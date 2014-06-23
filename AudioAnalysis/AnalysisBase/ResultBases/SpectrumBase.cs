@@ -11,39 +11,16 @@ using System;
 
 namespace AnalysisBase.ResultBases
 {
-    public class SpectrumBase : ResultBase
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+
+    public abstract class SpectrumBase : ResultBase
     {
 
-        public double[] DummySpectrum { get; set; }
+        public abstract IEnumerable<Func<SpectrumBase, object>> GetSelectors();
 
-
-        /* Here's what I'm thinking:
-         * Some kind of reflection magic that will allow scannign through all base classes
-         * to get all properties that match a criteria.
-         * 
-         * The get and set spectrum methods will do dynamic casting.
-         * 
-         * Caching will be important.
-         */
-
-        public string[] Keys
-        {
-            get
-            {
-
-                throw new NotImplementedException();
-            }
-        }
-
-        public T GetSpectrum<T>(string key)
-        {
-            return default(T);
-        }
-
-        public void SetSpectrm<T>(string key, T[] spectrum)
-        {
-            
-        }
     }
 
 

@@ -68,8 +68,8 @@ namespace AnalysisBase
         /// Ensures abstract types are downcast by the analyzer and written to file.
         /// </summary>
         /// <param name="destination">The file to write to.</param>
-        /// <param name="results">The results to write.</param> 
-        void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results);
+        /// <param name="results">The results to write.</param>
+        void WriteSpectrumIndicesFiles(DirectoryInfo destination, IEnumerable<SpectrumBase> results);
 
         /// <summary>
         /// Allows Events to be rendered as Summary Indices

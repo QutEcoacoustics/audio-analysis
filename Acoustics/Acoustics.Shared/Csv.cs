@@ -70,21 +70,6 @@ namespace Acoustics.Shared
 
         #region matrix/readers writers
 
-        internal static void Encode2DMatrix<T>(this CsvWriter writer, T[,] matrix, TwoDimensionalArray dimensionality,
-            bool includeRowIndex)
-        {
-            var transformedMatrix = new MatrixMapper<T>(matrix, dimensionality);
-
-            EncodeMatrixInner(writer, transformedMatrix, includeRowIndex);
-        }
-
-        internal static void EncodeMatrix<T>(this CsvWriter writer, IEnumerable<T[]> matrix, bool includeRowIndex)
-        {
-            var transformedMatrix = new MatrixMapper<T>(matrix);
-
-            EncodeMatrixInner(writer, transformedMatrix, includeRowIndex);
-        }
-
         private static void EncodeMatrixInner<T>(this CsvWriter writer, MatrixMapper<T> matrix, bool includeRowIndex)
         {
             int columns = matrix.Columns;
@@ -185,12 +170,13 @@ namespace Acoustics.Shared
             {
                 var writer = new CsvWriter(stream, DefaultConfiguration);
 
-                writer.Encode2DMatrix(matrix, dimnesionality, true);
+                var transformedMatrix = new TwoDimArrayMapper<T>(matrix, dimnesionality);
+
+                EncodeMatrixInner(writer, transformedMatrix, true);
             }
         }
 
-        public static T[,] ReadMatrixFromCsv<T>(FileInfo source,
-            TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
+        public static T[,] ReadMatrixFromCsv<T>(FileInfo source, TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
         {
             // not tested!
             using (var stream = source.OpenText())
@@ -208,7 +194,9 @@ namespace Acoustics.Shared
             {
                 var writer = new CsvWriter(stream, DefaultConfiguration);
 
-                writer.EncodeMatrix(matrix, true);
+                var transformedMatrix = new EnumerableMapper<T>(matrix);
+
+                EncodeMatrixInner(writer, transformedMatrix, true);
             }
         }
 
@@ -226,6 +214,18 @@ namespace Acoustics.Shared
             }
 
             return matrix;
+        }
+
+        public static void WriteMatrix<T, U>(FileInfo destination, IEnumerable<U> matrix, Func<U, T[]> selector)
+        {
+            using (var stream = destination.CreateText())
+            {
+                var writer = new CsvWriter(stream, DefaultConfiguration);
+
+                var transformedMatrix = new ObjectArrayMapper<U, T>(matrix, selector);
+
+                EncodeMatrixInner(writer, transformedMatrix, true);
+            }
         }
 
         #endregion

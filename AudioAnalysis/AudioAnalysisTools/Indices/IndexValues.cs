@@ -17,6 +17,8 @@ namespace AudioAnalysisTools.Indices
 
     using AnalysisBase.ResultBases;
 
+    using NeuralNets;
+
     using TowseyLibrary;
 
     public class IndexCalculateResult
@@ -198,5 +200,15 @@ namespace AudioAnalysisTools.Indices
         public double[] SPT { get; set; }
 
         public double[] CLS { get; set; }
+
+        public override IEnumerable<Func<SpectrumBase, object>> GetSelectors()
+        {
+            return new Func<SpectrumBase, object>[]
+                       {
+                           (x => ((SpectralValues)x).ACI), (x => ((SpectralValues)x).ENT), (x => ((SpectralValues)x).BGN),
+                           (x => ((SpectralValues)x).AVG), (x => ((SpectralValues)x).CVR), (x => ((SpectralValues)x).EVN),
+                           (x => ((SpectralValues)x).SPT), (x => ((SpectralValues)x).CLS)
+                       };
+        }
     }
 }

@@ -397,7 +397,7 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results.Cast<EventIndex>());
         }
 
-        public override void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results)
+        public override void WriteSpectrumIndicesFiles(DirectoryInfo destination, IEnumerable<SpectrumBase> results)
         {
             throw new NotImplementedException();
         }

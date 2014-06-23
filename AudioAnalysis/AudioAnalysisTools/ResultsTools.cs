@@ -459,7 +459,7 @@ namespace AudioAnalysisTools
 
         public static FileInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectrumBase> spectra)
         {
-            return SaveResults(outputDirectory, fileName + ".Spectra", analyser2.WriteSpectrumIndicesFile, spectra);
+            return SaveResults(outputDirectory, fileName + ".Spectra", (destination, results) => analyser2.WriteSpectrumIndicesFiles(destination, results), spectra);
         }
 
         private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)
@@ -479,7 +479,5 @@ namespace AudioAnalysisTools
 
             return reportfilePath;
         }
-
-    } //TempTools
-
-} //AudioBrowser
+    }
+}

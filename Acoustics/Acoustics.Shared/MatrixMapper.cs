@@ -22,51 +22,132 @@ namespace Acoustics.Shared
         RowMajor
     }
 
-    internal class MatrixMapper<T, TBase> : IEnumerable<int>
+    internal abstract class MatrixMapper<TMatrix> : IEnumerable<int>
+    {
+        public abstract int Columns { get; protected set; }
+
+        public abstract TMatrix[] Current { get; set; }
+
+        public abstract TMatrix this[int i, int j] { get; }
+
+        public abstract IEnumerator<int> GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+    }
+
+    internal class ObjectArrayMapper<TBase, TMatrix> : MatrixMapper<TMatrix>
+    {
+        private readonly IEnumerable<TBase> objectMatrix;
+        private readonly Func<TBase, TMatrix[]> selector;
+
+
+        public ObjectArrayMapper(IEnumerable<TBase> matrix, Func<TBase, TMatrix[]> selector)
+        {
+            // here
+            this.objectMatrix = matrix;
+            this.selector = selector;
+
+            ////this.isMatrix = false;
+        }
+
+        public override IEnumerator<int> GetEnumerator()
+        {
+
+                int rowCounter = -1;
+                foreach (var currentItem in this.objectMatrix)
+                {
+                    rowCounter++;
+                    this.Current = this.selector(currentItem);
+                    yield return rowCounter;
+                }
+        }
+
+        public override int Columns { get; protected set; }
+
+        public override TMatrix[] Current { get; set; }
+
+        public override TMatrix this[int i, int j]
+        {
+            get
+            {
+                return this.Current[j];
+                
+                throw new Exception();
+            }
+        }
+    }
+
+    internal class EnumerableMapper<TMatrix> : MatrixMapper<TMatrix>
+    {
+        private readonly IEnumerable<TMatrix[]> enumerableMatrix;
+        public EnumerableMapper(IEnumerable<TMatrix[]> matrix)
+        {
+            this.enumerableMatrix = matrix;
+            this.Columns = this.enumerableMatrix.First().Length;
+        }
+
+        public override IEnumerator<int> GetEnumerator()
+        {
+            int rowCounter = -1;
+            foreach (var currentItem in this.enumerableMatrix)
+            {
+                rowCounter++;
+                this.Current = currentItem;
+                yield return rowCounter;
+            }
+
+        }
+
+        public override int Columns { get; protected set; }
+
+        public override TMatrix[] Current { get; set; }
+
+        public override TMatrix this[int i, int j]
+        {
+            get
+            {
+                return this.Current[j];
+
+                throw new Exception();
+            }
+        }
+    }
+
+    internal class TwoDimArrayMapper<TMatrix> : MatrixMapper<TMatrix>
     {
         private readonly TwoDimensionalArray dimensionality;
-        private readonly IEnumerable<T[]> enumerableMatrix;
-        private readonly bool isMatrix;
-        private readonly T[,] matrix;
-        private T[] current;
+        private readonly TMatrix[,] matrix;
+        public int? Rows { get; private set; }
 
-        public MatrixMapper(T[,] matrix, TwoDimensionalArray dimensionality)
+        public TwoDimArrayMapper(TMatrix[,] matrix, TwoDimensionalArray dimensionality)
         {
             this.matrix = matrix;
             this.dimensionality = dimensionality;
             this.Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
-            this.Columns = TwoDimensionalArray.ColumnMajor == dimensionality ? matrix.ColumnLength() : matrix.RowLength();
-
-            this.isMatrix = true;
+            this.Columns = TwoDimensionalArray.ColumnMajor == dimensionality
+                               ? matrix.ColumnLength()
+                               : matrix.RowLength();
         }
 
-        public MatrixMapper(IEnumerable<T[]> matrix)
+        public override IEnumerator<int> GetEnumerator()
         {
-            this.enumerableMatrix = matrix;
-            this.Columns = this.enumerableMatrix.First().Length;
-            this.Rows = null;
-
-            this.isMatrix = false;
+            for (int i = 0; i < this.Rows; i++)
+            {
+                yield return i;
+            }
         }
 
-        public MatrixMapper(IEnumerable<TBase> matrix, Func<TBase, T> selector)
-        {
-            // here
-        }
+        public override int Columns { get; protected set; }
 
-        public int Columns { get; private set; }
+        public override TMatrix[] Current { get; set; }
 
-        public int? Rows { get; private set; }
-
-        public T this[int i, int j]
+        public override TMatrix this[int i, int j]
         {
             get
             {
-                if (this.isMatrix)
-                {
-                    return this.current[j];
-                }
-
                 if (this.dimensionality == TwoDimensionalArray.RowMajor)
                 {
                     return this.matrix[i, j];
@@ -79,33 +160,6 @@ namespace Acoustics.Shared
 
                 throw new Exception();
             }
-        }
-
-
-        public IEnumerator<int> GetEnumerator()
-        {
-            if (this.isMatrix)
-            {
-                for (int i = 0; i < this.Rows; i++)
-                {
-                    yield return i;
-                }
-            }
-            else
-            {
-                int rowCounter = -1;
-                foreach (var currentItem in this.enumerableMatrix)
-                {
-                    rowCounter++;
-                    this.current = currentItem;
-                    yield return rowCounter;
-                }
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
     }
 }
