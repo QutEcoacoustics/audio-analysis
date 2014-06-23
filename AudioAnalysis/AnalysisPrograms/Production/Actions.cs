@@ -374,6 +374,12 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.DummyAnalyser.Execute;
         }
 
+        public FileRenamer.Arguments FileRenamerArgs { get; set; }
+        public static Action<FileRenamer.Arguments> FileRenamer()
+        {
+            return AnalysisPrograms.FileRenamer.Execute;
+        }  
+
         #endregion
     }
 }
