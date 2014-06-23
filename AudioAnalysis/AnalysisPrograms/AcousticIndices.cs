@@ -147,11 +147,9 @@ namespace AnalysisPrograms
             get { return "Acoustic Indices"; }
         }
 
-        private const string identifier = "Towsey." + AnalysisName;
-
         public string Identifier
         {
-            get { return identifier; }
+            get { return "Towsey." + AnalysisName; }
         }
 
 
@@ -194,8 +192,8 @@ namespace AnalysisPrograms
                 var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
                 var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
                 var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, identifier);
-                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, identifier);
+                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
+                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
 
                 if (true)
                 {
@@ -375,7 +373,7 @@ namespace AnalysisPrograms
 
             if (analysisSettings.SpectrumIndicesDirectory != null)
             {
-                SpectrumBase.WriteResults<SpectralValues>(analysisSettings.SpectrumIndicesDirectory)
+                this.WriteSpectrumIndicesFiles(analysisSettings.SpectrumIndicesDirectory, analysisResults.SpectralIndices);
             }
 
             return analysisResults;
@@ -391,9 +389,10 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
-        public void WriteSpectrumIndicesFile(FileInfo destination, IEnumerable<SpectrumBase> results)
+        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, IEnumerable<SpectrumBase> results)
         {
-            Csv.WriteMatrixToCsv<SpectrumBase>(destination, results);
+            SpectrumBase.WriteToFile(destination, results);
+            
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(
