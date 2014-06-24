@@ -216,7 +216,7 @@ namespace Acoustics.Shared
             return matrix;
         }
 
-        public static void WriteMatrix<T, U>(FileInfo destination, IEnumerable<U> matrix, Func<U, T[]> selector)
+        public static void WriteMatrixToCsv<T, U>(FileInfo destination, IEnumerable<U> matrix, Func<U, T[]> selector)
         {
             using (var stream = destination.CreateText())
             {

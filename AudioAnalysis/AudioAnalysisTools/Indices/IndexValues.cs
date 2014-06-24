@@ -201,7 +201,7 @@ namespace AudioAnalysisTools.Indices
 
         public double[] CLS { get; set; }
 
-        public override IEnumerable<Func<SpectrumBase, object>> GetSelectors()
+        public static override IEnumerable<Func<SpectrumBase, object>> GetSelectors()
         {
             return new Func<SpectrumBase, object>[]
                        {
