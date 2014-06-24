@@ -391,7 +391,51 @@ namespace AnalysisPrograms
 
         public void WriteSpectrumIndicesFiles(DirectoryInfo destination, IEnumerable<SpectrumBase> results)
         {
-            SpectrumBase.WriteToFile(destination, results);
+            var selectors = results.First().GetSelectors();
+
+            foreach (var spectrum in selectors)
+            {
+                // write spectrogram to disk as CSV file
+
+                var saveCsvPath = destination.CombineFile(fileName + "." + spectrumKey + ".csv");
+
+                Csv.WriteMatrixToCsv(saveCsvPath, results, spectrum);
+
+                //following lines used to store spectrogram matrices in Dictionary
+                ////double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
+                ////matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                ////spectrogramDictionary.Add(spectrumKey, matrix);
+            }
+
+            /*
+             *             var spectrogramDictionary = new Dictionary<string, double[,]>();
+            foreach (var spectrumKey in results[0].indexBase.SpectralIndices.Keys)
+            {
+                // +1 for header
+                var lines = new string[results.Length + 1]; //used to write the spectrogram as a CSV file
+                var numbers = new double[results.Length][]; //used to draw  the spectrogram as an image
+                foreach (var analysisResult in results)
+                {
+                    var index = ((int) analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
+
+                    numbers[index] = analysisResult.indexBase.SpectralIndices[spectrumKey];
+
+                    // add one to offset header
+                    lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);
+                }
+
+                // write spectrogram to disk as CSV file
+                var saveCsvPath = Path.Combine(resultsDirectory.FullName, fName + "." + spectrumKey + ".csv");
+                lines[0] = Spectrum.GetHeader(numbers[0].Length); // add in header
+                FileTools.WriteTextFile(saveCsvPath, lines);
+
+                //following lines used to store spectrogram matrices in Dictionary
+                double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
+                matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                spectrogramDictionary.Add(spectrumKey, matrix);
+            } // foreach spectrumKey
+             * 
+             */
             
         }
 
@@ -427,21 +471,6 @@ namespace AnalysisPrograms
 
 
 
-            ////var spectrogramDictionary = new Dictionary<string, double[,]>();
-            foreach (var spectrumKey in new string[] {"????????"})
-            {
-                throw new NotImplementedException();
-                // write spectrogram to disk as CSV file
-
-                var saveCsvPath = resultsDirectory.CombineFile(fileName + "." + spectrumKey + ".csv");
-
-                Csv.WriteMatrixToCsv(saveCsvPath, spectra.Select(x => x.DummySpectrum));
-
-                //following lines used to store spectrogram matrices in Dictionary
-                ////double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
-                ////matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                ////spectrogramDictionary.Add(spectrumKey, matrix);
-            }
 
             // TODO: make more efficient, pass data directly in
             var config = new LDSpectrogramConfig(fileName, resultsDirectory, resultsDirectory);
@@ -472,32 +501,7 @@ namespace AnalysisPrograms
             // this method also AUTOMATICALLY SORTS because it uses array indexing
 
             int startMinute = (int) (fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
-            var spectrogramDictionary = new Dictionary<string, double[,]>();
-            foreach (var spectrumKey in results[0].indexBase.SpectralIndices.Keys)
-            {
-                // +1 for header
-                var lines = new string[results.Length + 1]; //used to write the spectrogram as a CSV file
-                var numbers = new double[results.Length][]; //used to draw  the spectrogram as an image
-                foreach (var analysisResult in results)
-                {
-                    var index = ((int) analysisResult.SegmentStartOffset.TotalMinutes) - startMinute;
 
-                    numbers[index] = analysisResult.indexBase.SpectralIndices[spectrumKey];
-
-                    // add one to offset header
-                    lines[index + 1] = Spectrum.SpectrumToCsvString(index, numbers[index]);
-                }
-
-                // write spectrogram to disk as CSV file
-                var saveCsvPath = Path.Combine(resultsDirectory.FullName, fName + "." + spectrumKey + ".csv");
-                lines[0] = Spectrum.GetHeader(numbers[0].Length); // add in header
-                FileTools.WriteTextFile(saveCsvPath, lines);
-
-                //following lines used to store spectrogram matrices in Dictionary
-                double[,] matrix = DataTools.ConvertJaggedToMatrix(numbers);
-                matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                spectrogramDictionary.Add(spectrumKey, matrix);
-            } // foreach spectrumKey
 
             var spectrogramConfig = new LDSpectrogramConfig(fName, resultsDirectory, resultsDirectory);
             FileInfo spectrogramConfigPath = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
