@@ -10,6 +10,8 @@ using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {
+    using AudioAnalysisTools.LongDurationSpectrograms;
+
     public static class LDSpectrogramTStatistic
     {
         //PARAMETERS
@@ -97,7 +99,7 @@ namespace AudioAnalysisTools
             string opFileName1 = ipFileName1.Name;
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = opFileName1;
-            cs1.ColorMODE = colorMap;
+            cs1.ColorMode = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             string[] keys = colorMap.Split('-');
             cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
@@ -106,7 +108,7 @@ namespace AudioAnalysisTools
             string opFileName2 = ipFileName2.Name;
             var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs2.FileName = opFileName2;
-            cs2.ColorMODE = colorMap;
+            cs2.ColorMode = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
             cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
 
@@ -227,12 +229,12 @@ namespace AudioAnalysisTools
             //frame image 1
             string title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs1.FileName);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
 
             //frame image 2
             title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs2.FileName);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval);
 
             //get matrices required to calculate matrix of t-statistics
             double[,] avg1 = cs1.GetSpectrogramMatrix(key);
@@ -252,7 +254,7 @@ namespace AudioAnalysisTools
             Image image4 = LDSpectrogramTStatistic.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, colourGain);
             title = String.Format("{0} DIFFERENCE SPECTROGRAM (thresholded by t-statistic={3}) for: {1} - {2}.      (scale:hours x kHz)", key, cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);
-            image4 = LDSpectrogramRGB.FrameSpectrogram(image4, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
+            image4 = LDSpectrogramRGB.FrameSpectrogram(image4, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval);
 
             Image[] opArray = new Image[3];
             opArray[0] = image1;
@@ -468,10 +470,10 @@ namespace AudioAnalysisTools
 
             string title = String.Format("DIFFERENCE SPECTROGRAM (thresholded by t-Statistic={2}) where {0} > {1}      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, tStatThreshold);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
-            images[0] = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval); ;
+            images[0] = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval); ;
             title = String.Format("DIFFERENCE SPECTROGRAM (thresholded by t-Statistic={2}) where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
-            images[1] = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval); ;
+            images[1] = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval); ;
 
             Image compositeImage = ImageTools.CombineImagesVertically(images);
             return compositeImage;

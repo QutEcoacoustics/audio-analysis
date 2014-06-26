@@ -214,10 +214,8 @@ namespace AudioAnalysisTools
 
         public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectrumBase spectrumToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)
         {
-
         }
 
-        
         /// <summary>
         /// 
         /// </summary>
@@ -292,8 +290,12 @@ namespace AudioAnalysisTools
 
         private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
 
-        public static void ConvertEventsToIndices(IAnalyser2 analyser, 
-            EventBase[] events, ref SummaryIndexBase[] indices, TimeSpan durationOfTheOriginalAudioFile, double scoreThreshold)
+        public static void ConvertEventsToIndices(
+            IAnalyser2 analyser,
+            EventBase[] events,
+            ref SummaryIndexBase[] indices,
+            TimeSpan durationOfTheOriginalAudioFile,
+            double scoreThreshold)
         {
             if (events == null && indices == null)
             {
@@ -308,7 +310,10 @@ namespace AudioAnalysisTools
             {
                 Log.InfoFormat("Converting Events to {0} minute Indices", IndexUnitTime.TotalMinutes);
 
-                indices = analyser.ConvertEventsToSummaryIndices(events, IndexUnitTime, durationOfTheOriginalAudioFile,
+                indices = analyser.ConvertEventsToSummaryIndices(
+                    events,
+                    IndexUnitTime,
+                    durationOfTheOriginalAudioFile,
                     scoreThreshold);
             }
             else if (events != null && indices != null)
@@ -316,7 +321,7 @@ namespace AudioAnalysisTools
                 // no-op both values already present, just ensure they match
                 Log.Info("Both events and indices already given, no event conversion done");
             }
-        } 
+        }
 
         /*
         /// <summary>
@@ -459,7 +464,7 @@ namespace AudioAnalysisTools
 
         public static FileInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectrumBase> spectra)
         {
-            return SaveResults(outputDirectory, fileName + ".Spectra", (destination, results) => analyser2.WriteSpectrumIndicesFiles(destination, results), spectra);
+            return SaveResults(outputDirectory, fileName + ".Spectra", (destination, results) => analyser2.WriteSpectrumIndicesFiles(outputDirectory, fileName, results), spectra);
         }
 
         private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)

@@ -26,6 +26,8 @@ namespace AnalysisPrograms
 
     using Acoustics.Shared.Extensions;
 
+    using AnalysisBase.ResultBases;
+
     using AnalysisPrograms.Production;
 
     public class Rain : IAnalyser
@@ -236,6 +238,13 @@ namespace AnalysisPrograms
 
         }
 
+        public class RainResultIndex : SummaryIndexBase
+        {
+            public double RainIndex { get; set; }
+
+            public double CicadaIndex { get; set; }
+        }
+
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
             var fiAudioF = analysisSettings.AudioFile;
@@ -246,17 +255,26 @@ namespace AnalysisPrograms
             analysisResults.SettingsUsed = analysisSettings;
             analysisResults.Data = null;
 
-            //######################################################################
+            // ######################################################################
             var results = RainAnalyser(fiAudioF, analysisSettings);
-            //######################################################################
+            // ######################################################################
 
-            if (results == null)  return analysisResults; //nothing to process 
+            if (results == null)
+            {
+                return analysisResults; //nothing to process 
+            }
 
             //analysisResults.Data = results.Item1;
-            foreach (KeyValuePair<string, double> entry in results.Item1)
-            {
-                analysisResults.indexBase.SummaryIndicesOfTypeDouble.Add(entry.Key, entry.Value); 
-            }
+
+            var result = new RainResultIndex();
+                result.RainIndex = results.Item1[InitialiseIndexProperties.keyRAIN];
+                result.CicadaIndex = results.Item1[InitialiseIndexProperties.keyCICADA];
+
+            throw new NotImplementedException("Anthony was too lazy to convert this to a IAnalyser2 interface");
+            // TODO: save results into analysisResults object
+
+
+
             analysisResults.AudioDuration = results.Item2;
             //var sonogram = results.Item3;
             //var scores = results.Item4;
@@ -282,25 +300,33 @@ namespace AnalysisPrograms
         {
             Dictionary<string, string> config = analysisSettings.ConfigDict;
 
-            //get parameters for the analysis
+            // get parameters for the analysis
             int frameSize = IndexCalculate.DefaultWindowSize;
             double windowOverlap = 0.0;
             int lowFreqBound = IndexCalculate.LowFreqBound;
             int midFreqBound = IndexCalculate.MidFreqBound;
 
-            if (config.ContainsKey(AnalysisKeys.FRAME_LENGTH)) 
+            if (config.ContainsKey(AnalysisKeys.FRAME_LENGTH))
+            {
                 frameSize = ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config);
-            if (config.ContainsKey(key_LOW_FREQ_BOUND)) 
+            }
+            if (config.ContainsKey(key_LOW_FREQ_BOUND))
+            {
                 lowFreqBound = ConfigDictionary.GetInt(key_LOW_FREQ_BOUND, config);
-            if (config.ContainsKey(key_MID_FREQ_BOUND)) 
+            }
+            if (config.ContainsKey(key_MID_FREQ_BOUND))
+            {
                 midFreqBound = ConfigDictionary.GetInt(key_MID_FREQ_BOUND, config);
-            if (config.ContainsKey(AnalysisKeys.FRAME_OVERLAP)) 
+            }
+            if (config.ContainsKey(AnalysisKeys.FRAME_OVERLAP))
+            {
                 windowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, config);
+            }
 
-            //get recording segment
+            // get recording segment
             AudioRecording recording = new AudioRecording(fiAudioFile.FullName);
 
-            //calculate duration/size of various quantities.
+            // calculate duration/size of various quantities.
             int signalLength = recording.GetWavReader().Samples.Length;
             TimeSpan audioDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
             double duration        = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
@@ -400,7 +426,7 @@ namespace AnalysisPrograms
             double eventThreshold = 0.0;
             Image image = SpectrogramTools.Sonogram2Image(sonogram, configDict, null, scores, predictedEvents, eventThreshold);
             return image;
-        } //DrawSonogram()
+        }
 
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {

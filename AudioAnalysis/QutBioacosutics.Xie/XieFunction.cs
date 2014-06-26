@@ -203,7 +203,7 @@ namespace QutBioacosutics.Xie
 
             // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
             TimeSpan minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstantsJie.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
-            TimeSpan xScale = (TimeSpan?)configuration.X_Axis_TicInterval ?? SpectrogramConstantsJie.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
+            TimeSpan xScale = (TimeSpan?)configuration.XAxisTicInterval ?? SpectrogramConstantsJie.X_AXIS_SCALE; // default is one minute spectra i.e. 60 per hour
             int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstantsJie.SAMPLE_RATE;
             int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstantsJie.FRAME_WIDTH;
 
@@ -227,14 +227,14 @@ namespace QutBioacosutics.Xie
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
             image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
             colorMap = SpectrogramConstantsJie.RGBMap_ACI_ENT_SPT;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
             image2.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
             Image[] array = new Image[2];
             array[0] = image1;

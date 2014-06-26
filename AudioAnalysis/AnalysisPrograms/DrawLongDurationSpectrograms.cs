@@ -69,7 +69,7 @@ namespace AnalysisPrograms
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
             var config = new LDSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
-            config.WritConfigToYAML(fiSpectrogramConfig);
+            config.WriteConfigToYaml(fiSpectrogramConfig);
 
 
             return new Arguments

@@ -113,6 +113,10 @@
       <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
       <Name>Acoustics.Tools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
+      <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
+      <Name>AnalysisBase</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
