@@ -37,9 +37,9 @@ namespace AudioAnalysisTools.Indices
         public const int DefaultWindowSize = 256;
 
         // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
-        private static int LowFreqBound = 500;
+        public static int LowFreqBound = 500;
 
-        private static int MidFreqBound = 3500;
+        public static int MidFreqBound = 3500;
 
         // chose this value because it is simple fraction (4/5) of 22050Hz. However this now appears to be irrelevant.
         // public const int RESAMPLE_RATE = 22050;

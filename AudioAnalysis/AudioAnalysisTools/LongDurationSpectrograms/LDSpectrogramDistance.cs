@@ -10,6 +10,8 @@ using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {
+    using AudioAnalysisTools.LongDurationSpectrograms;
+
     public static class LDSpectrogramDistance
     {
         // set DEFAULT values for parameters
@@ -78,7 +80,7 @@ namespace AudioAnalysisTools
             //PARAMETERS
                 string opFileName1 = ipFileName1.Name;
                 var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
-                cs1.ColorMODE = colorMap;
+                cs1.ColorMode = colorMap;
                 cs1.BackgroundFilter = backgroundFilterCoeff;
                 string[] keys = colorMap.Split('-');
                 cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
@@ -92,13 +94,13 @@ namespace AudioAnalysisTools
                     Console.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
                     return;
                 }
-                string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMODE);
+                string title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName1, cs1.ColorMode);
                 Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
-                spg1Image = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+                spg1Image = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
 
                 string opFileName2 = ipFileName2.Name;
                 var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
-                cs2.ColorMODE = colorMap;
+                cs2.ColorMode = colorMap;
                 cs2.BackgroundFilter = backgroundFilterCoeff;
                 cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
                 //cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
@@ -111,15 +113,15 @@ namespace AudioAnalysisTools
                     return;
                 }
 
-                title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName2, cs2.ColorMODE);
+                title = String.Format("FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", ipFileName2, cs2.ColorMode);
                 titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
-                spg2Image = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
+                spg2Image = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval);
 
                 string opFileName4 = ipFileName1 + ".EuclidianDistance.png";
                 Image deltaSp = LDSpectrogramDistance.DrawDistanceSpectrogram(cs1, cs2);
                 Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(LDSpectrogramDistance.GetDifferenceColourChart());
                 titleBar = LDSpectrogramDistance.DrawTitleBarOfEuclidianDistanceSpectrogram(ipFileName1.Name, ipFileName2.Name, colorArray, deltaSp.Width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
-                deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.X_interval, cs2.Y_interval);
+                deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval);
                 deltaSp.Save(Path.Combine(opdir.FullName, opFileName4));
 
                 string opFileName5 = ipFileName1 + ".2SpectrogramsAndDistance.png";

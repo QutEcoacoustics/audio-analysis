@@ -176,9 +176,8 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
 
-            //    ###########################################################################################
+            // ##############################################################################################
             // 8. PROCESS THE RESULTS
-
             LoggedConsole.WriteLine(string.Empty);
             if (analyserResults == null)
             {

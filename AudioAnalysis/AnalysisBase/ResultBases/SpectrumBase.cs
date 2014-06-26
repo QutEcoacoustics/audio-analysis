@@ -18,8 +18,7 @@ namespace AnalysisBase.ResultBases
 
     public abstract class SpectrumBase : ResultBase
     {
-
-        public abstract IEnumerable<Func<SpectrumBase, object>> GetSelectors();
+        public abstract Dictionary<string, Func<SpectrumBase, double[]>> GetSelectors();
 
     }
 

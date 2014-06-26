@@ -10,6 +10,8 @@ using TowseyLibrary;
 
 namespace AudioAnalysisTools
 {
+    using AudioAnalysisTools.LongDurationSpectrograms;
+
     public static class LDSpectrogramDifference
     {
         //PARAMETERS
@@ -76,7 +78,7 @@ namespace AudioAnalysisTools
 
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs1.FileName = ipFileName1.Name;
-            cs1.ColorMODE = colorMap;
+            cs1.ColorMode = colorMap;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             string[] keys = colorMap.Split('-');
             cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
@@ -88,7 +90,7 @@ namespace AudioAnalysisTools
 
             var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
             cs2.FileName = ipFileName2.Name;
-            cs2.ColorMODE = colorMap;
+            cs2.ColorMode = colorMap;
             cs2.BackgroundFilter = backgroundFilterCoeff;
             cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
             if (cs2.GetCountOfSpectrogramMatrices() == 0)
@@ -107,13 +109,13 @@ namespace AudioAnalysisTools
             //Draw positive difference spectrograms in one image.
             Image[] images = LDSpectrogramDifference.DrawPositiveDifferenceSpectrograms(cs1, cs2, colourGain);
 
-            string title = String.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+            string title = String.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[0].Width);
-            images[0] = LDSpectrogramRGB.FrameSpectrogram(images[0], titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            images[0] = LDSpectrogramRGB.FrameSpectrogram(images[0], titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
 
-            title = String.Format("DIFFERENCE SPECTROGRAM where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMODE);
+            title = String.Format("DIFFERENCE SPECTROGRAM where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[1].Width);
-            images[1] = LDSpectrogramRGB.FrameSpectrogram(images[1], titleBar, minuteOffset, cs1.X_interval, cs1.Y_interval);
+            images[1] = LDSpectrogramRGB.FrameSpectrogram(images[1], titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
             Image combinedImage = ImageTools.CombineImagesVertically(images);
             string opFileName = ipFileName1 +"-"+ ipFileName2 + ".Difference.png";
             combinedImage.Save(Path.Combine(opdir.FullName, opFileName));

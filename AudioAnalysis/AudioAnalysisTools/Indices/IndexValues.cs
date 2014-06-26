@@ -14,8 +14,12 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
+    using System.Reflection;
 
     using AnalysisBase.ResultBases;
+
+    using MathNet.Numerics.LinearAlgebra.Complex32.Solvers.Iterative;
 
     using NeuralNets;
 
@@ -201,14 +205,39 @@ namespace AudioAnalysisTools.Indices
 
         public double[] CLS { get; set; }
 
-        public static override IEnumerable<Func<SpectrumBase, object>> GetSelectors()
+        private static readonly Dictionary<string, Func<SpectrumBase, double[]>> cachedSelectors;
+
+        static SpectralValues()
         {
-            return new Func<SpectrumBase, object>[]
-                       {
-                           (x => ((SpectralValues)x).ACI), (x => ((SpectralValues)x).ENT), (x => ((SpectralValues)x).BGN),
-                           (x => ((SpectralValues)x).AVG), (x => ((SpectralValues)x).CVR), (x => ((SpectralValues)x).EVN),
-                           (x => ((SpectralValues)x).SPT), (x => ((SpectralValues)x).CLS)
-                       };
+             Type thisType = typeof(SpectralValues);
+            /*var selectors = new Func<SpectrumBase, object>[]
+                                {
+                                    (x => ((SpectralValues)x).ACI), (x => ((SpectralValues)x).ENT), (x => ((SpectralValues)x).BGN),
+                                    (x => ((SpectralValues)x).AVG), (x => ((SpectralValues)x).CVR), (x => ((SpectralValues)x).EVN),
+                                    (x => ((SpectralValues)x).SPT), (x => ((SpectralValues)x).CLS)
+                                };*/
+
+            var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            cachedSelectors = new Dictionary<string, Func<SpectrumBase, double[]>>(props.Length);
+            foreach (var propertyInfo in props)
+            {
+ 
+                if (propertyInfo.PropertyType != typeof(double[]))
+                {
+                    continue;
+                }
+                
+                var methodInfo = propertyInfo.GetGetMethod();
+                var getDelegate = (Func<SpectrumBase, double[]>)Delegate.CreateDelegate(thisType, methodInfo);
+                var name = propertyInfo.Name;
+
+                cachedSelectors.Add(name, getDelegate);
+            }
+        }
+
+        public override Dictionary<string, Func<SpectrumBase, double[]>> GetSelectors()
+        {
+            return cachedSelectors;
         }
     }
 }
