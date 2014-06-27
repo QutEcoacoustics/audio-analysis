@@ -133,20 +133,20 @@
             //Contract.Requires(file != null, "Source file must not be null.");
 
             bool saveIntermediateWavFiles = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES))
-                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
+                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles, settings.ConfigDict);
 
             bool doParallelProcessing = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING))
-                doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.ParallelProcessing))
+                doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.ParallelProcessing, settings.ConfigDict);
 
             bool saveSonograms = false;
-            if (settings.ConfigDict.ContainsKey(AnalysisKeys.SAVE_SONOGRAMS))
-                saveSonograms = ConfigDictionary.GetBoolean(AnalysisKeys.SAVE_SONOGRAMS, (settings.ConfigDict));
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.SaveSonograms))
+                saveSonograms = ConfigDictionary.GetBoolean(AnalysisKeys.SaveSonograms, (settings.ConfigDict));
 
             bool displayCsvImage = false;
-            if (settings.ConfigDict.ContainsKey(AnalysisKeys.DISPLAY_CSV_IMAGE))
-                displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DISPLAY_CSV_IMAGE, (settings.ConfigDict));
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.DisplayCsvImage))
+                displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DisplayCsvImage, (settings.ConfigDict));
 
             //initilise classes that will do the analysis
             this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, displayCsvImage)

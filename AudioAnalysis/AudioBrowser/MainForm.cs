@@ -813,8 +813,8 @@
             FileInfo fiConfig = this.AnalyserConfigFile;
             Dictionary<string, string> dict = config.GetTable();
             DirectoryInfo diOutputDir = this.AnalyserOutputDir;
-            string keySegmentDuration = AudioAnalysisTools.AnalysisKeys.SEGMENT_DURATION;
-            string keySegmentOverlap = AudioAnalysisTools.AnalysisKeys.SEGMENT_OVERLAP;
+            string keySegmentDuration = AudioAnalysisTools.AnalysisKeys.SegmentDuration;
+            string keySegmentOverlap = AudioAnalysisTools.AnalysisKeys.SegmentOverlap;
             settings.ConfigFile = fiConfig;
             settings.ConfigDict = dict;
             settings.AnalysisBaseOutputDirectory = diOutputDir;
@@ -863,7 +863,7 @@
                 Log.DebugFormat("\t{0} = {1}", kvp.Key, kvp.Value);
             }
 
-            string analysisName = analysisParams[AudioAnalysisTools.AnalysisKeys.ANALYSIS_NAME];
+            string analysisName = analysisParams[AudioAnalysisTools.AnalysisKeys.AnalysisName];
             if (analyserId != analysisName)
             {
                 Log.WarnFormat("Analysis type selected in browser ({0}) not same as that in config file ({1})", analyserId, analysisName);

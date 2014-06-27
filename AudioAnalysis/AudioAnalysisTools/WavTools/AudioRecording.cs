@@ -434,8 +434,8 @@
 
 
             int resampleRate = DEFAULT_SAMPLE_RATE;
-            if (configDict.ContainsKey(AnalysisKeys.RESAMPLE_RATE))
-                resampleRate = ConfigDictionary.GetInt(AnalysisKeys.RESAMPLE_RATE, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
+                resampleRate = ConfigDictionary.GetInt(AnalysisKeys.ResampleRate, configDict);
 
             //EXTRACT RECORDING SEGMENT
             int startMilliseconds = (int)(start.TotalMilliseconds - buffer.TotalMilliseconds);

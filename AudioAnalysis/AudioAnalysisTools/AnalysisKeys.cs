@@ -1,95 +1,90 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AnalysisKeys.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace AudioAnalysisTools
 {
     public static class AnalysisKeys
     {
-
-
-        //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string ANNOTATE_SONOGRAM  = "ANNOTATE_SONOGRAM";
-        public static string ANALYSIS_NAME = "ANALYSIS_NAME";
-        public static string CALL_DURATION = "CALL_DURATION";
-        public static string DCT_DURATION = "DCT_DURATION";
-        public static string DCT_THRESHOLD = "DCT_THRESHOLD";
-        public static string DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
-        public static string DISPLAY_CSV_IMAGE = "DISPLAY_CSV_IMAGE";
-        public static string DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
-        public static string DISPLAY_WEIGHTED_INDICES = "DISPLAY_WEIGHTED_INDICES";
-        public static string DOMINANT_FREQUENCY = "DOMINANT_FREQUENCY";
-        public static string DO_SEGMENTATION = "DO_SEGMENTATION";
-        public static string FRAME_LENGTH = "FRAME_LENGTH";
-        public static string FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
-        public static string MIN_HZ = "MIN_HZ";
-        public static string MAX_HZ = "MAX_HZ";
-        public static string MIN_FORMANT_GAP = "MIN_FORMANT_GAP";
-        public static string MAX_FORMANT_GAP = "MAX_FORMANT_GAP";
-        public static string MIN_GAP = "MIN_GAP";
-        public static string MAX_GAP = "MAX_GAP";
-        public static string MIN_AMPLITUDE = "MIN_AMPLITUDE";
-        public static string MIN_DURATION  = "MIN_DURATION";
-        public static string MAX_DURATION  = "MAX_DURATION";
-        public static string MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
-        public static string MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
-        public static string MIN_PERIODICITY = "MIN_PERIOD";
-        public static string MAX_PERIODICITY = "MAX_PERIOD";
-        public static string OSCILLATION_RATE = "OSCILLATION_RATE";
-        public static string PARALLEL_PROCESSING = "PARALLEL_PROCESSING";
-        public static string RESAMPLE_RATE = "RESAMPLE_RATE";
-        public static string SAVE_INTERMEDIATE_CSV_FILES = "SAVE_INTERMEDIATE_CSV_FILES";
-        public static string SAVE_INTERMEDIATE_WAV_FILES = "SAVE_INTERMEDIATE_WAV_FILES";
-        public const string SEGMENT_DURATION  = "SEGMENT_DURATION";
-        public static string SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
-        public static string SMOOTHING_WINDOW = "SMOOTHING_WINDOW";
-        public static string THRESHOLD        = "THRESHOLD";
-
+        // KEYS TO PARAMETERS IN CONFIG FILE
+        public const string AnnotateSonogram = "ANNOTATE_SONOGRAM";
+        public const string AnalysisName = "AnalysisName";
+        public const string CallDuration = "CALL_DURATION";
+        public const string DctDuration = "DCT_DURATION";
+        public const string DctThreshold = "DCT_THRESHOLD";
+        public const string DecibelThreshold = "DECIBEL_THRESHOLD";
+        public const string DisplayCsvImage = "DISPLAY_CSV_IMAGE";
+        public const string DisplayColumns = "DISPLAY_COLUMNS";
+        public const string DisplayWeightedIndices = "DISPLAY_WEIGHTED_INDICES";
+        public const string DominantFrequency = "DOMINANT_FREQUENCY";
+        public const string DoSegmentation = "DO_SEGMENTATION";
+        public const string FrameLength = "FRAME_LENGTH";
+        public const string FrameOverlap = "FRAME_OVERLAP";
+        public const string IntensityThreshold = "INTENSITY_THRESHOLD";
+        public const string MinHz = "MIN_HZ";
+        public const string MaxHz = "MAX_HZ";
+        public const string MinFormantGap = "MIN_FORMANT_GAP";
+        public const string MaxFormantGap = "MAX_FORMANT_GAP";
+        public const string MinGap = "MIN_GAP";
+        public const string MaxGap = "MAX_GAP";
+        public const string MinAmplitude = "MIN_AMPLITUDE";
+        public const string MinDuration = "MIN_DURATION";
+        public const string MaxDuration = "MAX_DURATION";
+        public const string MinOscilFreq = "MIN_OSCIL_FREQ";
+        public const string MaxOscilFreq = "MAX_OSCIL_FREQ";
+        public const string MinPeriodicity = "MIN_PERIOD";
+        public const string MaxPeriodicity = "MAX_PERIOD";
+        public const string OscillationRate = "OSCILLATION_RATE";
+        public const string ParallelProcessing = "PARALLEL_PROCESSING";
+        public const string ResampleRate = "RESAMPLE_RATE";
+        public const string SaveIntermediateCsvFiles = "SAVE_INTERMEDIATE_CSV_FILES";
+        public const string SaveIntermediateWavFiles = "SAVE_INTERMEDIATE_WAV_FILES";
+        public const string SegmentDuration = "SEGMENT_DURATION";
+        public const string SegmentOverlap = "SEGMENT_OVERLAP";
+        public const string SmoothingWindow = "SMOOTHING_WINDOW";
+        public const string Threshold = "THRESHOLD";
 
         // Keys to recognise identifiers in ANALYSIS CONFIG file. 
-        public static string LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
-        public static string MID_FREQ_BOUND = "MID_FREQ_BOUND";
+        public const string LowFreqBound = "LOW_FREQ_BOUND";
+        public const string MidFreqBound = "MID_FREQ_BOUND";
 
         // KEYS to SONOGRAMS
-        public static string SAVE_SONOGRAMS         = "SAVE_SONOGRAM_FILES";
-        public static string TIME_REDUCTION_FACTOR  = "TIME_REDUCTION_FACTOR";
-        public static string FREQ_REDUCTION_FACTOR  = "FREQ_REDUCTION_FACTOR";
-        public static string ADD_AXES               = "ADD_AXES";
-        public static string ADD_TIME_SCALE         = "ADD_TIME_SCALE";
-        public static string ADD_SEGMENTATION_TRACK = "ADD_SEGMENTATION_TRACK";
-        public static string MAKE_SOX_SONOGRAM      = "MAKE_SOX_SONOGRAM";
-        public static string SONOGRAM_TITLE         = "SONOGRAM_TITLE";
-        public static string SONOGRAM_COMMENT       = "SONOGRAM_COMMENT";
-        public static string SONOGRAM_COLOURED      = "SONOGRAM_COLOURED";
-        public static string SONOGRAM_QUANTISATION  = "SONOGRAM_QUANTISATION";
-        public static string SOX_PATH               = "SOX_PATH";
-        public static string NOISE_REDUCTION_TYPE   = "NOISE_REDUCTION_TYPE";
-        public static string NOISE_DO_REDUCTION     = "DO_NOISE_REDUCTION";
-        public static string NOISE_BG_THRESHOLD     = "BG_NOISE_THRESHOLD";
+        public const string SaveSonograms = "SAVE_SONOGRAM_FILES";
+        public const string TimeReductionFactor = "TIME_REDUCTION_FACTOR";
+        public const string FreqReductionFactor = "FREQ_REDUCTION_FACTOR";
+        public const string AddAxes = "ADD_AXES";
+        public const string AddTimeScale = "ADD_TIME_SCALE";
+        public const string AddSegmentationTrack = "ADD_SEGMENTATION_TRACK";
+        public const string MakeSoxSonogram = "MAKE_SOX_SONOGRAM";
+        public const string SonogramTitle = "SONOGRAM_TITLE";
+        public const string SonogramComment = "SONOGRAM_COMMENT";
+        public const string SonogramColoured = "SONOGRAM_COLOURED";
+        public const string SonogramQuantisation = "SONOGRAM_QUANTISATION";
+        public const string SoxPath = "SOX_PATH";
+        public const string NoiseReductionType = "NOISE_REDUCTION_TYPE";
+        public const string NoiseDoReduction = "DO_NOISE_REDUCTION";
+        public const string NoiseBgThreshold = "BG_NOISE_THRESHOLD";
 
+        // KEYS TO CSV HEADERS FOR SUMMARY INDEX
+        public const string KeyRankOrder = "RankOrder";
+        public const string KeyStartMinute = "StartMinute";
+        public const string KeySegmentDuration = "SegmentDuration";
+        public const string KeyAvSignalAmplitude = "AvSignalAmplitude";
+        public const string KeyCallDensity = "CallDensity";
+        public const string KeySnrScore = "SNRscore";
 
-
-        //KEYS TO CSV HEADERS FOR SUMMARY INDEX
-        public static string KEY_RankOrder       = "RankOrder";
-        public const string  KEY_StartMinute     = "StartMinute";
-        public static string KEY_SegmentDuration = "SegmentDuration";
-        public static string KEY_AvSignalAmplitude = "AvSignalAmplitude";
-        public static string KEY_CallDensity     = "CallDensity";
-        public static string KEY_SNRScore        = "SNRscore";
-
-        //KEYS TO CSV HEADERS FOR EVENTS
-        public static string EVENT_COUNT     = "EventCount";
-        public static string EVENT_DURATION  = "EvDuration";
-        public static string EVENT_INTENSITY = "EvIntensity";
-        public static string EVENT_NAME      = "EventName";
-        public static string EVENT_NORMSCORE = "EvScoreNorm";
-        public static string EVENT_SCORE     = "EvScore";
-        public static string EVENT_START_ABS = "EvStartAbs";
-        public static string EVENT_START_SEC = "EvStartSec";
-        public static string EVENT_START_MIN = "EvStartMin";
-        public static string EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string EVENT_TOTAL     = "EventTotal";
+        // KEYS TO CSV HEADERS FOR EVENTS
+        public const string EventCount = "EventCount";
+        public const string EventDuration = "EvDuration";
+        public const string EventIntensity = "EvIntensity";
+        public const string EventName = "EventName";
+        public const string EventNormscore = "EvScoreNorm";
+        public const string EventScore = "EvScore";
+        public const string EventStartAbs = "EvStartAbs";
+        public const string EventStartSec = "EvStartSec";
+        public const string EventStartMin = "EvStartMin";
+        public const string EventThreshold = "EVENT_THRESHOLD";
+        public const string EventTotal = "EventTotal";
     }
 }
