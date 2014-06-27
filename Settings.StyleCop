@@ -1,7 +1,9 @@
 <StyleCopSettings Version="105">
   <GlobalSettings>
     <CollectionProperty Name="RecognizedWords">
+      <Value>Csv</Value>
       <Value>Towsey</Value>
+      <Value>Yaml</Value>
     </CollectionProperty>
   </GlobalSettings>
   <Analyzers>
@@ -29,6 +31,8 @@
         <CollectionProperty Name="Hungarian">
           <Value>an</Value>
           <Value>dB</Value>
+          <Value>x</Value>
+          <Value>y</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>

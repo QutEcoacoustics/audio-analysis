@@ -1,18 +1,30 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Acoustics.Shared.Extensions;
-using CsvHelper;
-using CsvHelper.Configuration;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Csv.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Generic methods for reading and writing Csv file.
+//   *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace Acoustics.Shared
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using Acoustics.Shared.Extensions;
+
+    using CsvHelper;
+    using CsvHelper.Configuration;
+
     /// <summary>
     /// Generic methods for reading and writing Csv file.
-    /// 
+    /// .
     /// *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***
     /// </summary>
     public static class Csv
@@ -21,19 +33,18 @@ namespace Acoustics.Shared
         {
             get
             {
-                var settings = new CsvConfiguration();
-
                 // change the defaults here if you want
+                var settings = new CsvConfiguration();
 
                 return settings;
             }
         }
 
         /// <summary>
-        /// Serialise results to CSV - if you want the concrete type to be serialized you need to ensure it is downcast before using this method.
+        /// Serialize results to CSV - if you want the concrete type to be serialized you need to ensure it is downcast before using this method.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="destination"></param>
+        /// <typeparam name="T">The type to serialize.</typeparam>
+        /// <param name="destination">The file to create.</param>
         /// <param name="results"></param>
         public static void WriteToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {

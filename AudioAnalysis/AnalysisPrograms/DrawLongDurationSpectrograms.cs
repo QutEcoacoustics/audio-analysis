@@ -1,18 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using AudioAnalysisTools;
-using PowerArgs;
-using AnalysisPrograms.Production;
-using AudioAnalysisTools.LongDurationSpectrograms;
-
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the DrawLongDurationSpectrograms type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms
 {
+    using System;
+    using System.IO;
+
+    using AudioAnalysisTools.LongDurationSpectrograms;
+
+    using PowerArgs;
+
     public static class DrawLongDurationSpectrograms
     {
 
@@ -67,7 +70,7 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LDSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
+            var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(fiSpectrogramConfig);
 
@@ -97,9 +100,11 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine("");
                 }
 
-            } // if (arguments == null)
+            }
 
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
+            var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig);
         }
 
 

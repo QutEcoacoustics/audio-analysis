@@ -28,7 +28,7 @@ namespace AudioAnalysisTools
         /// <param name="fiConfig"></param>
         /// <param name="fiImage"></param>
         /// <returns></returns>
-        public static Image GetImageFromAudioSegment(FileInfo fiAudio, FileInfo fiConfig, FileInfo fiImage, IAnalyser analyser)
+        public static Image GetImageFromAudioSegment(FileInfo fiAudio, FileInfo fiConfig, FileInfo fiImage, IAnalyser2 analyser)
         {
             var config = new ConfigDictionary(fiConfig.FullName); //read in config file
 
@@ -70,7 +70,11 @@ namespace AudioAnalysisTools
                 Image image = SpectrogramTools.Audio2SonogramImage(fiAudio, config.GetDictionary());
                 if (image != null)
                 {
-                    if (fiImage.Exists) fiImage.Delete();
+                    if (fiImage.Exists)
+                    {
+                        fiImage.Delete();
+                    }
+
                     image.Save(fiImage.FullName, ImageFormat.Png);
                 }
                 return image;

@@ -69,15 +69,18 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LDSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
+            var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir)
+                             {
+                                 ColourMap1 = "ACI-ENT-CVR",
+                                 ColourMap2 = "OSC-ENG-TRK",
+                                 MinuteOffset =
+                                     TimeSpan.FromMinutes(19 * 60),
+                                 FrameWidth = 256,
+                                 SampleRate = 22050
+                             }; // default values have been set
 
             //config.ColourMap = "TRK-OSC-HAR";
-            config.ColourMap1 = "ACI-ENT-CVR";
-            config.ColourMap2 = "OSC-ENG-TRK";
-            config.MinuteOffset = TimeSpan.FromMinutes(19 * 60);
-            config.FrameWidth = 256;
             //config.SampleRate = 17640;
-            config.SampleRate = 22050;
             FileInfo outPath = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(outPath);
 
@@ -109,19 +112,24 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             LoggedConsole.WriteLine();
 
-            DrawLDSpectrogram.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
+            DrawLDSpectrogram.DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
         }
 
 
 
         /// <summary>
         ///  This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS 
+        /// 
+        /// 
+        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT MICHAELS COPY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ///
+        ///  
         /// </summary>
         /// <param name="configuration"></param>
-        public static void DrawSpectrogramsFromSpectralIndices(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath)
+        public static void DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath)
         {
             //LDSpectrogramConfig configuration = Yaml.Deserialise<LDSpectrogramConfig>(configPath);
-            LDSpectrogramConfig configuration = LDSpectrogramConfig.ReadYAMLToConfig(spectrogramConfigPath);
+            LdSpectrogramConfig configuration = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
@@ -185,7 +193,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
             image1.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
 
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
@@ -193,7 +201,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
             Image[] array = new Image[2];
             array[0] = image1;
@@ -207,7 +215,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
         public static void GetJiesLDSpectrogramConfig(string fileName, DirectoryInfo ipDir, DirectoryInfo opDir)
         {
-            LDSpectrogramConfig spgConfig = new LDSpectrogramConfig(fileName, ipDir, opDir);
+            LdSpectrogramConfig spgConfig = new LdSpectrogramConfig(fileName, ipDir, opDir);
             //spgConfig.ColourMap = "TRK-OSC-HAR";
             spgConfig.ColourMap1 = "OSC-HAR-TRK";
             //spgConfig.ColourMap2 = "OSC-HAR-TRK";

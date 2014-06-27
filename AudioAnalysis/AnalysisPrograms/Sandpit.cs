@@ -146,14 +146,14 @@ namespace AnalysisPrograms
                 Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
                 string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
                 Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-                image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
+                image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
                 image1.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
 
                 colorMap = "BGN-AVG-VAR";
                 Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
                 title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
                 titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-                image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
+                image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
                 image2.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
                 Image[] array = new Image[2];
                 array[0] = image1;

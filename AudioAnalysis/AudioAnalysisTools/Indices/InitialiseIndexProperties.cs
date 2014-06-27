@@ -1,12 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioAnalysisTools.DSP;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="InitialiseIndexProperties.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   This static class contains all the keys to identify available acoustic indices.
+//   THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools.Indices
 {
+    using System;
+    using System.Collections.Generic;
+
+    using AudioAnalysisTools.DSP;
+
     ///
     /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC INDEX (BOTH SUMMARY AND SPECTRAL INDICES), DO THE FOLLOWING:
     /// 1) Create a KEY or IDENTIFIER for the index in the list below. Always use this key when referencing the index.

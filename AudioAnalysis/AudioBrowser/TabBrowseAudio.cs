@@ -482,7 +482,8 @@ namespace AudioBrowser
             this.IndicesImageFile = new FileInfo(Path.Combine(this.OutputDirectory.FullName, (Path.GetFileNameWithoutExtension(csvFile.FullName) + imageExt)));
 
             // process the CSV file
-            var output = analyser.ProcessCsvFile(csvFile, configFile);
+            // HACK: using only one varient of process csv file, this is probbably broken
+            var output = DrawSummaryIndices.ProcessCsvFile(csvFile, configFile);
             DataTable dtRaw = output.Item1;
             DataTable dt2Display = output.Item2;
 

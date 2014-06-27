@@ -10,6 +10,7 @@ namespace System
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     public static class EnumerableExtensions
     {
@@ -37,6 +38,40 @@ namespace System
             }
 
             return Tuple.Create(count, sum);
+        }
+
+        public static Dictionary<string, T[,]> ToTwoDimensionalArray<T, TBase>(
+            this IList<TBase> items,
+            Dictionary<string, Func<TBase, T[]>> selectors)
+        {
+            var itemCount = items.Count;
+            int keyCount = selectors.Keys.Count;
+            var result = new Dictionary<string, T[,]>(keyCount);
+            foreach (var kvp in selectors)
+            {
+                var current = kvp.Value(items[0]);
+                result.Add(kvp.Key, new T[itemCount,  current.Length]);
+            }
+
+
+            Parallel.ForEach(
+                selectors,
+                (kvp, state, index) =>
+                    {
+                        var key = kvp.Key;
+                        var selctor = kvp.Value;
+
+                        for (int i = 1; i < itemCount; i++)
+                        {
+                            T[] line = selctor(items[i]);
+                            for (int j = 0; j < line.Length; j++)
+                            {
+                                result[key][i, j] = line[j];
+                            }
+                        }
+                    });
+
+            return result;
         }
 
         #endregion

@@ -7,8 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-
-
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
@@ -243,7 +241,6 @@ Output  to  directory: {1}
 
 
             // 11. SAVE THE RESULTS
-
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
 
             var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, resultsDirectory, mergedEventResults);
