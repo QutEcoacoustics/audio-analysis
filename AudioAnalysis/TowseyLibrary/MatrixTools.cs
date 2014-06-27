@@ -131,7 +131,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[,] Submatrix(double[,] M, int r1, int c1, int r2, int c2)
         {
-            int subRowCount = r2 - r1 +1;
+            int subRowCount = r2 - r1 + 1;
             int subColCount = c2 - c1 + 1;
 
             double[,] sm = new double[subRowCount, subColCount];
@@ -139,9 +139,11 @@ namespace TowseyLibrary
             for (int i = 0; i < subRowCount; i++)
             {
                 for (int j = 0; j < subColCount; j++)
-                {   sm[i,j] = M[r1+i,c1+j];
+                {   
+                    sm[i, j] = M[r1 + i, c1 + j];
                 }
             }
+
             return sm;
         }
 

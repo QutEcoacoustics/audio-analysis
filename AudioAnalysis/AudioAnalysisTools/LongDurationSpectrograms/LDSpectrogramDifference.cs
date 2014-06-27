@@ -84,7 +84,7 @@ namespace AudioAnalysisTools
             cs1.ReadCSVFiles(ipdir, ipFileName1.Name, keys);
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
-                Console.WriteLine("There are no spectrogram matrices in cs1.dictionary.");
+                LoggedConsole.WriteLine("There are no spectrogram matrices in cs1.dictionary.");
                 return;
             }
 
@@ -95,7 +95,7 @@ namespace AudioAnalysisTools
             cs2.ReadCSVFiles(ipdir, ipFileName2.Name, keys);
             if (cs2.GetCountOfSpectrogramMatrices() == 0)
             {
-                Console.WriteLine("There are no spectrogram matrices in cs2.dictionary.");
+                LoggedConsole.WriteLine("There are no spectrogram matrices in cs2.dictionary.");
                 return;
             }
 
@@ -111,11 +111,11 @@ namespace AudioAnalysisTools
 
             string title = String.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[0].Width);
-            images[0] = LDSpectrogramRGB.FrameSpectrogram(images[0], titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
+            images[0] = LDSpectrogramRGB.FrameSpectrogram(images[0], titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
 
             title = String.Format("DIFFERENCE SPECTROGRAM where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[1].Width);
-            images[1] = LDSpectrogramRGB.FrameSpectrogram(images[1], titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
+            images[1] = LDSpectrogramRGB.FrameSpectrogram(images[1], titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
             Image combinedImage = ImageTools.CombineImagesVertically(images);
             string opFileName = ipFileName1 +"-"+ ipFileName2 + ".Difference.png";
             combinedImage.Save(Path.Combine(opdir.FullName, opFileName));

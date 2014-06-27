@@ -168,9 +168,9 @@
                 return null;
             }
 
-            // TODO: don't be lazy
+            // TODO: don't be lazy. This should probly just call analyse long recording since the code is mostly the same
             throw new NotImplementedException("Replacing the datatable method below is on my TODO");
-            DataTable datatable; //// = ResultsTools.MergeResultsIntoSingleDataTable(results);
+            /*DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
 
             //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
             var audioUtility = new MasterAudioUtility();
@@ -221,7 +221,7 @@
                 Log.Info("\tNumber of indices = " + indicesCount);
             }
 
-            return results;
+            return results;*/
 
         } //ProcessRecording()
 

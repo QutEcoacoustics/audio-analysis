@@ -229,12 +229,12 @@ namespace AudioAnalysisTools
             //frame image 1
             string title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs1.FileName);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
 
             //frame image 2
             title = String.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs2.FileName);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs2.XInterval, cs2.YInterval);
 
             //get matrices required to calculate matrix of t-statistics
             double[,] avg1 = cs1.GetSpectrogramMatrix(key);
@@ -254,7 +254,7 @@ namespace AudioAnalysisTools
             Image image4 = LDSpectrogramTStatistic.DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, colourGain);
             title = String.Format("{0} DIFFERENCE SPECTROGRAM (thresholded by t-statistic={3}) for: {1} - {2}.      (scale:hours x kHz)", key, cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);
-            image4 = LDSpectrogramRGB.FrameSpectrogram(image4, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval);
+            image4 = LDSpectrogramRGB.FrameSpectrogram(image4, titleBar, minuteOffset, cs2.XInterval, cs2.YInterval);
 
             Image[] opArray = new Image[3];
             opArray[0] = image1;
@@ -470,10 +470,10 @@ namespace AudioAnalysisTools
 
             string title = String.Format("DIFFERENCE SPECTROGRAM (thresholded by t-Statistic={2}) where {0} > {1}      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, tStatThreshold);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
-            images[0] = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.XInterval, cs1.Y_interval); ;
+            images[0] = LDSpectrogramRGB.FrameSpectrogram(spg1Image, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval); ;
             title = String.Format("DIFFERENCE SPECTROGRAM (thresholded by t-Statistic={2}) where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
-            images[1] = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.XInterval, cs2.Y_interval); ;
+            images[1] = LDSpectrogramRGB.FrameSpectrogram(spg2Image, titleBar, minuteOffset, cs2.XInterval, cs2.YInterval); ;
 
             Image compositeImage = ImageTools.CombineImagesVertically(images);
             return compositeImage;

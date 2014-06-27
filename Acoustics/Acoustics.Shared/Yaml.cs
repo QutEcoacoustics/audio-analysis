@@ -26,7 +26,7 @@ namespace Acoustics.Shared
             }
         }
 
-        public static void Serialise(FileInfo file, dynamic obj)
+        public static void SerialiseDynamic(FileInfo file, dynamic obj)
         {
             // YMMV - not tested
             Serialise(file, obj);

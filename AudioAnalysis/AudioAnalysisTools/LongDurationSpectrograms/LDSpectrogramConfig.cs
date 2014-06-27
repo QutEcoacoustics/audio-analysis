@@ -14,21 +14,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// <summary>
     ///     CONFIG CLASS FOR the class LDSpectrogramRGB
     /// </summary>
-    public class LDSpectrogramConfig
+    public class LdSpectrogramConfig
     {
-        // these parameters manipulate the colour map and appearance of the false-colour spectrogram
         #region Fields
-
-        // these parameters manipulate the colour map and appearance of the false-colour spectrogram
-        // pass two colour maps because interesting to draw a double image.
-
-        // default value for frame width from which spectrogram was derived. Assume no frame overlap.
-
-        // default recording starts at zero minute of day i.e. midnight
-
-        // assume one minute spectra and hourly time lines
-
-        // mark 1 kHz intervals
+        /// <summary>
+        ///  mark 1 kHz intervals
+        /// </summary>
         private int yAxisTicInterval = 1000; 
 
         #endregion
@@ -36,7 +27,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LDSpectrogramConfig"/> class. 
+        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class. 
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="fileName">
@@ -45,44 +36,83 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </param>
         /// <param name="outputDirectory">
         /// </param>
-        public LDSpectrogramConfig(string fileName, DirectoryInfo inputDirectory, DirectoryInfo outputDirectory)
+        public LdSpectrogramConfig(string fileName, DirectoryInfo inputDirectory, DirectoryInfo outputDirectory)
+            : this()
         {
+            this.FileName = fileName;
+            this.InputDirectory = inputDirectory;
+            this.OutputDirectory = outputDirectory;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class. 
+        /// CONSTRUCTOR
+        /// </summary>
+        public LdSpectrogramConfig()
+        {
+            // default values
             this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
             this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
             this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             this.ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
-            this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            this.FileName = fileName;
-            this.InputDirectory = inputDirectory;
-            this.OutputDirectory = outputDirectory;
-
-            // DEFAULT VALUES are set for the remaining parameters            
+            this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;        
         }
 
         #endregion
 
         #region Public Properties
 
+        /// <summary>
+        /// 
+        /// </summary>
         public double BackgroundFilterCoeff { get; set; }
 
+        /// <summary>
+        /// these parameters manipulate the colour map and appearance of the false-colour spectrogram
+        /// </summary>
         public string ColourMap1 { get; set; }
 
+        /// <summary>
+        /// these parameters manipulate the colour map and appearance of the false-colour spectrogram
+        ///  pass two colour maps because interesting to draw a double image.
+        /// </summary>
         public string ColourMap2 { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string FileName { get; set; }
 
+        /// <summary>
+        ///  default value for frame width from which spectrogram was derived. Assume no frame overlap.
+        /// </summary>
         public int FrameWidth { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DirectoryInfo InputDirectory { get; set; }
 
+        /// <summary>
+        /// default recording starts at zero minute of day i.e. midnight
+        /// </summary>
         public TimeSpan MinuteOffset { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DirectoryInfo OutputDirectory { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public int SampleRate { get; set; }
 
+        /// <summary>
+        ///  assume one minute spectra and hourly time lines
+        /// </summary>
         public TimeSpan XAxisTicInterval { get; set; }
 
         public int YAxisTicInterval
@@ -110,22 +140,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="path">
         /// </param>
         /// <returns>
-        /// The <see cref="LDSpectrogramConfig"/>.
+        /// The <see cref="LdSpectrogramConfig"/>.
         /// </returns>
-        public static LDSpectrogramConfig ReadYAMLToConfig(FileInfo path)
+        public static LdSpectrogramConfig ReadYamlToConfig(FileInfo path)
         {
-            // load YAML configuration
+            return Yaml.Deserialise<LdSpectrogramConfig>(path);
+            /* // load YAML configuration
             dynamic configuration = Yaml.Deserialise(path);
 
             /*
              * Warning! The `configuration` variable is dynamic.
              * Do not use it outside this method. 
              * Extract all params below.
-             */
+             */ /*
             var inputDirectory = new DirectoryInfo((string)configuration.InputDirectory);
             var outputDirectory = new DirectoryInfo((string)configuration.OutputDirectory);
 
-            var config = new LDSpectrogramConfig((string)configuration.FileName, inputDirectory, outputDirectory);
+            var config = new LdSpectrogramConfig((string)configuration.FileName, inputDirectory, outputDirectory);
 
             // these parameters manipulate the colour map and appearance of the false-colour spectrogram
             config.ColourMap1 = (string)configuration.ColourMap1;
@@ -145,11 +176,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 // default is one minute spectra and hourly time lines
             config.YAxisTicInterval = (int)configuration.YaxisTicInterval; // default is 1000 Herz
 
-            return config;
+            return config;*/
         }
 
         public void WriteConfigToYaml(FileInfo path)
         {
+            Yaml.Serialise(path, this);
+            /*
             // WRITE THE YAML CONFIG FILE
             Yaml.Serialise(
                 path, 
@@ -176,10 +209,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         // default is one minute spectra and hourly time lines
                         YaxisTicInterval = this.YAxisTicInterval // default is 1000 Herz
                     });
+             * 
+             * */
         }
-
         #endregion
-
-        // WritConfigToYAML()
-    } // LDSpectrogramConfig
+    }
 }

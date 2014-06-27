@@ -48,7 +48,7 @@ namespace System
 
         public static FileInfo ToFileInfo(this string str)
         {
-            if (String.IsNullOrWhiteSpace(str))
+            if (string.IsNullOrWhiteSpace(str))
             {
                 return null;
             }
@@ -58,7 +58,7 @@ namespace System
 
         public static DirectoryInfo ToDirectoryInfo(this string str)
         {
-            if (String.IsNullOrWhiteSpace(str))
+            if (string.IsNullOrWhiteSpace(str))
             {
                 return null;
             }

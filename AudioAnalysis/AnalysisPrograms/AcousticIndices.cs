@@ -431,96 +431,65 @@ namespace AnalysisPrograms
             // this method also AUTOMATICALLY SORTS because it uses array indexing
             var startMinute = (int)(inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
 
-            // ensure results are sorted in order
+            var config = new LdSpectrogramConfig
+                             {
+                                 FileName = fileName,
+                                 OutputDirectory = resultsDirectory,
+                                 InputDirectory = resultsDirectory
+                             };
 
+            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
 
+            var matrixSpectra = spectra.ToTwoDimensionalArray(SpectralValues.CachedSelectors);
 
-            // TODO: make more efficient, pass data directly in
-            var config = new LDSpectrogramConfig(fileName, resultsDirectory, resultsDirectory);
-            FileInfo path = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
-            config.WriteConfigToYaml(path);
-            LDSpectrogramRGB.DrawFalseColourSpectrograms(config);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, indicesPropertiesConfig, matrixSpectra);
 
-            // alternate implmentation
-            /*        private static void ProcessSpectralIndices(IEnumerable<AnalysisResult> analyserResults, FileInfo sourceAudio,
-            AnalysisSettings analysisSettings, FileSegment fileSegment, DirectoryInfo resultsDirectory)
-        {
-            // ensure results are sorted in order
-            var results = analyserResults.ToArray();
-            string fName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
-
-
-            int frameWidth = 512; // default value
-            if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.FRAME_LENGTH))
-                frameWidth = Int32.Parse(analysisSettings.ConfigDict[AnalysisKeys.FRAME_LENGTH]);
-
-            int sampleRate = 17640; // default value
-            if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.RESAMPLE_RATE))
-                sampleRate = Int32.Parse(analysisSettings.ConfigDict[AnalysisKeys.RESAMPLE_RATE]);
-
-            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
-            // this is the most effcient way to do this
-            // gather up numbers and strings store in memory, write to disk one time
-            // this method also AUTOMATICALLY SORTS because it uses array indexing
-
-            int startMinute = (int) (fileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
-
-
-            var spectrogramConfig = new LDSpectrogramConfig(fName, resultsDirectory, resultsDirectory);
-            FileInfo spectrogramConfigPath = new FileInfo(Path.Combine(resultsDirectory.FullName, "LDSpectrogramConfig.yml"));
-            spectrogramConfig.WritConfigToYAML(spectrogramConfigPath);
-
-            //var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-            //FileInfo indicesConfigPath = new FileInfo(Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml"));
-            var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
-
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(spectrogramConfigPath, indexPropertiesConfigPath.ToFileInfo());
-
-        }*/
-        }
-
-
-        /// <summary>
-        /// This analysis type only calculates acoustic indices. There are no events to convert to indices.
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="unitTime"></param>
-        /// <param name="timeDuration"></param>
-        /// <param name="scoreThreshold"></param>
-        /// <returns></returns>
-        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
-        {
-            return null;
         }
 
 
 
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            const bool DoHighlightSubband = false; 
+            const bool Add1KHzLines = true;
             int maxFreq = sonogram.NyquistFrequency;
             //int maxFreq = sonogram.NyquistFrequency / 2;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, DoHighlightSubband, Add1KHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 
             if (scores != null)
             {
                 foreach (Plot plot in scores)
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                {
+                    //assumes data normalised in 0,1
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                }
             }
-            if (tracks != null) image.AddTracks(tracks, sonogram.FramesPerSecond, sonogram.FBinWidth);
-            if (hits != null) image.OverlayRedMatrix(hits, 1.0);
+
+            if (tracks != null)
+            {
+                image.AddTracks(tracks, sonogram.FramesPerSecond, sonogram.FBinWidth);
+            }
+
+            if (hits != null)
+            {
+                image.OverlayRedMatrix(hits, 1.0);
+            }
+
             return image.GetImage();
         }
 
 
 
-
+        /* // deprecated
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
             DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
-            if ((dt == null) || (dt.Rows.Count == 0)) return null;
+            if ((dt == null) || (dt.Rows.Count == 0))
+            {
+                return null;
+            }
             //get its column headers
             var dtHeaders = new List<string>();
             var dtTypes = new List<Type>();
@@ -580,7 +549,7 @@ namespace AnalysisPrograms
 
             DataTable table2Display = null;
             return System.Tuple.Create(dt, table2Display);
-        } // ProcessCsvFile()
+        } // ProcessCsvFile()*/
 
 
         public AnalysisSettings DefaultSettings

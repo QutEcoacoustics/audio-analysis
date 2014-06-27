@@ -189,6 +189,38 @@ namespace AudioAnalysisTools.Indices
 
     public class SpectralValues : SpectrumBase
     {
+        private static readonly Dictionary<string, Func<SpectrumBase, double[]>> CachedSelectorsInternal;
+
+        static SpectralValues()
+        {
+            Type thisType = typeof(SpectralValues);
+
+            var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            CachedSelectorsInternal = new Dictionary<string, Func<SpectrumBase, double[]>>(props.Length);
+            foreach (var propertyInfo in props)
+            {
+
+                if (propertyInfo.PropertyType != typeof(double[]))
+                {
+                    continue;
+                }
+
+                var methodInfo = propertyInfo.GetGetMethod();
+                var getDelegate = (Func<SpectrumBase, double[]>)Delegate.CreateDelegate(thisType, methodInfo);
+                var name = propertyInfo.Name;
+
+                CachedSelectors.Add(name, getDelegate);
+            }
+        }
+
+        public static Dictionary<string, Func<SpectrumBase, double[]>> CachedSelectors
+        {
+            get
+            {
+                return CachedSelectorsInternal;
+            }
+        }
+
         public double[] ACI { get; set; }
 
         public double[] ENT { get; set; }
@@ -205,39 +237,9 @@ namespace AudioAnalysisTools.Indices
 
         public double[] CLS { get; set; }
 
-        private static readonly Dictionary<string, Func<SpectrumBase, double[]>> cachedSelectors;
-
-        static SpectralValues()
-        {
-             Type thisType = typeof(SpectralValues);
-            /*var selectors = new Func<SpectrumBase, object>[]
-                                {
-                                    (x => ((SpectralValues)x).ACI), (x => ((SpectralValues)x).ENT), (x => ((SpectralValues)x).BGN),
-                                    (x => ((SpectralValues)x).AVG), (x => ((SpectralValues)x).CVR), (x => ((SpectralValues)x).EVN),
-                                    (x => ((SpectralValues)x).SPT), (x => ((SpectralValues)x).CLS)
-                                };*/
-
-            var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            cachedSelectors = new Dictionary<string, Func<SpectrumBase, double[]>>(props.Length);
-            foreach (var propertyInfo in props)
-            {
- 
-                if (propertyInfo.PropertyType != typeof(double[]))
-                {
-                    continue;
-                }
-                
-                var methodInfo = propertyInfo.GetGetMethod();
-                var getDelegate = (Func<SpectrumBase, double[]>)Delegate.CreateDelegate(thisType, methodInfo);
-                var name = propertyInfo.Name;
-
-                cachedSelectors.Add(name, getDelegate);
-            }
-        }
-
         public override Dictionary<string, Func<SpectrumBase, double[]>> GetSelectors()
         {
-            return cachedSelectors;
+            return CachedSelectors;
         }
     }
 }
