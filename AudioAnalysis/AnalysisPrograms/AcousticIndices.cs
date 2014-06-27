@@ -421,9 +421,9 @@ namespace AnalysisPrograms
 
 
             int frameWidth = 512;
-            frameWidth = settings.Configuration[AnalysisKeys.FRAME_LENGTH] ?? frameWidth;
+            frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
             int sampleRate = 17640;
-            sampleRate = settings.Configuration[AnalysisKeys.RESAMPLE_RATE] ?? sampleRate;
+            sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
 
             // gather spectra to form spectrograms.  Assume same spectra in all analyser results
             // this is the most effcient way to do this

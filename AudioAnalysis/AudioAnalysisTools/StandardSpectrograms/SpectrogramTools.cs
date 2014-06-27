@@ -32,7 +32,7 @@ namespace AudioAnalysisTools
         {
             var config = new ConfigDictionary(fiConfig.FullName); //read in config file
 
-            bool doAnnotate = config.GetBoolean(AnalysisKeys.ANNOTATE_SONOGRAM);
+            bool doAnnotate = config.GetBoolean(AnalysisKeys.AnnotateSonogram);
             //bool doNoiseReduction = config.GetBoolean(Keys.NOISE_DO_REDUCTION);
             //double bgNoiseThreshold = config.GetDouble(Keys.NOISE_BG_REDUCTION);
 
@@ -43,7 +43,7 @@ namespace AudioAnalysisTools
             {
                 if (analyser == null)
                 {
-                    string analyisName = config.GetString(AnalysisKeys.ANALYSIS_NAME);
+                    string analyisName = config.GetString(AnalysisKeys.AnalysisName);
                     LoggedConsole.WriteLine("\nWARNING: Could not construct annotated image because analysis name not recognized:");
                     LoggedConsole.WriteLine("\t " + analyisName);
                     return null;
@@ -57,7 +57,7 @@ namespace AudioAnalysisTools
                 settings.ImageFile = fiImage;
                 settings.AnalysisInstanceOutputDirectory = diOutputDir;
                 // want to psas SampleRate of the original file.
-                settings.SampleRateOfOriginalAudioFile = Int32.Parse(settings.ConfigDict[AnalysisKeys.RESAMPLE_RATE]);
+                settings.SampleRateOfOriginalAudioFile = Int32.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);
                 var results = analyser.Analyse(settings);
                 if (results.ImageFile == null) image = null;
                 else image = Image.FromFile(results.ImageFile.FullName);
@@ -158,12 +158,12 @@ namespace AudioAnalysisTools
         public static BaseSonogram Audio2Sonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
             int frameLength = 512; // default value
-            if (configDict.ContainsKey(AnalysisKeys.FRAME_LENGTH))
-                frameLength = ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.FrameLength))
+                frameLength = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, configDict);
 
             double frameOverlap = 0.0; // default value
-            if (configDict.ContainsKey(AnalysisKeys.FRAME_OVERLAP))
-                frameOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
+                frameOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
 
             AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
@@ -208,23 +208,23 @@ namespace AudioAnalysisTools
             
             // (iii) NOISE REDUCTION
             bool doNoiseReduction = false;
-            if (configDict.ContainsKey(AnalysisKeys.NOISE_DO_REDUCTION))
-                doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NOISE_DO_REDUCTION, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.NoiseDoReduction))
+                doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NoiseDoReduction, configDict);
             if (doNoiseReduction)
             {
                 //LoggedConsole.WriteLine("PERFORMING NOISE REDUCTION");
                 double bgThreshold = 3.0;
-                if (configDict.ContainsKey(AnalysisKeys.NOISE_BG_THRESHOLD))
-                    bgThreshold = ConfigDictionary.GetDouble(AnalysisKeys.NOISE_BG_THRESHOLD, configDict);
+                if (configDict.ContainsKey(AnalysisKeys.NoiseBgThreshold))
+                    bgThreshold = ConfigDictionary.GetDouble(AnalysisKeys.NoiseBgThreshold, configDict);
                 var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, bgThreshold);
                 sonogram.Data = tuple.Item1;   // store data matrix
             }
 
             //ADD time and frequency scales
             bool addScale = false;
-            if (configDict.ContainsKey(AnalysisKeys.ADD_TIME_SCALE)) addScale = ConfigDictionary.GetBoolean(AnalysisKeys.ADD_TIME_SCALE, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.AddTimeScale)) addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddTimeScale, configDict);
             else
-            if (configDict.ContainsKey(AnalysisKeys.ADD_AXES))       addScale = ConfigDictionary.GetBoolean(AnalysisKeys.ADD_AXES, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.AddAxes))       addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
             bool add1kHzLines = addScale;
 
 
@@ -234,8 +234,8 @@ namespace AudioAnalysisTools
             bool addSegmentationTrack = false;
 
             //add segmentation track
-            if (configDict.ContainsKey(AnalysisKeys.ADD_SEGMENTATION_TRACK))
-                addSegmentationTrack = ConfigDictionary.GetBoolean(AnalysisKeys.ADD_SEGMENTATION_TRACK, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.AddSegmentationTrack))
+                addSegmentationTrack = ConfigDictionary.GetBoolean(AnalysisKeys.AddSegmentationTrack, configDict);
             if (addSegmentationTrack) mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
             return mti;
         }//Sonogram2MultiTrackImage()
@@ -289,9 +289,9 @@ namespace AudioAnalysisTools
             //Acoustics.Tools.SpectrogramRequest request = new Acoustics.Tools.SpectrogramRequest();
             
             string soxPath = @"C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe";
-            if (configDict.ContainsKey(AnalysisKeys.SOX_PATH))
+            if (configDict.ContainsKey(AnalysisKeys.SoxPath))
             {
-                soxPath = configDict[AnalysisKeys.SOX_PATH];
+                soxPath = configDict[AnalysisKeys.SoxPath];
                 var fiSOX = new FileInfo(soxPath);
                 if (!fiSOX.Exists)
                 {
@@ -302,29 +302,29 @@ namespace AudioAnalysisTools
             string soxCmd = "" + soxPath + ""; //must quote the path because has a space in it.
 
             string title = "";
-            if (configDict.ContainsKey(AnalysisKeys.SONOGRAM_TITLE))
+            if (configDict.ContainsKey(AnalysisKeys.SonogramTitle))
             {
-                title = " -t " + configDict[AnalysisKeys.SONOGRAM_TITLE];
+                title = " -t " + configDict[AnalysisKeys.SonogramTitle];
             }
             string comment = "";
-            if (configDict.ContainsKey(AnalysisKeys.SONOGRAM_COMMENT))
+            if (configDict.ContainsKey(AnalysisKeys.SonogramComment))
             {
-                comment = " -c " + configDict[AnalysisKeys.SONOGRAM_COMMENT];
+                comment = " -c " + configDict[AnalysisKeys.SonogramComment];
             }
             string axes = "";
-            if (configDict.ContainsKey(AnalysisKeys.ADD_AXES) && (! ConfigDictionary.GetBoolean(AnalysisKeys.ADD_AXES, configDict)))
+            if (configDict.ContainsKey(AnalysisKeys.AddAxes) && (! ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict)))
             {
                 axes = " -r ";
             }
             string coloured = " -m "; //default
-            if (configDict.ContainsKey(AnalysisKeys.SONOGRAM_COLOURED) && (ConfigDictionary.GetBoolean(AnalysisKeys.SONOGRAM_COLOURED, configDict)))
+            if (configDict.ContainsKey(AnalysisKeys.SonogramColoured) && (ConfigDictionary.GetBoolean(AnalysisKeys.SonogramColoured, configDict)))
             {
                 coloured = "";
             }
             string quantisation = " -q 64 "; //default
-            if (configDict.ContainsKey(AnalysisKeys.SONOGRAM_QUANTISATION))
+            if (configDict.ContainsKey(AnalysisKeys.SonogramQuantisation))
             {
-                quantisation = " -q " + ConfigDictionary.GetInt(AnalysisKeys.SONOGRAM_QUANTISATION, configDict);
+                quantisation = " -q " + ConfigDictionary.GetInt(AnalysisKeys.SonogramQuantisation, configDict);
             }
 
             //          Path\sox.exe  -V "sourcefile.wav" -n rate 22050 spectrogram -m -r -l -a -q 249 -w hann -y 257 -X 43.06640625 -z 100 -o "imagefile.png"

@@ -107,11 +107,11 @@ namespace AudioAnalysisTools.Indices
 
             // get parameters for the analysis
             int frameSize = IndexCalculate.DefaultWindowSize;
-            frameSize = config.ContainsKey(AnalysisKeys.FRAME_LENGTH) ? ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config) : frameSize;
+            frameSize = config.ContainsKey(AnalysisKeys.FrameLength) ? ConfigDictionary.GetInt(AnalysisKeys.FrameLength, config) : frameSize;
             int freqBinCount = frameSize / 2;
-            LowFreqBound = config.ContainsKey(AnalysisKeys.LOW_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.LOW_FREQ_BOUND, config) : LowFreqBound;
-            MidFreqBound = config.ContainsKey(AnalysisKeys.MID_FREQ_BOUND) ? ConfigDictionary.GetInt(AnalysisKeys.MID_FREQ_BOUND, config) : MidFreqBound;
-            double windowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, config);
+            LowFreqBound = config.ContainsKey(AnalysisKeys.LowFreqBound) ? ConfigDictionary.GetInt(AnalysisKeys.LowFreqBound, config) : LowFreqBound;
+            MidFreqBound = config.ContainsKey(AnalysisKeys.MidFreqBound) ? ConfigDictionary.GetInt(AnalysisKeys.MidFreqBound, config) : MidFreqBound;
+            double windowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, config);
 
             // get recording segment
             int signalLength = recording.GetWavReader().Samples.Length;
@@ -340,22 +340,22 @@ namespace AudioAnalysisTools.Indices
                 SonogramConfig sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FileName;
                 sonoConfig.WindowSize = 1024; // the default
-                if (config.ContainsKey(AnalysisKeys.FRAME_LENGTH))
+                if (config.ContainsKey(AnalysisKeys.FrameLength))
                 {
-                    sonoConfig.WindowSize = ConfigDictionary.GetInt(AnalysisKeys.FRAME_LENGTH, config);
+                    sonoConfig.WindowSize = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, config);
                 }
 
                 sonoConfig.WindowOverlap = 0.0; // the default
-                if (config.ContainsKey(AnalysisKeys.FRAME_OVERLAP))
+                if (config.ContainsKey(AnalysisKeys.FrameOverlap))
                 {
-                    sonoConfig.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FRAME_OVERLAP, config);
+                    sonoConfig.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, config);
                 }
 
                 sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
                 bool doNoiseReduction = false;  // the default
-                if (config.ContainsKey(AnalysisKeys.NOISE_DO_REDUCTION))
+                if (config.ContainsKey(AnalysisKeys.NoiseDoReduction))
                 {
-                    doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NOISE_DO_REDUCTION, config);
+                    doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NoiseDoReduction, config);
                 }
 
                 if (doNoiseReduction)

@@ -78,14 +78,14 @@ Output  to  directory: {1}
             // 2. get the analysis config dictionary
             dynamic configuration = Yaml.Deserialise(configFile);
 
-            bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES] ?? false;
-            bool saveSonograms = (bool?)configuration[AnalysisKeys.SAVE_SONOGRAMS] ?? false;
-            bool displayCsvImage = (bool?)configuration[AnalysisKeys.DISPLAY_CSV_IMAGE] ?? false;
-            bool doParallelProcessing = (bool?)configuration[AnalysisKeys.PARALLEL_PROCESSING] ?? false;
-            string analysisIdentifier = configuration[AnalysisKeys.ANALYSIS_NAME];
+            bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+            bool saveSonograms = (bool?)configuration[AnalysisKeys.SaveSonograms] ?? false;
+            bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
+            bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
+            string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
 
             double scoreThreshold = 0.2; // min score for an acceptable event
-            scoreThreshold = configuration[AnalysisKeys.EVENT_THRESHOLD] ?? scoreThreshold;
+            scoreThreshold = configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
             /* var configuration = new ConfigDictionary(configFile.FullName);
              Dictionary<string, string> configDict = configuration.GetTable();
@@ -149,7 +149,7 @@ Output  to  directory: {1}
             // set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
             try
             {
-                int rawDuration = configuration[AnalysisKeys.SEGMENT_DURATION];
+                int rawDuration = configuration[AnalysisKeys.SegmentDuration];
                 analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(rawDuration);
             }
             catch (Exception ex)
@@ -161,7 +161,7 @@ Output  to  directory: {1}
             // set overlap
             try
             {
-                int rawOverlap = configuration[AnalysisKeys.SEGMENT_OVERLAP];
+                int rawOverlap = configuration[AnalysisKeys.SegmentOverlap];
                 analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
             }
             catch (Exception ex)
