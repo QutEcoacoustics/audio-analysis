@@ -1,0 +1,30 @@
+---
+AnalysisName: Towsey.Acoustic
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+#FRAME LENGTH in samples and Frame Overlap as fraction 
+FrameLength: 512
+FrameOverlap: 0.0
+#Resample rate must be 2 X the desired Nyquist
+ResampleRate: 17640
+LowFreqBound: 500
+MidFreqBound: 3500
+SonogramBackgroundThreshold: 4.0
+# DO NOT leave spaces in the following list
+#DisplayColumns: bg-dB,snr-dB,activeSnr-dB,activity,segCount,avSegDur,hfCover,mfCover,lfCover,AcComplexity,H[temporal],H[spectral],clusterCount,avClustDur,3gramCount,av3gramRepetition,SpPkTracks/Sec,SpPkTracks%Dur,rain
+#indices NOT displayed:  avAmp-dB,H[spectralVar],cicada
+DisplayColumns: avAmp-dB,bg-dB,snr-dB,activity,segCount,avSegDur,H[temporal],AcComplexity,mfCover,H[spectral],H[spectralMax],H[spectralVar],clusterCount,avClustDur,cicada
+#indices NOT displayed: ,activeSnr-dB,hfCover,lfCover,3gramCount,av3gramRepetition,SpPkTracks/Sec,SpPkTracks%Dur,rain,cicada
+DisplayWeightedIndices: true
+
+#SAVE INTERMEDIARY FILES
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+DisplayCsvImage: true
+DoNoiseReduction: true
+ParallelProcessing: true
+...
+
+

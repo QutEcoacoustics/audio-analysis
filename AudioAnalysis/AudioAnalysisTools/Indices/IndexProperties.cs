@@ -26,8 +26,6 @@ namespace AudioAnalysisTools.Indices
 
     public class FindIndicesConfig
     {
-        public const string KeyIndexPropertiesConfig = "INDEX_PROPERTIES_CONFIG";
-
         public static FileInfo Find(dynamic configuration, FileInfo originalConfigFile)
         {
             if (configuration == null)
@@ -35,7 +33,7 @@ namespace AudioAnalysisTools.Indices
                 return null;
             }
 
-            var indexPropertiesConfigPath = (string)configuration[KeyIndexPropertiesConfig];
+            var indexPropertiesConfigPath = (string)configuration[AnalysisKeys.KeyIndexPropertiesConfig];
 
             if (indexPropertiesConfigPath.IsNullOrEmpty())
             {

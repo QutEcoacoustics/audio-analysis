@@ -34,45 +34,45 @@ namespace AnalysisPrograms
         {
         }
 
-        //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
-        public static string key_CALL_DURATION = "CALL_DURATION";
-        public static string key_DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
-        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
-        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
-        public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
-        public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
-        public static string key_FRAME_LENGTH = "FRAME_LENGTH";
-        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
-        public static string key_UPPERFREQBAND_TOP = "UPPERFREQBAND_TOP";
-        public static string key_UPPERFREQBAND_BTM = "UPPERFREQBAND_BTM";
-        public static string key_LOWERFREQBAND_TOP = "LOWERFREQBAND_TOP";
-        public static string key_LOWERFREQBAND_BTM = "LOWERFREQBAND_BTM";
-        public static string key_MIN_AMPLITUDE  = "MIN_AMPLITUDE";
-        public static string key_MIN_DURATION   = "MIN_DURATION";
-        public static string key_MAX_DURATION   = "MAX_DURATION";
-        public static string key_MIN_PERIOD     = "MIN_PERIOD";
-        public static string key_MAX_PERIOD     = "MAX_PERIOD";
-        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        // KEYS TO PARAMETERS IN CONFIG FILE
+        public const string KeyAnalysisName = AnalysisKeys.AnalysisName;
+        public const string KeyCallDuration = AnalysisKeys.CallDuration;
+        public const string KeyDecibelThreshold = AnalysisKeys.DecibelThreshold;
+        public const string KeyEventThreshold = AnalysisKeys.EventThreshold;
+        public const string KeyIntensityThreshold = AnalysisKeys.IntensityThreshold;
+        public const string KeySegmentDuration = AnalysisKeys.SegmentDuration;
+        public const string KeySegmentOverlap = AnalysisKeys.SegmentOverlap;
+        public const string KeyResampleRate = AnalysisKeys.ResampleRate;
+        public const string KeyFrameLength = AnalysisKeys.FrameLength;
+        public const string KeyFrameOverlap = AnalysisKeys.FrameOverlap;
+        public const string KeyNoiseReductionType = AnalysisKeys.NoiseReductionType;
+        public const string KeyUpperfreqbandTop = "UpperFreqBandTop";
+        public const string KeyUpperfreqbandBtm = "UpperFreqBandBottom";
+        public const string KeyLowerfreqbandTop = "LowerFreqBandTop";
+        public const string KeyLowerfreqbandBtm = "LowerFreqBandBottom";
+        public const string KeyMinAmplitude  = AnalysisKeys.MinAmplitude;
+        public const string KeyMinDuration   = AnalysisKeys.MinDuration;
+        public const string KeyMaxDuration   = AnalysisKeys.MaxDuration;
+        public const string KeyMinPeriod     = AnalysisKeys.MinPeriodicity;
+        public const string KeyMaxPeriod = AnalysisKeys.MaxPeriodicity;
+        public const string KeyDrawSonograms = AnalysisKeys.KeyDrawSonograms;
 
-        //KEYS TO OUTPUT EVENTS and INDICES
-        public static string key_COUNT     = "count";
-        public static string key_SEGMENT_TIMESPAN = "SegTimeSpan";
-        public static string key_START_ABS = "EvStartAbs";
-        public static string key_START_MIN = "EvStartMin";
-        public static string key_START_SEC = "EvStartSec";
-        public static string key_CALL_DENSITY = "CallDensity";
-        public static string key_CALL_SCORE = "CallScore";
-        public static string key_EVENT_TOTAL= "# events";
+        // KEYS TO OUTPUT EVENTS and INDICES
+        public const string KeyCount     = "count";
+        public const string KeySegmentTimespan = "SegTimeSpan";
+        public const string KeyStartAbs = "EvStartAbs";
+        public const string KeyStartMin = "EvStartMin";
+        public const string KeyStartSec = "EvStartSec";
+        public const string KeyCallDensity = "CallDensity";
+        public const string KeyCallScore = "CallScore";
+        public const string KeyEventTotal = "# events";
 
 
-        //OTHER CONSTANTS
+        // OTHER CONSTANTS
         public const string AnalysisName = "LewinsRail3";
         public const int ResampleRate = 17640;
-        //public const int RESAMPLE_RATE = 22050;
-        //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
+        ////public const int RESAMPLE_RATE = 22050;
+        ////public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
 
@@ -244,7 +244,7 @@ namespace AnalysisPrograms
 
             if ((predictedEvents != null) && (predictedEvents.Count != 0))
             {
-                string analysisName = configDict[key_ANALYSIS_NAME];
+                string analysisName = configDict[KeyAnalysisName];
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
@@ -254,7 +254,7 @@ namespace AnalysisPrograms
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
-                string sortString = key_START_SEC + " ASC";
+                string sortString = KeyStartSec + " ASC";
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
 
@@ -302,16 +302,16 @@ namespace AnalysisPrograms
             int frameSize = 1024;
             double windowOverlap = 0.0;
 
-            int upperBandMinHz = Int32.Parse(configDict[key_UPPERFREQBAND_BTM]);
-            int upperBandMaxHz = Int32.Parse(configDict[key_UPPERFREQBAND_TOP]);
-            int lowerBandMinHz = Int32.Parse(configDict[key_LOWERFREQBAND_BTM]);
-            int lowerBandMaxHz = Int32.Parse(configDict[key_LOWERFREQBAND_TOP]);
-            double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
-            double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
-            double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
-            double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
-            double minPeriod = Double.Parse(configDict[key_MIN_PERIOD]);  // seconds
-            double maxPeriod = Double.Parse(configDict[key_MAX_PERIOD]);  // seconds
+            int upperBandMinHz = Int32.Parse(configDict[KeyUpperfreqbandBtm]);
+            int upperBandMaxHz = Int32.Parse(configDict[KeyUpperfreqbandTop]);
+            int lowerBandMinHz = Int32.Parse(configDict[KeyLowerfreqbandBtm]);
+            int lowerBandMaxHz = Int32.Parse(configDict[KeyLowerfreqbandTop]);
+            double decibelThreshold = Double.Parse(configDict[KeyDecibelThreshold]); ;   //dB
+            double intensityThreshold = Double.Parse(configDict[KeyIntensityThreshold]); //in 0-1
+            double minDuration = Double.Parse(configDict[KeyMinDuration]);  // seconds
+            double maxDuration = Double.Parse(configDict[KeyMaxDuration]);  // seconds
+            double minPeriod = Double.Parse(configDict[KeyMinPeriod]);  // seconds
+            double maxPeriod = Double.Parse(configDict[KeyMaxPeriod]);  // seconds
 
             AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
             if (recording == null)

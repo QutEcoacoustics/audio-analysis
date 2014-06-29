@@ -317,7 +317,7 @@ namespace AudioAnalysisTools
                 axes = " -r ";
             }
             string coloured = " -m "; //default
-            if (configDict.ContainsKey(AnalysisKeys.SonogramColoured) && (ConfigDictionary.GetBoolean(AnalysisKeys.SonogramColoured, configDict)))
+            if (configDict.ContainsKey(AnalysisKeys.SonogramColored) && (ConfigDictionary.GetBoolean(AnalysisKeys.SonogramColored, configDict)))
             {
                 coloured = "";
             }

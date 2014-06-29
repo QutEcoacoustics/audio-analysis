@@ -1,0 +1,24 @@
+---
+AnalysisName: Towsey.RheobatrachusSilus
+# General Parameters
+DisplayColumns: Rheobatrachus
+
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+MinPeriod: 0.01
+MaxPeriod: 0.04
+MinDuration: 0.3
+MaxDuration: 0.8
+#use this threshold if averaging over a period - averaging seems to work better
+IntensityThreshold: 0.22
+#use this threshold if obtaining max value over a period
+#IntensityThreshold: 0.1
+#######################################
+# save sonograms and other files 
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: true
+DoNoiseReduction: false
+BgNoiseThreshold: 3.0
+...

@@ -1,0 +1,25 @@
+---
+AnalysisName: Towsey.LewinsRail
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+UpperFreqBandTop: 4100
+UpperFreqBandBottom: 3400
+LowerFreqBandTop: 2900
+LowerFreqBandBottom: 2600
+MinPeriod: 0.18
+MaxPeriod: 0.25
+MinDuration: 3
+MaxDuration: 15
+#use this threshold if averaging over a period - averaging seems to work better
+IntensityThreshold: 0.01
+#use this threshold if obtaining max value over a period
+#IntensityThreshold: 0.1
+#######################################
+# save sonograms and other files 
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+#DoNoiseReduction: true
+#BgNoiseThreshold: 3.0
+...

@@ -5,66 +5,71 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace AudioAnalysisTools
 {
+    using System;
+
     public static class AnalysisKeys
     {
         // KEYS TO PARAMETERS IN CONFIG FILE
-        public const string AnnotateSonogram = "ANNOTATE_SONOGRAM";
+        public const string AnnotateSonogram = "AnnotateSonogram";
         public const string AnalysisName = "AnalysisName";
-        public const string CallDuration = "CALL_DURATION";
-        public const string DctDuration = "DCT_DURATION";
-        public const string DctThreshold = "DCT_THRESHOLD";
-        public const string DecibelThreshold = "DECIBEL_THRESHOLD";
-        public const string DisplayCsvImage = "DISPLAY_CSV_IMAGE";
-        public const string DisplayColumns = "DISPLAY_COLUMNS";
-        public const string DisplayWeightedIndices = "DISPLAY_WEIGHTED_INDICES";
-        public const string DominantFrequency = "DOMINANT_FREQUENCY";
-        public const string DoSegmentation = "DO_SEGMENTATION";
-        public const string FrameLength = "FRAME_LENGTH";
-        public const string FrameOverlap = "FRAME_OVERLAP";
-        public const string IntensityThreshold = "INTENSITY_THRESHOLD";
-        public const string MinHz = "MIN_HZ";
-        public const string MaxHz = "MAX_HZ";
-        public const string MinFormantGap = "MIN_FORMANT_GAP";
-        public const string MaxFormantGap = "MAX_FORMANT_GAP";
-        public const string MinGap = "MIN_GAP";
-        public const string MaxGap = "MAX_GAP";
-        public const string MinAmplitude = "MIN_AMPLITUDE";
-        public const string MinDuration = "MIN_DURATION";
-        public const string MaxDuration = "MAX_DURATION";
-        public const string MinOscilFreq = "MIN_OSCIL_FREQ";
-        public const string MaxOscilFreq = "MAX_OSCIL_FREQ";
-        public const string MinPeriodicity = "MIN_PERIOD";
-        public const string MaxPeriodicity = "MAX_PERIOD";
-        public const string OscillationRate = "OSCILLATION_RATE";
-        public const string ParallelProcessing = "PARALLEL_PROCESSING";
-        public const string ResampleRate = "RESAMPLE_RATE";
-        public const string SaveIntermediateCsvFiles = "SAVE_INTERMEDIATE_CSV_FILES";
-        public const string SaveIntermediateWavFiles = "SAVE_INTERMEDIATE_WAV_FILES";
-        public const string SegmentDuration = "SEGMENT_DURATION";
-        public const string SegmentOverlap = "SEGMENT_OVERLAP";
-        public const string SmoothingWindow = "SMOOTHING_WINDOW";
-        public const string Threshold = "THRESHOLD";
+        public const string CallDuration = "CallDuration";
+        public const string DctDuration = "DctDuration";
+        public const string DctThreshold = "DctThreshold";
+        public const string DecibelThreshold = "DecibelThreshold";
+        public const string DisplayCsvImage = "DisplayCsvImage";
+        public const string DisplayColumns = "DisplayColumns";
+        public const string DisplayWeightedIndices = "DisplayWeightedIndices";
+        public const string DominantFrequency = "DominantFrequency";
+        public const string DoSegmentation = "DoSegmentation";
+        public const string FrameLength = "FrameLength";
+        public const string FrameOverlap = "FrameOverlap";
+        public const string IntensityThreshold = "IntensityThreshold";
+        public const string MinHz = "MinHz";
+        public const string MaxHz = "MaxHz";
+        public const string MinFormantGap = "MinFormantGap";
+        public const string MaxFormantGap = "MaxFormantGap";
+        public const string MinGap = "MinGap";
+        public const string MaxGap = "MaxGap";
+        public const string MinAmplitude = "MinAmplitude";
+        public const string MinDuration = "MinDuration";
+        public const string MaxDuration = "MaxDuration";
+        public const string MinOscilFreq = "MinOcilFreq";
+        public const string MaxOscilFreq = "MaxOcilFreq";
+        public const string MinPeriodicity = "MinPeriod";
+        public const string MaxPeriodicity = "MaxPeriod";
+        public const string OscillationRate = "OcillationRate";
+        public const string ParallelProcessing = "ParallelProcessing";
+        public const string ResampleRate = "ResampleRate";
+        public const string SaveIntermediateCsvFiles = "SaveIntermediateCsvFiles";
+        public const string SaveIntermediateWavFiles = "SaveIntermediateWavFiles";
+        public const string SegmentDuration = "SegmentDuration";
+        public const string SegmentOverlap = "SegmentOverlap";
+        public const string SmoothingWindow = "SmoothingWindow";
+        public const string Threshold = "Threshold";
 
         // Keys to recognise identifiers in ANALYSIS CONFIG file. 
-        public const string LowFreqBound = "LOW_FREQ_BOUND";
-        public const string MidFreqBound = "MID_FREQ_BOUND";
+        public const string LowFreqBound = "LowFreqBound";
+        public const string MidFreqBound = "MidFreqBound";
 
         // KEYS to SONOGRAMS
-        public const string SaveSonograms = "SAVE_SONOGRAM_FILES";
-        public const string TimeReductionFactor = "TIME_REDUCTION_FACTOR";
-        public const string FreqReductionFactor = "FREQ_REDUCTION_FACTOR";
-        public const string AddAxes = "ADD_AXES";
-        public const string AddTimeScale = "ADD_TIME_SCALE";
-        public const string AddSegmentationTrack = "ADD_SEGMENTATION_TRACK";
-        public const string MakeSoxSonogram = "MAKE_SOX_SONOGRAM";
-        public const string SonogramTitle = "SONOGRAM_TITLE";
-        public const string SonogramComment = "SONOGRAM_COMMENT";
-        public const string SonogramColoured = "SONOGRAM_COLOURED";
-        public const string SonogramQuantisation = "SONOGRAM_QUANTISATION";
+        public const string SaveSonograms = "SaveSonogramFiles";
+        public const string TimeReductionFactor = "TimeReductionFactor";
+        public const string FreqReductionFactor = "FreqReductionFactor";
+        public const string AddAxes = "AddAxes";
+        public const string AddTimeScale = "AddTimeScale";
+        public const string AddSegmentationTrack = "AddSegmentationTrack";
+        public const string MakeSoxSonogram = "MakeSoxSonogram";
+        public const string SonogramTitle = "SonogramTitle";
+        public const string SonogramComment = "SonogramComment";
+        public const string SonogramColored = "SonogramColored";
+        public const string SonogramQuantisation = "SonogramQuantisation";
+
+        [Obsolete]
         public const string SoxPath = "SOX_PATH";
-        public const string NoiseReductionType = "NOISE_REDUCTION_TYPE";
-        public const string NoiseDoReduction = "DO_NOISE_REDUCTION";
-        public const string NoiseBgThreshold = "BG_NOISE_THRESHOLD";
+
+        public const string NoiseReductionType = "NoiseReductionType";
+        public const string NoiseDoReduction = "DoNoiseReduction";
+        public const string NoiseBgThreshold = "BgNoiseThreshold";
 
         // KEYS TO CSV HEADERS FOR SUMMARY INDEX
         public const string KeyRankOrder = "RankOrder";
@@ -84,7 +89,29 @@ namespace AudioAnalysisTools
         public const string EventStartAbs = "EvStartAbs";
         public const string EventStartSec = "EvStartSec";
         public const string EventStartMin = "EvStartMin";
-        public const string EventThreshold = "EVENT_THRESHOLD";
+        public const string EventThreshold = "EventThreshold";
         public const string EventTotal = "EventTotal";
+
+        // AED
+        public const string KeyBandpassMaximum = "BandpassMaximum";
+        public const string KeyBandpassMinimum = "BandpassMinimum";
+        public const string KeyAedIntensityThreshold = "IntensityThreshold";
+        public const string KeyAedSmallAreaThreshold = "SmallAreaThreshold";
+
+        // SNR
+        public const string KeyFrameSize = "FrameSize";
+        public const string KeyFrameOverlap = FrameOverlap;
+        public const string KeyWindowFunction = "WindowFunction";
+        public const string KeyNPointSmoothFft = "NpointSmoothFFT";
+        public const string KeyNoiseReductionType = "NoiseReductionType";
+        public const string KeySegmentationThresholdK1 = "SegmentationThresholdK1";
+        public const string KeySegmentationThresholdK2 = "SegmentationThresholdK2";
+        public const string KeyK1K2Latency = "K1K2Latency";
+        public const string KeyVocalGap = "VocalGap";
+        public const string KeyMinVocalDuration = "MinVocalDuraton";
+        public const string KeyDrawSonograms = "DrawSonograms";
+
+        // Other config keys
+        public const string KeyIndexPropertiesConfig = "IndexPropertiesConfig";
     }
 }
