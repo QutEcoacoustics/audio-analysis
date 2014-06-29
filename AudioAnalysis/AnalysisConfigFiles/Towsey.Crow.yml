@@ -1,0 +1,22 @@
+---
+AnalysisName: Towsey.Crow
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+
+MinHz: 1000          
+CallDuration: 0.3
+DecibelThreshold: 1.5
+IntensityThreshold: 0.15
+MinFormantGap: 180
+MaxFormantGap: 450
+# Event threshold - Determines FP / FN trade-off for events.
+EventThreshold: 0.2
+
+
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+#DoNoiseReduction: true
+#BgNoiseThreshold: 3.0
+...

@@ -1,0 +1,34 @@
+---
+AnalysisName: Towsey.LSKiwi2
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 5
+SegmentOverlap: 10
+FrameLength: 2048
+FrameOverlap: 0.0
+
+#Resample rate must be 2 X the desired Nyquist
+ResampleRate: 17640
+
+#Frequency band of female call
+MinHz_FEMALE: 1300
+MaxHz_FEMALE: 2000
+
+#Frequency band of male call
+MinHz_MALE: 2200
+MaxHz_MALE: 3300
+
+#DctDuration: 5.5
+#DctThreshold: 0.48
+#DctThreshold: 0.25
+MinPeriod: 0.5
+MaxPeriod: 1.8
+MinDuration: 15
+MaxDuration: 70
+EventThreshold: 0.04
+#EventThreshold: 0.15
+
+#SAVE INTERMEDIARY FILES
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+...

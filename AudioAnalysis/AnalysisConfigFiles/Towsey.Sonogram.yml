@@ -1,0 +1,33 @@
+---
+#FRAME LENGTH in samples - must be power of 2
+FrameLength: 1024
+
+#Frame Overlap as fraction: default=0.0 
+FrameOverlap: 0.25
+
+#Resample rate must be 2 X the desired Nyquist. Default is that of recording.
+ResampleRate: 17640
+
+#MinHz: 500
+#MaxHz: 3500
+
+#NOISE REDUCTION PARAMETERS
+DoNoiseReduction: true 
+BgNoiseThreshold: 3.0
+
+
+ADD_AXES: true
+AddSegmentationTrack: true
+
+# REDUCTION FACTORS for freq and time dimensions
+#TimeReductionFactor: 1          
+#FreqReductionFactor: 1
+
+MakeSoxSonogram: false
+# Bad Michael, Don't do the following! SoX will always be deployed with AnalysisPrograms.exe
+#SOX_PATH: C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe
+SonogramTitle: Sonogram
+SonogramComment: "Sonogram produced using SOX"
+#SonogramColored: true
+SonogramQuantisation: 128
+...

@@ -1,0 +1,11 @@
+---
+# General Parameters
+AnalysisName: Dong.RidgeDetection
+
+
+#######################################
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: true
+SaveSonogramFiles: false
+ParallelProcessing: true
+...

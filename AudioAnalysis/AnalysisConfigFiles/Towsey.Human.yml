@@ -1,0 +1,28 @@
+---
+AnalysisName: Towsey.Human
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+# min and max of the freq band to search
+MinHz: 100          
+
+MinFormantGap: 80
+MaxFormantGap: 330
+
+# Expected minimum and maximum duration of an event in seconds.
+#MinFormantDuration: 0.08
+#MaxFormantDuration: 0.7
+IntensityThreshold: 0.13
+MinFormantDuration: 0.1
+MaxFormantDuration: 0.7
+#IntensityThreshold: 0.17
+# Event threshold - Determines FP / FN trade-off for events.
+EventThreshold: 0.2
+
+
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+#DoNoiseReduction: true
+#BgNoiseThreshold: 3.0
+...

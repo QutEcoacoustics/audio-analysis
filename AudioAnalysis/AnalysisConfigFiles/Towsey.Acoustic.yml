@@ -1,31 +1,31 @@
 ---
-ANALYSIS_NAME=Towsey.Acoustic
-#SEGMENT_DURATION=minutes,   SEGMENT_OVERLAP=seconds        
-SEGMENT_DURATION=1
-SEGMENT_OVERLAP=0
+AnalysisName: Towsey.Acoustic
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
 #FRAME LENGTH in samples and Frame Overlap as fraction 
-FRAME_LENGTH=512
-FRAME_OVERLAP=0.0
+FrameLength: 512
+FrameOverlap: 0.0
 #Resample rate must be 2 X the desired Nyquist
-RESAMPLE_RATE=17640
-LOW_FREQ_BOUND=500
-MID_FREQ_BOUND=4000
+ResampleRate: 17640
+LowFreqBound: 500
+MidFreqBound: 4000
 # DO NOT leave spaces in the following list
-#DISPLAY_COLUMNS=Clipping,bg-dB,snr-dB,activeSnr-dB,activity,segCount,avSegDur,hfCover,mfCover,lfCover,AcComplexity,H[temporal],H[spectral],clusterCount,avClustDur,3gramCount,av3gramRepetition,SpPkTracks/Sec,SpPkTracks%Dur,rain
+#DisplayColumns: Clipping,bg-dB,snr-dB,activeSnr-dB,activity,segCount,avSegDur,hfCover,mfCover,lfCover,AcComplexity,H[temporal],H[spectral],clusterCount,avClustDur,3gramCount,av3gramRepetition,SpPkTracks/Sec,SpPkTracks%Dur,rain
 #indices NOT displayed:  avAmp-dB,H[spectralVar],cicada
-#DISPLAY_COLUMNS=Clipping,bg-dB,snr-dB,activity,segCount,AcComplexity,hfCover,mfCover,lfCover,H[temporal],H[spectral],SpPkTracks/Sec,clusterCount,rain,cicada
+#DisplayColumns: Clipping,bg-dB,snr-dB,activity,segCount,AcComplexity,hfCover,mfCover,lfCover,H[temporal],H[spectral],SpPkTracks/Sec,clusterCount,rain,cicada
 #indices NOT displayed:avAmp-dB,activeSnr-dB,avSegDur,H[spectralMax],H[spectralVar],avClustDur,3gramCount,av3gramRepetition,SpPkTracks%Dur
-DISPLAY_WEIGHTED_INDICES=false
+DisplayWeightedIndices: false
 
 #SAVE INTERMEDIARY FILES
-SAVE_INTERMEDIATE_WAV_FILES=false
-SAVE_INTERMEDIATE_CSV_FILES=false
-SAVE_SONOGRAM_FILES=false
-DISPLAY_CSV_IMAGE=true
-DO_NOISE_REDUCTION=true
-BG_NOISE_THRESHOLD=3.0
-PARALLEL_PROCESSING=false
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+DisplayCsvImage: true
+DoNoiseReduction: true
+BgNoiseThreshold: 3.0
+ParallelProcessing: false
 
-INDEX_PROPERTIES_CONFIG =.\IndexPropertiesConfig.yml
+IndexPropertiesConfig =.\IndexPropertiesConfig.yml
 ...
 

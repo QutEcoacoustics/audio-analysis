@@ -41,30 +41,7 @@ namespace AnalysisPrograms
 
         }
 
-
-        // Keys to recognise identifiers in PARAMETERS - INI file. 
-
-        /// <summary>
-        /// The key_ smallarea_ threshold.
-        /// </summary>
-        public const string KeyBandpassMaximum = "BANDPASS_MAXIMUM";
-
-        /// <summary>
-        /// The key_ intensity_ threshold.
-        /// </summary>
-        public const string KeyBandpassMinimum = "BANDPASS_MINIMUM";
-
-        /// <summary>
-        /// The key_ intensity_ threshold.
-        /// </summary>
-        public const string KeyIntensityThreshold = "INTENSITY_THRESHOLD";
-
-        /// <summary>
-        /// The key_ smallarea_ threshold.
-        /// </summary>
-        public const string KeySmallareaThreshold = "SMALLAREA_THRESHOLD";
-
-        public const int ResampleRate = 22050;//wtf even is this shit: 17640;
+        public const int ResampleRate = 22050;
 
         private static readonly Color AedEventColor = Color.Red;
 
@@ -672,27 +649,27 @@ namespace AnalysisPrograms
             bandPassFilterMaximum = Default.bandPassMaxDefault;
             bandPassFilterMinimum = Default.bandPassMinDefault;
 
-            if (dict.ContainsKey(KeyIntensityThreshold))
+            if (dict.ContainsKey(AnalysisKeys.KeyAedIntensityThreshold))
             {
-                intensityThreshold = Convert.ToDouble(dict[KeyIntensityThreshold]);
+                intensityThreshold = Convert.ToDouble(dict[AnalysisKeys.KeyAedIntensityThreshold]);
                 propertyUsageCount++;
             }
 
-            if (dict.ContainsKey(KeySmallareaThreshold))
+            if (dict.ContainsKey(AnalysisKeys.KeyAedSmallAreaThreshold))
             {
-                smallAreaThreshold = Convert.ToInt32(dict[KeySmallareaThreshold]);
+                smallAreaThreshold = Convert.ToInt32(dict[AnalysisKeys.KeyAedSmallAreaThreshold]);
                 propertyUsageCount++;
             }
 
-            if (dict.ContainsKey(KeyBandpassMaximum))
+            if (dict.ContainsKey(AnalysisKeys.KeyBandpassMaximum))
             {
-                bandPassFilterMaximum = Convert.ToDouble(dict[KeyBandpassMaximum]);
+                bandPassFilterMaximum = Convert.ToDouble(dict[AnalysisKeys.KeyBandpassMaximum]);
                 propertyUsageCount++;
             }
 
-            if (dict.ContainsKey(KeyBandpassMinimum))
+            if (dict.ContainsKey(AnalysisKeys.KeyBandpassMinimum))
             {
-                bandPassFilterMinimum = Convert.ToDouble(dict[KeyBandpassMinimum]);
+                bandPassFilterMinimum = Convert.ToDouble(dict[AnalysisKeys.KeyBandpassMinimum]);
                 propertyUsageCount++;
             }
 

@@ -1,0 +1,14 @@
+---
+AnalysisName: Towsey.Grids
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+#use this threshold if averaging over a period - averaging seems to work better
+IntensityThreshold: 0.03
+#use this threshold if obtaining max value over a period
+#IntensityThreshold: 0.25
+# save a sonogram for each recording that contains a hit 
+DrawSonograms: 2
+DoNoiseReduction: true
+BgNoiseThreshold: 3.0
+...
