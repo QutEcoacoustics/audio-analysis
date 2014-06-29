@@ -15,6 +15,8 @@ using AudioAnalysisTools.LongDurationSpectrograms;
 
 namespace QutBioacosutics.Xie
 {
+    using Acoustics.Shared;
+
     public static class XieFunction
     {
         /// <summary>
@@ -220,8 +222,8 @@ namespace QutBioacosutics.Xie
             cs1.DrawGreyScaleSpectrograms(opDir, fileStem, new[] {SpectrogramConstantsJie.ALL_KNOWN_KEYS});
 
             cs1.CalculateStatisticsForAllIndices();
-            List<string> lines = cs1.WriteStatisticsForAllIndices();
-            FileTools.WriteTextFile(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt"), lines);
+
+            Json.Serialise(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt").ToFileInfo(), cs1.IndexStats);
 
             colorMap = SpectrogramConstantsJie.RGBMap_TRK_OSC_ENG;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);

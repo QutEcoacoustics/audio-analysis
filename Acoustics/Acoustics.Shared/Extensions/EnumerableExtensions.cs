@@ -12,6 +12,8 @@ namespace System
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Acoustics.Shared;
+
     public static class EnumerableExtensions
     {
         #region Public Methods and Operators
@@ -42,7 +44,8 @@ namespace System
 
         public static Dictionary<string, T[,]> ToTwoDimensionalArray<T, TBase>(
             this IList<TBase> items,
-            Dictionary<string, Func<TBase, T[]>> selectors)
+            Dictionary<string, Func<TBase, T[]>> selectors,
+            TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
         {
             var itemCount = items.Count;
             int keyCount = selectors.Keys.Count;
@@ -50,7 +53,8 @@ namespace System
             foreach (var kvp in selectors)
             {
                 var current = kvp.Value(items[0]);
-                result.Add(kvp.Key, new T[itemCount,  current.Length]);
+                var value = dimensionality == TwoDimensionalArray.RowMajor ? new T[itemCount, current.Length] : new T[current.Length, itemCount];
+                result.Add(kvp.Key, value);
             }
 
 
@@ -59,14 +63,21 @@ namespace System
                 (kvp, state, index) =>
                     {
                         var key = kvp.Key;
-                        var selctor = kvp.Value;
+                        var selector = kvp.Value;
 
                         for (int i = 1; i < itemCount; i++)
                         {
-                            T[] line = selctor(items[i]);
+                            T[] line = selector(items[i]);
                             for (int j = 0; j < line.Length; j++)
                             {
-                                result[key][i, j] = line[j];
+                                if (dimensionality == TwoDimensionalArray.RowMajor)
+                                {
+                                    result[key][i, j] = line[j];
+                                }
+                                else
+                                {
+                                    result[key][j, i] = line[j];
+                                }
                             }
                         }
                     });

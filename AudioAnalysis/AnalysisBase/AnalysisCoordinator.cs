@@ -357,24 +357,28 @@
 
             string fileName = Path.GetFileNameWithoutExtension(preparedFile.OriginalFile.Name);
 
-            //if user requests, save the sonogram files 
-            if (saveImageFiles)
+            // if user requests, save the sonogram files 
+            if (this.saveImageFiles)
             {
                 // save spectrogram to output dir - saving to temp dir means possibility of being overwritten
                 localCopyOfSettings.ImageFile =
                     new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName, fileName + ".png"));
             }
 
-            //if user requests, save the intermediate csv files 
-            if (saveIntermediateCsvFiles)
+            // if user requests, save the intermediate csv files 
+            if (this.saveIntermediateCsvFiles)
             {
                 // always save csv to output dir
                 localCopyOfSettings.EventsFile =
-                    new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
-                        fileName + ".Events.csv"));
+                    new FileInfo(
+                        Path.Combine(
+                            localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
+                            fileName + ".Events.csv"));
                 localCopyOfSettings.SummaryIndicesFile =
-                    new FileInfo(Path.Combine(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
-                        fileName + ".Indices.csv"));
+                    new FileInfo(
+                        Path.Combine(
+                            localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName,
+                            fileName + ".Indices.csv"));
                 localCopyOfSettings.SpectrumIndicesDirectory = new DirectoryInfo(localCopyOfSettings.AnalysisInstanceOutputDirectory.FullName);
             }
 
@@ -433,17 +437,27 @@
        {
            Debug.Assert(result.SettingsUsed != null);
            Debug.Assert(result.SegmentStartOffset == start);
-           Debug.Assert(result.SegmentAudioDuration == preparedFileDuration);
-           Debug.Assert(settings.ImageFile != null && settings.ImageFile.Exists);
-           if (result.Events != null)
+           Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0);
+
+           if (settings.ImageFile != null)
            {
-               Debug.Assert(settings.EventsFile != null && result.EventsFile.Exists);
+               Debug.Assert(settings.ImageFile.Exists);
            }
-           if (result.SummaryIndices != null)
+
+           Debug.Assert(result.Events != null);
+           if (result.Events.Length != 0)
            {
-               Debug.Assert(settings.SummaryIndicesFile != null && result.SummaryIndicesFile.Exists);
+               Debug.Assert(settings.EventsFile == null || (settings.EventsFile != null && result.EventsFile.Exists));
            }
-           if (result.SpectralIndices != null)
+
+           Debug.Assert(result.SummaryIndices != null);
+           if (result.SummaryIndices.Length != 0)
+           {
+               Debug.Assert(settings.SummaryIndicesFile == null || (settings.SummaryIndicesFile != null && result.SummaryIndicesFile.Exists));
+           }
+
+           Debug.Assert(result.SpectralIndices != null);
+           if (result.SpectralIndices.Length != 0 && settings.SpectrumIndicesDirectory != null)
            {
                foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
                {

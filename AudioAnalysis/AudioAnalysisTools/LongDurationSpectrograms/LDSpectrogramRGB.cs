@@ -26,6 +26,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Linq;
     using System.Reflection;
 
+    using Acoustics.Shared;
+
     using AnalysisBase.ResultBases;
 
     using AudioAnalysisTools.Indices;
@@ -106,7 +108,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
         private Dictionary<string, double[,]> spgr_StdDevMatrices;                                       // used if reading standard devaition matrices for tTest
-        private Dictionary<string, Dictionary<string, double>> indexStats = new Dictionary<string, Dictionary<string, double>>(); // used to save mode and sd of the indices 
+
+        public class SpectraStats
+        {
+            public double Minimum { get; set; }
+
+            public double Maximum { get; set; }
+
+            public double Mode { get; set; }
+
+            public double StandardDeviation { get; set; }
+        }
+
+        // used to save mode and sd of the indices 
+        private readonly Dictionary<string, SpectraStats> indexStats = new Dictionary<string, SpectraStats>();
+
+        public Dictionary<string, SpectraStats> IndexStats
+        {
+            get
+            {
+                return indexStats;
+            }
+        }
 
         /// <summary>
         /// used where the spectrograms are derived from averages and want to do t-test of difference.
@@ -293,6 +316,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             return this.spectrogramMatrices[key];
         }
+
         public double[,] GetStandarDeviationMatrix(string key)
         {
             return this.spgr_StdDevMatrices[key];
@@ -302,24 +326,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             return this.spectrogramMatrices.Count;
         }
+
         public int GetCountOfStandardDeviationMatrices()
         {
             return this.spgr_StdDevMatrices.Count;
-        }
-
-        public Dictionary<string, double> GetIndexStatistics(string key)
-        {
-            return this.indexStats[key]; // used to return a dictionary of index statistics
-        }
-        public double GetIndexStatistics(string key, string stat)
-        {
-            return this.indexStats[key][stat]; // used to return index statistics
-        }
-
-
-        public void SetIndexStatistics(string key, Dictionary<string, double> dict)
-        {
-            this.indexStats.Add(key, dict); // add index statistics
         }
 
 
@@ -338,9 +348,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
         }
 
-        public List<string> WriteStatisticsForAllIndices()
+        /* public List<string> WriteStatisticsForAllIndices()
         {
-            List<string> lines = new List<string>();
+           List<string> lines = new List<string>();
             foreach (string key in this.spectrogramKeys)
             {
                 if (this.spectrogramMatrices.ContainsKey(key))
@@ -355,7 +365,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
             return lines;
-        }
+
+        }*/
 
         public void DrawIndexDistributionsAndSave(string imagePath)
         {
@@ -364,10 +375,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var list = new List<Image>();
             foreach (string key in this.spectrogramMatrices.Keys)
             {
-                Dictionary<string, double> stats = this.indexStats[key];
+                var stats = this.indexStats[key];
                 int[] histogram = Histogram.Histo(this.spectrogramMatrices[key], width);
-                list.Add(ImageTools.DrawHistogram(key, histogram, stats, width, height));
+                list.Add(
+                    ImageTools.DrawHistogram(
+                        key,
+                        histogram,
+                        new Dictionary<string, double>()
+                            {
+                                { "min", stats.Minimum },
+                                { "max", stats.Maximum },
+                                { "mode", stats.Mode },
+                                { "sd", stats.StandardDeviation },
+                            },
+                        width,
+                        height));
             }
+
             Image image3 = ImageTools.CombineImagesVertically(list.ToArray());
             image3.Save(imagePath);
         }
@@ -700,18 +724,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static Dictionary<string, double> GetModeAndOneTailedStandardDeviation(double[,] M)
+        public static SpectraStats GetModeAndOneTailedStandardDeviation(double[,] M)
         {
             double[] values = DataTools.Matrix2Array(M);
             const bool DisplayHistogram = false;
             double min, max, mode, SD;
             DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
-            var dict = new Dictionary<string, double>();
-            dict["min"] = min;
-            dict["max"] = max;
-            dict["mode"] = mode;
-            dict["sd"] = SD;
-            return dict;
+
+            return new SpectraStats()
+                       {
+                           Minimum = min,
+                           Maximum = max,
+                           Mode = mode,
+                           StandardDeviation = SD
+                       };
         }
 
         //========================================================================================================================================================
@@ -1028,8 +1054,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
             cs1.CalculateStatisticsForAllIndices();
-            List<string> lines = cs1.WriteStatisticsForAllIndices();
-            FileTools.WriteTextFile(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.txt"), lines);
+            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.txt").ToFileInfo(), cs1.indexStats);
+
 
             cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
 

@@ -192,56 +192,56 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string key = keys[0];
             double[,] m1Red = cs1.GetNormalisedSpectrogramMatrix(key);
-            Dictionary<string, double> dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Red);
-            cs1.SetIndexStatistics(key, dict);
-            m1Red = MatrixTools.Matrix2ZScores(m1Red, dict["mode"], dict["sd"]);
+            LDSpectrogramRGB.SpectraStats stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Red);
+            cs1.IndexStats.Add(key, stats);
+            m1Red = MatrixTools.Matrix2ZScores(m1Red, stats.Mode, stats.StandardDeviation);
 
             ////LoggedConsole.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
             key = keys[1];
             double[,] m1Grn = cs1.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Grn);
-            cs1.SetIndexStatistics(key, dict);
-            m1Grn = MatrixTools.Matrix2ZScores(m1Grn, dict["mode"], dict["sd"]);
+            stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Grn);
+            cs1.IndexStats.Add(key, stats);
+            m1Grn = MatrixTools.Matrix2ZScores(m1Grn, stats.Mode, stats.StandardDeviation);
 
             ////LoggedConsole.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
             key = keys[2];
             double[,] m1Blu = cs1.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Blu);
-            cs1.SetIndexStatistics(key, dict);
-            m1Blu = MatrixTools.Matrix2ZScores(m1Blu, dict["mode"], dict["sd"]);
+            stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Blu);
+            cs1.IndexStats.Add(key, stats);
+            m1Blu = MatrixTools.Matrix2ZScores(m1Blu, stats.Mode, stats.StandardDeviation);
 
             ////LoggedConsole.WriteLine("1.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
             key = keys[0];
             double[,] m2Red = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Red);
-            cs2.SetIndexStatistics(key, dict);
-            m2Red = MatrixTools.Matrix2ZScores(m2Red, dict["mode"], dict["sd"]);
+            stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Red);
+            cs2.IndexStats.Add(key, stats);
+            m2Red = MatrixTools.Matrix2ZScores(m2Red, stats.Mode, stats.StandardDeviation);
 
             ////LoggedConsole.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
             key = keys[1];
             double[,] m2Grn = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Grn);
-            cs2.SetIndexStatistics(key, dict);
-            m2Grn = MatrixTools.Matrix2ZScores(m2Grn, dict["mode"], dict["sd"]);
+            stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Grn);
+            cs2.IndexStats.Add(key, stats);
+            m2Grn = MatrixTools.Matrix2ZScores(m2Grn, stats.Mode, stats.StandardDeviation);
 
             ////LoggedConsole.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
             key = keys[2];
             double[,] m2Blu = cs2.GetNormalisedSpectrogramMatrix(key);
-            dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Blu);
-            cs2.SetIndexStatistics(key, dict);
-            m2Blu = MatrixTools.Matrix2ZScores(m2Blu, dict["mode"], dict["sd"]);
+            stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m2Blu);
+            cs2.IndexStats.Add(key, stats);
+            m2Blu = MatrixTools.Matrix2ZScores(m2Blu, stats.Mode, stats.StandardDeviation);
 
             ////LoggedConsole.WriteLine("2.{0}: Min={1:f2}   Max={2:f2}    Mode={3:f2}+/-{4:f3} (SD=One-tailed)", key, dict["min"], dict["max"], dict["mode"], dict["sd"]);
             var v1 = new double[3];
             double[] mode1 =
                 {
-                    cs1.GetIndexStatistics(keys[0], "mode"), cs1.GetIndexStatistics(keys[1], "mode"), 
-                    cs1.GetIndexStatistics(keys[2], "mode")
+                    cs1.IndexStats[keys[0]].Mode, cs1.IndexStats[keys[1]].Mode, 
+                    cs1.IndexStats[keys[2]].Mode
                 };
             double[] stDv1 =
                 {
-                    cs1.GetIndexStatistics(keys[0], "sd"), cs1.GetIndexStatistics(keys[1], "sd"), 
-                    cs1.GetIndexStatistics(keys[2], "sd")
+                    cs1.IndexStats[keys[0]].StandardDeviation, cs1.IndexStats[keys[1]].StandardDeviation, 
+                    cs1.IndexStats[keys[2]].StandardDeviation
                 };
             LoggedConsole.WriteLine(
                 "1: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", 
@@ -255,13 +255,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var v2 = new double[3];
             double[] mode2 =
                 {
-                    cs2.GetIndexStatistics(keys[0], "mode"), cs2.GetIndexStatistics(keys[1], "mode"), 
-                    cs2.GetIndexStatistics(keys[2], "mode")
+                    cs2.IndexStats[keys[0]].Mode, cs2.IndexStats[keys[1]].Mode, 
+                    cs2.IndexStats[keys[2]].Mode
                 };
             double[] stDv2 =
                 {
-                    cs2.GetIndexStatistics(keys[0], "sd"), cs2.GetIndexStatistics(keys[1], "sd"), 
-                    cs2.GetIndexStatistics(keys[2], "sd")
+                    cs2.IndexStats[keys[0]].StandardDeviation, cs2.IndexStats[keys[1]].StandardDeviation, 
+                    cs2.IndexStats[keys[2]].StandardDeviation
                 };
             LoggedConsole.WriteLine(
                 "2: avACI={0:f3}+/-{1:f3};   avTEN={2:f3}+/-{3:f3};   avCVR={4:f3}+/-{5:f3}", 

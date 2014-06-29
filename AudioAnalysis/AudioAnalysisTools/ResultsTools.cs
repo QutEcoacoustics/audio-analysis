@@ -482,9 +482,10 @@ namespace AudioAnalysisTools
             return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
         }
 
-        public static FileInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectrumBase> spectra)
+        public static DirectoryInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectrumBase> spectra)
         {
-            return SaveResults(outputDirectory, fileName + ".Spectra", (destination, results) => analyser2.WriteSpectrumIndicesFiles(outputDirectory, fileName, results), spectra);
+            analyser2.WriteSpectrumIndicesFiles(outputDirectory, fileName, spectra);
+            return outputDirectory;
         }
 
         private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)
@@ -493,6 +494,7 @@ namespace AudioAnalysisTools
             {
                 return null;    
             }
+
 
             var reportfilePath = outputDirectory.CombineFile(resultFilenamebase + ReportFileExt);
             var reportfilePathBackup = outputDirectory.CombineFile(resultFilenamebase + "_BACKUP" + ReportFileExt);

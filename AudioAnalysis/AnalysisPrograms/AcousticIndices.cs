@@ -440,7 +440,7 @@ namespace AnalysisPrograms
 
             FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
 
-            var matrixSpectra = spectra.ToTwoDimensionalArray(SpectralValues.CachedSelectors);
+            var matrixSpectra = spectra.ToTwoDimensionalArray(SpectralValues.CachedSelectors, TwoDimensionalArray.ColumnMajor);
 
             LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, indicesPropertiesConfig, matrixSpectra);
 

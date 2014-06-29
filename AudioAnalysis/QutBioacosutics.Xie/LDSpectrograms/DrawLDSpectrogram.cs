@@ -18,6 +18,8 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
     using AcousticIndicesJie;
 
+    using Acoustics.Shared;
+
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -184,8 +186,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
             cs1.CalculateStatisticsForAllIndices();
-            List<string> lines = cs1.WriteStatisticsForAllIndices();
-            FileTools.WriteTextFile(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.txt"), lines);
+            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.txt").ToFileInfo(), cs1.IndexStats);
 
             cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
 
