@@ -135,6 +135,10 @@
             bool saveIntermediateWavFiles = false;
             if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
                 saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles, settings.ConfigDict);
+            
+            bool saveIntermediateCsvFiles = false;
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
+                saveIntermediateCsvFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateCsvFiles, settings.ConfigDict);
 
             bool doParallelProcessing = false;
             if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.ParallelProcessing))
@@ -149,7 +153,7 @@
                 displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DisplayCsvImage, (settings.ConfigDict));
 
             //initilise classes that will do the analysis
-            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, displayCsvImage)
+            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, saveIntermediateCsvFiles)
             {
                 DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
                 IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????

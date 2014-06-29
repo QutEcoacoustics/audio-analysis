@@ -15,6 +15,7 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Reflection;
 
     using AnalysisBase.ResultBases;
@@ -206,10 +207,13 @@ namespace AudioAnalysisTools.Indices
                 }
 
                 var methodInfo = propertyInfo.GetGetMethod();
-                var getDelegate = (Func<SpectrumBase, double[]>)Delegate.CreateDelegate(thisType, methodInfo);
+
+                var getDelegate = (Func<SpectralValues, double[]>)Delegate.CreateDelegate(typeof(Func<SpectralValues, double[]>), methodInfo);
+                Func<SpectrumBase, double[]> casted = spectrumBase => getDelegate((SpectralValues)spectrumBase);
+
                 var name = propertyInfo.Name;
 
-                CachedSelectors.Add(name, getDelegate);
+                CachedSelectors.Add(name, casted);
             }
         }
 

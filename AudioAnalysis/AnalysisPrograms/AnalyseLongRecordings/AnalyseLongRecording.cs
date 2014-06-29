@@ -30,6 +30,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using AudioAnalysisTools.Indices;
 
     using log4net;
+    using log4net.Repository.Hierarchy;
 
     public partial class AnalyseLongRecording
     {
@@ -70,54 +71,31 @@ Output  to  directory: {1}
                 tempFilesDirectory = arguments.Output;
             }
 
-            LoggedConsole.WriteLine("# Recording file:     " + sourceAudio.Name);
-            LoggedConsole.WriteLine("# Configuration file: " + configFile);
-            LoggedConsole.WriteLine("# Output folder:      " + outputDirectory);
-            LoggedConsole.WriteLine("# Temp File Directory:      " + tempFilesDirectory);
+            LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.Name);
+            LoggedConsole.WriteLine("# Configuration file:  " + configFile);
+            LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
+            LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
 
             // 2. get the analysis config dictionary
             dynamic configuration = Yaml.Deserialise(configFile);
 
             bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+            bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
             bool saveSonograms = (bool?)configuration[AnalysisKeys.SaveSonograms] ?? false;
-            bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
+            
+            // There's no reason for this to be here
+            ////bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
 
             double scoreThreshold = 0.2; // min score for an acceptable event
-            scoreThreshold = configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
-
-            /* var configuration = new ConfigDictionary(configFile.FullName);
-             Dictionary<string, string> configDict = configuration.GetTable();
-
-            
-             bool saveIntermediateWavFiles = false;
-             if (configDict.ContainsKey(AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES))
-                 saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES,
-                     configDict);
-
-             bool saveSonograms;
-             if (configDict.ContainsKey(AnalysisKeys.SAVE_SONOGRAMS))
-                 saveSonograms = ConfigDictionary.GetBoolean(AnalysisKeys.SAVE_SONOGRAMS, configDict);
-
-             bool displayCSVImage = false;
-             if (configDict.ContainsKey(AnalysisKeys.DISPLAY_CSV_IMAGE))
-                 displayCSVImage = ConfigDictionary.GetBoolean(AnalysisKeys.DISPLAY_CSV_IMAGE, configDict);
-
-             bool doParallelProcessing = false;
-             if (configDict.ContainsKey(AnalysisKeys.PARALLEL_PROCESSING))
-                 doParallelProcessing = ConfigDictionary.GetBoolean(AnalysisKeys.PARALLEL_PROCESSING, configDict);
-            
-             if (analysisSettings.ConfigDict.ContainsKey(AnalysisKeys.EVENT_THRESHOLD))
-             {
-                 scoreThreshold = double.Parse(analysisSettings.ConfigDict[AnalysisKeys.EVENT_THRESHOLD]);
-             }
-             */
+            scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
+            Log.Warn("Minimum event threshold has been set to " + scoreThreshold);
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, displayCsvImage)
+            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, saveIntermediateCsvFiles)
             {
-                DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
+                DeleteFinished = !saveIntermediateWavFiles, // create and delete directories 
                 IsParallel = doParallelProcessing,
                 SubFoldersUnique = false
             };
@@ -141,6 +119,7 @@ Output  to  directory: {1}
             // 6. initialise the analysis settings object
             var analysisSettings = analyser.DefaultSettings;
             analysisSettings.ConfigFile = configFile;
+            analysisSettings.Configuration = configuration;
             analysisSettings.SourceFile = sourceAudio;
             analysisSettings.AnalysisBaseOutputDirectory = outputDirectory;
             analysisSettings.AnalysisBaseTempDirectory = tempFilesDirectory;
@@ -233,8 +212,11 @@ Output  to  directory: {1}
             // 10. Allow analysers to post-process
 
             // TODO: remove results directory if possible
-            var resultsDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
-            Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == resultsDirectory);
+            var instanceOutputDirectory = analyserResults.First().SettingsUsed.AnalysisInstanceOutputDirectory;
+
+            // this allows the summariser to write results to the same output directory as each analysis segment
+            analysisSettings.AnalysisInstanceOutputDirectory = instanceOutputDirectory;
+            Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
             Debug.Assert(analysisSettings.SourceFile == fileSegment.OriginalFile);
 
             analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectrumResults, analyserResults);
@@ -243,9 +225,9 @@ Output  to  directory: {1}
             // 11. SAVE THE RESULTS
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
 
-            var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, resultsDirectory, mergedEventResults);
-            var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, resultsDirectory, mergedIndicesResults);
-            var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, resultsDirectory, mergedSpectrumResults);
+            var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
+            var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
+            var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectrumResults);
 
             // 12. Convert summary indices to image
             var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
@@ -253,7 +235,7 @@ Output  to  directory: {1}
             string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
             string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
             Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(IndexProperties.GetIndexProperties(indicesPropertiesConfig), indicesFile, imageTitle);
-            var imagePath = Path.Combine(resultsDirectory.FullName, fileName + ImagefileExt);
+            var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
             tracksImage.Save(imagePath);
 
             // 13. wrap up, write stats
@@ -273,7 +255,7 @@ Output  to  directory: {1}
             }
 
 
-            LoggedConsole.WriteLine(FinishedMessage, sourceAudio.Name, resultsDirectory.FullName);
+            LoggedConsole.WriteLine(FinishedMessage, sourceAudio.Name, instanceOutputDirectory.FullName);
         }
 
         private static IAnalyser2 FindAndCheckAnalyser(string analysisIdentifier)

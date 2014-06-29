@@ -26,6 +26,6 @@ DoNoiseReduction: true
 BgNoiseThreshold: 3.0
 ParallelProcessing: false
 
-IndexPropertiesConfig =.\IndexPropertiesConfig.yml
+IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
 ...
 

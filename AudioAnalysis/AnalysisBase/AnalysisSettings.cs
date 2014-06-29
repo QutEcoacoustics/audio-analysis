@@ -28,6 +28,7 @@ namespace AnalysisBase
     /// The working directory may be deleted after the analysis is complete.
     /// </para>
     /// </remarks>
+    [Serializable]
     public class AnalysisSettings : ICloneable
     {
 
@@ -279,7 +280,8 @@ namespace AnalysisBase
 
         public object Clone()
         {
-            return this.DeepClone();
+            AnalysisSettings deepCloneWithoutSerialization = this.DeepClone();
+            return deepCloneWithoutSerialization;
         }
 
         public override string ToString()

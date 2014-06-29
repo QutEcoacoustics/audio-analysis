@@ -107,11 +107,11 @@ namespace AudioAnalysisTools.Indices
 
             // get parameters for the analysis
             int frameSize = IndexCalculate.DefaultWindowSize;
-            frameSize = config.ContainsKey(AnalysisKeys.FrameLength) ? ConfigDictionary.GetInt(AnalysisKeys.FrameLength, config) : frameSize;
+            frameSize = (int?)config[AnalysisKeys.FrameLength] ?? frameSize;
             int freqBinCount = frameSize / 2;
-            LowFreqBound = config.ContainsKey(AnalysisKeys.LowFreqBound) ? ConfigDictionary.GetInt(AnalysisKeys.LowFreqBound, config) : LowFreqBound;
-            MidFreqBound = config.ContainsKey(AnalysisKeys.MidFreqBound) ? ConfigDictionary.GetInt(AnalysisKeys.MidFreqBound, config) : MidFreqBound;
-            double windowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, config);
+            LowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? LowFreqBound;
+            MidFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? MidFreqBound;
+            double windowOverlap = config[AnalysisKeys.FrameOverlap];
 
             // get recording segment
             int signalLength = recording.GetWavReader().Samples.Length;
@@ -219,6 +219,11 @@ namespace AudioAnalysisTools.Indices
 
             // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             var spectra = new SpectralValues();
+
+            // TODO: Michael the following is needed to prevent an exception later... i'm not sure if it is the desired behaviour
+            // initialise values
+            spectra.CLS = new double[freqBinCount];
+
             double[] aciArray = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
             
             // store ACI spectrum
@@ -426,7 +431,7 @@ namespace AudioAnalysisTools.Indices
                 clusterInfo.clusterHits2 = null;
                 indexValues.ClusterCount = 0;
                 indexValues.AvgClusterDuration = TimeSpan.Zero;
-                indexValues.ThreeGramCount =  0;
+                indexValues.ThreeGramCount = 0;
             }
             else
             {
@@ -452,6 +457,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     clusterHits = new int[dBArray.Length]; // array of zeroes
                 }
+
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0)); // location of cluster hits
             }
 
