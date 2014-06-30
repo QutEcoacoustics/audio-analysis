@@ -95,7 +95,8 @@ Output  to  directory: {1}
             // 3. initilise AnalysisCoordinator class that will do the analysis
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, saveIntermediateCsvFiles)
             {
-                DeleteFinished = !saveIntermediateWavFiles, // create and delete directories 
+                // create and delete directories
+                DeleteFinished = !saveIntermediateWavFiles,  
                 IsParallel = doParallelProcessing,
                 SubFoldersUnique = false
             };
@@ -167,7 +168,7 @@ Output  to  directory: {1}
             // Merge and correct main result types
             EventBase[] mergedEventResults = ResultsTools.MergeResults(analyserResults, ar => ar.Events, ResultsTools.CorrectEvent);
             SummaryIndexBase[] mergedIndicesResults = ResultsTools.MergeResults(analyserResults, ar => ar.SummaryIndices, ResultsTools.CorrectSummaryIndex);
-            SpectrumBase[] mergedSpectrumResults = ResultsTools.MergeResults(analyserResults, ar => ar.SpectralIndices, ResultsTools.CorrectSpectrumIndex);
+            SpectralIndexBase[] mergedSpectralIndexResults = ResultsTools.MergeResults(analyserResults, ar => ar.SpectralIndices, ResultsTools.CorrectSpectrumIndex);
 
             // not an exceptional state, do not throw exception
             if (mergedEventResults != null && mergedEventResults.Length == 0)
@@ -178,7 +179,7 @@ Output  to  directory: {1}
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no Summary INDICES (mergedResults had zero count)");
             }
-            if (mergedSpectrumResults != null && mergedSpectrumResults.Length == 0)
+            if (mergedSpectralIndexResults != null && mergedSpectralIndexResults.Length == 0)
             {
                 LoggedConsole.WriteWarnLine("The analysis produced no Spectral INDICES (merged results had zero count)");
             }
@@ -196,14 +197,6 @@ Output  to  directory: {1}
 #endif
             var duration = fileSegment.OriginalFileDuration;
 
-            // AT: disabled - I can't think of a good reason for this to be here!
-            /*// increase the threshold - used to display number of high scoring events
-            scoreThreshold *= 3;
-            if (scoreThreshold > 1.0)
-            {
-                scoreThreshold = 1.0;
-            }*/
-
             ResultsTools.ConvertEventsToIndices(analyser, mergedEventResults, ref mergedIndicesResults, duration, scoreThreshold);
             int eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
             int numberOfRowsOfIndices = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
@@ -219,7 +212,8 @@ Output  to  directory: {1}
             Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
             Debug.Assert(analysisSettings.SourceFile == fileSegment.OriginalFile);
 
-            analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectrumResults, analyserResults);
+            // Important - this is where IAnalyser2's post processer gets called. I.e. Long duration spectrograms are drawn IFF anlaysis type is Towsey.Acoustic
+            analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);
 
 
             // 11. SAVE THE RESULTS
@@ -227,9 +221,9 @@ Output  to  directory: {1}
 
             var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
             var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
-            var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectrumResults);
+            var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectralIndexResults);
 
-            // 12. Convert summary indices to image
+            // 12. Convert summary indices to tracks (black and white rows) image
             var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
 
             string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
@@ -275,6 +269,7 @@ Output  to  directory: {1}
 
                 throw new Exception("Cannot find a valid IAnalyser2");
             }
+
             return analyser;
         }
     }

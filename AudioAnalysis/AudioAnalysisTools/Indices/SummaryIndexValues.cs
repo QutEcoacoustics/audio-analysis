@@ -44,8 +44,8 @@ namespace AudioAnalysisTools.Indices
 
         public List<SpectralTrack> Tracks { get; set; }
 
-        public IndexValues IndexValues { get; set; }
-        public SpectralValues SpectralValues { get; set; }
+        public SummaryIndexValues SummaryIndexValues { get; set; }
+        public SpectralIndexValues SpectralIndexValues { get; set; }
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ namespace AudioAnalysisTools.Indices
     /// They are stored in dictionaries in order to make them accessible by key without having to write a special method each time a new index is created.
     /// SOme of the functionality is in the parent class IndexBase.
     /// </summary>
-    public class IndexValues : SummaryIndexBase
+    public class SummaryIndexValues : SummaryIndexBase
     {
 
         // store indices in relevant dictionaries
@@ -138,7 +138,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
-        public IndexValues(int freqBinCount, TimeSpan wavDuration, FileInfo indexPropertiesConfig)
+        public SummaryIndexValues(int freqBinCount, TimeSpan wavDuration, FileInfo indexPropertiesConfig)
         {
             this.SegmentDuration = wavDuration;
 
@@ -188,16 +188,16 @@ namespace AudioAnalysisTools.Indices
 
     }
 
-    public class SpectralValues : SpectrumBase
+    public class SpectralIndexValues : SpectralIndexBase
     {
-        private static readonly Dictionary<string, Func<SpectrumBase, double[]>> CachedSelectorsInternal;
+        private static readonly Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectorsInternal;
 
-        static SpectralValues()
+        static SpectralIndexValues()
         {
-            Type thisType = typeof(SpectralValues);
+            Type thisType = typeof(SpectralIndexValues);
 
             var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            CachedSelectorsInternal = new Dictionary<string, Func<SpectrumBase, double[]>>(props.Length);
+            CachedSelectorsInternal = new Dictionary<string, Func<SpectralIndexBase, double[]>>(props.Length);
             foreach (var propertyInfo in props)
             {
 
@@ -208,8 +208,8 @@ namespace AudioAnalysisTools.Indices
 
                 var methodInfo = propertyInfo.GetGetMethod();
 
-                var getDelegate = (Func<SpectralValues, double[]>)Delegate.CreateDelegate(typeof(Func<SpectralValues, double[]>), methodInfo);
-                Func<SpectrumBase, double[]> casted = spectrumBase => getDelegate((SpectralValues)spectrumBase);
+                var getDelegate = (Func<SpectralIndexValues, double[]>)Delegate.CreateDelegate(typeof(Func<SpectralIndexValues, double[]>), methodInfo);
+                Func<SpectralIndexBase, double[]> casted = spectrumBase => getDelegate((SpectralIndexValues)spectrumBase);
 
                 var name = propertyInfo.Name;
 
@@ -217,7 +217,7 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-        public static Dictionary<string, Func<SpectrumBase, double[]>> CachedSelectors
+        public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
         {
             get
             {
@@ -241,7 +241,7 @@ namespace AudioAnalysisTools.Indices
 
         public double[] CLS { get; set; }
 
-        public override Dictionary<string, Func<SpectrumBase, double[]>> GetSelectors()
+        public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
         {
             return CachedSelectors;
         }

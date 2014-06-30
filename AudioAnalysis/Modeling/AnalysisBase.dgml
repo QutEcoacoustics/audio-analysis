@@ -1,92 +1,92 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph DataVirtualized="True" GraphDirection="BottomToTop" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
-    <Node Id="(@1 @2 @14 Member=DummySpectrum)" Category="CodeSchema_Property" Bounds="259.110178468343,14.1193956903807,150.745728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="DummySpectrum" />
-    <Node Id="(@1 @2 @14 Member=Keys)" Category="CodeSchema_Property" Bounds="259.110178468343,-40.8806043784167,82.585728120715,25" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Keys" />
-    <Node Id="(@1 @2 @3 Member=EventCount)" Category="CodeSchema_Property" Bounds="258.807591008697,240.078649390815,119.505728120715,25.0000000000001" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventCount" />
-    <Node Id="(@1 @2 @3 Member=EventStartAbsolute)" Category="CodeSchema_Property" Bounds="135.938529554649,295.078649459941,159.142394787382,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventStartAbsolute" />
-    <Node Id="(@1 @2 @3 Member=MinHz)" Category="CodeSchema_Property" Bounds="135.938529554649,240.078649366187,92.8690614540482,25.0000000000001" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="MinHz" />
-    <Node Id="(@1 @2 @3 Member=Score)" Category="CodeSchema_Property" Bounds="322.297591008697,185.078649330118,87.845728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Score" />
-    <Node Id="(@1 @2 @5 Member=EventsTotal)" Category="CodeSchema_Property" Bounds="-118.680257306641,169.481883849064,118.882361674495,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventsTotal" />
-    <Node Id="(@1 @2 @5 Member=EventsTotalThresholded)" Category="CodeSchema_Property" Bounds="-118.7070541202,224.481884148105,184.645728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventsTotalThresholded" />
-    <Node Id="(@1 @2 @8 Member=FileName)" Category="CodeSchema_Property" Bounds="229.169802590114,-321.841063044624,108.095728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="FileName" />
-    <Node Id="(@1 @2 @8 Member=SegmentDuration)" Category="CodeSchema_Property" Bounds="36.7507411360658,-266.841163044624,151.912394787382,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="SegmentDuration" />
-    <Node Id="(@1 @2 @8 Member=StartOffsetMinute)" Category="CodeSchema_Property" Bounds="36.7507411360659,-211.841063044624,152.839061454048,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="StartOffsetMinute" />
-    <Node Id="@13" Category="CodeSchema_Class" Bounds="-65.0370442546575,425.078856958232,714.274131850053,195.957703133033" CodeSchemaProperty_IsPublic="True" CommonLabel="RidgeEvent" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="7" Group="Expanded" Icon="CodeSchema_Class" Label="RidgeEvent" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisPrograms/Dong.Felt.Main.cs StartLineNumber=287 StartCharacterOffset=4 EndLineNumber=287 EndCharacterOffset=4)" UseManualLocation="True" />
-    <Node Id="@15" Category="CodeSchema_Class" Bounds="239.110906289163,-136.840806347693,190.745748313264,195.9604" CodeSchemaProperty_IsPublic="True" CommonLabel="SpectrumBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="3" Group="Expanded" Icon="CodeSchema_Class" Label="SpectrumBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/SpectrumBase.cs StartLineNumber=13 StartCharacterOffset=4 EndLineNumber=13 EndCharacterOffset=4)" UseManualLocation="True" />
-    <Node Id="@16" Category="CodeSchema_Method" Bounds="165.256434736476,184.118640124573,97.7233333333334,25.96" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="CompareTo" />
-    <Node Id="@17" Category="CodeSchema_Method" Bounds="69.0986130403412,-322.801165957502,97.76944232,25.95778048" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="CompareTo" />
-    <Node Id="@19" Category="CodeSchema_Method" Bounds="251.384795943197,575.078938355015,95.5081333333334,25.9575116799999" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="RidgeEvent" />
-    <Node Id="@21" Category="CodeSchema_Method" Bounds="322.297539371492,129.118651568102,89.3066666666666,25.96" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsProtected="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="EventBase" />
-    <Node Id="@22" Category="CodeSchema_Method" Bounds="-118.707069816032,113.525504554154,93.8801333333333,25.9562828799999" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="EventIndex" />
-    <Node Id="@23" Category="CodeSchema_Method" Bounds="44.4543843779308,-57.4339734722335,89.2142,25.95907072" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="IndexBase" />
-    <Node Id="@24" Category="CodeSchema_Method" Bounds="229.169799292314,-377.801043887183,92.7244666666666,25.95778048" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsProtected="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="ResultBase" />
-    <Node Id="@25" Category="CodeSchema_Method" Bounds="259.110158275794,-96.8406103549467,110.97,25.96" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="SpectrumBase" />
-    <Node Id="@26" Category="CodeSchema_Property" Bounds="380.248864687299,520.079056958233,75.0257281207149,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Bin" />
-    <Node Id="@27" Category="CodeSchema_Property" Bounds="-45.0370442546576,520.078956958233,127.785728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="BinMaximum" />
-    <Node Id="@28" Category="CodeSchema_Property" Bounds="135.938529554649,129.118649220492,156.359061454048,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventStartSeconds" />
-    <Node Id="@29" Category="CodeSchema_Property" Bounds="112.748783866057,520.078956958233,91.2023947873815,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Frame" />
-    <Node Id="@30" Category="CodeSchema_Property" Bounds="485.274692808014,520.079056958233,143.962394787382,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="FrameMaximum" />
-    <Node Id="@31" Category="CodeSchema_Property" Bounds="44.4820525390831,-1.47479903093584,119.384028762561,25.0000000000001" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="IndexCount" />
-    <Node Id="@32" Category="CodeSchema_Property" Bounds="233.951278653439,477.222663560393,116.295728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Magnitude" />
-    <Node Id="@33" Category="CodeSchema_Property" Bounds="380.244629576816,465.078956958233,118.613815886759,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Orientation" />
-    <Node Id="@34" Category="CodeSchema_Property" Bounds="36.7507394871593,-377.80126927148,162.419061454048,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="SegmentStartOffset" />
-    <Node Id="@4" Category="CodeSchema_Class" Bounds="115.9393661071,89.1183904407878,315.665728120715,250.96058214986" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="EventBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="7" Group="Expanded" Icon="CodeSchema_Class" Label="EventBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/EventBase.cs StartLineNumber=14 StartCharacterOffset=4 EndLineNumber=14 EndCharacterOffset=4)" UseManualLocation="True" />
-    <Node Id="@6" Category="CodeSchema_Class" Bounds="-138.707069816032,73.5254009690644,224.645743816547,195.956583179041" CodeSchemaProperty_IsPublic="True" CommonLabel="EventIndex" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="3" Group="Expanded" Icon="CodeSchema_Class" Label="EventIndex" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/EventIndex.cs StartLineNumber=14 StartCharacterOffset=4 EndLineNumber=14 EndCharacterOffset=4)" UseManualLocation="True" />
-    <Node Id="@7" Category="CodeSchema_Class" Bounds="24.4543845795783,-97.4340697509358,159.409180396452,140.95937072" CodeSchemaProperty_IsPublic="True" CommonLabel="IndexBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="2" Group="Expanded" Icon="CodeSchema_Class" Label="IndexBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/IndexBase.cs StartLineNumber=14 StartCharacterOffset=4 EndLineNumber=14 EndCharacterOffset=4)" UseManualLocation="True" />
-    <Node Id="@9" Category="CodeSchema_Class" Bounds="16.7507394871593,-417.80136927148,340.51479122367,250.960406226856" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="ResultBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="6" Group="Expanded" Icon="CodeSchema_Class" Label="ResultBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/ResultBase.cs StartLineNumber=19 StartCharacterOffset=4 EndLineNumber=19 EndCharacterOffset=4)" UseManualLocation="True" />
+    <Node Id="(@1 @2 @14 Member=DummySpectrum)" Category="CodeSchema_Property" Bounds="231.42701566065,63.0266438518151,150.745728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="DummySpectrum" />
+    <Node Id="(@1 @2 @14 Member=Keys)" Category="CodeSchema_Property" Bounds="231.42701566065,8.02654385181503,82.585728120715,25" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Keys" />
+    <Node Id="(@1 @2 @3 Member=EventCount)" Category="CodeSchema_Property" Bounds="242.961524464962,288.987110566141,119.505728120715,25.0000000000001" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventCount" />
+    <Node Id="(@1 @2 @3 Member=EventStartAbsolute)" Category="CodeSchema_Property" Bounds="120.092463010914,343.987210566141,159.142394787382,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventStartAbsolute" />
+    <Node Id="(@1 @2 @3 Member=MinHz)" Category="CodeSchema_Property" Bounds="120.092463010914,288.987143851815,92.8690614540482,25.0000000000001" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="MinHz" />
+    <Node Id="(@1 @2 @3 Member=Score)" Category="CodeSchema_Property" Bounds="306.451524464962,233.987043876443,87.845728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Score" />
+    <Node Id="(@1 @2 @5 Member=EventsTotal)" Category="CodeSchema_Property" Bounds="-371.037657837021,343.709297021631,118.882361674495,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventsTotal" />
+    <Node Id="(@1 @2 @5 Member=EventsTotalThresholded)" Category="CodeSchema_Property" Bounds="-371.07450431991,398.709297320672,184.645728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventsTotalThresholded" />
+    <Node Id="(@1 @2 @8 Member=FileName)" Category="CodeSchema_Property" Bounds="140.436229599254,-272.933856148185,108.095728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="FileName" />
+    <Node Id="(@1 @2 @8 Member=SegmentDuration)" Category="CodeSchema_Property" Bounds="-51.9828318547942,-217.933956148185,151.912394787382,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="SegmentDuration" />
+    <Node Id="(@1 @2 @8 Member=StartOffsetMinute)" Category="CodeSchema_Property" Bounds="-51.9828318547932,-162.933856148185,152.839061454048,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="StartOffsetMinute" />
+    <Node Id="@13" Category="CodeSchema_Class" Bounds="-123.815733588669,418.987343945569,688.938058324909,195.957711702715" CodeSchemaProperty_IsPublic="True" CommonLabel="RidgeEvent" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="7" Group="Expanded" Icon="CodeSchema_Class" Label="RidgeEvent" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisPrograms/Dong.Felt.Main.cs StartLineNumber=287 StartCharacterOffset=4 EndLineNumber=287 EndCharacterOffset=4)" UseManualLocation="True" />
+    <Node Id="@15" Category="CodeSchema_Class" Bounds="211.42701566065,-87.933656148185,190.745728120715,195.9604" CodeSchemaProperty_IsPublic="True" CommonLabel="SpectrumBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="3" Group="Expanded" Icon="CodeSchema_Class" Label="SpectrumBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/SpectrumBase.cs StartLineNumber=13 StartCharacterOffset=4 EndLineNumber=13 EndCharacterOffset=4)" UseManualLocation="True" />
+    <Node Id="@16" Category="CodeSchema_Class" Bounds="-268.401912175082,-17.6096679112021,179.113333333333,140.96" CodeSchemaProperty_IsPublic="True" CommonLabel="SummaryIndexBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="2" Group="Expanded" Icon="CodeSchema_Class" Label="SummaryIndexBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///c:/work/github/audio-analysis/audioanalysis/analysisbase/resultbases/summaryindexbase.cs StartLineNumber=14 StartCharacterOffset=4 EndLineNumber=14 EndCharacterOffset=4)" UseManualLocation="True" />
+    <Node Id="@17" Category="CodeSchema_Method" Bounds="149.41036702474,233.027010541513,97.7233333333334,25.96" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="CompareTo" />
+    <Node Id="@18" Category="CodeSchema_Method" Bounds="-19.6349614859277,-273.893978473967,97.76944232,25.95778048" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsVirtual="True" DelayedCrossGroupLinksState="Fetched" Label="CompareTo" />
+    <Node Id="@20" Category="CodeSchema_Method" Bounds="184.332374373372,568.987443968285,95.5081333333334,25.9575116799999" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="RidgeEvent" />
+    <Node Id="@22" Category="CodeSchema_Method" Bounds="306.451517135639,178.026943876443,89.3066666666666,25.96" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsProtected="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="EventBase" />
+    <Node Id="@23" Category="CodeSchema_Method" Bounds="-371.074519586645,287.752910065184,93.8801333333333,25.9562828799999" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="EventIndex" />
+    <Node Id="@24" Category="CodeSchema_Method" Bounds="140.43621332194,-328.893856403655,92.7244666666666,25.95778048" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsProtected="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="ResultBase" />
+    <Node Id="@25" Category="CodeSchema_Method" Bounds="231.427033081055,-47.933556148185,110.97,25.96" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="SpectrumBase" />
+    <Node Id="@26" Category="CodeSchema_Method" Bounds="-248.401912175082,22.3904816188315,139.113333333333,25.96" CodeSchemaProperty_IsConstructor="True" CodeSchemaProperty_IsPublic="True" CodeSchemaProperty_IsSpecialName="True" DelayedCrossGroupLinksState="Fetched" Label="SummaryIndexBase" />
+    <Node Id="@27" Category="CodeSchema_Property" Bounds="312.310768497187,513.987543945569,75.0257281207148,25.0000000000002" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Bin" />
+    <Node Id="@28" Category="CodeSchema_Property" Bounds="417.336596615524,513.987543945569,127.785728120715,25.0000000000002" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="BinMaximum" />
+    <Node Id="@29" Category="CodeSchema_Property" Bounds="120.092455681591,178.026943851815,156.359061454048,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="EventStartSeconds" />
+    <Node Id="@30" Category="CodeSchema_Property" Bounds="44.8124455890902,513.987493945569,91.2023947873815,25.0000000000002" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Frame" />
+    <Node Id="@31" Category="CodeSchema_Property" Bounds="312.310768487677,458.987443945569,143.962394787382,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="FrameMaximum" />
+    <Node Id="@32" Category="CodeSchema_Property" Bounds="-248.40190861583,78.3504825587643,119.389061454048,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="IndexCount" />
+    <Node Id="@33" Category="CodeSchema_Property" Bounds="166.014940376471,471.161313205119,116.295728120715,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Magnitude" />
+    <Node Id="@34" Category="CodeSchema_Property" Bounds="-103.815733588669,513.987493945569,118.613815886759,25.0000000000002" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="Orientation" />
+    <Node Id="@35" Category="CodeSchema_Property" Bounds="-51.9828335036997,-328.894078473967,162.419061454048,25" CodeSchemaProperty_IsPublic="True" DelayedChildNodesState="NotFetched" DelayedCrossGroupLinksState="Fetched" Group="Collapsed" Label="SegmentStartOffset" />
+    <Node Id="@4" Category="CodeSchema_Class" Bounds="100.092455681591,138.026810541513,315.665728120715,250.960500024628" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="EventBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="7" Group="Expanded" Icon="CodeSchema_Class" Label="EventBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/EventBase.cs StartLineNumber=14 StartCharacterOffset=4 EndLineNumber=14 EndCharacterOffset=4)" UseManualLocation="True" />
+    <Node Id="@6" Category="CodeSchema_Class" Bounds="-391.074519586645,247.75281987265,224.645744665985,195.95668288" CodeSchemaProperty_IsPublic="True" CommonLabel="EventIndex" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="3" Group="Expanded" Icon="CodeSchema_Class" Label="EventIndex" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/EventIndex.cs StartLineNumber=14 StartCharacterOffset=4 EndLineNumber=14 EndCharacterOffset=4)" UseManualLocation="True" />
+    <Node Id="@9" Category="CodeSchema_Class" Bounds="-71.9828335036997,-368.894178473967,340.514791223669,250.960422325782" CodeSchemaProperty_IsAbstract="True" CodeSchemaProperty_IsPublic="True" CommonLabel="ResultBase" DelayedChildNodesState="Fetched" DelayedCrossGroupLinksState="Fetched" FetchedChildrenCount="6" Group="Expanded" Icon="CodeSchema_Class" Label="ResultBase" Language="{B5E9BD34-6D3E-4B5D-925E-8A43B79820B4}" SourceLocation="(Assembly=file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/ResultBases/ResultBase.cs StartLineNumber=19 StartCharacterOffset=4 EndLineNumber=19 EndCharacterOffset=4)" UseManualLocation="True" />
   </Nodes>
   <Links>
-    <Link Source="@13" Target="@19" Category="Contains" FetchingParent="@13" />
-    <Link Source="@13" Target="@26" Category="Contains" FetchingParent="@13" />
+    <Link Source="@13" Target="@20" Category="Contains" FetchingParent="@13" />
     <Link Source="@13" Target="@27" Category="Contains" FetchingParent="@13" />
-    <Link Source="@13" Target="@29" Category="Contains" FetchingParent="@13" />
+    <Link Source="@13" Target="@28" Category="Contains" FetchingParent="@13" />
     <Link Source="@13" Target="@30" Category="Contains" FetchingParent="@13" />
-    <Link Source="@13" Target="@32" Category="Contains" FetchingParent="@13" />
+    <Link Source="@13" Target="@31" Category="Contains" FetchingParent="@13" />
     <Link Source="@13" Target="@33" Category="Contains" FetchingParent="@13" />
+    <Link Source="@13" Target="@34" Category="Contains" FetchingParent="@13" />
     <Link Source="@15" Target="(@1 @2 @14 Member=DummySpectrum)" Category="Contains" FetchingParent="@15" />
     <Link Source="@15" Target="(@1 @2 @14 Member=Keys)" Category="Contains" FetchingParent="@15" />
     <Link Source="@15" Target="@25" Category="Contains" FetchingParent="@15" />
     <Link Source="@15" Target="@9" Category="InheritsFrom" Weight="1" />
-    <Link Source="@16" Target="@17" Category="CodeSchema_Calls" Weight="1" />
-    <Link Source="@16" Target="@28" Category="CodeSchema_Calls" Bounds="214.11822004426,163.119362715685,1.55650798774332E-05,20.9999909032111" IsTargetVirtualized="True" Weight="2" />
-    <Link Source="@16" Target="@9" Category="References" Bounds="246.400606315759,43.7277272579939,7.68237256290939,116.019914790205" Weight="1" />
-    <Link Source="@17" Target="@34" Category="CodeSchema_Calls" Bounds="117.968937408294,-343.801606670139,0.00873026129453081,21.0001040917265" IsTargetVirtualized="True" Weight="2" />
-    <Link Source="@17" Target="@9" Category="References" Bounds="3.25073957443237,-309.822784423828,65.8478779792786,12.322265625" Weight="1" />
-    <Link Source="@19" Target="@26" Category="CodeSchema_Calls" Bounds="326.866208040877,548.889378799457,56.0083955087475,26.1876435636818" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@19" Target="@27" Category="CodeSchema_Calls" Bounds="88.6214512446175,546.388526402109,162.762573504562,32.2211429672841" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@19" Target="@29" Category="CodeSchema_Calls" Bounds="198.436847275666,548.377674615631,67.738152678652,26.6993477475071" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@19" Target="@30" Category="CodeSchema_Calls" Bounds="346.815061437644,546.968415773052,143.478710497458,30.8351878246272" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@19" Target="@32" Category="CodeSchema_Calls" Bounds="293.630266260522,511.198758328994,4.55080946406321,63.8782640341442" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@19" Target="@33" Category="CodeSchema_Calls" Bounds="313.169311523438,495.28955078125,101.44677734375,79.7874755859375" IsTargetVirtualized="True" Weight="1" />
-    <Link Source="@21" Target="@24" Category="CodeSchema_Calls" Weight="1" />
-    <Link Source="@22" Target="@23" Category="CodeSchema_Calls" Weight="1" />
-    <Link Source="@23" Target="@24" Category="CodeSchema_Calls" Weight="1" />
+    <Link Source="@16" Target="@26" Category="Contains" FetchingParent="@16" />
+    <Link Source="@16" Target="@32" Category="Contains" FetchingParent="@16" />
+    <Link Source="@16" Target="@9" Category="InheritsFrom" Weight="1" />
+    <Link Source="@17" Target="@18" Category="CodeSchema_Calls" Weight="1" />
+    <Link Source="@17" Target="@29" Category="CodeSchema_Calls" Bounds="198.272004731953,212.026943851812,1.78972707374214E-05,21.0000666897008" IsTargetVirtualized="True" Weight="2" />
+    <Link Source="@17" Target="@9" Category="References" Bounds="246.400606315759,43.7277272579939,7.68237256290939,116.019914790205" Weight="1" />
+    <Link Source="@18" Target="@35" Category="CodeSchema_Calls" Bounds="29.2356347088662,-294.894079251585,0.00872967924959056,21.0001007776179" IsTargetVirtualized="True" Weight="2" />
+    <Link Source="@18" Target="@9" Category="References" Bounds="-85.4828338623047,-260.915100097656,65.8478717803955,12.3222808837891" Weight="1" />
+    <Link Source="@20" Target="@27" Category="CodeSchema_Calls" Bounds="259.63004746364,542.823844865422,55.5245730174802,26.1635991028629" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@20" Target="@28" Category="CodeSchema_Calls" Bounds="279.771520412915,540.943732941657,136.538224330698,30.4040513389492" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@20" Target="@30" Category="CodeSchema_Calls" Bounds="130.71452927283,542.26921808141,68.2288052984891,26.7182258868744" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@20" Target="@31" Category="CodeSchema_Calls" Bounds="246.906875610352,487.935546875,96.3139190673828,81.0518798828125" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@20" Target="@33" Category="CodeSchema_Calls" Bounds="225.893416856747,505.132219332387,5.146901773802,63.8552246358977" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@20" Target="@34" Category="CodeSchema_Calls" Bounds="21.6281491155478,539.753063575076,162.704225257825,32.6347589525786" IsTargetVirtualized="True" Weight="1" />
+    <Link Source="@22" Target="@24" Category="CodeSchema_Calls" Weight="1" />
+    <Link Source="@23" Target="@26" Category="CodeSchema_Calls" Weight="1" />
     <Link Source="@25" Target="@24" Category="CodeSchema_Calls" Weight="1" />
-    <Link Source="@31" Target="@7" Category="References" Bounds="104.176582336426,23.5252017974854,12.3222732543945,33.5000972747803" IsSourceVirtualized="True" Weight="2">
+    <Link Source="@26" Target="@24" Category="CodeSchema_Calls" Weight="1" />
+    <Link Source="@32" Target="@16" Category="References" Bounds="-188.707382202148,103.350532531738,12.3222808837891,33.4997940063477" IsSourceVirtualized="True" Weight="2">
       <Category Ref="CodeSchema_ReturnTypeLink" />
     </Link>
     <Link Source="@4" Target="(@1 @2 @3 Member=EventCount)" Category="Contains" FetchingParent="@4" />
     <Link Source="@4" Target="(@1 @2 @3 Member=EventStartAbsolute)" Category="Contains" FetchingParent="@4" />
     <Link Source="@4" Target="(@1 @2 @3 Member=MinHz)" Category="Contains" FetchingParent="@4" />
     <Link Source="@4" Target="(@1 @2 @3 Member=Score)" Category="Contains" FetchingParent="@4" />
-    <Link Source="@4" Target="@16" Category="Contains" FetchingParent="@4" />
-    <Link Source="@4" Target="@21" Category="Contains" FetchingParent="@4" />
-    <Link Source="@4" Target="@28" Category="Contains" FetchingParent="@4" />
+    <Link Source="@4" Target="@17" Category="Contains" FetchingParent="@4" />
+    <Link Source="@4" Target="@22" Category="Contains" FetchingParent="@4" />
+    <Link Source="@4" Target="@29" Category="Contains" FetchingParent="@4" />
     <Link Source="@4" Target="@9" Category="InheritsFrom" Weight="1" />
     <Link Source="@6" Target="(@1 @2 @5 Member=EventsTotal)" Category="Contains" FetchingParent="@6" />
     <Link Source="@6" Target="(@1 @2 @5 Member=EventsTotalThresholded)" Category="Contains" FetchingParent="@6" />
-    <Link Source="@6" Target="@22" Category="Contains" FetchingParent="@6" />
-    <Link Source="@6" Target="@7" Category="InheritsFrom" Weight="1" />
-    <Link Source="@7" Target="@23" Category="Contains" FetchingParent="@7" />
-    <Link Source="@7" Target="@31" Category="Contains" FetchingParent="@7" />
-    <Link Source="@7" Target="@9" Category="InheritsFrom" Weight="1" />
+    <Link Source="@6" Target="@16" Category="InheritsFrom" Weight="1" />
+    <Link Source="@6" Target="@23" Category="Contains" FetchingParent="@6" />
     <Link Source="@9" Target="(@1 @2 @8 Member=FileName)" Category="Contains" FetchingParent="@9" />
     <Link Source="@9" Target="(@1 @2 @8 Member=SegmentDuration)" Category="Contains" FetchingParent="@9" />
     <Link Source="@9" Target="(@1 @2 @8 Member=StartOffsetMinute)" Category="Contains" FetchingParent="@9" />
-    <Link Source="@9" Target="@17" Category="Contains" FetchingParent="@9" />
+    <Link Source="@9" Target="@18" Category="Contains" FetchingParent="@9" />
     <Link Source="@9" Target="@24" Category="Contains" FetchingParent="@9" />
-    <Link Source="@9" Target="@34" Category="Contains" FetchingParent="@9" />
+    <Link Source="@9" Target="@35" Category="Contains" FetchingParent="@9" />
   </Links>
   <Categories>
     <Category Id="CodeSchema_Calls" Label="Calls" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Called By" OutgoingActionLabel="Calls" />
@@ -155,7 +155,6 @@
     <Alias n="4" Id="(@1 @2 @3)" />
     <Alias n="5" Id="Type=EventIndex" />
     <Alias n="6" Id="(@1 @2 @5)" />
-    <Alias n="7" Id="(@1 @2 Type=IndexBase)" />
     <Alias n="8" Id="Type=ResultBase" />
     <Alias n="9" Id="(@1 @2 @8)" />
     <Alias n="10" Uri="Assembly=$(ec323929-0160-46bc-a04b-b4a66d02e757.OutputPathUri)" />
@@ -164,25 +163,26 @@
     <Alias n="13" Id="(@10 @11 @12)" />
     <Alias n="14" Id="Type=SpectrumBase" />
     <Alias n="15" Id="(@1 @2 @14)" />
-    <Alias n="16" Id="(@1 @2 @3 Member=(Name=CompareTo OverloadingParameters=[@9]))" />
-    <Alias n="17" Id="(@1 @2 @8 Member=(Name=CompareTo OverloadingParameters=[@9]))" />
-    <Alias n="18" Uri="Assembly=$(86855cbc-7243-492a-a500-2de36cc7c825.OutputPathUri)" />
-    <Alias n="19" Id="(@10 @11 @12 Member=(Name=.ctor OverloadingParameters=[(@18 Namespace=AudioAnalysisTools Type=PointOfInterest),(@1 Namespace=AnalysisBase Type=AnalysisSettings),(@18 Namespace=AudioAnalysisTools.StandardSpectrograms Type=SpectrogramStandard)]))" />
-    <Alias n="20" Id="Member=.ctor" />
-    <Alias n="21" Id="(@1 @2 @3 @20)" />
-    <Alias n="22" Id="(@1 @2 @5 @20)" />
-    <Alias n="23" Id="(@1 @2 Type=IndexBase @20)" />
-    <Alias n="24" Id="(@1 @2 @8 @20)" />
-    <Alias n="25" Id="(@1 @2 @14 @20)" />
-    <Alias n="26" Id="(@10 @11 @12 Member=Bin)" />
-    <Alias n="27" Id="(@10 @11 @12 Member=BinMaximum)" />
-    <Alias n="28" Id="(@1 @2 @3 Member=EventStartSeconds)" />
-    <Alias n="29" Id="(@10 @11 @12 Member=Frame)" />
-    <Alias n="30" Id="(@10 @11 @12 Member=FrameMaximum)" />
-    <Alias n="31" Id="(@1 @2 Type=IndexBase Member=IndexCount)" />
-    <Alias n="32" Id="(@10 @11 @12 Member=Magnitude)" />
-    <Alias n="33" Id="(@10 @11 @12 Member=Orientation)" />
-    <Alias n="34" Id="(@1 @2 @8 Member=SegmentStartOffset)" />
+    <Alias n="16" Id="(@1 @2 Type=SummaryIndexBase)" />
+    <Alias n="17" Id="(@1 @2 @3 Member=(Name=CompareTo OverloadingParameters=[@9]))" />
+    <Alias n="18" Id="(@1 @2 @8 Member=(Name=CompareTo OverloadingParameters=[@9]))" />
+    <Alias n="19" Uri="Assembly=$(86855cbc-7243-492a-a500-2de36cc7c825.OutputPathUri)" />
+    <Alias n="20" Id="(@10 @11 @12 Member=(Name=.ctor OverloadingParameters=[(@19 Namespace=AudioAnalysisTools Type=PointOfInterest),(@1 Namespace=AnalysisBase Type=AnalysisSettings),(@19 Namespace=AudioAnalysisTools.StandardSpectrograms Type=SpectrogramStandard)]))" />
+    <Alias n="21" Id="Member=.ctor" />
+    <Alias n="22" Id="(@1 @2 @3 @21)" />
+    <Alias n="23" Id="(@1 @2 @5 @21)" />
+    <Alias n="24" Id="(@1 @2 @8 @21)" />
+    <Alias n="25" Id="(@1 @2 @14 @21)" />
+    <Alias n="26" Id="(@1 @2 Type=SummaryIndexBase @21)" />
+    <Alias n="27" Id="(@10 @11 @12 Member=Bin)" />
+    <Alias n="28" Id="(@10 @11 @12 Member=BinMaximum)" />
+    <Alias n="29" Id="(@1 @2 @3 Member=EventStartSeconds)" />
+    <Alias n="30" Id="(@10 @11 @12 Member=Frame)" />
+    <Alias n="31" Id="(@10 @11 @12 Member=FrameMaximum)" />
+    <Alias n="32" Id="(@1 @2 Type=SummaryIndexBase Member=IndexCount)" />
+    <Alias n="33" Id="(@10 @11 @12 Member=Magnitude)" />
+    <Alias n="34" Id="(@10 @11 @12 Member=Orientation)" />
+    <Alias n="35" Id="(@1 @2 @8 Member=SegmentStartOffset)" />
   </IdentifierAliases>
   <Styles>
     <Style TargetType="Node" GroupLabel="Results" ValueLabel="True">
@@ -312,8 +312,11 @@
     </Style>
   </Styles>
   <Paths>
+    <Path Id="80bc795a-a987-45ab-b29b-76cf190384ba.OutputPath" Value="C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisBase\bin\Debug\AnalysisBase.dll" />
     <Path Id="80bc795a-a987-45ab-b29b-76cf190384ba.OutputPathUri" Value="file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisBase/bin/Debug/AnalysisBase.dll" />
+    <Path Id="86855cbc-7243-492a-a500-2de36cc7c825.OutputPath" Value="C:\Work\GitHub\audio-analysis\AudioAnalysis\AudioAnalysisTools\bin\Debug\AudioAnalysisTools.dll" />
     <Path Id="86855cbc-7243-492a-a500-2de36cc7c825.OutputPathUri" Value="file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AudioAnalysisTools/bin/Debug/AudioAnalysisTools.dll" />
+    <Path Id="ec323929-0160-46bc-a04b-b4a66d02e757.OutputPath" Value="C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe" />
     <Path Id="ec323929-0160-46bc-a04b-b4a66d02e757.OutputPathUri" Value="file:///C:/Work/GitHub/audio-analysis/AudioAnalysis/AnalysisPrograms/bin/Debug/AnalysisPrograms.exe" />
   </Paths>
 </DirectedGraph>

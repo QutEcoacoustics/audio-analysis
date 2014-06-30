@@ -17,7 +17,7 @@ namespace AnalysisBase.ResultBases
 
 
 
-        public SummaryIndexBase IndexCount { get; set; }
+        public int IndexCount { get; set; }
 
 
     }

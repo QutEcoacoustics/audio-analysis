@@ -16,9 +16,9 @@ namespace AnalysisBase.ResultBases
     using System.Linq;
     using System.Reflection;
 
-    public abstract class SpectrumBase : ResultBase
+    public abstract class SpectralIndexBase : ResultBase
     {
-        public abstract Dictionary<string, Func<SpectrumBase, double[]>> GetSelectors();
+        public abstract Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors();
 
     }
 

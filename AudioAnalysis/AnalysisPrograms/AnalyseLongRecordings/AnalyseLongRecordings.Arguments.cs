@@ -1,13 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using AnalysisPrograms.Production;
-using PowerArgs;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AnalyseLongRecordings.Arguments.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the AnalyseLongRecording type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.AnalyseLongRecordings
 {
+    using System.IO;
+
+    using AnalysisPrograms.Production;
+
+    using PowerArgs;
+
     public partial class AnalyseLongRecording
     {
         public class Arguments : SourceConfigOutputDirArguments, IArgClassValidator

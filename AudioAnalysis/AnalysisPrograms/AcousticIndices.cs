@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AcousticIndices.cs" company="MQUTeR">
-//   -
+// <copyright file="AcousticIndices.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
 //   Defines the Acoustic type.
@@ -354,8 +354,8 @@ namespace AnalysisPrograms
                 return analysisResults; // nothing to process 
             }
 
-            analysisResults.SummaryIndices = new SummaryIndexBase[] { indexCalculateResult.IndexValues };
-            analysisResults.SpectralIndices = new SpectrumBase[] { indexCalculateResult.SpectralValues };
+            analysisResults.SummaryIndices = new SummaryIndexBase[] { indexCalculateResult.SummaryIndexValues };
+            analysisResults.SpectralIndices = new SpectralIndexBase[] { indexCalculateResult.SpectralIndexValues };
 
 
             if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
@@ -389,7 +389,7 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
-        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectrumBase> results)
+        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             var selectors = results.First().GetSelectors();
 
@@ -411,7 +411,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results)
+        public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results)
         {
             var sourceAudio = inputFileSegment.OriginalFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
@@ -440,9 +440,9 @@ namespace AnalysisPrograms
 
             FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
 
-            var matrixSpectra = spectra.ToTwoDimensionalArray(SpectralValues.CachedSelectors, TwoDimensionalArray.ColumnMajor);
+            var matrixOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajor);
 
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, indicesPropertiesConfig, matrixSpectra);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, indicesPropertiesConfig, matrixOfSpectra);
 
         }
 

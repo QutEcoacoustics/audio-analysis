@@ -192,7 +192,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string key = keys[0];
             double[,] m1Red = cs1.GetNormalisedSpectrogramMatrix(key);
-            LDSpectrogramRGB.SpectraStats stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Red);
+            LDSpectrogramRGB.SpectralStats stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(m1Red);
             cs1.IndexStats.Add(key, stats);
             m1Red = MatrixTools.Matrix2ZScores(m1Red, stats.Mode, stats.StandardDeviation);
 

@@ -1,16 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using AnalysisPrograms.Production;
-using log4net;
-using PowerArgs;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="DummyAnalyser.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   The purpose of this analyser is to make inter-program parallelisation easier to develop
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using AnalysisPrograms.Production;
+
+    using log4net;
+
+    using PowerArgs;
+
     /// <summary>
     /// The purpose of this analyser is to make inter-program parallelisation easier to develop
     /// </summary>

@@ -152,7 +152,7 @@
     <Compile Include="ResultBases\EventIndex.cs" />
     <Compile Include="ResultBases\SummaryIndexBase.cs" />
     <Compile Include="ResultBases\ResultBase.cs" />
-    <Compile Include="ResultBases\SpectrumBase.cs" />
+    <Compile Include="ResultBases\SpectralIndexBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
