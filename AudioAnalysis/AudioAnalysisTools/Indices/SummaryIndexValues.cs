@@ -20,6 +20,8 @@ namespace AudioAnalysisTools.Indices
 
     using AnalysisBase.ResultBases;
 
+    using CsvHelper.Configuration;
+
     using MathNet.Numerics.LinearAlgebra.Complex32.Solvers.Iterative;
 
     using NeuralNets;
@@ -55,39 +57,6 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class SummaryIndexValues : SummaryIndexBase
     {
-
-        // store indices in relevant dictionaries
-        // dictionary to store summary indices of type double and int
-       /* public void StoreIndex(string key, double val)
-        {
-            SummaryIndicesOfTypeDouble[key] = val;
-        }
-        public void StoreIndex(string key, int val)
-        {
-            SummaryIndicesOfTypeDouble[key] = (double)val;
-        }
-        // dictionary to store summary indices of type TimeSpan
-        public void StoreIndex(string key, TimeSpan val)
-        {
-            SummaryIndicesOfTypeTimeSpan[key] = val;
-        }
-        public double[] GetSpectrum(string key)
-        {
-            return SpectralIndices[key];
-        }
-        public void AddSpectrum(string key, double[] spectrum)
-        {
-            if (this.SpectralIndices.ContainsKey(key))
-            {
-                this.SpectralIndices[key] = spectrum;
-            }
-            else
-                this.SpectralIndices.Add(key, spectrum);
-        }*/
-
-
-
-
         public double TemporalEntropy { get; set; }
         public double HighAmplitudeIndex { get; set; }
 
@@ -125,9 +94,9 @@ namespace AudioAnalysisTools.Indices
 
         public double LowFreqCover { get; set; }
 
-        public TimeSpan AvgSPTDuration { get; set; }
+        public TimeSpan AvgSptDuration { get; set; }
 
-        public double SPTPerSecond { get; set; }
+        public double SptPerSecond { get; set; }
 
         public int ClusterCount { get; set; }
 
@@ -135,9 +104,8 @@ namespace AudioAnalysisTools.Indices
 
         public int ThreeGramCount { get; set; }
 
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
+        public static Dictionary<string, Func<SummaryIndexValues, object>> CahcedSelectors { get;  private set; }
+
         public SummaryIndexValues(int freqBinCount, TimeSpan wavDuration, FileInfo indexPropertiesConfig)
         {
             this.SegmentDuration = wavDuration;
@@ -149,43 +117,21 @@ namespace AudioAnalysisTools.Indices
             {
                 // no-op, nothing useful left to do;
             }
-
         }
 
-
-        /*
-        /// <summary>
-        /// Initialise all vectors of spectral indices  
-        /// </summary>
-        /// <param name="size"></param>
-        public Dictionary<string, double[]> InitialiseSpectra(int size, Dictionary<string, IndexProperties> dictOfIndexProperties)
+        static SummaryIndexValues()
         {
+            CahcedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
+        }
 
-            Dictionary<string, double[]> spectra = new Dictionary<string, double[]>();
-            foreach (string key in dictOfIndexProperties.Keys)
+/*        private class SummaryIndexValuesMap : CsvClassMap<SpectralIndexValues>
+        {
+            public SummaryIndexValuesMap()
             {
-                if (dictOfIndexProperties[key].DataType != typeof(double[]))
-                {
-                    continue; // only want spectral indices
-                }
-
-                double defaultValue = dictOfIndexProperties[key].DefaultValue;
-
-                var spectrum = new double[size];
-                if (defaultValue != 0.0)
-                {
-                    for (int i = 0; i < size; i++)
-                    {
-                        spectrum[i] = defaultValue;
-                    }
-                }
-
-                spectra.Add(key, spectrum);
+                this.AutoMap();
+                this.Map(m => m.CachedSelectors).Ignore();
             }
-
-            return spectra;
         }*/
-
     }
 
     public class SpectralIndexValues : SpectralIndexBase
@@ -194,26 +140,15 @@ namespace AudioAnalysisTools.Indices
 
         static SpectralIndexValues()
         {
-            Type thisType = typeof(SpectralIndexValues);
+            var getters = ReflectionExtensions.GetGetters<SpectralIndexValues, double[]>();
 
-            var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            CachedSelectorsInternal = new Dictionary<string, Func<SpectralIndexBase, double[]>>(props.Length);
-            foreach (var propertyInfo in props)
+            CachedSelectorsInternal = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
+            foreach (var keyValuePair in getters)
             {
+                var key = keyValuePair.Key;
+                var selector = keyValuePair.Value;
 
-                if (propertyInfo.PropertyType != typeof(double[]))
-                {
-                    continue;
-                }
-
-                var methodInfo = propertyInfo.GetGetMethod();
-
-                var getDelegate = (Func<SpectralIndexValues, double[]>)Delegate.CreateDelegate(typeof(Func<SpectralIndexValues, double[]>), methodInfo);
-                Func<SpectralIndexBase, double[]> casted = spectrumBase => getDelegate((SpectralIndexValues)spectrumBase);
-
-                var name = propertyInfo.Name;
-
-                CachedSelectors.Add(name, casted);
+                CachedSelectorsInternal.Add(keyValuePair.Key, spectrumBase  => selector((SpectralIndexValues)spectrumBase));
             }
         }
 

@@ -223,7 +223,7 @@ namespace QutBioacosutics.Xie
 
             cs1.CalculateStatisticsForAllIndices();
 
-            Json.Serialise(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.txt").ToFileInfo(), cs1.IndexStats);
+            Json.Serialise(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.IndexStats);
 
             colorMap = SpectrogramConstantsJie.RGBMap_TRK_OSC_ENG;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);

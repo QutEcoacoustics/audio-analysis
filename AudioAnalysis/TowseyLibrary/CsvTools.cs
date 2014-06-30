@@ -404,7 +404,26 @@ namespace TowseyLibrary
                 words = lines[r].Split(',');
                 for (int c = 0; c < columnCount; c++)
                 {
-                    values[c][r - 1] = Double.Parse(words[c]);
+                    double d;
+                    var parsed = double.TryParse(words[c], out d);
+
+                    if (parsed)
+                    {
+                        values[c][r - 1] = d;
+                    }
+                    else
+                    {
+                        TimeSpan ts;
+                        parsed = TimeSpan.TryParse(words[c], out ts);
+                        if (parsed)
+                        {
+                            values[c][r - 1] = ts.TotalSeconds;
+                        }
+                        else
+                        {
+                            values[c][r - 1] = double.NaN;
+                        }
+                    }
                 }
             }
 
@@ -417,7 +436,7 @@ namespace TowseyLibrary
         }
         public static double[,] ReadCSVFile2Matrix(string csvFileName)
         {
-            System.Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
+            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
             List<double[]> columns = tuple.Item2;
             int rows = columns[0].Length;
             int cols = columns.Count;
@@ -451,8 +470,8 @@ namespace TowseyLibrary
             for (int i = 1; i < lines.Count; i++) //ignore first line = header.
             {
                 words = lines[i].Split(',');
-                array[i - 1] = Double.Parse(words[colNumber]);
-                if (Double.IsNaN(array[i - 1]))
+                array[i - 1] = double.Parse(words[colNumber]);
+                if (double.IsNaN(array[i - 1]))
                 {
                     array[i - 1] = 0.0;
                 }
@@ -494,7 +513,7 @@ namespace TowseyLibrary
                 int day = DateTime.Now.Day;
                 int hour = DateTime.Now.Hour;
                 int min = DateTime.Now.Minute;
-                StringBuilder sb1 = new StringBuilder(String.Format("{0}-{1}-{2}-{3}-{4}", year, month, day, hour, min));
+                StringBuilder sb1 = new StringBuilder(string.Format("{0}-{1}-{2}-{3}-{4}", year, month, day, hour, min));
                 for (int i = 0; i < length; i++) sb1.Append(",h" + i);
                 sb1.Append("\n" + rowID);
                 for (int i = 0; i < length; i++) sb1.Append("," + data[i]);

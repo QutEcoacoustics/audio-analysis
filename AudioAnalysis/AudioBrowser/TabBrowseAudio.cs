@@ -19,6 +19,8 @@ using TowseyLibrary;
 
 namespace AudioBrowser
 {
+    using AudioAnalysisTools.Indices;
+
     public class TabBrowseAudio
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(TabBrowseAudio));

@@ -27,6 +27,8 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
+    using AudioAnalysisTools.Indices;
+
     public class AnalysisTemplate : IAnalyser
     {
         //OTHER CONSTANTS

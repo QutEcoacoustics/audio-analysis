@@ -16,6 +16,9 @@ namespace AnalysisPrograms
 
     using Acoustics.Shared.Extensions;
     using AnalysisPrograms.Production;
+
+    using AudioAnalysisTools.Indices;
+
     using PowerArgs;
 
     public class DrawSummaryIndexTracks
