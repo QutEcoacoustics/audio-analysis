@@ -593,6 +593,7 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, string> GetKeyTranslationDictionary()
         {
             var dict = new Dictionary<string, string>();
+            dict.Add("IndexCount", "RankOrder");
             dict.Add("COUNT", "RankOrder");
             dict.Add("START-MIN", "StartMinute");
             dict.Add("SEGMENT-DUR", "SegmentDuration");

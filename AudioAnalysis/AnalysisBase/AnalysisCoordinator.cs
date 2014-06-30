@@ -464,6 +464,21 @@
                    Debug.Assert(spectraIndicesFile.Exists);
                }
            }
+
+           foreach (var eventBase in result.Events)
+           {
+               Debug.Assert(eventBase.StartOffset >= result.SegmentStartOffset);
+           }
+
+           foreach (var summaryIndexBase in result.SummaryIndices)
+           {
+               Debug.Assert(summaryIndexBase.StartOffset >= result.SegmentStartOffset);
+           }
+
+           foreach (var spectralIndexBase in result.SpectralIndices)
+           {
+               Debug.Assert(spectralIndexBase.StartOffset >= result.SegmentStartOffset);
+           }
        }
 
 

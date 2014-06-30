@@ -26,6 +26,8 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
+    using AudioAnalysisTools.Indices;
+
     /// This class is a combination of analysers
     /// When adding a new analyser to this class need to modify two methods:
     ///    1) ConvertEvents2Indices();  and

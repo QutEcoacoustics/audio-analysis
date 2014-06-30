@@ -19,7 +19,7 @@ namespace AnalysisBase.ResultBases
     /// </summary>
     public abstract class ResultBase
     {
-        private TimeSpan segmentStartOffset;
+        private TimeSpan startOffset;
 
         /// <summary>
         /// Gets or sets the filename of the audio file this result produced.
@@ -34,16 +34,16 @@ namespace AnalysisBase.ResultBases
         /// I.e. the time since the start of the original audio recording.
         /// E.g. Given segment 78 of a 120min audio file, with a segment size of 60 seconds, this property would hold 78 minutes.
         /// </summary>
-        public TimeSpan SegmentStartOffset
+        public TimeSpan StartOffset
         {
             get
             {
-                return this.segmentStartOffset;
+                return this.startOffset;
             }
             set
             {
                 this.StartOffsetMinute = (int)value.TotalMinutes;
-                this.segmentStartOffset = value;
+                this.startOffset = value;
             }
         }
 
@@ -69,7 +69,7 @@ namespace AnalysisBase.ResultBases
         /// <returns>A integer representing the relative order between the two instances.</returns>
         public virtual int CompareTo(ResultBase other)
         {
-            return this.SegmentStartOffset.CompareTo(other.SegmentStartOffset);
+            return this.StartOffset.CompareTo(other.StartOffset);
         }
     }
 }

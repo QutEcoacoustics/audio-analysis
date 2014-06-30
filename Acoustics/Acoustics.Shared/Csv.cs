@@ -101,6 +101,7 @@ namespace Acoustics.Shared
             // write rows
             foreach (var i in matrix)
             {
+                writer.WriteField(i);
                 for (int j = 0; j < columns; j++)
                 {
                     writer.WriteField(matrix[i, j]);
@@ -135,8 +136,8 @@ namespace Acoustics.Shared
                 {
                     row[i] = reader.GetField<T>(i);
                 }
-                csvRows.Add(row);
 
+                csvRows.Add(row);
                 rowCount++;
             }
 

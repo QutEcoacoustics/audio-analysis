@@ -1,12 +1,12 @@
 --- 
 # WARNING!!! The keys used below MUST BE EXACTLY the SAME as those declared in the class InitialiseIndexProperties (starting at line 30).
 - 
-  Key: RankOrder
+  Key: RankOrder # AKA IndexCount
   Name: Rank order of audio segment
   Comment: "Rank of minute segment in temporal order from start of recording."
   DataType: int
   DefaultValue: 0.0
-  DoDisplay: false
+  DoDisplay: true
   NormMin: 0.0
   NormMax: 1.0
   ProjectID: Acoustic Indices
@@ -14,7 +14,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: StartMinute
+  Key: StartOffsetMinute
   Name: Segment start minute
   Comment: "Exact time span (total minutes) from start of recording to start of this segment."
   DataType: TimeSpan
@@ -66,7 +66,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: AvSignalAmplitude
+  Key: AvgSignalAmplitude
   Name: av Signal Ampl
   Comment: "Av amplitude of the signal envelope in dB."
   DataType: double
@@ -95,7 +95,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: SNR
+  Key: Snr
   Name: Maximum SNR
   Comment: "Max amplitude of signal envelope after noise removal."
   DataType: double
@@ -108,7 +108,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: AvSNROfActiveFrames
+  Key: AvgSnrOfActiveFrames
   Name: av SNR (Active frames)
   Comment: "Av amplitude of active frames in signal envelope after noise removal. Active frames are those with amplitude > threshold 3 dB."
   DataType: double
@@ -134,7 +134,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: EventsPerSec
+  Key: EventsPerSecond
   Name: Events per sec
   Comment: "Av number of events per second. An event is any consecutive sequence of active frames having duration > threshold = 100 ms."
   DataType: double
@@ -147,7 +147,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: AvEventDuration
+  Key: AvgEventDuration
   Name: Av Event Duration
   Comment: "Av duration in ms of the events in an audio segment."
   DataType: TimeSpan
@@ -160,7 +160,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: HF_CVR
+  Key: HighFreqCover
   Name: hf Cover
   Comment: "% hf Cover 4000 Hz to 8800 Hz"
   DataType: int
@@ -173,7 +173,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: MF_CVR
+  Key: MidFreqCover
   Name: mf Cover
   Comment: "% mf Cover. 500 Hz to 4000 Hz"
   DataType: int
@@ -186,7 +186,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: LF_CVR
+  Key: LowFreqCover
   Name: lf Cover
   Comment: "% lf Cover. 0 - 500 Hz"
   DataType: int
@@ -199,7 +199,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: Htemporal
+  Key: TemporalEntropy
   Name: 1-H[t]
   Comment: "1-Ht is a measure of concentration of acoustic energy instead of energy dispersal."
   DataType: double
@@ -212,7 +212,7 @@
   includeInComboIndex: true
   comboWeight: 0.3
 - 
-  Key: Hpeaks
+  Key: EntropyPeaks
   Name: 1-H[peak freq]
   Comment: "1-H[peak freq] is a measure of concentration of peak frequencies over one minute."
   DataType: double
@@ -225,7 +225,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: HAvSpectrum
+  Key: AvgEntropySpectrum
   Name: 1-H[spectral avg]
   Comment: "1-H[spectral avg] is a measure of concentration of acoustic energy in the average spectrum over one minute."
   DataType: double
@@ -238,7 +238,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: HVarSpectrum
+  Key: VarianceEntropySpectrum
   Name: 1-H[spectral var]
   Comment: "1-H[spectral var] is a measure of concentration of acoustic energy in the variance spectrum over one minute."
   DataType: double
@@ -277,7 +277,7 @@
   includeInComboIndex: true
   comboWeight: 0.3
 - 
-  Key: AvClusterDuration
+  Key: AvgClusterDuration
   Name: av Cluster Duration
   Comment: "Average duration in ms of the spectrum cluster sequences."
   DataType: TimeSpan
@@ -290,7 +290,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: 3GramCount
+  Key: ThreeGramCount
   Name: 3-gram Count
   Comment: "Number of different tri-gram cluster sequences."
   DataType: int
@@ -303,7 +303,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: SPTPerSec
+  Key: SptPerSecond
   Name: av Tracks/Sec
   Comment: "Average number of spectral tracks per second."
   DataType: double
@@ -316,7 +316,7 @@
   includeInComboIndex: false
   comboWeight: 0.0
 - 
-  Key: AvSPTDuration
+  Key: AvgSptDuration
   Name: av Track Duration
   Comment: "Average duration of a spectral track."
   DataType: TimeSpan

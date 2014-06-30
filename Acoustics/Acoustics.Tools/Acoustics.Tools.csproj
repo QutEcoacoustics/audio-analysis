@@ -98,8 +98,7 @@
       <HintPath>..\..\AudioAnalysis\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
     </Reference>
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AudioAnalysis\packages\CsvHelper.2.6.1\lib\net40-client\CsvHelper.dll</HintPath>
+      <HintPath>..\..\AudioAnalysis\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\..\AudioAnalysis\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>

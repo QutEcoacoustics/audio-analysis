@@ -27,6 +27,8 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
+    using AudioAnalysisTools.Indices;
+
     public class LSKiwi3 : IAnalyser
     {
         public class Arguments : AnalyserArguments

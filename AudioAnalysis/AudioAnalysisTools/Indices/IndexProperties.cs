@@ -248,8 +248,8 @@ namespace AudioAnalysisTools.Indices
             string annotation = this.GetPlotAnnotation();
             double[] values = this.NormaliseIndexValues(array);
 
-            int trackWidth = dataLength + DrawSummaryIndices.TRACK_END_PANEL_WIDTH;
-            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
+            int trackWidth = dataLength + DrawSummaryIndices.TrackEndPanelWidth;
+            int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
             Color[] grayScale = ImageTools.GrayScale();
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);

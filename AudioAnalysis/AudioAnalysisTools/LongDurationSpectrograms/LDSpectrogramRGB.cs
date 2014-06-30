@@ -1054,7 +1054,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
             cs1.CalculateStatisticsForAllIndices();
-            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.txt").ToFileInfo(), cs1.indexStats);
+            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.indexStats);
 
 
             cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));

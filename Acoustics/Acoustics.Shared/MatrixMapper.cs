@@ -49,7 +49,7 @@ namespace Acoustics.Shared
             // here
             this.objectMatrix = matrix;
             this.selector = selector;
-
+            this.Columns = selector(this.objectMatrix.First()).Length;
             ////this.isMatrix = false;
         }
 

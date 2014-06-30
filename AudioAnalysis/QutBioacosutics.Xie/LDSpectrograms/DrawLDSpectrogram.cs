@@ -186,7 +186,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
             cs1.CalculateStatisticsForAllIndices();
-            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.txt").ToFileInfo(), cs1.IndexStats);
+            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.IndexStats);
 
             cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
 

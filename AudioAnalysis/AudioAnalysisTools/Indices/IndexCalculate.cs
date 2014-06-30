@@ -134,6 +134,9 @@ namespace AudioAnalysisTools.Indices
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
             // total duration of recording
             SummaryIndexValues summaryIndexValues = new SummaryIndexValues(freqBinCount, wavDuration, indicesPropertiesConfig);
+            
+            // give the index a offset value so it can be sorted. 
+            summaryIndexValues.StartOffset = analysisSettings.SegmentStartOffset.Value;
 
             double totalSeconds = wavDuration.TotalSeconds;
             double highAmplIndex = dspOutput.MaxAmplitudeCount / totalSeconds;
@@ -219,6 +222,9 @@ namespace AudioAnalysisTools.Indices
 
             // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             var spectra = new SpectralIndexValues();
+
+            // give the index a offset value so it can be sorted. 
+            spectra.StartOffset = analysisSettings.SegmentStartOffset.Value;
 
             // TODO: Michael the following is needed to prevent an exception later... i'm not sure if it is the desired behaviour
             // initialise values
@@ -324,8 +330,8 @@ namespace AudioAnalysisTools.Indices
             SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
             spectra.SPT = sptInfo.spSpectrum;
 
-            summaryIndexValues.AvgSPTDuration = sptInfo.avTrackDuration;
-            summaryIndexValues.SPTPerSecond = sptInfo.trackCount / totalSeconds;
+            summaryIndexValues.AvgSptDuration = sptInfo.avTrackDuration;
+            summaryIndexValues.SptPerSecond = sptInfo.trackCount / totalSeconds;
 
 
             // TODO: calculate av track duration and total duration as fraction of recording duration

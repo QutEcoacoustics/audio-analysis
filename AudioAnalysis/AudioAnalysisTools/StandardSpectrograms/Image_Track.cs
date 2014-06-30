@@ -4,6 +4,7 @@
     using System;
     using System.Drawing;
 
+    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
@@ -672,7 +673,7 @@
         public static Bitmap DrawGrayScaleScoreTrack(double[] array, double minVal, double maxVal, double threshold, string title)
         {
 
-            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
+            int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
             Color[] grayScale = ImageTools.GrayScale();
             int imageWidth = array.Length;
             Bitmap bmp = new Bitmap(imageWidth, trackHeight);
@@ -708,7 +709,7 @@
         /// <returns></returns>
         public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackWidth, double threshold, string title)
         {
-            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
+            int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
 
             Color[] grayScale = ImageTools.GrayScale();
             //int imageWidth = array.Length;
