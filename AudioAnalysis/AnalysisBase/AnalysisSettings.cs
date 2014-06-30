@@ -280,8 +280,8 @@ namespace AnalysisBase
 
         public object Clone()
         {
-            AnalysisSettings deepCloneWithoutSerialization = this.DeepClone();
-            return deepCloneWithoutSerialization;
+            AnalysisSettings deepClone = this.DeepClone();
+            return deepClone;
         }
 
         public override string ToString()

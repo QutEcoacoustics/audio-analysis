@@ -39,7 +39,7 @@ namespace AnalysisBase
 
         public abstract void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results);
 
-        public abstract void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectrumBase> results);
+        public abstract void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
 
         public virtual SummaryIndexBase[] ConvertEventsToSummaryIndices(
             IEnumerable<EventBase> events,
@@ -106,6 +106,6 @@ namespace AnalysisBase
 
         }
 
-        public abstract void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectrumBase[] spectra, AnalysisResult2[] results);
+        public abstract void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results);
     }
 }

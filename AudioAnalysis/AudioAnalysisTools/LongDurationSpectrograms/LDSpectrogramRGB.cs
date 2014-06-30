@@ -109,7 +109,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
         private Dictionary<string, double[,]> spgr_StdDevMatrices;                                       // used if reading standard devaition matrices for tTest
 
-        public class SpectraStats
+        public class SpectralStats
         {
             public double Minimum { get; set; }
 
@@ -121,9 +121,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         // used to save mode and sd of the indices 
-        private readonly Dictionary<string, SpectraStats> indexStats = new Dictionary<string, SpectraStats>();
+        private readonly Dictionary<string, SpectralStats> indexStats = new Dictionary<string, SpectralStats>();
 
-        public Dictionary<string, SpectraStats> IndexStats
+        public Dictionary<string, SpectralStats> IndexStats
         {
             get
             {
@@ -342,8 +342,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if(this.spectrogramMatrices.ContainsKey(key)) 
                 {
                     matrix = this.spectrogramMatrices[key];
-                    var dict = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(matrix);
-                    this.indexStats.Add(key, dict); // add index statistics
+                    SpectralStats stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(matrix);
+                    this.indexStats.Add(key, stats); // add index statistics
                 }
             }
         }
@@ -724,14 +724,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static SpectraStats GetModeAndOneTailedStandardDeviation(double[,] M)
+        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M)
         {
             double[] values = DataTools.Matrix2Array(M);
             const bool DisplayHistogram = false;
             double min, max, mode, SD;
             DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
 
-            return new SpectraStats()
+            return new SpectralStats()
                        {
                            Minimum = min,
                            Maximum = max,
@@ -1006,7 +1006,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </param>
         public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, Dictionary<string, double[,]> spectra = null)
         {
-            var configuration = longDurationSpectrogramConfig;
+            LdSpectrogramConfig configuration = longDurationSpectrogramConfig;
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);

@@ -18,6 +18,7 @@ namespace Acoustics.Shared
         public static void Serialise<T>(FileInfo file, T obj)
         {
             var serializer = new JsonSerializer();
+            serializer.Formatting = Formatting.Indented;
 
             using (var stream = file.CreateText())
             using (var writer = new JsonTextWriter(stream))

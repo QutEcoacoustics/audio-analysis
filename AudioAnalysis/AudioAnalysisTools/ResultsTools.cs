@@ -223,10 +223,10 @@ namespace AudioAnalysisTools
 
         public static void CorrectSummaryIndex(AnalysisResult2 result, SummaryIndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInResultSoFar)
         {
-            indexToBeFixed.IndexCount = indexToBeFixed;
+            indexToBeFixed.IndexCount = totalSumaryIndicesInResultSoFar;
         }
 
-        public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectrumBase spectrumToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)
+        public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectralIndexBase spectralIndexToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)
         {
         }
 
@@ -482,7 +482,7 @@ namespace AudioAnalysisTools
             return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
         }
 
-        public static DirectoryInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectrumBase> spectra)
+        public static DirectoryInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectralIndexBase> spectra)
         {
             analyser2.WriteSpectrumIndicesFiles(outputDirectory, fileName, spectra);
             return outputDirectory;

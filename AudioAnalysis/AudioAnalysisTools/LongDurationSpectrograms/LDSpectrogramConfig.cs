@@ -20,7 +20,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         ///  mark 1 kHz intervals
         /// </summary>
-        private int yAxisTicInterval = 1000; 
+        private int yAxisTicInterval = 1000;
 
         #endregion
 

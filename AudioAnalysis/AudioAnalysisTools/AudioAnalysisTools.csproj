@@ -204,7 +204,7 @@
     <Compile Include="DSP\WavWriter.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />
     <Compile Include="Indices\IndexProperties.cs" />
-    <Compile Include="Indices\IndexValues.cs" />
+    <Compile Include="Indices\SummaryIndexValues.cs" />
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />

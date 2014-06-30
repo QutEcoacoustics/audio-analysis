@@ -39,7 +39,7 @@ namespace AnalysisBase
             this.SegmentAudioDuration = durationAnalysed;
             this.MiscellaneousResults = new Dictionary<string, object>();
             this.SummaryIndices = new SummaryIndexBase[0];
-            this.SpectralIndices = new SpectrumBase[0];
+            this.SpectralIndices = new SpectralIndexBase[0];
             this.Events = new EventBase[0];
         }
 
@@ -64,7 +64,7 @@ namespace AnalysisBase
         /// Gets or sets spectral indices results.
         /// Should typically contain just 1 result.
         /// </summary>
-        public SpectrumBase[] SpectralIndices { get; set; }
+        public SpectralIndexBase[] SpectralIndices { get; set; }
 
         /// <summary>
         /// Gets a loosely typed dictionary that can store arbitrary result data.
