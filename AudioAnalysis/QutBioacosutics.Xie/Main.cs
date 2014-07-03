@@ -186,12 +186,6 @@ namespace QutBioacosutics.Xie
 
 
 
-
-
-
-
-
-
                 //***********************Caerulea*************************//
 
                 //var peakHitsCaerulea = CalculateIndexForLitoriaCaerulea.GetPeakHits(caeruleaConfig, spectrogramLong);
