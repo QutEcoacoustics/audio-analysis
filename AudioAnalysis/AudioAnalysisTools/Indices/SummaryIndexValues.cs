@@ -104,19 +104,20 @@ namespace AudioAnalysisTools.Indices
 
         public int ThreeGramCount { get; set; }
 
-        public static Dictionary<string, Func<SummaryIndexValues, object>> CahcedSelectors { get;  private set; }
+        private static Dictionary<string, Func<SummaryIndexValues, object>> CahcedSelectors { get;  set; }
 
         public SummaryIndexValues(int freqBinCount, TimeSpan wavDuration, FileInfo indexPropertiesConfig)
         {
             this.SegmentDuration = wavDuration;
 
             // initialise with default values stored values in the dictionary of index properties.
-            Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            // AT: following is disabled - hugely inefficient!
+            ///Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
 
-            foreach (string key in dictOfIndexProperties.Keys)
-            {
+            //foreach (string key in dictOfIndexProperties.Keys)
+            //{
                 // no-op, nothing useful left to do;
-            }
+            //}
         }
 
         static SummaryIndexValues()
