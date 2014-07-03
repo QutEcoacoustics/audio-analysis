@@ -17,6 +17,10 @@ MidFreqBound: 4000
 #indices NOT displayed:avAmp-dB,activeSnr-dB,avSegDur,H[spectralMax],H[spectralVar],avClustDur,3gramCount,av3gramRepetition,SpPkTracks%Dur
 DisplayWeightedIndices: false
 
+# not sure what the next two lines do.
+StartOffset: 0.0
+EndOffset: 0.0
+
 #SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
