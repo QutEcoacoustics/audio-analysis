@@ -39,7 +39,7 @@ namespace QutBioacosutics.Xie.FrogIndices
 
             var canetoadOscillationResults = RemoveSparseHits.PruneHits(canetoadOscillationHits);
 
-            return canetoadOscillationHits;   
+            return canetoadOscillationResults;   
                 
         }
 
