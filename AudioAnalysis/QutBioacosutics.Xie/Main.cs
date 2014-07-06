@@ -89,9 +89,9 @@ namespace QutBioacosutics.Xie
 
             //string path = configuration.LoadedFilePath;
                       
-            var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_01");
+            var fileEntries = Directory.GetFiles("C:\\Jie\\data\\Segment_JCU_03");
             var fileCount = fileEntries.Count();
-
+            //var fileCount = 5;
             // Canetoad
             //var canetoadTrack = new double[257, 726];
             //var canetoadEnergy = new double[257, 726];
@@ -103,6 +103,7 @@ namespace QutBioacosutics.Xie
 
             // Nasuta
             var nasutaTrack = new double[257, 726];
+            var nasutaEnergy = new double[257, 726];
             var nasutaHarmonic = new double[257, 726];
             var nasutaOscillation = new double[257, 726];
 
@@ -121,9 +122,9 @@ namespace QutBioacosutics.Xie
 
                 int indexNumber = Convert.ToInt32(indexOfRecording.Split('_', 'm')[1]);
 
-                //var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_01", path);
+                var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_03", path);
 
-                string fullPath = @"C:\Jie\data\Segment_JCU_01\020313_393min.wav";
+                //string fullPath = @"C:\Jie\data\Segment_JCU_03\160113_1min.wav";
                 var recording = new AudioRecording(fullPath);
 
                 // Step.1 Generate spectrogarm
@@ -179,7 +180,7 @@ namespace QutBioacosutics.Xie
                 //{
                 //    for (int c = 0; c < cols; c++)
                 //    {
-                //        if (trackCanetaod.Item4[c, r] != 0)
+                //        if (trackNasuta.TrackHitsNasuta.Item4[c, r] != 0)
                 //            bmp.SetPixel(r, c, Color.Blue);
                 //    }
                 //}
@@ -240,7 +241,7 @@ namespace QutBioacosutics.Xie
                 //// Nasuta
                 var trackFeatureNasuta = trackNasuta.TrackHitsNasuta.Item1;
                 var harmonicNasuta = trackNasuta.HarmonicHitsNasuta; // Need to be normalised
-
+                var energyFeatureNasuta = trackNasuta.TrackHitsNasuta.Item3;
                 var harmonicArrayNasuta = new double[harmonicNasuta.GetLength(0)];
                 for (int i = 0; i < harmonicNasuta.GetLength(0); i++)
                 {
@@ -268,6 +269,7 @@ namespace QutBioacosutics.Xie
                 {
                     nasutaTrack[i, indexNumber] = trackFeatureNasuta[i];
                     nasutaHarmonic[i, indexNumber] = harmonicArrayNasuta[i];
+                    nasutaEnergy[i,indexNumber] = energyFeatureNasuta[i];
                     nasutaOscillation[i, indexNumber] = oscillationFeatureNasuta[i];
                 }
 
@@ -314,6 +316,7 @@ namespace QutBioacosutics.Xie
 
             // Nasuta
             FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(nasutaTrack), @"C:\Jie\output\indexNasuta\nasutaTrack.csv");
+            FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(nasutaEnergy), @"C:\Jie\output\indexNasuta\nasutaEnergy.csv");
             FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(nasutaHarmonic), @"C:\Jie\output\indexNasuta\nasutaHarmonic.csv");
             FileTools.WriteMatrix2File(MatrixTools.MatrixRotate90Clockwise(nasutaOscillation), @"C:\Jie\output\indexNasuta\nasutaOscillation.csv");
 
