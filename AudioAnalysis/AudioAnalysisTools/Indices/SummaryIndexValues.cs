@@ -153,6 +153,23 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
+        public SpectralIndexValues()
+        {
+            // empty constructor important!
+        }
+
+        public SpectralIndexValues(int spectrumDimensions)
+        {
+            this.ACI = new double[spectrumDimensions];
+            this.ENT = new double[spectrumDimensions];
+            this.BGN = new double[spectrumDimensions];
+            this.AVG = new double[spectrumDimensions];
+            this.CVR = new double[spectrumDimensions];
+            this.EVN = new double[spectrumDimensions];
+            this.SPT = new double[spectrumDimensions];
+            this.CLS = new double[spectrumDimensions];
+        }
+
         public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
         {
             get
@@ -160,6 +177,8 @@ namespace AudioAnalysisTools.Indices
                 return CachedSelectorsInternal;
             }
         }
+
+
 
         public double[] ACI { get; set; }
 

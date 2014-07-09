@@ -154,7 +154,11 @@ namespace AudioAnalysisTools.Indices
             {
                 Logger.Debug("Segment skipped because avSignalEnvelope is too small!");
                 result.SummaryIndexValues = summaryIndexValues;
-                result.SpectralIndexValues = new SpectralIndexValues();
+                result.SpectralIndexValues = new SpectralIndexValues(freqBinCount)
+                                                 {
+                                                     // give the index a offset value so it can be sorted. 
+                                                     StartOffset = analysisSettings.SegmentStartOffset.Value
+                                                 };
                 return result;
             }
             

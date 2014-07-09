@@ -30,7 +30,9 @@ namespace AnalysisBase.ResultBases
         ////public int SegmentCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the SegmentStartOffset.
+        /// Gets or sets the StartOffset.
+        /// This basically allows every sort of result to be sorted/time indexed from the start of the file.
+        /// It replaced SegmentStartOffset but is NOT THE SAME.
         /// I.e. the time since the start of the original audio recording.
         /// E.g. Given segment 78 of a 120min audio file, with a segment size of 60 seconds, this property would hold 78 minutes.
         /// </summary>
@@ -40,6 +42,7 @@ namespace AnalysisBase.ResultBases
             {
                 return this.startOffset;
             }
+
             set
             {
                 this.StartOffsetMinute = (int)value.TotalMinutes;

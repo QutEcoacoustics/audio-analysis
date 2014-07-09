@@ -157,7 +157,7 @@ Output  to  directory: {1}
             // ##############################################################################################
             // 8. PROCESS THE RESULTS
             LoggedConsole.WriteLine(string.Empty);
-            //if (analyserResults == null)
+            if (analyserResults == null)
             {
                 LoggedConsole.WriteErrorLine("###################################################\n");
                 LoggedConsole.WriteErrorLine("The Analysis Run Coordinator has returned a null result.");
