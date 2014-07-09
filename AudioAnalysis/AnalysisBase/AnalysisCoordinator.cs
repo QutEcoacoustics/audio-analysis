@@ -403,12 +403,12 @@
             if (this.DeleteFinished && this.SubFoldersUnique)
             {
                 // delete the directory created for this run
-                DeleteDirectory(localCopyOfSettings.InstanceId, localCopyOfSettings.AnalysisInstanceOutputDirectory);
+                this.DeleteDirectory(localCopyOfSettings.InstanceId, localCopyOfSettings.AnalysisInstanceOutputDirectory);
             }
             else if (this.DeleteFinished && !this.SubFoldersUnique)
             {
                 // delete the prepared audio file segment. Don't delete the directory - all instances use the same directory!
-                if (saveIntermediateWavFiles)
+                if (this.saveIntermediateWavFiles)
                 {
                     Log.DebugFormat("File {0} not deleted because saveIntermediateWavFiles was set to true", localCopyOfSettings.AudioFile.FullName);
                 }       
@@ -422,8 +422,12 @@
                     catch (Exception ex)
                     {
                         // this error is not fatal, but it does mean we'll be leaving an audio file behind.
-                        Log.Warn(string.Format("Item {0} could not delete audio file {1}.",
-                            localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.FullName), ex);
+                        Log.Warn(
+                            string.Format(
+                                "Item {0} could not delete audio file {1}.",
+                                localCopyOfSettings.InstanceId,
+                                localCopyOfSettings.AudioFile.FullName),
+                            ex);
                     }
                 }
             }
@@ -431,53 +435,68 @@
             return result;
         }
 
+        /// <summary>
+        /// This method simply ensures that certain requirements are fullfilled by IAnalyser2.Analyse results.
+        /// It only runs when the program is built as DEBUG.
+        /// </summary>
        [Conditional("DEBUG")]
-       private static void ValidateResult(AnalysisSettings settings, AnalysisResult2 result, TimeSpan start,
+       private static void ValidateResult(AnalysisSettings preAnalysisSettings, AnalysisResult2 result, TimeSpan start,
            TimeSpan preparedFileDuration)
        {
-           Debug.Assert(result.SettingsUsed != null);
-           Debug.Assert(result.SegmentStartOffset == start);
-           Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0);
+           Debug.Assert(result.SettingsUsed != null, "The settings used in the analysis must be populated in the analysis result.");
+           Debug.Assert(result.SegmentStartOffset == start, "The segmen start offset of the result should match the start offset that it was instructed to analyse");
+           Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0, "The duration analysed (reported by the analysis result) should be withing a millisecond of the provided audio file");
 
-           if (settings.ImageFile != null)
+           if (preAnalysisSettings.ImageFile != null)
            {
-               Debug.Assert(settings.ImageFile.Exists);
+               Debug.Assert(preAnalysisSettings.ImageFile.Exists, "If the analysis was instructed to produce an image file, then it should exist");
            }
 
-           Debug.Assert(result.Events != null);
-           if (result.Events.Length != 0)
+           Debug.Assert(result.Events != null, "The Events array should never be null. No events should be represted by a zero length Events array.");
+           if (result.Events.Length != 0 && preAnalysisSettings.EventsFile != null)
            {
-               Debug.Assert(settings.EventsFile == null || (settings.EventsFile != null && result.EventsFile.Exists));
+               Debug.Assert(
+                   result.EventsFile.Exists,
+                   "If events were produced and an events file was expected, then the events file should exist");
            }
 
-           Debug.Assert(result.SummaryIndices != null);
-           if (result.SummaryIndices.Length != 0)
+           Debug.Assert(result.SummaryIndices != null, "The SummaryIndices array should never be null. No SummaryIndices should be represted by a zero length SummaryIndices array.");
+           if (result.SummaryIndices.Length != 0 && preAnalysisSettings.SummaryIndicesFile != null)
            {
-               Debug.Assert(settings.SummaryIndicesFile == null || (settings.SummaryIndicesFile != null && result.SummaryIndicesFile.Exists));
+               Debug.Assert(
+                   result.SummaryIndicesFile.Exists,
+                   "If SummaryIndices were produced and an SummaryIndices file was expected, then the SummaryIndices file should exist");
            }
 
-           Debug.Assert(result.SpectralIndices != null);
-           if (result.SpectralIndices.Length != 0 && settings.SpectrumIndicesDirectory != null)
+           Debug.Assert(result.SpectralIndices != null, "The SpectralIndices array should never be null. No SpectralIndices should be represted by a zero length SpectralIndices array.");
+           if (result.SpectralIndices.Length != 0 && preAnalysisSettings.SpectrumIndicesDirectory != null)
            {
                foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
                {
-                   Debug.Assert(spectraIndicesFile.Exists);
+                   Debug.Assert(spectraIndicesFile.Exists, "If SpectralIndices were produced and SpectralIndices files were expected, then the SpectralIndices files should exist");
                }
            }
 
+
            foreach (var eventBase in result.Events)
            {
-               Debug.Assert(eventBase.StartOffset >= result.SegmentStartOffset);
+               Debug.Assert(
+                   eventBase.StartOffset >= result.SegmentStartOffset,
+                   "Every event detected by this analysis should of been found within the bounds of the segment analysed");
            }
 
            foreach (var summaryIndexBase in result.SummaryIndices)
            {
-               Debug.Assert(summaryIndexBase.StartOffset >= result.SegmentStartOffset);
+               Debug.Assert(
+                   summaryIndexBase.StartOffset >= result.SegmentStartOffset,
+                   "Every summary index generated by this analysis should of been found within the bounds of the segment analysed");
            }
 
            foreach (var spectralIndexBase in result.SpectralIndices)
            {
-               Debug.Assert(spectralIndexBase.StartOffset >= result.SegmentStartOffset);
+               Debug.Assert(
+                   spectralIndexBase.StartOffset >= result.SegmentStartOffset,
+                   "Every spectral index generated by this analysis should of been found within the bounds of the segment analysed");
            }
        }
 
