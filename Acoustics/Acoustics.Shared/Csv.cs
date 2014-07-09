@@ -13,6 +13,7 @@ namespace Acoustics.Shared
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -48,6 +49,8 @@ namespace Acoustics.Shared
         /// <param name="results"></param>
         public static void WriteToCsv<T>(FileInfo destination, IEnumerable<T> results)
         {
+            Contract.Requires(destination != null);
+
             // using CSV Helper
             using (var stream = destination.CreateText())
             {
@@ -65,8 +68,9 @@ namespace Acoustics.Shared
         /// <returns></returns>
         public static IEnumerable<T> ReadFromCsv<T>(FileInfo source)
         {
-            // using CSV Helper
+            Contract.Requires(source != null);
 
+            // using CSV Helper
             using (var stream = source.OpenText())
             {
                 var reader = new CsvReader(stream, DefaultConfiguration);
@@ -160,13 +164,16 @@ namespace Acoustics.Shared
                 var row = csvRows[i];
                 for (int j = 0; j < row.Length; j++)
                 {
-                    if (dimensionality == TwoDimensionalArray.RowMajor)
+                    switch (dimensionality)
                     {
-                        result[i, j] = row[j];
-                    }
-                    else
-                    {
-                        result[j, i] = row[j];
+                        case TwoDimensionalArray.RowMajor:
+                            result[i, j] = row[j];
+                            break;
+                        case TwoDimensionalArray.ColumnMajor:
+                            result[j, i] = row[j];
+                            break;
+                        default:
+                            throw new NotImplementedException("Other dimensionalities not implemented");
                     }
                 }
             }
@@ -177,6 +184,8 @@ namespace Acoustics.Shared
         public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix,
             TwoDimensionalArray dimnesionality = TwoDimensionalArray.RowMajor)
         {
+            Contract.Requires(destination != null);
+
             // not tested!
             using (var stream = destination.CreateText())
             {
@@ -190,6 +199,8 @@ namespace Acoustics.Shared
 
         public static T[,] ReadMatrixFromCsv<T>(FileInfo source, TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
         {
+            Contract.Requires(source != null);
+
             // not tested!
             using (var stream = source.OpenText())
             {
@@ -201,6 +212,8 @@ namespace Acoustics.Shared
 
         public static void WriteMatrixToCsv<T>(FileInfo destination, IEnumerable<T[]> matrix)
         {
+            Contract.Requires(destination != null);
+
             // not tested!
             using (var stream = destination.CreateText())
             {
@@ -214,6 +227,8 @@ namespace Acoustics.Shared
 
         public static IEnumerable<T[]> ReadMatrixFromCsv<T>(FileInfo source)
         {
+            Contract.Requires(source != null);
+
             // not tested!
             List<T[]> matrix;
             using (var stream = source.OpenText())
@@ -230,6 +245,8 @@ namespace Acoustics.Shared
 
         public static void WriteMatrixToCsv<T, U>(FileInfo destination, IEnumerable<U> matrix, Func<U, T[]> selector)
         {
+            Contract.Requires(destination != null);
+
             using (var stream = destination.CreateText())
             {
                 var writer = new CsvWriter(stream, DefaultConfiguration);

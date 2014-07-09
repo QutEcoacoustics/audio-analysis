@@ -18,7 +18,22 @@ namespace Acoustics.Shared
 
     public enum TwoDimensionalArray
     {
+        /// <summary>
+        /// 1 | 3
+        /// 2 | 4
+        /// </summary>
         ColumnMajor,
+
+        /// <summary>
+        /// 2 | 4
+        /// 1 | 3
+        /// </summary>
+        ColumnMajorFlipped,
+
+        /// <summary>
+        /// 1 | 2
+        /// 3 | 4
+        /// </summary>
         RowMajor
     }
 
@@ -126,6 +141,12 @@ namespace Acoustics.Shared
         {
             this.matrix = matrix;
             this.dimensionality = dimensionality;
+
+            if (dimensionality != TwoDimensionalArray.ColumnMajor || dimensionality != TwoDimensionalArray.RowMajor)
+            {
+                throw new NotImplementedException("Only ColumnMajor and RowMajor dimensionalities have been implemented");
+            }
+
             this.Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
             this.Columns = TwoDimensionalArray.ColumnMajor == dimensionality
                                ? matrix.ColumnLength()
