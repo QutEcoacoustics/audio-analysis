@@ -106,6 +106,7 @@
     <Compile Include="Tools\AudioUtilityWavpackTests.cs" />
     <Compile Include="Tools\AudioUtilityWavTests.cs" />
     <Compile Include="Tools\MasterAudioUtilityTests.cs" />
+    <Compile Include="EnumerableExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shared\" />

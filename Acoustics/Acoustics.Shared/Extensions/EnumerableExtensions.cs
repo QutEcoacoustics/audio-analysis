@@ -9,6 +9,7 @@ namespace System
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -47,6 +48,10 @@ namespace System
             Dictionary<string, Func<TBase, T[]>> selectors,
             TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
         {
+            // This code is covered by unit tests Acoustics.Test - change the unit tests before you change the class!
+            Contract.Requires(items != null);
+            Contract.Requires(selectors != null);
+
             var itemCount = items.Count;
             int keyCount = selectors.Keys.Count;
             var result = new Dictionary<string, T[,]>(keyCount);
@@ -65,18 +70,25 @@ namespace System
                         var key = kvp.Key;
                         var selector = kvp.Value;
 
-                        for (int i = 1; i < itemCount; i++)
+                        for (int i = 0; i < itemCount; i++)
                         {
                             T[] line = selector(items[i]);
-                            for (int j = 0; j < line.Length; j++)
+                            var lineLength = line.Length;
+                            for (int j = 0; j < lineLength; j++)
                             {
-                                if (dimensionality == TwoDimensionalArray.RowMajor)
+                                switch (dimensionality)
                                 {
-                                    result[key][i, j] = line[j];
-                                }
-                                else
-                                {
-                                    result[key][j, i] = line[j];
+                                    case TwoDimensionalArray.RowMajor:
+                                        result[key][i, j] = line[j];
+                                        break;
+                                    case TwoDimensionalArray.ColumnMajor:
+                                        result[key][j, i] = line[j];
+                                        break;
+                                    case TwoDimensionalArray.ColumnMajorFlipped:
+                                        result[key][lineLength - 1 - j, i] = line[j];
+                                        break;
+                                    default:
+                                        throw new NotImplementedException("Dimensionality not supported");
                                 }
                             }
                         }
