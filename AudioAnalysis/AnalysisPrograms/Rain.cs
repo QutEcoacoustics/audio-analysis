@@ -327,8 +327,8 @@ namespace AnalysisPrograms
             AudioRecording recording = new AudioRecording(fiAudioFile.FullName);
 
             // calculate duration/size of various quantities.
-            int signalLength = recording.GetWavReader().Samples.Length;
-            TimeSpan audioDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
+            int signalLength = recording.WavReader.Samples.Length;
+            TimeSpan audioDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
             double duration        = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
             TimeSpan frameDuration = TimeSpan.FromTicks((long)(duration * TimeSpan.TicksPerSecond));
 
@@ -341,7 +341,7 @@ namespace AnalysisPrograms
 
             //i: EXTRACT ENVELOPE and FFTs
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var signalextract = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
+            var signalextract = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, windowOverlap);
             double[]  envelope    = signalextract.Envelope;
             double[,] spectrogram = signalextract.amplitudeSpectrogram;  //amplitude spectrogram
             int colCount = spectrogram.GetLength(1);

@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="EnumerableExtensions.cs" company="QutBioacoustics">
+// <copyright file="EnumerableExtensionsTests.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>

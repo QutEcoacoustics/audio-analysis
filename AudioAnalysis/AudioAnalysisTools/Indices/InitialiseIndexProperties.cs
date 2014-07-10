@@ -500,7 +500,7 @@ namespace AudioAnalysisTools.Indices
             var dict = new Dictionary<string, IndexProperties>();
             foreach (IndexProperties ip in indexProperties.Values)
             {
-                if (ip.DataType == typeof(double[]))
+                if (ip.IsSpectralIndex)
                 {
                     dict.Add(ip.Key, ip);
                 }
@@ -528,8 +528,9 @@ namespace AudioAnalysisTools.Indices
             var dict = new Dictionary<string, IndexProperties>();
             foreach (IndexProperties ip in indexProperties.Values)
             {
-                if (ip.DataType != typeof(double[])) //summary indices are never of type double[]
+                if (!ip.IsSpectralIndex)
                 {
+                    // summary indices are never of type double[]
                     dict.Add(ip.Key, ip);
                 }
             }
@@ -537,9 +538,9 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-        public static Type[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
+        public static string[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
         {
-            Type[] typeArray = new Type[properties.Count];
+            string[] typeArray = new string[properties.Count];
             int count = 0;
             foreach (string key in properties.Keys)
             {

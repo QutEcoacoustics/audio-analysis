@@ -338,7 +338,7 @@ namespace AnalysisPrograms
             }
 
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5};
-            var sonogram = new SpectrogramStandard(config, recording.GetWavReader());
+            var sonogram = new SpectrogramStandard(config, recording.WavReader);
 
             // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
             var ridgeConfig = new RidgeDetectionConfiguration {

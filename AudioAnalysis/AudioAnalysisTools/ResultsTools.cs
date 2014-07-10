@@ -223,7 +223,7 @@ namespace AudioAnalysisTools
 
         public static void CorrectSummaryIndex(AnalysisResult2 result, SummaryIndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInJustThisResultSoFar)
         {
-            indexToBeFixed.IndexCount = totalSummaryIndicesSoFar;
+            indexToBeFixed.RankOrder = totalSummaryIndicesSoFar;
         }
 
         public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectralIndexBase spectralIndexToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)

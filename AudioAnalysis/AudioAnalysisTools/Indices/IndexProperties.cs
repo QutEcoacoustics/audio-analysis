@@ -13,6 +13,7 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Drawing;
@@ -23,6 +24,7 @@ namespace AudioAnalysisTools.Indices
     using TowseyLibrary;
 
     using YamlDotNet.Dynamic;
+    using YamlDotNet.Serialization;
 
     public class FindIndicesConfig
     {
@@ -76,9 +78,45 @@ namespace AudioAnalysisTools.Indices
 
         public string Name { get; set; }
 
-        public Type DataType { get; set; }
+        public string DataType
+        {
+            get
+            {
+                return this.dataType;
+            }
 
-        public double DefaultValue { get; set; }
+            set
+            {
+                this.dataType = value;
+                this.UpdateTypedDefault();
+            }
+        }
+
+        [YamlIgnore]
+        public bool IsSpectralIndex
+        {
+            get
+            {
+                // TODO: this information should really be encoded rather than inferred
+                return this.DataType == "double[]";
+            }
+        }
+
+        public double DefaultValue
+        {
+            get
+            {
+                return this.defaultValue;
+            }
+            set
+            {
+                this.defaultValue = value;
+                this.UpdateTypedDefault();
+            }
+        }
+
+        [YamlIgnore]
+        public object DefaultValueCasted { get; private set; }
 
         public string ProjectID { get; set; }
 
@@ -106,7 +144,7 @@ namespace AudioAnalysisTools.Indices
             // TODO: why not initialise these to null, the proper empty value?
             this.Key = "NOT SET";
             this.Name = string.Empty;
-            this.DataType = typeof(double);
+            this.DataType = "double";
             this.DefaultValue = default(double);
             this.ProjectID = "NOT SET";
             this.Comment = "Relax - everything is OK";
@@ -114,10 +152,30 @@ namespace AudioAnalysisTools.Indices
             this.DoDisplay = true;
             this.NormMin = 0.0;
             this.NormMax = 1.0;
-            this.Units = String.Empty;
+            this.Units = string.Empty;
 
             this.IncludeInComboIndex = false;
             this.ComboWeight = 0.0;
+        }
+
+        private void UpdateTypedDefault()
+        {
+            if (this.DataType == "int")
+            {
+                this.DefaultValueCasted = (int)this.DefaultValue;
+            }
+            else if (this.DataType == "double" || this.dataType == "double[]")
+            {
+                this.DefaultValueCasted = this.DefaultValue;
+            }
+            else if (this.DataType == "TimeSpan")
+            {
+                this.DefaultValueCasted = TimeSpan.FromSeconds(this.DefaultValue);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unknown data type");
+            }
         }
 
         public double NormaliseValue(double val)
@@ -287,9 +345,39 @@ namespace AudioAnalysisTools.Indices
 
 
 
+        private static readonly ConcurrentDictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new ConcurrentDictionary<string, Dictionary<string, IndexProperties>>();
 
+        private string dataType;
+
+        private double defaultValue;
+
+        /// <summary>
+        /// Returns a cached set of configuration properties.
+        /// WARNING CACHED!
+        /// </summary>
+        /// <param name="configFile"></param>
+        /// <returns></returns>
         public static Dictionary<string, IndexProperties> GetIndexProperties(FileInfo configFile)
         {
+            // AT: the effects of this method have been significantly altered
+            // a) caching introduced - unkown effects for parallelism and dodgy file rewriting stuff
+            // b) static deserialisation utilised (instead of dynamic)
+            Dictionary<string, IndexProperties> propertySet = CachedProperties.GetOrAdd(
+                configFile.FullName,
+                fileName =>
+                    {
+                        var deserialised = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
+
+                        foreach (var kvp in deserialised)
+                        {
+                            // assign the key to the object for consistency
+                            kvp.Value.Key = kvp.Key;
+                        }
+                        return deserialised;
+                    });
+
+            return propertySet;
+            /*
             dynamic configuration = Yaml.Deserialise(configFile);
 
             var dict = new Dictionary<string, IndexProperties>();
@@ -333,7 +421,7 @@ namespace AudioAnalysisTools.Indices
                 dict.Add(ip.Key, ip);
             }
 
-            return dict;
+            return dict;*/
         }
     }
 }

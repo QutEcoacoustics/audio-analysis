@@ -170,7 +170,7 @@ namespace AudioAnalysisTools
             sonoConfig.SourceFName = recordingSegment.FileName;
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             return sonogram;
         }
 

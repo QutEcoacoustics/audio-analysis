@@ -335,7 +335,7 @@ namespace AnalysisPrograms
             //int frameCount = (length - windowSize + frameOffset) / frameOffset;
 
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, epsilon, windowSize, windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, sr, epsilon, windowSize, windowOverlap);
             double[] avAbsolute = results2.Average; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
             double[,] matrix = results2.amplitudeSpectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
@@ -390,7 +390,7 @@ namespace AnalysisPrograms
             hits = null;
 
             //set up the songogram to return. Use the existing amplitude sonogram
-            int bitsPerSample = recording.GetWavReader().BitsPerSample;
+            int bitsPerSample = recording.WavReader.BitsPerSample;
             TimeSpan duration = recording.Duration();
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");

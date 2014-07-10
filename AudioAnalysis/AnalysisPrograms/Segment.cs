@@ -170,7 +170,7 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             recording.Dispose();
 
             //iii: DETECT SEGMENTS

@@ -80,6 +80,34 @@ namespace System
         }
 
 
+        /// <summary>
+        /// Fills a given array with a supplied value.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The type of the given Array.
+        /// </typeparam>
+        /// <param name="array">
+        /// The array to manipulate.
+        /// </param>
+        /// <param name="value">
+        /// The Value to insert.
+        /// </param>
+        /// <returns>
+        /// Returns a reference to the manipulated array.
+        /// </returns>
+        public static T[,] Fill<T>(this T[,] array, T value)
+        {
+            for (int i = 0; i < array.GetUpperBound(0); i++)
+            {
+                for (int j = 0; j < array.GetUpperBound(1); j++)
+                {
+                    array[i, j] = value;
+                }
+            }
+
+            return array;
+        }
+
         #endregion
     }
 }

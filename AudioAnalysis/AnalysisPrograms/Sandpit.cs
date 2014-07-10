@@ -190,7 +190,7 @@ namespace AnalysisPrograms
                 //var testImage = (Bitmap)(Image.FromFile(imagePath));
                 var recording = new AudioRecording(wavFilePath);
                 var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                var spectrogram = new SpectrogramStandard(config, recording.GetWavReader());
+                var spectrogram = new SpectrogramStandard(config, recording.WavReader);
                 Plot scores = null; 
                 double eventThreshold = 0.5; // dummy variable - not used
                 List<AcousticEvent> list = null;

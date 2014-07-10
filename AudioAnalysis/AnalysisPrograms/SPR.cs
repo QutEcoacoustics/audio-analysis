@@ -116,7 +116,7 @@ namespace AnalysisPrograms
                     //NoiseReductionType = NoiseReductionType.STANDARD,
                     WindowOverlap = frameOverlap
                 };
-                sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
+                sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             }
 
             List<AcousticEvent> predictedEvents = null;

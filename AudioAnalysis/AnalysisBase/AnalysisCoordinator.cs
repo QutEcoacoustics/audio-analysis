@@ -214,45 +214,41 @@
         /// <param name="analysis">
         /// The analysis.
         /// </param>
-       /// <param name="clonedSettings">
+        /// <param name="clonedSettings">
         /// The settings.
         /// </param>
         /// <returns>
         /// The analysis results.
         /// </returns>
-       private AnalysisResult2[] RunParallel(IEnumerable<FileSegment> analysisSegments, IAnalyser2 analysis,
-           AnalysisSettings clonedSettings)
-       {
-            var analysisSegmentsCount = analysisSegments.Count();
+        private AnalysisResult2[] RunParallel(List<FileSegment> analysisSegments, IAnalyser2 analysis, AnalysisSettings clonedSettings)
+        {
+            var analysisSegmentsCount = analysisSegments.Count;
             var results = new AnalysisResult2[analysisSegmentsCount];
+
+            // much dodgy, such parallelism, so dining philosopher...
+            int finished = 0;
+
 
             Parallel.ForEach(
                 analysisSegments,
-                new ParallelOptions() {MaxDegreeOfParallelism = 64},
+                new ParallelOptions() { MaxDegreeOfParallelism = 64 },
                 (item, state, index) =>
-                {
-                    var itemClosed = item;
-                    var indexClosed = index;
-
-                    // finished items
-                    var finishedItems = results.Count(i => i != null);
-
-                    // process item
-                    var result = ProcessItem(itemClosed, analysis, clonedSettings);
-                    if (result != null)
                     {
-                        results[indexClosed] = result;
-                    }
+                        var itemClosed = item;
+                        var indexClosed = index;
 
-                    // check for cancellation
-                    //if (this.CancellationPending)
-                    //{
-                    //    Log.InfoFormat(cancelledItem, "parallel", analysis.Identifier, settingsForThisItem.InstanceId, item1);
-                    //    state.Break();
-                    //}
+                        // process item
+                        var result = ProcessItem(itemClosed, analysis, clonedSettings, parallelised: true);
+                        if (result != null)
+                        {
+                            results[indexClosed] = result;
+                        }
 
+                        // such dodgy - let's see if it works!
+                        finished++;
+                        Log.Info("Completed segment {0}/{1} - roughly {2} completed".Format2(index, analysisSegments.Count, finished));
 
-                });
+                    });
 
             return results;
         }
@@ -280,22 +276,19 @@
 
             for (var index = 0; index < analysisSegmentsList.Count; index++)
             {
+                Log.Debug("Starting segment {0}/{1}".Format2(index, analysisSegmentsList.Count));
+
                 var item = analysisSegmentsList[index];
 
                 // process item
                 // this can use settings, as it is modified each iteration, but this is run synchronously.
-                var result = ProcessItem(item, analysis, clonedSettings);
+                var result = this.ProcessItem(item, analysis, clonedSettings, parallelised: false);
                 if (result != null)
                 {
                     results[index] = result;
                 }
 
-                // check for cancellation
-                //if (this.CancellationPending)
-                //{
-                //    Log.WarnFormat(cancelledItem, "sequential", analysis.Identifier, settings.InstanceId, item);
-                //    break;
-                //}
+                Log.Info("Completed segment {0}/{1}".Format2(index, analysisSegmentsList.Count));
             }
 
             return results;
@@ -305,19 +298,19 @@
         /// Prepare the resources for an analysis, and the run the analysis.
         /// </summary>
         /// <param name="fileSegment">
-        /// The file Segment.
+        ///     The file Segment.
         /// </param>
         /// <param name="analyser">
-        /// The analysis.
+        ///     The analysis.
         /// </param>
-       /// <param name="localCopyOfSettings">
-        /// The settings.
+        /// <param name="localCopyOfSettings">
+        ///     The settings.
         /// </param>
+        /// <param name="parallelised"></param>
         /// <returns>
         /// The results from the analysis.
         /// </returns>
-       private AnalysisResult2 PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser2 analyser,
-           AnalysisSettings localCopyOfSettings)
+        private AnalysisResult2 PrepareFileAndRunAnalysis(FileSegment fileSegment, IAnalyser2 analyser, AnalysisSettings localCopyOfSettings, bool parallelised)
        {
            Contract.Requires(localCopyOfSettings != null, "Settings must not be null.");
             Contract.Requires(fileSegment != null, "File Segments must not be null.");
@@ -396,8 +389,11 @@
             // add information to the results
             result.AnalysisIdentifier = analyser.Identifier;
 
-            // validate results (debug only)
-            ValidateResult(localCopyOfSettings, result, start, preparedFileDuration);
+            // validate results (debug only & not parallel only)
+            if (!parallelised)
+            {
+                ValidateResult(localCopyOfSettings, result, start, preparedFileDuration);
+            }
 
             // clean up
             if (this.DeleteFinished && this.SubFoldersUnique)
@@ -608,32 +604,11 @@
             return analysers;
         }
 
-        private AnalysisResult2 ProcessItem(FileSegment item, IAnalyser2 analysis, AnalysisSettings clonedSettings)
+        private AnalysisResult2 ProcessItem(FileSegment item, IAnalyser2 analysis, AnalysisSettings clonedSettings, bool parallelised)
         {
             Log.DebugFormat(StartingItem, clonedSettings.InstanceId, item);
 
-            AnalysisResult2 result = null;
-
-            //try
-            //{
-            result = this.PrepareFileAndRunAnalysis(item, analysis, clonedSettings);
-
-            var progressString = string.Format("Successfully analysed {0} using {1}.", item, analysis.Identifier);
-            //}
-            //catch (Exception ex)
-            //{
-            //// try to get all the results up to the exception
-            //DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
-            //var op1 = ResultsTools.GetEventsAndIndicesDataTables(datatable, analyser, TimeSpan.Zero);
-            //var eventsDatatable = op1.Item1;
-            //var indicesDatatable = op1.Item2;
-            //var opdir = results.ElementAt(0).SettingsUsed.AnalysisRunDirectory;
-            //string fName = Path.GetFileNameWithoutExtension(audioFile.Name) + "_" + analyser.Identifier;
-            //var op2 = ResultsTools.SaveEventsAndIndicesDataTables(eventsDatatable, indicesDatatable, fName, opdir.FullName);
-
-            //Log.Error(string.Format("Item {0}: Error processing {1}. Error: {2}.", settings.InstanceId, item, ex.Message), ex);
-            //throw;
-            //}
+            AnalysisResult2 result = this.PrepareFileAndRunAnalysis(item, analysis, clonedSettings, parallelised);
 
             return result;
         }

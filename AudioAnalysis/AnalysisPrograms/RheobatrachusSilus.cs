@@ -349,7 +349,7 @@ namespace AnalysisPrograms
             double frameOffset = sonoConfig.GetFrameOffset(sr);
             double framesPerSecond = 1 / frameOffset;
 
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
             recording.Dispose();
