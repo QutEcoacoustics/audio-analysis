@@ -17,7 +17,7 @@ namespace AnalysisBase.ResultBases
 
 
 
-        public int IndexCount { get; set; }
+        public int RankOrder { get; set; }
 
 
     }

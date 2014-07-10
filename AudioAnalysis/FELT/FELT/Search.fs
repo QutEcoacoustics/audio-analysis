@@ -203,7 +203,7 @@
             // can enable noise reduction here
             let config = new SonogramConfig( NoiseReductionType = NoiseReductionType.NONE )
 
-            let sp = new SpectrogramStandard(config, wavSource.GetWavReader());
+            let sp = new SpectrogramStandard(config, wavSource.WavReader);
             sp
 
         let spectrogramToMatrix (sonogram:SpectrogramStandard) =

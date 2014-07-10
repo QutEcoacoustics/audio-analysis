@@ -102,8 +102,7 @@ namespace AudioAnalysisTools.Indices
         {
             var config = analysisSettings.Configuration;
             var indicesPropertiesConfig = FindIndicesConfig.Find(config, analysisSettings.ConfigFile);
-
-            var result = new IndexCalculateResult();
+            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
             // get parameters for the analysis
             int frameSize = IndexCalculate.DefaultWindowSize;
@@ -114,10 +113,12 @@ namespace AudioAnalysisTools.Indices
             double windowOverlap = config[AnalysisKeys.FrameOverlap];
 
             // get recording segment
-            int signalLength = recording.GetWavReader().Samples.Length;
-            TimeSpan wavDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
+            int signalLength = recording.WavReader.Samples.Length;
+            TimeSpan wavDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
             double duration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
             TimeSpan frameDuration = TimeSpan.FromTicks((long)(duration * TimeSpan.TicksPerSecond));
+
+            var result = new IndexCalculateResult(wavDuration, freqBinCount, indexProperties, analysisSettings.SegmentStartOffset.Value);
 
 
             // EXTRACT ENVELOPE and SPECTROGRAM
@@ -133,11 +134,8 @@ namespace AudioAnalysisTools.Indices
 
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
             // total duration of recording
-            SummaryIndexValues summaryIndexValues = new SummaryIndexValues(freqBinCount, wavDuration, indicesPropertiesConfig);
+            SummaryIndexValues summaryIndexValues = result.SummaryIndexValues;
             
-            // give the index a offset value so it can be sorted. 
-            summaryIndexValues.StartOffset = analysisSettings.SegmentStartOffset.Value;
-
             double totalSeconds = wavDuration.TotalSeconds;
             double highAmplIndex = dspOutput.MaxAmplitudeCount / totalSeconds;
             summaryIndexValues.HighAmplitudeIndex = highAmplIndex;
@@ -153,12 +151,7 @@ namespace AudioAnalysisTools.Indices
             if (avSignalEnvelope < 0.001)
             {
                 Logger.Debug("Segment skipped because avSignalEnvelope is too small!");
-                result.SummaryIndexValues = summaryIndexValues;
-                result.SpectralIndexValues = new SpectralIndexValues(freqBinCount)
-                                                 {
-                                                     // give the index a offset value so it can be sorted. 
-                                                     StartOffset = analysisSettings.SegmentStartOffset.Value
-                                                 };
+
                 return result;
             }
             
@@ -226,14 +219,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
-            var spectra = new SpectralIndexValues();
-
-            // give the index a offset value so it can be sorted. 
-            spectra.StartOffset = analysisSettings.SegmentStartOffset.Value;
-
-            // TODO: Michael the following is needed to prevent an exception later... i'm not sure if it is the desired behaviour
-            // initialise values
-            spectra.CLS = new double[freqBinCount];
+            var spectra = result.SpectralIndexValues;
 
             double[] aciArray = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
             
@@ -380,7 +366,7 @@ namespace AudioAnalysisTools.Indices
                 }
 
                 // init sonogram
-                sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
+                sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
@@ -409,9 +395,6 @@ namespace AudioAnalysisTools.Indices
                 result.TrackScores = scores;
                 ////result.Tracks = trackInfo.listOfSPTracks;
                 IndexCalculate.MarkClippedSpectra(spectra, highAmplIndex, summaryIndexValues.ClippingIndex);
-
-                result.SummaryIndexValues = summaryIndexValues;
-                result.SpectralIndexValues = spectra;
 
                 return result;
             }
@@ -476,8 +459,7 @@ namespace AudioAnalysisTools.Indices
             result.Hits = hits;
             result.TrackScores = scores;
             result.Tracks = sptInfo.listOfSPTracks;
-            result.SummaryIndexValues = summaryIndexValues;
-            result.SpectralIndexValues = spectra;
+
             IndexCalculate.MarkClippedSpectra(spectra, highAmplIndex, summaryIndexValues.ClippingIndex); 
 
             return result;

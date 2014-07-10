@@ -155,8 +155,8 @@ namespace AnalysisPrograms
 
             // (A) ##########################################################################################################################
             AudioRecording recording = new AudioRecording(fileToAnalyse.FullName);
-            int signalLength = recording.GetWavReader().Samples.Length;
-            TimeSpan wavDuration = TimeSpan.FromSeconds(recording.GetWavReader().Time.TotalSeconds);
+            int signalLength = recording.WavReader.Samples.Length;
+            TimeSpan wavDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
             double frameDurationInSeconds = sonoConfig.WindowSize / (double)recording.SampleRate;
             TimeSpan frameDuration = TimeSpan.FromTicks((long)(frameDurationInSeconds * TimeSpan.TicksPerSecond));
             int stepSize = (int)Math.Floor(sonoConfig.WindowSize * (1 - sonoConfig.WindowOverlap));

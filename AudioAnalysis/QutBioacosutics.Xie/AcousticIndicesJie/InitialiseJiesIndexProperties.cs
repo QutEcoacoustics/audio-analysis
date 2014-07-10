@@ -97,6 +97,9 @@ namespace AcousticIndicesJie
 
             //string key, string name, typeof(double[]), bool doDisplay, double normMin, double normMax, "dB", bool _includeInComboIndex, 
 
+
+            throw new NotImplementedException("Ask Anthony why this no longer works!");
+            /*
             properties.Add(spKEY_ACI,
                 new IndexProperties
                 {
@@ -191,7 +194,7 @@ namespace AcousticIndicesJie
                     Comment = "",
                     Units = ""
                 });
-
+            */
             //properties.Add(spKEY_Combined,
             //    new IndexProperties { Key = spKEY_Combined, Name = "av Track Duration", DataType = typeof(double[]), normMax = 200, Units = "ms" });
 
@@ -206,7 +209,7 @@ namespace AcousticIndicesJie
             var dict = new Dictionary<string, IndexProperties>();
             foreach (IndexProperties ip in indexProperties.Values)
             {
-                if (ip.DataType == typeof(double[]))
+                if (ip.IsSpectralIndex)
                 {
                     dict.Add(ip.Key, ip);
                 }
@@ -221,7 +224,7 @@ namespace AcousticIndicesJie
             var dict = new Dictionary<string, IndexProperties>();
             foreach (IndexProperties ip in indexProperties.Values)
             {
-                if (ip.DataType != typeof(double[]))
+                if (!ip.IsSpectralIndex)
                 {
                     dict.Add(ip.Key, ip);
                 }
@@ -230,9 +233,9 @@ namespace AcousticIndicesJie
         }
 
 
-        public static Type[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
+        public static string[] GetArrayOfIndexTypes(Dictionary<string, IndexProperties> properties)
         {
-            Type[] typeArray = new Type[properties.Count];
+            string[] typeArray = new string[properties.Count];
             int count = 0;
             foreach (string key in properties.Keys)
             {

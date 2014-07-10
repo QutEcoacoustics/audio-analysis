@@ -350,7 +350,7 @@ namespace AnalysisPrograms
             // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
             // 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
 
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
             recording.Dispose();

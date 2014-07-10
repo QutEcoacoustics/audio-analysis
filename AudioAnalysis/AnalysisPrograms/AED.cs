@@ -555,7 +555,7 @@ namespace AnalysisPrograms
 
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
 
-            return new SpectrogramStandard(config, recording.GetWavReader());
+            return new SpectrogramStandard(config, recording.WavReader);
         }
 
         /// <summary>

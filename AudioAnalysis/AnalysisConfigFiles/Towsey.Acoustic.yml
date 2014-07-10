@@ -24,6 +24,7 @@ SaveSonogramFiles: false
 DisplayCsvImage: true
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0
+SonogramBackgroundThreshold: 4.0
 ParallelProcessing: false
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"

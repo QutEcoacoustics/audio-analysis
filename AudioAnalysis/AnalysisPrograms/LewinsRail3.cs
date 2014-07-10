@@ -349,7 +349,7 @@ namespace AnalysisPrograms
             int lowerBandMinBin = (int)Math.Round(lowerBandMinHz / freqBinWidth) + 1;
             int lowerBandMaxBin = (int)Math.Round(lowerBandMaxHz / freqBinWidth) + 1;
 
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
             recording.Dispose();

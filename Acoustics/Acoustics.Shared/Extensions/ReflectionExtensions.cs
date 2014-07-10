@@ -18,24 +18,6 @@ namespace System
 
     public static class ReflectionExtensions
     {
-        internal static bool HasAttr<T>(this MemberInfo info)
-        {
-            return info.GetCustomAttributes(typeof(T), true).Length > 0;
-        }
-
-
-        internal static T Attr<T>(this MemberInfo info)
-        {
-            if (info.HasAttr<T>())
-            {
-                return (T)info.GetCustomAttributes(typeof(T), true)[0];
-            }
-            else
-            {
-                return default(T);
-            }
-        }
-
         public static bool IsInstanceOfGenericType(this Type genericType, object instance, out Type matchedType)
         {
             Type type = instance.GetType();
@@ -72,11 +54,13 @@ namespace System
             }
 
             if (type != propInfo.ReflectedType && !type.IsSubclassOf(propInfo.ReflectedType))
+            {
                 throw new ArgumentException(
                     string.Format(
                         "Expresion '{0}' refers to a property that is not from type {1}.",
                         propertyLambda.ToString(),
                         type));
+            }
 
             return propInfo;
         }
@@ -107,6 +91,24 @@ namespace System
             }
 
             return result;
-        } 
+        }
+
+        internal static bool HasAttr<T>(this MemberInfo info)
+        {
+            return info.GetCustomAttributes(typeof(T), true).Length > 0;
+        }
+
+
+        internal static T Attr<T>(this MemberInfo info)
+        {
+            if (info.HasAttr<T>())
+            {
+                return (T)info.GetCustomAttributes(typeof(T), true)[0];
+            }
+            else
+            {
+                return default(T);
+            }
+        }
     }
 }

@@ -78,14 +78,17 @@
         }
 
         /// <summary>
-        /// Wrapper for the wav reader. 
-        /// Audio must be in wav format.
-        /// Use MasterAudioUtility to convert or segment the audio first.
+        ///     Wrapper for the wav reader.
+        ///     Audio must be in wav format.
+        ///     Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
-		public WavReader GetWavReader()
-		{
-            return wavReader;
-		}
+        public WavReader WavReader
+        {
+            get
+            {
+                return this.wavReader;
+            }
+        }
 
         /// <summary>
         /// NOTE: from Michael Towsey May 2014
@@ -121,7 +124,7 @@
         /// <returns></returns>
         public TimeSpan Duration()
         {
-            return GetWavReader().Time;
+            return WavReader.Time;
         }
 
         /// <summary>
@@ -186,7 +189,7 @@
             double[,] envelope = new double[2, length];
 
             //get the signal samples
-            var wavData = GetWavReader();
+            var wavData = WavReader;
             var data = wavData.Samples;
             int sampleCount = data.GetLength(0); // Number of samples in signal
             int subSample = sampleCount / length;

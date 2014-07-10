@@ -118,7 +118,7 @@
                     throw new NotSupportedException(msg);
                 }
 
-                using (var sonogram = new SpectrogramStandard(sonogramConfig, audiorecording.GetWavReader()))
+                using (var sonogram = new SpectrogramStandard(sonogramConfig, audiorecording.WavReader))
                 using (var img = sonogram.GetImage())
                 {
                     image = new Bitmap(img);

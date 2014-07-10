@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IndexValues.cs" company="QutBioacoustics">
+// <copyright file="SummaryIndexValues.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
@@ -17,10 +17,13 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Security;
 
     using AnalysisBase.ResultBases;
 
     using CsvHelper.Configuration;
+
+    using Fasterflect;
 
     using MathNet.Numerics.LinearAlgebra.Complex32.Solvers.Iterative;
 
@@ -30,24 +33,36 @@ namespace AudioAnalysisTools.Indices
 
     public class IndexCalculateResult
     {
+        public IndexCalculateResult(TimeSpan wavDuration, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan startOffset)
+        {
+            this.Hits = null;
+            this.Tracks = null;
+            this.TrackScores = new List<Plot>();
+
+            this.SummaryIndexValues = new SummaryIndexValues(wavDuration, indexProperties)
+                                          {
+                                              // give the index a offset value so it can be sorted. 
+                                              StartOffset = startOffset
+                                          };
+            this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
+                                           {
+                                               // give the index a offset value so it can be sorted. 
+                                               StartOffset = startOffset
+                                           };
+        }
+
+        public List<SpectralTrack> Tracks { get; set; }
+
+        public SummaryIndexValues SummaryIndexValues { get; private set; }
+
+        public SpectralIndexValues SpectralIndexValues { get; private set; }
+
         // other possible results to store
         public BaseSonogram Sg { get; set; }
 
         public double[,] Hits { get; set; }
 
         public List<Plot> TrackScores { get; set; }
-
-        public IndexCalculateResult()
-        {
-            Hits = null;
-            Tracks = null;
-            TrackScores = new List<Plot>();
-        }
-
-        public List<SpectralTrack> Tracks { get; set; }
-
-        public SummaryIndexValues SummaryIndexValues { get; set; }
-        public SpectralIndexValues SpectralIndexValues { get; set; }
     }
 
     /// <summary>
@@ -58,6 +73,7 @@ namespace AudioAnalysisTools.Indices
     public class SummaryIndexValues : SummaryIndexBase
     {
         public double TemporalEntropy { get; set; }
+
         public double HighAmplitudeIndex { get; set; }
 
         public double ClippingIndex { get; set; }
@@ -106,33 +122,33 @@ namespace AudioAnalysisTools.Indices
 
         private static Dictionary<string, Func<SummaryIndexValues, object>> CahcedSelectors { get;  set; }
 
-        public SummaryIndexValues(int freqBinCount, TimeSpan wavDuration, FileInfo indexPropertiesConfig)
+        public SummaryIndexValues()
+        {
+            // serialization entry
+        }
+
+        public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)
         {
             this.SegmentDuration = wavDuration;
 
             // initialise with default values stored values in the dictionary of index properties.
-            // AT: following is disabled - hugely inefficient!
-            ///Dictionary<string, IndexProperties> dictOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            foreach (var kvp in indexProperties)
+            {
+                // do not process spectral indices properties
+                // don't bother with slow reflection if the default is 0.0
+                if (kvp.Value.IsSpectralIndex || kvp.Value.DefaultValue == default(double))
+                {
+                    continue;    
+                }
 
-            //foreach (string key in dictOfIndexProperties.Keys)
-            //{
-                // no-op, nothing useful left to do;
-            //}
+                this.SetPropertyValue(kvp.Key, kvp.Value.DefaultValueCasted);
+            }
         }
 
         static SummaryIndexValues()
         {
             CahcedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
         }
-
-/*        private class SummaryIndexValuesMap : CsvClassMap<SpectralIndexValues>
-        {
-            public SummaryIndexValuesMap()
-            {
-                this.AutoMap();
-                this.Map(m => m.CachedSelectors).Ignore();
-            }
-        }*/
     }
 
     public class SpectralIndexValues : SpectralIndexBase
@@ -158,16 +174,19 @@ namespace AudioAnalysisTools.Indices
             // empty constructor important!
         }
 
-        public SpectralIndexValues(int spectrumDimensions)
+        public SpectralIndexValues(int spectrumLength, Dictionary<string, IndexProperties> indexProperties)
         {
-            this.ACI = new double[spectrumDimensions];
-            this.ENT = new double[spectrumDimensions];
-            this.BGN = new double[spectrumDimensions];
-            this.AVG = new double[spectrumDimensions];
-            this.CVR = new double[spectrumDimensions];
-            this.EVN = new double[spectrumDimensions];
-            this.SPT = new double[spectrumDimensions];
-            this.CLS = new double[spectrumDimensions];
+            foreach (var kvp in indexProperties)
+            {
+                if (!kvp.Value.IsSpectralIndex)
+                {
+                    continue;
+                }
+
+
+                double[] initArray = (new double[spectrumLength]).FastFill(kvp.Value.DefaultValue);
+                this.SetPropertyValue(kvp.Key, initArray);
+            }
         }
 
         public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
