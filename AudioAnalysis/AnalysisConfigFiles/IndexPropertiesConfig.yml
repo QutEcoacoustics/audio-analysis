@@ -20,7 +20,7 @@ StartOffset:
   Comment: "Exact time span (total minutes) from start of recording to start of this segment."
   DataType: double
   DefaultValue: 0.0
-  DoDisplay: true
+  DoDisplay: false
   NormMin: 0.0
   NormMax: 200.0
   ProjectID: Acoustic Indices
@@ -67,7 +67,7 @@ AvgSignalAmplitude:
   Name: av Signal Ampl
   Comment: "Av amplitude of the signal envelope in dB."
   DataType: double
-  DefaultValue: -70
+  DefaultValue: -80
   DoDisplay: true
   # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL = -80 dB
   # -50 dB is typical level for environmental BGN
