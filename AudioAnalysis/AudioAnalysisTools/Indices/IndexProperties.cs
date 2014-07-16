@@ -108,6 +108,7 @@ namespace AudioAnalysisTools.Indices
             {
                 return this.defaultValue;
             }
+
             set
             {
                 this.defaultValue = value;
@@ -117,6 +118,9 @@ namespace AudioAnalysisTools.Indices
 
         [YamlIgnore]
         public object DefaultValueCasted { get; private set; }
+
+        [YamlIgnore]
+        public int Order { get; set; }
 
         public string ProjectID { get; set; }
 
@@ -368,11 +372,17 @@ namespace AudioAnalysisTools.Indices
                     {
                         var deserialised = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
 
+                        int i = 0;
                         foreach (var kvp in deserialised)
                         {
                             // assign the key to the object for consistency
                             kvp.Value.Key = kvp.Key;
+
+                            // HACK: infer order of properties for visualisation based on order of for-each
+                            kvp.Value.Order = i;
+                            i++;
                         }
+
                         return deserialised;
                     });
 

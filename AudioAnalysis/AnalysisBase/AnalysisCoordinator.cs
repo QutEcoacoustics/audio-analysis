@@ -246,8 +246,7 @@
 
                         // such dodgy - let's see if it works!
                         finished++;
-                        Log.Info("Completed segment {0}/{1} - roughly {2} completed".Format2(index, analysisSegments.Count, finished));
-
+                        Log.Info("Completed segment {0}/{1} - roughly {2} completed".Format2(index + 1, analysisSegments.Count, finished));
                     });
 
             return results;
@@ -288,7 +287,7 @@
                     results[index] = result;
                 }
 
-                Log.Info("Completed segment {0}/{1}".Format2(index, analysisSegmentsList.Count));
+                Log.Info("Completed segment {0}/{1}".Format2(index + 1, analysisSegmentsList.Count));
             }
 
             return results;
