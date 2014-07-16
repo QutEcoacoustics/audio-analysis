@@ -10,19 +10,19 @@ RankOrder: # AKA IndexCount
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 100.0
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-StartOffsetMinute:
+StartOffset:
   Name: Segment start minute
   Comment: "Exact time span (total minutes) from start of recording to start of this segment."
-  DataType: int
+  DataType: double
   DefaultValue: 0.0
-  DoDisplay: false
+  DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
   IncludeInComboIndex: false
@@ -81,7 +81,7 @@ BackgroundNoise:
   Name: Background Noise
   Comment: "Av amplitude of the noise removed from the audio segment using the method of Lamel et al."
   DataType: double
-  DefaultValue: -70
+  DefaultValue: -80
   DoDisplay: true
   # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10
   NormMin: -50.0
@@ -186,6 +186,18 @@ LowFreqCover:
   Units: "%"
   IncludeInComboIndex: false
   ComboWeight: 0.0
+AcousticComplexity:
+  Name: ACI
+  Comment: "ACI"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.4
+  NormMax: 0.7
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: true
+  ComboWeight: 0.2
 TemporalEntropy:
   Name: 1-H[t]
   Comment: "1-Ht is a measure of concentration of acoustic energy instead of energy dispersal."
@@ -198,18 +210,6 @@ TemporalEntropy:
   Units: ""
   IncludeInComboIndex: true
   ComboWeight: 0.3
-EntropyPeaks:
-  Name: 1-H[peak freq]
-  Comment: "1-H[peak freq] is a measure of concentration of peak frequencies over one minute."
-  DataType: double
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 1.0
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 AvgEntropySpectrum:
   Name: 1-H[spectral avg]
   Comment: "1-H[spectral avg] is a measure of concentration of acoustic energy in the average spectrum over one minute."
@@ -234,18 +234,18 @@ VarianceEntropySpectrum:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-AcousticComplexity:
-  Name: ACI
-  Comment: "ACI"
+EntropyPeaks:
+  Name: 1-H[peak freq]
+  Comment: "1-H[peak freq] is a measure of concentration of peak frequencies over one minute."
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.4
-  NormMax: 0.7
+  NormMin: 0.0
+  NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: true
-  ComboWeight: 0.2
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
 ClusterCount:
   Name: Cluster Count
   Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."

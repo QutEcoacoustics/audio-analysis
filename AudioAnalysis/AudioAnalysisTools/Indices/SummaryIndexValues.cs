@@ -72,13 +72,11 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class SummaryIndexValues : SummaryIndexBase
     {
-        public double TemporalEntropy { get; set; }
-
         public double HighAmplitudeIndex { get; set; }
 
         public double ClippingIndex { get; set; }
 
-        public double Activity { get; set; }
+        public double AvgSignalAmplitude { get; set; }
 
         public double BackgroundNoise { get; set; }
 
@@ -86,23 +84,11 @@ namespace AudioAnalysisTools.Indices
 
         public double AvgSnrOfActiveFrames { get; set; }
 
-        public double AvgSignalAmplitude { get; set; }
+        public double Activity { get; set; }
 
         public double EventsPerSecond { get; set; }
 
         public TimeSpan AvgEventDuration { get; set; }
-
-        public double AcousticComplexity { get; set; }
-
-        public double AvgEntropySpectrum { get; set; }
-
-        public double VarianceEntropySpectrum { get; set; }
-
-        public double EntropyPeaks { get; set; }
-
-        public double RainIndex { get; set; }
-
-        public double CicadaIndex { get; set; }
 
         public double HighFreqCover { get; set; }
 
@@ -110,9 +96,15 @@ namespace AudioAnalysisTools.Indices
 
         public double LowFreqCover { get; set; }
 
-        public TimeSpan AvgSptDuration { get; set; }
+        public double AcousticComplexity { get; set; }
 
-        public double SptPerSecond { get; set; }
+        public double TemporalEntropy { get; set; }
+
+        public double AvgEntropySpectrum { get; set; }
+
+        public double VarianceEntropySpectrum { get; set; }
+
+        public double EntropyPeaks { get; set; }
 
         public int ClusterCount { get; set; }
 
@@ -120,7 +112,17 @@ namespace AudioAnalysisTools.Indices
 
         public int ThreeGramCount { get; set; }
 
-        private static Dictionary<string, Func<SummaryIndexValues, object>> CahcedSelectors { get;  set; }
+        public double SptPerSecond { get; set; }
+
+        public TimeSpan AvgSptDuration { get; set; }
+
+        public double RainIndex { get; set; }
+
+        public double CicadaIndex { get; set; }
+
+
+        private static Dictionary<string, Func<SummaryIndexValues, object>> CachedSelectors { get; set; }
+
 
         public SummaryIndexValues()
         {
@@ -147,7 +149,7 @@ namespace AudioAnalysisTools.Indices
 
         static SummaryIndexValues()
         {
-            CahcedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
+            CachedSelectors = ReflectionExtensions.GetGetters<SummaryIndexValues, object>();
         }
     }
 
