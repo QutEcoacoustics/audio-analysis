@@ -57,7 +57,7 @@
 
             const int TrackHeight = DrawSummaryIndices.DefaultTrackHeight;
             int scaleLength = 0;
-            var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
+            var arrayOfBitmaps = new Image[dictionaryOfCsvFile.Keys.Count]; // accumulate the individual tracks in a List
 
             foreach (string key in dictionaryOfCsvFile.Keys)
             {
@@ -89,8 +89,12 @@
                 double[] array = dictionaryOfCsvFile[key];
                 scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array);
-                listOfBitmaps.Add(bitmap);
+
+
+                arrayOfBitmaps[ip.Order] = bitmap;
             }
+
+            var listOfBitmaps = arrayOfBitmaps.Where(b => b != null).ToList();
 
 
             //set up the composite image parameters
