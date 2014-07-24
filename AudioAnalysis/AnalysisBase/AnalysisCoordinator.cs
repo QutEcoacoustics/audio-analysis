@@ -237,8 +237,12 @@
                         var itemClosed = item;
                         var indexClosed = index;
 
+                        // can't use settings as each iteration modifies settings. This causes hard to track down bugs
+                        // instead create a copy of the settings, and use that
+                        var settingsForThisItem = (AnalysisSettings)clonedSettings.Clone();
+
                         // process item
-                        var result = ProcessItem(itemClosed, analysis, clonedSettings, parallelised: true);
+                        var result = ProcessItem(itemClosed, analysis, settingsForThisItem, parallelised: true);
                         if (result != null)
                         {
                             results[indexClosed] = result;
