@@ -74,7 +74,7 @@
         public double SonogramBackgroundThreshold { get; private set; }
 
         // other global properties
-        public IAnalyser DefaultAnalyser { get { return this.pluginHelper.GetAcousticAnalyser(this.DefaultAnalysisIdentifier); } }
+        public IAnalyser2 DefaultAnalyser { get { return this.pluginHelper.GetAcousticAnalyser(this.DefaultAnalysisIdentifier); } }
 
         public IEnumerable<KeyValuePair<string, string>> AnalysersAvailable
         {
@@ -113,7 +113,7 @@
             this.pluginHelper.FindIAnalysisPlugins();
         }
 
-        public IAnalyser GetAnalyser(string analyserIdentifier)
+        public IAnalyser2 GetAnalyser(string analyserIdentifier)
         {
             return this.pluginHelper.GetAcousticAnalyser(analyserIdentifier);
         }
@@ -125,7 +125,7 @@
         /// <param name="analyser"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, FileInfo configFile, IAnalyser analyser, AnalysisSettings settings)
+        public IEnumerable<AnalysisResult> ProcessRecording(FileInfo audioFile, FileInfo configFile, IAnalyser2 analyser, AnalysisSettings settings)
         {
             //var analyserResults = analysisCoordinator.Run(fileSegments, analyser, settings).OrderBy(a => a.SegmentStartOffset);
             Contract.Requires(settings != null, "Settings must not be null.");
@@ -133,15 +133,27 @@
             //Contract.Requires(file != null, "Source file must not be null.");
 
             bool saveIntermediateWavFiles = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES))
-                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SAVE_INTERMEDIATE_WAV_FILES, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
+                saveIntermediateWavFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles, settings.ConfigDict);
+            
+            bool saveIntermediateCsvFiles = false;
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.SaveIntermediateWavFiles))
+                saveIntermediateCsvFiles = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.SaveIntermediateCsvFiles, settings.ConfigDict);
 
             bool doParallelProcessing = false;
-            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING))
-                doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.PARALLEL_PROCESSING, settings.ConfigDict);
+            if (settings.ConfigDict.ContainsKey(AudioAnalysisTools.AnalysisKeys.ParallelProcessing))
+                doParallelProcessing = ConfigDictionary.GetBoolean(AudioAnalysisTools.AnalysisKeys.ParallelProcessing, settings.ConfigDict);
+
+            bool saveSonograms = false;
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.SaveSonograms))
+                saveSonograms = ConfigDictionary.GetBoolean(AnalysisKeys.SaveSonograms, (settings.ConfigDict));
+
+            bool displayCsvImage = false;
+            if (settings.ConfigDict.ContainsKey(AnalysisKeys.DisplayCsvImage))
+                displayCsvImage = ConfigDictionary.GetBoolean(AnalysisKeys.DisplayCsvImage, (settings.ConfigDict));
 
             //initilise classes that will do the analysis
-            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer())
+            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, saveIntermediateCsvFiles)
             {
                 DeleteFinished = (!saveIntermediateWavFiles), // create and delete directories 
                 IsParallel = doParallelProcessing,         // ########### PARALLEL OR SEQUENTIAL ??????????????
@@ -160,7 +172,9 @@
                 return null;
             }
 
-            DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
+            // TODO: don't be lazy. This should probly just call analyse long recording since the code is mostly the same
+            throw new NotImplementedException("Replacing the datatable method below is on my TODO");
+            /*DataTable datatable = ResultsTools.MergeResultsIntoSingleDataTable(results);
 
             //get the duration of the original source audio file - need this to convert Events datatable to Indices Datatable
             var audioUtility = new MasterAudioUtility();
@@ -211,7 +225,7 @@
                 Log.Info("\tNumber of indices = " + indicesCount);
             }
 
-            return results;
+            return results;*/
 
         } //ProcessRecording()
 

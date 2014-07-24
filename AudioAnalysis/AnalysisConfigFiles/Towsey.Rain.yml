@@ -1,0 +1,24 @@
+---
+AnalysisName: Towsey.Rain
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+#FRAME LENGTH in samples and Frame Overlap as fraction 
+FrameLength: 128
+FrameOverlap: 0.0
+#Resample rate must be 2 X the desired Nyquist
+ResampleRate: 17640
+LowFreqBound: 500
+MidFreqBound: 3500
+SONOGRAM_BACKGROUND_Threshold: 4.0
+#DisplayColumns: avAmp-dB,snr-dB,bg-dB,activity,segCount,avSegDur,hfCover,mfCover,lfCover,H[ampl],H[avSpectrum]
+
+#SAVE INTERMEDIARY FILES
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+DoNoiseReduction: false
+BgNoiseThreshold: 3.0
+
+ParallelProcessing: false
+...

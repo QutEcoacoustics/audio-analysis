@@ -101,7 +101,7 @@ namespace AudioAnalysisTools
             config.SetPair(ConfigKeys.Mfcc.Key_IncludeDelta, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_IncludeDoubleDelta, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_DeltaT, "2");
-            config.SetPair(ConfigKeys.Sonogram.Key_SonogramType, ConfigKeys.SonogramTypes.spectral.ToString());
+            config.SetPair(ConfigKeys.Sonogram.Key_SonogramType, ConfigKeys.SonogramTypes.Spectral.ToString());
             config.SetPair(ConfigKeys.ImageSave.Key_AddGrid, false.ToString());
             Initialize(config);                        
         }

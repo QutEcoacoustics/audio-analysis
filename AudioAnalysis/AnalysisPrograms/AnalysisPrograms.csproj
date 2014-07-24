@@ -130,8 +130,8 @@
     <Reference Include="alglibnet2">
       <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
     </Reference>
-    <Reference Include="CsvHelper">
-      <HintPath>..\packages\CsvHelper.2.5.0\lib\net40-client\CsvHelper.dll</HintPath>
+    <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -156,9 +156,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="PowerArgs">
       <HintPath>..\..\Extra Assemblies\PowerArgs\PowerArgs.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\packages\ServiceStack.Text.4.0.12\lib\net40\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -190,6 +187,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
+    <Compile Include="AnalyseLongRecordings\AnalyseLongRecording.cs" />
+    <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Arguments.cs" />
+    <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Dev.cs" />
     <Compile Include="AnalysesAvailable.cs" />
     <Compile Include="AnalysisTemplate.cs" />
     <Compile Include="Audio2Sonogram.cs" />
@@ -225,7 +225,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="AnalyseLongRecording.cs" />
     <Compile Include="Production\Runner.cs" />
     <Compile Include="Rain.cs" />
     <Compile Include="RheobatrachusSilus.cs" />
@@ -299,6 +298,7 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="MSBuild.Community.Tasks.ReadMe.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -139,7 +139,7 @@ namespace AnalysisPrograms
             var filteredRecording = results.Item2;
 
             //AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
-            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, filteredRecording.GetWavReader());
+            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, filteredRecording.WavReader);
             SpectrogramStandard  sonogram = new SpectrogramStandard(basegram);         //spectrogram has dim[N,257]
              
             //viii WRITE FILTERED SIGNAL IF NEED TO DEBUG
@@ -187,7 +187,7 @@ namespace AnalysisPrograms
             //i: Apply filter
             Log.WriteLine("#   Filter: " + filterName);
             var filteredRecording = AudioRecording.Filter_IIR(recording, filterName); //return new filtered audio recording.
-            int signalLength = filteredRecording.GetWavReader().Samples.Length;
+            int signalLength = filteredRecording.WavReader.Samples.Length;
             //recording.Dispose(); // DISPOSE ORIGINAL
 
             //ii: FRAMING
@@ -196,7 +196,7 @@ namespace AnalysisPrograms
 
             //iii: EXTRACT ENVELOPE and ZERO-CROSSINGS
             Log.WriteLine("#   Extract Envelope and Zero-crossings.");
-            var results2 = DSP_Frames.ExtractEnvelopeAndZeroCrossings(filteredRecording.GetWavReader().Samples, sr, windowSize, windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndZeroCrossings(filteredRecording.WavReader.Samples, sr, windowSize, windowOverlap);
             //double[] average       = results2.Item1;
             double[] envelope = results2.Item2;
             double[] zeroCrossings = results2.Item3;
@@ -207,7 +207,7 @@ namespace AnalysisPrograms
             //iv: FRAME ENERGIES
             double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
             var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(envelope), StandardDeviationCount);
-            var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
 
             //v: CONVERSIONS: ZERO CROSSINGS to herz - then NORMALIZE to Fuzzy freq
             int[] freq = DSP_Frames.ConvertZeroCrossings2Hz(zeroCrossings, windowSize, sr);

@@ -1,18 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ActivityAndCover.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   a set of indices to describe level of acoustic activity and number of acoustic events in recording.
+//   Location of acoustic events also called segmentation in some literature.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using TowseyLibrary;
 
     /// <summary>
     /// a set of indices to describe level of acoustic activity and number of acoustic events in recording.
     /// Location of acoustic events also called segmentation in some literature.
     /// </summary>
-    public struct SummaryActivity
+    public class SummaryActivity
     {
         public double percentActiveFrames, activeAvDB;
         public TimeSpan avEventDuration;
@@ -29,9 +37,9 @@ namespace AudioAnalysisTools
             avEventDuration = _avEventDuration;
             eventLocations = _events;
         }
-    } // struct Activity
+    }
 
-    public struct SpectralActivity
+    public class SpectralActivity
     {
 
         public double lowFreqBandCover, midFreqBandCover, highFreqBandCover;
@@ -108,11 +116,11 @@ namespace AudioAnalysisTools
             TimeSpan avEventDuration = TimeSpan.FromSeconds((frameDuration.TotalSeconds * eventSum) / (double)eventCount);   //av segment duration in milliseconds
 
             return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount, avEventDuration);
-        } // CalculateActivity()
+        }
 
 
         /// <summary>
-        /// returns the number of acoustic events in the each frequency bin
+        /// Returns the number of acoustic events in the each frequency bin
         /// </summary>
         /// <param name="spectrogram"></param>
         /// <param name="bgThreshold"></param>
@@ -150,27 +158,33 @@ namespace AudioAnalysisTools
             }
 
 
-            //calculate coverage for low freq band as a percentage
+            // calculate coverage for low freq band as a percentage
             int count = 0;
             double sum = 0;
             for (int j = 0; j < lowFreqBinIndex; j++) { sum += coverSpectrum[j]; count++; }
             double lowFreqCover = sum / (double)count;
-            //calculate coverage for mid freq band as a percentage
+            
+            // calculate coverage for mid freq band as a percentage
             count = 0;
             sum = 0;
-            for (int j = lowFreqBinIndex; j < midFreqBinIndex; j++) { sum += coverSpectrum[j]; count++; }
+            for (int j = lowFreqBinIndex; j < midFreqBinIndex; j++)
+            {
+                sum += coverSpectrum[j];
+                count++;
+            }
             double midFreqCover = sum / (double)count;
-            //calculate coverage for high freq band as a percentage
+            
+            // calculate coverage for high freq band as a percentage
             count = 0;
             sum = 0;
-            for (int j = midFreqBinIndex; j < highFreqBinIndex; j++) { sum += coverSpectrum[j]; count++; }
+            for (int j = midFreqBinIndex; j < highFreqBinIndex; j++)
+            {
+                sum += coverSpectrum[j];
+                count++;
+            }
             double highFreqCover = sum / (double)count;
 
             return new SpectralActivity(eventSpectrum, coverSpectrum, lowFreqCover, midFreqCover, highFreqCover);
-
-        } //CalculateSpectralEvents()
-
-
-
+        }
     }
 }

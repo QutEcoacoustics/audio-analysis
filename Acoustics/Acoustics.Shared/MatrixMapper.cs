@@ -1,97 +1,186 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Acoustics.Shared.Extensions;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MatrixMapper.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the TwoDimensionalArray type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace Acoustics.Shared
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using Acoustics.Shared.Extensions;
+
     public enum TwoDimensionalArray
     {
+        /// <summary>
+        /// 1 | 3
+        /// 2 | 4
+        /// </summary>
         ColumnMajor,
+
+        /// <summary>
+        /// 2 | 4
+        /// 1 | 3
+        /// </summary>
+        ColumnMajorFlipped,
+
+        /// <summary>
+        /// 1 | 2
+        /// 3 | 4
+        /// </summary>
         RowMajor
     }
 
-    internal class MatrixMapper<T> : IEnumerable<int>
+    internal abstract class MatrixMapper<TMatrix> : IEnumerable<int>
     {
-        private readonly T[,] _matrix;
-        private readonly TwoDimensionalArray _dimensionality;
-        private readonly IEnumerable<T[]> _enumerableMatrix;
-        private readonly bool _isMatrix;
-        private T[] _current;
+        public abstract int Columns { get; protected set; }
 
-        public MatrixMapper(T[,] matrix, TwoDimensionalArray dimensionality)
+        public abstract TMatrix[] Current { get; set; }
+
+        public abstract TMatrix this[int i, int j] { get; }
+
+        public abstract IEnumerator<int> GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            _matrix = matrix;
-            _dimensionality = dimensionality;
-            Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
-            Columns = TwoDimensionalArray.ColumnMajor == dimensionality ? matrix.ColumnLength() : matrix.RowLength();
+            return this.GetEnumerator();
+        }
+    }
 
-            _isMatrix = true;
+    internal class ObjectArrayMapper<TBase, TMatrix> : MatrixMapper<TMatrix>
+    {
+        private readonly IEnumerable<TBase> objectMatrix;
+        private readonly Func<TBase, TMatrix[]> selector;
+
+
+        public ObjectArrayMapper(IEnumerable<TBase> matrix, Func<TBase, TMatrix[]> selector)
+        {
+            // here
+            this.objectMatrix = matrix;
+            this.selector = selector;
+            this.Columns = selector(this.objectMatrix.First()).Length;
+            ////this.isMatrix = false;
         }
 
-        public MatrixMapper(IEnumerable<T[]> matrix)
+        public override IEnumerator<int> GetEnumerator()
         {
-            _enumerableMatrix = matrix;
-            Columns = _enumerableMatrix.First().Length;
-            Rows = null;
 
-            _isMatrix = false;
+                int rowCounter = -1;
+                foreach (var currentItem in this.objectMatrix)
+                {
+                    rowCounter++;
+                    this.Current = this.selector(currentItem);
+                    yield return rowCounter;
+                }
         }
 
-        public int Columns { get; private set; }
+        public override int Columns { get; protected set; }
 
-        public int? Rows { get; private set; }
+        public override TMatrix[] Current { get; set; }
 
-        public T this[int i, int j]
+        public override TMatrix this[int i, int j]
         {
             get
             {
-                if (_isMatrix)
-                {
-                    return _current[j];
-                }
+                return this.Current[j];
+                
+                throw new Exception();
+            }
+        }
+    }
 
-                if (_dimensionality == TwoDimensionalArray.RowMajor)
-                {
-                    return _matrix[i, j];
-                }
+    internal class EnumerableMapper<TMatrix> : MatrixMapper<TMatrix>
+    {
+        private readonly IEnumerable<TMatrix[]> enumerableMatrix;
+        public EnumerableMapper(IEnumerable<TMatrix[]> matrix)
+        {
+            this.enumerableMatrix = matrix;
+            this.Columns = this.enumerableMatrix.First().Length;
+        }
 
-                if (_dimensionality == TwoDimensionalArray.ColumnMajor)
-                {
-                    return _matrix[j, i];
-                }
+        public override IEnumerator<int> GetEnumerator()
+        {
+            int rowCounter = -1;
+            foreach (var currentItem in this.enumerableMatrix)
+            {
+                rowCounter++;
+                this.Current = currentItem;
+                yield return rowCounter;
+            }
+
+        }
+
+        public override int Columns { get; protected set; }
+
+        public override TMatrix[] Current { get; set; }
+
+        public override TMatrix this[int i, int j]
+        {
+            get
+            {
+                return this.Current[j];
 
                 throw new Exception();
             }
         }
+    }
 
+    internal class TwoDimArrayMapper<TMatrix> : MatrixMapper<TMatrix>
+    {
+        private readonly TwoDimensionalArray dimensionality;
+        private readonly TMatrix[,] matrix;
+        public int? Rows { get; private set; }
 
-        public IEnumerator<int> GetEnumerator()
+        public TwoDimArrayMapper(TMatrix[,] matrix, TwoDimensionalArray dimensionality)
         {
-            if (_isMatrix)
+            this.matrix = matrix;
+            this.dimensionality = dimensionality;
+
+            if (dimensionality != TwoDimensionalArray.ColumnMajor || dimensionality != TwoDimensionalArray.RowMajor)
             {
-                for (int i = 0; i < Rows; i++)
-                {
-                    yield return i;
-                }
+                throw new NotImplementedException("Only ColumnMajor and RowMajor dimensionalities have been implemented");
             }
-            else
+
+            this.Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
+            this.Columns = TwoDimensionalArray.ColumnMajor == dimensionality
+                               ? matrix.ColumnLength()
+                               : matrix.RowLength();
+        }
+
+        public override IEnumerator<int> GetEnumerator()
+        {
+            for (int i = 0; i < this.Rows; i++)
             {
-                int rowCounter = -1;
-                foreach (var current in _enumerableMatrix)
-                {
-                    rowCounter++;
-                    _current = current;
-                    yield return rowCounter;
-                }
+                yield return i;
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public override int Columns { get; protected set; }
+
+        public override TMatrix[] Current { get; set; }
+
+        public override TMatrix this[int i, int j]
         {
-            return GetEnumerator();
+            get
+            {
+                if (this.dimensionality == TwoDimensionalArray.RowMajor)
+                {
+                    return this.matrix[i, j];
+                }
+
+                if (this.dimensionality == TwoDimensionalArray.ColumnMajor)
+                {
+                    return this.matrix[j, i];
+                }
+
+                throw new Exception();
+            }
         }
     }
 }

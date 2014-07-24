@@ -1,27 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AcousticEntropy.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the AcousticEntropy type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools
 {
+    using System;
+
+    using TowseyLibrary;
+
     public static class AcousticEntropy
     {
-
         public static double[] CalculateTemporalEntropySpectrum(double[,] spectrogram)
         {
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
             double[] tenSp = new double[freqBinCount];      // array of H[t] indices, one for each freq bin
-            for (int j = 0; j < freqBinCount; j++)         // for all frequency bins
+
+            // for all frequency bins
+            for (int j = 0; j < freqBinCount; j++)         
             {
                 double[] column = MatrixTools.GetColumn(spectrogram, j);
-                tenSp[j] = DataTools.Entropy_normalised(DataTools.SquareValues(column)); // ENTROPY of freq bin                
+
+                // ENTROPY of freq bin
+                tenSp[j] = DataTools.Entropy_normalised(DataTools.SquareValues(column));
             }
+
             return tenSp;
-        } //CalculateTemporalEntropySpectrum()
+        }
 
 
         public static Tuple<double, double> CalculateSpectralEntropies(double[,] amplitudeSpectrogram, int lowerBinBound, int reducedFreqBinCount)

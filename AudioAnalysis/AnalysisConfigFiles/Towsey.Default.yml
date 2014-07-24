@@ -1,0 +1,23 @@
+---
+AnalysisName: Towsey.Default
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+# min and max of the freq band to search
+MinHz: 100          
+MaxHz: 1000          
+MinGap: 70
+MaxGap: 330
+
+# Expected minimum and maximum duration of an event in seconds.
+MinDuration: 0.02
+MaxDuration: 0.7
+IntensityThreshold: 0.18
+DisplayColumns: count,avAmp-dB
+
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+#DoNoiseReduction: true
+#BgNoiseThreshold: 3.0
+...

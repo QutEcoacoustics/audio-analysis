@@ -1,9 +1,24 @@
-﻿namespace AnalysisBase
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AnalysisSettings.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   The analysis settings for processing one audio file.
+//   DO NOT CHANGE THIS CLASS UNLESS YOU ARE TOLD TO.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace AnalysisBase
 {
-    using Acoustics.Shared;
     using System;
     using System.Collections.Generic;
     using System.IO;
+
+    using Acoustics.Shared;
+
+    using GeorgeCloney;
+    using log4net;
+    using System.Reflection;
 
     /// <summary>
     /// The analysis settings for processing one audio file.
@@ -15,133 +30,46 @@
     /// The working directory may be deleted after the analysis is complete.
     /// </para>
     /// </remarks>
-    public class AnalysisSettings
+    [Serializable]
+    public class AnalysisSettings : ICloneable
     {
-        /// <summary>
-        /// Gets RunDirectoryString.
-        /// </summary>
-        public static string AnalysisBaseDirectoryString
-        {
-            get
-            {
-                return "AnalysisSettings.analysisBaseDirectory";
-            }
-        }
+        [NonSerialized]
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        [NonSerialized]
+        private static int instanceCounter = 0;
 
         /// <summary>
-        /// Gets BaseRunDirectoryString.
+        /// Used to track instances of this class through parallelism - must be readonly.
         /// </summary>
-        public static string AnalysisRunDirectoryString
-        {
-            get
-            {
-                return "AnalysisSettings.analysisRunDirectory";
-            }
-        }
+        [NonSerialized]
+        private int? instanceId = null;
 
         /// <summary>
-        /// Gets AudioFileString.
+        /// Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
         /// </summary>
-        public static string AudioFileString
-        {
-            get
-            {
-                return "AnalysisSettings.audioFile";
-            }
-        }
-
-        /// <summary>
-        /// Gets SegmentOverlapDurationString.
-        /// </summary>
-        public static string SegmentOverlapDurationString
-        {
-            get
-            {
-                return "AnalysisSettings.SegmentOverlapDuration";
-            }
-        }
-
-        /// <summary>
-        /// Gets SegmentMinDurationString.
-        /// </summary>
-        public static string SegmentMinDurationString
-        {
-            get
-            {
-                return "AnalysisSettings.SegmentMinDuration";
-            }
-        }
-
-        /// <summary>
-        /// Gets SegmentMaxDurationString.
-        /// </summary>
-        public static string SegmentMaxDurationString
-        {
-            get
-            {
-                return "AnalysisSettings.SegmentMaxDuration";
-            }
-        }
-
-        /// <summary>
-        /// Gets SegmentTargetSampleRateString.
-        /// </summary>
-        public static string SegmentTargetSampleRateString
-        {
-            get
-            {
-                return "AnalysisSettings.SegmentTargetSampleRate";
-            }
-        }
-
-        /// <summary>
-        /// Gets SegmentMediaTypeString.
-        /// </summary>
-        public static string SegmentMediaTypeString
-        {
-            get
-            {
-                return "AnalysisSettings.SegmentMediaType";
-            }
-        }
-
-        /// <summary>
-        /// Gets ConfigStringInputString.
-        /// </summary>
-        public static string ConfigStringInputString
-        {
-            get
-            {
-                return "AnalysisSettings.configStringInput";
-            }
-        }
-
-        /// <summary>
-        /// Gets ConfigFileString.
-        /// </summary>
-        public static string ConfigFileString
-        {
-            get
-            {
-                return "AnalysisSettings.configFile";
-            }
-        }
-
-        static int instanceCounter = 0;
-        int instanceId;
-
         public AnalysisSettings()
         {
-            instanceCounter++;
-            instanceId = instanceCounter;
+            this.ConfigDict = new Dictionary<string, string>();
         }
 
-        public int InstanceId { get { return instanceId; } }
-
-        public override string ToString()
+        /// <summary>
+        /// Gets the instance tracking integer.
+        /// </summary>
+        public int InstanceId
         {
-            return string.Format("Settings for {0} with instance id {1} and config file {2}.",
-                this.AudioFile.Name, this.InstanceId, this.ConfigFile.Name);
+            get
+            {
+                if (!instanceId.HasValue)
+                {
+                    // counter increment moved out of constructor because binary serializer does not use constructors
+                    instanceCounter++;
+                    this.instanceId = instanceCounter;
+
+                }
+
+                return this.instanceId.Value;                
+            }
         }
 
         /// <summary>
@@ -152,7 +80,7 @@
         public DirectoryInfo AnalysisBaseTempDirectory { get; set; }
 
         /// <summary>
-        /// Gets a base temp directory. The dir will exist.
+        /// Gets a base temp directory. The directory will exist.
         /// </summary>
         public DirectoryInfo AnalysisBaseTempDirectoryChecked
         {
@@ -192,7 +120,7 @@
         public DirectoryInfo AnalysisInstanceTempDirectory { get; set; }
 
         /// <summary>
-        /// Gets a temp directory for a single run. The dir will exist.
+        /// Gets a temp directory for a single run. The directory will exist.
         /// </summary>
         public DirectoryInfo AnalysisInstanceTempDirectoryChecked
         {
@@ -206,7 +134,7 @@
                 }
                 else
                 {
-                    tempDir = new DirectoryInfo(Path.Combine(AnalysisBaseTempDirectoryChecked.FullName, Path.GetRandomFileName()));
+                    tempDir = new DirectoryInfo(Path.Combine(this.AnalysisBaseTempDirectoryChecked.FullName, Path.GetRandomFileName()));
                 }
 
                 if (!Directory.Exists(tempDir.FullName))
@@ -241,9 +169,14 @@
         public FileInfo EventsFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the indices file for the analysis.
+        /// Gets or sets the summary indices file for the analysis.
         /// </summary>
-        public FileInfo IndicesFile { get; set; }
+        public FileInfo SummaryIndicesFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the spectrum indices directory where spectra should be written for the analysis.
+        /// </summary>
+        public DirectoryInfo SpectrumIndicesDirectory { get; set; }
 
         /// <summary>
         /// Gets or sets the audio file for the analysis.
@@ -261,7 +194,7 @@
         /// Gets or sets the minimum audio file duration the analysis can process.
         /// This is the min duration without including overlap. Overlap will be added.
         /// This should be set to an initial value by an analysis.
-        /// TODO: a chunk of audio without the overlap is a 'segmentstep'.
+        /// TODO: a chunk of audio without the overlap is a 'segment step'.
         /// </summary>
         public TimeSpan? SegmentMinDuration { get; set; }
 
@@ -272,7 +205,11 @@
         /// </summary>
         public TimeSpan? SegmentMaxDuration { get; set; }
 
-        public TimeSpan? StartOfSegment { get; set; }
+        /// <summary>
+        /// Gets or sets the start offset of the current analysis segment.
+        /// For a large file, analyzed in minute segments, this will store Minute offsets (e.g. min 1, min 2, min 3...).
+        /// </summary>
+        public TimeSpan? SegmentStartOffset { get; set; }
 
         /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
@@ -304,55 +241,11 @@
         public Dictionary<string, string> ConfigDict { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets other configuration properties. Should be mutually exclusive with ConfigFile.
         /// </summary>
-        /// <param name="fiConfig"></param>
-        /// <param name="dict"></param>
-        /// <param name="diOutputDir"></param>
-        /// <param name="key_SEGMENT_DURATION"></param>
-        /// <param name="key_SEGMENT_OVERLAP"></param>
-        public void SetUserConfiguration(DirectoryInfo tempFileDir, FileInfo fiConfig, Dictionary<string, string> dict, DirectoryInfo diOutputDir, string key_SEGMENT_DURATION, string key_SEGMENT_OVERLAP)
-        {
-            this.ConfigFile = fiConfig;
-            this.ConfigDict = dict;
-            this.AnalysisBaseOutputDirectory = diOutputDir;
+        public dynamic Configuration { get; set; }
 
-            // if temp dir is not given, use output dir as temp dir
-            if (tempFileDir != null)
-            {
-                this.AnalysisBaseTempDirectory = tempFileDir;
-            }
-
-            //#SEGMENT_DURATION=minutes, SEGMENT_OVERLAP=seconds   FOR EXAMPLE: SEGMENT_DURATION=5  and SEGMENT_OVERLAP=10
-
-            //set the segment offset i.e. time between consecutive segment starts - the key used for this in config file = "SEGMENT_DURATION"
-            if (this.ConfigDict.ContainsKey(key_SEGMENT_DURATION))
-            {
-                string value = dict.TryGetValue(key_SEGMENT_DURATION, out value) ? value : null;
-                int segmentOffsetMinutes;
-                if (int.TryParse(value, out segmentOffsetMinutes))
-                    this.SegmentMaxDuration = TimeSpan.FromMinutes(segmentOffsetMinutes);
-                else
-                {
-                    this.SegmentMaxDuration = null;
-                    Console.WriteLine("############### WARNING #############");
-                    Console.WriteLine("ERROR READING USER CONFIGURATION FILE");
-                    Console.WriteLine("\tINVALID KVP: key={0}, value={1}", key_SEGMENT_DURATION, value);
-                }
-            }
-
-            // set overlap
-            if (this.ConfigDict.ContainsKey(key_SEGMENT_OVERLAP))
-            {
-                string value = dict.TryGetValue(key_SEGMENT_OVERLAP, out value) ? value : null;
-                int segmentOverlapSeconds;
-                if (int.TryParse(value, out segmentOverlapSeconds))
-                    this.SegmentOverlapDuration = TimeSpan.FromSeconds(segmentOverlapSeconds);
-                else
-                    this.SegmentOverlapDuration = TimeSpan.Zero;
-            }
-        } //SetUserConfiguration()
-
+        /*
         /// <summary>
         /// Creates a clone of this AnalysisSettings object.
         /// 
@@ -394,6 +287,23 @@
             newSettings.ConfigDict = new Dictionary<string, string>(this.ConfigDict);
 
             return newSettings;
+        }
+         * */
+
+        public object Clone()
+        {
+            AnalysisSettings deepClone = this.DeepClone();
+            Log.Debug("Instance Id of old: {0}, vs new {1}".Format2(this.InstanceId, deepClone.InstanceId));
+            return deepClone;
+        }
+
+        public override string ToString()
+        {
+            return string.Format(
+                "Settings for {0} with instance id {1} and config file {2}.",
+                this.AudioFile.Name,
+                this.InstanceId,
+                this.ConfigFile.Name);
         }
     }
 }

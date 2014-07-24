@@ -156,7 +156,7 @@ namespace Dong.Felt
         {
             var recording = new AudioRecording(wavFilePath);
             var config = new SonogramConfig();
-            var amplitudeSpectrogram = new SpectrogramStandard(config, recording.GetWavReader());
+            var amplitudeSpectrogram = new SpectrogramStandard(config, recording.WavReader);
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
 
             var minFrame = (int)Math.Round(startTime * amplitudeSpectrogram.FramesPerSecond);

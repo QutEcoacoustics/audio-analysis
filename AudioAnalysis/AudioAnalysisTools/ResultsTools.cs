@@ -1,32 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Acoustics.Shared.Extensions;
-using AnalysisBase;
-//using AudioAnalysisTools;
-using log4net;
-using TowseyLibrary;
-using AudioAnalysisTools.Indices;
-//using Acoustics.Shared;
-//using Acoustics.Tools.Audio;
-//using AnalysisRunner;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ResultsTools.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using Acoustics.Shared.Extensions;
+
+    using AnalysisBase;
+    using AnalysisBase.ResultBases;
+
+    using AudioAnalysisTools.Indices;
+
+    using log4net;
+
+    using TowseyLibrary;
+
     public static class ResultsTools
     {
         public const string ReportFileExt = ".csv";
         private static readonly ILog Log = LogManager.GetLogger(typeof(ResultsTools));
 
+        /* 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="analyserResults"></param>  
         /// <returns></returns>
+        [Obsolete]
         public static DataTable MergeResultsIntoSingleDataTable(IEnumerable<AnalysisResult> analyserResults)
         {
             DataTable mergedDatatable = null;
@@ -43,7 +55,8 @@ namespace AudioAnalysisTools
             }
             return mergedDatatable;
         }
-
+       
+        [Obsolete]
         public static Tuple<EventBase[], IndexBase[]> MergeResults(IEnumerable<AnalysisResult> results)
         {
             var eventCount = 0;
@@ -68,11 +81,53 @@ namespace AudioAnalysisTools
             }
 
             return Tuple.Create(mergedEvents, mergedIndices);
+        }*/
+         
+
+        public static T[] MergeResults<T>(IEnumerable<AnalysisResult2> results, Func<AnalysisResult2, T[]> selector,
+            Action<AnalysisResult2, T, int, int> correctionFunc) where T : ResultBase
+        {
+            var count = results.Sum(result => selector(result).Length);
+
+
+            if (count <= 0)
+            {
+                return null;
+            }
+
+
+            var merged = new T[count];
+
+            int index = 0;
+            foreach (var result in results)
+            {
+                T[] items = selector(result);
+
+                // relies on SegmentStartOffset to be set (enforced by analysisCoordinator)
+                Array.Sort(items);
+
+                for (int resultIndex = 0; resultIndex < items.Length; resultIndex++)
+                {
+                    var item = items[resultIndex];
+                    item.SegmentDuration = result.SegmentAudioDuration;
+
+                    // correct specific details
+                    correctionFunc(result, item, index, resultIndex);
+
+                    merged[index] = item;
+                    index++;
+                }
+            }
+
+            // assumption of non-overlapping results - otherwise another sort of the final list will be needed.
+            return merged;
         }
 
+        // TODO: ensure all functionality here is taken care of in correct index offsets
+        /*[Obsolete]
         public static IndexBase[] MergeIndexResults(IEnumerable<AnalysisResult> results)
         {
-            if ((results == null)||(results.Count() == 0)) return null;
+            if ((results == null)||(results.Any())) return null;
             int indexCount = results.Count();
             var mergedIndices = new IndexBase[indexCount];
 
@@ -98,9 +153,10 @@ namespace AudioAnalysisTools
             }
 
             return mergedIndices;
-        }
+        }*/
 
-        
+        /*
+        [Obsolete]
         public static DataTable GetSegmentDatatableWithContext(AnalysisBase.AnalysisResult result)
         {
             TimeSpan segmentStartOffset = result.SegmentStartOffset;
@@ -148,49 +204,33 @@ namespace AudioAnalysisTools
 
             return dt;
         } //GetSegmentDatatableWithContext()
+         */
+         
 
-        public static int CorrectEventOffsets(EventBase[] destination, int destinationIndex, AnalysisResult2 result)
+        public static void CorrectEvent(AnalysisResult2 result, EventBase eventToBeFixed, int totalEventsSoFar, int totalEventsInResultSoFar)
         {
-            var resultStartSeconds = result.SegmentStartOffset.TotalSeconds;
-            var count = 0;
-            foreach (var eventBase in result.Data)
-            {
-                eventBase.EventCount = count;
-                count++;
+            // TODO: check with michael what this should be (totalEventsSoFa or totalEventsInResultSoFar)
+            eventToBeFixed.EventCount = totalEventsSoFar;
 
-                eventBase.SegmentDuration = result.AudioDuration;
-                var absoluteOffset = resultStartSeconds + eventBase.EventStartSeconds;
-                eventBase.EventStartAbsolute = absoluteOffset;
-                
-                // just in case the event was in a segment longer than 60 seconds, rebase values
-                eventBase.MinuteOffset = (int) (absoluteOffset / 60);
-                eventBase.EventStartSeconds = resultStartSeconds % 60;
+            var resultStartSeconds = eventToBeFixed.StartOffset.TotalSeconds;
+            var absoluteOffset = resultStartSeconds + eventToBeFixed.EventStartSeconds;
+            eventToBeFixed.EventStartAbsolute = absoluteOffset;
 
-                destination[destinationIndex] = eventBase;
-                destinationIndex++;
-            }
-
-            return destinationIndex;
+            // just in case the event was in a segment longer than 60 seconds, rebase values
+            ////eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
+            eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
         }
 
-        public static int CorrectIndexOffsets(IndexBase[] destination, int destinationIndex, AnalysisResult2 result)
+        public static void CorrectSummaryIndex(AnalysisResult2 result, SummaryIndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInJustThisResultSoFar)
         {
-            foreach (var indexBase in result.Indices)
-            {
-                // (double)result.SegmentStartOffset.Minutes
-                indexBase.MinuteOffset = (int)result.SegmentStartOffset.TotalMinutes;
-                indexBase.SegmentDuration = result.AudioDuration;
-                //indexBase.indexStore = result.
-                // TODO: what is the purpose of Indices_Count
-
-                destination[destinationIndex] = indexBase;
-                destinationIndex++;
-            }
-
-            return destinationIndex;
+            indexToBeFixed.RankOrder = totalSummaryIndicesSoFar;
         }
 
-        
+        public static void CorrectSpectrumIndex(AnalysisResult2 result, SpectralIndexBase spectralIndexToBeFixed, int totalSpectrumIndicesSoFar, int totalSpectrumIndicesInResultSoFar)
+        {
+        }
+
+        /*
         /// <summary>
         /// 
         /// </summary>
@@ -200,41 +240,44 @@ namespace AudioAnalysisTools
         /// <param name="segmentStartOffset"></param>
         /// <param name="segmentIndex"></param>
         /// <returns></returns>
-        //public static DataTable AppendToDataTable(DataTable masterDataTable, DataTable segmentDataTable, TimeSpan segmentDuration, TimeSpan segmentStartOffset, int segmentIndex)
-        //{
-        //        // set IndicesCount,start-min,SegTimeSpan
-        //        // int, double, double
-        //        // segmentDataTable is the datatable for the current result only
-        //        segmentDataTable.Rows[0][Keys.INDICES_COUNT] = segmentIndex;
-        //        segmentDataTable.Rows[0][Keys.START_MIN] = segmentStartOffset.TotalMinutes;
-        //        segmentDataTable.Rows[0][Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalMinutes;
+        [Obsolete]
+        public static DataTable AppendToDataTable(DataTable masterDataTable, DataTable segmentDataTable, TimeSpan segmentDuration, TimeSpan segmentStartOffset, int segmentIndex)
+        {
+                // set IndicesCount,start-min,SegTimeSpan
+                // int, double, double
+                // segmentDataTable is the datatable for the current result only
+                segmentDataTable.Rows[0][Keys.INDICES_COUNT] = segmentIndex;
+                segmentDataTable.Rows[0][Keys.START_MIN] = segmentStartOffset.TotalMinutes;
+                segmentDataTable.Rows[0][Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalMinutes;
 
-        //        /*
-        //        var headers = new List<string>();
+                /*
+                var headers = new List<string>();
 
-        //        foreach (DataColumn col in segmentDataTable.Columns)
-        //        {
-        //            headers.Add(col.ColumnName);
-        //        }
+                foreach (DataColumn col in segmentDataTable.Columns)
+                {
+                    headers.Add(col.ColumnName);
+                }
 
-        //        foreach (DataRow row in segmentDataTable.Rows)
-        //        {
-        //            if (headers.Contains(Keys.EVENT_START_SEC)) //this is a file of events
-        //            {
-        //                double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
-        //                if (headers.Contains(Keys.EVENT_START_ABS)) row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
-        //                if (headers.Contains(Keys.EVENT_START_MIN)) row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
-        //                if (headers.Contains(Keys.EVENT_COUNT)) row[Keys.EVENT_COUNT] = masterDataTable.Rows.Count + 1;
-        //                row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
-        //            }
-        //            if (headers.Contains(Keys.INDICES_COUNT)) row[Keys.INDICES_COUNT] = segmentIndex;
-        //            if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
-        //            masterDataTable.ImportRow(row);
-        //        }
-        //        */
-        //    return masterDataTable;
-        //}
-
+                foreach (DataRow row in segmentDataTable.Rows)
+                {
+                    if (headers.Contains(Keys.EVENT_START_SEC)) //this is a file of events
+                    {
+                        double secondsOffsetInCurrentAudioSegment = (double)row[Keys.EVENT_START_SEC];
+                        if (headers.Contains(Keys.EVENT_START_ABS)) row[Keys.EVENT_START_ABS] = segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment;
+                        if (headers.Contains(Keys.EVENT_START_MIN)) row[Keys.EVENT_START_MIN] = (int)((segmentStartOffset.TotalSeconds + secondsOffsetInCurrentAudioSegment) / 60);
+                        if (headers.Contains(Keys.EVENT_COUNT)) row[Keys.EVENT_COUNT] = masterDataTable.Rows.Count + 1;
+                        row[Keys.EVENT_START_SEC] = (double)(secondsOffsetInCurrentAudioSegment % 60); //recalculate the offset to nearest minute - not start of segment
+                    }
+                    if (headers.Contains(Keys.INDICES_COUNT)) row[Keys.INDICES_COUNT] = segmentIndex;
+                    if (headers.Contains(Keys.SEGMENT_TIMESPAN)) row[Keys.SEGMENT_TIMESPAN] = segmentDuration.TotalSeconds;
+                    masterDataTable.ImportRow(row);
+                }
+              
+            return masterDataTable;
+        }
+        */
+        
+        /*
         /// <summary>
         /// AT THE END OF FILE ANALYSIS NEED TO CONSTRUCT EVENTS AND INDICES DATATABLES
         /// Different things happen depending on the content of the analysis data table
@@ -244,6 +287,7 @@ namespace AudioAnalysisTools
         /// <param name="analyser"></param>
         /// <param name="durationOfTheOriginalAudioFile"></param>
         /// <returns></returns>
+        [Obsolete]
         public static Tuple<DataTable, DataTable> GetEventsAndIndicesDataTables(DataTable masterDataTable, IAnalyser analyser,
                                                                                 TimeSpan durationOfTheOriginalAudioFile, double scoreThreshold)
         {
@@ -261,15 +305,19 @@ namespace AudioAnalysisTools
             indicesDatatable = analyser.ConvertEvents2Indices(masterDataTable, unitTime, durationOfTheOriginalAudioFile, scoreThreshold); //convert to datatable of indices
             return System.Tuple.Create(masterDataTable, indicesDatatable);
         }
-
+        */
         private static readonly TimeSpan IndexUnitTime = new TimeSpan(0, 1, 0);
 
-        public static void ConvertEventsToIndices(IAnalyser2 analyser, 
-            EventBase[] events, ref IndexBase[] indices, TimeSpan durationOfTheOriginalAudioFile, double scoreThreshold)
+        public static void ConvertEventsToIndices(
+            IAnalyser2 analyser,
+            EventBase[] events,
+            ref SummaryIndexBase[] indices,
+            TimeSpan durationOfTheOriginalAudioFile,
+            double scoreThreshold)
         {
             if (events == null && indices == null)
             {
-                throw new InvalidOperationException("If no results were produced, events cannot be made into indices");
+                Log.Warn("No events or summary indices were produced, events cannot be made into indices");
             }
             else if (events == null && indices != null)
             {
@@ -280,17 +328,20 @@ namespace AudioAnalysisTools
             {
                 Log.InfoFormat("Converting Events to {0} minute Indices", IndexUnitTime.TotalMinutes);
 
-                indices = analyser.ConvertEventsToIndices(events, IndexUnitTime, durationOfTheOriginalAudioFile,
-                    scoreThreshold).ToArray();
+                indices = analyser.ConvertEventsToSummaryIndices(
+                    events,
+                    IndexUnitTime,
+                    durationOfTheOriginalAudioFile,
+                    scoreThreshold);
             }
             else if (events != null && indices != null)
             {
                 // no-op both values already present, just ensure they match
-                Log.Debug("Both events and indices already given");
+                Log.Info("Both events and indices already given, no event conversion done");
             }
-        } 
+        }
 
-
+        /*
         /// <summary>
         /// Save an events and indices data tables if they exist.
         /// File names are constructed form the analysis ID etc.
@@ -300,6 +351,7 @@ namespace AudioAnalysisTools
         /// <param name="fName"></param>
         /// <param name="opDir"></param>
         /// <returns></returns>
+        [Obsolete]
         public static Tuple<FileInfo, FileInfo> SaveEventsAndIndicesDataTables(DataTable eventsDatatable, DataTable indicesDatatable, string fName, string opDir)
         {
             FileInfo fiEvents = null;
@@ -345,7 +397,7 @@ namespace AudioAnalysisTools
             return Tuple.Create(fiEvents, fiIndices);
         }
 
-
+        [Obsolete]
         public static FileInfo SaveSummaryIndices2File(IndexBase[] indices, string fName, DirectoryInfo opDir, FileInfo indexPropertiesConfig)
         {
             if (indices == null) return null;
@@ -364,6 +416,7 @@ namespace AudioAnalysisTools
 
 
         //WRITE A CSV FILE of SUMMARY INDICES from an ARRAY OF INDEX-BASE
+        [Obsolete]
         public static void WriteSummaryIndices2CSV(IndexBase[] indicesResults, string strFilePath, FileInfo indexPropertiesConfig)
         {
             string seperatorChar = ",";
@@ -414,8 +467,8 @@ namespace AudioAnalysisTools
                 if (sr != null) { sr.Close(); }
             }
         } // DataTable2CSV()
-
-
+        */
+        
 
         public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName,
             DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
@@ -423,10 +476,16 @@ namespace AudioAnalysisTools
             return SaveResults(outputDirectory, fileName + ".Events", analyser2.WriteEventsFile, events);
         }
 
-        public static FileInfo SaveIndices(IAnalyser2 analyser2, string fileName,
-            DirectoryInfo outputDirectory, IEnumerable<IndexBase> indices) 
+        public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName,
+            DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices) 
         {
-            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteIndicesFile, indices);
+            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
+        }
+
+        public static DirectoryInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectralIndexBase> spectra)
+        {
+            analyser2.WriteSpectrumIndicesFiles(outputDirectory, fileName, spectra);
+            return outputDirectory;
         }
 
         private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)
@@ -435,6 +494,7 @@ namespace AudioAnalysisTools
             {
                 return null;    
             }
+
 
             var reportfilePath = outputDirectory.CombineFile(resultFilenamebase + ReportFileExt);
             var reportfilePathBackup = outputDirectory.CombineFile(resultFilenamebase + "_BACKUP" + ReportFileExt);
@@ -446,7 +506,5 @@ namespace AudioAnalysisTools
 
             return reportfilePath;
         }
-
-    } //TempTools
-
-} //AudioBrowser
+    }
+}

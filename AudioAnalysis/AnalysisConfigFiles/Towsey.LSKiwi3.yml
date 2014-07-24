@@ -1,0 +1,45 @@
+---
+AnalysisName: Towsey.LSKiwi3
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 5
+SegmentOverlap: 10
+FrameLength: 2048
+FrameOverlap: 0.0
+
+#Resample rate must be 2 X the desired Nyquist
+ResampleRate: 17640
+
+#Frequency band of female call
+MinHz_FEMALE: 1300
+MaxHz_FEMALE: 2000
+
+#Frequency band of male call
+MinHz_MALE: 2200
+MaxHz_MALE: 3300
+
+MinPeriod: 0.3
+MaxPeriod: 1.8
+MinDuration: 7
+MaxDuration: 70
+EventThreshold: 0.20
+
+# WEIGHTS TO CALCULATE COMBO SCORE - used to determine start and end of kiwi events.
+#ORIGINAL WTS: intensity=0.3;  gridScore=0.20;   deltaPeriodScore=0.20;   chirpScore=0.3
+#CURRENT BEST: intensity=0.3;  gridScore=0.15;   deltaPeriodScore=0.25;   chirpScore=0.3
+WEIGHT_EvIntensity: 0.30
+WEIGHT_GridScore: 0.2
+WEIGHT_DeltaPeriodScore: 0.25
+WEIGHT_ChirpScore: 0.25
+
+#RULES TO FILTER POTENTIAL KIWI EVENTS
+DO_FILTER_EVENTS: false
+EXCLUDE_IF_RULE: BandwidthScore_LT_0.3
+EXCLUDE_IF_RULE: EvIntensity_LT_0.1
+EXCLUDE_IF_RULE: DeltaPeriodScore_LT_0.1
+
+#SAVE INTERMEDIARY FILES
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: true
+ParallelProcessing: false
+...

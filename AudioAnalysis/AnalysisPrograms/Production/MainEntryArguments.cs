@@ -138,7 +138,7 @@ namespace AnalysisPrograms.Production
 
         public AnalysisSettings ToAnalysisSettings()
         {
-            AnalysisSettings analysisSettings = new AnalysisSettings();
+            var analysisSettings = new AnalysisSettings();
 
             // ANT: renabled this line because it just makes sense! this is needed by IAnalyser cmd entry points // this not required at this point
             analysisSettings.SourceFile = this.Source; 
@@ -146,28 +146,28 @@ namespace AnalysisPrograms.Production
             analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
             analysisSettings.AudioFile = this.Output.CombineFile(this.Source.Name);
             analysisSettings.EventsFile = null;
-            analysisSettings.IndicesFile = null;
+            analysisSettings.SummaryIndicesFile = null;
             analysisSettings.ImageFile = null;
 
             var configuration = new ConfigDictionary(this.Config);
             analysisSettings.ConfigDict = configuration.GetTable();
 
-            if (this.TmpWav.NotEmpty())
+            if (this.TmpWav.IsNotEmpty())
             {
                 analysisSettings.AudioFile = this.Output.CombineFile(this.TmpWav);
             }
 
-            if (this.Events.NotEmpty())
+            if (this.Events.IsNotEmpty())
             {
                 analysisSettings.EventsFile = this.Output.CombineFile(this.Events);
             }
 
-            if (this.Indices.NotEmpty())
+            if (this.Indices.IsNotEmpty())
             {
-                analysisSettings.IndicesFile = this.Output.CombineFile(this.Indices);
+                analysisSettings.SummaryIndicesFile = this.Output.CombineFile(this.Indices);
             }
 
-            if (this.Sgram.NotEmpty())
+            if (this.Sgram.IsNotEmpty())
             {
                 analysisSettings.ImageFile = this.Output.CombineFile(this.Sgram);
             }

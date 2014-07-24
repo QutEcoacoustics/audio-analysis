@@ -1,8 +1,20 @@
-﻿#if DEBUG
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AutoAttachVs.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Example taken from this gist.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+
+#if DEBUG
+
 namespace Acoustics.Shared.Debugging
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
@@ -16,27 +28,26 @@ namespace Acoustics.Shared.Debugging
     #region Classes
 
     /// <summary>
-    /// https://gist.github.com/3813175 .
+    /// Example taken from <a href="https://gist.github.com/3813175">this gist</a>.
     /// </summary>
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", 
+        Justification = "Reviewed. Suppression is OK here.", Scope = "class")]
     public static class VisualStudioAttacher
     {
         #region Public Methods
 
-        [DllImport("User32")]
-        private static extern int ShowWindow(int hwnd, int nCmdShow);
-
         [DllImport("ole32.dll")]
         public static extern int CreateBindCtx(int reserved, out IBindCtx ppbc);
+
 
         [DllImport("ole32.dll")]
         public static extern int GetRunningObjectTable(int reserved, out IRunningObjectTable prot);
 
-
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SetFocus(IntPtr hWnd);
-
 
         public static string GetSolutionForVisualStudio(Process visualStudioProcess)
         {
@@ -51,6 +62,7 @@ namespace Acoustics.Shared.Debugging
                 {
                 }
             }
+
             return null;
         }
 
@@ -78,9 +90,22 @@ namespace Acoustics.Shared.Debugging
                     }
                 }
             }
+
             return null;
         }
 
+        /// <summary>
+        /// The method to use to attach visual studio to a specified process.
+        /// </summary>
+        /// <param name="visualStudioProcess">
+        /// The visual studio process to attach to.
+        /// </param>
+        /// <param name="applicationProcess">
+        /// The application process that needs to be debugged.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the application process is null.
+        /// </exception>
         public static void AttachVisualStudioToProcess(Process visualStudioProcess, Process applicationProcess)
         {
             _DTE visualStudioInstance;
@@ -88,23 +113,35 @@ namespace Acoustics.Shared.Debugging
             if (TryGetVsInstance(visualStudioProcess.Id, out visualStudioInstance))
             {
                 // Find the process you want the VS instance to attach to...
-                DTEProcess processToAttachTo = visualStudioInstance.Debugger.LocalProcesses.Cast<DTEProcess>().FirstOrDefault(process => process.ProcessID == applicationProcess.Id);
+                DTEProcess processToAttachTo =
+                    visualStudioInstance.Debugger.LocalProcesses.Cast<DTEProcess>()
+                                        .FirstOrDefault(process => process.ProcessID == applicationProcess.Id);
 
                 // Attach to the process.
                 if (processToAttachTo != null)
                 {
                     processToAttachTo.Attach();
-                    
+
                     ShowWindow((int)visualStudioProcess.MainWindowHandle, 3);
                     SetForegroundWindow(visualStudioProcess.MainWindowHandle);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Visual Studio process cannot find specified application '" + applicationProcess.Id + "'");
+                    throw new InvalidOperationException(
+                        "Visual Studio process cannot find specified application '" + applicationProcess.Id + "'");
                 }
             }
         }
 
+        /// <summary>
+        /// The get visual studio for solutions.
+        /// </summary>
+        /// <param name="solutionNames">
+        /// The solution names.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Process"/>.
+        /// </returns>
         public static Process GetVisualStudioForSolutions(List<string> solutionNames)
         {
             foreach (string solution in solutionNames)
@@ -112,13 +149,23 @@ namespace Acoustics.Shared.Debugging
                 Process visualStudioForSolution = GetVisualStudioForSolution(solution);
                 if (visualStudioForSolution != null)
                 {
-                    return visualStudioForSolution; ;
+                    return visualStudioForSolution;
+                    
                 }
             }
+
             return null;
         }
 
-
+        /// <summary>
+        /// The get visual studio process that is running and has the specified solution loaded.
+        /// </summary>
+        /// <param name="solutionName">
+        /// The solution name to look for.
+        /// </param>
+        /// <returns>
+        /// The visual studio <see cref="Process"/> with the specified solution name.
+        /// </returns>
         public static Process GetVisualStudioForSolution(string solutionName)
         {
             IEnumerable<Process> visualStudios = GetVisualStudioProcesses();
@@ -132,22 +179,31 @@ namespace Acoustics.Shared.Debugging
                     {
                         string actualSolutionName = Path.GetFileName(visualStudioInstance.Solution.FullName);
 
-                        if (string.Compare(actualSolutionName, solutionName, StringComparison.InvariantCultureIgnoreCase) == 0)
+                        if (string.Compare(
+                            actualSolutionName, 
+                            solutionName, 
+                            StringComparison.InvariantCultureIgnoreCase) == 0)
                         {
                             return visualStudio;
                         }
                     }
                     catch (Exception)
                     {
+                        throw;
                     }
                 }
             }
+
             return null;
         }
 
         #endregion
 
         #region Private Methods
+
+
+        [DllImport("User32")]
+        private static extern int ShowWindow(int hwnd, int nCmdShow);
 
         private static IEnumerable<Process> GetVisualStudioProcesses()
         {

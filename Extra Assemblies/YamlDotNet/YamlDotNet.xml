@@ -1289,6 +1289,11 @@
             Gets / sets the index of the column
             </summary>
         </member>
+        <member name="T:YamlDotNet.Core.MergingParser">
+            <summary>
+            Simple implementation of <see cref="T:YamlDotNet.Core.IParser"/> that implements merging: http://yaml.org/type/merge.html
+            </summary>
+        </member>
         <member name="T:YamlDotNet.Core.Parser">
             <summary>
             Parses YAML streams.
@@ -3302,7 +3307,7 @@
             <param name="value">The value of the mapping that is about to be entered.</param>
             <returns>If the mapping is to be entered, returns true; otherwise returns false;</returns>
         </member>
-        <member name="M:YamlDotNet.Serialization.IObjectGraphVisitor.EnterMapping(YamlDotNet.Serialization.IPropertyDescriptor,System.Object)">
+        <member name="M:YamlDotNet.Serialization.IObjectGraphVisitor.EnterMapping(YamlDotNet.Serialization.IPropertyDescriptor,YamlDotNet.Serialization.IObjectDescriptor)">
             <summary>
             Indicates whether the specified mapping should be entered. This allows the visitor to
             override the handling of a particular pair. This overload should be invoked when the

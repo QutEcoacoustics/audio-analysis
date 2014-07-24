@@ -192,7 +192,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FELT\FELT.fsproj">
       <Project>{73B9C579-F539-426F-9852-1EFCBA75C0D5}</Project>
-      <Name>FELT %28FSharp\FELT\FELT%29</Name>
+      <Name>FELT</Name>
     </ProjectReference>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
       <Project>{9A0FBE53-07FD-4DCF-97EC-7812BADD89D4}</Project>

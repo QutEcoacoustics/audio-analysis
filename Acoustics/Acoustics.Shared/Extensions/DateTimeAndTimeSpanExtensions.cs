@@ -1,20 +1,24 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="ExtMethodsDateTime.cs" company="QUT">
-// TODO: Update copyright text.
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ExtensionsDateTime.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
-// -----------------------------------------------------------------------
+// <summary>
+//   
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
+// ReSharper disable once CheckNamespace
 namespace System
 {
     using System.Collections.Generic;
     using System.Linq;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Extensions for the <c>DateTime</c> and <c>TimeSpan</c> structs.
     /// </summary>
-    public static class ExtensionsDateTime
+    public static class DateTimeAndTimeSpanExtensions
     {
-        private const int DaysInYear = 364;
+        private const int DaysInYear = 365;
 
         private const int DaysInMonth = 30;
 
@@ -269,9 +273,7 @@ namespace System
             return new TimeSpan(
                 Convert.ToInt64(Math.Round(
                     time.Ticks / (decimal)roundingInterval.Ticks,
-                    roundingType
-                )) * roundingInterval.Ticks
-            );
+                    roundingType)) * roundingInterval.Ticks);
         }
 
         /// <remarks>From: http://stackoverflow.com/questions/766626/is-there-a-better-way-in-c-sharp-to-round-a-datetime-to-the-nearest-5-seconds (Stackoverflow).</remarks>
@@ -284,6 +286,22 @@ namespace System
         public static DateTime Round(this DateTime datetime, TimeSpan roundingInterval)
         {
             return new DateTime((datetime - DateTime.MinValue).Round(roundingInterval).Ticks);
+        }
+
+        /// <summary>
+        /// Multiplies a timespan by an integer value
+        /// </summary>
+        public static TimeSpan Multiply(this TimeSpan multiplicand, int multiplier)
+        {
+            return TimeSpan.FromTicks(multiplicand.Ticks * multiplier);
+        }
+
+        /// <summary>
+        /// Multiplies a timespan by a double value
+        /// </summary>
+        public static TimeSpan Multiply(this TimeSpan multiplicand, double multiplier)
+        {
+            return TimeSpan.FromTicks((long)(multiplicand.Ticks * multiplier));
         }
     }
 }

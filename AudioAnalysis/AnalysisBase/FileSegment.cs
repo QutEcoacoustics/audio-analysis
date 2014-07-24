@@ -1,4 +1,14 @@
-﻿namespace AnalysisBase
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="FileSegment.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Represents a segment file. Also stores the original file.
+//   Be aware that the original file may also be a segment file.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace AnalysisBase
 {
     using System;
     using System.Collections.Generic;
@@ -10,7 +20,7 @@
     using System.Text.RegularExpressions;
 
     /// <summary>
-    /// Represents a segment file. Also stores the orginal file. 
+    /// Represents a segment file. Also stores the original file. 
     /// Be aware that the original file may also be a segment file.
     /// </summary>
     public class FileSegment
@@ -71,13 +81,13 @@
 
         public override string ToString()
         {
-            return string.Format("{0} ({3}{4}) {1} - {2}",
+            return string.Format(
+                "{0} ({3}{4}) {1} - {2}",
                 this.OriginalFile.Name,
                 this.SegmentStartOffset.HasValue ? this.SegmentStartOffset.Value.ToString() : "start",
                 this.SegmentEndOffset.HasValue ? this.SegmentEndOffset.Value.ToString() : "end",
                 this.OriginalFileDuration,
-                this.OriginalFileSampleRate.HasValue ? ", " + this.OriginalFileSampleRate.Value + "hz" : string.Empty
-                );
+                this.OriginalFileSampleRate.HasValue ? ", " + this.OriginalFileSampleRate.Value + "hz" : string.Empty);
         }
 
         public DateTime? FileModifedDateTime()
@@ -85,7 +95,7 @@
             if (this.OriginalFile != null && this.OriginalFile.Exists)
             {
                 var createTime = this.OriginalFile.CreationTime;
-                //var accessTime = this.OriginalFile.LastAccessTime;
+                ////var accessTime = this.OriginalFile.LastAccessTime;
                 var modifyTime = this.OriginalFile.LastWriteTime;
 
                 // just assume the earliest date is the one to use
@@ -97,7 +107,7 @@
         }
 
         // Prefix_YYYYMMDD_hhmmss.wav
-        private readonly string fileNameWithPrefixPattern = @".*_(\d{8}_\d{6})\..+";
+        private const string FileNameWithPrefixPattern = @".*_(\d{8}_\d{6})\..+";
 
         public DateTime? FileNameDateTime()
         {
@@ -105,9 +115,9 @@
             {
                 var fileName = this.OriginalFile.Name;
 
-                if (Regex.IsMatch(fileName, fileNameWithPrefixPattern, RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(fileName, FileNameWithPrefixPattern, RegexOptions.IgnoreCase))
                 {
-                    var match = Regex.Match(fileName, fileNameWithPrefixPattern, RegexOptions.IgnoreCase);
+                    var match = Regex.Match(fileName, FileNameWithPrefixPattern, RegexOptions.IgnoreCase);
                     DateTime dt;
                     if (DateTime.TryParseExact(
                         match.Groups[1].Value,
@@ -129,13 +139,13 @@
 
         public DateTime? AudioFileStart()
         {
-            var dateTime = FileNameDateTime();
+            var dateTime = this.FileNameDateTime();
             if (dateTime.HasValue && dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
             {
                 return dateTime;
             }
 
-            dateTime = FileModifedDateTime();
+            dateTime = this.FileModifedDateTime();
             if (this.OriginalFileDuration > TimeSpan.Zero && dateTime.HasValue &&
                 dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
             {

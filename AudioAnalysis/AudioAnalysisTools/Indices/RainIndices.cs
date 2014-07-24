@@ -1,16 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-
-using TowseyLibrary;
-using AudioAnalysisTools.DSP;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="RainIndices.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the RainIndices type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools.Indices
 {
-    public static class  RainIndices
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Linq;
+    using System.Text;
+
+    using AudioAnalysisTools.DSP;
+
+    using TowseyLibrary;
+
+    public static class RainIndices
     {
         public const string header_rain   = InitialiseIndexProperties.keyRAIN;
         public const string header_cicada = InitialiseIndexProperties.keyCICADA;
@@ -127,7 +136,7 @@ namespace AudioAnalysisTools.Indices
             // i: FRAME ENERGIES - 
             double StandardDeviationCount = 0.1;
             var results3 = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signal), StandardDeviationCount); //use Lamel et al.
-            var dBarray = SNR.TruncateNegativeValues2Zero(results3.noiseReducedSignal);
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DEFAULT_ActivityThreshold_dB) activeFrames[i] = true;
@@ -215,12 +224,19 @@ namespace AudioAnalysisTools.Indices
             int cicadaCount = 0;
             for (int i = 0; i < length; i++)
             {
-                if (classifications[i] == header_rain) rainCount++;
-                if (classifications[i] == header_cicada) cicadaCount++;
+                if (classifications[i] == header_rain)
+                {
+                    rainCount++;
+                }
+
+                if (classifications[i] == header_cicada)
+                {
+                    cicadaCount++;
+                }
             }
 
-            dict.Add(header_rain,   (rainCount   / (double)length));
-            dict.Add(header_cicada, (cicadaCount / (double)length));
+            dict.Add(header_rain,   rainCount   / (double)length);
+            dict.Add(header_cicada, cicadaCount / (double)length);
             return dict;
         }
 

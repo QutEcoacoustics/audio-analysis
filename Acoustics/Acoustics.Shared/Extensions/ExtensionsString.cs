@@ -326,12 +326,12 @@ namespace System
             return string.Format(format, args);
         }
 
-        public static bool NotEmpty(this string str)
+        public static bool IsNotEmpty(this string str)
         {
             return !string.IsNullOrEmpty(str);
         }
 
-        public static bool NotWhitespace(this string str)
+        public static bool IsNotWhitespace(this string str)
         {
             return !string.IsNullOrWhiteSpace(str);
         }

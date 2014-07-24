@@ -1,0 +1,27 @@
+---
+AnalysisName: Towsey.Frogs
+# General Parameters
+DisplayColumns: Frog
+
+# FROG_DATA_FILE=FrogDataAndCompilationFile.csv
+FROG_DATA_FILE: CompilationOf31FrogSpeciesForCurramoreSE-QLD.csv
+
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+MinPeriod: 0.01
+MaxPeriod: 0.04
+MinDuration: 0.3
+MaxDuration: 0.8
+#use this threshold if averaging over a period - averaging seems to work better
+IntensityThreshold: 0.22
+#use this threshold if obtaining max value over a period
+#IntensityThreshold: 0.1
+#######################################
+# save sonograms and other files 
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: true
+DoNoiseReduction: true
+BgNoiseThreshold: 3.0
+...

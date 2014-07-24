@@ -19,6 +19,8 @@ using TowseyLibrary;
 
 namespace AudioBrowser
 {
+    using AudioAnalysisTools.Indices;
+
     public class TabBrowseAudio
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(TabBrowseAudio));
@@ -65,7 +67,7 @@ namespace AudioBrowser
 
         public FileInfo SonogramImageFile { get; private set; }
 
-        public IAnalyser Analyser { get; private set; }
+        public IAnalyser2 Analyser { get; private set; }
 
         public Dictionary<string, string> AnalysisParams { get; private set; }
 
@@ -285,22 +287,22 @@ namespace AudioBrowser
             var config = ConfigDictionary.ReadPropertiesFile(configFile.FullName);
 
             //Set following key/value pairs from radio buttons.
-            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.ANNOTATE_SONOGRAM, annotated.ToString().ToLowerInvariant());
-            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NOISE_DO_REDUCTION, noiseReduced.ToString().ToLowerInvariant());
+            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.AnnotateSonogram, annotated.ToString().ToLowerInvariant());
+            SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NoiseDoReduction, noiseReduced.ToString().ToLowerInvariant());
 
             //If any of following config key/value pairs are missing, then add in the defaults.
-            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.FRAME_LENGTH))
+            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.FrameLength))
             {
                 var defaultFrameLength = 1024; // do not want long spectrogram
-                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.FRAME_LENGTH, defaultFrameLength.ToString().ToLowerInvariant());
+                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.FrameLength, defaultFrameLength.ToString().ToLowerInvariant());
             }
 
-            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.NOISE_BG_THRESHOLD))
+            if (!config.ContainsKey(AudioAnalysisTools.AnalysisKeys.NoiseBgThreshold))
             {
-                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NOISE_BG_THRESHOLD, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
+                SetConfigValue(config, AudioAnalysisTools.AnalysisKeys.NoiseBgThreshold, defaultBackgroundNoiseThreshold.ToString().ToLowerInvariant());
             }
 
-            config[AudioAnalysisTools.AnalysisKeys.ANALYSIS_NAME] = analysisId;
+            config[AudioAnalysisTools.AnalysisKeys.AnalysisName] = analysisId;
             var fiTempConfig = TempFileHelper.NewTempFile(outputDir, configFileExt);
             ConfigDictionary.WriteConfgurationFile(config, fiTempConfig);
 
@@ -482,7 +484,8 @@ namespace AudioBrowser
             this.IndicesImageFile = new FileInfo(Path.Combine(this.OutputDirectory.FullName, (Path.GetFileNameWithoutExtension(csvFile.FullName) + imageExt)));
 
             // process the CSV file
-            var output = analyser.ProcessCsvFile(csvFile, configFile);
+            // HACK: using only one varient of process csv file, this is probbably broken
+            var output = DrawSummaryIndices.ProcessCsvFile(csvFile, configFile);
             DataTable dtRaw = output.Item1;
             DataTable dt2Display = output.Item2;
 

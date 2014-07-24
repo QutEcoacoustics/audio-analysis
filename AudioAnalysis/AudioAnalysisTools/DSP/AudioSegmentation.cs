@@ -118,7 +118,7 @@ namespace AudioAnalysisTools.DSP
             //Make sonogram of each recording
             AudioRecording recording = new AudioRecording(f.FullName);
             recording.ConvertSampleRate22kHz();  //convert all recordings to SR=22050 to get spectrogram with correct range 0-11025 Hz.
-            var ss = new SpectrogramStandard(config, recording.GetWavReader());
+            var ss = new SpectrogramStandard(config, recording.WavReader);
             var image = new Image_MultiTrack(ss.GetImage(false, false));
             image.AddTrack(Image_Track.GetTimeTrack(ss.Duration, ss.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(ss));

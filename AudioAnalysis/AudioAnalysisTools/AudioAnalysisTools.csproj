@@ -141,6 +141,12 @@
     <Reference Include="alglibnet2">
       <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
     </Reference>
+    <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="Fasterflect">
+      <HintPath>..\packages\fasterflect.2.1.3\lib\net40\Fasterflect.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -150,6 +156,12 @@
     </Reference>
     <Reference Include="MathNet.Iridium">
       <HintPath>..\..\Extra Assemblies\MathNet\MathNet.Iridium.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics">
+      <HintPath>..\packages\MathNet.Numerics.2.6.2\lib\net40\MathNet.Numerics.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics.IO">
+      <HintPath>..\packages\MathNet.Numerics.2.6.2\lib\net40\MathNet.Numerics.IO.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -161,6 +173,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -197,7 +210,7 @@
     <Compile Include="DSP\WavWriter.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />
     <Compile Include="Indices\IndexProperties.cs" />
-    <Compile Include="Indices\IndexValues.cs" />
+    <Compile Include="Indices\SummaryIndexValues.cs" />
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />
