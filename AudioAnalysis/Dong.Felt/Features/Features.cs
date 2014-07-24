@@ -1,8 +1,10 @@
-﻿using Dong.Felt.Representations;
+﻿using AudioAnalysisTools.DSP;
+using Dong.Felt.Representations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TowseyLibrary;
 
 namespace Dong.Felt.Features
 {
@@ -29,6 +31,27 @@ namespace Dong.Felt.Features
         /// </summary>
         public List<double> magnitudes { get; set; }
 
+        /// <summary>
+        /// This is feature 5, the MFCC fecture vector for each spectrogram segment.
+        /// </summary>
+        public double[] MFCC {get; set;}
+
+        public Feature(double[,] spectra)
+        {
+            //set up the matrix of cosine coefficients 
+            int coeffCount = 12; //only use first 12 coefficients.
+            int binCount = spectra.GetLength(1);  //number of filters in filter bank
+            double[,] cosines = MFCCStuff.Cosines(binCount, coeffCount + 1); //set up the cosine coefficients
+            
+            //spectra is a double array [spectra.GetLength(0), coeffCount]
+            spectra = MFCCStuff.Cepstra(spectra, coeffCount, cosines);
+            
+            double[] v2 = DataTools.Matrix2Array(spectra);
+            v2 = DataTools.normalise2UnitLength(v2);
+            MFCC = v2;
+        }
+
+        
         public Feature(List<RegionRerepresentation> region)
         {
             var histogram = new int[8];
