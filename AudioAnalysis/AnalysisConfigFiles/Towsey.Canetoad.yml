@@ -1,25 +1,27 @@
-ANALYSIS_NAME=Towsey.Canetoad
+---
+AnalysisName: Towsey.Canetoad
 # min and max of the freq band to search
-MIN_HZ=400          
-MAX_HZ=900
+MinHz: 400          
+MaxHz: 900
 # duration of DCT in seconds 
-DCT_DURATION=0.5
+DctDuration: 0.5
 # minimum acceptable value of a DCT coefficient
-DCT_THRESHOLD=0.5
+DctThreshold: 0.5
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MIN_OSCIL_FREQ=10        
-MAX_OSCIL_FREQ=15
+MinOcilFreq: 10        
+MaxOcilFreq: 15
 # Minimum and maximum duration for the length of a true event.
-MIN_DURATION=2.0
-MAX_DURATION=60.0
+MinDuration: 2.0
+MaxDuration: 60.0
 # Event threshold - use this to determine FP / FN trade-off for events.
-EVENT_THRESHOLD=0.40
+EventThreshold: 0.40
 ################################################################################
-DO_NOISE_REDUCTION=false
-#BG_NOISE_THRESHOLD=3.0
-SAVE_INTERMEDIATE_WAV_FILES=false
-SAVE_INTERMEDIATE_CSV_FILES=false
-SAVE_SONOGRAM_FILES=false
-DISPLAY_CSV_IMAGE=false
-PARALLEL_PROCESSING=true
+DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+DisplayCsvImage: false
+ParallelProcessing: true
+...

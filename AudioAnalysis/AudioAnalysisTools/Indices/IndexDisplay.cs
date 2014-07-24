@@ -1,23 +1,25 @@
-﻿using AudioAnalysisTools.Indices;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using TowseyLibrary;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools.Indices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+
+    using log4net;
+
+    using TowseyLibrary;
+
     public static class DrawSummaryIndices
     {
-        public const int DEFAULT_TRACK_HEIGHT = 20;
-        public const int TRACK_END_PANEL_WIDTH = 250; // pixels. This is where name of index goes in track image
+        public const int DefaultTrackHeight = 20;
+        public const int TrackEndPanelWidth = 250; // pixels. This is where name of index goes in track image
         // This constant must be same as for spectrograms. It places grid lines every 60 pixels = 1 hour
-        public static TimeSpan TIME_SCALE = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // Default = one minute segments or 60 segments per hour.
+        public static TimeSpan TimeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // Default = one minute segments or 60 segments per hour.
 
+        private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
 
@@ -44,41 +46,63 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, FileInfo csvFile, string title)
         {
-
-            if (! csvFile.Exists) return null;
+            if (!csvFile.Exists)
+            {
+                return null;
+            }
 
             Dictionary<string, double[]> dictionaryOfCsvFile = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
-            Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); //to translate past keys into current keys
+            Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); // to translate past keys into current keys
 
 
-            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
+            const int TrackHeight = DrawSummaryIndices.DefaultTrackHeight;
             int scaleLength = 0;
-            var listOfBitmaps = new List<Image>(); // accumulate the individual tracks in a List
+            var arrayOfBitmaps = new Image[dictionaryOfCsvFile.Keys.Count]; // accumulate the individual tracks in a List
 
             foreach (string key in dictionaryOfCsvFile.Keys)
             {
                 string correctKey = key;
                 if (!listOfIndexProperties.ContainsKey(key))
                 {
-                    correctKey = translationDictionary[key];
-                    LoggedConsole.WriteWarnLine("The csv header is an unknown index <{0}>. Translated to <{1}>", key, correctKey);
+                    if (translationDictionary.ContainsKey(key))
+                    {
+                        correctKey = translationDictionary[key];
+                        LoggedConsole.WriteWarnLine(
+                            "The csv header is an unknown index <{0}>. Translated to <{1}>",
+                            key,
+                            correctKey);
+                    }
+                    else
+                    {
+                        Logger.Warn("A index properties configuration could not be found for {0} (not even in the translation dictory). Property is ignored and not rendered".Format2(key));
+                        continue;
+                    }
                 }
+
                 IndexProperties ip = listOfIndexProperties[correctKey];
-                if (!ip.DoDisplay) continue;
+                if (!ip.DoDisplay)
+                {
+                    continue;
+                }
+
                 string name = ip.Name;
                 double[] array = dictionaryOfCsvFile[key];
                 scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array);
-                listOfBitmaps.Add(bitmap);
+
+
+                arrayOfBitmaps[ip.Order] = bitmap;
             }
+
+            var listOfBitmaps = arrayOfBitmaps.Where(b => b != null).ToList();
 
 
             //set up the composite image parameters
             int X_offset = 2;
-            int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TRACK_END_PANEL_WIDTH;
-            int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleLength, DrawSummaryIndices.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
+            int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TrackEndPanelWidth;
+            int imageHt = TrackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, title);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleLength, DrawSummaryIndices.TimeScale, imageWidth, TrackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -88,13 +112,13 @@ namespace AudioAnalysisTools
 
                 int Y_offset = 0;
                 gr.DrawImage(titleBmp, X_offset, Y_offset); //draw in the top title
-                Y_offset += trackHeight;
+                Y_offset += TrackHeight;
                 gr.DrawImage(timeBmp, X_offset, Y_offset); //draw in the top time scale
-                Y_offset += trackHeight;
+                Y_offset += TrackHeight;
                 for (int i = 0; i < listOfBitmaps.Count; i++)
                 {
                     gr.DrawImage(listOfBitmaps[i], X_offset, Y_offset);
-                    Y_offset += trackHeight;
+                    Y_offset += TrackHeight;
                 }
                 gr.DrawImage(timeBmp, X_offset, Y_offset); //draw in bottom time scale
             }
@@ -144,12 +168,12 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Bitmap ConstructImageOfIndexTracks(List<string> headers, List<double[]> values, string title, double[] order)
         {
-            int trackHeight = DrawSummaryIndices.DEFAULT_TRACK_HEIGHT;
+            int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
 
 
             // accumulate the individual tracks
             int duration = values[0].Length;    // time in minutes - 1 value = 1 pixel
-            int imageWidth = duration + DrawSummaryIndices.TRACK_END_PANEL_WIDTH;
+            int imageWidth = duration + DrawSummaryIndices.TrackEndPanelWidth;
 
             var listOfBitmaps = new List<Bitmap>();
             double threshold = 0.0;
@@ -174,7 +198,7 @@ namespace AudioAnalysisTools
             //set up the composite image parameters
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, DrawSummaryIndices.TIME_SCALE, imageWidth, trackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, DrawSummaryIndices.TimeScale, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -217,9 +241,9 @@ namespace AudioAnalysisTools
             {
                 var configuration = new ConfigDictionary(fiConfigFile.FullName);
                 Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
+                if (configDict.ContainsKey(AnalysisKeys.DisplayColumns))
                 {
-                    displayHeaders = configDict[AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
+                    displayHeaders = configDict[AnalysisKeys.DisplayColumns].Split(',').ToList();
                     for (int i = 0; i < displayHeaders.Count; i++) // trim the headers just in case
                     {
                         displayHeaders[i] = displayHeaders[i].Trim();
@@ -257,21 +281,21 @@ namespace AudioAnalysisTools
             }
 
             //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
+            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventStartAbs))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventStartAbs + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventCount))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventCount + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyRankOrder))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_RankOrder + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyRankOrder + " ASC");
             }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_StartMinute))
+            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyStartMinute))
             {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_StartMinute + " ASC");
+                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyStartMinute + " ASC");
             }
 
             //table2Display = NormaliseColumnsOfDataTable(table2Display);

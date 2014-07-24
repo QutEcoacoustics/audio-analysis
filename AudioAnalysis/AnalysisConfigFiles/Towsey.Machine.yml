@@ -1,0 +1,23 @@
+---
+AnalysisName: Towsey.Machine
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+
+# min and max of the freq band to search
+MinHz: 40          
+MaxHz: 1000
+MinFormantGap: 50
+MaxFormantGap: 200
+
+# Expected minimum duration of an event in seconds.
+MinDuration: 6
+# Event threshold - use this to adjust FP / FN trade-off for events.
+IntensityThreshold: 0.13
+
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+DoNoiseReduction: true
+BgNoiseThreshold: 3.0
+...

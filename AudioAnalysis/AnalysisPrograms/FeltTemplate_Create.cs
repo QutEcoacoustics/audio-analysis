@@ -201,7 +201,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap = frameOverlap;
             
 
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             recording.Dispose();
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
@@ -212,7 +212,7 @@ namespace AnalysisPrograms
             //calculate the modal noise profile
             double SD_COUNT = 0.1; // number of noise standard deviations used to calculate noise threshold
             SNR.NoiseProfile profile = SNR.CalculateModalNoiseProfile(sonogram.Data, SD_COUNT); //calculate modal noise profile
-            double[] modalNoise = DataTools.filterMovingAverage(profile.noiseMode, 7);    //smooth the noise profile
+            double[] modalNoise = DataTools.filterMovingAverage(profile.NoiseMode, 7);    //smooth the noise profile
             //extract modal noise values of the required event
             double[] noiseSubband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
             

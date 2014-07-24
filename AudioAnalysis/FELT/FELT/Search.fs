@@ -86,7 +86,7 @@
         open System.IO
         open Microsoft.FSharp.Collections
         open TowseyLibrary
-        open CsvHelper
+        //open CsvHelper
 
         type Point<'a, 'b> = { x : 'a; y: 'b}
         type SpectrogramPoint = Point<float<s>, float<Hz>>
@@ -203,7 +203,7 @@
             // can enable noise reduction here
             let config = new SonogramConfig( NoiseReductionType = NoiseReductionType.NONE )
 
-            let sp = new SpectrogramStandard(config, wavSource.GetWavReader());
+            let sp = new SpectrogramStandard(config, wavSource.WavReader);
             sp
 
         let spectrogramToMatrix (sonogram:SpectrogramStandard) =

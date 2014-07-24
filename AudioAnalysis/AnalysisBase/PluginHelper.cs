@@ -20,8 +20,8 @@
         /// <summary>
         /// The available analysers.
         /// </summary>
-        [ImportMany(typeof(IAnalyser))]
-        public IEnumerable<IAnalyser> AnalysisPlugins { get; private set; }
+        [ImportMany(typeof(IAnalyser2))]
+        public IEnumerable<IAnalyser2> AnalysisPlugins { get; private set; }
 
         /// <summary>
         /// The available Source Preparers.
@@ -60,7 +60,7 @@
             this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");
         }
 
-        public IAnalyser GetAcousticAnalyser(string analysisIdentifier)
+        public IAnalyser2 GetAcousticAnalyser(string analysisIdentifier)
         {
             return this.AnalysisPlugins.FirstOrDefault(a => a.Identifier == analysisIdentifier);
         }
@@ -109,7 +109,7 @@
             return plugins;
         }
 
-        public IEnumerable<IAnalyser> GetPluginsMef(IEnumerable<DirectoryInfo> pluginBaseDirs)
+        public IEnumerable<IAnalyser2> GetPluginsMef(IEnumerable<DirectoryInfo> pluginBaseDirs)
         {
             this.Compose(pluginBaseDirs, "AnalysisPrograms.exe");
 

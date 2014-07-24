@@ -12,6 +12,8 @@ namespace System
     using System.Collections.Generic;
     using System.Linq.Expressions;
 
+    using Newtonsoft.Json;
+
     /// <summary>
     /// The object extensions.
     /// </summary>
@@ -35,7 +37,9 @@ namespace System
         /// </returns>
         /// <exception cref="ArgumentException">
         /// </exception>
-        public static IEnumerable<string> NameOf<T>(this T target, params Expression<Func<T, object>>[] propertyExpressions)
+        public static IEnumerable<string> NameOf<T>(
+            this T target,
+            params Expression<Func<T, object>>[] propertyExpressions)
         {
             foreach (var expression in propertyExpressions)
             {
@@ -64,12 +68,12 @@ namespace System
         /// </returns>
         /// <exception cref="ArgumentException">
         /// </exception>
-        
-		public static string NameOf<T>(this T target, Expression<Func<T, object>> propertyExpression)
+
+        public static string NameOf<T>(this T target, Expression<Func<T, object>> propertyExpression)
         {
             MemberExpression body = null;
-            
-			if (propertyExpression.Body is UnaryExpression)
+
+            if (propertyExpression.Body is UnaryExpression)
             {
                 var unary = propertyExpression.Body as UnaryExpression;
 
@@ -93,6 +97,15 @@ namespace System
 
             // Extract the name of the property to raise a change on
             return body.Member.Name;
+        }
+
+
+        public static T JsonClone<T>(this T source)
+        {
+            var settings = JsonConvert.DefaultSettings();
+
+            var serialized = JsonConvert.SerializeObject(source);
+            return JsonConvert.DeserializeObject<T>(serialized);
         }
 
         #endregion

@@ -297,7 +297,7 @@ namespace AnalysisPrograms
 
             //i: GET SONOGRAM AS MATRIX
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, epsilon, frameSize, windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, sr, epsilon, frameSize, windowOverlap);
             double[] avAbsolute = results2.Average; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
             double[,] spectrogram = results2.amplitudeSpectrogram;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
@@ -352,7 +352,7 @@ namespace AnalysisPrograms
             } //foreach
 
             //set up the songogram to return. Use the existing amplitude sonogram
-            int bitsPerSample = recording.GetWavReader().BitsPerSample;
+            int bitsPerSample = recording.WavReader.BitsPerSample;
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");
             var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, tsRecordingtDuration, nrt, spectrogram);
@@ -394,7 +394,7 @@ namespace AnalysisPrograms
                 {
                     double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
                     SNR.BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(amplitudeArray, StandardDeviationCount);
-                    amplitudeArray = bgn.noiseReducedSignal;
+                    amplitudeArray = bgn.NoiseReducedSignal;
                 }
 
                 //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
@@ -484,14 +484,14 @@ namespace AnalysisPrograms
 
             foreach (DataRow ev in dt.Rows)
             {
-                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_START_SEC];
-                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EVENT_NORMSCORE];
+                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EventStartSec];
+                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EventNormscore];
                 int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
                 eventsPerUnitTime[timeUnit]++;
                 if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.KEY_StartMinute, AudioAnalysisTools.AnalysisKeys.EVENT_TOTAL, ("#Ev>" + scoreThreshold) };
+            string[] headers = { AudioAnalysisTools.AnalysisKeys.KeyStartMinute, AudioAnalysisTools.AnalysisKeys.EventTotal, ("#Ev>" + scoreThreshold) };
             Type[] types = { typeof(int), typeof(int), typeof(int) };
             var newtable = DataTableTools.CreateTable(headers, types);
 

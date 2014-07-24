@@ -11,8 +11,6 @@ namespace AnalysisPrograms.Production
 
     using PowerArgs;
 
-    using ServiceStack.Text;
-
     /// <summary>
     /// Validates that if the user specifies a value for a property that the value represents a directory that exists
     /// as determined by System.IO.Directory.Exists(directory).

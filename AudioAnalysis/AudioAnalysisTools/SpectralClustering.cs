@@ -1,23 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SpectralClustering.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the SpectralClustering type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
+
 
 namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
 
     using AnalysisBase;
+
     using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+
+    using log4net;
+
     using NeuralNets;
-    using System.IO;
+
     using TowseyLibrary;
-    //using log4net;
 
     public static class SpectralClustering
     {
@@ -408,7 +421,7 @@ namespace AudioAnalysisTools
             var recording = new AudioRecording(wavFilePath); // get recording segment
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = _windowOverlap };
             config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
-            var spectrogram = new SpectrogramStandard(config, recording.GetWavReader());
+            var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             Plot scores = null;
             double eventThreshold = 0.5; // dummy variable - not used
             List<AcousticEvent> list = null;
@@ -418,7 +431,7 @@ namespace AudioAnalysisTools
             //#######################################################################################################################################
             // get amplitude spectrogram and remove the DC column ie column zero.
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, frameSize, _windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, _windowOverlap);
             double[,] spectrogramData = results2.amplitudeSpectrogram;
             double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
 
@@ -427,7 +440,7 @@ namespace AudioAnalysisTools
             double SD_COUNT = 0.1;
             double SpectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             SNR.NoiseProfile profile = SNR.CalculateModalNoiseProfile(spectrogramData, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
-            double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThresholds, 7);      // smooth the noise profile
+            double[] noiseValues = DataTools.filterMovingAverage(profile.NoiseThresholds, 7);      // smooth the noise profile
             spectrogramData = SNR.NoiseReduce_Standard(spectrogramData, noiseValues, SpectralBgThreshold);
 
             // convert spectrum to decibels

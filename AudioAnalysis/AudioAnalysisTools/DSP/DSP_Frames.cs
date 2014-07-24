@@ -117,7 +117,7 @@ namespace AudioAnalysisTools.DSP
         public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(AudioRecording recording, int windowSize, double overlap)
         {
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            return ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, epsilon, windowSize, overlap);
+            return ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, windowSize, overlap);
         }
 
 

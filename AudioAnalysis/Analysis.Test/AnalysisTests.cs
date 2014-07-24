@@ -27,7 +27,7 @@ namespace Ecosounds.Test.AnalysisPrograms
             keyValueStore.LoadFromAppConfig();
 
             var preparer = new LocalSourcePreparer();
-            var coord = new AnalysisCoordinator(preparer);
+            var coord = new AnalysisCoordinator(preparer, false, false, false);
             coord.IsParallel = true;
             coord.SubFoldersUnique = false;
 

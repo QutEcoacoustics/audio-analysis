@@ -1,25 +1,26 @@
-ANALYSIS_NAME=Towsey.KoalaMale
+---
+AnalysisName: Towsey.KoalaMale
 # min and max of the freq band to search
-MIN_HZ=200          
-MAX_HZ=1000
+MinHz: 200          
+MaxHz: 1000
 # duration of DCT in seconds 
-DCT_DURATION=0.30
+DctDuration: 0.30
 # minimum acceptable amplitude of a DCT coefficient
-DCT_THRESHOLD=0.6
+DctThreshold: 0.6
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MIN_OSCIL_FREQ=20        
-MAX_OSCIL_FREQ=50
+MinOcilFreq: 20        
+MaxOcilFreq: 50
 # Minimum duration for the length of a true event (seconds).
-MIN_DURATION=0.5
+MinDuration: 0.5
 # Maximum duration for the length of a true event.
-MAX_DURATION=2.5
+MaxDuration: 2.5
 # Event threshold - Determines FP / FN trade-off for events.
-EVENT_THRESHOLD=0.2
+EventThreshold: 0.2
 ################################################################################
-SAVE_INTERMEDIATE_WAV_FILES=false
-SAVE_INTERMEDIATE_CSV_FILES=false
-SAVE_SONOGRAM_FILES=false
-#DO_NOISE_REDUCTION=true
-#BG_NOISE_THRESHOLD=3.0
-
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+#DoNoiseReduction: true
+#BgNoiseThreshold: 3.0
+...

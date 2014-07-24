@@ -189,7 +189,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             bool includeDoubleDelta = sonoConfig.mfccConfig.IncludeDoubleDelta;
             sonoConfig.SourceFName = recording.FileName;
 
-            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
+            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
             recording.Dispose();
 

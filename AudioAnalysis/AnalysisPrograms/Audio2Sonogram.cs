@@ -150,7 +150,7 @@ namespace AnalysisPrograms
             }
 
             //###### get sonogram image ##############################################################################################
-            if ((configDict.ContainsKey(AnalysisKeys.MAKE_SOX_SONOGRAM)) && (ConfigDictionary.GetBoolean(AnalysisKeys.MAKE_SOX_SONOGRAM, configDict)))
+            if ((configDict.ContainsKey(AnalysisKeys.MakeSoxSonogram)) && (ConfigDictionary.GetBoolean(AnalysisKeys.MakeSoxSonogram, configDict)))
             {
                 SpectrogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
             }

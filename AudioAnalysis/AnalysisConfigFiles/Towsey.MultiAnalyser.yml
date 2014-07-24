@@ -1,0 +1,64 @@
+---
+# General Parameters
+AnalysisName: Towsey.MultiAnalyser
+#FrameLength MUST EQUAL EITHER 1024 OR 2048 - no other value
+FrameLength: 1024
+DisplayColumns: HumanEvents,CrowEvents,MachineEvents,KoalaEvents,CanetoadEvents
+
+# CROW PARAMETERS
+CROW_MinHz: 1000          
+CROW_CallDuration: 0.3
+CROW_DecibelThreshold: 1.5
+CROW_MinFormantGap: 180
+CROW_MaxFormantGap: 450
+CROW_IntensityThreshold: 0.2
+
+# HUMAN PARAMETERS
+HUMAN_MinHz: 100
+HUMAN_MinFormantGap: 80
+HUMAN_MaxFormantGap: 330
+HUMAN_MIN_FORMANT_DURATION: 0.1
+HUMAN_MAX_FORMANT_DURATION: 0.7
+HUMAN_IntensityThreshold: 0.2
+
+# MACHINE PARAMETERS
+MACHINE_MinHz: 40          
+MACHINE_MaxHz: 1000
+MACHINE_MinFormantGap: 50
+MACHINE_MaxFormantGap: 200
+MACHINE_MinDuration: 6
+MACHINE_IntensityThreshold: 0.20
+
+#CANETOAD
+CANETOAD_MinHz: 400          
+CANETOAD_MaxHz: 900
+# duration of DCT in seconds 
+CANETOAD_DctDuration: 0.5
+# minimum acceptable value of a DCT coefficient
+CANETOAD_DctThreshold: 0.6
+CANETOAD_MinOcilFreq: 10        
+CANETOAD_MaxOcilFreq: 15
+CANETOAD_MinDuration: 3.0
+CANETOAD_MaxDuration: 60.0
+CANETOAD_EventThreshold: 0.4
+
+#KOALA MALE
+KOALAMALE_MinHz: 200          
+KOALAMALE_MaxHz: 1000
+KOALAMALE_DctDuration: 0.30
+KOALAMALE_DctThreshold: 0.6
+KOALAMALE_MinOcilFreq: 20        
+KOALAMALE_MaxOcilFreq: 50
+KOALAMALE_MinDuration: 0.5
+KOALAMALE_MaxDuration: 2.5
+# Event threshold - determines FP / FN trade-off for events.
+KOALAMALE_EventThreshold: 0.2
+
+#######################################
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramFiles: false
+DoNoiseReduction: false
+BgNoiseThreshold: 3.0
+ParallelProcessing: true
+...

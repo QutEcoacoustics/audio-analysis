@@ -1,42 +1,40 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Dong.Felt.Main.cs" company="MQUTeR">
-//   -
+// <copyright file="Dong.Felt.Main.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
 //   The felt analysis.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Linq;
-using ServiceStack;
-
-namespace Dong.Felt
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
-    using System.Text;
-    using System.Drawing;
 
     using Acoustics.Shared;
-    using Acoustics.Shared.Extensions;
-    using PowerArgs;
-    using ServiceStack.Text;
-    using log4net;
-    using QutSensors.Shared;
-    using AnalysisPrograms.Production;
 
     using AnalysisBase;
+    using AnalysisBase.ResultBases;
+
+    using AnalysisPrograms.Production;
+
     using AudioAnalysisTools;
-    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using TowseyLibrary;
+
+    using Dong.Felt;
     using Dong.Felt.Representations;
 
-    
+    using log4net;
+
+    using PowerArgs;
+
     /// <summary>
     /// The felt analysis.
     /// </summary>
@@ -298,13 +296,11 @@ namespace Dong.Felt
             this.Frame = pointOfInterest.Point.X;
             this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;
             this.Magnitude = pointOfInterest.RidgeMagnitude;
-            this.Orientation = (Direction) pointOfInterest.OrientationCategory;
+            this.Orientation = (Direction)pointOfInterest.OrientationCategory;
             this.FrameMaximum = sonogram.FrameCount;
             this.BinMaximum = sonogram.Configuration.FreqBinCount;
 
             this.EventStartSeconds = pointOfInterest.TimeLocation.TotalSeconds;
-
-            this.MinuteOffset = (int) (analysisSettings.StartOfSegment ?? TimeSpan.Zero).TotalMinutes;
             this.FileName = analysisSettings.SourceFile.FullName;
             
         }
@@ -322,28 +318,27 @@ namespace Dong.Felt
         public int FrameMaximum { get; set; }
     }
 
-    public class RidgeAnalysis : IAnalyser2
+    public class RidgeAnalysis : AbstractStrongAnalyser
     {
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
-            var startOffset = analysisSettings.StartOfSegment ?? TimeSpan.Zero;
-            var result = new AnalysisResult2
+            var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
+            
+            var recording = new AudioRecording(audioFile.FullName);
+            
+            var result = new AnalysisResult2(analysisSettings, recording.Duration())
                          {
-                             AnalysisIdentifier = Identifier,
-                             SettingsUsed = analysisSettings,
-                             SegmentStartOffset = startOffset
+                             AnalysisIdentifier = this.Identifier
                          };
 
-            var recording = new AudioRecording(audioFile.FullName);
-            result.AudioDuration = recording.Duration();
             if (recording.SampleRate != 22050)
             {
                 throw new NotSupportedException();
             }
 
             var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5};
-            var sonogram = new SpectrogramStandard(config, recording.GetWavReader());
+            var sonogram = new SpectrogramStandard(config, recording.WavReader);
 
             // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
             var ridgeConfig = new RidgeDetectionConfiguration {
@@ -360,23 +355,23 @@ namespace Dong.Felt
                 return result;
             }
 
-            result.Data = new RidgeEvent[ridges.Count];                      
+            result.Events = new RidgeEvent[ridges.Count];
             for (int index = 0; index < ridges.Count; index++)
             {
-                ((RidgeEvent[])result.Data)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
+                ((RidgeEvent[])result.Events)[index] = new RidgeEvent(ridges[index], analysisSettings, sonogram);
             }
 
             if (analysisSettings.EventsFile != null)
             {
-                WriteEventsFile(analysisSettings.EventsFile, result.Data);
+                this.WriteEventsFile(analysisSettings.EventsFile, result.Events);
             }
 
-            if (analysisSettings.IndicesFile != null)
+            if (analysisSettings.SummaryIndicesFile != null)
             {
                 var unitTime = TimeSpan.FromMinutes(1.0);
-                result.Indices = ConvertEventsToIndices(result.Data, unitTime, result.AudioDuration, 0);
+                result.SummaryIndices = this.ConvertEventsToSummaryIndices(result.Events, unitTime, result.SegmentAudioDuration, 0);
 
-                WriteIndicesFile(analysisSettings.IndicesFile, result.Indices);
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, result.SummaryIndices);
             }
 
             if (analysisSettings.ImageFile != null)
@@ -384,31 +379,41 @@ namespace Dong.Felt
                 throw new NotImplementedException();
             }
 
-            result.AudioDuration = recording.Duration();
             return result;
         }
 
-        public IEnumerable<IndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
+        public IEnumerable<SummaryIndexBase> ProcessCsvFile(FileInfo csvFile, FileInfo configFile)
         {
             throw new NotImplementedException();
         }
 
-        public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            CsvTools.WriteResultsToCsv(destination, results.Cast<RidgeEvent>());
+            Csv.WriteToCsv(destination, results.Cast<RidgeEvent>());
         }
 
-        public void WriteIndicesFile(FileInfo destination, IEnumerable<IndexBase> results)
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
-            CsvTools.WriteResultsToCsv(destination, results.Cast<EventIndex>());
+            Csv.WriteToCsv(destination, results.Cast<EventIndex>());
         }
 
-        public IndexBase[] ConvertEventsToIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold)
+        public override void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
-            return AnalyserHelpers.StandardEventToIndexConverter(events, unitTime, duration, scoreThreshold);
+            throw new NotImplementedException();
         }
 
-        public string DisplayName
+        public override void SummariseResults(
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
+            AnalysisResult2[] results)
+        {
+            // no-op
+        }
+
+        public override string DisplayName
         {
             get
             {
@@ -416,7 +421,7 @@ namespace Dong.Felt
             }
         }
 
-        public string Identifier
+        public override string Identifier
         {
             get
             {
@@ -424,7 +429,7 @@ namespace Dong.Felt
             }
         }
 
-        public AnalysisSettings DefaultSettings
+        public override AnalysisSettings DefaultSettings
         {
             get
             {
@@ -438,23 +443,6 @@ namespace Dong.Felt
                 };
             }
         }
-
-        #region ignored
-        AnalysisResult IAnalyser.Analyse(AnalysisSettings analysisSettings)
-        {
-            throw new NotImplementedException();
-        }
-
-        Tuple<DataTable, DataTable> IAnalyser.ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
-        {
-            throw new NotImplementedException();
-        }
-
-        DataTable IAnalyser.ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan timeDuration, double scoreThreshold)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
 
 
 
