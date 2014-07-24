@@ -17,6 +17,8 @@ namespace AnalysisBase
     using Acoustics.Shared;
 
     using GeorgeCloney;
+    using log4net;
+    using System.Reflection;
 
     /// <summary>
     /// The analysis settings for processing one audio file.
@@ -31,21 +33,23 @@ namespace AnalysisBase
     [Serializable]
     public class AnalysisSettings : ICloneable
     {
+        [NonSerialized]
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        [NonSerialized]
         private static int instanceCounter = 0;
 
         /// <summary>
         /// Used to track instances of this class through parallelism - must be readonly.
         /// </summary>
-        private readonly int instanceId;
+        [NonSerialized]
+        private int? instanceId = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
         /// </summary>
         public AnalysisSettings()
         {
-            instanceCounter++;
-            this.instanceId = instanceCounter;
             this.ConfigDict = new Dictionary<string, string>();
         }
 
@@ -56,7 +60,15 @@ namespace AnalysisBase
         {
             get
             {
-                return this.instanceId;
+                if (!instanceId.HasValue)
+                {
+                    // counter increment moved out of constructor because binary serializer does not use constructors
+                    instanceCounter++;
+                    this.instanceId = instanceCounter;
+
+                }
+
+                return this.instanceId.Value;                
             }
         }
 
@@ -281,6 +293,7 @@ namespace AnalysisBase
         public object Clone()
         {
             AnalysisSettings deepClone = this.DeepClone();
+            Log.Debug("Instance Id of old: {0}, vs new {1}".Format2(this.InstanceId, deepClone.InstanceId));
             return deepClone;
         }
 
