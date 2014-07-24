@@ -672,6 +672,9 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
+                var data = spectrogram.Data;
+                var maxMagnitude = data.Cast<double>().Max(); 
+                var minMagnitude = data.Cast<double>().Min(); 
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
@@ -932,10 +935,10 @@
                 }
                 if (endTime > 59)
                 {
-                    startTime = startTime + 60 - endTime;
-                    endTime = startTime + duration;
+                    //startTime = startTime + 60 - endTime;
+                    startTime = (candidates[i].StartTime - candidates[i].EndTime) / secondToMilliSecond + 2;                   
                 }
-
+                endTime = startTime + duration;
                 if (i == 0)
                 {
                     var acousticEventlistForQuery = new List<AcousticEvent>();

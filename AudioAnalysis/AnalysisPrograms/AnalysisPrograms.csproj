@@ -201,6 +201,7 @@
     <Compile Include="DrawLongDurationSpectrograms.cs" />
     <Compile Include="DummyAnalyser.cs" />
     <Compile Include="EPR.cs" />
+    <Compile Include="FileRenamer.cs" />
     <Compile Include="Frogs.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="Production\Actions.cs" />
