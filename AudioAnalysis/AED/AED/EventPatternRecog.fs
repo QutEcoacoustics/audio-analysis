@@ -57,7 +57,7 @@ module EprInternals =
     /// calculate centre point from rect    
     let centroids (rs:seq<EventRect>)  =
         let centre s (l:float<_>) = s + (l / 2.0)
-        Seq.map (fun r -> (centre (left r) (width2 r.Right r.Left), centre (bottom r) (height2 r.Top r.Bottom))) rs
+        Seq.map (fun r -> (centre (left r) (oldWidth r), centre (bottom r) (height2 r.Top r.Bottom))) rs
     
     // TODO investigate performance optimisation by normalising individual points in tuple computations
     // TODO same result  if move normaliszaton earlier?

@@ -4,6 +4,8 @@ open System.IO
 
 open QutSensors.AudioAnalysis.AED.Util
 open Xunit
+open System
+open System.Reflection
                        
 type TestMetadata = {Dir:string; BWthresh:double; smallThreshIn:int; smallThreshOut:int}
 let BAC2_20071015_045040 =
@@ -13,11 +15,20 @@ let GParrots_JB2_20090607_173000_wav_minute_3 =
                           
 let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
                 
+
+
 /// Sets the current directory to be trunk\AudioAnalysis\AED\Test
-let matlabPath = @"..\..\AudioAnalysis\AED\Test\matlab\"
+let matlabPath = @"..\..\..\..\AED\Test\matlab\"
+
+let basePath relativePath = 
+    let codeBaseUrl = new Uri(Assembly.GetExecutingAssembly().CodeBase);
+    let codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
+    let dirPath = Path.GetDirectoryName(codeBasePath);
+    Path.Combine(dirPath, relativePath);
 
 let loadTestFile2 d f = 
-    csvToMatrix (matlabPath + d + Path.DirectorySeparatorChar.ToString() + f) 
+    let p = Path.Combine( (basePath matlabPath), d, f)
+    csvToMatrix p 
 
 let loadTestFile f md = loadTestFile2 md.Dir f 
 

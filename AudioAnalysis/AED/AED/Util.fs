@@ -133,6 +133,8 @@ let inline bottomLeft r = (r.Left, r.Bottom)
 let inline increment n = n + LanguagePrimitives.GenericOne
 let inline width r = (right r) - (left r) |> abs |> increment
 let inline width2 (right:float<_>) (left:float<_>) = right - left |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
+// for event pattern recog compatibility
+let inline oldWidth r = (right r) - (left r)
 
 let inline height r = (top r) - (bottom r) |> abs |> increment
 let inline height2 (top:float<_>) (bottom:float<_>) = top - bottom |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
