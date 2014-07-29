@@ -133,26 +133,25 @@ ClusterDendrogram <- function () {
     # this function is not working at all
     # was moved out of "cluster events" function
     # but has not been completed to work in its own function 
-    if (save.dendrogram) { 
-        labels.for.dendrogram <- EventLabels(events$data)
-    }
     
-    if (num.groups == 'auto') {
-        num.groups <- floor(sqrt(nrow(events$data)))
-    }
+    #    labels.for.dendrogram <- EventLabels(events$data)
+    
+    num.groups = 4
+
     library('pvclust')
     # display dendogram
     #todo: OutputFilePath function
     fit <- ReadOutput('clustering')
-    img.path <- OutputFilePath('cluster_dendrogram', ext = 'png', level = 2);
+    #img.path <- OutputFilePath('cluster_dendrogram', ext = 'png', level = 2);
     Report(5, 'saving dendrogram')
-    png(img.path, width = 30000, height = 20000)
+    #png(img.path, width = 30000, height = 20000)
     Dot()
-    plot(fit$data, labels = labels.for.dendrogram)
+    #plot(fit$data, labels = labels.for.dendrogram)
+    plot(fit$data, col='black')
     # draw dendogram with red borders around the k clusters
-    rect.hclust(fit, k=num.groups, border="red")
+    rect.hclust(fit$data, k=num.groups, border="red")
     #pvrect(fit, alpha=.95)
-    dev.off()
+    #dev.off()
 }
 
 

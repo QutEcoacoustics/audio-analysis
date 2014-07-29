@@ -388,11 +388,12 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
     return(species.in.each.min)
 }
 
-GraphProgressions <- function (ranked.count.progressions, optimal, random.at.dawn = NA, random.all = NA, from.indices = NA, cutoff = 300) {
+GraphProgressions <- function (ranked.count.progressions, optimal, random.at.dawn = NA, random.all = NA, from.indices = NA, cutoff = 150) {
    
-    ranked.count.progressions <- NA
+    #ranked.count.progressions <- NA
     
-    rank.names <- names(ranked.count.progressions);
+    #rank.names <- names(ranked.count.progressions);
+    rank.names <- c()
     
     # truncate all output at cuttoff
     if (!is.na(cutoff)) {
@@ -431,14 +432,18 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
     legend.names = c()
     
     par(col = 'black')
-    heading <- "Species count progressions"
+    #heading <- "Species accumulation curve"
+    heading <- NULL
     
     # setup using optimal for the y axis, since it will have all the species
     setup.data <- rep(max(optimal), plot.width)
     setup.data[1] <- 0
+    par(mar=c(5, 4, 4, 5) + 0.1)
     plot(setup.data, main=heading, type = 'n', xlab="After this many minutes", ylab="Number of species found")
     
-    
+    percent.ticks.at <- (0:6)/6
+    axis(4, at=percent.ticks.at*60, labels=round(percent.ticks.at*100))
+    mtext("% of total", side=4, line=2.5)
     # plot each of the ranking results
     line.colours <- matrix(NA, ncol = 3, nrow = 0)
 
@@ -488,29 +493,44 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
                                        0,0.6,0.9,
                                        0.7,0.1,0.9), ncol = 3, byrow = TRUE)
     
+    
+    #ss.method.names <- c('Smart Sampling by Event Count', 
+    #                     "Smart Sampling by Clusters 1",
+    #                     "Smart Sampling by Clusters 2")
+    ss.method.names <- c('Smart Sampling by Event Count', 
+                         "")
+    
 
     if (length(rank.names) > 0) {
         for (i in 1:length(rank.names)) {
             
-            if (is.list(ranked.count.progressions[[i]])) {
-                line <- ranked.count.progressions[[i]]$mean
-                sd <-  ranked.count.progressions[[i]]$sd
-            } else {
-                line <- ranked.count.progressions[[i]]
-                sd <- NA
+            
+            if (ss.method.names[i] != "") {
+                
+                if (is.list(ranked.count.progressions[[i]])) {
+                    line <- ranked.count.progressions[[i]]$mean
+                    sd <-  ranked.count.progressions[[i]]$sd
+                } else {
+                    line <- ranked.count.progressions[[i]]
+                    sd <- NA
+                }
+                
+                PlotLine(line, ranking.method.colours[i, ])
+                
+                #legend.names = c(legend.names, paste('Smart Sampling method', rank.names[i]))
+                legend.names = c(legend.names, ss.method.names[i])
+                line.colours <- rbind(line.colours,  ranking.method.colours[i, ])               
+                
             }
             
-            PlotLine(line, ranking.method.colours[i, ])
-            
-            legend.names = c(legend.names, paste('Smart Sampling method', rank.names[i]))
-            line.colours <- rbind(line.colours,  ranking.method.colours[i, ])
+
         }
     }
     
     legend.cols <- apply(as.matrix(line.colours), 1, RgbCol)
     
     
-    lty <- c(rep('dashed', length(legend.cols) - length(rank.names)), rep('solid', length(rank.names)))
+    lty <- c(rep('dashed', length(legend.cols) - length(rank.names) + 1) , rep('solid', length(rank.names)))
     
     legend("bottomright",  legend = legend.names, 
            col = legend.cols, 
