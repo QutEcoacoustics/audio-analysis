@@ -40,78 +40,11 @@ namespace AnalysisPrograms
 
 
 
-            if (true)  // concatenating images with a gap between them.
+            if (true)  // concatenating spectrogram images with gaps between them.
             {
-                var inputDirectory = new DirectoryInfo(@"Z:\Italy_GianniPavan\output4\Towsey.Acoustic");
-                string opFileStem = "Sassofratino_24hours_v3";
-                var outputDirectory = new DirectoryInfo(@"Z:\Italy_GianniPavan\output4\");
+                LDSpectrogramStitching.StitchPartialSpectrograms();
 
-                string[] fileEntries = Directory.GetFiles(inputDirectory.FullName);
-
-                List<Image> images = new List<Image>();
-                bool interpolateSpacer = true;
-                var imagePair = new Image[2];
-
-                // timeing protocol
-                int trackHeight = 20;
-                int pixelColumnsPerHour = 60;
-                int minutesBetweenRecordingStarts = 30;
-                TimeSpan minOffset = TimeSpan.Zero;
-                TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(pixelColumnsPerHour); // assume 60 pixels per hour
-
-
-                foreach (string path in fileEntries)
-                {
-                    // filter files.
-                    if(! path.EndsWith("_000.2MAPS.png")) continue;
-                    var image = new Bitmap(path);
-                    int spacerWidth = minutesBetweenRecordingStarts - image.Width;
-
-                    if (interpolateSpacer)
-                    {
-                        var spacer = new Bitmap(spacerWidth, image.Height);
-                        
-
-                        imagePair[0] = image;
-                        imagePair[1] = spacer;
-                        image = (Bitmap)ImageTools.CombineImagesInLine(imagePair);
-                    }
-
-                    images.Add(image);
-                }
-                Image compositeBmp = ImageTools.CombineImagesInLine(images.ToArray());
-
-                int totalWidth = compositeBmp.Width;
-                Bitmap timeBmp = Image_Track.DrawTimeTrack(totalWidth, minOffset, xAxisTicInterval, totalWidth, trackHeight, "hours");
-
-                Graphics gr = Graphics.FromImage(compositeBmp);
-                int halfHeight = compositeBmp.Height / 2;
-
-                //add in the title bars
-                string title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "BGN-AVG-CVR");
-                Bitmap titleBmp = Image_Track.DrawTitleTrack(totalWidth, trackHeight, title);
-                int offset = 0;
-                gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
-                title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "ACI-ENT-EVN");
-                titleBmp = Image_Track.DrawTitleTrack(totalWidth, trackHeight, title);
-                offset = halfHeight;
-                gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
-
-                //add in the timescale tracks
-                offset = trackHeight;
-                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-                offset = compositeBmp.Height - trackHeight;
-                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-                offset = halfHeight - trackHeight;
-                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-                offset = halfHeight + trackHeight;
-                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-
-
-                compositeBmp.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
-
-
-                Log.WriteLine("GOT TO HERE");
+                Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
