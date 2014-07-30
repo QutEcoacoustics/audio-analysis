@@ -2316,7 +2316,6 @@ namespace TowseyLibrary
         public static Image CombineImagesVertically(Image[] array)
         {
             int width = array[0].Width;   // assume all images have the same width
-            int height = array[0].Height; // assume all images have the same height
 
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
@@ -2333,6 +2332,35 @@ namespace TowseyLibrary
             {
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top spectrogram
                 yOffset += array[i].Height;
+            }
+            return (Image)compositeBmp;
+        }
+
+        /// <summary>
+        /// Stacks the passed images one on top of the other. 
+        /// Assumes that all images have the same width.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static Image CombineImagesInLine(Image[] array)
+        {
+            int height = array[0].Height; // assume all images have the same height
+
+            int compositeWidth = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                compositeWidth += array[i].Width;
+            }
+
+            Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
+            int xOffset = 0;
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                gr.DrawImage(array[i], xOffset, 0); //draw in the top spectrogram
+                xOffset += array[i].Width;
             }
             return (Image)compositeBmp;
         }

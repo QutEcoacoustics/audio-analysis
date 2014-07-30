@@ -995,6 +995,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS 
         ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
+        ///  
+        /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
         /// </summary>
         /// <param name="longDurationSpectrogramConfig">
         /// </param>

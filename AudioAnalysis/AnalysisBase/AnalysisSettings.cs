@@ -51,6 +51,7 @@ namespace AnalysisBase
         public AnalysisSettings()
         {
             this.ConfigDict = new Dictionary<string, string>();
+            this.SegmentTargetSampleRate = AppConfigHelper.GetInt("DefaultTargetSampleRate"); ;
         }
 
         /// <summary>
