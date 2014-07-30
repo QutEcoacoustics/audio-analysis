@@ -55,7 +55,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // recording protocol
             int minutesBetweenRecordingStarts = 30;
-            TimeSpan minOffset = TimeSpan.Zero;
+            TimeSpan minOffset = TimeSpan.Zero; // assume first recording in sequence started at midnight
             // X-axis timescale
             int pixelColumnsPerHour = 60;
             int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
@@ -119,6 +119,131 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             compositeBmp.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
         }
+
+
+
+        /// <summary>
+        /// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, 
+        /// that have a total duration of 24 hours. This was necesarry to deal with Jasoni Wimmer's new regime of doing 24 hour recordings 
+        /// in blocks of 6 hours. 
+        /// </summary>
+        public static void ConcatenateSpectralIndexFiles()
+        {
+            // create an array that contains the names of csv file to be read.
+            // The file names must be in the temporal order rquired for the resulting spectrogram image.
+            string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
+            string fileStem = "SERF_20130401";
+            string[] names = {"SERF_20130401_000025_000",
+                                  "SERF_20130401_064604_000",
+                                  "SERF_20130401_133143_000",
+                                  "SERF_20130401_201721_000",
+                                      };
+            //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
+            //string fileStem = "SERF_20130619";
+            //string[] names = {"SERF_20130619_000038_000",
+            //                  "SERF_20130619_064615_000",
+            //                  "SERF_20130619_133153_000",
+            //                  "SERF_20130619_201730_000",
+            //                      };
+
+
+            // ###############################################################
+            // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
+            int sampleRate = 17640;
+            int frameWidth = 256;
+            // ###############################################################
+
+
+            string[] level2Dirs = {names[0]+".wav",
+                                       names[1]+".wav",
+                                       names[2]+".wav",
+                                       names[3]+".wav",
+                                      };
+            string level3Dir = "Towsey.Acoustic";
+            string[] dirNames = {topLevelDirectory+@"\"+level2Dirs[0]+@"\"+level3Dir,
+                                     topLevelDirectory+@"\"+level2Dirs[1]+@"\"+level3Dir,
+                                     topLevelDirectory+@"\"+level2Dirs[2]+@"\"+level3Dir,
+                                     topLevelDirectory+@"\"+level2Dirs[3]+@"\"+level3Dir
+                                    };
+            string[] fileExtentions = { ".ACI.csv",
+                                            ".AVG.csv",
+                                            ".BGN.csv",
+                                            ".CVR.csv",
+                                            ".TEN.csv",
+                                            ".VAR.csv",
+                                            "_Towsey.Acoustic.Indices.csv"
+                                          };
+
+            // this loop reads in all the Indices from conseqcutive csv files
+            foreach (string extention in fileExtentions)
+            {
+                Console.WriteLine("\n\nFILE TYPE: " + extention);
+
+                List<string> lines = new List<string>();
+
+                for (int i = 0; i < dirNames.Length; i++)
+                {
+                    string fName = names[i] + extention;
+                    string path = Path.Combine(dirNames[i], fName);
+                    var fileInfo = new FileInfo(path);
+                    Console.WriteLine(path);
+                    if (!fileInfo.Exists)
+                        Console.WriteLine("ABOVE FILE DOES NOT EXIST");
+
+                    var ipLines = FileTools.ReadTextFile(path);
+                    if (i != 0)
+                    {
+                        ipLines.RemoveAt(0); //remove the first line
+                    }
+                    lines.AddRange(ipLines);
+                }
+                string opFileName = fileStem + extention;
+                string opPath = Path.Combine(topLevelDirectory, opFileName);
+                FileTools.WriteTextFile(opPath, lines, false);
+
+
+
+            } //end of all file extentions
+
+            TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
+            TimeSpan xScale = TimeSpan.FromMinutes(60);
+            double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
+            cs1.FileName = fileStem;
+            cs1.ColorMode = colorMap;
+            cs1.BackgroundFilter = backgroundFilterCoeff;
+            var dirInfo = new DirectoryInfo(topLevelDirectory);
+            cs1.ReadCSVFiles(dirInfo, fileStem); // reads all known indices files
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                Console.WriteLine("There are no spectrogram matrices in the dictionary.");
+                return;
+            }
+            cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem);
+
+            colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
+            Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+            image1.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
+
+            colorMap = "BGN-AVG-VAR";
+            Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
+            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+            image2.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
+            Image[] array = new Image[2];
+            array[0] = image1;
+            array[1] = image2;
+            Image image3 = ImageTools.CombineImagesVertically(array);
+            image3.Save(Path.Combine(dirInfo.FullName, fileStem + ".2MAPS.png"));
+        }
+
+
+
 
     }
 }
