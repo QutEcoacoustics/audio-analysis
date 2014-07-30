@@ -17,9 +17,8 @@ using Acoustics.Shared;
 
 namespace AnalysisPrograms
 {
-    using AudioAnalysisTools.LongDurationSpectrograms;
-
     using PowerArgs;
+    using AudioAnalysisTools.LongDurationSpectrograms;
 
     public class Sandpit
     {
@@ -38,16 +37,90 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
-            if (true)  // reading/deserialising a config file)
+
+
+
+            if (true)  // concatenating images with a gap between them.
             {
-                var opDir = new DirectoryInfo(@"C:\SensorNetworks\Output\Test\TestYaml");
-                var configFile = Path.Combine(opDir.FullName, "IndexPropertiesConfig.yml");
+                var inputDirectory = new DirectoryInfo(@"Z:\Italy_GianniPavan\output4\Towsey.Acoustic");
+                string opFileStem = "Sassofratino_24hours_v3";
+                var outputDirectory = new DirectoryInfo(@"Z:\Italy_GianniPavan\output4\");
 
-                Dictionary<string, IndexProperties> dict = IndexProperties.GetIndexProperties(new FileInfo(configFile));
+                string[] fileEntries = Directory.GetFiles(inputDirectory.FullName);
 
-                Log.WriteLine("GOT To HERE - YAML file unfinished");
+                List<Image> images = new List<Image>();
+                bool interpolateSpacer = true;
+                var imagePair = new Image[2];
 
+                // timeing protocol
+                int trackHeight = 20;
+                int pixelColumnsPerHour = 60;
+                int minutesBetweenRecordingStarts = 30;
+                TimeSpan minOffset = TimeSpan.Zero;
+                TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(pixelColumnsPerHour); // assume 60 pixels per hour
+
+
+                foreach (string path in fileEntries)
+                {
+                    // filter files.
+                    if(! path.EndsWith("_000.2MAPS.png")) continue;
+                    var image = new Bitmap(path);
+                    int spacerWidth = minutesBetweenRecordingStarts - image.Width;
+
+                    if (interpolateSpacer)
+                    {
+                        var spacer = new Bitmap(spacerWidth, image.Height);
+                        
+
+                        imagePair[0] = image;
+                        imagePair[1] = spacer;
+                        image = (Bitmap)ImageTools.CombineImagesInLine(imagePair);
+                    }
+
+                    images.Add(image);
+                }
+                Image compositeBmp = ImageTools.CombineImagesInLine(images.ToArray());
+
+                int totalWidth = compositeBmp.Width;
+                Bitmap timeBmp = Image_Track.DrawTimeTrack(totalWidth, minOffset, xAxisTicInterval, totalWidth, trackHeight, "hours");
+
+                Graphics gr = Graphics.FromImage(compositeBmp);
+                int halfHeight = compositeBmp.Height / 2;
+
+                //add in the title bars
+                string title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "BGN-AVG-CVR");
+                Bitmap titleBmp = Image_Track.DrawTitleTrack(totalWidth, trackHeight, title);
+                int offset = 0;
+                gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+                title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "ACI-ENT-EVN");
+                titleBmp = Image_Track.DrawTitleTrack(totalWidth, trackHeight, title);
+                offset = halfHeight;
+                gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+
+                //add in the timescale tracks
+                offset = trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset = compositeBmp.Height - trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset = halfHeight - trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset = halfHeight + trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+
+
+                compositeBmp.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
+
+
+                Log.WriteLine("GOT TO HERE");
+                Console.ReadLine();
+                System.Environment.Exit(0);
             }
+
+
+
+
+
+
 
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
             // problem is that Jason cuts them up into 6 hour blocks.
@@ -60,6 +133,11 @@ namespace AnalysisPrograms
                                   "SERF_20130401_133143_000",
                                   "SERF_20130401_201721_000",
                                       };
+
+                // MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA
+                int sampleRate = 17640;
+                int frameWidth = 256;
+
 
 
                 //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
@@ -125,8 +203,6 @@ namespace AnalysisPrograms
 
                 TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
                 TimeSpan xScale = TimeSpan.FromMinutes(60);
-                int sampleRate = 17640;
-                int frameWidth = 256;
                 double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
                 string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
                 var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
@@ -173,114 +249,6 @@ namespace AnalysisPrograms
             
 
 
-            // experiments with Sobel ridge detector
-            if (false)
-            {
-                //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-                //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC2_20071005-235040.wav";
-                //string wavFilePath = @"C:\SensorNetworks\WavFiles\BAC\BAC5_20080520-040000_silence.wav";
-                //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-                string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
-
-                string outputDir = @"C:\SensorNetworks\Output\Test";
-                string imageFname = "test3.png";
-                string annotatedImageFname = "BAC2_annotatedTEST.png";
-                double magnitudeThreshold = 7.0; // of ridge height above neighbours
-
-                //var testImage = (Bitmap)(Image.FromFile(imagePath));
-                var recording = new AudioRecording(wavFilePath);
-                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-                var spectrogram = new SpectrogramStandard(config, recording.WavReader);
-                Plot scores = null; 
-                double eventThreshold = 0.5; // dummy variable - not used
-                List<AcousticEvent> list = null;
-                Image image = DrawSonogram(spectrogram, scores, list, eventThreshold, null);
-                string imagePath = Path.Combine(outputDir, imageFname);
-                image.Save(imagePath, ImageFormat.Png);
-
-                double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-
-                List<PointOfInterest> poiList = new List<PointOfInterest>();
-                double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
-                var timeScale = TimeSpan.FromTicks((long)(secondsScale * TimeSpan.TicksPerSecond));
-                double herzScale = spectrogram.FBinWidth;
-                double freqBinCount = spectrogram.Configuration.FreqBinCount;
-                int ridgeLength = 5; // dimension of NxN matrix to use for ridge detection - must be odd number
-                int halfLength = ridgeLength / 2;
-
-                int rows = matrix.GetLength(0);
-                int cols = matrix.GetLength(1);
-                for (int r = 5 + halfLength; r < rows - halfLength -14; r++) // avoid top 5 freq bins and bottom 14 bins
-                {
-                    for (int c = halfLength; c < cols - halfLength; c++)
-                    {
-                        var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                        double magnitude, direction;
-                        bool isRidge = false;
-                        TowseyLibrary.ImageTools.SobelRidgeDetection(subM, out isRidge, out magnitude, out direction);
-                        //TowseyLib.ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                        //TowseyLib.ImageTools.Sobel5X5CornerDetection(subM, out isRidge, out magnitude, out direction);
-                        if (isRidge && (magnitude > magnitudeThreshold)) 
-                        {
-                            Point point = new Point(c, r);
-                            //var poi = new PointOfInterest(point);
-                            TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
-                            double herz = (freqBinCount-r -1) * herzScale;
-                            var poi = new PointOfInterest(time, herz);
-                            poi.Point = point;
-                            poi.RidgeOrientation = direction;
-                            poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
-                            poi.RidgeMagnitude = magnitude;
-                            poi.Intensity = matrix[r, c];
-                            poi.TimeScale = timeScale;
-                            poi.HerzScale = herzScale;
-                            poi.IsLocalMaximum = MatrixTools.CentreIsLocalMaximum(subM, magnitudeThreshold + 2.0); // local max must stick out!
-                            poiList.Add(poi);
-                        } // c++;
-                    } // r++;
-                }
-
-                //double intensityThreshold = 6.0; // dB
-                //PointOfInterest.RemoveLowIntensityPOIs(poiList, intensityThreshold);
-
-                PointOfInterest.PruneSingletons(poiList, rows, cols);
-                //PointOfInterest.PruneDoublets(poiList, rows, cols);
-                //poiList = PointOfInterest.PruneAdjacentTracks(poiList, rows, cols);
-
-                //Bitmap bmp = (Bitmap)image;
-                //foreach (PointOfInterest poi in poiList)
-                //{
-                //    poi.DrawColor = Color.Crimson;
-                //    bool multiPixel = true;
-                //    poi.DrawPoint(bmp, (int)freqBinCount, multiPixel);
-                //    //poi.DrawOrientationPoint(bmp, (int)freqBinCount);
-
-                //    // draw local max
-                //    //poi.DrawColor = Color.Cyan;
-                //    //poi.DrawLocalMax(bmp, (int)freqBinCount);
-                //}
-
-                int[,] poiMatrix = PointOfInterest.TransferPOIsToOrientationMatrix(poiList, rows, cols);
-                int poiCount;
-                double fraction;
-                PointOfInterest.CountPOIsInMatrix(poiMatrix, out poiCount, out fraction);
-                Console.WriteLine("poiCount={0};  fraction={1}", poiCount, fraction);
-
-                poiMatrix = MatrixTools.MatrixRotate90Clockwise(poiMatrix);
-                image = DrawSonogram(spectrogram, scores, poiMatrix);
-
-                imagePath = Path.Combine(outputDir, annotatedImageFname);
-                image.Save(imagePath, ImageFormat.Png);
-                //image = (Image) bmp;
-                //bmp.Save(imagePath);
-                FileInfo fiImage = new FileInfo(imagePath);
-                if (fiImage.Exists)
-                {
-                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
-                    process.Run(imagePath, outputDir);
-                }
-
-            } // experiments with Sobel ridge detector
 
             // INPUT FILES
             //string ipdir = @"C:\SensorNetworks\Output\Test2\Towsey.Acoustic"; //KIWI FILES

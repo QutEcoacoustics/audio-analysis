@@ -28,22 +28,24 @@ namespace AudioAnalysisTools.Indices
     using log4net;
 
     using TowseyLibrary;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Core class that calculates indices.
     /// </summary>
     public class IndexCalculate
     {
+        // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 22050) THEN frame duration = 5.805ms.
+        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 22050) THEN frame duration = 11.61ms.
+        // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 11025) THEN frame duration = 11.61ms.
+        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 11025) THEN frame duration = 23.22ms.
+        // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 17640) THEN frame duration = 18.576ms.
         public const int DefaultWindowSize = 256;
 
         // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
-        public static int LowFreqBound = 500;
+        public static int DefaultLowFreqBound = 500;
 
-        public static int MidFreqBound = 3500;
-
-        // chose this value because it is simple fraction (4/5) of 22050Hz. However this now appears to be irrelevant.
-        // public const int RESAMPLE_RATE = 22050;
-        public const int ResampleRate = 17640; 
+        public static int DefaultMidFreqBound = 3500;
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -87,9 +89,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Extracts indices from a single  segment of recording
-        /// EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
-        /// EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
+        /// Extracts indices from a single segment of recording
         /// </summary>
         /// <param name="recording">an audio recording</param>
         /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
@@ -105,12 +105,13 @@ namespace AudioAnalysisTools.Indices
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
             // get parameters for the analysis
-            int frameSize = IndexCalculate.DefaultWindowSize;
-            frameSize = (int?)config[AnalysisKeys.FrameLength] ?? frameSize;
+            //int frameSize = IndexCalculate.DefaultWindowSize;
+            int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
             int freqBinCount = frameSize / 2;
-            LowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? LowFreqBound;
-            MidFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? MidFreqBound;
+            int LowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? IndexCalculate.DefaultLowFreqBound;
+            int MidFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? IndexCalculate.DefaultMidFreqBound;
             double windowOverlap = config[AnalysisKeys.FrameOverlap];
+            int sampleRate = (int?)config[AnalysisKeys.ResampleRate] ?? AppConfigHelper.GetInt("DefaultTargetSampleRate"); ;
 
             // get recording segment
             int signalLength = recording.WavReader.Samples.Length;

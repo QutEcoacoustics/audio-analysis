@@ -435,7 +435,15 @@ namespace AnalysisPrograms
                              {
                                  FileName = fileName,
                                  OutputDirectory = resultsDirectory,
-                                 InputDirectory = resultsDirectory
+                                 InputDirectory = resultsDirectory,
+
+                                 SampleRate = sampleRate,
+                                 FrameWidth = frameWidth,
+                                 XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                                 MinuteOffset = SpectrogramConstants.MINUTE_OFFSET,
+                                 ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                                 ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR,
+                                 BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF       
                              };
 
             FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);

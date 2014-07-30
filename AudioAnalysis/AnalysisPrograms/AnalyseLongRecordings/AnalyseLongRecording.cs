@@ -146,8 +146,19 @@ Output  to  directory: {1}
             }
             catch (Exception ex)
             {
-                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squahsed, default value used)", ex);
+                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value used)", ex);
                 analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
+            }
+
+            // set target sample rate
+            try
+            {
+                int rawSampleRate = configuration[AnalysisKeys.ResampleRate];
+                analysisSettings.SegmentTargetSampleRate = rawSampleRate;
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value used)", ex);
             }
 
             // 7. ####################################### DO THE ANALYSIS ###################################
