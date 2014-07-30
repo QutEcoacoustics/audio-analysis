@@ -8,6 +8,8 @@
     using System.Linq;
     using System.Reflection;
 
+    using AudioAnalysisTools.LongDurationSpectrograms;
+
     using log4net;
 
     using TowseyLibrary;
