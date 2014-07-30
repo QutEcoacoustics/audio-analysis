@@ -33,6 +33,8 @@ namespace AnalysisBase
     [Serializable]
     public class AnalysisSettings : ICloneable
     {
+        public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
+
         [NonSerialized]
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -51,7 +53,7 @@ namespace AnalysisBase
         public AnalysisSettings()
         {
             this.ConfigDict = new Dictionary<string, string>();
-            this.SegmentTargetSampleRate = AppConfigHelper.GetInt("DefaultTargetSampleRate"); ;
+            this.SegmentTargetSampleRate = AppConfigHelper.GetInt(DefaultTargetSampleRateKey);
         }
 
         /// <summary>
@@ -214,7 +216,8 @@ namespace AnalysisBase
 
         /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
-        /// This should be set to an initial value by an analysis.
+        /// This is initially set to the value of the <c>DefaultTargetSampleRateKey</c> setting in the app.config.
+        /// This used to be set by a constant in each implementation of an analysis.
         /// </summary>
         public int SegmentTargetSampleRate { get; set; }
 
@@ -242,7 +245,7 @@ namespace AnalysisBase
         public Dictionary<string, string> ConfigDict { get; set; }
 
         /// <summary>
-        /// Gets other configuration properties. Should be mutually exclusive with ConfigFile.
+        /// Gets or sets the object of other configuration properties. Should be mutually exclusive with ConfigFile.
         /// </summary>
         public dynamic Configuration { get; set; }
 

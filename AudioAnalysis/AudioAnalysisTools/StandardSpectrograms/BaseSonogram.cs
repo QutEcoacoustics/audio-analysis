@@ -8,6 +8,8 @@
     using System.Text;
 
     using Acoustics.Tools.Wav;
+
+    using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
 

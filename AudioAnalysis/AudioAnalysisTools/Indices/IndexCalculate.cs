@@ -111,7 +111,7 @@ namespace AudioAnalysisTools.Indices
             int LowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? IndexCalculate.DefaultLowFreqBound;
             int MidFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? IndexCalculate.DefaultMidFreqBound;
             double windowOverlap = config[AnalysisKeys.FrameOverlap];
-            int sampleRate = (int?)config[AnalysisKeys.ResampleRate] ?? AppConfigHelper.GetInt("DefaultTargetSampleRate"); ;
+            int sampleRate = (int?)config[AnalysisKeys.ResampleRate] ?? analysisSettings.SegmentTargetSampleRate;
 
             // get recording segment
             int signalLength = recording.WavReader.Samples.Length;
