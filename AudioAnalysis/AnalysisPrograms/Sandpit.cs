@@ -38,8 +38,6 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-
-
             if (false)  // concatenating spectrogram images with gaps between them.
             {
                 LDSpectrogramStitching.StitchPartialSpectrograms();

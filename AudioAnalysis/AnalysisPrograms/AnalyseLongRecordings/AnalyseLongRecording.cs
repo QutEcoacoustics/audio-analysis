@@ -32,6 +32,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using log4net;
     using log4net.Repository.Hierarchy;
 
+
     public partial class AnalyseLongRecording
     {
         private const string ImagefileExt = ".png";

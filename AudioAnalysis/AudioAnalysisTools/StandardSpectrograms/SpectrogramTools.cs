@@ -284,21 +284,15 @@ namespace AudioAnalysisTools
 
         public static int MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
         {
-            //string sourceMimeType = "wav";
-            //string outputMimeType = "png";
-            //Acoustics.Tools.SpectrogramRequest request = new Acoustics.Tools.SpectrogramRequest();
-            
-            string soxPath = @"C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe";
-            if (configDict.ContainsKey(AnalysisKeys.SoxPath))
+            string soxPath = AppConfigHelper.GetString("AudioUtilitySoxExe");  // default value
+
+            var fiSOX = new FileInfo(soxPath);
+            if (!fiSOX.Exists)
             {
-                soxPath = configDict[AnalysisKeys.SoxPath];
-                var fiSOX = new FileInfo(soxPath);
-                if (!fiSOX.Exists)
-                {
-                    LoggedConsole.WriteLine("SOX ERROR: Path does not exist: <{0}>", fiSOX.FullName);
-                    return 1;
-                }
+                LoggedConsole.WriteLine("SOX ERROR: Path does not exist: <{0}>", fiSOX.FullName);
+                return 1;
             }
+            
             string soxCmd = "" + soxPath + ""; //must quote the path because has a space in it.
 
             string title = "";
@@ -311,10 +305,10 @@ namespace AudioAnalysisTools
             {
                 comment = " -c " + configDict[AnalysisKeys.SonogramComment];
             }
-            string axes = "";
+            string axes = "-r";
             if (configDict.ContainsKey(AnalysisKeys.AddAxes) && (! ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict)))
             {
-                axes = " -r ";
+                axes = "";
             }
             string coloured = " -m "; //default
             if (configDict.ContainsKey(AnalysisKeys.SonogramColored) && (ConfigDictionary.GetBoolean(AnalysisKeys.SonogramColored, configDict)))
@@ -332,8 +326,9 @@ namespace AudioAnalysisTools
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -l -o \"{1}\"";  //greyscale with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -o \"{1}\"";     //reverse image greyscale with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l -o \"{1}\"";     //colour with time, freq and intensity scales
-            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64  -l -o \"{1}\"";    //64 grey scale, with time, freq and intensity scales
-            string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l {1} {2} {3} {4} {5} -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64 -r -l -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
+              string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m {1} -q 64 -l -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l {1} {2} {3} {4} {5} -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
 
             //FOR COMMAND LINE OPTIONS SEE:  http://sox.sourceforge.net/sox.html
             //−a     Suppress display of axis lines. This is sometimes useful in helping to discern artefacts at the spectrogram edges.

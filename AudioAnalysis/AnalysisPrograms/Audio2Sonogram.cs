@@ -34,10 +34,8 @@ namespace AnalysisPrograms
     public class Audio2Sonogram
     {
         //use the following paths for the command line for the <Audio2Sonogram> task. 
-
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
 
-        //public const int DEFAULT_SAMPLE_RATE = 22050;
 
         [CustomDetailedDescription]
         [CustomDescription]
@@ -72,8 +70,20 @@ namespace AnalysisPrograms
 
         private static Arguments Dev()
         {
+
+            return new Arguments
+            {
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
+                StartOffset = 0,
+                EndOffset = 0,
+                Verbose = true
+            };
+
             throw new NoDeveloperMethodException();
         }
+
 
         public static void Main(Arguments arguments)
         {
@@ -90,17 +100,9 @@ namespace AnalysisPrograms
             }
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
-
-            /*// checks validity of the first 3 path arguments
-            CheckArguments(args); 
-
-            string recordingPath = args[0];
-            string configPath    = args[1];
-            string outputPath    = args[2];*/
-
+            // set default offsets - only use defaults if not provided in argments list
             TimeSpan startOffsetMins = TimeSpan.Zero;
             TimeSpan endOffsetMins   = TimeSpan.Zero;
-
             if (offsetsProvided)
             {
                 startOffsetMins = TimeSpan.FromMinutes(arguments.StartOffset.Value);
@@ -128,9 +130,40 @@ namespace AnalysisPrograms
             FileInfo fiImage  = arguments.Output;
 
             //2. get the config dictionary
-            var configuration = new ConfigDictionary(fiConfig.FullName);
-            Dictionary<string, string> configDict = configuration.GetTable();
+            dynamic configuration = Yaml.Deserialise(fiConfig);
 
+            //below three lines are examples of retrieving info from dynamic config
+            //string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
+            //bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+            //scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
+
+            //3 transfer conogram parameters to a dictionary to be passed around
+            var configDict = new Dictionary<string, string>();
+            configDict["FrameLength"] = configuration[AnalysisKeys.FrameLength] ?? 512;
+            // #Frame Overlap as fraction: default=0.0 
+            configDict["FrameOverlap"] = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
+            // #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
+            configDict["ResampleRate"] = configuration[AnalysisKeys.ResampleRate] ?? 17640;
+            // #MinHz: 500
+            // #MaxHz: 3500
+            // #NOISE REDUCTION PARAMETERS
+            configDict["DoNoiseReduction"] = configuration["DoNoiseReduction"] ?? true;
+            configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
+
+            configDict["ADD_AXES"] = configuration["ADD_AXES"] ?? true;
+            configDict["AddSegmentationTrack"] = configuration["AddSegmentationTrack"] ?? true;
+
+            // # REDUCTION FACTORS for freq and time dimensions
+            // #TimeReductionFactor: 1          
+            // #FreqReductionFactor: 1
+
+            configDict["MakeSoxSonogram"] = (string)configuration["MakeSoxSonogram"] ?? "false";
+            configDict["SonogramTitle"]   = (string)configuration["SonogramTitle"] ?? "Sonogram";
+            configDict["SonogramComment"] = (string)configuration["SonogramComment"] ?? "Sonogram produced using SOX";
+            configDict["SonogramColored"] = (string)configuration["SonogramColored"] ?? "false";
+            configDict["SonogramQuantisation"] = (string)configuration["SonogramQuantisation"] ?? "128";
+
+            // print out the sonogram parameters
             if (verbose)
             {
                 LoggedConsole.WriteLine("\nPARAMETERS");
@@ -138,6 +171,7 @@ namespace AnalysisPrograms
                 {
                     LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
                 }
+
             }
 
             //3: GET RECORDING
