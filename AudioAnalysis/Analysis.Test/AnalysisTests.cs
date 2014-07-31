@@ -8,8 +8,6 @@ namespace Ecosounds.Test.AnalysisPrograms
 {
     using System.IO;
 
-    using EcoSounds.Mvc.Tests;
-
     //using AudioAnalysis.TowseyLibrary;
 
     using global::AnalysisPrograms;
