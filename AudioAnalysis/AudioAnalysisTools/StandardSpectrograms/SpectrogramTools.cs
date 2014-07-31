@@ -184,11 +184,6 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Image_MultiTrack Sonogram2MultiTrackImage(BaseSonogram sonogram, Dictionary<string, string> configDict)
         {
-            //double smoothWindow = Double.Parse(configDict[Keys.SMOOTHING_WINDOW]);   //smoothing window (seconds) before segmentation
-            //double thresholdSD = Double.Parse(configDict[Keys.THRESHOLD]);           //segmentation threshold in noise SD
-            //int lowFrequencyBound = Double.Int(configDict[Keys.LOW_FREQ_BOUND]);     //lower bound of the freq band to be displayed
-            //int hihFrequencyBound = Double.Int(configDict[Keys.HIGH_FREQ_BOUND]);    //upper bound of the freq band to be displayed
-
             bool doHighlightSubband = false;
 
 
@@ -207,24 +202,24 @@ namespace AudioAnalysisTools
 
             
             // (iii) NOISE REDUCTION
-            bool doNoiseReduction = false;
-            if (configDict.ContainsKey(AnalysisKeys.NoiseDoReduction))
-                doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NoiseDoReduction, configDict);
-            if (doNoiseReduction)
-            {
-                //LoggedConsole.WriteLine("PERFORMING NOISE REDUCTION");
-                double bgThreshold = 3.0;
-                if (configDict.ContainsKey(AnalysisKeys.NoiseBgThreshold))
-                    bgThreshold = ConfigDictionary.GetDouble(AnalysisKeys.NoiseBgThreshold, configDict);
-                var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, bgThreshold);
-                sonogram.Data = tuple.Item1;   // store data matrix
-            }
+            //bool doNoiseReduction = false;
+            //if (configDict.ContainsKey(AnalysisKeys.NoiseDoReduction))
+            //    doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NoiseDoReduction, configDict);
+            //if (doNoiseReduction)
+            //{
+            //    //LoggedConsole.WriteLine("PERFORMING NOISE REDUCTION");
+            //    double bgThreshold = 3.0;
+            //    if (configDict.ContainsKey(AnalysisKeys.NoiseBgThreshold))
+            //        bgThreshold = ConfigDictionary.GetDouble(AnalysisKeys.NoiseBgThreshold, configDict);
+            //    var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, bgThreshold);
+            //    sonogram.Data = tuple.Item1;   // store data matrix
+            //}
 
             //ADD time and frequency scales
             bool addScale = false;
             if (configDict.ContainsKey(AnalysisKeys.AddTimeScale)) addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddTimeScale, configDict);
             else
-            if (configDict.ContainsKey(AnalysisKeys.AddAxes))       addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.AddAxes))      addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
             bool add1kHzLines = addScale;
 
 
@@ -266,14 +261,13 @@ namespace AudioAnalysisTools
         {
             bool doHighlightSubband = false;
             //ADD time and frequency scales
-            bool addScale = false;
+            bool addScale = true;
             //if (configDict.ContainsKey(Keys.ADD_TIME_SCALE)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
             //else
             //    if (configDict.ContainsKey(Keys.ADD_AXES)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_AXES, configDict);
             bool add1kHzLines = addScale;
 
             BaseSonogram sonogram = new SpectrogramStandard(config, matrix);
-            sonogram.Configuration.MaxFreqBand = 8800;
             System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             Image_MultiTrack image = new Image_MultiTrack(img);
             //if (addScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale

@@ -18,9 +18,10 @@ namespace AnalysisPrograms
     using PowerArgs;
     using Acoustics.Shared;
     using System.Drawing.Imaging;
+using System.Drawing;
    
     
-    class Create4Sonograms
+    public static class Create4Sonograms
     {
 
 
@@ -150,26 +151,83 @@ namespace AnalysisPrograms
             // (A) ################################## EXTRACT INDICES FROM THE SIGNAL WAVEFORM ##################################
             double[] signalEnvelope = dspOutput.Envelope;
             double avSignalEnvelope = signalEnvelope.Average();
+            // double[] frameEnergy = dspOutput.FrameEnergy;
 
             double totalSeconds = wavDuration.TotalSeconds;
             double highAmplIndex = dspOutput.MaxAmplitudeCount / totalSeconds;
 
+            int nyquistFreq = dspOutput.NyquistFreq;
+            ////double binWidth = dspOutput.BinWidth;
+            int nyquistBin = dspOutput.NyquistBin;
+            // dspOutput.WindowPower,
+            // dspOutput.FreqBinWidth
+            // recording.SampleRate
 
+            double[,] amplitudeSpectrogram = dspOutput.amplitudeSpectrogram; // get amplitude spectrogram.
+
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
+
+            // ii: Calculate background noise spectrum in decibels
+            double sdCount = 0.0; // number of SDs above the mean for noise removal
+            SNR.NoiseProfile dBProfile = SNR.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
+            deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.NoiseThresholds);
+            double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
+            deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
+
+
+            var list = new List<Image>();
+            Image image1 = ImageTools.DrawMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogram));
+
+            Image image2 = ImageTools.DrawMatrix(MatrixTools.MatrixRotate90Anticlockwise(deciBelSpectrogram));
 
 
             //BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);
             //var mti = Sonogram2MultiTrackImage(sonogram, configDict);
             //var image = mti.GetImage();
+            SonogramConfig config = new SonogramConfig();
+            config.MinFreqBand = 0;
+            config.MaxFreqBand = 8800;
+            config.WindowSize = frameSize;
+            config.WindowOverlap = windowOverlap;
+
+            //var mfccConfig = new MfccConfiguration(config);
+            int bandCount = config.mfccConfig.FilterbankCount;
+            bool doMelScale = config.mfccConfig.DoMelScale;
+            int ccCount = config.mfccConfig.CcCount;
+            int FFTbins = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            int minHz = config.MinFreqBand ?? 0;
+            int maxHz = config.MaxFreqBand ?? nyquistFreq;
 
 
-            //image.Save(fiImage.FullName, ImageFormat.Png);
+            AmplitudeSonogram amplitudeSonogram = new AmplitudeSonogram(config, amplitudeSpectrogram);
+            amplitudeSonogram.SampleRate = recording.SampleRate;
+            SpectrogramCepstral cepSng = new SpectrogramCepstral(amplitudeSonogram);
+            double[,] cepstralCoefficients = cepSng.Data;
+            Image image3 = cepSng.GetImage();
+
+            //BaseSonogram sonogram = new SpectrogramStandard(config, amplitudeSpectrogram);
+            //sonogram.SampleRate = recording.SampleRate;
+            ////Image image1 = sonogram.GetImage();
+
+            //var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+            //var image = mti.GetImage();
+
+            
+            //Image image = SpectrogramTools.Matrix2SonogramImage(deciBelSpectrogram, config);
+            //Image image = SpectrogramTools.Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict);
 
 
 
+            list.Add(image1);
+            list.Add(image2);
+            list.Add(image3);
+            Image finalImage = ImageTools.CombineImagesVertically(list);
+            finalImage.Save(fiImage.FullName, ImageFormat.Png);
 
             //prepare sonogram images
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = null;
+            //Image_MultiTrack image = null;
 
 
             //image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
@@ -292,7 +350,7 @@ namespace AnalysisPrograms
              */
 
 
-            LoggedConsole.WriteLine("\nFINISHED!");
+            //LoggedConsole.WriteLine("\nFINISHED!");
         }
 
 
