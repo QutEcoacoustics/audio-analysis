@@ -7,7 +7,7 @@ using TowseyLibrary;
 
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
-    class LDSpectrogramDiscreteColour
+    public class LDSpectrogramDiscreteColour
     {
         /// <summary>
         /// Experiments with false colour images - discretising the colours
