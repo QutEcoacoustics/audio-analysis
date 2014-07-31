@@ -109,8 +109,8 @@ namespace FELT.Tests
                         new Interval<DateTimeOffset>(etCivilStart, etCivilEnd))));*/
             var sunPhases = SunCalc.getDayInfo(testDate, lat, lng);
 
-            var a = Minimod.PrettyPrint.PrettyPrintMinimod.PrettyPrint(sunPhases, typeof(Tuple<string, Interval<DateTimeOffset>>[]));
-            Debug.WriteLine(a);
+            //var a = Minimod.PrettyPrint.PrettyPrintMinimod.PrettyPrint(sunPhases, typeof(Tuple<string, Interval<DateTimeOffset>>[]));
+            //Debug.WriteLine(a);
             /*
             var e = Minimod.PrettyPrint.PrettyPrintMinimod.PrettyPrint(expectedPhases, typeof(SunCalc.SunPhases));
             
