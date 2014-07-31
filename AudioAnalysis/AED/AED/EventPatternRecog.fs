@@ -54,9 +54,9 @@ module EprInternals =
         let h x s d l = (x - s) / d * (float l) |> rnd l
         (g t st td nt, h f sf fr nf)
 
-    /// calculate centre point from rect    
+    /// calculate centre point from rect
+    let centre s (l:float<_>) = s + (l / 2.0)    
     let centroids (rs:seq<EventRect>)  =
-        let centre s (l:float<_>) = s + (l / 2.0)
         Seq.map (fun r -> (centre (left r) (oldWidth r), centre (bottom r) (height2 r.Top r.Bottom))) rs
     
     // TODO investigate performance optimisation by normalising individual points in tuple computations
