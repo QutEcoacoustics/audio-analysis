@@ -405,8 +405,13 @@ namespace AnalysisPrograms.Production
         public static Action<FileRenamer.Arguments> FileRenamer()
         {
             return AnalysisPrograms.FileRenamer.Execute;
-        }  
+        }
 
+        public Create4Sonograms.Arguments Create4SonogramsArgs { get; set; }
+        public static Action<Create4Sonograms.Arguments> Create4Sonograms()
+        {
+            return AnalysisPrograms.Create4Sonograms.Main;
+        }  
         #endregion
     }
 }

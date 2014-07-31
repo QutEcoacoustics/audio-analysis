@@ -14,6 +14,7 @@
 
     using TowseyLibrary;
     using AudioAnalysisTools.DSP;
+    using AnalysisBase;
 
 
 	public class AudioRecording : IDisposable
@@ -423,7 +424,7 @@
 
 
         /// <summary>
-        /// 
+        /// This method extracts a recording segment and saves it to disk at the location fiOutputSegment.
         /// </summary>
         /// <param name="fiSource"></param>
         /// <param name="start"></param>
@@ -433,10 +434,9 @@
         /// <param name="fiOutputSegment"></param>
         public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, Dictionary<string, string> configDict, FileInfo fiOutputSegment)
         {
-            int DEFAULT_SAMPLE_RATE = 22050;
 
 
-            int resampleRate = DEFAULT_SAMPLE_RATE;
+            int resampleRate = AppConfigHelper.GetInt(AnalysisSettings.DefaultTargetSampleRateKey);
             if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
                 resampleRate = ConfigDictionary.GetInt(AnalysisKeys.ResampleRate, configDict);
 

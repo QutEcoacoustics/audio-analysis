@@ -24,10 +24,8 @@ AddSegmentationTrack: true
 #FreqReductionFactor: 1
 
 MakeSoxSonogram: false
-# Bad Michael, Don't do the following! SoX will always be deployed with AnalysisPrograms.exe
-#SOX_PATH: C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe
 SonogramTitle: Sonogram
 SonogramComment: "Sonogram produced using SOX"
-#SonogramColored: true
+#SonogramColored: false
 SonogramQuantisation: 128
 ...
