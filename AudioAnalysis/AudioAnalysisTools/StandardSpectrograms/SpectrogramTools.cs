@@ -67,7 +67,11 @@ namespace AudioAnalysisTools
             else
             {
                 analyser = null;
-                Image image = SpectrogramTools.Audio2SonogramImage(fiAudio, config.GetDictionary());
+                var configDict = config.GetDictionary();
+                BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);
+                var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                var image = mti.GetImage();
+
                 if (image != null)
                 {
                     if (fiImage.Exists)
@@ -170,7 +174,16 @@ namespace AudioAnalysisTools
             sonoConfig.SourceFName = recordingSegment.FileName;
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+
+            BaseSonogram sonogram = null;
+            if (configDict.ContainsKey("MakeAmplitudeSpectrogram"))
+            {
+                sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            }
+            else
+            {
+                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            }
             return sonogram;
         }
 
