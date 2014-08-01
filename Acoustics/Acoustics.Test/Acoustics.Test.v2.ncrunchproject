@@ -38,6 +38,7 @@
     <FixtureTestSelector>
       <FixtureName>Acoustics.Test.Tools.AudioUtilityWavTests</FixtureName>
     </FixtureTestSelector>
+    <AllTestsSelector />
   </IgnoredTests>
   <AdditionalFilesToInclude>..\..\Extra Assemblies\**.*</AdditionalFilesToInclude>
 </ProjectConfiguration>

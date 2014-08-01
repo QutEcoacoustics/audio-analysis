@@ -410,8 +410,8 @@ namespace AnalysisPrograms
 
             foreach (AcousticEvent ev in events)
             {
-                int start = ev.oblong.r1;
-                int end   = ev.oblong.r2;
+                int start = ev.oblong.RowTop;
+                int end   = ev.oblong.RowBottom;
                 double[] subArray = DataTools.Subarray(intensity, start, end-start+1);
                 int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
 
@@ -419,7 +419,7 @@ namespace AnalysisPrograms
                 int newMaxRow = start + bounds[1];
                 if (newMaxRow >= length) newMaxRow = length - 1;
 
-                Oblong o = new Oblong(newMinRow, ev.oblong.c1, newMaxRow, ev.oblong.c2);
+                Oblong o = new Oblong(newMinRow, ev.oblong.ColumnLeft, newMaxRow, ev.oblong.ColumnRight);
                 ev.oblong = o;
                 ev.TimeStart = newMinRow * ev.FrameOffset;
                 ev.TimeEnd   = newMaxRow * ev.FrameOffset;

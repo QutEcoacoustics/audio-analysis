@@ -199,8 +199,8 @@ namespace AudioAnalysisTools
         //    }
         //    else if (this.oblong != null)
         //    {
-        //        t1 = this.oblong.r1; //temporal start of event
-        //        tWidth = this.oblong.r2 - t1 + 1;
+        //        t1 = this.oblong.RowTop; //temporal start of event
+        //        tWidth = this.oblong.RowBottom - t1 + 1;
         //    }
 
         //    g.DrawRectangle(p1, t1, y, tWidth, height);
