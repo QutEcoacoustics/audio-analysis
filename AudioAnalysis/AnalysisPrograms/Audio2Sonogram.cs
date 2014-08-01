@@ -30,6 +30,7 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
 
     using PowerArgs;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     public class Audio2Sonogram
     {
@@ -73,9 +74,11 @@ namespace AnalysisPrograms
 
             return new Arguments
             {
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
                 StartOffset = 0,
                 EndOffset = 0,
                 Verbose = true
@@ -163,6 +166,12 @@ namespace AnalysisPrograms
             configDict["SonogramColored"] = (string)configuration["SonogramColored"] ?? "false";
             configDict["SonogramQuantisation"] = (string)configuration["SonogramQuantisation"] ?? "128";
 
+
+            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
+            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";
+            configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+
+
             // print out the sonogram parameters
             if (verbose)
             {
@@ -190,13 +199,27 @@ namespace AnalysisPrograms
             }
             else
             {
-                using (Image image = SpectrogramTools.Audio2SonogramImage(fiOutputSegment, configDict))
-                {
-                    // TODO: remove eventually
-                    Debug.Assert(image != null, "The image should not be null - there is no reason it can be");
-                    if (fiImage.Exists) fiImage.Delete();
-                    image.Save(fiImage.FullName, ImageFormat.Png);
-                }
+                BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiOutputSegment, configDict);
+                var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                var image = mti.GetImage();
+
+                // TODO: remove eventually
+                Debug.Assert(image != null, "The image should not be null - there is no reason it can be");
+                if (fiImage.Exists) fiImage.Delete();
+                image.Save(fiImage.FullName, ImageFormat.Png);
+
+
+                configDict.Add("MakeAmplitudeSpectrogram", "true");
+                BaseSonogram amplitudeSpg = SpectrogramTools.Audio2Sonogram(fiOutputSegment, configDict);
+                var mti2 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                var image2 = mti2.GetImage();
+                image2.Save(fiImage.FullName+"2", ImageFormat.Png);
+
+                SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
+                var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                var image3 = mti3.GetImage();
+                image3.Save(fiImage.FullName + "3", ImageFormat.Png);
+                    
             }
             //###### get sonogram image ##############################################################################################
 

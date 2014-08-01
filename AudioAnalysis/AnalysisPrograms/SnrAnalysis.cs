@@ -77,8 +77,7 @@ namespace AnalysisPrograms
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav".ToFileInfo(),
                 
                            Config =
-                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml"
-                               .ToFileInfo(),
+                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
                            Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo()
                        };
             throw new NotImplementedException();
