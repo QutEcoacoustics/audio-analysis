@@ -784,8 +784,8 @@ namespace AnalysisPrograms
         //this method assumes that the array has had backgroundnoise removed
         public static double CalculatePeakSnrScore(AcousticEvent ev, double[] dBarray)
         {
-            int start = ev.oblong.r1;
-            int end = ev.oblong.r2;
+            int start = ev.oblong.RowTop;
+            int end = ev.oblong.RowBottom;
             if (end > dBarray.Length) end = dBarray.Length - 1;
             int length = end - start + 1;
 
@@ -846,8 +846,8 @@ namespace AnalysisPrograms
             {
                 int start = (int)(ev.TimeStart * ev.FramesPerSecond);
                 int end = (int)(ev.TimeEnd * ev.FramesPerSecond);
-                //int start = ev.oblong.r1;
-                //int end = ev.oblong.r2;
+                //int start = ev.oblong.RowTop;
+                //int end = ev.oblong.RowBottom;
                 double[] subArray = DataTools.Subarray(activity, start, end - start + 1);
                 int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, croppingSeverity);
 

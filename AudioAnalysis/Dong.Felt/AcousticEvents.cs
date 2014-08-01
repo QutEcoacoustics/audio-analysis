@@ -130,12 +130,12 @@
             this.IsMelscale = false;
 
             double startTime; double duration;
-            RowIDs2Time(o.r1, o.r2, frameOffset, out startTime, out duration);
+            RowIDs2Time(o.RowTop, o.RowBottom, frameOffset, out startTime, out duration);
             this.TimeStart = startTime;
             this.Duration = duration;
             this.TimeEnd = startTime + duration;
             int minF; int maxF;
-            HerzBinIDs2Freq(o.c1, o.c2, binWidth, out minF, out maxF);
+            HerzBinIDs2Freq(o.ColumnLeft, o.ColumnRight, binWidth, out minF, out maxF);
             this.MinFreq = minF;
             this.MaxFreq = maxF;
         }
@@ -279,7 +279,7 @@
 
         public string WriteProperties()
         {
-            return " min-max=" + this.MinFreq + "-" + this.MaxFreq + ",  " + oblong.c1 + "-" + oblong.c2;
+            return " min-max=" + this.MinFreq + "-" + this.MaxFreq + ",  " + oblong.ColumnLeft + "-" + oblong.ColumnRight;
         }
 
 
@@ -308,8 +308,8 @@
             }
             else if (this.oblong != null)
             {
-                t1 = this.oblong.r1; //temporal start of event
-                tWidth = this.oblong.r2 - t1 + 1;
+                t1 = this.oblong.RowTop; //temporal start of event
+                tWidth = this.oblong.RowBottom - t1 + 1;
             }
 
             g.DrawRectangle(p2, t1, y, tWidth, height);
@@ -699,7 +699,7 @@
                 {
                     events[e].TimeEnd = events[e + 1].TimeEnd;
                     events[e].Duration = events[e].TimeEnd - events[e].TimeStart;
-                    events[e].oblong.r2 = events[e + 1].oblong.r2;
+                    events[e].oblong.RowBottom = events[e + 1].oblong.RowBottom;
                     events.RemoveRange(e + 1, 1);
                 } 
             }

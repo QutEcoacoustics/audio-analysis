@@ -204,7 +204,7 @@ namespace AnalysisPrograms
             foreach (AcousticEvent ae in allEvents)
             {
                 Log.WriteLine("# Event name = {0}  ############################", ae.Name);
-                Log.WriteLine("# Event time = {0:f2} to {1:f2} (frames {2}-{3}).", ae.TimeStart, ae.TimeEnd, ae.oblong.r1, ae.oblong.r2);
+                Log.WriteLine("# Event time = {0:f2} to {1:f2} (frames {2}-{3}).", ae.TimeStart, ae.TimeEnd, ae.oblong.RowTop, ae.oblong.RowBottom);
                 Log.WriteLine("# Event score= {0:f2}.", ae.Score);
             }
 
@@ -376,7 +376,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Event: "+callName);
             foreach (AcousticEvent ae in matchEvents)
             {
-                Log.WriteLine("# Old  event frame= {0} to {1}.", ae.oblong.r1, ae.oblong.r2);
+                Log.WriteLine("# Old  event frame= {0} to {1}.", ae.oblong.RowTop, ae.oblong.RowBottom);
                 ae.Name = callName;
                 ae.TimeStart = ae.Score_TimeOfMaxInEvent;
                 ae.Duration  = templateDuration;
@@ -386,7 +386,7 @@ namespace AnalysisPrograms
                 ae.Score = ae.Score_MaxInEvent;
                 ae.ScoreNormalised = ae.Score / ae.Score_MaxPossible;  // normalised to the user supplied threshold
                 Log.WriteLine("# New event time = {0:f2} to {1:f2}.", ae.TimeStart, ae.TimeEnd);
-                Log.WriteLine("# New event frame= {0} to {1}.", ae.oblong.r1, ae.oblong.r2);
+                Log.WriteLine("# New event frame= {0} to {1}.", ae.oblong.RowTop, ae.oblong.RowBottom);
             }
         }
 
@@ -449,12 +449,12 @@ namespace AnalysisPrograms
             //Log.WriteLine("# Convert time scale of events.");
             //foreach (AcousticEvent ae in predictedEvents)
             //{
-            //    Log.WriteLine("# Event frame= {0} to {1}.", ae.oblong.r1, ae.oblong.r2);
+            //    Log.WriteLine("# Event frame= {0} to {1}.", ae.oblong.RowTop, ae.oblong.RowBottom);
             //    ae.FrameOffset = sonogram.FrameOffset;
             //    ae.FramesPerSecond = sonogram.FramesPerSecond;
             //    ae.oblong = AcousticEvent.ConvertEvent2Oblong(ae);
             //    Log.WriteLine("# Event time = {0:f2} to {1:f2}.", ae.StartTime, ae.EndTime);
-            //    Log.WriteLine("# Event frame= {0} to {1}.", ae.oblong.r1, ae.oblong.r2);
+            //    Log.WriteLine("# Event frame= {0} to {1}.", ae.oblong.RowTop, ae.oblong.RowBottom);
             //}
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
