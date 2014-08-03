@@ -21,6 +21,9 @@ namespace AnalysisPrograms
 using System.Drawing;
    
     
+    /// <summary>
+    /// Call this class by using the activity (first command line argument) "Create4Sonograms"
+    /// </summary>
     public static class Create4Sonograms
     {
 
@@ -61,9 +64,11 @@ using System.Drawing;
 
             return new Arguments
             {
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
                 Verbose = true
             };
 
@@ -164,16 +169,26 @@ using System.Drawing;
             // recording.SampleRate
 
             double[,] amplitudeSpectrogram = dspOutput.amplitudeSpectrogram; // get amplitude spectrogram.
+            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(amplitudeSpectrogram));
 
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, recording.SampleRate, epsilon);
+            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
+            //deciBelSpectrogram = MatrixTools.Normalise(deciBelSpectrogram, -80, -30);
+            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
 
             // ii: Calculate background noise spectrum in decibels
             double sdCount = 0.0; // number of SDs above the mean for noise removal
             SNR.NoiseProfile dBProfile = SNR.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
-            deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.NoiseThresholds);
-            double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
-            deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
+            //DataTools.writeBarGraph(dBProfile.NoiseMode);
+            
+            
+            //deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.NoiseThresholds);
+            //double dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
+            //deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, dBThreshold);
+
+            deciBelSpectrogram = MatrixTools.normalise(deciBelSpectrogram);
+            //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(deciBelSpectrogram));
 
 
             var list = new List<Image>();
@@ -202,9 +217,14 @@ using System.Drawing;
 
             AmplitudeSonogram amplitudeSonogram = new AmplitudeSonogram(config, amplitudeSpectrogram);
             amplitudeSonogram.SampleRate = recording.SampleRate;
+            Image image3 = amplitudeSonogram.GetImage();
+
+
+
+
             SpectrogramCepstral cepSng = new SpectrogramCepstral(amplitudeSonogram);
             double[,] cepstralCoefficients = cepSng.Data;
-            Image image3 = cepSng.GetImage();
+            Image image4 = cepSng.GetImage();
 
             //BaseSonogram sonogram = new SpectrogramStandard(config, amplitudeSpectrogram);
             //sonogram.SampleRate = recording.SampleRate;
@@ -222,6 +242,7 @@ using System.Drawing;
             list.Add(image1);
             list.Add(image2);
             list.Add(image3);
+            list.Add(image4);
             Image finalImage = ImageTools.CombineImagesVertically(list);
             finalImage.Save(fiImage.FullName, ImageFormat.Png);
 
