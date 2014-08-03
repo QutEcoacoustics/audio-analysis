@@ -41,11 +41,15 @@ let aeToMatrix ae =
     Set.iter (fun (i,j) -> m.[i-(top r), j-(left r)] <- 1.0) ae.Elements
     m
 
+let mapToRectangles aes = 
+    List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1 + top b2) (width b2) (height b2))
+    List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1) (width b2) (height b1))
+
 let separateLargeEvents aes =
     let areat = 3000
     let freqt = 20.0
     let timet = 100.0 / 3.0
-    let f ae =
+    let separate ae =
         let m = aeToMatrix ae
         let s = sumRows m |> Math.Vector.toArray |> Array.map (fun x -> x / (float) m.NumCols * 100.0 <= freqt) 
         let m1 = Math.Matrix.mapi (fun i _ x -> if s.[i] then 0.0 else x) m
@@ -54,23 +58,24 @@ let separateLargeEvents aes =
         let m2 = m - m1
         rs @ (getAcousticEvents m2
               |> List.filter (fun x -> (float) (height x.Bounds ) * 100.0 / (float) m2.NumRows >= timet)
+
               |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1) (width b2) (height b1)))         
-    Seq.collect (fun ae -> if area ae.Bounds < areat then [ae.Bounds] else f ae) aes
+    Seq.collect (fun ae -> if area ae.Bounds < areat then [ae] else separate ae) aes
 
 let smallFirstMin cs h t =
     let s = Seq.pairwise h |> Seq.map (fun (x,y) -> x-y) |> Seq.zip cs
     let tf g = Seq.tryFind (fun (_,x) -> g x) s
     tf ((>) 0) |? lazy tf ((=) 0) |> Option.map fst |?| t
 
-let smallThreshold t rs =
+let smallThreshold t aes =
     let (%%) x y = (float x) * y |> round |> (int)
     let cs = seq {for i in 0..9 -> (i * (t %% 0.1)) + (t %% 0.05)}
     let as' = Seq.map area rs |> Seq.filter (fun x -> x <= t)
     smallFirstMin cs (histi as' cs) t
 
-let filterOutSmallEvents t rs =
-    let t' = smallThreshold t rs
-    Seq.filter (fun r -> area r > t') rs
+let filterOutSmallEvents t aes =
+    let t' = smallThreshold t aes
+    Seq.filter (fun r -> area r > t') aes
 
 let detectEventsMatlab intensityThreshold smallAreaThreshold m =
     m

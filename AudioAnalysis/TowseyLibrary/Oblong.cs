@@ -46,14 +46,33 @@ namespace TowseyLibrary
         /// <param name="col2">
         /// </param>
         public Oblong(int row1, int col1, int row2, int col2)
+            : this(row1, col1, row2, col2, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Oblong"/> class. 
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="row1">
+        /// </param>
+        /// <param name="col1">
+        /// </param>
+        /// <param name="row2">
+        /// </param>
+        /// <param name="col2">
+        /// </param>
+        /// <param name="perimiterPoints"></param>
+        public Oblong(int row1, int col1, int row2, int col2, ISet<Point> perimiterPoints)
         {
             this.RowTop = row1;
             this.ColumnLeft = col1;
             this.RowBottom = row2;
             this.ColumnRight = col2;
+            this.PerimiterPoints = perimiterPoints;
             this.RowWidth = row2 - row1 + 1;
             this.ColWidth = col2 - col1 + 1;
-            this.category = -1;
+            this.Category = -1;
 
             // set up fuzzy sets
             this.FuzzySetCentres();
@@ -105,7 +124,12 @@ namespace TowseyLibrary
         /// </summary>
         public int ColumnRight { get; set; }
 
-        public int category { get; set; }
+        /// <summary>
+        /// Gets or sets the collection of points that form the perimeter of the oblong
+        /// </summary>
+        public ISet<Point> PerimiterPoints { get; set; }
+
+        public int Category { get; set; }
 
         /// <summary>
         /// Gets or sets the location of Oblong's top row in parent matrix
@@ -135,7 +159,7 @@ namespace TowseyLibrary
 
             for (int i = 0; i < shapes.Count; i++)
             {
-                shapes[i].category = categories[i];
+                shapes[i].Category = categories[i];
             }
         }
 
@@ -202,7 +226,7 @@ namespace TowseyLibrary
                 r2 /= count;
                 c2 /= count;
                 var shape = new Oblong(r1, c1, r2, c2);
-                shape.category = c;
+                shape.Category = c;
 
                 categoryShapes.Add(shape);
             }
