@@ -68,7 +68,7 @@ namespace AudioAnalysisTools
             {
                 analyser = null;
                 var configDict = config.GetDictionary();
-                BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);
+                BaseSonogram sonogram = SpectrogramTools.Audio2DecibelSonogram(fiAudio, configDict);
                 var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
                 var image = mti.GetImage();
 
@@ -94,7 +94,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Image Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
-            BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);
+            BaseSonogram sonogram = SpectrogramTools.Audio2DecibelSonogram(fiAudio, configDict);
             var mti = Sonogram2MultiTrackImage(sonogram, configDict);
             var image = mti.GetImage();
             return image;
@@ -159,7 +159,7 @@ namespace AudioAnalysisTools
 
 
 
-        public static BaseSonogram Audio2Sonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
+        public static BaseSonogram Audio2AmplitudeSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
             int frameLength = 512; // default value
             if (configDict.ContainsKey(AnalysisKeys.FrameLength))
@@ -175,19 +175,33 @@ namespace AudioAnalysisTools
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
 
-            BaseSonogram sonogram = null;
-            if (configDict.ContainsKey("MakeAmplitudeSpectrogram"))
-            {
-                sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-            }
-            else
-            {
-                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-            }
+            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
             return sonogram;
         }
 
+        public static BaseSonogram Audio2DecibelSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
+        {
+            //int frameLength = 512; // default value
+            //if (configDict.ContainsKey(AnalysisKeys.FrameLength))
+            //    frameLength = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, configDict);
 
+            //double frameOverlap = 0.0; // default value
+            //if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
+            //    frameOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
+
+            AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
+            int sr = recordingSegment.SampleRate;
+            configDict["SampleRate"] = sr.ToString();
+            SonogramConfig sonoConfig = new SonogramConfig(configDict); //default values config
+            //sonoConfig.SourceFName = recordingSegment.FileName;
+            //sonoConfig.WindowSize = frameLength;
+            //sonoConfig.WindowOverlap = frameOverlap;
+
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            return sonogram;
+        }
+        
+        
         /// <summary>
         /// 
         /// </summary>
@@ -248,25 +262,24 @@ namespace AudioAnalysisTools
             return mti;
         }//Sonogram2MultiTrackImage()
 
-
         public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, 
                                            double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
-            Image_MultiTrack image = Sonogram2MultiTrackImage(sonogram, configDict);
+            Image_MultiTrack multiTrackImage = Sonogram2MultiTrackImage(sonogram, configDict);
 
             if (scores != null)
             {
                 foreach (Plot plot in scores)
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                    multiTrackImage.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
 
             if (hits != null) 
-                image.OverlayRainbowTransparency(hits);
+                multiTrackImage.OverlayRainbowTransparency(hits);
 
             if (predictedEvents.Count > 0) 
-                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+                multiTrackImage.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
 
-            return image.GetImage();
+            return multiTrackImage.GetImage();
         } //Sonogram2Image()
 
 

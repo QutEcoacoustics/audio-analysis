@@ -69,7 +69,6 @@ namespace AudioAnalysisTools
             public const string Key_StartTime        = "START_TIME";
             public const string Key_EndTime          = "END_TIME";
             public const string Key_DoMelScale       = "DO_MEL_CONVERSION";
-            public const string Key_NoiseReductionType = "NOISE_REDUCTION_TYPE";
             public const string Key_MinFreq          = "MIN_FREQ";
             public const string Key_MaxFreq          = "MAX_FREQ";
             public const string Key_FilterbankCount  = "FILTERBANK_COUNT";
@@ -171,6 +170,11 @@ namespace AudioAnalysisTools
         #endregion
 
 
+        public FftConfiguration(int sr)
+        {
+            sampleRate = sr;
+        }
+
         public FftConfiguration(ConfigDictionary config)
 		{
             SetConfig(config);
@@ -178,7 +182,7 @@ namespace AudioAnalysisTools
 
         public void SetConfig(ConfigDictionary config)
 		{
-            sampleRate = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
+            this.sampleRate = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
             //at present time following parameters are preset.
             //WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
             //NPointSmoothFFT = config.GetInt(ConfigKeys.Mfcc.Key_NPointSmoothFFT); 

@@ -13,6 +13,7 @@ ResampleRate: 17640
 
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true 
+NoiseReductionType: STANDARD
 BgNoiseThreshold: 3.0
 
 
