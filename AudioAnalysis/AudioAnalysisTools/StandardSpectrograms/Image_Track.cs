@@ -14,8 +14,8 @@
     public sealed class Image_Track
     {
         #region Constants
-        public const int DefaultHeight = 30;   //pixel height of a track
-        public const int timeScaleHt = 10;   //pixel height of the top and bottom time scales
+        public const int DefaultHeight = 30;       //pixel height of a track
+        public const int HeightOfTimeScale = 15;   //pixel height of the top and bottom time scales
         public const int syllablesTrackHeight = 10;   //pixel height of a track
         public const int envelopeTrackHeight  = 40;   //pixel height of a track
         public const int scoreTrackHeight = 40;   //pixel height of a track
@@ -146,7 +146,7 @@
             switch (TrackType)
             {
                 case TrackType.timeTics:
-                    return timeScaleHt;
+                    return HeightOfTimeScale;
                 case TrackType.syllables:
                     return syllablesTrackHeight;
                 case TrackType.scoreArray:
@@ -246,35 +246,45 @@
             return bmp;
         }
 
-
-        public byte[] CreateXaxis(int width, TimeSpan timeSpan)
+        /// <summary>
+        /// returns array of bytes that is the gray scale colour to use.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="timeSpan"></param>
+        /// <returns></returns>
+        public static byte[] GetXaxisTicLocations(int width, TimeSpan timeSpan)
         {
             byte[] ba = new byte[width]; //byte array
-            double duration = timeSpan.TotalSeconds;
-            double period = duration / (double)width;
+            double secondsPerPixel = timeSpan.TotalSeconds / (double)width;
 
-            for (int x = 0; x < width; x++) ba[x] = (byte)230; //set background pale gray colour
-            for (int x = 0; x < width - 1; x++)
+            // assume that the time scale starts at zero
+            ba[0] = (byte)2;
+            ba[1] = (byte)2;
+
+            for (int x = 2; x < width - 1; x++)
             {
-                double elapsedTime = x * period; // / (double)width;
-                double mod1sec  = elapsedTime %  1.00000;
-                double mod2sec  = elapsedTime %  2.00000;
-                //double mod5sec = elapsedTime % 5.00000;
-                double mod10sec = elapsedTime % 10.00000;
-                if (mod10sec < period)//double black line
+                double elapsedTime = x * secondsPerPixel;
+                double mod1sec  = elapsedTime %  1.0;
+                // double mod2sec  = elapsedTime %  2.0;
+                // double mod5sec = elapsedTime % 5.0;
+                double mod10sec = elapsedTime % 10.0;
+                if (mod10sec < secondsPerPixel)
                 {
-                    ba[x] = (byte)0;
-                    ba[x + 1] = (byte)0;
+                    // put a major tic i.e. double black line
+                    ba[x] = (byte)2;
+                    ba[x + 1] = (byte)2;
                 }
                 else
-                    if (mod2sec <= period)
-                    {
-                        ba[x] = (byte)0;
-                    }
-                    else
-                        if (mod1sec <= period)
+                    //if (mod2sec <= secondsPerPixel)
+                    //{
+                    //    ba[x] = (byte)0;
+                    //}
+                    //else
+
+                    // minor tic
+                        if (mod1sec <= secondsPerPixel)
                         {
-                            ba[x] = (byte)50;
+                            ba[x] = (byte)1;
                         }
             }
             return ba; //byte array
@@ -430,16 +440,29 @@
             return bmp;
         }
 
+        public Bitmap DrawDecibelTrack(Bitmap bmp)
+        {
+
+            Bitmap track = Image_Track.DrawDecibelTrack(this.doubleData, bmp.Width, this.SegmentationThreshold_k1, this.SegmentationThreshold_k2);
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawImage(track, 0,  topOffset);
+            return bmp;
+        }
+        
         /// <summary>
         /// This method assumes that the passed decibel array has been normalised
         /// </summary>
-        public Bitmap DrawDecibelTrack(Bitmap bmp)
+        public static Bitmap DrawDecibelTrack(double[] data, int imageWidth, double segmentationThreshold_k1, double segmentationThreshold_k2)
         {
-            int dataLength = doubleData.Length;
-            int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
+            int dataLength = data.Length;
+            int subSample = (int)Math.Round((double)(dataLength / imageWidth));
             if (subSample < 1) subSample = 1;
 
-            for (int w = 0; w < bmp.Width; w++)
+            var bmp = new Bitmap(imageWidth, Image_Track.DefaultHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.FillRectangle(new SolidBrush(Color.White), 0, 0, imageWidth, Image_Track.DefaultHeight);
+
+            for (int w = 0; w < imageWidth; w++)
             {
                 int start = w * subSample;
                 int end = (w+1) * subSample;
@@ -447,18 +470,38 @@
                 int location = 0;
                 for (int x = start; x < end; x++)
                 {
-                    if (max < doubleData[x]) max = doubleData[x];
+                    if (max < data[x]) max = data[x];
                     location = x;
                 }
 
-                double norm = doubleData[location];
+                double norm = data[location];
                 int id = Image_Track.DefaultHeight - 1 - (int)(Image_Track.DefaultHeight * norm);
                 if (id < 0) id = 0;
                 else if (id > Image_Track.DefaultHeight) id = Image_Track.DefaultHeight;
                 //paint white and leave a black vertical bar
-                //for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, Color.White); // backgorund
-                for (int z = id; z < Image_Track.DefaultHeight; z++) bmp.SetPixel(w, topOffset + z, Color.Black);
+                //for (int z = 0; z < id; z++) bmp.SetPixel(w, z, Color.White); // draw bar by drawing in white backgorund
+                for (int z = id; z < Image_Track.DefaultHeight; z++) bmp.SetPixel(w, z, Color.Black);
             }
+
+            //display vocalisation thresholds used to determine endpoints
+            Color[] stateColors = { Color.White, Color.Green, Color.Red };
+            double v1 = segmentationThreshold_k1;
+            int k1 = Image_Track.DefaultHeight - (int)(Image_Track.DefaultHeight * v1);
+            double v2 = segmentationThreshold_k2;
+            int k2 = Image_Track.DefaultHeight - (int)(Image_Track.DefaultHeight * v2);
+            if ((v1 < 0.0) || (v1 > 1.0)) return bmp; //thresholds are illegal so stop now.
+            if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
+
+            //calculate location of the segmentation threshold lines
+            int y1 = k1;
+            if (y1 >= bmp.Height) y1 = bmp.Height - 1;
+            int y2 = k2;
+            if (y2 >= bmp.Height) y2 = bmp.Height - 1;
+            Pen orangePen = new Pen(Color.Orange);
+            Pen limePen   = new Pen(Color.Lime);
+
+            g.DrawLine(orangePen, 0, y1, imageWidth, y1);//threshold lines
+            g.DrawLine(limePen,  0, y2, imageWidth, y2);//threshold lines
 
             return bmp;
         }
@@ -503,50 +546,46 @@
         /// <summary>
         /// This method assumes that the passed decibel array has been normalised
         /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2
-
         /// </summary>
         public Bitmap DrawSegmentationTrack(Bitmap bmp)
         {
-            bmp = DrawDecibelTrack(bmp);
-
-            if (this.intData == null) return bmp;     //cannot show becuase no state info
-
-            int dataLength = this.intData.Length;
-            int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
-            if (subSample < 1) subSample = 1;
-
-            //display vocalisation state and thresholds used to determine endpoints
-            Color[] stateColors = { Color.White, Color.Green, Color.Red };
-            double v1 = this.SegmentationThreshold_k1;
-            int k1 = this.Height - (int)(this.Height * v1);
-            double v2 = this.SegmentationThreshold_k2;
-            int k2 = this.Height - (int)(this.Height * v2);
-            if ((v1 < 0.0) || (v1 > 1.0)) return bmp; //thresholds are illegal so stop now.
-            if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
-
-            //calculate location of the segmentation threshold lines
-            int y1 = topOffset + k1;
-            if (y1 >= bmp.Height) y1 = bmp.Height - 1;
-            int y2 = topOffset + k2;
-            if (y2 >= bmp.Height) y2 = bmp.Height - 1;
-
-            for (int x = 0; x < bmp.Width; x++)
-            {
-                bmp.SetPixel(x, y1, Color.Orange);//threshold lines
-                bmp.SetPixel(x, y2, Color.Lime);
-
-                //put state as top four pixels
-                int location = x * subSample;
-                if (location > dataLength - 1) continue;
-                Color col = stateColors[this.intData[location]];
-                bmp.SetPixel(x, topOffset, col);
-                bmp.SetPixel(x, topOffset + 1, col);
-                bmp.SetPixel(x, topOffset + 2, col);
-                bmp.SetPixel(x, topOffset + 3, col);
-            }
+            Bitmap track = DrawSegmentationTrack(this.doubleData, this.intData, this.SegmentationThreshold_k1, this.SegmentationThreshold_k2, bmp.Width);
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawImage(track, 0, this.topOffset);
             return bmp;
         }
 
+        public static Bitmap DrawSegmentationTrack(double[] data, int[] intData, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
+        {
+            if (data == null) return null;
+            Bitmap segmentBmp = Image_Track.DrawDecibelTrack(data, imageWidth, segmentationThreshold_k1, segmentationThreshold_k2);
+            //track.Save(@"C:\SensorNetworks\Output\Sonograms\segmentBmp.png");
+
+            int dataLength = data.Length;
+            int subSample = (int)Math.Round((double)(dataLength / imageWidth));
+            if (subSample < 1) subSample = 1;
+            var stateBmp = new Bitmap(imageWidth, 4);
+            //display vocalisation state and thresholds used to determine endpoints
+            Color[] stateColors = { Color.White, Color.Green, Color.Red };
+
+            for (int x = 0; x < stateBmp.Width; x++)
+            {
+                int location = x * subSample;
+                if (location > dataLength - 1) continue;
+                Color col = stateColors[intData[location]];
+                stateBmp.SetPixel(x, 0, col);
+                stateBmp.SetPixel(x, 1, col);
+                stateBmp.SetPixel(x, 2, col);
+                stateBmp.SetPixel(x, 3, col);
+            }
+
+            Graphics g = Graphics.FromImage(segmentBmp);
+            g.DrawImage(stateBmp, 0, 1);
+            // surround the whole by a frame
+            g.DrawRectangle(new Pen(Color.Black), 0, 0, imageWidth, Image_Track.DefaultHeight);
+
+            return segmentBmp;
+        }
        
         /// <summary>
         /// ASSUME that passed decibel array has been normalised
@@ -804,12 +843,12 @@
 
 
         // mark of time scale according to scale.
-        public static void DrawTimeTrack(Bitmap bmp, int duration, TimeSpan xAxisTicInterval, int yOffset, int trackHeight, string title)
-        {
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, xAxisTicInterval, bmp.Width, trackHeight, title);
-            Graphics gr = Graphics.FromImage(bmp);
-            gr.DrawImage(timeBmp, 0, yOffset);
-        }
+        //public static void DrawTimeTrack(Bitmap bmp, int duration, TimeSpan xAxisTicInterval, int yOffset, int trackHeight, string title)
+        //{
+        //    Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, xAxisTicInterval, bmp.Width, trackHeight, title);
+        //    Graphics gr = Graphics.FromImage(bmp);
+        //    gr.DrawImage(timeBmp, 0, yOffset);
+        //}
 
         public static Bitmap DrawTimeTrack(int duration, TimeSpan scale, int trackWidth, int trackHeight, string title)
         {
@@ -852,54 +891,79 @@
             return bmp;
         }
 
-
+        /// <summary>
+        /// adds time track to a sonogram at the vertical position determined by topOffset.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="topOffset"></param>
+        /// <returns></returns>
         public Bitmap DrawTimeTrack(Bitmap bmp)
         {
             int width = bmp.Width;
-            int height = bmp.Height;
 
-            DateTime start = new DateTime(0);
-            double duration = this.timeSpan.TotalSeconds;
-            double secondsPerPixel = duration / (double)width;
-
-            byte[] hScale = CreateXaxis(width, this.timeSpan);
-            topOffset += (timeScaleHt - 1);//shift offset to bottom of scale
-
-            Graphics g1 = Graphics.FromImage(bmp);
-            g1.FillRectangle(Brushes.White, 0, topOffset - timeScaleHt + 1, width, topOffset - 13); //why -13??? I don't know! Quick & dirty fix!
-
-            var font = new Font("Tahoma", 8);
-
-            // mark the tics
-            for (int x = 0; x < width; x++)
-            {
-                if (hScale[x] == 50) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Gray);
-                else
-                if (hScale[x] ==  0) for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, Color.Black);
-                bmp.SetPixel(x, topOffset, Color.Black);                   // bottom line of scale
-                bmp.SetPixel(x, topOffset - timeScaleHt + 1, Color.Black); // top line of scale
-            } //end of adding time grid
-
-            // add time tic labels - where to place label depends on scale of the time axis.
-            int onesecondInterval = (int)Math.Round(1 / secondsPerPixel);
-            int interval = onesecondInterval;
-            if (interval < 50) interval *= 10;
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                int prevLocation = -interval-1;
-                for (int x = 0; x < width; x++)
-                {
-                    if ((hScale[x] == 0) && (x > (prevLocation+interval)))
-                    {
-                        int secs = (int)Math.Round(x * secondsPerPixel);
-                        TimeSpan span = new TimeSpan(0, 0, secs);
-                        g.DrawString(span.ToString(), font, Brushes.Black, new PointF(x - 1, topOffset - 11));
-                        prevLocation = x;
-                    }
-                }
-            }
+            var timeTrack = Image_Track.DrawTimeTrack(this.timeSpan, width);
+            Graphics g = System.Drawing.Graphics.FromImage(bmp);
+            g.DrawImage(timeTrack, 0, topOffset);
             return bmp;
         }
 
+        public static Bitmap DrawTimeTrack(TimeSpan duration, int width)
+        {
+            int height = Image_Track.HeightOfTimeScale;
+            Pen blackPen = new Pen(Color.Black);
+            Pen grayPen = new Pen(Color.DarkGray);
+            var bgBrush = new SolidBrush(Color.FromArgb(240,240,240));
+
+            DateTime start = new DateTime(0);
+            double secondsPerPixel = duration.TotalSeconds / (double)width;
+
+            byte[] hScale = Image_Track.GetXaxisTicLocations(width, duration);
+
+            var bmp = new Bitmap(width, height);
+            var font = new Font("Tahoma", 8);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.FillRectangle(bgBrush, 0, 0, width, height);
+
+
+                // mark the tics
+                for (int x = 0; x < width; x++)
+                {
+                    if (hScale[x] == 0) continue;
+                    if (hScale[x] == 1) // minor tic
+                    {
+                        g.DrawLine(grayPen, x, 0, x, height-1);
+                    }
+                    else
+                    {
+                        if (hScale[x] == 2) // major tic 
+                            g.DrawLine(blackPen, x, 0, x, height-1);
+                    }
+                } //end of adding time grid
+
+                // add time tic labels - where to place label depends on scale of the time axis.
+                int oneSecondInterval = (int)Math.Round(1 / secondsPerPixel);
+                int interval = oneSecondInterval;
+                if (interval < 50) interval *= 10;
+                int prevLocation = -interval - 1;
+                for (int x = 1; x < width; x++)
+                {
+                    if (hScale[x] == 0) continue;
+                    //if ((hScale[x] == 2) && (x > (prevLocation + interval)))
+                    if ((hScale[x] == 2) && (hScale[x-1] == 2))
+                    {
+                        int secs = (int)Math.Round(x * secondsPerPixel);
+                        TimeSpan span = new TimeSpan(0, 0, secs);
+                        g.DrawString(span.ToString(), font, Brushes.Black, new PointF(x, 0));
+                        prevLocation = x;
+                    }
+                }
+                g.DrawLine(blackPen, 0, 0, width, 0);
+                g.DrawLine(blackPen, 0, height-1, width, height-1);
+            }
+
+            return bmp;
+        }
     }// end  class Image_Track
 }

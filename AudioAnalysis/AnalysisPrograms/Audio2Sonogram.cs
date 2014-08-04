@@ -19,7 +19,7 @@ using AnalysisRunner;
 using AudioAnalysisTools;
 using AudioAnalysisTools.WavTools;
 using TowseyLibrary;
-
+using AudioAnalysisTools.DSP;
 
 namespace AnalysisPrograms
 {
@@ -31,10 +31,11 @@ namespace AnalysisPrograms
 
     using PowerArgs;
     using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.LongDurationSpectrograms;
 
     public class Audio2Sonogram
     {
-        //use the following paths for the command line for the <Audio2Sonogram> task. 
+        //use the following paths for the command line for the <audio2sonogram> task. 
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
 
 
@@ -150,8 +151,16 @@ namespace AnalysisPrograms
             // #MinHz: 500
             // #MaxHz: 3500
             // #NOISE REDUCTION PARAMETERS
-            configDict["DoNoiseReduction"] = configuration["DoNoiseReduction"] ?? true;
+            configDict["DoNoiseReduction"] = "false";
+
+            
+            configDict["NoiseReductionType"] = "NONE";
             configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
+
+
+            //string noisereduce = configDict[ConfigKeys.Mfcc.Key_NoiseReductionType];
+            configDict[AnalysisKeys.NoiseDoReduction]   = "false";
+            configDict[AnalysisKeys.NoiseReductionType] = "NONE";
 
             configDict["ADD_AXES"] = configuration["ADD_AXES"] ?? true;
             configDict["AddSegmentationTrack"] = configuration["AddSegmentationTrack"] ?? true;
@@ -166,6 +175,8 @@ namespace AnalysisPrograms
             configDict["SonogramColored"] = (string)configuration["SonogramColored"] ?? "false";
             configDict["SonogramQuantisation"] = (string)configuration["SonogramQuantisation"] ?? "128";
 
+            configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
+            configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
 
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";
@@ -199,26 +210,78 @@ namespace AnalysisPrograms
             }
             else
             {
-                BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiOutputSegment, configDict);
-                var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-                var image = mti.GetImage();
-
-                // TODO: remove eventually
-                Debug.Assert(image != null, "The image should not be null - there is no reason it can be");
-                if (fiImage.Exists) fiImage.Delete();
-                image.Save(fiImage.FullName, ImageFormat.Png);
+                // init the image stack
+                var list = new List<Image>();
 
 
-                configDict.Add("MakeAmplitudeSpectrogram", "true");
-                BaseSonogram amplitudeSpg = SpectrogramTools.Audio2Sonogram(fiOutputSegment, configDict);
-                var mti2 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-                var image2 = mti2.GetImage();
-                image2.Save(fiImage.FullName+"2", ImageFormat.Png);
+                BaseSonogram sonogram = SpectrogramTools.Audio2AmplitudeSonogram(fiOutputSegment, configDict);
+                var image = sonogram.GetImage(false, false);
 
-                SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
-                var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-                var image3 = mti3.GetImage();
-                image3.Save(fiImage.FullName + "3", ImageFormat.Png);
+                // put grid lines on image.
+                var minOffset = TimeSpan.Zero;
+                var X_interval = TimeSpan.FromSeconds(10);
+                TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(sonogram.Duration.Ticks / (double)image.Width));
+                int nyquist = sonogram.NyquistFrequency;
+                int Y_interval = (int)(image.Height / (double)(nyquist / (double)1000));
+                ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, Y_interval);
+
+                //add title bar and time scale
+                string title = "AMPLITUDE SPECTROGRAM";
+                var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
+                //Image titleBar = Image_Track.DrawTitleTrack(mti.sonogramImage.Width, trackHeight, title);
+                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+                Bitmap timeBmp = Image_Track.DrawTimeTrack(sonogram.Duration, image.Width);
+
+                list.Add(titleBar);
+                list.Add(timeBmp);
+                list.Add(image);
+                list.Add(timeBmp);
+
+
+                sonogram = SpectrogramTools.Audio2DecibelSonogram(fiOutputSegment, configDict);
+                image = sonogram.GetImage(false, false);
+                ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, Y_interval);
+
+                //add title bar and time scale
+                title = "DECIBEL SPECTROGRAM";
+                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+
+                list.Add(titleBar);
+                list.Add(timeBmp);
+                list.Add(image);
+                list.Add(timeBmp);
+
+                // add noise reduced spectrogram
+                configDict[AnalysisKeys.NoiseDoReduction]   = "true";
+                configDict[AnalysisKeys.NoiseReductionType] = "STANDARD";
+                configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
+
+                sonogram = SpectrogramTools.Audio2DecibelSonogram(fiOutputSegment, configDict);
+                image = sonogram.GetImage(false, false);
+                ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, Y_interval);
+
+                //add title bar and time scale
+                title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
+                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+
+                list.Add(titleBar);
+                list.Add(timeBmp);
+                list.Add(image);
+                list.Add(timeBmp);
+
+                Image compositeImage = ImageTools.CombineImagesVertically(list);
+                compositeImage.Save(fiImage.FullName, ImageFormat.Png);
+
+                //configDict.Add("MakeAmplitudeSpectrogram", "true");
+                //BaseSonogram amplitudeSpg = SpectrogramTools.Audio2Sonogram(fiOutputSegment, configDict);
+                //var mti2 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                //var image2 = mti2.GetImage();
+                //image2.Save(fiImage.FullName+"2", ImageFormat.Png);
+
+                //SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
+                //var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                //var image3 = mti3.GetImage();
+                //image3.Save(fiImage.FullName + "3", ImageFormat.Png);
                     
             }
             //###### get sonogram image ##############################################################################################

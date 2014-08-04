@@ -92,7 +92,7 @@ namespace AudioAnalysisTools
             config.SetPair(ConfigKeys.EndpointDetection.Key_VocalGap, "0.2");
             config.SetPair(ConfigKeys.EndpointDetection.Key_MinVocalDuration, "0.075");
 
-            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, NoiseReductionType.NONE.ToString());
+            config.SetPair(AnalysisKeys.NoiseReductionType, NoiseReductionType.NONE.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunctions.HAMMING.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, false.ToString());
@@ -106,15 +106,26 @@ namespace AudioAnalysisTools
             Initialize(config);                        
         }
         
-
         /// <summary>
         /// CONSTRUCTOR
+        /// Initialises sonogram config with key-value-pairs in the passed ConfigDictionary
         /// </summary>
         /// <param name="config"></param>
 		public SonogramConfig(ConfigDictionary config)
 		{
             Initialize(config);
 		}
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// Initialises sonogram config with key-value-pairs in the passed dictionary
+        /// </summary>
+        /// <param name="dictionary"></param>
+        public SonogramConfig(Dictionary<string, string> dictionary)
+        {
+            Initialize(dictionary);
+
+        }
 
         public SonogramConfig(SonogramConfig config, Acoustics.Tools.Wav.WavReader wavReader)
         {
@@ -142,7 +153,7 @@ namespace AudioAnalysisTools
 
             //NOISE REDUCTION PARAMETERS  
             DoSnr = true; // set false if only want to 
-            string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
+            string noisereduce = config.GetString(AnalysisKeys.NoiseReductionType);
             NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
             //NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_);
 
@@ -164,6 +175,56 @@ namespace AudioAnalysisTools
 
         }
 
+        /// <summary>
+        /// DoSnr = true;
+        /// DoFullBandwidth = false;
+        /// </summary>
+        /// <param name="config"></param>
+        private void Initialize(Dictionary<string, string> configDict)
+        {
+            CallName    = (string)configDict[ConfigKeys.Recording.Key_RecordingCallName];
+            SourceFName = (string)configDict[ConfigKeys.Recording.Key_RecordingFileName];
+            // var duration = config.GetDoubleNullable("WAV_DURATION");
+            // if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
+
+            //FRAMING PARAMETERS
+            this.WindowSize = 512; // default value
+            if (configDict.ContainsKey(AnalysisKeys.FrameLength))
+                this.WindowSize = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, configDict);
+
+            this.WindowOverlap = 0.0; // default value
+            if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
+                this.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
+
+            int sampleRate = 0;
+            if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
+                sampleRate = ConfigDictionary.GetInt("SampleRate", configDict);
+            fftConfig = new FftConfiguration(sampleRate);
+
+            //NOISE REDUCTION PARAMETERS  
+            DoSnr = true; // set false if only want to 
+            this.NoiseReductionType = NoiseReductionType.NONE;
+            if (configDict.ContainsKey(AnalysisKeys.NoiseReductionType))
+            {
+                string noiseReductionType = configDict[AnalysisKeys.NoiseReductionType];
+                this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noiseReductionType.ToUpperInvariant());
+            }
+            // NoiseReductionParameter = config.GetDouble(SNR.key_Snr.key_);
+
+            // FREQ BAND PARAMETERS
+            this.DoFullBandwidth = true; // set true if only want to 
+            // MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
+            // MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
+            // MidFreqBand = MinFreqBand + ((MaxFreqBand - MinFreqBand) / 2);
+
+            // SEGMENTATION PARAMETERS
+            // EndpointDetectionConfiguration.SetConfig(config);
+
+            // MFCC PARAMETERS
+            // DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
+            // mfccConfig = new MfccConfiguration(config);
+            // DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
+        }
 
 		public virtual void Save(TextWriter writer)
 		{
@@ -175,7 +236,7 @@ namespace AudioAnalysisTools
             writer.WriteConfigValue("MIN_FREQ", MinFreqBand);
 			writer.WriteConfigValue("MAX_FREQ", MaxFreqBand);
             writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NoiseReductionType, this.NoiseReductionType.ToString());
+            writer.WriteConfigValue(AnalysisKeys.NoiseReductionType, this.NoiseReductionType.ToString());
             if (this.NoiseReductionParameter > 1.0)
                 writer.WriteConfigValue(SNR.key_Snr.key_DYNAMIC_RANGE, this.NoiseReductionParameter.ToString("F1"));
             writer.WriteLine("#");

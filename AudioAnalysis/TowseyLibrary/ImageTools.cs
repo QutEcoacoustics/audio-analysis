@@ -2104,29 +2104,29 @@ namespace TowseyLibrary
                 if ((row > 0) && (row % yInterval == 0))
                 {
                     int rowFromBottom = rows - row;
-                    for (int column = 0; column < cols; column++)
+                    for (int column = 0; column < cols-1; column++)
                     {
-                        bmp.SetPixel(column, rowFromBottom, Color.Gray);
-                        column++;
+                        bmp.SetPixel(column,   rowFromBottom, Color.Black);
+                        bmp.SetPixel(column+1, rowFromBottom, Color.White);
+                        column +=2;
                     }
                 }
             }
+
             // for columns, draw in X-axis hour lines
             int xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
-            int min = (int)minOffset.TotalMinutes;
-            min += 1; //skip first column
             for (int column = 1; column < cols; column++)
             {
-                //if ((column > 0) && (column % xInterval == 0))
-                if (min % xInterval == 0)
+
+                if (column % xInterval == 0)
                 {
-                    for (int row = 0; row < rows; row++)
+                    for (int row = 0; row < rows-1; row++)
                     {
-                        bmp.SetPixel(column, row, Color.Gray);
-                        row++;
+                        bmp.SetPixel(column, row,   Color.Black);
+                        bmp.SetPixel(column, row+1, Color.White);
+                        row +=2;
                     }
                 }
-                min++;
             }
         } // DrawGridLInesOnImage()
 
