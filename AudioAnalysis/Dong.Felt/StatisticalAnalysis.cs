@@ -622,6 +622,48 @@
         }
 
         /// <summary>
+        /// Substract double matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="row1"></param>
+        /// <param name="col1"></param>
+        /// <param name="row2"></param>
+        /// <param name="col2"></param>
+        /// <returns></returns>
+        public static double[,] Submatrix(double[,] matrix, int row1, int col1, int row2, int col2)
+        {
+            int subRowCount = row2 - row1;
+            int subColCount = col2 - col1;
+
+            var subMatrix = new double[subRowCount, subColCount];
+            for (int row = 0; row < subRowCount; row++)
+            {
+                for (int col = 0; col < subColCount; col++)
+                {
+                    subMatrix[row, col] = matrix[row1 + row, col1 + col];
+                }
+            }
+            return subMatrix;
+        }
+
+        public static double averageMatrix(double[,] matrix)
+        {
+            var maxXIndex = matrix.GetLength(0);
+            var maxYIndex = matrix.GetLength(1);
+            var sum = 0.0;
+
+            for (int i = 0; i < maxXIndex; i++)
+            {
+                for (int j = 0; j < maxYIndex; j++)
+                {
+                    sum += matrix[i, j];
+                }
+            }
+
+            return sum / maxXIndex * maxYIndex;
+        }
+
+        /// <summary>
         /// Substract matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix. 
         /// </summary>
         /// <param name="matrix"></param>
@@ -904,6 +946,25 @@
             for (int i = 0; i < listCount; i++)
             {
                 result[i / NhCountInColumn, i % NhCountInColumn] = ridgeNhList[i];
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// double list to double array.
+        /// </summary>
+        /// <param name="ridgeNhList"></param>
+        /// <param name="NhCountInRow"></param>
+        /// <param name="NhCountInColumn"></param>
+        /// <returns></returns>
+        public static double[,] DoubleListToArray(List<double> list, int maxRowIndex, int maxColIndex)
+        {
+            var listCount = list.Count;
+            var result = new double[maxRowIndex, maxColIndex];
+
+            for (int i = 0; i < listCount; i++)
+            {
+                result[i / maxColIndex, i % maxColIndex] = list[i];
             }
             return result;
         }
