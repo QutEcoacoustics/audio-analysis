@@ -9,33 +9,42 @@
     using AudioAnalysisTools;
     using Acoustics.Shared.Extensions;
     using System.Drawing;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     class StructureTensorAnalysis
     {
         // It has a kernel which is 3 * 3, and all values is equal to 1. 
         public static GaussianBlur filter = new GaussianBlur(1.0, 4);
 
-        // Step 1: calculate the structure tensor for each pixel in the spectrogram.
-        public static List<double[,]> OnePixelPartialDifference(double[,] spectroMatrix)
+        // Step 1: calculate the structure tensor for each pixel in the spectrogram. It is calculated based on one neighbouring pixel. 
+        public static List<Tuple<PointOfInterest, double[,]>> StructureTensorOnePixel(double[,] spectroMatrix)
         {
-            var result = new List<double[,]>();
+            var result = new List<Tuple<PointOfInterest, double[,]>>();
 
             int maximumXIndex = spectroMatrix.GetLength(0);
             int maximumYIndex = spectroMatrix.GetLength(1);
-          
+
             // ignore the pixels in the boundary  
-            for (int i = 0; i < maximumXIndex - 1; i++)
+            for (int i = 0; i < maximumXIndex; i++)
             {
-                for (int j = 0; j < maximumYIndex - 1; j++)
-                {                  
-                    var partialDifferenceX = spectroMatrix[i, j] - spectroMatrix[i + 1, j];
-                    var partialDifferenceY = spectroMatrix[i,j + 1] - spectroMatrix[i, j];
-                    var structureTensorItem = new double[2,2];
-                    structureTensorItem[0,0] = Math.Pow(partialDifferenceX, 2.0);
-                    structureTensorItem[0,1] = partialDifferenceX * partialDifferenceY;
-                    structureTensorItem[1,0] = partialDifferenceX * partialDifferenceY;
-                    structureTensorItem[1,1] = Math.Pow(partialDifferenceY, 2.0);
-                    result.Add(structureTensorItem);
+                for (int j = 0; j < maximumYIndex; j++)
+                {
+                    var partialDifferenceX = 0.0;
+                    var partialDifferenceY = 0.0;
+                    if (i + 1 < maximumXIndex)
+                    {
+                        partialDifferenceX = spectroMatrix[i + 1, j] - spectroMatrix[i, j];
+                    }
+                    if (j + 1 < maximumYIndex)
+                    {
+                        partialDifferenceY = spectroMatrix[i, j + 1] - spectroMatrix[i, j];
+                    }
+                    var structureTensorItem = new double[2, 2];
+                    structureTensorItem[0, 0] = Math.Pow(partialDifferenceX, 2.0);
+                    structureTensorItem[0, 1] = partialDifferenceX * partialDifferenceY;
+                    structureTensorItem[1, 0] = partialDifferenceX * partialDifferenceY;
+                    structureTensorItem[1, 1] = Math.Pow(partialDifferenceY, 2.0);
+                    result.Add(Tuple.Create(new PointOfInterest(new Point(i, j)), structureTensorItem)); ;
                 }
             }
 
@@ -43,12 +52,12 @@
         }
 
         // Step 2: averaging the strcture tensor in a 11*11 neighbourhood.
-        public static List<double[,]> AverageStructureTensor(List<double[,]> structureTensor, int neighbourhoodSize, 
+        public static List<Tuple<PointOfInterest, double[,]>> AverageStructureTensor(List<Tuple<PointOfInterest, double[,]>> structureTensor, int neighbourhoodSize,
             int maximumRowIndex, int maximumColIndex)
         {
-            var result = new List<double[,]>();
+            var result = new List<Tuple<PointOfInterest, double[,]>>();
             // convert list into a matrix
-            var TopLeftList = new List<double>();            
+            var TopLeftList = new List<double>();
             var TopRightList = new List<double>();
             var BottormLeftList = new List<double>();
             var BottormRightList = new List<double>();
@@ -56,10 +65,10 @@
 
             foreach (var s in structureTensor)
             {
-                TopLeftList.Add(s[0,0]);
-                TopRightList.Add(s[0,1]);
-                BottormLeftList.Add(s[1,0]);
-                BottormRightList.Add(s[1,1]);
+                TopLeftList.Add(s.Item2[0, 0]);
+                TopRightList.Add(s.Item2[0, 1]);
+                BottormLeftList.Add(s.Item2[1, 0]);
+                BottormRightList.Add(s.Item2[1, 1]);
             }
             var matrixTopLeft = StatisticalAnalysis.DoubleListToArray(TopLeftList, maximumRowIndex, maximumColIndex);
             var matrixTopRight = StatisticalAnalysis.DoubleListToArray(TopRightList, maximumRowIndex, maximumColIndex);
@@ -88,7 +97,7 @@
 
                         var subMatrixBottormRight = StatisticalAnalysis.Submatrix(matrixBottormRight, i - neighbourhoodRadius, j - neighbourhoodRadius,
                             i + neighbourhoodRadius, j + neighbourhoodRadius);
-                        averageStructureTensor[1, 1] = StatisticalAnalysis.averageMatrix(subMatrixTopLeft);       
+                        averageStructureTensor[1, 1] = StatisticalAnalysis.averageMatrix(subMatrixTopLeft);
                     }
                     else
                     {
@@ -97,9 +106,9 @@
                         averageStructureTensor[1, 0] = 0;
                         averageStructureTensor[1, 1] = 0;
                     }
-                    result.Add(averageStructureTensor);
+                    result.Add(Tuple.Create(new PointOfInterest(new Point(i, j)), averageStructureTensor));
                 }
-            }            
+            }
             return result;
         }
 
@@ -113,16 +122,26 @@
         /// <returns>
         /// return the eignvalue of each structure for a point. 
         /// </returns>
-        public static List<double[]> EignvalueDecomposition2(List<double[,]> structureTensors)
+        /// <summary>
+        /// With eigenvalue decomposition, get the eigenvalues of the list of structure tensors.
+        /// </summary>
+        /// <param name="structureTensor">
+        /// A list of structureTensors.
+        /// </param>
+        /// <returns>
+        /// return the eignvalue of each structure for a point. 
+        /// </returns>
+        public static List<Tuple<PointOfInterest, double[]>> EignvalueDecomposition(List<Tuple<PointOfInterest, double[,]>> structureTensors)
         {
-            var result = new List<double[]>();
+            var result = new List<Tuple<PointOfInterest, double[]>>();
 
             foreach (var st in structureTensors)
             {
-                var evd = new EigenvalueDecomposition(st);
+                var evd = new EigenvalueDecomposition(st.Item2);
                 var realEigenValue = evd.RealEigenvalues;
-                result.Add(realEigenValue);
+                result.Add(Tuple.Create(new PointOfInterest(st.Item1.Point), realEigenValue));
             }
+
             return result;
         }
 
@@ -136,49 +155,81 @@
         /// <returns>
         /// return the list of attentions. 
         /// </returns>
-        public static List<double> CacluteAttention(List<double[]> eigenValue)
+        public static List<Tuple<PointOfInterest, double>> CalculateAttention(List<Tuple<PointOfInterest, double[]>> eigenValue)
         {
-            var result = new List<double>();
+            var result = new List<Tuple<PointOfInterest, double>>();
 
             foreach (var ev in eigenValue)
             {
                 // by default, the eigenvalue is in a ascend order, so just check whether they are equal
-                if (ev[0] != ev[1])
+                if (ev.Item2[1] > 0.0)
                 {
-                    result.Add(ev[1]);
+                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
                 }
                 else
                 {
-                    result.Add(0.0);
+                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), 0.0));
+                }
+            }
+
+            return result;
+        }
+
+        // Step 5. Extract PointOfIntest
+        public static List<PointOfInterest> ExtractPOI(List<Tuple<PointOfInterest, double>> attentionList, 
+            SpectrogramStandard spectrogram,
+            double overlap, int maximumRowIndex, int maximumColIndex)
+        {
+            var result = new List<PointOfInterest>();
+            // segment spectrogram for calculating threshold for each segment
+            const int numberOfColumn = 1000;
+            // the count of segments means how many local threshold we will get. 
+            var countOfSegments = maximumColIndex / numberOfColumn + 1;
+            var spectroSegment = SpectrogramDivision(attentionList);
+            for (int i = 0; i < countOfSegments; i++)
+            {
+                var segment = spectroSegment[i];               
+                var threshold = SetThreshold(segment);
+                foreach (var s in segment)
+                {
+                    if (s.Item2 > threshold)
+                    {
+                        Point point = new Point(s.Item1.Point.X, s.Item1.Point.Y);
+                        double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+                        var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                        double herzScale = spectrogram.FBinWidth; //43 hz
+                        TimeSpan time = TimeSpan.FromSeconds(s.Item1.Point.X * secondsScale);
+                        double herz = (s.Item1.Point.Y - 1) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        var poi = new PointOfInterest(time, herz);
+                        poi.Point = point;
+                        poi.OrientationCategory = 0;   
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                        poi.RidgeMagnitude = s.Item2; 
+                        result.Add(poi);
+                    }
                 }
             }
             return result;
         }
 
-        // Step 5. Extract PointOfIntest
-        public static double ExtractPOI(List<double> attentionList, double overlap, int maximumRowIndex, int maximumColIndex)
+        // Step 6. the flowchart of structure tensor calculation
+        public static List<PointOfInterest> ExtractPOIFromStructureTensor(SpectrogramStandard spectrogram,
+            int neighbourhoodSize)
         {
-            // segment spectrogram for calculating threshold for each segment
-            const int numberOfColumn = 1000;
-            var countOfSegments = maximumColIndex / numberOfColumn;
-            var attentionMatrix = StatisticalAnalysis.DoubleListToArray(attentionList, maximumRowIndex, maximumColIndex);
-            var spectroSegment = SpectrogramDivision(attentionMatrix);
-            for (int i = 0; i < countOfSegments; i++)
-            {             
-                var segment = spectroSegment[i];
-                var threshold = SetThreshold(segment);
-                foreach (var s in segment)
-                {
-                    if (s > threshold)
-                    {
-                        var point = new Point(0, 0);
-                    }
-                }
-            }
-            return 0.0;
+            var maxRowIndex = spectrogram.Data.GetLength(0);
+            var maxColIndex = spectrogram.Data.GetLength(1);
+            var basicStructureTensor = StructureTensorOnePixel(spectrogram.Data);
+            var averageStructureTensor = AverageStructureTensor(basicStructureTensor, neighbourhoodSize,
+                maxRowIndex, maxColIndex);
+            var eigenValues = EignvalueDecomposition(averageStructureTensor);
+            var attentionList = CalculateAttention(eigenValues);
+            var overlap = 0.0;
+            var poi = ExtractPOI(attentionList, spectrogram, overlap, maxRowIndex, maxColIndex);
+            return poi;
         }
-
-        //  Step 5. set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
+        // Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
         /// <summary>
         /// Get the threshold for keeping points of interest
         /// </summary>
@@ -191,7 +242,7 @@
         /// <returns>
         /// return a threshold  
         /// </returns>
-        public static double SetThreshold(List<double> attentionList)
+        public static double SetThreshold(List<Tuple<PointOfInterest, double>> attentionList)
         {
             const int numberOfColumn = 1000;
             var maxAttention = MaximumOfAttention(attentionList);
@@ -200,40 +251,44 @@
         }
 
         // Step 5.1 divide the spectrogram into segments that have 1000 columns 
-        public static List<List<double>> SpectrogramDivision(double[,] attentionMatrix)
+        public static List<List<Tuple<PointOfInterest, double>>> SpectrogramDivision(List<Tuple<PointOfInterest, double>> attentionList)
         {
-            var result = new List<List<double>>();
-            var maxRowIndex = attentionMatrix.GetLength(0);
-            var maxColIndex = attentionMatrix.GetLength(1);
-            var subList0 = new List<double>();
-            var subList1 = new List<double>();
-            var subList2 = new List<double>();
-            var subList3 = new List<double>();
-            var subList4 = new List<double>(); 
-            for (int i = 0; i < maxRowIndex; i++)
+            var result = new List<List<Tuple<PointOfInterest, double>>>();
+            //var maxRowIndex = attentionMatrix.GetLength(0);
+            //var maxColIndex = attentionMatrix.GetLength(1);
+            var subList0 = new List<Tuple<PointOfInterest, double>>();
+            var subList1 = new List<Tuple<PointOfInterest, double>>();
+            var subList2 = new List<Tuple<PointOfInterest, double>>();
+            var subList3 = new List<Tuple<PointOfInterest, double>>();
+            var subList4 = new List<Tuple<PointOfInterest, double>>();
+            var subList5 = new List<Tuple<PointOfInterest, double>>();
+            foreach (var a in attentionList)
             {
-                for (int j = 0; j < maxColIndex; j++)
-                {                   
-                    if (j >= 0 && j < 1000)
-                    {
-                        subList0.Add(attentionMatrix[i, j]);
-                    }                   
-                    if (j >= 1000 && j < 2000)
-                    {
-                        subList1.Add(attentionMatrix[i, j]);
-                    }
-                    if (j >= 2000 && j < 3000)
-                    {
-                        subList2.Add(attentionMatrix[i, j]);
-                    }
-                    if (j >= 3000 && j < 4000)
-                    {
-                        subList3.Add(attentionMatrix[i, j]);
-                    }
-                    if (j >= 4000 && j < 5000)
-                    {
-                        subList4.Add(attentionMatrix[i, j]);
-                    }                   
+                var columnIndex = a.Item1.Point.Y;
+
+                if (columnIndex >= 0 && columnIndex < 1000)
+                {
+                    subList0.Add(a);
+                }
+                if (columnIndex >= 1000 && columnIndex < 2000)
+                {
+                    subList1.Add(a);
+                }
+                if (columnIndex >= 2000 && columnIndex < 3000)
+                {
+                    subList2.Add(a);
+                }
+                if (columnIndex >= 3000 && columnIndex < 4000)
+                {
+                    subList3.Add(a);
+                }
+                if (columnIndex >= 4000 && columnIndex < 5000)
+                {
+                    subList4.Add(a);
+                }
+                else
+                {
+                    subList5.Add(a);
                 }
             }
             result.Add(subList0);
@@ -241,10 +296,11 @@
             result.Add(subList2);
             result.Add(subList3);
             result.Add(subList4);
+            result.Add(subList5);
             return result;
         }
 
-        // Step 5.1 calculate the maximum of attention 
+        // Step 5.2 calculate the maximum of attention 
         /// <summary>
         /// Find out the maximum  of a list of attention
         /// </summary>
@@ -271,7 +327,7 @@
             }
             return maxAttention;
         }
-        // Step 5.2: bardeli: get the l(a scaling parameter) 
+        // Step 5.3: bardeli: get the l(a scaling parameter) 
         public static int GetMaximumLength(List<double> listOfAttention, double maxOfAttention)
         {
             const int numberOfBins = 1000;
@@ -308,7 +364,7 @@
             return l;
         }
 
-        // Step 5.3
+        // Step 5.4
         // according to Bardeli, Calculate the Histogram
         public static int[] CalculateHistogram(List<double> listOfAttention, double maxOfAttention)
         {
@@ -342,15 +398,6 @@
             // for our data, the threshold is best between 150 - 200
             //double threshold = 150.0;                       
             var result = new List<PointOfInterest>();
-
-            //foreach (var ev in attention)
-            //{
-            //    if (ev.Item2 > threshold)
-            //    {
-            //         result.Add(ev.Item1);
-            //         ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
-            //    }
-            //}
 
             /// calculate the threshold for each distinct part
             for (int i = 0; i < maxIndexOfPart; i++)
@@ -457,29 +504,6 @@
         }
 
         /// <summary>
-        /// With eigenvalue decomposition, get the eigenvalues of the list of structure tensors.
-        /// </summary>
-        /// <param name="structureTensor">
-        /// A list of structureTensors.
-        /// </param>
-        /// <returns>
-        /// return the eignvalue of each structure for a point. 
-        /// </returns>
-        public static List<Tuple<PointOfInterest, double[]>> EignvalueDecomposition(List<Tuple<PointOfInterest, double[,]>> structureTensors)
-        {
-            var result = new List<Tuple<PointOfInterest, double[]>>();
-
-            foreach (var st in structureTensors)
-            {
-                var evd = new EigenvalueDecomposition(st.Item2);
-                var realEigenValue = evd.RealEigenvalues;
-                result.Add(Tuple.Create(new PointOfInterest(st.Item1.Point), realEigenValue));
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Calculate the structure tensor with GaussianBlur.
         /// </summary>
         /// <param name="gaussianBlur">
@@ -536,31 +560,6 @@
 
                     result.Add(Tuple.Create(new PointOfInterest(new Point(row, col)), structureTensor));
                     // col = col + 3;                    
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Get the attention from the eigenvalues, it's actually the largest eigenvalue in the eigenvalues --- Bardeli.
-        /// </summary>
-        /// <param name="eigenValue">
-        /// A list of eigenValues for each point.
-        /// </param>
-        /// <returns>
-        /// return the list of attentions. 
-        /// </returns>
-        public static List<Tuple<PointOfInterest, double>> GetTheAttention(List<Tuple<PointOfInterest, double[]>> eigenValue)
-        {
-            var result = new List<Tuple<PointOfInterest, double>>();
-
-            foreach (var ev in eigenValue)
-            {
-                // by default, the eigenvalue is in a ascend order, so just check whether they are equal
-                if (ev.Item2[1] > 0.0)
-                {
-                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
                 }
             }
 
@@ -641,12 +640,12 @@
         }
 
         // bardeli: get the l(a scaling parameter) 
-        public static int GetMaximumLength(List<Tuple<PointOfInterest,double>> listOfAttention, double maxOfAttention)
+        public static int GetMaximumLength(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention)
         {
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.0002;  //  a fixed parameterl Bardeli : 0.96
+            var p = 0.0002;  //  a fixed parameterl Bardeli : mine is 0.0002
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -676,7 +675,6 @@
 
             return l;
         }
-
 
         /// <summary>
         /// Get the threshold for keeping points of interest
@@ -714,7 +712,7 @@
             var MaximumYIndex = paritialDifferenceX.GetLength(1);
 
             var result = new double[MaximumXIndex, MaximumYIndex];
-        
+
             for (int i = 0; i < MaximumXIndex; i++)
             {
                 for (int j = 0; j < MaximumYIndex; j++)
@@ -742,17 +740,17 @@
         {
             var MaximumXIndex = paritialDifferenceX.GetLength(0);
             var MaximumYIndex = paritialDifferenceX.GetLength(1);
-            
+
             var result = new double[MaximumXIndex, MaximumYIndex];
 
-                for (int i = 0; i < MaximumXIndex; i++)
+            for (int i = 0; i < MaximumXIndex; i++)
+            {
+                for (int j = 0; j < MaximumYIndex; j++)
                 {
-                    for (int j = 0; j < MaximumYIndex; j++)
-                    {
-                        result[i, j] = Math.Atan2(partialDifferenceY[i, j], paritialDifferenceX[i, j]);
-                    }
+                    result[i, j] = Math.Atan2(partialDifferenceY[i, j], paritialDifferenceX[i, j]);
                 }
-       
+            }
+
             return result;
         }
 
@@ -897,7 +895,7 @@
 
                 if (eigenValueOne + eigenValueTwo > 0)
                 {
-                    coherence.Add(Tuple.Create(eigenValue[i].Item1, Math.Pow((eigenValueOne - eigenValueTwo) / (eigenValueOne + eigenValueTwo), 2)));                   
+                    coherence.Add(Tuple.Create(eigenValue[i].Item1, Math.Pow((eigenValueOne - eigenValueTwo) / (eigenValueOne + eigenValueTwo), 2)));
                 }
                 else
                 {
@@ -905,7 +903,7 @@
                 }
             }
 
-            return coherence; 
+            return coherence;
         }
 
         public static List<PointOfInterest> hitCoherence(List<Tuple<PointOfInterest, double>> coherence)
@@ -949,7 +947,7 @@
 
             return maxAttention;
         }
-        
+
         // according to Bardeli, Calculate the Histogram
         public static int[] CalculateHistogram1(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention)
         {
@@ -1066,56 +1064,56 @@
         //    var StructureTensor = structureTensor(partialDifference.Item1, partialDifference.Item2);
         //    var eigenValueDecomposition = EignvalueDecomposition(StructureTensor);
         //    var attention = GetTheAttention(eigenValueDecomposition);
-            //var pointsOfInterst = ExtractPointsOfInterest(attention);
+        //var pointsOfInterst = ExtractPointsOfInterest(attention);
 
-            //return result = pointsOfInterst;
+        //return result = pointsOfInterst;
 
-            //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
-            //Log.Info("differenceOfGaussian");
-            //var partialDifference = StructureTensor.PartialDifference(testMatrix);
-            //Log.Info("partialDifference");
-            //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("magnitude");
-            //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("phase");
-            //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-            //Log.Info("structureTensor");
-            //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-            //Log.Info("eigenValue");
-            //var coherence = StructureTensor.Coherence(eigenValue);
-            //Log.Info("coherence");
-            //var hitCoherence = StructureTensor.hitCoherence(coherence);
-            //Log.Info("hitCoherence");
+        //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+        //Log.Info("differenceOfGaussian");
+        //var partialDifference = StructureTensor.PartialDifference(testMatrix);
+        //Log.Info("partialDifference");
+        //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+        //Log.Info("magnitude");
+        //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+        //Log.Info("phase");
+        //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+        //Log.Info("structureTensor");
+        //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+        //Log.Info("eigenValue");
+        //var coherence = StructureTensor.Coherence(eigenValue);
+        //Log.Info("coherence");
+        //var hitCoherence = StructureTensor.hitCoherence(coherence);
+        //Log.Info("hitCoherence");
 
-            //var numberOfVetex = structureTensor.Count;
-            //var results = new List<string>();
+        //var numberOfVetex = structureTensor.Count;
+        //var results = new List<string>();
 
-            //results.Add("eigenValue1, eigenValue2, coherence");
-            //for (int i = 0; i < numberOfVetex; i++)
-            //{
-            //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
-            //}
-            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
+        //results.Add("eigenValue1, eigenValue2, coherence");
+        //for (int i = 0; i < numberOfVetex; i++)
+        //{
+        //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
+        //}
+        //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
 
-            // put it into csv.file
-            //var results1 = new List<string>();
-            //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
+        // put it into csv.file
+        //var results1 = new List<string>();
+        //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
 
-            //var maximumXindex = partialDifference.Item1.GetLength(0);
-            //var maximumYindex = partialDifference.Item1.GetLength(1);
-            //for (int i = 0; i < maximumXindex; i++)
-            //{
-            //    for (int j = 0; j < maximumYindex; j++)
-            //    {
-            //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
-            //    }
-            //}
-            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
-            //foreach (var poi in hitCoherence)
-            //{
-            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
-            //}
-            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
+        //var maximumXindex = partialDifference.Item1.GetLength(0);
+        //var maximumYindex = partialDifference.Item1.GetLength(1);
+        //for (int i = 0; i < maximumXindex; i++)
+        //{
+        //    for (int j = 0; j < maximumYindex; j++)
+        //    {
+        //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
+        //    }
+        //}
+        //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
+        //foreach (var poi in hitCoherence)
+        //{
+        //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+        //}
+        //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
         //}
 
     }
