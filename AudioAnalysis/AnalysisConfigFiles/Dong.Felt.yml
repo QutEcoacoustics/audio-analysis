@@ -17,7 +17,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six speci
 # 
 # C:\Output
 # action
-Actions: [batch]  # processOne batch makeImages another
+Actions: [processOne]  # processOne batch makeImages another
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
