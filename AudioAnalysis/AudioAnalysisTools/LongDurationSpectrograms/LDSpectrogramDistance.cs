@@ -130,7 +130,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     inputFileName1, 
                     cs1.ColorMode);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
-            spg1Image = LDSpectrogramRGB.FrameSpectrogram(
+            spg1Image = LDSpectrogramRGB.FrameLDSpectrogram(
                 spg1Image, 
                 titleBar, 
                 minuteOffset, 
@@ -158,7 +158,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 inputFileName2, 
                 cs2.ColorMode);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
-            spg2Image = LDSpectrogramRGB.FrameSpectrogram(
+            spg2Image = LDSpectrogramRGB.FrameLDSpectrogram(
                 spg2Image, 
                 titleBar, 
                 minuteOffset, 
@@ -174,7 +174,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 colorArray, 
                 deltaSp.Width, 
                 SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
-            deltaSp = LDSpectrogramRGB.FrameSpectrogram(deltaSp, titleBar, minuteOffset, cs2.XInterval, cs2.YInterval);
+            deltaSp = LDSpectrogramRGB.FrameLDSpectrogram(deltaSp, titleBar, minuteOffset, cs2.XInterval, cs2.YInterval);
             deltaSp.Save(Path.Combine(outputDirectory.FullName, outputFileName4));
 
             string outputFileName5 = inputFileName1 + ".2SpectrogramsAndDistance.png";

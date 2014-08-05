@@ -75,10 +75,12 @@ using AudioAnalysisTools.LongDurationSpectrograms;
 
             return new Arguments
             {
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-062040.png".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
                 StartOffset = 0,
                 EndOffset = 0,
@@ -150,13 +152,15 @@ using AudioAnalysisTools.LongDurationSpectrograms;
             configDict["ResampleRate"] = configuration[AnalysisKeys.ResampleRate] ?? 17640;
             // #MinHz: 500
             // #MaxHz: 3500
-            // #NOISE REDUCTION PARAMETERS
-            configDict["DoNoiseReduction"] = "false";
 
             
+            // #NOISE REDUCTION PARAMETERS
+            configDict["DoNoiseReduction"] = "false";            
             configDict["NoiseReductionType"] = "NONE";
             configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
-
+            //configDict[AnalysisKeys.NoiseDoReduction] = "true";
+            //configDict[AnalysisKeys.NoiseReductionType] = "STANDARD";
+            //configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
 
             //string noisereduce = configDict[ConfigKeys.Mfcc.Key_NoiseReductionType];
             configDict[AnalysisKeys.NoiseDoReduction]   = "false";
@@ -213,22 +217,26 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 // init the image stack
                 var list = new List<Image>();
 
+                // 1) draw amplitude spectrogram
+                AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
+                SonogramConfig sonoConfig = new SonogramConfig(configDict); //default values config
 
-                BaseSonogram sonogram = SpectrogramTools.Audio2AmplitudeSonogram(fiOutputSegment, configDict);
+                BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
                 var image = sonogram.GetImage(false, false);
 
-                // put grid lines on image.
+                Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+
+                // initialise parameters for drawing gridlines on images
                 var minOffset = TimeSpan.Zero;
+                int nyquist = sonogram.NyquistFrequency;
                 var X_interval = TimeSpan.FromSeconds(10);
                 TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(sonogram.Duration.Ticks / (double)image.Width));
-                int nyquist = sonogram.NyquistFrequency;
-                int Y_interval = (int)(image.Height / (double)(nyquist / (double)1000));
-                ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, Y_interval);
+                int herzInterval = 1000;
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, nyquist, herzInterval);
 
                 //add title bar and time scale
                 string title = "AMPLITUDE SPECTROGRAM";
                 var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
-                //Image titleBar = Image_Track.DrawTitleTrack(mti.sonogramImage.Width, trackHeight, title);
                 Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
                 Bitmap timeBmp = Image_Track.DrawTimeTrack(sonogram.Duration, image.Width);
 
@@ -236,29 +244,33 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 list.Add(timeBmp);
                 list.Add(image);
                 list.Add(timeBmp);
+                list.Add(envelopeImage);
 
-
-                sonogram = SpectrogramTools.Audio2DecibelSonogram(fiOutputSegment, configDict);
+                // 2) now draw the standard decibel spectrogram
+                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImage(false, false);
-                ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, Y_interval);
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, nyquist, herzInterval);
 
                 //add title bar and time scale
                 title = "DECIBEL SPECTROGRAM";
                 titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+                Image segmentationImage = Image_Track.DrawSegmentationTrack(sonogram, 
+                                          EndpointDetectionConfiguration.K1Threshold, EndpointDetectionConfiguration.K2Threshold, image.Width);
 
                 list.Add(titleBar);
                 list.Add(timeBmp);
                 list.Add(image);
                 list.Add(timeBmp);
+                list.Add(segmentationImage);
 
-                // add noise reduced spectrogram
-                configDict[AnalysisKeys.NoiseDoReduction]   = "true";
-                configDict[AnalysisKeys.NoiseReductionType] = "STANDARD";
-                configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
+                // 3) now draw the noise reduced decibel spectrogram
+                sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+                sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0; 
 
-                sonogram = SpectrogramTools.Audio2DecibelSonogram(fiOutputSegment, configDict);
+                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImage(false, false);
-                ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, Y_interval);
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, nyquist, herzInterval);
+
 
                 //add title bar and time scale
                 title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
@@ -269,19 +281,16 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 list.Add(image);
                 list.Add(timeBmp);
 
-                Image compositeImage = ImageTools.CombineImagesVertically(list);
-                compositeImage.Save(fiImage.FullName, ImageFormat.Png);
-
-                //configDict.Add("MakeAmplitudeSpectrogram", "true");
-                //BaseSonogram amplitudeSpg = SpectrogramTools.Audio2Sonogram(fiOutputSegment, configDict);
-                //var mti2 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-                //var image2 = mti2.GetImage();
-                //image2.Save(fiImage.FullName+"2", ImageFormat.Png);
-
+                // 4) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
                 //SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
                 //var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
                 //var image3 = mti3.GetImage();
                 //image3.Save(fiImage.FullName + "3", ImageFormat.Png);
+
+
+                Image compositeImage = ImageTools.CombineImagesVertically(list);
+                compositeImage.Save(fiImage.FullName, ImageFormat.Png);
+
                     
             }
             //###### get sonogram image ##############################################################################################

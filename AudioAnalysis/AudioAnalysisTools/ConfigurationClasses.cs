@@ -152,50 +152,50 @@ namespace AudioAnalysisTools
 
 
 
-    [Serializable]
-    public class FftConfiguration
-	{
-        #region Properties
-        private int sampleRate = 0;
-        public int SampleRate { get { return sampleRate; } 
-                                set { sampleRate  = value;
-                                      NyquistFreq = value / 2;
-                                    }
-        }
-        public int NyquistFreq { get; private set; }
-        private string windowFunction = WindowFunctions.HAMMING.ToString();
-        public string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
-        private int smoothingWindow = 3;
-        public int NPointSmoothFFT { get { return smoothingWindow; } set { smoothingWindow = value; } } // Number of points to smooth FFT spectra
-        #endregion
+    //[Serializable]
+    //public class FftConfiguration
+    //{
+    //    #region Properties
+    //    private int sampleRate = 0;
+    //    public int SampleRate { get { return sampleRate; } 
+    //                            set { sampleRate  = value;
+    //                                  NyquistFreq = value / 2;
+    //                                }
+    //    }
+    //    public int NyquistFreq { get; private set; }
+    //    private string windowFunction = WindowFunctions.HAMMING.ToString();
+    //    public string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
+    //    private int smoothingWindow = 3;
+    //    public int NPointSmoothFFT { get { return smoothingWindow; } set { smoothingWindow = value; } } // Number of points to smooth FFT spectra
+    //    #endregion
 
 
-        public FftConfiguration(int sr)
-        {
-            sampleRate = sr;
-        }
+    //    public FftConfiguration(int sr)
+    //    {
+    //        sampleRate = sr;
+    //    }
 
-        public FftConfiguration(ConfigDictionary config)
-		{
-            SetConfig(config);
-		}
+    //    public FftConfiguration(ConfigDictionary config)
+    //    {
+    //        SetConfig(config);
+    //    }
 
-        public void SetConfig(ConfigDictionary config)
-		{
-            this.sampleRate = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
-            //at present time following parameters are preset.
-            //WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
-            //NPointSmoothFFT = config.GetInt(ConfigKeys.Mfcc.Key_NPointSmoothFFT); 
-		}
+    //    public void SetConfig(ConfigDictionary config)
+    //    {
+    //        this.sampleRate = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
+    //        //at present time following parameters are preset.
+    //        //WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
+    //        //NPointSmoothFFT = config.GetInt(ConfigKeys.Mfcc.Key_NPointSmoothFFT); 
+    //    }
 
-		public void Save(TextWriter writer)
-		{
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
-            writer.Flush();
-        }
-    } // end class FftConfiguration
+    //    public void Save(TextWriter writer)
+    //    {
+    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
+    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
+    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
+    //        writer.Flush();
+    //    }
+    //} // end class FftConfiguration
 
     [Serializable]
     public class MfccConfiguration

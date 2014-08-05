@@ -159,44 +159,10 @@ namespace AudioAnalysisTools
 
 
 
-        public static BaseSonogram Audio2AmplitudeSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
-        {
-            int frameLength = 512; // default value
-            if (configDict.ContainsKey(AnalysisKeys.FrameLength))
-                frameLength = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, configDict);
-
-            double frameOverlap = 0.0; // default value
-            if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
-                frameOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
-
-            AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recordingSegment.FileName;
-            sonoConfig.WindowSize = frameLength;
-            sonoConfig.WindowOverlap = frameOverlap;
-
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-            return sonogram;
-        }
-
         public static BaseSonogram Audio2DecibelSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
-            //int frameLength = 512; // default value
-            //if (configDict.ContainsKey(AnalysisKeys.FrameLength))
-            //    frameLength = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, configDict);
-
-            //double frameOverlap = 0.0; // default value
-            //if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
-            //    frameOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
-
             AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
-            int sr = recordingSegment.SampleRate;
-            configDict["SampleRate"] = sr.ToString();
             SonogramConfig sonoConfig = new SonogramConfig(configDict); //default values config
-            //sonoConfig.SourceFName = recordingSegment.FileName;
-            //sonoConfig.WindowSize = frameLength;
-            //sonoConfig.WindowOverlap = frameOverlap;
-
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             return sonogram;
         }
@@ -258,8 +224,10 @@ namespace AudioAnalysisTools
             //add segmentation track
             if (configDict.ContainsKey(AnalysisKeys.AddSegmentationTrack))
                 addSegmentationTrack = ConfigDictionary.GetBoolean(AnalysisKeys.AddSegmentationTrack, configDict);
-            if (addSegmentationTrack) mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
+            if (addSegmentationTrack) 
+                mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
             return mti;
+            //mti.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram)); //add segmentation track
         }//Sonogram2MultiTrackImage()
 
         public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, 
@@ -474,6 +442,162 @@ namespace AudioAnalysisTools
             var subband = new double[subbandCount];
             for (int i = 0; i < subbandCount; i++) subband[i] = modalNoise[c1 + i];
             return subband;
+        }
+
+        // #######################################################################################################################################
+        // ### BELOW METHODS DRAW GRID LINES ON SEPECTROGRAMS ####################################################################################
+        // #######################################################################################################################################
+
+
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
+                                                    int nyquist, int herzInterval)
+        {
+            int Y_interval = (int)(bmp.Height / (double)(nyquist / (double)herzInterval));
+            DrawGridLinesOnImage(bmp, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
+        }
+
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int Y_interval)
+        {
+            int rows = bmp.Height;
+            int cols = bmp.Width;
+
+            Graphics g = Graphics.FromImage(bmp);
+
+            // for rows draw in Y-axis line
+            for (int row = 0; row < rows; row++)
+            {
+                if ((row > 0) && (row % Y_interval == 0))
+                {
+                    int rowFromBottom = rows - row;
+                    for (int column = 0; column < cols - 1; column++)
+                    {
+                        bmp.SetPixel(column, rowFromBottom, Color.Black);
+                        bmp.SetPixel(column + 1, rowFromBottom, Color.White);
+                        column += 2;
+                    }
+                    int band = rowFromBottom / Y_interval;
+                    g.DrawString(((band) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
+                }
+            }
+
+            // for columns, draw in X-axis hour lines
+            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds));
+            for (int column = 1; column < cols; column++)
+            {
+
+                if (column % xInterval == 0)
+                {
+                    for (int row = 0; row < rows - 1; row++)
+                    {
+                        bmp.SetPixel(column, row, Color.Black);
+                        bmp.SetPixel(column, row + 1, Color.White);
+                        row += 2;
+                    }
+                }
+            }
+        } // DrawGridLInesOnImage()
+
+
+
+        public static void Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        {
+            const int kHz = 1000;
+            double kHzBinWidth = kHz / freqBinWidth;
+            int width = bmp.Width;
+            int height = bmp.Height;
+
+            int bandCount = (int)Math.Floor(height / kHzBinWidth);
+            int[] gridLineLocations = new int[bandCount];
+            for (int b = 0; b < bandCount; b++)
+            {
+                gridLineLocations[b] = (int)(height - ((b + 1) * kHzBinWidth));
+            }
+
+            //get melscale locations
+            if (doMelScale)
+                gridLineLocations = SpectrogramTools.CreateMelYaxis(kHz, nyquist, height); // WARNING!!!! NEED TO REWORK THIS BUT NOW SELDOM USED
+
+            Graphics g = Graphics.FromImage(bmp);
+            //g.SmoothingMode = SmoothingMode.AntiAlias;
+            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            for (int b = 0; b < bandCount; b++) //over each band
+            {
+                int y = gridLineLocations[b];
+                for (int x = 1; x < width; x++)
+                {
+                    bmp.SetPixel(x - 1, y, Color.White);
+                    bmp.SetPixel(x, y, Color.Black);
+                    x++;
+                }
+                g.DrawString(((b + 1) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, y + 1);
+            }
+            //g.Flush();
+        }//end AddGridLines()
+
+
+        /// <summary>
+        /// currently, this method is only called when drawing a reduced sonogram. 
+        /// </summary>
+        /// <param name="herzInterval"></param>
+        /// <param name="nyquistFreq"></param>
+        /// <param name="imageHt"></param>
+        /// <returns></returns>
+        public static int[] CreateLinearYaxis(int herzInterval, int nyquistFreq, int imageHt)
+        {
+            //int freqRange = this.maxFreq - this.minFreq + 1;
+            int minFreq = 0;
+            int maxFreq = nyquistFreq;
+            int freqRange = maxFreq - minFreq + 1;
+            double pixelPerHz = imageHt / (double)freqRange;
+            int[] vScale = new int[imageHt];
+            //LoggedConsole.WriteLine("freqRange=" + freqRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerHz=" + pixelPerHz);
+
+            for (int f = minFreq + 1; f < maxFreq; f++)
+            {
+                if (f % 1000 == 0)  //convert freq value to pixel id
+                {
+                    int hzOffset = f - minFreq;
+                    int pixelID = (int)(hzOffset * pixelPerHz) + 1;
+                    if (pixelID >= imageHt) pixelID = imageHt - 1;
+                    //LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
+                    vScale[pixelID] = 1;
+                }
+            }
+            return vScale;
+        }
+
+
+        /// <summary>
+        /// Use this method to generate grid lines for mel scale image
+        /// Currently this method is only called from Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        /// and when bool doMelScale = true;
+        /// </summary>
+        public static int[] CreateMelYaxis(int herzInterval, int nyquistFreq, int imageHt)
+        {
+            int minFreq = 0;
+            int maxFreq = nyquistFreq;
+            //int freqRange = maxFreq - minFreq + 1;
+            double minMel = DSP.MFCCStuff.Mel(minFreq);
+            int melRange = (int)(MFCCStuff.Mel(maxFreq) - minMel + 1);
+            //double pixelPerHz = imageHt / (double)freqRange;
+            double pixelPerMel = imageHt / (double)melRange;
+            int[] vScale = new int[imageHt];
+            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
+
+            for (int f = minFreq + 1; f < maxFreq; f++)
+            {
+                if (f % 1000 == 0)  //convert freq value to pixel id
+                {
+                    //int hzOffset  = f - this.minFreq;
+                    int melOffset = (int)(MFCCStuff.Mel(f) - minMel);
+                    int pixelID = (int)(melOffset * pixelPerMel) + 1;
+                    if (pixelID >= imageHt) pixelID = imageHt - 1;
+                    //LoggedConsole.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
+                    vScale[pixelID] = 1;
+                }
+            }
+            return vScale;
         }
 
 

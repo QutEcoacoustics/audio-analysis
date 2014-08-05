@@ -246,50 +246,6 @@
             return bmp;
         }
 
-        /// <summary>
-        /// returns array of bytes that is the gray scale colour to use.
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="timeSpan"></param>
-        /// <returns></returns>
-        public static byte[] GetXaxisTicLocations(int width, TimeSpan timeSpan)
-        {
-            byte[] ba = new byte[width]; //byte array
-            double secondsPerPixel = timeSpan.TotalSeconds / (double)width;
-
-            // assume that the time scale starts at zero
-            ba[0] = (byte)2;
-            ba[1] = (byte)2;
-
-            for (int x = 2; x < width - 1; x++)
-            {
-                double elapsedTime = x * secondsPerPixel;
-                double mod1sec  = elapsedTime %  1.0;
-                // double mod2sec  = elapsedTime %  2.0;
-                // double mod5sec = elapsedTime % 5.0;
-                double mod10sec = elapsedTime % 10.0;
-                if (mod10sec < secondsPerPixel)
-                {
-                    // put a major tic i.e. double black line
-                    ba[x] = (byte)2;
-                    ba[x + 1] = (byte)2;
-                }
-                else
-                    //if (mod2sec <= secondsPerPixel)
-                    //{
-                    //    ba[x] = (byte)0;
-                    //}
-                    //else
-
-                    // minor tic
-                        if (mod1sec <= secondsPerPixel)
-                        {
-                            ba[x] = (byte)1;
-                        }
-            }
-            return ba; //byte array
-        }
-
         public Bitmap DrawNamedScoreArrayTrack(Bitmap bmp)
         {
             DrawScoreArrayTrack(bmp);
@@ -440,6 +396,72 @@
             return bmp;
         }
 
+        /// <summary>
+        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values 
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns></returns>
+        public Bitmap DrawWaveEnvelopeTrack(Bitmap bmp)
+        {
+            int halfHeight = this.height / 2;
+            Color c = Color.FromArgb(10, 200, 255);
+
+            for (int w = 0; w < bmp.Width; w++)
+            {
+                int minID = halfHeight + (int)Math.Round(doubleMatrix[0, w] * halfHeight);
+                //minID = halfHeight + (int)Math.Round(-1.0 * halfHeight);
+                int maxID = halfHeight + (int)Math.Round(doubleMatrix[1, w] * halfHeight) - 1;
+                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, this.bottomOffset - z, c);
+                bmp.SetPixel(w, this.topOffset + halfHeight, c); //set zero line in case it was missed
+                if (doubleMatrix[0, w] < -0.99)
+                {
+                    bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
+                    bmp.SetPixel(w, this.bottomOffset - 2, Color.OrangeRed);
+                    bmp.SetPixel(w, this.bottomOffset - 3, Color.OrangeRed);
+                }
+                else
+                    if (doubleMatrix[1, w] > 0.99)
+                    {
+                        bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
+                        bmp.SetPixel(w, this.topOffset + 1, Color.OrangeRed);
+                        bmp.SetPixel(w, this.topOffset + 2, Color.OrangeRed);
+                    }
+                //bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
+                //bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
+            }
+
+            return bmp;
+        }
+
+        /// <summary>
+        /// adds time track to a sonogram at the vertical position determined by topOffset.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="topOffset"></param>
+        /// <returns></returns>
+        public Bitmap DrawTimeTrack(Bitmap bmp)
+        {
+            int width = bmp.Width;
+
+            var timeTrack = Image_Track.DrawTimeTrack(this.timeSpan, width);
+            Graphics g = System.Drawing.Graphics.FromImage(bmp);
+            g.DrawImage(timeTrack, 0, topOffset);
+            return bmp;
+        }
+
+
+        /// <summary>
+        /// This method assumes that the passed decibel array has been normalised
+        /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2
+        /// </summary>
+        public Bitmap DrawSegmentationTrack(Bitmap bmp)
+        {
+            Bitmap track = DrawSegmentationTrack(this.doubleData, this.intData, this.SegmentationThreshold_k1, this.SegmentationThreshold_k2, bmp.Width);
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawImage(track, 0, this.topOffset);
+            return bmp;
+        }
+
         public Bitmap DrawDecibelTrack(Bitmap bmp)
         {
 
@@ -448,7 +470,69 @@
             g.DrawImage(track, 0,  topOffset);
             return bmp;
         }
-        
+
+
+        //###########################################################################################################################################
+        //#### STATIC METHODS BELOW HERE TO DRAW TRACK ##############################################################################################
+        //###########################################################################################################################################
+
+
+        public static Image DrawWaveEnvelopeTrack(AudioRecording recording, int imageWidth)
+        {
+            //int height = Image_Track.DefaultHeight;
+            double[,] envelope = recording.GetWaveForm(imageWidth);
+
+            Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(envelope);
+            return envelopeImage;
+        }
+
+
+        /// <summary>
+        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values 
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns></returns>
+        public static Bitmap DrawWaveEnvelopeTrack(double[,] envelope)
+        {
+            int height = Image_Track.DefaultHeight;
+            int halfHeight = Image_Track.DefaultHeight / 2;
+            Color colour = Color.FromArgb(10, 200, 255); // pale blue
+            int width = envelope.GetLength(1);
+            var bmp = new Bitmap(width, height);
+
+            for (int w = 0; w < width; w++)
+            {
+                int minID = halfHeight + (int)Math.Round(envelope[0, w] * halfHeight);
+                //minID = halfHeight + (int)Math.Round(-1.0 * halfHeight);
+                int maxID = halfHeight + (int)Math.Round(envelope[1, w] * halfHeight) - 1;
+                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, height - z, colour);
+
+                // set zero line in case it was missed
+                bmp.SetPixel(w, halfHeight, colour); 
+
+                // if clipped values
+                if (envelope[0, w] < -0.99)
+                {
+                    bmp.SetPixel(w, height - 1, Color.OrangeRed);
+                    bmp.SetPixel(w, height - 2, Color.OrangeRed);
+                    bmp.SetPixel(w, height - 3, Color.OrangeRed);
+                }
+                else
+                    if (envelope[1, w] > 0.99)
+                    {
+                        bmp.SetPixel(w, 0, Color.OrangeRed);
+                        bmp.SetPixel(w, 1, Color.OrangeRed);
+                        bmp.SetPixel(w, 2, Color.OrangeRed);
+                    }
+                //bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
+                //bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
+            }
+
+            return bmp;
+        }
+
+
+
         /// <summary>
         /// This method assumes that the passed decibel array has been normalised
         /// </summary>
@@ -506,55 +590,13 @@
             return bmp;
         }
 
-        /// <summary>
-        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values 
-        /// </summary>
-        /// <param name="bmp"></param>
-        /// <returns></returns>
-        public Bitmap DrawWaveEnvelopeTrack(Bitmap bmp)
+        public static Bitmap DrawSegmentationTrack(BaseSonogram sg, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
         {
-            int halfHeight = this.height / 2;
-            Color c = Color.FromArgb(10, 200, 255);
-
-            for (int w = 0; w < bmp.Width; w++)
-            {
-                int minID = halfHeight + (int)Math.Round(doubleMatrix[0, w] * halfHeight);
-                //minID = halfHeight + (int)Math.Round(-1.0 * halfHeight);
-                int maxID = halfHeight + (int)Math.Round(doubleMatrix[1, w] * halfHeight) -1;
-                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, this.bottomOffset - z, c);
-                bmp.SetPixel(w, this.topOffset + halfHeight, c); //set zero line in case it was missed
-                if (doubleMatrix[0, w] < -0.99)
-                {
-                    bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
-                    bmp.SetPixel(w, this.bottomOffset - 2, Color.OrangeRed);
-                    bmp.SetPixel(w, this.bottomOffset - 3, Color.OrangeRed);
-                }else 
-                if (doubleMatrix[1, w] > 0.99)
-                {
-                    bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
-                    bmp.SetPixel(w, this.topOffset+1, Color.OrangeRed);
-                    bmp.SetPixel(w, this.topOffset+2, Color.OrangeRed);
-                }
-                //bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
-                //bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
-            }
-
-            return bmp;
+            Bitmap track = DrawSegmentationTrack(sg.DecibelsNormalised, sg.SigState, segmentationThreshold_k1, segmentationThreshold_k2, sg.FrameCount);
+            return track;
         }
 
-
-        /// <summary>
-        /// This method assumes that the passed decibel array has been normalised
-        /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2
-        /// </summary>
-        public Bitmap DrawSegmentationTrack(Bitmap bmp)
-        {
-            Bitmap track = DrawSegmentationTrack(this.doubleData, this.intData, this.SegmentationThreshold_k1, this.SegmentationThreshold_k2, bmp.Width);
-            Graphics g = Graphics.FromImage(bmp);
-            g.DrawImage(track, 0, this.topOffset);
-            return bmp;
-        }
-
+            
         public static Bitmap DrawSegmentationTrack(double[] data, int[] intData, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
         {
             if (data == null) return null;
@@ -841,15 +883,6 @@
             return bmp;
         }
 
-
-        // mark of time scale according to scale.
-        //public static void DrawTimeTrack(Bitmap bmp, int duration, TimeSpan xAxisTicInterval, int yOffset, int trackHeight, string title)
-        //{
-        //    Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, xAxisTicInterval, bmp.Width, trackHeight, title);
-        //    Graphics gr = Graphics.FromImage(bmp);
-        //    gr.DrawImage(timeBmp, 0, yOffset);
-        //}
-
         public static Bitmap DrawTimeTrack(int duration, TimeSpan scale, int trackWidth, int trackHeight, string title)
         {
             TimeSpan offsetMinute = TimeSpan.Zero;
@@ -891,20 +924,49 @@
             return bmp;
         }
 
-        /// <summary>
-        /// adds time track to a sonogram at the vertical position determined by topOffset.
-        /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="topOffset"></param>
-        /// <returns></returns>
-        public Bitmap DrawTimeTrack(Bitmap bmp)
-        {
-            int width = bmp.Width;
 
-            var timeTrack = Image_Track.DrawTimeTrack(this.timeSpan, width);
-            Graphics g = System.Drawing.Graphics.FromImage(bmp);
-            g.DrawImage(timeTrack, 0, topOffset);
-            return bmp;
+        /// <summary>
+        /// returns array of bytes that is the gray scale colour to use.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="timeSpan"></param>
+        /// <returns></returns>
+        public static byte[] GetXaxisTicLocations(int width, TimeSpan timeSpan)
+        {
+            byte[] ba = new byte[width]; //byte array
+            double secondsPerPixel = timeSpan.TotalSeconds / (double)width;
+
+            // assume that the time scale starts at zero
+            ba[0] = (byte)2;
+            ba[1] = (byte)2;
+
+            for (int x = 2; x < width - 1; x++)
+            {
+                double elapsedTime = x * secondsPerPixel;
+                double mod1sec = elapsedTime % 1.0;
+                // double mod2sec  = elapsedTime %  2.0;
+                // double mod5sec = elapsedTime % 5.0;
+                double mod10sec = elapsedTime % 10.0;
+                if (mod10sec < secondsPerPixel)
+                {
+                    // put a major tic i.e. double black line
+                    ba[x] = (byte)2;
+                    ba[x + 1] = (byte)2;
+                }
+                else
+                    //if (mod2sec <= secondsPerPixel)
+                    //{
+                    //    ba[x] = (byte)0;
+                    //}
+                    //else
+
+                    // minor tic
+                    if (mod1sec <= secondsPerPixel)
+                    {
+                        ba[x] = (byte)1;
+                    }
+            }
+            return ba; //byte array
         }
 
         public static Bitmap DrawTimeTrack(TimeSpan duration, int width)

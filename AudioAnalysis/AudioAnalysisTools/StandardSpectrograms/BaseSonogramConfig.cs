@@ -25,6 +25,22 @@ namespace AudioAnalysisTools
         public double WindowOverlap { get; set; } // Percent overlap of frames
         public double WindowPower   { get; set; } // Power of the Hamming Window
 
+        private int sampleRate = 0;
+        public int SampleRate
+        {
+            get { return sampleRate; }
+            set
+            {
+                sampleRate = value;
+                NyquistFreq = value / 2;
+            }
+        }
+        public int NyquistFreq { get; private set; }
+        private string windowFunction = WindowFunctions.HAMMING.ToString();
+        public string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
+        private int smoothingWindow = 3;
+        public int NPointSmoothFFT { get { return smoothingWindow; } set { smoothingWindow = value; } } // Number of points to smooth FFT spectra
+
         public double epsilon { get; set; }         //small value to prevent log of zero value
         public int  FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
@@ -37,7 +53,7 @@ namespace AudioAnalysisTools
         public NoiseReductionType NoiseReductionType { get; set; }
         public double NoiseReductionParameter { get; set; }
 
-        public FftConfiguration fftConfig { get; set; }
+        //public FftConfiguration fftConfig { get; set; }
         public MfccConfiguration mfccConfig { get; set; }
         public bool DoMelScale { get; set; }
         public int DeltaT { get; set; }
@@ -149,7 +165,6 @@ namespace AudioAnalysisTools
             //FRAMING PARAMETERS
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
-            fftConfig = new FftConfiguration(config);
 
             //NOISE REDUCTION PARAMETERS  
             DoSnr = true; // set false if only want to 
@@ -196,13 +211,12 @@ namespace AudioAnalysisTools
             if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
                 this.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
 
-            int sampleRate = 0;
+            this.sampleRate = 0;
             if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
-                sampleRate = ConfigDictionary.GetInt("SampleRate", configDict);
-            fftConfig = new FftConfiguration(sampleRate);
+                this.sampleRate = ConfigDictionary.GetInt("SampleRate", configDict);
 
             //NOISE REDUCTION PARAMETERS  
-            DoSnr = true; // set false if only want to 
+            this.DoSnr = true; // set false if only want to 
             this.NoiseReductionType = NoiseReductionType.NONE;
             if (configDict.ContainsKey(AnalysisKeys.NoiseReductionType))
             {
@@ -242,7 +256,6 @@ namespace AudioAnalysisTools
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");
-            fftConfig.Save(writer);
             mfccConfig.Save(writer);
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
             writer.WriteLine("#");
@@ -269,7 +282,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public double GetFrameOffset()
         {
-            double frameDuration = GetFrameDuration(this.fftConfig.SampleRate); // Duration of full frame or window in seconds
+            double frameDuration = GetFrameDuration(this.SampleRate); // Duration of full frame or window in seconds
             double frameOffset = frameDuration * (1 - this.WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
             return frameOffset; 
         }
