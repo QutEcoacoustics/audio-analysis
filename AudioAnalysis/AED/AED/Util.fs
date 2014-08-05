@@ -1,6 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.Util
 
 open Microsoft.FSharp.Math.SI
+open System.Drawing
 
 // If the first Option is not empty return it, else return the second. Copy of Scala Option.orElse.
 let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
@@ -142,6 +143,8 @@ let inline area r = (width r) * (height r)
 
 let inline toFloatRect r =
     cornersToRect (left r |> float) (right r |> float) (top r |> float) (bottom r |> float)
+
+let inline toPoint (x, y) = new Point(x, y)
     
 (* This is currently done the easy, inefficient way.
 
