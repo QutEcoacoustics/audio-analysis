@@ -119,8 +119,8 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName = arguments.Source.FullName;
             sonoConfig.WindowSize = (int?)configuration.FrameSize ?? 512; // 
             sonoConfig.WindowOverlap = (double?)configuration.FrameOverlap ?? 0.5;
-            sonoConfig.fftConfig.WindowFunction = configuration.WindowFunction;
-            sonoConfig.fftConfig.NPointSmoothFFT = (int?)configuration.NpointSmoothFFT ?? 256;
+            sonoConfig.WindowFunction = configuration.WindowFunction;
+            sonoConfig.NPointSmoothFFT = (int?)configuration.NpointSmoothFFT ?? 256;
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType((string)configuration.NoiseReductionType);
 
             int minHz = (int?)configuration.MIN_HZ ?? 0;
@@ -320,7 +320,7 @@ namespace AnalysisPrograms
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
             TimeSpan labelInterval = TimeSpan.FromSeconds(5);
-            image = BaseSonogram.FrameSpectrogram(
+            image = BaseSonogram.FrameSonogram(
                 image,
                 titleBar,
                 minuteOffset,
