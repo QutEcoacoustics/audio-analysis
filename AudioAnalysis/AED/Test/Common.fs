@@ -6,6 +6,7 @@ open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 open System
 open System.Reflection
+open QutSensors.AudioAnalysis.AED.GetAcousticEvents
                        
 type TestMetadata = {Dir:string; BWthresh:double; smallThreshIn:int; smallThreshOut:int}
 let BAC2_20071015_045040 =
@@ -55,6 +56,7 @@ let matrixFloatEquals (a:matrix) (b:matrix) d =
      
 let defToString x = sprintf "%A" x
 let rectToString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
+let rectToStringI r = sprintf "%i, %i, %i, %i" (left r) (right r) (bottom r) (top r)
 
 let seqEqual eq toS xs' ys' =
     let xs, ys = Seq.sort xs', Seq.sort ys'
@@ -81,4 +83,34 @@ let assertSeqEqual eq toS xs ys =
     else
         Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n" )
 
+let selectBounds (aes:seq<AcousticEvent>) = Seq.map (fun ae -> ae.Bounds) aes
+let createEvents (rs:seq<Rectangle<int, int>>) = Seq.map (fun r -> { Bounds = r; Elements = Set.empty }) rs
 
+
+
+let parseStringAsMatrix (input:string) =
+    let split = input.Split([|Environment.NewLine|], StringSplitOptions.RemoveEmptyEntries)
+
+    Matrix.init (split.Length) (split.[0].Length) (fun x y -> split.[x].[y] |> string |> Double.Parse)
+
+
+[<Fact>]
+let ``matrix parsing test`` () = 
+
+    let pattern = @"
+1010101010101010
+1010101010101010
+1010101010101010
+"
+
+    let expected = 
+        matrix [|
+            [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
+            [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
+            [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
+        |]
+
+
+    let actual = parseStringAsMatrix pattern
+
+    Assert.Equal(expected, actual)
