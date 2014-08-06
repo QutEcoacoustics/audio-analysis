@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="MainEntry.cs" company="MQUTeR">
-//   -
+// <copyright file="MainEntry.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
 //   Defines the MainEntry type.
@@ -59,7 +59,6 @@ namespace AnalysisPrograms
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             Execute(Arguments);
 
-            
             HangBeforeExit();
 
             // finally return error level

@@ -482,7 +482,7 @@ namespace AnalysisPrograms
             TowseyLibrary.Log.WriteLine("AED finished");
 
             SonogramConfig config = sonogram.Configuration;
-            double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
+            double freqBinWidth = config.NyquistFreq / (double)config.FreqBinCount;
 
             List<AcousticEvent> events =
                 oblongs.Select(o => {
