@@ -144,15 +144,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </returns>
         public static LdSpectrogramConfig ReadYamlToConfig(FileInfo path)
         {
-            return Yaml.Deserialise<LdSpectrogramConfig>(path);
-            /* // load YAML configuration
+            //return Yaml.Deserialise<LdSpectrogramConfig>(path);
+            // load YAML configuration
             dynamic configuration = Yaml.Deserialise(path);
 
             /*
              * Warning! The `configuration` variable is dynamic.
              * Do not use it outside this method. 
              * Extract all params below.
-             */ /*
+             */ 
             var inputDirectory = new DirectoryInfo((string)configuration.InputDirectory);
             var outputDirectory = new DirectoryInfo((string)configuration.OutputDirectory);
 
@@ -176,13 +176,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 // default is one minute spectra and hourly time lines
             config.YAxisTicInterval = (int)configuration.YaxisTicInterval; // default is 1000 Herz
 
-            return config;*/
+            return config;
         }
 
         public void WriteConfigToYaml(FileInfo path)
         {
-            Yaml.Serialise(path, this);
-            /*
+           // Yaml.Serialise(path, this);
+
             // WRITE THE YAML CONFIG FILE
             Yaml.Serialise(
                 path, 
@@ -209,8 +209,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         // default is one minute spectra and hourly time lines
                         YaxisTicInterval = this.YAxisTicInterval // default is 1000 Herz
                     });
-             * 
-             * */
+
+        
         }
         #endregion
     }
