@@ -13,10 +13,11 @@ ResampleRate: 17640
 
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true 
+NoiseReductionType: STANDARD
 BgNoiseThreshold: 3.0
 
 
-ADD_AXES: true
+AddAxes: true
 AddSegmentationTrack: true
 
 # REDUCTION FACTORS for freq and time dimensions
@@ -24,10 +25,8 @@ AddSegmentationTrack: true
 #FreqReductionFactor: 1
 
 MakeSoxSonogram: false
-# Bad Michael, Don't do the following! SoX will always be deployed with AnalysisPrograms.exe
-#SOX_PATH: C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe
 SonogramTitle: Sonogram
 SonogramComment: "Sonogram produced using SOX"
-#SonogramColored: true
+#SonogramColored: false
 SonogramQuantisation: 128
 ...

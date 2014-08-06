@@ -1,23 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SpectrogramTools.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the SpectrogramTools type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-using AnalysisBase;
-
-using TowseyLibrary;
-using Acoustics.Tools.Audio;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-using Acoustics.Shared;
-
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.StandardSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+
+    using Acoustics.Shared;
+
+    using AnalysisBase;
+
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
+
+    using TowseyLibrary;
+
     public static class SpectrogramTools
     {
 
@@ -67,7 +73,11 @@ namespace AudioAnalysisTools
             else
             {
                 analyser = null;
-                Image image = SpectrogramTools.Audio2SonogramImage(fiAudio, config.GetDictionary());
+                var configDict = config.GetDictionary();
+                BaseSonogram sonogram = SpectrogramTools.Audio2DecibelSonogram(fiAudio, configDict);
+                var mti = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                var image = mti.GetImage();
+
                 if (image != null)
                 {
                     if (fiImage.Exists)
@@ -90,7 +100,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Image Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
-            BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);
+            BaseSonogram sonogram = SpectrogramTools.Audio2DecibelSonogram(fiAudio, configDict);
             var mti = Sonogram2MultiTrackImage(sonogram, configDict);
             var image = mti.GetImage();
             return image;
@@ -155,26 +165,15 @@ namespace AudioAnalysisTools
 
 
 
-        public static BaseSonogram Audio2Sonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
+        public static BaseSonogram Audio2DecibelSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
         {
-            int frameLength = 512; // default value
-            if (configDict.ContainsKey(AnalysisKeys.FrameLength))
-                frameLength = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, configDict);
-
-            double frameOverlap = 0.0; // default value
-            if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
-                frameOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
-
             AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recordingSegment.FileName;
-            sonoConfig.WindowSize = frameLength;
-            sonoConfig.WindowOverlap = frameOverlap;
+            SonogramConfig sonoConfig = new SonogramConfig(configDict); //default values config
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             return sonogram;
         }
-
-
+        
+        
         /// <summary>
         /// 
         /// </summary>
@@ -184,11 +183,6 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Image_MultiTrack Sonogram2MultiTrackImage(BaseSonogram sonogram, Dictionary<string, string> configDict)
         {
-            //double smoothWindow = Double.Parse(configDict[Keys.SMOOTHING_WINDOW]);   //smoothing window (seconds) before segmentation
-            //double thresholdSD = Double.Parse(configDict[Keys.THRESHOLD]);           //segmentation threshold in noise SD
-            //int lowFrequencyBound = Double.Int(configDict[Keys.LOW_FREQ_BOUND]);     //lower bound of the freq band to be displayed
-            //int hihFrequencyBound = Double.Int(configDict[Keys.HIGH_FREQ_BOUND]);    //upper bound of the freq band to be displayed
-
             bool doHighlightSubband = false;
 
 
@@ -207,24 +201,24 @@ namespace AudioAnalysisTools
 
             
             // (iii) NOISE REDUCTION
-            bool doNoiseReduction = false;
-            if (configDict.ContainsKey(AnalysisKeys.NoiseDoReduction))
-                doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NoiseDoReduction, configDict);
-            if (doNoiseReduction)
-            {
-                //LoggedConsole.WriteLine("PERFORMING NOISE REDUCTION");
-                double bgThreshold = 3.0;
-                if (configDict.ContainsKey(AnalysisKeys.NoiseBgThreshold))
-                    bgThreshold = ConfigDictionary.GetDouble(AnalysisKeys.NoiseBgThreshold, configDict);
-                var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, bgThreshold);
-                sonogram.Data = tuple.Item1;   // store data matrix
-            }
+            //bool doNoiseReduction = false;
+            //if (configDict.ContainsKey(AnalysisKeys.NoiseDoReduction))
+            //    doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NoiseDoReduction, configDict);
+            //if (doNoiseReduction)
+            //{
+            //    //LoggedConsole.WriteLine("PERFORMING NOISE REDUCTION");
+            //    double bgThreshold = 3.0;
+            //    if (configDict.ContainsKey(AnalysisKeys.NoiseBgThreshold))
+            //        bgThreshold = ConfigDictionary.GetDouble(AnalysisKeys.NoiseBgThreshold, configDict);
+            //    var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, bgThreshold);
+            //    sonogram.Data = tuple.Item1;   // store data matrix
+            //}
 
             //ADD time and frequency scales
             bool addScale = false;
             if (configDict.ContainsKey(AnalysisKeys.AddTimeScale)) addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddTimeScale, configDict);
             else
-            if (configDict.ContainsKey(AnalysisKeys.AddAxes))       addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
+            if (configDict.ContainsKey(AnalysisKeys.AddAxes))      addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
             bool add1kHzLines = addScale;
 
 
@@ -236,29 +230,30 @@ namespace AudioAnalysisTools
             //add segmentation track
             if (configDict.ContainsKey(AnalysisKeys.AddSegmentationTrack))
                 addSegmentationTrack = ConfigDictionary.GetBoolean(AnalysisKeys.AddSegmentationTrack, configDict);
-            if (addSegmentationTrack) mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
+            if (addSegmentationTrack) 
+                mti.AddTrack(Image_Track.GetSegmentationTrack(sonogram)); //add segmentation track
             return mti;
+            //mti.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram)); //add segmentation track
         }//Sonogram2MultiTrackImage()
-
 
         public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, 
                                            double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
-            Image_MultiTrack image = Sonogram2MultiTrackImage(sonogram, configDict);
+            Image_MultiTrack multiTrackImage = Sonogram2MultiTrackImage(sonogram, configDict);
 
             if (scores != null)
             {
                 foreach (Plot plot in scores)
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                    multiTrackImage.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
             }
 
             if (hits != null) 
-                image.OverlayRainbowTransparency(hits);
+                multiTrackImage.OverlayRainbowTransparency(hits);
 
             if (predictedEvents.Count > 0) 
-                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+                multiTrackImage.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
 
-            return image.GetImage();
+            return multiTrackImage.GetImage();
         } //Sonogram2Image()
 
 
@@ -266,14 +261,13 @@ namespace AudioAnalysisTools
         {
             bool doHighlightSubband = false;
             //ADD time and frequency scales
-            bool addScale = false;
+            bool addScale = true;
             //if (configDict.ContainsKey(Keys.ADD_TIME_SCALE)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_TIME_SCALE, configDict);
             //else
             //    if (configDict.ContainsKey(Keys.ADD_AXES)) addScale = ConfigDictionary.GetBoolean(Keys.ADD_AXES, configDict);
             bool add1kHzLines = addScale;
 
             BaseSonogram sonogram = new SpectrogramStandard(config, matrix);
-            sonogram.Configuration.MaxFreqBand = 8800;
             System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             Image_MultiTrack image = new Image_MultiTrack(img);
             //if (addScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
@@ -282,46 +276,43 @@ namespace AudioAnalysisTools
 
 
 
-        public static int MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
+        public static void MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
         {
-            //string sourceMimeType = "wav";
-            //string outputMimeType = "png";
-            //Acoustics.Tools.SpectrogramRequest request = new Acoustics.Tools.SpectrogramRequest();
-            
-            string soxPath = @"C:\SensorNetworks\Software\Extra Assemblies\sox\sox.exe";
-            if (configDict.ContainsKey(AnalysisKeys.SoxPath))
+            var soxPath = new FileInfo(AppConfigHelper.SoxExe);
+            if (!soxPath.Exists)
             {
-                soxPath = configDict[AnalysisKeys.SoxPath];
-                var fiSOX = new FileInfo(soxPath);
-                if (!fiSOX.Exists)
-                {
-                    LoggedConsole.WriteLine("SOX ERROR: Path does not exist: <{0}>", fiSOX.FullName);
-                    return 1;
-                }
+                LoggedConsole.WriteLine("SOX ERROR: Path does not exist: <{0}>", soxPath.FullName);
+                throw new FileNotFoundException("SOX ERROR: Path for executable does not exist.", soxPath.FullName);
             }
-            string soxCmd = "" + soxPath + ""; //must quote the path because has a space in it.
 
-            string title = "";
+            // must quote the path because has a space in it.
+            string soxCmd = "\"" + AppConfigHelper.SoxExe + "\"";
+
+            string title = string.Empty;
             if (configDict.ContainsKey(AnalysisKeys.SonogramTitle))
             {
                 title = " -t " + configDict[AnalysisKeys.SonogramTitle];
             }
-            string comment = "";
+
+            string comment = string.Empty;
             if (configDict.ContainsKey(AnalysisKeys.SonogramComment))
             {
                 comment = " -c " + configDict[AnalysisKeys.SonogramComment];
             }
-            string axes = "";
-            if (configDict.ContainsKey(AnalysisKeys.AddAxes) && (! ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict)))
+
+            string axes = "-r";
+            if (configDict.ContainsKey(AnalysisKeys.AddAxes) && (!ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict)))
             {
-                axes = " -r ";
+                axes = string.Empty;
             }
-            string coloured = " -m "; //default
+
+            string coloured = " -m "; // default
             if (configDict.ContainsKey(AnalysisKeys.SonogramColored) && (ConfigDictionary.GetBoolean(AnalysisKeys.SonogramColored, configDict)))
             {
-                coloured = "";
+                coloured = string.Empty;
             }
-            string quantisation = " -q 64 "; //default
+
+            string quantisation = " -q 64 "; // default
             if (configDict.ContainsKey(AnalysisKeys.SonogramQuantisation))
             {
                 quantisation = " -q " + ConfigDictionary.GetInt(AnalysisKeys.SonogramQuantisation, configDict);
@@ -332,24 +323,23 @@ namespace AudioAnalysisTools
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -l -o \"{1}\"";  //greyscale with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -o \"{1}\"";     //reverse image greyscale with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l -o \"{1}\"";     //colour with time, freq and intensity scales
-            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64  -l -o \"{1}\"";    //64 grey scale, with time, freq and intensity scales
-            string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l {1} {2} {3} {4} {5} -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64 -r -l -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
+            const string SoxCommandLineArguments = " -V \"{0}\" -n spectrogram -m {1} -q 64 -l -o \"{6}\""; //64 grey scale, with time, freq and intensity scales
+            //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l {1} {2} {3} {4} {5} -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
 
-            //FOR COMMAND LINE OPTIONS SEE:  http://sox.sourceforge.net/sox.html
-            //−a     Suppress display of axis lines. This is sometimes useful in helping to discern artefacts at the spectrogram edges.
-            //-l     Print firendly monochrome spectrogram.
-            //−m     Creates a monochrome spectrogram (the default is colour).
-            //-q     Number of intensity quanitisation levels/colors - try -q 64
-            //−r     Raw spectrogram: suppress the display of axes and legends.
-            //−t text  Set the image title - text to display above the spectrogram.
-            //−c text  Set (or clear) the image comment - text to display below and to the left of the spectrogram.
-            //trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
-
-            var args = string.Format(soxCommandLineArguments, fiAudio.FullName, title, comment, axes, coloured, quantisation, output.FullName);
+            // FOR COMMAND LINE OPTIONS SEE:  http://sox.sourceforge.net/sox.html
+            // −a     Suppress display of axis lines. This is sometimes useful in helping to discern artefacts at the spectrogram edges.
+            // -l     Print firendly monochrome spectrogram.
+            // −m     Creates a monochrome spectrogram (the default is colour).
+            // -q     Number of intensity quanitisation levels/colors - try -q 64
+            // −r     Raw spectrogram: suppress the display of axes and legends.
+            // −t text  Set the image title - text to display above the spectrogram.
+            // −c text  Set (or clear) the image comment - text to display below and to the left of the spectrogram.
+            // trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
+            var args = string.Format(SoxCommandLineArguments, fiAudio.FullName, title, comment, axes, coloured, quantisation, output.FullName);
             var process = new TowseyLibrary.ProcessRunner(soxCmd);
             process.Run(args, output.DirectoryName);
-            return 0;
-        } //MakeSonogramWithSox
+        }
 
 
 
@@ -461,8 +451,168 @@ namespace AudioAnalysisTools
             return subband;
         }
 
+        // #######################################################################################################################################
+        // ### BELOW METHODS DRAW GRID LINES ON SPECTROGRAMS ####################################################################################
+        // #######################################################################################################################################
+
+
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
+                                                    int nyquist, int herzInterval)
+        {
+            int Y_interval = (int)(bmp.Height / (double)(nyquist / (double)herzInterval));
+            DrawGridLinesOnImage(bmp, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
+        }
+
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int Y_interval)
+        {
+            int rows = bmp.Height;
+            int cols = bmp.Width;
+
+            Graphics g = Graphics.FromImage(bmp);
+
+            // for rows draw in Y-axis line
+            for (int row = 0; row < rows; row++)
+            {
+                if ((row > 0) && (row % Y_interval == 0))
+                {
+                    int rowFromBottom = rows - row;
+                    for (int column = 0; column < cols - 1; column++)
+                    {
+                        bmp.SetPixel(column, rowFromBottom, Color.Black);
+                        bmp.SetPixel(column + 1, rowFromBottom, Color.White);
+                        column += 2;
+                    }
+                    int band = rowFromBottom / Y_interval;
+                    g.DrawString(((band) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
+                }
+            }
+
+            // for columns, draw in X-axis hour lines
+            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds));
+            for (int column = 1; column < cols; column++)
+            {
+
+                if (column % xInterval == 0)
+                {
+                    for (int row = 0; row < rows - 1; row++)
+                    {
+                        bmp.SetPixel(column, row, Color.Black);
+                        bmp.SetPixel(column, row + 1, Color.White);
+                        row += 2;
+                    }
+                }
+            }
+        } // DrawGridLInesOnImage()
 
 
 
-    } //class
+        public static void Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        {
+            const int kHz = 1000;
+            double kHzBinWidth = kHz / freqBinWidth;
+            int width = bmp.Width;
+            int height = bmp.Height;
+
+            int bandCount = (int)Math.Floor(height / kHzBinWidth);
+            int[] gridLineLocations = new int[bandCount];
+            for (int b = 0; b < bandCount; b++)
+            {
+                gridLineLocations[b] = (int)(height - ((b + 1) * kHzBinWidth));
+            }
+
+            //get melscale locations
+            if (doMelScale)
+                gridLineLocations = SpectrogramTools.CreateMelYaxis(kHz, nyquist, height); // WARNING!!!! NEED TO REWORK THIS BUT NOW SELDOM USED
+
+            Graphics g = Graphics.FromImage(bmp);
+            //g.SmoothingMode = SmoothingMode.AntiAlias;
+            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            for (int b = 0; b < bandCount; b++) //over each band
+            {
+                int y = gridLineLocations[b];
+                for (int x = 1; x < width; x++)
+                {
+                    bmp.SetPixel(x - 1, y, Color.White);
+                    bmp.SetPixel(x, y, Color.Black);
+                    x++;
+                }
+                g.DrawString(((b + 1) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, y + 1);
+            }
+            //g.Flush();
+        }//end AddGridLines()
+
+
+        /// <summary>
+        /// currently, this method is only called when drawing a reduced sonogram. 
+        /// </summary>
+        /// <param name="herzInterval"></param>
+        /// <param name="nyquistFreq"></param>
+        /// <param name="imageHt"></param>
+        /// <returns></returns>
+        public static int[] CreateLinearYaxis(int herzInterval, int nyquistFreq, int imageHt)
+        {
+            //int freqRange = this.maxFreq - this.minFreq + 1;
+            int minFreq = 0;
+            int maxFreq = nyquistFreq;
+            int freqRange = maxFreq - minFreq + 1;
+            double pixelPerHz = imageHt / (double)freqRange;
+            int[] vScale = new int[imageHt];
+            //LoggedConsole.WriteLine("freqRange=" + freqRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerHz=" + pixelPerHz);
+
+            for (int f = minFreq + 1; f < maxFreq; f++)
+            {
+                if (f % 1000 == 0)  //convert freq value to pixel id
+                {
+                    int hzOffset = f - minFreq;
+                    int pixelID = (int)(hzOffset * pixelPerHz) + 1;
+                    if (pixelID >= imageHt) pixelID = imageHt - 1;
+                    //LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
+                    vScale[pixelID] = 1;
+                }
+            }
+            return vScale;
+        }
+
+
+        /// <summary>
+        /// Use this method to generate grid lines for mel scale image
+        /// Currently this method is only called from Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        /// and when bool doMelScale = true;
+        /// </summary>
+        public static int[] CreateMelYaxis(int herzInterval, int nyquistFreq, int imageHt)
+        {
+            int minFreq = 0;
+            int maxFreq = nyquistFreq;
+            //int freqRange = maxFreq - minFreq + 1;
+            double minMel = DSP.MFCCStuff.Mel(minFreq);
+            int melRange = (int)(MFCCStuff.Mel(maxFreq) - minMel + 1);
+            //double pixelPerHz = imageHt / (double)freqRange;
+            double pixelPerMel = imageHt / (double)melRange;
+            int[] vScale = new int[imageHt];
+            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
+
+            for (int f = minFreq + 1; f < maxFreq; f++)
+            {
+                if (f % 1000 == 0)  //convert freq value to pixel id
+                {
+                    //int hzOffset  = f - this.minFreq;
+                    int melOffset = (int)(MFCCStuff.Mel(f) - minMel);
+                    int pixelID = (int)(melOffset * pixelPerMel) + 1;
+                    if (pixelID >= imageHt) pixelID = imageHt - 1;
+                    //LoggedConsole.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
+                    vScale[pixelID] = 1;
+                }
+            }
+            return vScale;
+        }
+
+        // #######################################################################################################################################
+        // ### ABOVE METHODS DRAW GRID LINES ON SPECTROGRAMS ####################################################################################
+        // #######################################################################################################################################
+
+
+
+
+    }
 }

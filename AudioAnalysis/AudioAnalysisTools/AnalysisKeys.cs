@@ -7,6 +7,8 @@ namespace AudioAnalysisTools
 {
     using System;
 
+    using Acoustics.Shared;
+
     public static class AnalysisKeys
     {
         // KEYS TO PARAMETERS IN CONFIG FILE
@@ -46,6 +48,7 @@ namespace AudioAnalysisTools
         public const string SegmentOverlap = "SegmentOverlap";
         public const string SmoothingWindow = "SmoothingWindow";
         public const string Threshold = "Threshold";
+
 
         // Keys to recognise identifiers in ANALYSIS CONFIG file. 
         public const string LowFreqBound = "LowFreqBound";

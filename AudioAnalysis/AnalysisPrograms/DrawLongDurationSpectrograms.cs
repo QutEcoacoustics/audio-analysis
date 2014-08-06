@@ -16,6 +16,10 @@ namespace AnalysisPrograms
 
     using PowerArgs;
 
+
+    /// <summary>
+    /// First argument on command line to call this action is "ColourSpectrogram"
+    /// </summary>
     public static class DrawLongDurationSpectrograms
     {
 
@@ -41,6 +45,10 @@ namespace AnalysisPrograms
         {
             // INPUT and OUTPUT DIRECTORIES
             //2010 Oct 13th
+            string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+            string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\Test\Test1";
+
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct13_SpectralIndices";
@@ -61,9 +69,9 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct16_SpectralIndices";
 
             //2010 Oct 17th
-            string ipFileName = "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000";
-            string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
+            //string ipFileName = "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000";
+            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
 
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);

@@ -138,7 +138,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             //var dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
 
             string fileStem = configuration.FileName;
-            DirectoryInfo outputDirectory = configuration.OutputDirectory;
+            DirectoryInfo outputDirectory = configuration.OutputDirectoryInfo;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map1 = configuration.ColourMap1;
@@ -160,7 +160,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
-            cs1.ReadCSVFiles(configuration.InputDirectory, fileStem); // reads all known files spectral indices
+            cs1.ReadCSVFiles(configuration.InputDirectoryInfo, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
@@ -194,7 +194,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
             image1.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
 
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
@@ -202,7 +202,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
             Image[] array = new Image[2];
             array[0] = image1;
