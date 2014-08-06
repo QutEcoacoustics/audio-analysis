@@ -194,20 +194,24 @@
                 {
                     if (s.Item2 > threshold)
                     {
-                        Point point = new Point(s.Item1.Point.X, s.Item1.Point.Y);
-                        double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
-                        var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
-                        double herzScale = spectrogram.FBinWidth; //43 hz
-                        TimeSpan time = TimeSpan.FromSeconds(s.Item1.Point.X * secondsScale);
-                        double herz = (s.Item1.Point.Y - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
-                        var poi = new PointOfInterest(time, herz);
-                        poi.Point = point;
-                        poi.OrientationCategory = 0;   
-                        poi.TimeScale = timeScale;
-                        poi.HerzScale = herzScale;
-                        poi.RidgeMagnitude = s.Item2; 
-                        result.Add(poi);
+                        // To make it thin
+                        if (s.Item1.Point.Y % 3 == 0)
+                        {
+                            Point point = new Point(s.Item1.Point.X, s.Item1.Point.Y);
+                            double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+                            var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                            double herzScale = spectrogram.FBinWidth; //43 hz
+                            TimeSpan time = TimeSpan.FromSeconds(s.Item1.Point.X * secondsScale);
+                            double herz = (s.Item1.Point.Y - 1) * herzScale;
+                            // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                            var poi = new PointOfInterest(time, herz);
+                            poi.Point = point;
+                            poi.OrientationCategory = 0;
+                            poi.TimeScale = timeScale;
+                            poi.HerzScale = herzScale;
+                            poi.RidgeMagnitude = s.Item2;
+                            result.Add(poi);
+                        }
                     }
                 }
             }

@@ -12,6 +12,7 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using System.Drawing.Imaging;
+    using AForge.Math;
 
 
     class ImageAnalysisTools
@@ -118,6 +119,33 @@ namespace Dong.Felt
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
 
         #region Public Methods
+
+        /// Calculate the discrete Fourier Transform for an image 
+        public static double[,] DiscreteFourierTransform(double[,] imageData)
+        {
+            var matrixLength = imageData.GetLength(0);
+            var result = new double[matrixLength, matrixLength];
+            for (var i = 0; i < matrixLength; i++)
+            {
+                for (var j = 0; j < matrixLength; j++)
+                {
+                    //calculate the fft 
+                    var sum = new Complex(0.0, 0.0);
+                    for (var x = 0; x < matrixLength; x++)
+                    {
+                        for (var y = 0; y < matrixLength; y++)
+                        {
+                            var p = -Math.Sqrt(-1.0);
+                            var ePower = - 2 * p * Math.PI * (i * x / matrixLength + j * y / matrixLength);
+                            sum += imageData[x, y] * Math.Exp(ePower);
+                        }
+                    }
+                    var amplitude = Math.Sqrt(Math.Pow(sum.Re, 2.0) + Math.Pow(sum.Im, 2.0));
+                    result[i, j] = amplitude;
+                }
+            }
+            return result;
+        }
 
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
         {

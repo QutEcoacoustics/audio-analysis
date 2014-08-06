@@ -10,6 +10,7 @@
     using System.Reflection;
     using Representations;
     using System.Globalization;
+    using AForge.Math;
 
     class StatisticalAnalysis
     {
