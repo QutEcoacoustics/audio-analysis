@@ -38,6 +38,53 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
+            if (true)  // concatenating spectrogram images with gaps between them.
+            {
+                int spectralDim = 256;
+                double[] spectralIndices = new double[spectralDim];
+                for (int p = 0; p < spectralDim; p++)
+                {
+                    spectralIndices[p] = 1.0;
+                }
+                int maxdistance = 100;
+
+                //half life in meters
+                double halfLife = 30.0;
+                Bitmap bmp = new Bitmap(maxdistance, spectralDim);
+
+                double log2 = Math.Log(2.0);
+                double tau = halfLife / log2;
+
+                for (int d = 0; d < 100; d++)
+                {
+                    double[] array = LDSpectrogramRGB.CalculateDecayedSpectralIndices(spectralIndices, d, halfLife);
+                    for (int p = 0; p < spectralDim; p++)
+                    {
+                        int colourIndex = (int)(255 * array[p]);
+                        if (colourIndex > 255) colourIndex = 255;
+                        else
+                        if (colourIndex < 0) colourIndex = 0;
+                        bmp.SetPixel(d, spectralDim - p - 1, Color.FromArgb(colourIndex, colourIndex, colourIndex));
+                    }
+
+                }
+                bmp.Save(@"C:\SensorNetworks\Output\Test\Test1\decay.png");
+
+                //for (int d = 0; d < 100; d++)
+                //{
+                //    double exponent = d / tau;
+                //    Color c = bmp.GetPixel(d, spectralDim - 1);
+                //    Console.WriteLine("d={0} array[0]={1}    {2}", d, (c.R / (double)255), Math.Pow(Math.E, -exponent));
+                //}
+
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
+
+
+
+
             if (false)  // concatenating spectrogram images with gaps between them.
             {
                 LDSpectrogramStitching.StitchPartialSpectrograms();

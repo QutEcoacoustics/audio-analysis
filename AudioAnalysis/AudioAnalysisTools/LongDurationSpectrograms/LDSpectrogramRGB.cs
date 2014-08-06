@@ -103,11 +103,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         private Dictionary<string, IndexProperties> spectralIndexProperties; 
 
-        public string[] spectrogramKeys { get; private set; } 
+        public string[] spectrogramKeys { get; private set; }
 
-
-        private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>(); // used to save all spectrograms as dictionary of matrices 
-        private Dictionary<string, double[,]> spgr_StdDevMatrices;                                       // used if reading standard devaition matrices for tTest
+        // used to save all spectrograms as dictionary of matrices 
+        // IMPORTANT: The matrices are stored as they would appear in the LD spectrogram image. i.e. rotated 90 degrees anti-clockwise.
+        private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
+        // used if reading standard devaition matrices for tTest
+        private Dictionary<string, double[,]> spgr_StdDevMatrices;                                      
 
         public class SpectralStats
         {
@@ -711,6 +713,202 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return compositeBmp;
         }
 
+        //############################################################################################################################################################
+        //# BELOW METHODS CALCULATE SUMMARY INDEX RIBBONS ############################################################################################################
+        
+        /// <summary>
+        /// Returns an array of summary indices, where each element of the array (one element per minute) is a single summary index 
+        /// derived by averaging the spectral indices for that minute.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public double[] GetSummaryIndexArray(string key)
+        {
+            // return matrices have spectrogram orientation
+            double[,] m = this.GetNormalisedSpectrogramMatrix(key);
+            int colcount = m.GetLength(1);
+            double[] indices = new double[colcount];
+
+            for (int r = 0; r < colcount; r++)
+            {
+                indices[r] = MatrixTools.GetColumn(m, r).Average();
+            }
+
+            return indices;
+        }
+
+        public double[] GetSummaryIndicesAveraged()
+        {
+            double[] indices1 = GetSummaryIndexArray(this.spectrogramKeys[0]);
+            double[] indices2 = GetSummaryIndexArray(this.spectrogramKeys[1]);
+            double[] indices3 = GetSummaryIndexArray(this.spectrogramKeys[2]);
+
+            int count = indices1.Length;
+            double[] averagedIndices = new double[count];
+            for (int r = 0; r < count; r++)
+            {
+                averagedIndices[r] = (indices1[r] +indices2[r] +indices3[r]) / 3;
+            }
+            return averagedIndices;            
+        }
+
+        public Image GetSummaryIndexRibbon(string colorMap)
+        {
+            string colourKeys = colorMap;
+            string[] keys = colourKeys.Split('-');
+            double[] indices1 = GetSummaryIndexArray(keys[0]);
+            double[] indices2 = GetSummaryIndexArray(keys[1]);
+            double[] indices3 = GetSummaryIndexArray(keys[2]);
+
+            int width = indices1.Length;
+            int height = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
+            Pen pen;
+            var image = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(image);
+            for (int i = 0; i < width; i++)
+            {
+                int red = (int)(255 * indices1[i]);
+                int grn = (int)(255 * indices2[i]);
+                int blu = (int)(255 * indices3[i]);
+
+                pen = new Pen(Color.FromArgb(red, grn, blu));
+                g.DrawLine(pen, i, 0, i, height);
+            }
+            return image;
+        }
+
+
+        /// <summary>
+        /// Returns three arrays of summary indices, for the LOW, MIDDLE and HIGH frequency bands respectively. 
+        /// Each element of an array (one element per minute) is a single summary index 
+        /// derived by averaging the spectral indices in the L, M or H freq band for that minute.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public double[,] GetLMHSummaryIndexArrays(string key)
+        {
+            // return matrices have spectrogram orientation
+            double[,] m = this.GetNormalisedSpectrogramMatrix(key);
+            int colcount = m.GetLength(1);
+            double[,] indices = new double[3, colcount];
+
+            int spectrumLength = m.GetLength(0);
+
+            // here set bounds between the three freq bands
+            // this is important beacuse it will affect appearance of the final colour ribbon.
+            int lowBound = (int)(spectrumLength * 0.2);
+            int midBound = (int)(spectrumLength * 0.5);
+            int midBandWidth = midBound - lowBound;
+            int higBandWidth = spectrumLength - midBound;
+
+            // create highband weights - triangular weighting
+            double[] hibandWeights = new double[higBandWidth];
+            double maxweight = 2 / (double)higBandWidth;
+            double step = maxweight / (double)higBandWidth;
+            for (int c = 0; c < higBandWidth; c++)
+            {
+                hibandWeights[c] = maxweight - (c * step);
+            }
+            // check that sum = 1.0;
+            // double sum = hibandWeights.Sum();
+
+            for (int c = 0; c < colcount; c++)
+            {
+                double[] spectrum = MatrixTools.GetColumn(m, c);
+                // reverse the array because low frequencies are at the end of the array.
+                // because matrices are stored in the orientation that they appear in the final image.
+                spectrum = DataTools.reverseArray(spectrum);
+                // get the low freq band index
+                indices[0, c] = DataTools.Subarray(spectrum, 0, lowBound).Average();
+                // get the mid freq band index
+                indices[1, c] = DataTools.Subarray(spectrum, lowBound, midBandWidth).Average();
+                // get the hig freq band index. Here the weights are triangular, sum = 1.0
+                double[] subarray = DataTools.Subarray(spectrum, midBound, higBandWidth);
+                indices[2, c] = DataTools.DotProduct(subarray, hibandWeights);
+            }
+
+            return indices;
+        }
+
+        public Image GetSummaryIndexRibbonWeighted(string colorMap)
+        {
+            string colourKeys = colorMap;
+            string[] keys = colourKeys.Split('-');
+            // get the matrices for each of the three indices. 
+            // each matrix has three rows one for each of low, mid and high band averages
+            // each matrix has one column per minute.
+            double[,] indices1 = GetLMHSummaryIndexArrays(keys[0]);
+            double[,] indices2 = GetLMHSummaryIndexArrays(keys[1]);
+            double[,] indices3 = GetLMHSummaryIndexArrays(keys[2]);
+
+            int width = indices1.GetLength(1);
+            int height = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
+            Pen pen;
+            var image = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(image);
+
+            // get the low, mid and high band averages of indices in each minute.
+            double index = 0;
+            for (int i = 0; i < width; i++)
+            {
+                //  get the average of the three indices in the low bandwidth
+                index = (indices1[0, i] + indices2[0, i] + indices3[0, i]) / 3; 
+                int red = (int)(255 * index);
+                index = (indices1[1, i] + indices2[1, i] + indices3[1, i]) / 3;
+                int grn = (int)(255 * index);
+                index = (indices1[2, i] + indices2[2, i] + indices3[2, i]) / 3;
+                int blu = (int)(255 * index);
+
+                pen = new Pen(Color.FromArgb(red, grn, blu));
+                g.DrawLine(pen, i, 0, i, height);
+            }
+            return image;
+        }
+
+        public double[] GetSummaryIndicesWeightedAtDistance(double[,] normalisedIndex1, double[,] normalisedIndex2, double[,] normalisedIndex3, 
+                                                            int minuteInDay, int distanceInMeters)
+        {
+            double decayConstant = 20.0;
+
+            double[] indices1 = MatrixTools.GetColumn(normalisedIndex1, minuteInDay);
+            indices1 = DataTools.reverseArray(indices1);
+            indices1 = CalculateDecayedSpectralIndices(indices1, distanceInMeters, decayConstant);
+            double[] indices2 = MatrixTools.GetColumn(normalisedIndex2, minuteInDay);
+            indices2 = DataTools.reverseArray(indices2);
+            indices2 = CalculateDecayedSpectralIndices(indices2, distanceInMeters, decayConstant);
+            double[] indices3 = MatrixTools.GetColumn(normalisedIndex3, minuteInDay);
+            indices3 = DataTools.reverseArray(indices3);
+            indices3 = CalculateDecayedSpectralIndices(indices3, distanceInMeters, decayConstant);
+
+
+            // ####################### TO DO
+            // COMBINE THE INDCES IN SOME WAY
+
+            return indices1;
+        }
+
+        public static double[] CalculateDecayedSpectralIndices(double[] spectralIndices, int distanceInMeters, double halfLife)
+        {
+            double log2 = Math.Log(2.0);
+            double differentialFrequencyDecay = 0.1;
+            
+            int length = spectralIndices.Length;
+
+            double[]  returned = new double[length];
+            for (int i = 0; i < length; i++)
+            {
+                // half life decreases with increasing frquency.
+                double frequencyDecay = differentialFrequencyDecay * i;
+                double tau = (halfLife - (differentialFrequencyDecay * i)) / log2;
+                // check tau is not negative
+                if (tau < 0.0) tau = 0.001; 
+                double exponent = distanceInMeters / tau;
+                returned[i] = spectralIndices[i] * Math.Pow(Math.E, -exponent);
+            }
+            return returned;
+        }
+
+
 
         //############################################################################################################################################################
         //# STATIC METHODS ###########################################################################################################################################
@@ -1068,6 +1266,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+
+            //Image ribbon1 = cs1.GetSummaryIndexRibbon(colorMap);
+            Image ribbon1 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
             image1.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
 
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
@@ -1076,11 +1277,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+            //Image ribbon2 = cs1.GetSummaryIndexRibbon(colorMap);
+            Image ribbon2 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
-            Image[] array = new Image[2];
-            array[0] = image1;
-            array[1] = image2;
-            Image image3 = ImageTools.CombineImagesVertically(array);
+
+            var imageList = new List<Image>();
+            imageList.Add(image1);
+            imageList.Add(ribbon1);
+            imageList.Add(image2);
+            imageList.Add(ribbon2);
+            Image image3 = ImageTools.CombineImagesVertically(imageList);
             image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
         }
     }
