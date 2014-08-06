@@ -9,13 +9,20 @@
 
 namespace Acoustics.Shared
 {
+    using System;
     using System.IO;
+    using System.Text.RegularExpressions;
 
+    using YamlDotNet.Core;
+    using YamlDotNet.Core.Events;
     using YamlDotNet.Dynamic;
     using YamlDotNet.Serialization;
 
     public class Yaml
     {
+        static Yaml()
+        {
+        }
 
         public static DynamicYaml Deserialise(FileInfo file)
         {
@@ -48,6 +55,29 @@ namespace Acoustics.Shared
                 var serialiser = new Serializer(SerializationOptions.EmitDefaults);
                 serialiser.Serialize(stream, obj);
             }   
+        }
+    }
+
+    /// <summary>
+    /// An attempt to desrialize custom types - does not work.
+    /// See: https://github.com/aaubry/YamlDotNet/issues/103.
+    /// For now, serialize special types through proxy properties.
+    /// </summary>
+    public class YamlFileInfoConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(FileInfo);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            throw new NotImplementedException();
         }
     }
 }

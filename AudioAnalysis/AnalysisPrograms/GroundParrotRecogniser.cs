@@ -14,6 +14,7 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using QutSensors.AudioAnalysis.AED;
 

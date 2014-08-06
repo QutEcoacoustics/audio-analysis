@@ -190,10 +190,10 @@ namespace QutBioacosutics.Xie
 
         public static void DrawFalseColourSpectrograms(LdSpectrogramConfig configuration)
         {
-            string ipdir = configuration.InputDirectory.FullName;
+            string ipdir = configuration.InputDirectoryInfo.FullName;
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             string fileStem = configuration.FileName;
-            string opdir = configuration.OutputDirectory.FullName;
+            string opdir = configuration.OutputDirectoryInfo.FullName;
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram

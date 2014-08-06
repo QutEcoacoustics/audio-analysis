@@ -114,6 +114,10 @@ namespace AnalysisPrograms.Production
                 {
                     File.Create(arg);
                 }
+                else if (!shouldExist)
+                {
+                    // no op
+                }
                 else
                 {
                     throw new ValidationArgException(
@@ -148,7 +152,7 @@ namespace AnalysisPrograms.Production
     public class ArgNotExistingFile : ArgExistingFile
     {
         public ArgNotExistingFile()
-            : base(false, true)
+            : base(false, false)
         {
         }
     }

@@ -434,8 +434,8 @@ namespace AnalysisPrograms
             var config = new LdSpectrogramConfig
                              {
                                  FileName = fileName,
-                                 OutputDirectory = resultsDirectory,
-                                 InputDirectory = resultsDirectory,
+                                 OutputDirectoryInfo = resultsDirectory,
+                                 InputDirectoryInfo = resultsDirectory,
 
                                  SampleRate = sampleRate,
                                  FrameWidth = frameWidth,
