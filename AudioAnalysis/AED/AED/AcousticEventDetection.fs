@@ -65,17 +65,11 @@ let separateLargeEvents aes =
         let bridgingEvents = 
             getAcousticEvents m2
             |> List.filter (fun x -> (float) (height x.Bounds ) * 100.0 / (float) m2.NumRows >= timet)
-            // reset the bounds to full height of parent event (matches old behaviour)
-            |> List.map (fun x ->  {x with Bounds = lengthsToRect (left x.Bounds) (top ae.Bounds) (width x.Bounds) (height ae.Bounds) })
+            // reset the bounds to full height of parent event (matches old behaviour, we want overlapping events)
+            |> List.map (fun x ->  {x with Bounds = lengthsToRect (left x.Bounds) (0) (width x.Bounds) (m2.NumRows) })
 
               
         // map results back to absolute co-ordinates
-        // note: this function was derived as a refactor of two similar code blocks. The only difference was that top was not offet ?correctly? possible bug - not sure
-        // bug would only occurred for events that are the 'bridge' of two other events that were once a very large event 
-        (*
-        List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1 + top b2) (width b2) (height b2))
-        List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1) (width b2) (height b1))
-        *)
         // NOTE: no longer returns rectangles (just fixes coordiantes)
         splitEvents @ bridgingEvents |> List.map (mapEventToAbsolute ((left ae.Bounds), (top ae.Bounds)))
     Seq.collect (fun ae -> if area ae.Bounds < areat then [ae] else separate ae) aes

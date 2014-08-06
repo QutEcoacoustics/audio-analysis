@@ -113,14 +113,20 @@ let ``seperate large events - testing  hits`` () =
 00001111111111111111111111111111111111111110000000001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 "
-
     let testMatrix = parseStringAsMatrix testPattern
-
 
     let results = testMatrix |> getAcousticEvents |> separateLargeEvents |> Array.ofSeq
 
+    // expect threee events
+    Assert.Equal(3, results.Length)
 
-    Assert.Equal(3, results.Length)    
+    let expectedBounds = 
+        [
+            lengthsToRect 4 18 156 3;
+            lengthsToRect 4 1 157 3;
+            lengthsToRect 43 1 19 20;
+        ] :> seq<Rectangle<int, int>>
+    Seq.iter2 (fun expected actualAcousticEvent -> Assert.Equal(expected, actualAcousticEvent.Bounds)) expectedBounds results
     
 [<Fact>]
 let testSmallFirstMin () =

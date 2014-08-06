@@ -17,3 +17,5 @@ let testMatrixMapi2Unzip () =
     let y = Math.Matrix.ofList [[2.0]; [4.0]]
     let (r,s) = matrixMapi2Unzip (fun _ _ x -> (x-1.0, x+1.0)) m
     Assert.Equal((x,y), (r,s))
+
+
