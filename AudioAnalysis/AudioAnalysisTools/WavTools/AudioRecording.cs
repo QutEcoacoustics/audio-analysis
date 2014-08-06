@@ -432,29 +432,27 @@
         /// <param name="buffer"></param>
         /// <param name="resampleRate"></param>
         /// <param name="fiOutputSegment"></param>
-        public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, Dictionary<string, string> configDict, FileInfo fiOutputSegment)
+        public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, int sampleRate, FileInfo fiOutputSegment)
         {
-
-
-            int resampleRate = AppConfigHelper.GetInt(AnalysisSettings.DefaultTargetSampleRateKey);
-            if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
-                resampleRate = ConfigDictionary.GetInt(AnalysisKeys.ResampleRate, configDict);
-
-            //EXTRACT RECORDING SEGMENT
+            // EXTRACT RECORDING SEGMENT
             int startMilliseconds = (int)(start.TotalMilliseconds - buffer.TotalMilliseconds);
             int endMilliseconds = (int)(end.TotalMilliseconds + buffer.TotalMilliseconds);
-            if (startMilliseconds < 0) startMilliseconds = 0;
-            //if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;//no need to worry about end
+            if (startMilliseconds < 0)
+            {
+                startMilliseconds = 0;
+            }
+
+            ////if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;//no need to worry about end
             MasterAudioUtility.SegmentToWav(
                 fiSource,
                 fiOutputSegment,
                 new AudioUtilityRequest
                     {
-                        TargetSampleRate = resampleRate,
+                        TargetSampleRate = sampleRate,
                         OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
                         OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
-                        //Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
-                        //MixDownToMono  =true
+                        ////Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
+                        ////MixDownToMono  =true
                     });
         }
 

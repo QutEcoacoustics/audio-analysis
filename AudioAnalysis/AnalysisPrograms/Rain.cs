@@ -30,6 +30,8 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
+    using AudioAnalysisTools.StandardSpectrograms;
+
     public class Rain : IAnalyser
     {
         public const string key_LOW_FREQ_BOUND = "LOW_FREQ_BOUND";

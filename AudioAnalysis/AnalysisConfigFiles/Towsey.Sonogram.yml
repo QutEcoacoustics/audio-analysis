@@ -17,7 +17,7 @@ NoiseReductionType: STANDARD
 BgNoiseThreshold: 3.0
 
 
-ADD_AXES: true
+AddAxes: true
 AddSegmentationTrack: true
 
 # REDUCTION FACTORS for freq and time dimensions

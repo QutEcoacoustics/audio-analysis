@@ -11,6 +11,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     using Acoustics.Shared;
 
+    using YamlDotNet.Serialization;
+
     /// <summary>
     ///     CONFIG CLASS FOR the class LDSpectrogramRGB
     /// </summary>
@@ -40,8 +42,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             : this()
         {
             this.FileName = fileName;
-            this.InputDirectory = inputDirectory;
-            this.OutputDirectory = outputDirectory;
+            this.InputDirectoryInfo = inputDirectory;
+            this.OutputDirectoryInfo = outputDirectory;
         }
 
         /// <summary>
@@ -90,10 +92,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public int FrameWidth { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public DirectoryInfo InputDirectory { get; set; }
+        [YamlIgnore]
+        public DirectoryInfo InputDirectoryInfo { get; set; }
+
+        public string InputDirectory
+        {
+            get
+            {
+                return this.InputDirectoryInfo.FullName;
+            }
+
+            set
+            {
+                this.InputDirectoryInfo = value.ToDirectoryInfo();
+            }
+        }
 
         /// <summary>
         /// default recording starts at zero minute of day i.e. midnight
@@ -103,7 +116,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// 
         /// </summary>
-        public DirectoryInfo OutputDirectory { get; set; }
+        [YamlIgnore]
+        public DirectoryInfo OutputDirectoryInfo { get; set; }
+
+        public string OutputDirectory
+        {
+            get
+            {
+                return this.OutputDirectoryInfo.FullName;
+            }
+
+            set
+            {
+                this.OutputDirectoryInfo = value.ToDirectoryInfo();
+            }
+        }
 
         /// <summary>
         /// 
@@ -144,19 +171,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </returns>
         public static LdSpectrogramConfig ReadYamlToConfig(FileInfo path)
         {
-            //return Yaml.Deserialise<LdSpectrogramConfig>(path);
+            return Yaml.Deserialise<LdSpectrogramConfig>(path);
+
             // load YAML configuration
-            dynamic configuration = Yaml.Deserialise(path);
+            ////dynamic configuration = Yaml.Deserialise(path);
 
             /*
              * Warning! The `configuration` variable is dynamic.
              * Do not use it outside this method. 
              * Extract all params below.
-             */ 
+             */ /*
             var inputDirectory = new DirectoryInfo((string)configuration.InputDirectory);
-            var outputDirectory = new DirectoryInfo((string)configuration.OutputDirectory);
+            var OutputDirectoryInfo = new DirectoryInfo((string)configuration.OutputDirectoryInfo);
 
-            var config = new LdSpectrogramConfig((string)configuration.FileName, inputDirectory, outputDirectory);
+            var config = new LdSpectrogramConfig((string)configuration.FileName, inputDirectory, OutputDirectoryInfo);
 
             // these parameters manipulate the colour map and appearance of the false-colour spectrogram
             config.ColourMap1 = (string)configuration.ColourMap1;
@@ -176,13 +204,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 // default is one minute spectra and hourly time lines
             config.YAxisTicInterval = (int)configuration.YaxisTicInterval; // default is 1000 Herz
 
-            return config;
+            return config;*/
         }
 
         public void WriteConfigToYaml(FileInfo path)
         {
-           // Yaml.Serialise(path, this);
+            Yaml.Serialise(path, this);
 
+            /*
             // WRITE THE YAML CONFIG FILE
             Yaml.Serialise(
                 path, 
@@ -191,7 +220,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         // paths to required directories and files
                         this.FileName, 
                         InputDirectory = this.InputDirectory.FullName, 
-                        OutputDirectory = this.OutputDirectory.FullName, 
+                        OutputDirectoryInfo = this.OutputDirectoryInfo.FullName, 
 
                         // these parameters manipulate the colour map and appearance of the false-colour spectrogram
                         this.ColourMap1, 
@@ -209,7 +238,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         // default is one minute spectra and hourly time lines
                         YaxisTicInterval = this.YAxisTicInterval // default is 1000 Herz
                     });
-
+            */
         
         }
         #endregion

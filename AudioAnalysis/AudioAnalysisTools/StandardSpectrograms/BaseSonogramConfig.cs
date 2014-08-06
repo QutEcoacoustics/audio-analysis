@@ -1,14 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
-using System.IO;
-using AudioAnalysisTools.DSP;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="BaseSonogramConfig.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the SonogramConfig type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.StandardSpectrograms
 {
-	[Serializable]
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+
+    using AudioAnalysisTools.DSP;
+
+    using TowseyLibrary;
+
+    [Serializable]
 	public class SonogramConfig
 	{
         public const int DEFAULT_WINDOW_SIZE = 512;
@@ -28,21 +37,21 @@ namespace AudioAnalysisTools
         private int sampleRate = 0;
         public int SampleRate
         {
-            get { return sampleRate; }
+            get { return this.sampleRate; }
             set
             {
-                sampleRate = value;
-                NyquistFreq = value / 2;
+                this.sampleRate = value;
+                this.NyquistFreq = value / 2;
             }
         }
         public int NyquistFreq { get; private set; }
         private string windowFunction = WindowFunctions.HAMMING.ToString();
-        public string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
+        public string WindowFunction { get { return this.windowFunction; } set { this.windowFunction = value; } }
         private int smoothingWindow = 3;
-        public int NPointSmoothFFT { get { return smoothingWindow; } set { smoothingWindow = value; } } // Number of points to smooth FFT spectra
+        public int NPointSmoothFFT { get { return this.smoothingWindow; } set { this.smoothingWindow = value; } } // Number of points to smooth FFT spectra
 
         public double epsilon { get; set; }         //small value to prevent log of zero value
-        public int  FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
+        public int  FreqBinCount { get { return this.WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
         public int? MinFreqBand { get; set; }
         public int? MaxFreqBand { get; set; }
@@ -59,11 +68,11 @@ namespace AudioAnalysisTools
         public int DeltaT { get; set; }
 
         private bool saveSonogramImage = false;
-        public  bool SaveSonogramImage { get { return saveSonogramImage; } set { saveSonogramImage = value; } }
+        public  bool SaveSonogramImage { get { return this.saveSonogramImage; } set { this.saveSonogramImage = value; } }
         private string imageDir = null;
         private SonogramConfig config;
         private Acoustics.Tools.Wav.WavReader wavReader;
-        public  string ImageDir { get { return imageDir; } set { imageDir = value; } }
+        public  string ImageDir { get { return this.imageDir; } set { this.imageDir = value; } }
 
         #endregion
 
@@ -119,7 +128,7 @@ namespace AudioAnalysisTools
             config.SetPair(ConfigKeys.Mfcc.Key_DeltaT, "2");
             config.SetPair(ConfigKeys.Sonogram.Key_SonogramType, ConfigKeys.SonogramTypes.Spectral.ToString());
             config.SetPair(ConfigKeys.ImageSave.Key_AddGrid, false.ToString());
-            Initialize(config);                        
+            this.Initialize(config);                        
         }
         
         /// <summary>
@@ -129,7 +138,7 @@ namespace AudioAnalysisTools
         /// <param name="config"></param>
 		public SonogramConfig(ConfigDictionary config)
 		{
-            Initialize(config);
+            this.Initialize(config);
 		}
 
         /// <summary>
@@ -139,8 +148,7 @@ namespace AudioAnalysisTools
         /// <param name="dictionary"></param>
         public SonogramConfig(Dictionary<string, string> dictionary)
         {
-            Initialize(dictionary);
-
+            this.Initialize(dictionary);
         }
 
         public SonogramConfig(SonogramConfig config, Acoustics.Tools.Wav.WavReader wavReader)
@@ -157,34 +165,34 @@ namespace AudioAnalysisTools
         /// <param name="config"></param>
         private void Initialize(ConfigDictionary config)
         {
-            CallName    = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
-            SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
+            this.CallName    = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
+            this.SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
             var duration = config.GetDoubleNullable("WAV_DURATION");
-            if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
+            if (duration != null) this.Duration = TimeSpan.FromSeconds(duration.Value);
 
             //FRAMING PARAMETERS
-            WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
-            WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
+            this.WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
+            this.WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
             //NOISE REDUCTION PARAMETERS  
-            DoSnr = true; // set false if only want to 
+            this.DoSnr = true; // set false if only want to 
             string noisereduce = config.GetString(AnalysisKeys.NoiseReductionType);
-            NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
+            this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
             //NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_);
 
             //FREQ BAND PARAMETERS
-            DoFullBandwidth = false; // set true if only want to 
-            MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
-            MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
-            MidFreqBand = MinFreqBand + ((MaxFreqBand - MinFreqBand) / 2);
+            this.DoFullBandwidth = false; // set true if only want to 
+            this.MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
+            this.MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
+            this.MidFreqBand = this.MinFreqBand + ((this.MaxFreqBand - this.MinFreqBand) / 2);
 
             //SEGMENTATION PARAMETERS
             EndpointDetectionConfiguration.SetConfig(config);
 
             //MFCC PARAMETERS
-            DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
-            mfccConfig = new MfccConfiguration(config);
-            DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
+            this.DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
+            this.mfccConfig = new MfccConfiguration(config);
+            this.DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
 
             // for generating only spectrogram.
 
@@ -197,8 +205,8 @@ namespace AudioAnalysisTools
         /// <param name="config"></param>
         private void Initialize(Dictionary<string, string> configDict)
         {
-            CallName    = (string)configDict[ConfigKeys.Recording.Key_RecordingCallName];
-            SourceFName = (string)configDict[ConfigKeys.Recording.Key_RecordingFileName];
+            this.CallName    = (string)configDict[ConfigKeys.Recording.Key_RecordingCallName];
+            this.SourceFName = (string)configDict[ConfigKeys.Recording.Key_RecordingFileName];
             // var duration = config.GetDoubleNullable("WAV_DURATION");
             // if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
 
@@ -243,21 +251,21 @@ namespace AudioAnalysisTools
 		public virtual void Save(TextWriter writer)
 		{
             writer.WriteLine("#**************** INFO ABOUT FRAMES");
-            writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowSize, WindowSize);
-            writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowOverlap, WindowOverlap);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowSize, this.WindowSize);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowOverlap, this.WindowOverlap);
             EndpointDetectionConfiguration.Save(writer);
             writer.WriteLine("#**************** INFO ABOUT SONOGRAM");
-            writer.WriteConfigValue("MIN_FREQ", MinFreqBand);
-			writer.WriteConfigValue("MAX_FREQ", MaxFreqBand);
-            writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
+            writer.WriteConfigValue("MIN_FREQ", this.MinFreqBand);
+			writer.WriteConfigValue("MAX_FREQ", this.MaxFreqBand);
+            writer.WriteConfigValue("MID_FREQ", this.MidFreqBand); //=3500
             writer.WriteConfigValue(AnalysisKeys.NoiseReductionType, this.NoiseReductionType.ToString());
             if (this.NoiseReductionParameter > 1.0)
                 writer.WriteConfigValue(SNR.key_Snr.key_DYNAMIC_RANGE, this.NoiseReductionParameter.ToString("F1"));
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");
-            mfccConfig.Save(writer);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
+            this.mfccConfig.Save(writer);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, this.DeltaT);
             writer.WriteLine("#");
             writer.Flush();
 
@@ -282,7 +290,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public double GetFrameOffset()
         {
-            double frameDuration = GetFrameDuration(this.SampleRate); // Duration of full frame or window in seconds
+            double frameDuration = this.GetFrameDuration(this.SampleRate); // Duration of full frame or window in seconds
             double frameOffset = frameDuration * (1 - this.WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
             return frameOffset; 
         }

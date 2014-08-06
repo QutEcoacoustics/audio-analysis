@@ -33,8 +33,6 @@ namespace AnalysisBase
     [Serializable]
     public class AnalysisSettings : ICloneable
     {
-        public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
-
         [NonSerialized]
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -53,7 +51,7 @@ namespace AnalysisBase
         public AnalysisSettings()
         {
             this.ConfigDict = new Dictionary<string, string>();
-            this.SegmentTargetSampleRate = AppConfigHelper.GetInt(DefaultTargetSampleRateKey);
+            this.SegmentTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate;
         }
 
         /// <summary>

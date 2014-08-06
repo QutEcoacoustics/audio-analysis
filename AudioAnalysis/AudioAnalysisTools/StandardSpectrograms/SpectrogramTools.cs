@@ -1,23 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SpectrogramTools.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the SpectrogramTools type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-using AnalysisBase;
-
-using TowseyLibrary;
-using Acoustics.Tools.Audio;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-using Acoustics.Shared;
-
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.StandardSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+
+    using Acoustics.Shared;
+
+    using AnalysisBase;
+
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
+
+    using TowseyLibrary;
+
     public static class SpectrogramTools
     {
 
@@ -270,40 +276,43 @@ namespace AudioAnalysisTools
 
 
 
-        public static int MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
+        public static void MakeSonogramWithSox(FileInfo fiAudio, Dictionary<string, string> configDict, FileInfo output)
         {
-            string soxPath = AppConfigHelper.GetString("AudioUtilitySoxExe");  // default value
-
-            var fiSOX = new FileInfo(soxPath);
-            if (!fiSOX.Exists)
+            var soxPath = new FileInfo(AppConfigHelper.SoxExe);
+            if (!soxPath.Exists)
             {
-                LoggedConsole.WriteLine("SOX ERROR: Path does not exist: <{0}>", fiSOX.FullName);
-                return 1;
+                LoggedConsole.WriteLine("SOX ERROR: Path does not exist: <{0}>", soxPath.FullName);
+                throw new FileNotFoundException("SOX ERROR: Path for executable does not exist.", soxPath.FullName);
             }
-            
-            string soxCmd = "" + soxPath + ""; //must quote the path because has a space in it.
 
-            string title = "";
+            // must quote the path because has a space in it.
+            string soxCmd = "\"" + AppConfigHelper.SoxExe + "\"";
+
+            string title = string.Empty;
             if (configDict.ContainsKey(AnalysisKeys.SonogramTitle))
             {
                 title = " -t " + configDict[AnalysisKeys.SonogramTitle];
             }
-            string comment = "";
+
+            string comment = string.Empty;
             if (configDict.ContainsKey(AnalysisKeys.SonogramComment))
             {
                 comment = " -c " + configDict[AnalysisKeys.SonogramComment];
             }
+
             string axes = "-r";
-            if (configDict.ContainsKey(AnalysisKeys.AddAxes) && (! ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict)))
+            if (configDict.ContainsKey(AnalysisKeys.AddAxes) && (!ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict)))
             {
-                axes = "";
+                axes = string.Empty;
             }
-            string coloured = " -m "; //default
+
+            string coloured = " -m "; // default
             if (configDict.ContainsKey(AnalysisKeys.SonogramColored) && (ConfigDictionary.GetBoolean(AnalysisKeys.SonogramColored, configDict)))
             {
-                coloured = "";
+                coloured = string.Empty;
             }
-            string quantisation = " -q 64 "; //default
+
+            string quantisation = " -q 64 "; // default
             if (configDict.ContainsKey(AnalysisKeys.SonogramQuantisation))
             {
                 quantisation = " -q " + ConfigDictionary.GetInt(AnalysisKeys.SonogramQuantisation, configDict);
@@ -315,24 +324,22 @@ namespace AudioAnalysisTools
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -o \"{1}\"";     //reverse image greyscale with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l -o \"{1}\"";     //colour with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m -q 64 -r -l -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
-              string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -m {1} -q 64 -l -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
+            const string SoxCommandLineArguments = " -V \"{0}\" -n spectrogram -m {1} -q 64 -l -o \"{6}\""; //64 grey scale, with time, freq and intensity scales
             //string soxCommandLineArguments = " -V \"{0}\" -n spectrogram -l {1} {2} {3} {4} {5} -o \"{6}\"";    //64 grey scale, with time, freq and intensity scales
 
-            //FOR COMMAND LINE OPTIONS SEE:  http://sox.sourceforge.net/sox.html
-            //−a     Suppress display of axis lines. This is sometimes useful in helping to discern artefacts at the spectrogram edges.
-            //-l     Print firendly monochrome spectrogram.
-            //−m     Creates a monochrome spectrogram (the default is colour).
-            //-q     Number of intensity quanitisation levels/colors - try -q 64
-            //−r     Raw spectrogram: suppress the display of axes and legends.
-            //−t text  Set the image title - text to display above the spectrogram.
-            //−c text  Set (or clear) the image comment - text to display below and to the left of the spectrogram.
-            //trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
-
-            var args = string.Format(soxCommandLineArguments, fiAudio.FullName, title, comment, axes, coloured, quantisation, output.FullName);
+            // FOR COMMAND LINE OPTIONS SEE:  http://sox.sourceforge.net/sox.html
+            // −a     Suppress display of axis lines. This is sometimes useful in helping to discern artefacts at the spectrogram edges.
+            // -l     Print firendly monochrome spectrogram.
+            // −m     Creates a monochrome spectrogram (the default is colour).
+            // -q     Number of intensity quanitisation levels/colors - try -q 64
+            // −r     Raw spectrogram: suppress the display of axes and legends.
+            // −t text  Set the image title - text to display above the spectrogram.
+            // −c text  Set (or clear) the image comment - text to display below and to the left of the spectrogram.
+            // trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
+            var args = string.Format(SoxCommandLineArguments, fiAudio.FullName, title, comment, axes, coloured, quantisation, output.FullName);
             var process = new TowseyLibrary.ProcessRunner(soxCmd);
             process.Run(args, output.DirectoryName);
-            return 0;
-        } //MakeSonogramWithSox
+        }
 
 
 
@@ -607,5 +614,5 @@ namespace AudioAnalysisTools
 
 
 
-    } //class
+    }
 }

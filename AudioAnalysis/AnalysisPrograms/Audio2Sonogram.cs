@@ -1,44 +1,53 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics.Contracts;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using Acoustics.Shared;
-using AnalysisBase;
-using AnalysisRunner;
-using AudioAnalysisTools;
-using AudioAnalysisTools.WavTools;
-using TowseyLibrary;
-using AudioAnalysisTools.DSP;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Audio2Sonogram.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the Audio2Sonogram type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
     using System.Diagnostics;
+    using System.Diagnostics.Contracts;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
 
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
+
+    using AnalysisBase;
 
     using AnalysisPrograms.Production;
 
-    using PowerArgs;
+    using AnalysisRunner;
+
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.WavTools;
+
+    using PowerArgs;
+
+    using TowseyLibrary;
 
     public class Audio2Sonogram
     {
-        //use the following paths for the command line for the <audio2sonogram> task. 
+        // use the following paths for the command line for the <audio2sonogram> task. 
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
-
-
         [CustomDetailedDescription]
         [CustomDescription]
         public class Arguments : SourceAndConfigArguments
@@ -102,82 +111,66 @@ using AudioAnalysisTools.LongDurationSpectrograms;
 
             if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
             {
-                throw new InvalidStartOrEndException("If StartOffset or EndOffset is specifified, then both must be specified");
+                throw new InvalidStartOrEndException("If StartOffset or EndOffset is specified, then both must be specified");
             }
+
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
             // set default offsets - only use defaults if not provided in argments list
-            TimeSpan startOffsetMins = TimeSpan.Zero;
-            TimeSpan endOffsetMins   = TimeSpan.Zero;
+            TimeSpan? startOffset = null;
+            TimeSpan? endOffset = null;
             if (offsetsProvided)
             {
-                startOffsetMins = TimeSpan.FromMinutes(arguments.StartOffset.Value);
-                endOffsetMins   = TimeSpan.FromMinutes(arguments.EndOffset.Value);
+                startOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
+                endOffset   = TimeSpan.FromMinutes(arguments.EndOffset.Value);
             }
 
             bool verbose = arguments.Verbose;
  
-            if (verbose)
-            {
-                string title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
-                string date  = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine(title);
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
-                LoggedConsole.WriteLine("# Output image file: " + arguments.Output);
-            }
-            
-            
 
-            //1. set up the necessary files
-            DirectoryInfo diSource =  arguments.Source.Directory;
-            FileInfo fiSourceRecording = arguments.Source;
-            FileInfo fiConfig = arguments.Config;
-            FileInfo fiImage  = arguments.Output;
+            const string Title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
+            string date  = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine(Title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
 
-            //2. get the config dictionary
-            dynamic configuration = Yaml.Deserialise(fiConfig);
 
-            //below three lines are examples of retrieving info from dynamic config
-            //string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
-            //bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
-            //scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
+            // 1. set up the necessary files
+            FileInfo sourceRecording = arguments.Source;
+            FileInfo configFile = arguments.Config;
+            FileInfo outputImage  = arguments.Output;
 
-            //3 transfer conogram parameters to a dictionary to be passed around
-            var configDict = new Dictionary<string, string>();
-            configDict["FrameLength"] = configuration[AnalysisKeys.FrameLength] ?? 512;
-            // #Frame Overlap as fraction: default=0.0 
-            configDict["FrameOverlap"] = configuration[AnalysisKeys.FrameOverlap] ?? 0.0;
-            // #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
-            configDict["ResampleRate"] = configuration[AnalysisKeys.ResampleRate] ?? 17640;
-            // #MinHz: 500
-            // #MaxHz: 3500
+            // 2. get the config dictionary
+            dynamic configuration = Yaml.Deserialise(configFile);
 
-            
+            // below three lines are examples of retrieving info from dynamic config
+            // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
+            // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
+            // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
+
+            // Resample rate must be 2 X the desired Nyquist. Default is that of recording.
+            var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
+
+
+            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             // #NOISE REDUCTION PARAMETERS
-            configDict["DoNoiseReduction"] = "false";            
-            configDict["NoiseReductionType"] = "NONE";
-            configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
-            //configDict[AnalysisKeys.NoiseDoReduction] = "true";
-            //configDict[AnalysisKeys.NoiseReductionType] = "STANDARD";
-            //configDict["BgNoiseThreshold"] = configuration["BgNoiseThreshold"] ?? 3.0;
-
             //string noisereduce = configDict[ConfigKeys.Mfcc.Key_NoiseReductionType];
             configDict[AnalysisKeys.NoiseDoReduction]   = "false";
             configDict[AnalysisKeys.NoiseReductionType] = "NONE";
 
-            configDict["ADD_AXES"] = configuration["ADD_AXES"] ?? true;
-            configDict["AddSegmentationTrack"] = configuration["AddSegmentationTrack"] ?? true;
+            configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
+            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
 
             // # REDUCTION FACTORS for freq and time dimensions
             // #TimeReductionFactor: 1          
             // #FreqReductionFactor: 1
 
-            configDict["MakeSoxSonogram"] = (string)configuration["MakeSoxSonogram"] ?? "false";
-            configDict["SonogramTitle"]   = (string)configuration["SonogramTitle"] ?? "Sonogram";
-            configDict["SonogramComment"] = (string)configuration["SonogramComment"] ?? "Sonogram produced using SOX";
-            configDict["SonogramColored"] = (string)configuration["SonogramColored"] ?? "false";
-            configDict["SonogramQuantisation"] = (string)configuration["SonogramQuantisation"] ?? "128";
+
+            bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
+            configDict[AnalysisKeys.SonogramTitle]   = (string)configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
+            configDict[AnalysisKeys.SonogramComment] = (string)configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
+            configDict[AnalysisKeys.SonogramColored] = (string)configuration[AnalysisKeys.SonogramColored] ?? "false";
+            configDict[AnalysisKeys.SonogramQuantisation] = (string)configuration[AnalysisKeys.SonogramQuantisation] ?? "128";
 
             configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
             configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
@@ -195,22 +188,20 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 {
                     LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
                 }
-
             }
 
-            //3: GET RECORDING
-            FileInfo fiOutputSegment = fiSourceRecording;
-            if (!((startOffsetMins == TimeSpan.Zero) && (endOffsetMins == TimeSpan.Zero)))
+            // 3: GET RECORDING
+            FileInfo outputSegment = sourceRecording;
+            if (!((startOffset == null) || (endOffset == null)))
             {
-                TimeSpan buffer = new TimeSpan(0, 0, 0);
-                fiOutputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
-                AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, configDict, fiOutputSegment);
+                outputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
+                AudioRecording.ExtractSegment(sourceRecording, startOffset.Value, endOffset.Value, TimeSpan.Zero, resampleRate, outputSegment);
             }
 
-            //###### get sonogram image ##############################################################################################
-            if ((configDict.ContainsKey(AnalysisKeys.MakeSoxSonogram)) && (ConfigDictionary.GetBoolean(AnalysisKeys.MakeSoxSonogram, configDict)))
+            // ###### get sonogram image ##############################################################################################
+            if (makeSoxSonogram)
             {
-                SpectrogramTools.MakeSonogramWithSox(fiOutputSegment, configDict, fiImage);
+                SpectrogramTools.MakeSonogramWithSox(outputSegment, configDict, outputImage);
             }
             else
             {
@@ -218,8 +209,8 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 var list = new List<Image>();
 
                 // 1) draw amplitude spectrogram
-                AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
-                SonogramConfig sonoConfig = new SonogramConfig(configDict); //default values config
+                AudioRecording recordingSegment = new AudioRecording(outputSegment.FullName);
+                SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
 
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
                 var image = sonogram.GetImage(false, false);
@@ -229,12 +220,12 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 // initialise parameters for drawing gridlines on images
                 var minOffset = TimeSpan.Zero;
                 int nyquist = sonogram.NyquistFrequency;
-                var X_interval = TimeSpan.FromSeconds(10);
+                var xInterval = TimeSpan.FromSeconds(10);
                 TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(sonogram.Duration.Ticks / (double)image.Width));
-                int herzInterval = 1000;
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, nyquist, herzInterval);
+                const int HertzInterval = 1000;
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
-                //add title bar and time scale
+                // add title bar and time scale
                 string title = "AMPLITUDE SPECTROGRAM";
                 var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
                 Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
@@ -249,13 +240,16 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 // 2) now draw the standard decibel spectrogram
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImage(false, false);
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, nyquist, herzInterval);
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
-                //add title bar and time scale
+                // add title bar and time scale
                 title = "DECIBEL SPECTROGRAM";
                 titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-                Image segmentationImage = Image_Track.DrawSegmentationTrack(sonogram, 
-                                          EndpointDetectionConfiguration.K1Threshold, EndpointDetectionConfiguration.K2Threshold, image.Width);
+                Image segmentationImage = Image_Track.DrawSegmentationTrack(
+                    sonogram,
+                    EndpointDetectionConfiguration.K1Threshold,
+                    EndpointDetectionConfiguration.K2Threshold,
+                    image.Width);
 
                 list.Add(titleBar);
                 list.Add(timeBmp);
@@ -269,10 +263,10 @@ using AudioAnalysisTools.LongDurationSpectrograms;
 
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImage(false, false);
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, X_interval, xAxisPixelDuration, nyquist, herzInterval);
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
 
-                //add title bar and time scale
+                // add title bar and time scale
                 title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
                 titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
 
@@ -282,25 +276,21 @@ using AudioAnalysisTools.LongDurationSpectrograms;
                 list.Add(timeBmp);
 
                 // 4) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
-                //SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
-                //var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-                //var image3 = mti3.GetImage();
-                //image3.Save(fiImage.FullName + "3", ImageFormat.Png);
+                ////SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
+                ////var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+                ////var image3 = mti3.GetImage();
+                ////image3.Save(fiImage.FullName + "3", ImageFormat.Png);
 
 
                 Image compositeImage = ImageTools.CombineImagesVertically(list);
-                compositeImage.Save(fiImage.FullName, ImageFormat.Png);
-
-                    
+                compositeImage.Save(outputImage.FullName, ImageFormat.Png);
             }
-            //###### get sonogram image ##############################################################################################
 
-            if (verbose)
-            {
-                LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
-            }
+
+            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
+
         }
-    } //class Audio2Sonogram
+    }
 }
 
 

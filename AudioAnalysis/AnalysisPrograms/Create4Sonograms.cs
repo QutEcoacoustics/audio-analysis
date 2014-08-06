@@ -85,18 +85,12 @@ using System.Drawing;
             arguments.Output.CreateParentDirectories();
 
 
-
-            bool verbose = arguments.Verbose;
-
-            if (verbose)
-            {
-                string title = "# CREATE FOUR (4) SONOGRAMS FROM AUDIO RECORDING";
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine(title);
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
-                LoggedConsole.WriteLine("# Output image file: " + arguments.Output);
-            }
+            string title = "# CREATE FOUR (4) SONOGRAMS FROM AUDIO RECORDING";
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine(title);
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
+            LoggedConsole.WriteLine("# Output image file: " + arguments.Output);
 
 
             //1. set up the necessary files
@@ -131,7 +125,7 @@ using System.Drawing;
             configDict["ADD_AXES"] = configuration["ADD_AXES"] ?? true;
             configDict["AddSegmentationTrack"] = configuration["AddSegmentationTrack"] ?? true;
 
-            //3: GET RECORDING
+            // 3: GET RECORDING
             TimeSpan startOffsetMins = TimeSpan.Zero;
             TimeSpan endOffsetMins = TimeSpan.Zero;
 
@@ -141,7 +135,8 @@ using System.Drawing;
                 TimeSpan buffer = new TimeSpan(0, 0, 0);
                 fiOutputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
                 //This method extracts segment and saves to disk at the location fiOutputSegment.
-                AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, configDict, fiOutputSegment);
+                var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
+                AudioRecording.ExtractSegment(fiSourceRecording, startOffsetMins, endOffsetMins, buffer, resampleRate, fiOutputSegment);
             }
 
             var recording = new AudioRecording(fiOutputSegment.FullName);

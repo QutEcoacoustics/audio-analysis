@@ -1,12 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AnalysisPrograms.AnalyseLongRecordings;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Actions.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the MainEntryArguments type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Production
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
+    using System.Text;
+
+    using AnalysisPrograms.AnalyseLongRecordings;
+
+    using AudioAnalysisTools;
 
     using Dong.Felt;
 
@@ -15,7 +26,6 @@ namespace AnalysisPrograms.Production
     using PowerArgs;
 
     using SammonProjection;
-    using AudioAnalysisTools;
 
     [ArgAllowNullActions]
     public partial class MainEntryArguments

@@ -31,6 +31,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using AnalysisBase.ResultBases;
 
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using log4net;
 
@@ -1214,7 +1215,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
             string fileStem = configuration.FileName;
-            DirectoryInfo outputDirectory = configuration.OutputDirectory;
+            DirectoryInfo outputDirectory = configuration.OutputDirectoryInfo;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string colorMap1 = configuration.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
@@ -1238,7 +1239,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // reads all known files spectral indices
                 Logger.Info("Reading spectra files from disk");
-                cs1.ReadCSVFiles(configuration.InputDirectory, fileStem);
+                cs1.ReadCSVFiles(configuration.InputDirectoryInfo, fileStem);
             }
             else
             {
