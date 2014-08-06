@@ -114,3 +114,5 @@ let ``matrix parsing test`` () =
     let actual = parseStringAsMatrix pattern
 
     Assert.Equal(expected, actual)
+
+let parse

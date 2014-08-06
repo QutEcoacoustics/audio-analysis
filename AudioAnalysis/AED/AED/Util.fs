@@ -80,8 +80,10 @@ type Pixel = float<px>
     
 let inline s x y = x - y
 //type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
+[<StructuredFormatDisplayAttribute("Rectangle: L:{Left}, R:{Right}, T:{Top}, B:{Bottom}")>]
 type Rectangle<'a, 'b> = 
     {Left:'a; Top:'b; Right:'a; Bottom:'b; }
+    override m.ToString() = sprintf "Rectangle: L:{%A}, R:{%A}, T:{%A}, B:{%A}" m.Left m.Right m.Top m.Bottom
         
 
 type Rectangle2<'a> = Rectangle<'a, 'a>
