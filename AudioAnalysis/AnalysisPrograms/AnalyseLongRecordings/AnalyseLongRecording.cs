@@ -236,16 +236,28 @@ Output  to  directory: {1}
             var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectralIndexResults);
 
             // 12. Convert summary indices to tracks (black and white rows) image
-            var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
+            if (mergedIndicesResults == null)
+            {
+                Log.Info("No summary indices produced");
+            }
+            else
+            {
+                var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
 
-            string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-            string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(IndexProperties.GetIndexProperties(indicesPropertiesConfig), indicesFile, imageTitle);
-            var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
-            tracksImage.Save(imagePath);
+                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                Bitmap tracksImage =
+                    DrawSummaryIndices.DrawImageOfSummaryIndices(
+                        IndexProperties.GetIndexProperties(indicesPropertiesConfig),
+                        indicesFile,
+                        imageTitle);
+                var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
+                tracksImage.Save(imagePath);
+            }
 
             // 13. wrap up, write stats
-            LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
+            LoggedConsole.WriteLine(
+                "INDICES CSV file(s) = " + (indicesFile == null ? "<<No indices result, no file!>>" : indicesFile.Name));
             LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
                                     numberOfRowsOfIndices);
             LoggedConsole.WriteLine(string.Empty);

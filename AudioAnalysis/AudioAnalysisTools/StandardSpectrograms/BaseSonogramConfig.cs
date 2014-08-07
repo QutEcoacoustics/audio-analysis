@@ -18,8 +18,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using TowseyLibrary;
 
     [Serializable]
-	public class SonogramConfig
-	{
+    public class SonogramConfig
+    {
         public const int DEFAULT_WINDOW_SIZE = 512;
         public const double DEFAULT_WINDOW_OVERLAP = 0.5;
 
@@ -77,8 +77,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         #endregion
 
 
-		public static SonogramConfig Load(string configFile)
-		{
+        public static SonogramConfig Load(string configFile)
+        {
             Log.WriteLine("config file =" + configFile);
             if (!File.Exists(configFile))
             {
@@ -97,7 +97,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
                 return new SonogramConfig(config);
             }
-		}
+        }
 
         /// <summary>
         /// Default Constructor
@@ -136,10 +136,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Initialises sonogram config with key-value-pairs in the passed ConfigDictionary
         /// </summary>
         /// <param name="config"></param>
-		public SonogramConfig(ConfigDictionary config)
-		{
+        public SonogramConfig(ConfigDictionary config)
+        {
             this.Initialize(config);
-		}
+        }
 
         /// <summary>
         /// CONSTRUCTOR
@@ -248,15 +248,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
         }
 
-		public virtual void Save(TextWriter writer)
-		{
+        public virtual void Save(TextWriter writer)
+        {
             writer.WriteLine("#**************** INFO ABOUT FRAMES");
             writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowSize, this.WindowSize);
             writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowOverlap, this.WindowOverlap);
             EndpointDetectionConfiguration.Save(writer);
             writer.WriteLine("#**************** INFO ABOUT SONOGRAM");
             writer.WriteConfigValue("MIN_FREQ", this.MinFreqBand);
-			writer.WriteConfigValue("MAX_FREQ", this.MaxFreqBand);
+            writer.WriteConfigValue("MAX_FREQ", this.MaxFreqBand);
             writer.WriteConfigValue("MID_FREQ", this.MidFreqBand); //=3500
             writer.WriteConfigValue(AnalysisKeys.NoiseReductionType, this.NoiseReductionType.ToString());
             if (this.NoiseReductionParameter > 1.0)
@@ -269,7 +269,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             writer.WriteLine("#");
             writer.Flush();
 
-		}
+        }
 
         /// <summary>
         /// returns duration of a full frame or window in seconds
@@ -277,10 +277,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         /// <param name="sampleRate"></param>
         /// <returns>seconds</returns>
-		public double GetFrameDuration(int sampleRate)
-		{
-			return this.WindowSize / (double)sampleRate; 
-		}
+        public double GetFrameDuration(int sampleRate)
+        {
+            return this.WindowSize / (double)sampleRate; 
+        }
 
         /// <summary>
         /// returns the duration of that part of frame not overlapped with follwoing frame.  
