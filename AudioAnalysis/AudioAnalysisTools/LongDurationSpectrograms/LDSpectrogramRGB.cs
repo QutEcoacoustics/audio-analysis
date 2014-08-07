@@ -786,7 +786,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public double[,] GetLMHSummaryIndexArrays(string key)
+        public double[,] GetLoMidHiSummaryIndexArrays(string key)
         {
             // return matrices have spectrogram orientation
             double[,] m = this.GetNormalisedSpectrogramMatrix(key);
@@ -838,9 +838,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // get the matrices for each of the three indices. 
             // each matrix has three rows one for each of low, mid and high band averages
             // each matrix has one column per minute.
-            double[,] indices1 = GetLMHSummaryIndexArrays(keys[0]);
-            double[,] indices2 = GetLMHSummaryIndexArrays(keys[1]);
-            double[,] indices3 = GetLMHSummaryIndexArrays(keys[2]);
+            double[,] indices1 = GetLoMidHiSummaryIndexArrays(keys[0]);
+            double[,] indices2 = GetLoMidHiSummaryIndexArrays(keys[1]);
+            double[,] indices3 = GetLoMidHiSummaryIndexArrays(keys[2]);
 
             int width = indices1.GetLength(1);
             int height = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
@@ -862,6 +862,54 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 pen = new Pen(Color.FromArgb(red, grn, blu));
                 g.DrawLine(pen, i, 0, i, height);
+            }
+            return image;
+        }
+
+        /// <summary>
+        /// ############################################################################################## TO DO TODO TODO TODO TODO TODO
+        /// ############################################################################################## TO DO TODO TODO TODO TODO TODO
+        /// ############################################################################################## TO DO TODO TODO TODO TODO TODO
+        /// ############################################################################################## TO DO TODO TODO TODO TODO TODO
+        /// ############################################################################################## TO DO TODO TODO TODO TODO TODO
+        /// ############################################################################################## TO DO TODO TODO TODO TODO TODO
+        /// </summary>
+        /// <param name="colorMap"></param>
+        /// <returns></returns>
+        public Image GetSpectralIndexRibbonWeighted(string colorMap)
+        {
+            string colourKeys = colorMap;
+            string[] keys = colourKeys.Split('-');
+            // get the matrices for each of the three indices. 
+            // each matrix has three rows one for each of low, mid and high band averages
+            // each matrix has one column per minute.
+            /// ###########################################  THE BELOW LINES MUST BE CHANGED ############### TO DO TODO TODO TODO TODO TODO
+            /// ###########################################  THE BELOW LINES MUST BE CHANGED ############### TO DO TODO TODO TODO TODO TODO
+            double[,] indices1 = GetLoMidHiSummaryIndexArrays(keys[0]);
+            double[,] indices2 = GetLoMidHiSummaryIndexArrays(keys[1]);
+            double[,] indices3 = GetLoMidHiSummaryIndexArrays(keys[2]);
+
+            int width = indices1.GetLength(1);
+            int height = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
+            var image = new Bitmap(width, height);
+            //Graphics g = Graphics.FromImage(image);
+
+            // get the low, mid and high band averages of indices in each minute.
+            double index = 0;
+            for (int i = 0; i < width; i++)
+            {
+                for (int h = 0; h < height; h++)
+                {
+                    index = indices1[0, h + 200];
+                    /// ###########################################  THIS IS YET OT BE FIXED ############### TO DO TODO TODO TODO TODO TODO
+                    int red = (int)(255 * index);
+                    index = indices1[1, h + 200];
+                    int grn = (int)(255 * index);
+                    index = indices1[2, h + 200];
+                    int blu = (int)(255 * index);
+                    image.SetPixel(i, h, Color.FromArgb(red, grn, blu));
+                }
+                
             }
             return image;
         }
@@ -1280,6 +1328,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
             //Image ribbon2 = cs1.GetSummaryIndexRibbon(colorMap);
             Image ribbon2 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
+            Image ribbon3 = cs1.GetSpectralIndexRibbonWeighted(colorMap);
+
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
 
             var imageList = new List<Image>();
@@ -1287,6 +1337,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             imageList.Add(ribbon1);
             imageList.Add(image2);
             imageList.Add(ribbon2);
+            imageList.Add(ribbon3);
             Image image3 = ImageTools.CombineImagesVertically(imageList);
             image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
         }
