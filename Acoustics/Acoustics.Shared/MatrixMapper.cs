@@ -142,13 +142,13 @@ namespace Acoustics.Shared
             this.matrix = matrix;
             this.dimensionality = dimensionality;
 
-            if (dimensionality != TwoDimensionalArray.ColumnMajor || dimensionality != TwoDimensionalArray.RowMajor)
+            if (dimensionality != TwoDimensionalArray.ColumnMajor && dimensionality != TwoDimensionalArray.RowMajor)
             {
                 throw new NotImplementedException("Only ColumnMajor and RowMajor dimensionalities have been implemented");
             }
 
             this.Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
-            this.Columns = TwoDimensionalArray.ColumnMajor == dimensionality
+            this.Columns = TwoDimensionalArray.RowMajor == dimensionality
                                ? matrix.ColumnLength()
                                : matrix.RowLength();
         }
