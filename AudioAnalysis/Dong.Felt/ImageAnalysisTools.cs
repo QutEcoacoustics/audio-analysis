@@ -13,6 +13,7 @@ namespace Dong.Felt
     using AudioAnalysisTools.StandardSpectrograms;
     using System.Drawing.Imaging;
     using AForge.Math;
+    using AudioAnalysisTools.DSP;
 
 
     class ImageAnalysisTools
@@ -120,31 +121,50 @@ namespace Dong.Felt
 
         #region Public Methods
 
+        public static double RGBtoIntensity(Color color)
+        {
+            var result = 0.0;
+            return result;
+        }
+
         /// Calculate the discrete Fourier Transform for an image 
         public static double[,] DiscreteFourierTransform(double[,] imageData)
-        {
-            var matrixLength = imageData.GetLength(0);
-            var result = new double[matrixLength, matrixLength];
-            for (var i = 0; i < matrixLength; i++)
+        {          
+            var matrixRowLength = imageData.GetLength(0);
+            var matrixColLength = imageData.GetLength(1);
+           
+            var winfunc = FFT.Hamming;
+            var dft = new FFT(matrixColLength, winfunc, true);
+            // do dft for all the rows of imageData        
+            for (var l = 0; l < matrixRowLength; l++)
             {
-                for (var j = 0; j < matrixLength; j++)
+                var rowData = new double[matrixColLength];
+                for (var m = 0; m < rowData.Length; m++)
                 {
-                    //calculate the fft 
-                    var sum = new Complex(0.0, 0.0);
-                    for (var x = 0; x < matrixLength; x++)
-                    {
-                        for (var y = 0; y < matrixLength; y++)
-                        {
-                            var p = -Math.Sqrt(-1.0);
-                            var ePower = - 2 * p * Math.PI * (i * x / matrixLength + j * y / matrixLength);
-                            sum += imageData[x, y] * Math.Exp(ePower);
-                        }
-                    }
-                    var amplitude = Math.Sqrt(Math.Pow(sum.Re, 2.0) + Math.Pow(sum.Im, 2.0));
-                    result[i, j] = amplitude;
+                    rowData[m] = imageData[l, m];
+                }
+                var rowDataAfterDFT = dft.InvokeDotNetFFT(rowData);
+                for (var n = 0; n < rowDataAfterDFT.Length; n++)
+                {
+                    imageData[l, n] = rowDataAfterDFT[n];
                 }
             }
-            return result;
+            // do dft for all columns of previous result
+            for (var i = 0; i < matrixColLength; i++)
+            {
+                var colData = new double[matrixRowLength];
+                for (var n = 0; n < colData.Length; n++)
+                {
+                    colData[n] = imageData[n, i];
+                }
+                var colDataAfterDFT = dft.InvokeDotNetFFT(colData);
+                for (var p = 0; p < colDataAfterDFT.Length; p++)
+                {
+                    imageData[i, p] = colDataAfterDFT[p];
+                }
+            }
+            
+            return imageData;
         }
 
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
@@ -185,19 +205,19 @@ namespace Dong.Felt
         public static Image DrawQueryBoundary(Image image)
         {
             var bmp = new Bitmap(image);
-            var rect = new Rectangle(0,0,5,5);
+            var rect = new Rectangle(0, 0, 5, 5);
             Graphics g = Graphics.FromImage(bmp);
             var pen = new Pen(Color.Cyan);
             g.DrawRectangle(pen, rect);
             g.Flush();
-            return bmp; 
+            return bmp;
         }
 
         public static Image DrawVerticalLine(Image image)
         {
             var bmp = new Bitmap(image);
             Graphics g = Graphics.FromImage(bmp);
-            var brush = new SolidBrush(Color.Black);           
+            var brush = new SolidBrush(Color.Black);
             var rect = new Rectangle(0, 0, 3, image.Height);
             g.FillRectangle(brush, rect);
             g.Flush();
@@ -214,11 +234,12 @@ namespace Dong.Felt
             RectangleF rectf1 = new RectangleF(10, height - 39, 260, 70);
             RectangleF rectf2 = new RectangleF(10, height - 15, 70, 30);
             Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7,FontStyle.Bold), Brushes.Black, rectf2);
+            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf2);
             g.DrawString(audioFileName, new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf1);
             g.Flush();
             return bmp;
         }
+
         public static Bitmap DrawFrequencyIndicator(Bitmap bitmap, List<double> frequencyBands, double herzScale, double nyquistFrequency, int frameOffset)
         {
             var i = 0;
@@ -264,7 +285,7 @@ namespace Dong.Felt
             {
                 int width = array[0].Width;   // assume all images have the same width
                 height = array[0].Height; // assume all images have the same height
-               
+
                 for (int i = 0; i < array.Length; i++)
                 {
                     compositeWidth += array[i].Width;
