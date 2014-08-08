@@ -99,7 +99,14 @@
                     //OutputResults.MatchingResultsSummary(inputDirectory, new FileInfo(outputFilePath));
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                     ///extract POI based on structure tensor
-                    POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength);                   
+                    //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength); 
+                    //var imageData = GetImageData(inputDirectory.FullName);
+                    var imageData = new double[4, 4] {{0,    0,    0,  0},
+                                                      {0,  255,  255, 0},
+                                                      {0,  255,  255, 0},
+                                                      {0,    0,    0, 0}};
+                    var dataMatrix = ImageAnalysisTools.DiscreteFourierTransform(imageData);
+                    
                 }
                 else
                 {
@@ -341,7 +348,23 @@
             //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
             //image.Save(imagePath, ImageFormat.Png);
             //}
-        } // Dev()      
+        } // Dev()  
+        
+        public static double[,] GetImageData(string imageFilePath)
+        {
+            Bitmap image = (Bitmap)Image.FromFile(imageFilePath, true);          
+            var rowLength = image.Width;
+            var colLength = image.Height;
+            var result = new double[rowLength, colLength];
+            for (int i = 0; i < rowLength; i++)
+            {
+                for (int j = 0; j < colLength; j++)
+                {
+                    result[i, j] = 0.299 * image.GetPixel(i, j).R + 0.587 * image.GetPixel(i, j).G + 0.114 * image.GetPixel(i, j).B;
+                }
+            }
+            return result;
+        }
 
         public static void ParameterMixture(dynamic configuration, string featurePropertySet, DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, DirectoryInfo tempDirectory)
         {

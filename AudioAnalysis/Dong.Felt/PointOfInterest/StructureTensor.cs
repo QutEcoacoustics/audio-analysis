@@ -13,8 +13,119 @@
 
     class StructureTensorAnalysis
     {
+
         // It has a kernel which is 3 * 3, and all values is equal to 1. 
         public static GaussianBlur filter = new GaussianBlur(1.0, 4);
+
+        // feature class - 12-bit value for each pointOfInterest
+        public static double[] DFTfeatures(double[,] dftMatrix)
+        {
+            var result = new double[12];
+            // 16 colomns are divided into 4 columns, so that each column will get a concatenated 64d vector.
+            var matrixLength = dftMatrix.GetLength(0);
+            var vector1 = new double[4 * matrixLength];
+            var vector2 = new double[4 * matrixLength];
+            var vector3 = new double[4 * matrixLength];
+            var vector4 = new double[4 * matrixLength];
+            // i = colIndex
+            for (int i = 0; i < matrixLength; i++)
+            {
+                // j = rowIndex
+                for (int j = 0; j < matrixLength; j++)
+                {                                   
+                    if (i < 4)
+                    {
+                        vector1[j + i * 16] = dftMatrix[j, i];                   
+                    }
+                    if (i >= 4 && i < 8)
+                    {                       
+                        vector2[j + (i - 4) * 16] = dftMatrix[j, i];                     
+                    }
+                    if (i >= 8 && i < 12)
+                    {                       
+                        vector3[j + (i - 8) * 16] = dftMatrix[j, i];                      
+                    }
+                    if (i >= 12 && i < 16)
+                    {                      
+                        vector4[j + (i - 12) * 16] = dftMatrix[j, i];                        
+                    }
+                }
+            }
+            var scalorPropertyBe2Vec1 = 0.0;
+            var scalorPropertyBe2Vec2 = 0.0;
+            var scalorPropertyBe2Vec3 = 0.0;
+            var scalorPropertyBe2Vec4 = 0.0;
+            var scalorPropertyBe2Vec5 = 0.0;
+            var scalorPropertyBe2Vec6 = 0.0;
+            for (var k = 0; k < matrixLength; k++)
+            {
+                scalorPropertyBe2Vec1 += vector1[k] * vector2[k];
+                scalorPropertyBe2Vec2 += vector1[k] * vector3[k];
+                scalorPropertyBe2Vec3 += vector1[k] * vector4[k];
+                scalorPropertyBe2Vec4 += vector2[k] * vector3[k];
+                scalorPropertyBe2Vec5 += vector2[k] * vector4[k];
+                scalorPropertyBe2Vec6 += vector3[k] * vector4[k];
+            }
+            result[0] = scalorPropertyBe2Vec1;
+            result[1] = scalorPropertyBe2Vec2;
+            result[2] = scalorPropertyBe2Vec3;
+            result[3] = scalorPropertyBe2Vec4;
+            result[4] = scalorPropertyBe2Vec5;
+            result[5] = scalorPropertyBe2Vec6;
+            var vector5 = new double[4 * matrixLength];
+            var vector6 = new double[4 * matrixLength];
+            var vector7 = new double[4 * matrixLength];
+            var vector8 = new double[4 * matrixLength];
+                // 16 rows are processed like obove
+                // i = rowIndex
+                for (int i = 0; i < matrixLength; i++)
+                {
+                    // j = colIndex
+                    for (int j = 0; j < matrixLength; j++)
+                    {
+                        
+                        if (i < 4)
+                        {
+                            vector5[j + i * 16] = dftMatrix[i, j];
+                        }
+                        if (i >= 4 && i < 8)
+                        {
+                            vector6[j + (i - 4) * 16] = dftMatrix[i, j];
+                        }
+                        if (i >= 8 && i < 12)
+                        {
+                            vector7[j + (i - 8) * 16] = dftMatrix[i, j];
+                        }
+
+                        if (i >= 12 && i < 16)
+                        {
+                            vector8[j + (i - 12) * 16] = dftMatrix[i, j];
+                        }
+                    }
+                }
+                var scalorPropertyBe2Vec7 = 0.0;
+                var scalorPropertyBe2Vec8 = 0.0;
+                var scalorPropertyBe2Vec9 = 0.0;
+                var scalorPropertyBe2Vec10 = 0.0;
+                var scalorPropertyBe2Vec11 = 0.0;
+                var scalorPropertyBe2Vec12 = 0.0;
+                for (var k = 0; k < matrixLength; k++)
+                {
+                    scalorPropertyBe2Vec7 += vector5[k] * vector6[k];
+                    scalorPropertyBe2Vec8 += vector5[k] * vector7[k];
+                    scalorPropertyBe2Vec9 += vector5[k] * vector8[k];
+                    scalorPropertyBe2Vec10 += vector6[k] * vector7[k];
+                    scalorPropertyBe2Vec11 += vector6[k] * vector8[k];
+                    scalorPropertyBe2Vec12 += vector7[k] * vector8[k];
+                }
+                result[6] = scalorPropertyBe2Vec7;
+                result[7] = scalorPropertyBe2Vec8;
+                result[8] = scalorPropertyBe2Vec9;
+                result[9] = scalorPropertyBe2Vec10;
+                result[10] = scalorPropertyBe2Vec11;
+                result[11] = scalorPropertyBe2Vec12;
+            return result;
+        }
 
         // Step 1: calculate the structure tensor for each pixel in the spectrogram. It is calculated based on one neighbouring pixel. 
         public static List<Tuple<PointOfInterest, double[,]>> StructureTensorOnePixel(double[,] spectroMatrix)
@@ -176,7 +287,7 @@
         }
 
         // Step 5. Extract PointOfIntest
-        public static List<PointOfInterest> ExtractPOI(List<Tuple<PointOfInterest, double>> attentionList, 
+        public static List<PointOfInterest> ExtractPOI(List<Tuple<PointOfInterest, double>> attentionList,
             SpectrogramStandard spectrogram,
             double overlap, int maximumRowIndex, int maximumColIndex)
         {
@@ -188,7 +299,7 @@
             var spectroSegment = SpectrogramDivision(attentionList);
             for (int i = 0; i < countOfSegments; i++)
             {
-                var segment = spectroSegment[i];               
+                var segment = spectroSegment[i];
                 var threshold = SetThreshold(segment);
                 foreach (var s in segment)
                 {
@@ -1059,66 +1170,67 @@
         /// <returns>
         /// return a list of points of interest 
         /// </returns>
-        //public static List<PointOfInterest> HitStructureTensor(double[,] matrix)
-        //{
-        //    var result = new List<PointOfInterest>();
+        public static List<PointOfInterest> HitStructureTensor(double[,] matrix)
+        {
+            var result = new List<PointOfInterest>();
 
-        //    var differenceOfGaussian = DifferenceOfGaussian(ImageAnalysisTools.gaussianBlur5);
-        //    var partialDifference = DifferenceOfGaussianPartialDifference(matrix, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
-        //    var StructureTensor = structureTensor(partialDifference.Item1, partialDifference.Item2);
-        //    var eigenValueDecomposition = EignvalueDecomposition(StructureTensor);
-        //    var attention = GetTheAttention(eigenValueDecomposition);
-        //var pointsOfInterst = ExtractPointsOfInterest(attention);
+            //    var differenceOfGaussian = DifferenceOfGaussian(ImageAnalysisTools.gaussianBlur5);
+            //    var partialDifference = DifferenceOfGaussianPartialDifference(matrix, differenceOfGaussian.Item1, differenceOfGaussian.Item2);
+            //    var StructureTensor = structureTensor(partialDifference.Item1, partialDifference.Item2);
+            //    var eigenValueDecomposition = EignvalueDecomposition(StructureTensor);
+            //    var attention = GetTheAttention(eigenValueDecomposition);
+            //var pointsOfInterst = ExtractPointsOfInterest(attention);
 
-        //return result = pointsOfInterst;
+            //return result = pointsOfInterst;
+            return result;
 
-        //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
-        //Log.Info("differenceOfGaussian");
-        //var partialDifference = StructureTensor.PartialDifference(testMatrix);
-        //Log.Info("partialDifference");
-        //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-        //Log.Info("magnitude");
-        //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
-        //Log.Info("phase");
-        //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
-        //Log.Info("structureTensor");
-        //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
-        //Log.Info("eigenValue");
-        //var coherence = StructureTensor.Coherence(eigenValue);
-        //Log.Info("coherence");
-        //var hitCoherence = StructureTensor.hitCoherence(coherence);
-        //Log.Info("hitCoherence");
+            //var differenceOfGaussian = StructureTensor.DifferenceOfGaussian(StructureTensor.gaussianBlur5);
+            //Log.Info("differenceOfGaussian");
+            //var partialDifference = StructureTensor.PartialDifference(testMatrix);
+            //Log.Info("partialDifference");
+            //var magnitude = StructureTensor.MagnitudeOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("magnitude");
+            //var phase = StructureTensor.PhaseOfPartialDifference(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("phase");
+            //var structureTensor = StructureTensor.structureTensor(partialDifference.Item1, partialDifference.Item2);
+            //Log.Info("structureTensor");
+            //var eigenValue = StructureTensor.EignvalueDecomposition(structureTensor);
+            //Log.Info("eigenValue");
+            //var coherence = StructureTensor.Coherence(eigenValue);
+            //Log.Info("coherence");
+            //var hitCoherence = StructureTensor.hitCoherence(coherence);
+            //Log.Info("hitCoherence");
 
-        //var numberOfVetex = structureTensor.Count;
-        //var results = new List<string>();
+            //var numberOfVetex = structureTensor.Count;
+            //var results = new List<string>();
 
-        //results.Add("eigenValue1, eigenValue2, coherence");
-        //for (int i = 0; i < numberOfVetex; i++)
-        //{
-        //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
-        //}
-        //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
+            //results.Add("eigenValue1, eigenValue2, coherence");
+            //for (int i = 0; i < numberOfVetex; i++)
+            //{
+            //    results.Add(string.Format("{0}, {1}, {2}", eigenValue[i].Item2[0], eigenValue[i].Item2[1], coherence[i].Item2));
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text1.csv", results.ToArray());
 
-        // put it into csv.file
-        //var results1 = new List<string>();
-        //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
+            // put it into csv.file
+            //var results1 = new List<string>();
+            //results1.Add("partialDifferenceX, partialDifferenceY, magnitude, phase");
 
-        //var maximumXindex = partialDifference.Item1.GetLength(0);
-        //var maximumYindex = partialDifference.Item1.GetLength(1);
-        //for (int i = 0; i < maximumXindex; i++)
-        //{
-        //    for (int j = 0; j < maximumYindex; j++)
-        //    {
-        //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
-        //    }
-        //}
-        //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
-        //foreach (var poi in hitCoherence)
-        //{
-        //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
-        //}
-        //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
-        //}
+            //var maximumXindex = partialDifference.Item1.GetLength(0);
+            //var maximumYindex = partialDifference.Item1.GetLength(1);
+            //for (int i = 0; i < maximumXindex; i++)
+            //{
+            //    for (int j = 0; j < maximumYindex; j++)
+            //    {
+            //        results1.Add(string.Format("{0}, {1}, {2}, {3}", partialDifference.Item1[i, j], partialDifference.Item2[i, j], magnitude[i, j], phase[i, j]));
+            //    }
+            //}
+            //File.WriteAllLines(@"C:\Test recordings\Crows\Test\TestImage4\Canny-text2.csv", results1.ToArray());
+            //foreach (var poi in hitCoherence)
+            //{
+            //    testImage.SetPixel(poi.Point.X, poi.Point.Y, Color.Crimson);
+            //}
+            //testImage.Save(@"C:\Test recordings\Crows\Test\TestImage4\Test4-cannydetector-hitCoherence0.png");
+        }
 
     }
 }
