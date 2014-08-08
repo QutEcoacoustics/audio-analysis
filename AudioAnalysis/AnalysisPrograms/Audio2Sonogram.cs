@@ -381,9 +381,9 @@ namespace AnalysisPrograms
 
             bool saveCsv = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
 
-            if (configuration[AnalysisKeys.MakeSoxSonogram] != null)
+            if ((bool?)configuration[AnalysisKeys.MakeSoxSonogram] == true)
             {
-                Log.Warn("SoX spectrogram generation config variable found but will be ignored when running as an IAnalyzer");
+                Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
             }
 
             // generate spectrogram
