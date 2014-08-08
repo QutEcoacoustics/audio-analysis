@@ -1,4 +1,9 @@
 ---
+AnalysisName: Towsey.SpectrogramGenerator
+#SegmentDuration: minutes,   SegmentOverlap=seconds        
+SegmentDuration: 1
+SegmentOverlap: 0
+
 #FRAME LENGTH in samples - must be power of 2
 FrameLength: 1024
 
@@ -29,4 +34,14 @@ SonogramTitle: Sonogram
 SonogramComment: "Sonogram produced using SOX"
 #SonogramColored: false
 SonogramQuantisation: 128
+
+# IAnalyzer options
+# Save chunked files
+SaveIntermediateWavFiles: false
+# Output spectrogram csv
+SaveIntermediateCsvFiles: true
+# Output sonogram (composite) images
+SaveSonogramFiles: true
+ParallelProcessing: false
 ...
+

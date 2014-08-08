@@ -505,7 +505,7 @@
                 int minID = halfHeight + (int)Math.Round(envelope[0, w] * halfHeight);
                 //minID = halfHeight + (int)Math.Round(-1.0 * halfHeight);
                 int maxID = halfHeight + (int)Math.Round(envelope[1, w] * halfHeight) - 1;
-                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, height - z, colour);
+                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, height - z - 1, colour);
 
                 // set zero line in case it was missed
                 bmp.SetPixel(w, halfHeight, colour); 
