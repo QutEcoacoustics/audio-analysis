@@ -1612,6 +1612,26 @@ namespace TowseyLibrary
 		  return (array);
 		}
 
+
+
+        public double NormaliseValue(double val, double normMin, double normMax)
+        {
+            double range = normMax - normMin;
+            double norm = (val - normMin) / range;
+            if (norm > 1.0)
+            {
+                norm = 1.0;
+            }
+            else if (norm < 0.0)
+            {
+                norm = 0.0;
+            }
+
+            return norm;
+        }
+
+
+
 		/// <summary>
 		/// normalised matrix of real values to [0,1].
 		/// </summary>
@@ -2065,6 +2085,7 @@ namespace TowseyLibrary
             return orderedArray;
         }
 
+
         /// <summary>
         /// normalises the values in a matrix between the passed min and max.
         /// </summary>
@@ -2244,6 +2265,29 @@ namespace TowseyLibrary
 
             return (ret);
         }
+
+
+        public static double[] NormaliseValues(int[] val, int normMin, int normMax)
+        {
+            double range = normMax - normMin;
+            double[] norms = new double[val.Length];
+            for (int i = 0; i < val.Length; i++)
+            {
+                norms[i] = (val[i] - normMin) / range;
+                if (norms[i] > 1.0)
+                {
+                    norms[i] = 1.0;
+                }
+                else if (norms[i] < 0.0)
+                {
+                    norms[i] = 0.0;
+                }
+            }
+
+            return norms;
+        }
+
+
         /// <summary>
         /// normalizes the passed array between 0,1.
         /// Ensures all values are positive

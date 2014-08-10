@@ -220,8 +220,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 this.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, configDict);
 
             this.sampleRate = 0;
-            if (configDict.ContainsKey(AnalysisKeys.FrameOverlap))
-                this.sampleRate = ConfigDictionary.GetInt("SampleRate", configDict);
+            if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
+                this.sampleRate = ConfigDictionary.GetInt("ResampleRate", configDict);
 
             //NOISE REDUCTION PARAMETERS  
             this.DoSnr = true; // set false if only want to 
