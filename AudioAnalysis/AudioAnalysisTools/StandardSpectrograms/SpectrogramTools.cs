@@ -172,7 +172,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             return sonogram;
         }
-        
+
+
+        public static double[,] NormaliseSpectrogramMatrix(double[,] matrix, double truncateMin, double truncateMax, double backgroundFilterCoeff)
+        {
+            double[,] m = MatrixTools.NormaliseInZeroOne(matrix, truncateMin, truncateMax);
+            m = MatrixTools.FilterBackgroundValues(m, backgroundFilterCoeff); // to de-demphasize the background small values
+            return m;
+        }
+
         
         /// <summary>
         /// 
@@ -273,6 +281,65 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //if (addScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
             return image.GetImage();
         } //CSV2SonogramImage()
+
+
+        public static Image CreateFalseColourSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData)
+        {
+            double truncateMin = -120.0;
+            double truncateMax = -10.0;
+            double filterCoefficient = 1.0;
+            double[,] dbSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(dbSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+            truncateMin = 0;
+            truncateMax = 60;
+            double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+
+            byte[,] hits = MatrixTools.IdentifySpectralRidges(dbSpectrogramData);
+
+
+            int width = dbSpectrogramData.GetLength(0);
+            int height = dbSpectrogramData.GetLength(1);
+            Bitmap image = new Bitmap(width, height);
+
+            for (int y = 0; y < height; y++) //over all freq bins
+            {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        double dbValue = dbSpectrogramNorm[x, y];
+                        int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
+                        //int c1 = (int)Math.Floor(255.0 * dbValue);
+                        if (c1 < 0) c1 = 0;
+                        else
+                        if (c1 > 255) c1 = 255;
+                        Color colour = Color.FromArgb(c1, c1, c1);
+
+                        double nrValue = nrSpectrogramNorm[x, y];
+                        if (nrSpectrogramData[x, y] > 0)
+                        {
+                            int c2 = 255 - (int)Math.Floor(255.0 * nrValue); //original version
+                            if (c2 < 0) c2 = 0;
+                            else
+                                if (c2 > 255) c2 = 255;
+
+                            if (nrSpectrogramData[x, y] > 3.0)
+                            {
+                                colour = Color.FromArgb(0, c2, 0); // values > 3dB are in green
+                            }
+                            else // values < 3dB are in orange
+                            {
+                                colour = Color.FromArgb(c1, c2, 0);
+                            } 
+                            if(hits[x,y] > 0)
+                                colour = Color.FromArgb(0, c2, c2);
+                        }
+                        image.SetPixel(x, height - y - 1, colour);
+                    }
+            }//end over all freq bins
+
+
+            return image;
+        }
+
 
 
 

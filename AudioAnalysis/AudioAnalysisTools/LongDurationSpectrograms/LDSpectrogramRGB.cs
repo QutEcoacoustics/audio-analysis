@@ -471,6 +471,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             IndexProperties indexProperties = this.spectralIndexProperties[key];
             var matrix = indexProperties.NormaliseIndexValues(this.GetMatrix(key));
+
             return MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
         }
 

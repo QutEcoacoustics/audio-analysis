@@ -182,86 +182,17 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-        public double NormaliseValue(double val)
+        public double NormaliseValue(double value)
         {
-            double range = this.NormMax - this.NormMin;
-            double norm = (val - this.NormMin) / range;
-            if (norm > 1.0)
-            {
-                norm = 1.0;
-            }
-            else if (norm < 0.0)
-            {
-                norm = 0.0;
-            }
-
-            return norm;
+            return DataTools.NormaliseInZeroOne(value, this.NormMin, this.NormMax);
         }
 
-        public double[] NormaliseIndexValues(double[] val)
-        {
-            double range = this.NormMax - this.NormMin;
-            double[] norms = new double[val.Length];
-            for (int i = 0; i < val.Length; i++)
-            {
-                norms[i] = (val[i] - this.NormMin) / range;
-                if (norms[i] > 1.0)
-                {
-                    norms[i] = 1.0;
-                }
-                else if (norms[i] < 0.0)
-                {
-                    norms[i] = 0.0;
-                }
-            }
-
-            return norms;
-        }
 
         public double[,] NormaliseIndexValues(double[,] M)
         {
-            int rows = M.GetLength(0);
-            int cols = M.GetLength(1);
-            double range = this.NormMax - this.NormMin;
-            double[,] M2return = new double[rows, cols];
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    M2return[r, c] = (M[r, c] - this.NormMin) / range;
-                    if (M2return[r, c] > 1.0)
-                    {
-                        M2return[r, c] = 1.0;
-                    }
-                    else if (M2return[r, c] < 0.0)
-                    {
-                        M2return[r, c] = 0.0;
-                    }
-                }
-            }
-
-            return M2return;
+            return MatrixTools.NormaliseInZeroOne(M, this.NormMin, this.NormMax);
         }
 
-        public double[] NormaliseValues(int[] val)
-        {
-            double range = this.NormMax - this.NormMin;
-            double[] norms = new double[val.Length];
-            for (int i = 0; i < val.Length; i++)
-            {
-                norms[i] = (val[i] - this.NormMin) / range;
-                if (norms[i] > 1.0)
-                {
-                    norms[i] = 1.0;
-                }
-                else if (norms[i] < 0.0)
-                {
-                    norms[i] = 0.0;
-                }
-            }
-
-            return norms;
-        }
 
         /// <summary>
         /// Units for indices include: dB, ms, % and dimensionless
@@ -308,7 +239,9 @@ namespace AudioAnalysisTools.Indices
         {
             int dataLength = array.Length;
             string annotation = this.GetPlotAnnotation();
-            double[] values = this.NormaliseIndexValues(array);
+            //double[] values = this.NormaliseIndexValues(array);
+            double[] values = DataTools.NormaliseInZeroOne(array, this.NormMin, this.NormMax);
+
 
             int trackWidth = dataLength + DrawSummaryIndices.TrackEndPanelWidth;
             int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
