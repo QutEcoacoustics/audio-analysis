@@ -14,6 +14,7 @@ namespace Dong.Felt
     using System.Drawing.Imaging;
     using AForge.Math;
     using AudioAnalysisTools.DSP;
+    using MathNet.Numerics.Transformations;
 
 
     class ImageAnalysisTools
@@ -130,41 +131,64 @@ namespace Dong.Felt
         /// Calculate the discrete Fourier Transform for an image 
         public static double[,] DiscreteFourierTransform(double[,] imageData)
         {          
-            var matrixRowLength = imageData.GetLength(0);
-            var matrixColLength = imageData.GetLength(1);
-           
-            var winfunc = FFT.Hamming;
-            var dft = new FFT(matrixColLength, winfunc, true);
-            // do dft for all the rows of imageData        
-            for (var l = 0; l < matrixRowLength; l++)
+            var matrixRowCount = imageData.GetLength(0);
+            var matrixColCount = imageData.GetLength(1);
+
+            var outputData = new double[matrixRowCount, matrixColCount];      
+            var cft = new ComplexFourierTransformation();
+            // do dft for all the rows of imageData      
+            int[] dims = { matrixRowCount, matrixColCount };
+            var sampleData = new double[matrixRowCount * matrixColCount * 2];
+            for (var r = 0; r < matrixRowCount * 2; r++)
             {
-                var rowData = new double[matrixColLength];
-                for (var m = 0; m < rowData.Length; m++)
-                {
-                    rowData[m] = imageData[l, m];
+                var colData = MatrixTools.GetColumn(imageData, r / 2);
+                if (r % 2 == 0)
+                {                    
+                    for (var c = 0; c < colData.Length; c++)
+                    {                       
+                        sampleData[(r * matrixRowCount) + c] = colData[c];
+                    }
                 }
-                var rowDataAfterDFT = dft.InvokeDotNetFFT(rowData);
-                for (var n = 0; n < rowDataAfterDFT.Length; n++)
+                else
                 {
-                    imageData[l, n] = rowDataAfterDFT[n];
-                }
+                    for (var c = 0; c < colData.Length; c++)
+                    {
+                        sampleData[r * matrixRowCount + c] = 0.0;
+                    }
+                }                        
             }
-            // do dft for all columns of previous result
-            for (var i = 0; i < matrixColLength; i++)
+            // In sampleData, each column data the first 8 contribute to the real value in complex, 
+            // the second 8 contribute to the imaginary part in complex. 
+            cft.TransformForward(sampleData, dims);           
+            Complex[] sampleComplexPairs = new Complex[sampleData.Length / 2];
+
+            for (int i = 0; i < sampleData.Length; i++)
             {
-                var colData = new double[matrixRowLength];
-                for (var n = 0; n < colData.Length; n++)
+                var step = matrixRowCount / 2;
+                var ite = i / step;
+                var mod = i % step;
+                var sampleDataColCount = sampleData.Length / matrixRowCount;
+                
+                var item = new Complex();
+                
+                if (ite % 2 == 0)
                 {
-                    colData[n] = imageData[n, i];
-                }
-                var colDataAfterDFT = dft.InvokeDotNetFFT(colData);
-                for (var p = 0; p < colDataAfterDFT.Length; p++)
-                {
-                    imageData[i, p] = colDataAfterDFT[p];
-                }
+                    item.Re = sampleData[(ite * step) + mod];
+                    item.Im = sampleData[((ite + 1) * step) + mod];
+                    sampleComplexPairs[(ite * step / 2) + mod] = item;                   
+                }              
             }
-            
-            return imageData;
+
+            for (var r = 0; r < matrixRowCount; r++)
+            {
+                for (var c = 0; c < matrixColCount; c++)
+                {
+                    outputData[c, r] = Math.Sqrt(Math.Pow(sampleComplexPairs[r * matrixRowCount + c].Re, 2.0) 
+                        +
+                        Math.Pow(sampleComplexPairs[r * matrixRowCount + c].Im, 2.0));
+                }
+            }           
+            return outputData;
         }
 
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)

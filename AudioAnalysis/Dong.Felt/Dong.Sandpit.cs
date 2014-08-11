@@ -100,13 +100,15 @@
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength); 
-                    //var imageData = GetImageData(inputDirectory.FullName);
-                    var imageData = new double[4, 4] {{0,    0,    0,  0},
-                                                      {0,  255,  255, 0},
-                                                      {0,  255,  255, 0},
-                                                      {0,    0,    0, 0}};
+                    var imageData = GetImageData(inputDirectory.FullName);
+                    //var imageData = new double[4, 4] {{0,    0,    0,  0},
+                    //                                  {0,  255,  255, 0},
+                    //                                  {0,  255,  255, 0},
+                    //                                  {0,    0,    0, 0}};
                     var dataMatrix = ImageAnalysisTools.DiscreteFourierTransform(imageData);
-                    
+                    var outputImagePath = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png";
+                    Bitmap bitmap = (Bitmap)Image.FromFile(inputDirectory.FullName, true);
+                    DrawDFTImage(outputImagePath, dataMatrix, bitmap);                    
                 }
                 else
                 {
@@ -348,7 +350,31 @@
             //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
             //image.Save(imagePath, ImageFormat.Png);
             //}
-        } // Dev()  
+        } // Dev() 
+ 
+        public static void DrawDFTImage(string outputImagePath, double[,] imageData, Bitmap bitmap)
+        {
+
+            imageData = MatrixTools.normalise(imageData);
+            for (var i = 0; i < imageData.GetLength(0); i++)
+            {
+                for (var j = 0; j < imageData.GetLength(1); j++)
+                {
+                    var color = Color.Black;
+                    if (imageData[i, j] > 0.0)
+                    {
+
+                        double v = imageData[i, j];
+                        int R = (int)(255 * v);
+                        if (R > 255) R = 255;
+                        color = Color.FromArgb(R, R, R);
+                    }                
+                    bitmap.SetPixel(i, j, color);
+                }
+            }
+            var image = (Image)bitmap;
+            image.Save(outputImagePath);
+        }
         
         public static double[,] GetImageData(string imageFilePath)
         {
