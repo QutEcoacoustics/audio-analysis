@@ -1436,16 +1436,19 @@ namespace TowseyLibrary
             return smoothMatrix;
         }
 
-        public static byte[,] IdentifySpectralRidges(double[,] matrix)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static byte[,] IdentifySpectralRidges(double[,] matrix, double threshold)
         {
-            var m1 = matrix;
+            var binary1 = IdentifyHorizontalRidges(matrix, threshold);
+            //binary1 = JoinDisconnectedRidgesInBinaryMatrix(binary1, matrix, threshold);
 
-            var binary1 = IdentifySpectralRidgesInTemporalDirection(m1);
-            binary1 = JoinDisconnectedRidgesInBinaryMatrix1(binary1, m1);
-
-            var m2 = DataTools.MatrixTranspose(m1);
-            var binary2 = IdentifySpectralRidgesInFreqDirection(m2);
-            binary2 = JoinDisconnectedRidgesInBinaryMatrix1(binary2, m2);
+            var m2 = DataTools.MatrixTranspose(matrix);
+            var binary2 = IdentifyHorizontalRidges(m2, threshold);
+            //binary2 = JoinDisconnectedRidgesInBinaryMatrix(binary2, m2, threshold);
             binary2 = DataTools.MatrixTranspose(binary2);
 
             //merge the two binary matrices
@@ -1457,19 +1460,10 @@ namespace TowseyLibrary
                     if (binary2[r, c] == 1) binary1[r, c] = 1;
                 }
 
-            //int rows = matrix.GetLength(0);
-            //int cols = matrix.GetLength(1);
-            //byte[,] binary1 = new byte[rows,cols];
-            //for (int r = 0; r < rows; r++)
-            //    for (int c = 0; c < cols; c++)
-            //    {
-            //        if ((r % 3 == 0) && (c % 3 == 0)) binary1[r, c] = 1;
-            //    }
-
             return binary1;
         }
 
-        public static byte[,] IdentifySpectralRidgesInFreqDirection(double[,] matrix)
+        public static byte[,] IdentifySpectralRidgesInFreqDirection(double[,] matrix, double threshold)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -1486,36 +1480,50 @@ namespace TowseyLibrary
                     double d2 = row[c] - row[c + 1];
                     double d3 = row[c] - row[c - 2];
                     double d4 = row[c] - row[c + 2];
+                    double d5 = row[c] - row[c - 3];
+                    double d6 = row[c] - row[c + 3];
                     //identify a peak
-                    if ((d1 > 0.0) && (d2 > 0.0) && (d3 > 0.0) && (d4 > 0.0) && (row[c] > row[c - 3])
-                        && (row[c] > row[c + 3])
-                        //&& (d1 > d2)
-                        ) binary[r, c] = 1;
+                    if ((d1 > threshold) && (d2 > threshold) && (d3 > threshold) && (d4 > threshold) && (d5 > threshold) && (d6 > threshold))
+                    {
+                        binary[r, c] = 1;
+                    }
                 } //end for every col
             } //end for every row
             return binary;
         }
 
-        public static byte[,] IdentifySpectralRidgesInTemporalDirection(double[,] matrix)
+        public static byte[,] IdentifyHorizontalRidges(double[,] matrix, double threshold)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
             var binary = new byte[rows, cols];
-            for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
+            for (int r = 2; r < rows-2; r++) //row at a time, each row = one frame.
             {
-                double[] row = DataTools.GetRow(matrix, r);
-                row = DataTools.filterMovingAverage(row, 3);
-                //## SMOOTH FRAME SPECTRUM - high value breaks up horizontal tracks
-                for (int c = 3; c < cols - 3; c++)
+                for (int c = 2; c < cols - 2; c++)
                 {
                     //identify a peak
-                    if ((row[c] > row[c - 1]) && (row[c] > row[c + 1]) && (row[c] > row[c - 2]) && (row[c] > row[c + 2])
-                        && (row[c] > row[c - 3]) && (row[c] > row[c + 3])
-                        //&& (row[c] > row[c - 4]) && (row[c] > row[c + 4])
-                        //&& (row[c] > row[c - 4]) && (row[c] > row[c - 5])
-                        ) binary[r, c] = 1;
+                    double sumTop2 = matrix[r - 2, c - 2] + matrix[r - 2, c - 1] + matrix[r - 2, c] + matrix[r - 2, c + 1] + matrix[r - 2, c + 2];
+                    double sumTop1 = matrix[r - 1, c - 2] + matrix[r - 1, c - 1] + matrix[r - 1, c] + matrix[r - 1, c + 1] + matrix[r - 1, c + 2];
+                    double sumMid  = matrix[r,     c - 2] + matrix[r,     c - 1] + matrix[r,     c] + matrix[r,     c + 1] + matrix[r,     c + 2];
+                    double sumBtm1 = matrix[r + 1, c - 2] + matrix[r + 1, c - 1] + matrix[r + 1, c] + matrix[r + 1, c + 1] + matrix[r + 1, c + 2];
+                    double sumBtm2 = matrix[r + 2, c - 2] + matrix[r + 2, c - 1] + matrix[r + 2, c] + matrix[r + 2, c + 1] + matrix[r + 2, c + 2];
+                    double avTop = (sumTop2 + sumTop1) / (double)10;
+                    double avBtm = (sumBtm2 + sumBtm1) / (double)10;
+                    double avMdl = sumMid / (double)5;
+                    double dTop = avMdl - avTop;
+                    double dBtm = avMdl - avBtm;
+
+                    if ((dTop > threshold) && (dBtm > threshold))
+                    {
+                        binary[r, c - 2] = 1;
+                        binary[r, c - 1] = 1;
+                        binary[r, c]     = 1;
+                        binary[r, c + 1] = 1;
+                        binary[r, c + 2] = 1;
+                    }
+
                 } //end for every col
             } //end for every row
             return binary;
@@ -1526,9 +1534,8 @@ namespace TowseyLibrary
         ///JOINS DISCONNECTED RIDGES
         /// </summary>
         /// <returns></returns>
-        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix(byte[,] binary, double[,] matrix)
+        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix(byte[,] binary, double[,] matrix, double threshold)
         {
-            double threshold = 20.0;
             int rows = binary.GetLength(0);
             int cols = binary.GetLength(1);
             byte[,] newM = new byte[rows, cols];
@@ -1568,7 +1575,7 @@ namespace TowseyLibrary
             return newM;
         }
 
-        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix1(byte[,] binary, double[,] matrix)
+        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix1(byte[,] binary)
         {
             int rows = binary.GetLength(0);
             int cols = binary.GetLength(1);
