@@ -805,7 +805,8 @@ namespace AudioAnalysisTools.DSP
             mnr = NoiseReduce_Standard(matrix, modalNoise, neighbourhoodBackgroundThreshold);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
 
-            byte[,] binary = MatrixTools.IdentifySpectralRidges(mnr);
+            double ridgeThreshold = 0.1;
+            byte[,] binary = MatrixTools.IdentifySpectralRidges(mnr, ridgeThreshold);
             double[,] op = MatrixTools.SpectralRidges2Intensity(binary, mnr);
             return op;
         }
