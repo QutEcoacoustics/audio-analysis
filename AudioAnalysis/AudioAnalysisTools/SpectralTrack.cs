@@ -151,7 +151,7 @@ namespace AudioAnalysisTools
 
         public void DrawTrack(Graphics g, double sonogramFramesPerSecond, double sonogramFreqBinWidth, int sonogramHeight)
         {
-            Pen p1 = new Pen(AcousticEvent.DEFAULT_BORDER_COLOR, 2); // default colour
+            Pen p1 = new Pen(AcousticEvent.DefaultBorderColor, 2); // default colour
             double secondsPerTrackFrame = 1 / this.framesPerSecond;
 
             double startSec = this.timeOffset.TotalSeconds;

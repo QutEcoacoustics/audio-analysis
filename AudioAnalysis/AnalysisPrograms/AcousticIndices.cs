@@ -21,6 +21,7 @@ namespace AnalysisPrograms
     using System.Text;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;

@@ -334,8 +334,8 @@ namespace AnalysisPrograms
         {
             int length = sonogram.FrameCount;
             double[] eprScores = new double[length];
-            Oblong ob1 = template[0].oblong; // the first chirp in template
-            Oblong obZ = template[template.Count-1].oblong; // the last  chirp in template
+            Oblong ob1 = template[0].Oblong; // the first chirp in template
+            Oblong obZ = template[template.Count-1].Oblong; // the last  chirp in template
             int templateLength = obZ.RowBottom;
 
             for (int frame = 0; frame < length - templateLength; frame++)
@@ -361,7 +361,7 @@ namespace AnalysisPrograms
 
                 foreach(AcousticEvent ae in template)
                 {
-                    Oblong ob = new Oblong(ae.oblong.RowTop + frame, ae.oblong.ColumnLeft + freqBinOffset, ae.oblong.RowBottom + frame, ae.oblong.ColumnRight + freqBinOffset);
+                    Oblong ob = new Oblong(ae.Oblong.RowTop + frame, ae.Oblong.ColumnLeft + freqBinOffset, ae.Oblong.RowBottom + frame, ae.Oblong.ColumnRight + freqBinOffset);
                     double score = GetLocationScore(sonogram, ob);
                     eprScores[frame] += score;
                 }

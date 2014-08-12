@@ -77,6 +77,10 @@
             this.wavReader = wavReader;
         }
 
+        public AudioRecording(FileInfo audioFile) : this(audioFile.FullName)
+        {
+        }
+
         /// <summary>
         ///     Wrapper for the wav reader.
         ///     Audio must be in wav format.
@@ -98,6 +102,7 @@
         /// Reduces the signal sample rate to 22050Hz. 
         /// Requires the existing signal to be either 44100Hz or 88200 Hz.
         /// </summary>
+        [Obsolete]
         public void ConvertSampleRate22kHz()
         {
             int sr = wavReader.SampleRate;

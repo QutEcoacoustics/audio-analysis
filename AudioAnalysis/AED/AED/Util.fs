@@ -2,6 +2,8 @@
 
 open Microsoft.FSharp.Math.SI
 open System.Drawing
+open System.Text
+open System.IO
 
 // If the first Option is not empty return it, else return the second. Copy of Scala Option.orElse.
 let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
@@ -9,6 +11,8 @@ let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
 let (|?) = orElse
 
 let (|?|) = defaultArg
+
+let (|?>) item (condition, f) = if condition then f item else item
 
 // Haskell catMaybes
 let catOptions xs = Seq.filter Option.isSome xs |> Seq.map Option.get
@@ -26,6 +30,7 @@ let inline sqr x = x*x
 
 let (><) x (l,u) = x > l && x < u // in open interval
 let (>==<) x (l,u) = x >= l && x <= u // in closed interval
+
 
 let boundedInterval (p:float<_>) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> roundDownTo ub)
 
@@ -142,6 +147,11 @@ let inline oldWidth r = (right r) - (left r)
 let inline height r = (top r) - (bottom r) |> abs |> increment
 let inline height2 (top:float<_>) (bottom:float<_>) = top - bottom |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
 let inline area r = (width r) * (height r)
+let inline isWithin r (x,y) =
+    not (x < r.Left || x > r.Right || y < r.Top || y > r.Bottom)
+    //x >= r.Left && x < r.Right && y >= r.Top && y < r.Bottom
+let inline isWithin2 r (y,x) =
+    isWithin r (y, x)
 
 let inline toFloatRect r =
     cornersToRect (left r |> float) (right r |> float) (top r |> float) (bottom r |> float)
@@ -173,3 +183,8 @@ let csvToMatrix f =
 let matrixToCsv (m:matrix) f =
     let g i = m.Row i |> Seq.map (sprintf "%A") |> String.concat ","
     System.IO.File.WriteAllLines(f, Array.init m.NumRows g)
+
+let itemsToFile path (transformer: 'a -> string) items = 
+    use file = File.CreateText(path)
+    Seq.iter (fun x ->  x |> transformer |> file.WriteLine) items
+

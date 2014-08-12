@@ -8,17 +8,13 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Acoustics.Shared
+namespace Acoustics.Shared.Csv
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
-    using System.Text;
-
-    using Acoustics.Shared.Extensions;
 
     using CsvHelper;
     using CsvHelper.Configuration;

@@ -681,50 +681,57 @@ namespace AudioAnalysisTools.DSP
             double SD_COUNT = 0.0; // number of noise standard deviations included in noise threshold - determines severity of noise reduction.
             // Can be over-ridden by the passed parameter.
             double[] smoothedNoiseProfile = null;
-            if (nrt == NoiseReductionType.STANDARD)
+            switch (nrt)
             {
-                NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
-                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
-                m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
-            }
-            else if (nrt == NoiseReductionType.MODAL)
-            {
-                SD_COUNT = parameter;
-                NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate modal profile - any matrix of values
-                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the modal profile
-                m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
-            }
-            else if (nrt == NoiseReductionType.LOWEST_PERCENTILE) //
-            {
-                double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, parameter);
-                smoothedNoiseProfile = DataTools.filterMovingAverage(profile, 7); //smooth the modal profile
-                m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
-            }
-            else if (nrt == NoiseReductionType.BRIGGS_PERCENTILE) //
-            {
-                m = NoiseRemoval_Briggs.BriggsNoiseFilterTwice(m, parameter); 
-            }
-            else if (nrt == NoiseReductionType.BINARY)
-            {
-                NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile
-                smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
-                m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
-                m = DataTools.Matrix2Binary(m, 2 * parameter);             //convert to binary with backgroundThreshold = 2*parameter
-            }
-            else if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + parameter); //parameter should have value = 50 dB approx
-                m = SNR.NoiseReduce_FixedRange(m, parameter, SD_COUNT);
-            }
-            else if (nrt == NoiseReductionType.MEAN) 
-            {
-                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
-                m = SNR.NoiseReduce_Mean(m, parameter);
-            }
-            else if (nrt == NoiseReductionType.MEDIAN)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
-                m = SNR.NoiseReduce_Median(m, parameter);
+                case NoiseReductionType.STANDARD:
+                    {
+                        NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
+                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
+                        m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
+                    }
+                    break;
+                case NoiseReductionType.MODAL:
+                    {
+                        SD_COUNT = parameter;
+                        NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate modal profile - any matrix of values
+                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the modal profile
+                        m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
+                    }
+                    break;
+                case NoiseReductionType.LOWEST_PERCENTILE:
+                    {
+                        double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, parameter);
+                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile, 7); //smooth the modal profile
+                        m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
+                    }
+                    break;
+                case NoiseReductionType.BRIGGS_PERCENTILE:
+                    m = NoiseRemoval_Briggs.BriggsNoiseFilterTwice(m, parameter);
+                    break;
+                case NoiseReductionType.BINARY:
+                    {
+                        NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile
+                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
+                        m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
+                        m = DataTools.Matrix2Binary(m, 2 * parameter);             //convert to binary with backgroundThreshold = 2*parameter
+                    }
+                    break;
+                case NoiseReductionType.FIXED_DYNAMIC_RANGE:
+                    Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + parameter); //parameter should have value = 50 dB approx
+                    m = SNR.NoiseReduce_FixedRange(m, parameter, SD_COUNT);
+                    break;
+                case NoiseReductionType.MEAN:
+                    Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
+                    m = SNR.NoiseReduce_Mean(m, parameter);
+                    break;
+                case NoiseReductionType.MEDIAN:
+                    Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
+                    m = SNR.NoiseReduce_Median(m, parameter);
+                    break;
+                case NoiseReductionType.NONE:
+                default:
+                    Log.WriteIfVerbose("No noise reduction applied");
+                    break;
             }
             var tuple = System.Tuple.Create(m, smoothedNoiseProfile);
             return tuple;

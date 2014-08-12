@@ -14,6 +14,9 @@ namespace AnalysisPrograms
     using System.IO;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
 
     using Microsoft.FSharp.Math;
 
@@ -69,7 +72,24 @@ namespace AnalysisPrograms
             int smallLengthThreshold = 50;
             Log.WriteLine("smallLengthThreshold = " + smallLengthThreshold);
 
-            var sonogram = AED.FileToSonogram(wavFilePath.FullName);
+            string wavFilePath1 = wavFilePath.FullName;
+            var recording = new AudioRecording(wavFilePath1);
+            const int sampleRate = 22050;
+            if (recording.SampleRate != sampleRate)
+            {
+                throw new ArgumentException(
+                    "Sample rate of recording ({0}) does not match the desired sample rate ({1})".Format2(
+                        recording.SampleRate, 
+                        sampleRate), 
+                    "sampleRate");
+            }
+
+            var config = new SonogramConfig
+                             {
+                                 NoiseReductionType = NoiseReductionType.STANDARD,
+                                 NoiseReductionParameter = 3.5
+                             };
+            var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
             var result = doSPT(sonogram, intensityThreshold, smallLengthThreshold);
             sonogram.Data = result.Item1;

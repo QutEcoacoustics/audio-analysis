@@ -1,55 +1,126 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AED.cs" company="MQUTeR">
-//   -
+// <copyright file="AED.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
+// <summary>
+//   Acoustic Event Detection.
+// </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
 namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Drawing;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Diagnostics.Contracts;
-    using System.Drawing;
-    using System.Drawing.Imaging;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
+
     using AnalysisBase;
+    using AnalysisBase.ResultBases;
+
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
-    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
 
-    using PowerArgs;
     using log4net;
+
     using QutSensors.AudioAnalysis.AED;
 
     using TowseyLibrary;
 
-    /// <summary>
-    /// Acoustic Event Detection.
-    /// </summary>
-    public class AED : IAnalyser
-    {
-        public class Arguments : AnalyserArguments
-        {
+    using YamlDotNet.Dynamic;
 
+    /// <summary>
+    ///     Acoustic Event Detection.
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "Reviewed. Suppression is OK here.", Scope = "Class")]
+    public class Aed : AbstractStrongAnalyser
+    {
+        /// <summary>
+        /// The arguments.
+        /// </summary>
+        public class Arguments : SourceConfigOutputDirArguments
+        {
         }
 
-        public const int ResampleRate = 22050;
+        public class AedConfiguration
+        {
+            public AedConfiguration()
+            {
+                this.AedEventColor = Color.Red;
+                this.AedHitColor = Color.FromArgb(128, this.AedEventColor);
+                this.NoiseReductionType = NoiseReductionType.NONE;
+            }
 
-        private static readonly Color AedEventColor = Color.Red;
+            public double IntensityThreshold { get; set; } 
 
+            public int SmallAreaThreshold { get; set; }
+
+            public int? BandpassMinimum { get; set; }
+
+            public int? BandpassMaximum { get; set; }
+
+            public NoiseReductionType NoiseReductionType { get; set; } 
+
+            public double NoiseReductionParameter { get; set; } 
+
+            public int ResampleRate { get; set; }
+
+            public Color AedEventColor { get; set; }
+
+            public Color AedHitColor { get; set; }
+        }
+
+        #region Constants
 
         /// <summary>
-        /// Gets the name to display for the analysis.
+        /// The ecosounds aed identifier.
         /// </summary>
-        public string DisplayName
+        private const string EcosoundsAedIdentifier = "Ecosounds.AED";
+
+        #endregion
+
+        #region Static Fields
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        ///     Gets the initial (default) settings for the analysis.
+        /// </summary>
+        public AnalysisSettings DefaultSettings
+        {
+            get
+            {
+                return new AnalysisSettings
+                           {
+                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
+                               SegmentMinDuration = TimeSpan.FromSeconds(20), 
+                               SegmentMediaType = MediaTypes.MediaTypeWav, 
+                               SegmentOverlapDuration = TimeSpan.Zero, 
+                               
+                               // TODO: retrieve from app config after merge
+                               SegmentTargetSampleRate = 22050
+                           };
+            }
+        }
+
+        /// <summary>
+        ///     Gets the name to display for the analysis.
+        /// </summary>
+        public override string DisplayName
         {
             get
             {
@@ -58,32 +129,65 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Gets Identifier.
+        ///     Gets Identifier.
         /// </summary>
-        public string Identifier
+        public override string Identifier
         {
             get
             {
-                return "MQUTeR.AED";
+                return EcosoundsAedIdentifier;
             }
         }
 
-        /// <summary>
-        /// Gets the initial (default) settings for the analysis.
-        /// </summary>
-        public AnalysisSettings DefaultSettings
+        #endregion
+
+        #region Public Methods and Operators
+
+        public static Tuple<AcousticEvent[], AudioRecording, BaseSonogram> Detect(
+            FileInfo audioFile,
+           AedConfiguration aedConfiguration)
         {
-            get
+            if (aedConfiguration.NoiseReductionType != NoiseReductionType.NONE && aedConfiguration.NoiseReductionParameter == null)
             {
-                return new AnalysisSettings()
-                    {
-                        SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                        SegmentMinDuration = TimeSpan.FromSeconds(20),
-                        SegmentMediaType = MediaTypes.MediaTypeWav,
-                        SegmentOverlapDuration = TimeSpan.Zero,
-                        SegmentTargetSampleRate = ResampleRate
-                    };
+                throw new ArgumentException("A noise production parameter should be supplied if not using AED noise removal", "noiseReductionParameter");
             }
+
+            var recording = new AudioRecording(audioFile);
+            if (recording.SampleRate != aedConfiguration.ResampleRate)
+            {
+                throw new ArgumentException(
+                    "Sample rate of recording ({0}) does not match the desired sample rate ({1})".Format2(
+                        recording.SampleRate,
+                        aedConfiguration.ResampleRate));
+            }
+
+            var config = new SonogramConfig
+                              {
+                                  NoiseReductionType = aedConfiguration.NoiseReductionType,
+                                  NoiseReductionParameter = aedConfiguration.NoiseReductionParameter
+                              };
+            var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
+
+            Log.Info("AED start");
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
+                aedConfiguration.IntensityThreshold,
+                aedConfiguration.SmallAreaThreshold,
+                aedConfiguration.BandpassMinimum ?? 0.0,
+                aedConfiguration.BandpassMaximum ?? config.fftConfig.NyquistFreq,
+                aedConfiguration.NoiseReductionType == NoiseReductionType.NONE,
+                sonogram.Data);
+            Log.Info("AED finished");
+
+            double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
+
+            var events = oblongs.Select(
+                o => new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth)
+                         {
+                             BorderColour = aedConfiguration.AedEventColor,
+                             HitColour = aedConfiguration.AedHitColor
+                         }).ToArray();
+            TowseyLibrary.Log.WriteIfVerbose("AED # events: " + events.Length);
+            return Tuple.Create(events, recording, sonogram);
         }
 
         public static Arguments Dev(object obj)
@@ -91,7 +195,25 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public static void Execute(AED.Arguments arguments)
+        public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<AcousticEvent> events)
+        {
+            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
+
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+
+            ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddEvents(
+                events, 
+                sonogram.NyquistFrequency, 
+                sonogram.Configuration.FreqBinCount, 
+                sonogram.FramesPerSecond);
+
+            return image.GetImage();
+        }
+
+
+        public static void Execute(Arguments arguments)
         {
             if (arguments == null)
             {
@@ -101,625 +223,136 @@ namespace AnalysisPrograms
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine("# Running acoustic event detection.");
             LoggedConsole.WriteLine(date);
-            TowseyLibrary.Log.Verbosity = 1;
 
-            ////CheckArguments(args);
+            FileInfo recodingFile = arguments.Source;
+            var recodingBaseName = Path.GetFileNameWithoutExtension(arguments.Source.Name);
+            DirectoryInfo outputDir = arguments.Output.Combine(EcosoundsAedIdentifier);
 
-            ////string recordingPath = args[0];
-            var recordingPath = arguments.Source;
-
-            ////string iniPath = args[1];
-            var iniPath = arguments.Config;
-
-
-            //string outputDir = Path.GetDirectoryName(iniPath) + "\\";
-            var outputDir = iniPath.Directory;
-
-            //string opFName = args[2];
-            var outputFileName = arguments.Output;
-
-            //string opPath = outputDir + opFName;
-            var outputPath = Path.Combine(outputDir.FullName, outputFileName.FullName);
-
-            ////Log.WriteIfVerbose("# Output folder =" + outputDir);
-            ////Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            ////FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
-            LoggedConsole.WriteWarnLine("Output file writing disabled in build");
+            Log.Info("# Output folder =" + outputDir);
+            Log.Info("# Recording file: " + recodingFile.Name);
 
             // READ PARAMETER VALUES FROM INI FILE
-            double intensityThreshold;
-            double bandPassFilterMaximum;
-            double bandPassFilterMinimum;
-            int smallAreaThreshold;
-            GetAedParametersFromConfigFileOrDefaults(
-                iniPath,
-                out intensityThreshold,
-                out bandPassFilterMaximum,
-                out bandPassFilterMinimum,
-                out smallAreaThreshold);
+            DynamicYaml configruation = Yaml.Deserialise(arguments.Config);
+            var aedConfig = GetAedParametersFromConfigFileOrDefaults(configruation);
+            var results = Detect(recodingFile, aedConfig);
 
-            // TODO: fix constants
-            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(
-                recordingPath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
-            List<AcousticEvent> events = result.Item2;
+            // print image
+            // save image of sonograms
+            var outputImagePath = outputDir.CombineFile(recodingBaseName + ".Sonogram.png");
+            Image image = DrawSonogram(results.Item3, results.Item1);
+            image.Save(outputImagePath.FullName, ImageFormat.Png);
+            Log.Info("Image saved to: " + outputImagePath.FullName);
 
-            string destPathBase = Path.Combine(outputDir.FullName, Path.GetFileNameWithoutExtension(recordingPath.Name));
-            string destPath = destPathBase;
-            var inc = 0;
-            while (File.Exists(destPath + ".csv"))
-            {
-                inc++;
-                destPath = destPathBase + "_{0:000}".FormatWith(inc);
-            }
 
-            Csv.WriteToCsv((destPath + ".csv").ToFileInfo() , events);
+            // output csv
+            var outputCsvPath = outputDir.CombineFile(recodingBaseName + ".Events.csv");
+            WriteEventsFileStatic(outputCsvPath, results.Item1);
+            Log.Info("CSV file saved to: " + outputCsvPath.FullName);
 
-            TowseyLibrary.Log.WriteLine("{0} events created, saved to: {1}", events.Count, destPath + ".csv");
-            ////foreach (AcousticEvent ae in events)
-            ////{
-            ////    LoggedConsole.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
-            ////}
-
-            GenerateImage(destPath + ".png", result.Item1, events);
             TowseyLibrary.Log.WriteLine("Finished");
         }
 
 
-        /// <summary>
-        /// Run analysis using the given analysis settings.
-        /// </summary>
-        /// <param name="analysisSettings">
-        /// The analysis Settings.
-        /// </param>
-        /// <returns>
-        /// The results of the analysis.
-        /// </returns>
-        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
-            var fiAudioF = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
+            FileInfo audioFile = analysisSettings.AudioFile;
 
-            var analysisResults = new AnalysisResult();
+            var aedConfig = GetAedParametersFromConfigFileOrDefaults(analysisSettings.ConfigFile);
+
+            var results = Detect(audioFile, aedConfig);
+
+            var analysisResults = new AnalysisResult2(analysisSettings, results.Item2.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
-            analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.SegmentStartOffset = analysisSettings.SegmentStartOffset.HasValue ? analysisSettings.SegmentStartOffset.Value : TimeSpan.Zero;
-            analysisResults.Data = null;
+            analysisResults.Events = results.Item1;
+            BaseSonogram sonogram = results.Item3;
 
-            // READ PARAMETER VALUES FROM INI FILE
-            double intensityThreshold;
-            double bandPassFilterMaximum;
-            double bandPassFilterMinimum;
-            int smallAreaThreshold;
-            GetAedParametersFromConfigFileOrDefaults(
-                analysisSettings.ConfigFile,
-                out intensityThreshold,
-                out bandPassFilterMaximum,
-                out bandPassFilterMinimum,
-                out smallAreaThreshold);
-
-            //######################################################################
-            var results = Detect(fiAudioF, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
-            //######################################################################
-
-            if (results == null)
+            if (analysisSettings.EventsFile != null)
             {
-                //nothing to process
-                return analysisResults; 
+                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.EventsFile;
             }
 
-            var sonogram = results.Item1;
-            var predictedEvents = results.Item2;
 
-            TimeSpan recordingTimeSpan;
-            using (AudioRecording recording = new AudioRecording(fiAudioF.FullName))
+            // save image of sonograms
+            if (analysisSettings.ImageFile != null)
             {
-                recordingTimeSpan = recording.Duration();
-            }
-
-            DataTable dataTable = null;
-
-            if ((predictedEvents != null) && (predictedEvents.Count != 0))
-            {
-                string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.AnalysisKeys.AnalysisName];
-                string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
-                foreach (AcousticEvent ev in predictedEvents)
-                {
-                    ev.SourceFileName = fName;
-                    ev.Name = analysisName;
-                    ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
-                }
-                //write events to a data table to return.
-                dataTable = WriteEvents2DataTable(predictedEvents);
-                string sortString = AnalysisKeys.EventStartAbs + " ASC";
-                dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
-            }
-
-            if ((analysisSettings.EventsFile != null) && (dataTable != null))
-            {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
-            }
-            else
-            {
-                analysisResults.EventsFile = null;
-            }
-
-            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
-            {
-                double scoreThreshold = 0.1;
-                TimeSpan unitTime = TimeSpan.FromSeconds(60); //index for each time span of i minute
-                var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
-            }
-            else
-            {
-                analysisResults.IndicesFile = null;
-            }
-
-            //save image of sonograms
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
-            {
-                string imagePath = analysisSettings.ImageFile.FullName;
-                double eventThreshold = 0.0;
-                Image image = DrawSonogram(sonogram, predictedEvents, eventThreshold);
-                image.Save(imagePath, ImageFormat.Png);
+                Image image = DrawSonogram(sonogram, results.Item1);
+                image.Save(analysisSettings.ImageFile.FullName, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
             }
-            else
-            {
-                analysisResults.ImageFile = null;
-            }
-
-            analysisResults.Data = dataTable;
-            analysisResults.AudioDuration = recordingTimeSpan;
 
             return analysisResults;
         }
 
-        public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
+        public static AedConfiguration GetAedParametersFromConfigFileOrDefaults(dynamic configuration)
         {
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
-            if ((dt == null) || (dt.Rows.Count == 0)) return null;
-            //get its column headers
-            var dtHeaders = new List<string>();
-            var dtTypes = new List<Type>();
-            foreach (DataColumn col in dt.Columns)
+            var noiseReduction = NoiseReductionType.NONE;
+            if ((bool)configuration[AnalysisKeys.NoiseDoReduction])
             {
-                dtHeaders.Add(col.ColumnName);
-                dtTypes.Add(col.DataType);
-            }
+                string noiseReductionTypeString = configuration[AnalysisKeys.NoiseReductionType];
 
-            List<string> displayHeaders = null;
-            //check if config file contains list of display headers
-            if (fiConfigFile != null)
-            {
-                var configuration = new ConfigDictionary(fiConfigFile.FullName);
-                Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(AnalysisKeys.DisplayColumns))
-                    displayHeaders = configDict[AnalysisKeys.DisplayColumns].Split(',').ToList();
-            }
-            //if config file does not exist or does not contain display headers then use the original headers
-            if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
-
-            //now determine how to display tracks in display datatable
-            Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay = new bool[displayHeaders.Count];
-            for (int i = 0; i < displayTypes.Length; i++)
-            {
-                displayTypes[i] = typeof(double);
-                canDisplay[i] = false;
-                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
-            }
-
-            DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
-            foreach (DataRow row in dt.Rows)
-            {
-                DataRow newRow = table2Display.NewRow();
-                for (int i = 0; i < canDisplay.Length; i++)
+                if (string.IsNullOrWhiteSpace(noiseReductionTypeString))
                 {
-                    if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
-                    else newRow[displayHeaders[i]] = 0.0;
+                    // noop - leave NoiseReductionType as None
                 }
-                table2Display.Rows.Add(newRow);
-            }
-
-            //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventStartAbs))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventStartAbs + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventCount))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventCount + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyRankOrder))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyRankOrder + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyStartMinute))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyStartMinute + " ASC");
-            }
-
-            table2Display = NormaliseColumnsOfDataTable(table2Display);
-            return System.Tuple.Create(dt, table2Display);
-        }
-
-        /// <summary>
-        /// takes a data table of indices and normalises column values to values in [0,1].
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
-        public static DataTable NormaliseColumnsOfDataTable(DataTable dt)
-        {
-            string[] headers = DataTableTools.GetColumnNames(dt);
-            string[] newHeaders = new string[headers.Length];
-
-            List<double[]> newColumns = new List<double[]>();
-
-            for (int i = 0; i < headers.Length; i++)
-            {
-                double[] values = DataTableTools.Column2ArrayOfDouble(dt, headers[i]); //get list of values
-                if ((values == null) || (values.Length == 0)) continue;
-
-                double min = 0;
-                double max = 1;
-                if (headers[i].Equals(AnalysisKeys.KeyAvSignalAmplitude))
+                else
                 {
-                    min = -50;
-                    max = -5;
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (-50..-5dB)";
+                    noiseReduction = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noiseReductionTypeString, true);
                 }
-                else //default is to normalise in [0,1]
-                {
-                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
-                    newHeaders[i] = headers[i];
-                }
-            } //for loop
-
-            //convert type int to type double due to normalisation
-            Type[] types = new Type[newHeaders.Length];
-            for (int i = 0; i < newHeaders.Length; i++) types[i] = typeof(double);
-            var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
-            return processedtable;
-        }
-
-        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
-        {
-            if ((sourceDuration == null) || (sourceDuration == TimeSpan.Zero)) return null;
-            double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
-            int unitCount = (int)(units / 1);   //get whole minutes
-            if (units % 1 > 0.0) unitCount += 1; //add fractional minute
-            int[] eventsPerUnitTime = new int[unitCount]; //to store event counts
-            int[] bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
-
-            foreach (DataRow ev in dt.Rows)
+            }
+            else
             {
-                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EventStartAbs];
-                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EventNormscore];
-                int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
-                if (eventScore != 0.0) eventsPerUnitTime[timeUnit]++;
-                if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
+                Log.Warn("Noise reduction disabled, default AED noise removal used - this indicates a bad config file");
             }
 
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.KeyStartMinute, AudioAnalysisTools.AnalysisKeys.EventTotal, ("#Ev>" + scoreThreshold) };
-            Type[] types = { typeof(int), typeof(int), typeof(int) };
-            var newtable = DataTableTools.CreateTable(headers, types);
-
-            for (int i = 0; i < eventsPerUnitTime.Length; i++)
-            {
-                int unitID = (int)(i * unitTime.TotalMinutes);
-                newtable.Rows.Add(unitID, eventsPerUnitTime[i], bigEvsPerUnitTime[i]);
-            }
-            return newtable;
+            return new AedConfiguration()
+                       {
+                           IntensityThreshold = configuration.IntensityThreshold,
+                           SmallAreaThreshold = configuration.SmallAreaThreshold,
+                           BandpassMinimum = configuration.BandpassMinimum,
+                           BandpassMaximum = configuration.BandpassMaximum,
+                           AedEventColor = ((string)configuration.AedEventColor).ParseAsColor(),
+                           AedHitColor = ((string)configuration.AedHitColor).ParseAsColor(),
+                           ResampleRate = configuration[AnalysisKeys.ResampleRate],
+                           NoiseReductionType = noiseReduction,
+                           NoiseReductionParameter = configuration[AnalysisKeys.NoiseBgThreshold]
+                       };
         }
 
-        /// <summary>
-        /// Detect using audio file.
-        /// </summary>
-        /// <param name="wavFilePath">
-        /// path to audio file.
-        /// </param>
-        /// <param name="intensityThreshold">
-        /// Intensity threshold.
-        /// </param>
-        /// <param name="smallAreaThreshold">
-        /// Small area threshold.
-        /// </param>
-        /// <param name="bandPassMinimum">
-        /// The band Pass Minimum.
-        /// </param>
-        /// <param name="bandPassMaximum">
-        /// The band Pass Maximum.
-        /// </param>
-        /// <returns>
-        /// Sonogram and Acoustic events.
-        /// </returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
-            FileInfo wavFilePath,
-            double intensityThreshold,
-            int smallAreaThreshold,
-            double bandPassMinimum,
-            double bandPassMaximum)
+        public override void SummariseResults(
+            AnalysisSettings settings, 
+            FileSegment inputFileSegment, 
+            EventBase[] events, 
+            SummaryIndexBase[] indices, 
+            SpectralIndexBase[] spectralIndices, 
+            AnalysisResult2[] results)
         {
-            BaseSonogram sonogram = FileToSonogram(wavFilePath.FullName);
-            List<AcousticEvent> events = Detect(
-                sonogram, intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum);
-            return Tuple.Create(sonogram, events);
+            // noop
         }
 
-        /// <summary>
-        /// Detect events using sonogram.
-        /// </summary>
-        /// <param name="sonogram">
-        /// Existing sonogram.
-        /// </param>
-        /// <param name="intensityThreshold">
-        /// Intensity threshold.
-        /// </param>
-        /// <param name="smallAreaThreshold">
-        /// Small area threshold.
-        /// </param>
-        /// <param name="bandPassMinimum">
-        /// The band Pass Minimum.
-        /// </param>
-        /// <param name="bandPassMaximum">
-        /// The band Pass Maximum.
-        /// </param>
-        /// <returns>
-        /// Acoustic events.
-        /// </returns>
-        public static List<AcousticEvent> Detect(
-            BaseSonogram sonogram,
-            double intensityThreshold,
-            int smallAreaThreshold,
-            double bandPassMinimum,
-            double bandPassMaximum)
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            TowseyLibrary.Log.WriteLine("AED start");
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
-                intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum, sonogram.Data);
-            TowseyLibrary.Log.WriteLine("AED finished");
-
-            SonogramConfig config = sonogram.Configuration;
-            double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
-
-            List<AcousticEvent> events =
-                oblongs.Select(o => {
-                    var ae = new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth);
-                    ae.BorderColour = AedEventColor;
-                    return ae;
-                }).ToList();
-            TowseyLibrary.Log.WriteIfVerbose("AED # events: " + events.Count);
-            return events;
+            WriteEventsFileStatic(destination, results);
         }
 
-        /// <summary>
-        /// The detect.
-        /// </summary>
-        /// <param name="wavFilePath">
-        /// The wav file path.
-        /// </param>
-        /// <param name="intensityThreshold">
-        /// The intensity threshold.
-        /// </param>
-        /// <param name="smallAreaThreshold">
-        /// The small area threshold.
-        /// </param>
-        /// <returns>
-        /// </returns>
-        public static List<AcousticEvent> Detect(
-            BaseSonogram wavFilePath, double intensityThreshold, int smallAreaThreshold)
+        public static void WriteEventsFileStatic(FileInfo destination, IEnumerable<EventBase> results)
         {
-            // TODO fix constants
-            return Detect(wavFilePath, intensityThreshold, smallAreaThreshold, 0, 11025);
+            Csv.WriteToCsv(destination, results);
         }
 
-        /// <summary>
-        /// The detect.
-        /// </summary>
-        /// <param name="wavFilePath">
-        /// The wav file path.
-        /// </param>
-        /// <param name="intensityThreshold">
-        /// The intensity threshold.
-        /// </param>
-        /// <param name="smallAreaThreshold">
-        /// The small area threshold.
-        /// </param>
-        /// <returns>
-        /// </returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
-            FileInfo wavFilePath, double intensityThreshold, int smallAreaThreshold)
+        public override void WriteSpectrumIndicesFiles(
+            DirectoryInfo destination, 
+            string fileNameBase, 
+            IEnumerable<SpectralIndexBase> results)
         {
-            // TODO fix constants
-            return Detect(wavFilePath, intensityThreshold, smallAreaThreshold, 0, 11025);
+            throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Create a sonogram from a wav audio file.
-        /// </summary>
-        /// <param name="wavFilePath">
-        /// path to audio file.
-        /// </param>
-        /// <returns>
-        /// Sonogram from audio.
-        /// </returns>
-        public static BaseSonogram FileToSonogram(string wavFilePath)
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
-            var recording = new AudioRecording(wavFilePath);
-            if (recording.SampleRate != 22050)
-            {
-                recording.ConvertSampleRate22kHz();
-            }
-
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
-
-            return new SpectrogramStandard(config, recording.WavReader);
+            Csv.WriteToCsv(destination, results);
         }
 
-        /// <summary>
-        /// Create and save sonogram image.
-        /// </summary>
-        /// <param name="imagePath"> </param>
-        /// <param name="sonogram">
-        /// Existing sonogram.
-        /// </param>
-        /// <param name="events">
-        /// Acoustic events.
-        /// </param>
-        public static void GenerateImage(
-            string imagePath, BaseSonogram sonogram, List<AcousticEvent> events)
-        {
-            TowseyLibrary.Log.WriteIfVerbose("imagePath = " + imagePath);
-            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
-
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            image.Save(imagePath);
-        }
-
-        /// <summary>
-        /// Create and save sonogram image.
-        /// </summary>
-        /// <param name="wavFilePath">
-        /// path to audio file.
-        /// </param>
-        /// <param name="outputFolder">
-        /// Working directory.
-        /// </param>
-        /// <param name="sonogram">
-        /// Existing sonogram.
-        /// </param>
-        /// <param name="events">
-        /// Acoustic events.
-        /// </param>
-        public static void GenerateImage(
-            string wavFilePath, string outputFolder, BaseSonogram sonogram, List<AcousticEvent> events)
-        {
-            string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
-            GenerateImage(imagePath, sonogram, events);
-        }
-
-        public static Image DrawSonogram(BaseSonogram sonogram, List<AcousticEvent> events, double eventThreshold)
-        {
-            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
-            
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-
-            return image.GetImage();
-        }
-
-        /// <summary>
-        /// The get aed parameters from config file or defaults.
-        /// </summary>
-        /// <param name="iniPath">
-        /// The ini path.
-        /// </param>
-        /// <param name="intensityThreshold">
-        /// The intensity threshold.
-        /// </param>
-        /// <param name="bandPassFilterMaximum">
-        /// The band pass filter maximum.
-        /// </param>
-        /// <param name="bandPassFilterMinimum">
-        /// The band pass filter minimum.
-        /// </param>
-        /// <param name="smallAreaThreshold">
-        /// The small area threshold.
-        /// </param>
-        internal static void GetAedParametersFromConfigFileOrDefaults(
-            FileInfo iniPath,
-            out double intensityThreshold,
-            out double bandPassFilterMaximum,
-            out double bandPassFilterMinimum,
-            out int smallAreaThreshold)
-        {
-            var config = new ConfigDictionary(iniPath);
-            Dictionary<string, string> dict = config.GetTable();
-            int propertyUsageCount = 0;
-
-            intensityThreshold = Default.intensityThreshold;
-            smallAreaThreshold = Default.smallAreaThreshold;
-            bandPassFilterMaximum = Default.bandPassMaxDefault;
-            bandPassFilterMinimum = Default.bandPassMinDefault;
-
-            if (dict.ContainsKey(AnalysisKeys.KeyAedIntensityThreshold))
-            {
-                intensityThreshold = Convert.ToDouble(dict[AnalysisKeys.KeyAedIntensityThreshold]);
-                propertyUsageCount++;
-            }
-
-            if (dict.ContainsKey(AnalysisKeys.KeyAedSmallAreaThreshold))
-            {
-                smallAreaThreshold = Convert.ToInt32(dict[AnalysisKeys.KeyAedSmallAreaThreshold]);
-                propertyUsageCount++;
-            }
-
-            if (dict.ContainsKey(AnalysisKeys.KeyBandpassMaximum))
-            {
-                bandPassFilterMaximum = Convert.ToDouble(dict[AnalysisKeys.KeyBandpassMaximum]);
-                propertyUsageCount++;
-            }
-
-            if (dict.ContainsKey(AnalysisKeys.KeyBandpassMinimum))
-            {
-                bandPassFilterMinimum = Convert.ToDouble(dict[AnalysisKeys.KeyBandpassMinimum]);
-                propertyUsageCount++;
-            }
-
-            TowseyLibrary.Log.WriteIfVerbose("Using {0} file params and {1} AED defaults", propertyUsageCount, 4 - propertyUsageCount);
-        }
-
-        public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
-        {
-            if (predictedEvents == null) return null;
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,        //1
-                                 AudioAnalysisTools.AnalysisKeys.EventStartMin,    //2
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec,    //3
-                                 AudioAnalysisTools.AnalysisKeys.EventStartAbs,    //4
-                                 AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,   //5
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration,     //6
-                                 //AudioAnalysisTools.Keys.EVENT_INTENSITY,
-                                 AudioAnalysisTools.AnalysisKeys.EventName,         //7
-                                 AudioAnalysisTools.AnalysisKeys.DominantFrequency,
-                                 AudioAnalysisTools.AnalysisKeys.OscillationRate,
-                                 AudioAnalysisTools.AnalysisKeys.EventScore,
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore,
-                                 AudioAnalysisTools.AnalysisKeys.MaxHz,
-                                 AudioAnalysisTools.AnalysisKeys.MinHz
-                               };
-            //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(double), 
-                             typeof(double), typeof(double), typeof(double), typeof(double), typeof(double) };
-
-            var dataTable = DataTableTools.CreateTable(headers, types);
-            if (predictedEvents.Count == 0) return dataTable;
-
-            foreach (var ev in predictedEvents)
-            {
-                DataRow row = dataTable.NewRow();
-                row[AudioAnalysisTools.AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //Set now - will overwrite later
-                row[AudioAnalysisTools.AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.AnalysisKeys.EventDuration] = (double)ev.Duration;   //duration in seconds
-                //row[AudioAnalysisTools.Keys.EVENT_INTENSITY] = (double)ev.kiwi_intensityScore;   //
-                row[AudioAnalysisTools.AnalysisKeys.EventName] = (string)ev.Name;   //
-                row[AudioAnalysisTools.AnalysisKeys.DominantFrequency] = (double)ev.DominantFreq;
-                row[AudioAnalysisTools.AnalysisKeys.OscillationRate] = 1 / (double)ev.Periodicity;
-                row[AudioAnalysisTools.AnalysisKeys.EventScore] = (double)ev.Score;      //Score
-                row[AudioAnalysisTools.AnalysisKeys.EventNormscore] = (double)ev.ScoreNormalised;
-
-                row[AudioAnalysisTools.AnalysisKeys.MaxHz] = (double)ev.MaxFreq;
-                row[AudioAnalysisTools.AnalysisKeys.MinHz] = (double)ev.MinFreq;
-
-                dataTable.Rows.Add(row);
-            }
-            return dataTable;
-        }
+        #endregion
     }
 }

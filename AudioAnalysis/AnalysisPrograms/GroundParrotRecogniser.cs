@@ -8,12 +8,14 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing.Imaging;
     using System.IO;
 
     //using AnalysisPrograms.Processing;
     using AnalysisPrograms.Production;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.WavTools;
 
     using QutSensors.AudioAnalysis.AED;
 
@@ -94,13 +96,10 @@ namespace AnalysisPrograms
         /// </returns>
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
             FileInfo wavFilePath,
-            double intensityThreshold,
-            double bandPassFilterMaximum,
-            double bandPassFilterMinimum,
-            int smallAreaThreshold,
+            Aed.AedConfiguration aedConfiguration,
             double eprNormalisedMinScore)
         {
-            Tuple<BaseSonogram, List<AcousticEvent>> aed = AED.Detect(wavFilePath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
+            Tuple<AcousticEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration);
 
             return Detect(aed, eprNormalisedMinScore, wavFilePath);
         }
@@ -120,10 +119,10 @@ namespace AnalysisPrograms
         /// <returns>
         /// Sonogram and events.
         /// </returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(Tuple<BaseSonogram, List<AcousticEvent>> aed, double eprNormalisedMinScore, FileInfo wavFilePath)
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(Tuple<AcousticEvent[], AudioRecording, BaseSonogram> aed, double eprNormalisedMinScore, FileInfo wavFilePath)
         {
             var events = new List<Util.Rectangle<double, double>>();
-            foreach (AcousticEvent ae in aed.Item2)
+            foreach (AcousticEvent ae in aed.Item1)
             {
                 events.Add(Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.MaxFreq, ae.MinFreq));
             }
@@ -134,7 +133,7 @@ namespace AnalysisPrograms
                 EventPatternRecog.DetectGroundParrots(events, eprNormalisedMinScore);
             Log.WriteLine("EPR finished");
 
-            SonogramConfig config = aed.Item1.Configuration;
+            SonogramConfig config = aed.Item3.Configuration;
             double framesPerSec = 1 / config.GetFrameOffset(); // Surely this should go somewhere else
             double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
 
@@ -149,7 +148,7 @@ namespace AnalysisPrograms
                 eprEvents.Add(ae);
             }
 
-            return Tuple.Create(aed.Item1, eprEvents);
+            return Tuple.Create(aed.Item3, eprEvents);
         }
 
         /// <summary>
@@ -171,13 +170,9 @@ namespace AnalysisPrograms
 
 
             // READ PARAMETER VALUES FROM INI FILE
-            double intensityThreshold;
-            double bandPassFilterMaximum;
-            double bandPassFilterMinimum;
-            int smallAreaThreshold;
-            AED.GetAedParametersFromConfigFileOrDefaults(arguments.Config, out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
+            var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(arguments.Config);
 
-            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold, Default.eprNormalisedMinScore);
+            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, aedConfig, Default.eprNormalisedMinScore);
             List<AcousticEvent> eprEvents = result.Item2;
 
             eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
@@ -191,7 +186,11 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine();
 
             string outputFolder = arguments.Config.DirectoryName;
-            AED.GenerateImage(arguments.Source.FullName, outputFolder, result.Item1, eprEvents);
+            string wavFilePath = arguments.Source.FullName;
+            BaseSonogram sonogram = result.Item1;
+            string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
+            var image = Aed.DrawSonogram(sonogram, eprEvents);
+            image.Save(imagePath, ImageFormat.Png);
             //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
 
             Log.WriteLine("Finished");
