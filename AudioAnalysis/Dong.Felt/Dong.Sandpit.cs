@@ -105,7 +105,7 @@
                     //                                  {0,  255,  255, 0},
                     //                                  {0,  255,  255, 0},
                     //                                  {0,    0,    0, 0}};
-                    var dataMatrix = ImageAnalysisTools.DiscreteFourierTransform(imageData);
+                    var dataMatrix = _2DFourierTransform.DiscreteFourierTransform(imageData);
                     var outputImagePath = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png";
                     Bitmap bitmap = (Bitmap)Image.FromFile(inputDirectory.FullName, true);
                     DrawDFTImage(outputImagePath, dataMatrix, bitmap);                    
@@ -363,7 +363,6 @@
                     var color = Color.Black;
                     if (imageData[i, j] > 0.0)
                     {
-
                         double v = imageData[i, j];
                         int R = (int)(255 * v);
                         if (R > 255) R = 255;
