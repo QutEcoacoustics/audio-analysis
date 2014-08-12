@@ -14,7 +14,10 @@ namespace AnalysisBase.ResultBases
     /// </summary>
     public abstract class EventBase : ResultBase 
     {
-        //AudioAnalysisTools.Keys.EVENT_START_ABS,    //4
+        /// <summary>
+        /// Not intended to be set by Analyzers.
+        /// AudioAnalysisTools.Keys.EVENT_START_ABS,    //4
+        /// </summary>
         public double? EventStartAbsolute { get; set; }
 
         //AudioAnalysisTools.Keys.EVENT_SCORE,
@@ -26,7 +29,11 @@ namespace AnalysisBase.ResultBases
         //AudioAnalysisTools.Keys.MIN_HZ
         public double? MinHz { get; set; }
 
-        //AudioAnalysisTools.Keys.EVENT_COUNT,        //1
+        /// <summary>
+        /// AudioAnalysisTools.Keys.EVENT_COUNT,        //1
+        /// 
+        /// Not intended to be set by Analyzers.
+        /// </summary>
         public int EventCount { get; set; }
 
 
@@ -44,7 +51,7 @@ namespace AnalysisBase.ResultBases
                 return result;
             }
 
-            return this.EventStartSeconds.CompareTo(((EventBase) other).EventStartSeconds);
+            return this.EventStartSeconds.CompareTo(((EventBase)other).EventStartSeconds);
         }
     }
 }

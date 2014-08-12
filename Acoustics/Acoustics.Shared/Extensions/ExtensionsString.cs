@@ -310,6 +310,14 @@ namespace System
             return retVal;
         }
 
+        ///http://stackoverflow.com/questions/2109756/how-to-get-color-from-hexadecimal-color-code-using-net
+        public static Color ParseAsColor(this string str)
+        {
+            int argb = int.Parse(str.Replace("#", string.Empty), NumberStyles.HexNumber);
+            Color color = Color.FromArgb(argb);
+            return color;
+        }
+
         public static string ToCommaSeparatedList<T>(this IEnumerable<T> items)
         {
             if (items == null || !items.Any())

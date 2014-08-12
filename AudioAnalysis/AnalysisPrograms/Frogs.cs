@@ -253,9 +253,9 @@ namespace AnalysisPrograms
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFileName = fName;
+                    ev.FileName = fName;
                     //ev.Name = analysisName; //TEMPORARY DISABLE
-                    ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
+                    ev.SegmentDuration = recordingTimeSpan;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);

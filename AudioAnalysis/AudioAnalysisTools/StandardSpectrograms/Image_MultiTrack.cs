@@ -17,7 +17,7 @@ namespace AudioAnalysisTools
         public Image sonogramImage { get; private set; }
         List<Image_Track> tracks = new List<Image_Track>();
         public IEnumerable<Image_Track> Tracks { get { return this.tracks; } }
-        public List<AcousticEvent> eventList { get; set; }
+        public IEnumerable<AcousticEvent> eventList { get; set; }
         public List<SpectralTrack> spectralTracks { get; set; }
         double[,] SuperimposedMatrix { get; set; }
         double[,] SuperimposedRedTransparency { get; set; }
@@ -49,7 +49,7 @@ namespace AudioAnalysisTools
             this.tracks.Add(track);
         }
 
-        public void AddEvents(List<AcousticEvent> _list, int _nyquist, int _freqBinCount, double _framesPerSecond)
+        public void AddEvents(IEnumerable<AcousticEvent> _list, int _nyquist, int _freqBinCount, double _framesPerSecond)
         {
             this.eventList       = _list;
             this.nyquistFreq     = _nyquist;
@@ -150,33 +150,36 @@ namespace AudioAnalysisTools
             // Calculate total height of the bmp
             var height = this.CalculateImageHeight();
 
-            //set up a new image having the correct dimensions
-            var image2return = new Bitmap(this.sonogramImage.Width, height, PixelFormat.Format24bppRgb);
+            // set up a new image having the correct dimensions
+            var imageToReturn = new Bitmap(this.sonogramImage.Width, height, PixelFormat.Format32bppArgb);
 
-            //need to do this before get Graphics because cannot PutPixels into Graphics object.
+            // need to do this before get Graphics because cannot PutPixels into Graphics object.
             if (this.SuperimposedRedTransparency != null)
             {
                 this.sonogramImage = this.OverlayRedTransparency((Bitmap)this.sonogramImage);
             }
-            if (this.SuperimposedMatrix != null) 
-                this.sonogramImage = this.OverlayMatrix((Bitmap)this.sonogramImage);
-
-
-            //create new graphics canvas and add in the sonogram image
-            using (var g = Graphics.FromImage(image2return))
+            if (this.SuperimposedMatrix != null)
             {
-                //g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
-                GraphicsSegmented.Draw(g, this.sonogramImage); // USE THIS CALL INSTEAD.
+                this.sonogramImage = this.OverlayMatrix((Bitmap)this.sonogramImage);
+            }
 
-                if (this.eventList != null) //draw events first because their rectangles can cover other features
+            // create new graphics canvas and add in the sonogram image
+            using (var g = Graphics.FromImage(imageToReturn))
+            {
+                ////g.DrawImage(this.SonoImage, 0, 0);          // WARNING ### THIS CALL DID NOT WORK THEREFORE
+                GraphicsSegmented.Draw(g, this.sonogramImage);  // USE THIS CALL INSTEAD.
+
+                // draw events first because their rectangles can cover other features
+                if (this.eventList != null) 
                 {
                     foreach (AcousticEvent e in this.eventList)
                     {
-                        e.DrawEvent(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
+                        e.DrawEvent(g, imageToReturn, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
                     }
                 }
 
-                if (this.Points != null) //draw events first because their rectangles can cover other features
+                // draw events first because their rectangles can cover other features
+                if (this.Points != null) 
                 {
                     // var stats = new StatDescriptive(this.points.Select(p => p.Item2).ToArray());
                     // stats.Analyze(); 
@@ -188,29 +191,42 @@ namespace AudioAnalysisTools
                     }       
                 }
 
-                if (this.spectralTracks != null) //draw spectral tracks 
+                // draw spectral tracks
+                if (this.spectralTracks != null)  
                 {
                     foreach (SpectralTrack t in this.spectralTracks)
+                    {
                         t.DrawTrack(g, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
+                    }
                 }
 
-                if (this.FreqHits != null) this.DrawFreqHits(g);
+                if (this.FreqHits != null)
+                {
+                    this.DrawFreqHits(g);
+                }
 
-                if (this.SuperimposedRainbowTransparency != null) this.OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
-                if (this.SuperimposedDiscreteColorMatrix != null) this.OverlayDiscreteColorMatrix(g, (Bitmap)this.sonogramImage);
+                if (this.SuperimposedRainbowTransparency != null)
+                {
+                    this.OverlayRainbowTransparency(g, (Bitmap)this.sonogramImage);
+                }
+
+                if (this.SuperimposedDiscreteColorMatrix != null)
+                {
+                    this.OverlayDiscreteColorMatrix(g, (Bitmap)this.sonogramImage);
+                }
             }
 
-            //now add tracks to the image
+            // now add tracks to the image
             int offset = this.sonogramImage.Height;
             foreach (Image_Track track in this.tracks)
             {
                 track.topOffset = offset;
                 track.bottomOffset = offset + track.Height - 1;
-                track.DrawTrack(image2return);
+                track.DrawTrack(imageToReturn);
                 offset += track.Height;
             }
 
-            return image2return;
+            return imageToReturn;
         }
 
         private int CalculateImageHeight()

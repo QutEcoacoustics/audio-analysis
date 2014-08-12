@@ -62,14 +62,14 @@ namespace TowseyLibrary
         /// </param>
         /// <param name="col2">
         /// </param>
-        /// <param name="perimiterPoints"></param>
-        public Oblong(int row1, int col1, int row2, int col2, ISet<Point> perimiterPoints)
+        /// <param name="hitElements"></param>
+        public Oblong(int row1, int col1, int row2, int col2, ISet<Point> hitElements)
         {
             this.RowTop = row1;
             this.ColumnLeft = col1;
             this.RowBottom = row2;
             this.ColumnRight = col2;
-            this.PerimiterPoints = perimiterPoints;
+            this.HitElements = hitElements;
             this.RowWidth = row2 - row1 + 1;
             this.ColWidth = col2 - col1 + 1;
             this.Category = -1;
@@ -127,7 +127,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Gets or sets the collection of points that form the perimeter of the oblong
         /// </summary>
-        public ISet<Point> PerimiterPoints { get; set; }
+        public ISet<Point> HitElements { get; set; }
 
         public int Category { get; set; }
 

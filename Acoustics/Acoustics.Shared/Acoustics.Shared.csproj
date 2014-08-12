@@ -165,7 +165,8 @@
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="CompareFeatures.cs" />
     <Compile Include="Coordinate.cs" />
-    <Compile Include="Csv.cs" />
+    <Compile Include="Csv\Csv.cs" />
+    <Compile Include="Csv\ISetPointConverter.cs" />
     <Compile Include="Debugging\AutoAttachVs.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
@@ -190,7 +191,7 @@
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="Logging\Logging.cs" />
-    <Compile Include="MatrixMapper.cs" />
+    <Compile Include="Csv\MatrixMapper.cs" />
     <Compile Include="MediaTypes.cs" />
     <Compile Include="MinimalLocationSummary.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
