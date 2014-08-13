@@ -214,6 +214,11 @@ namespace AnalysisPrograms
                 SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
 
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+                // ###############################################################
+                // TEMPORARY TRIAL OF LocalContrastNormalisation
+                //int fieldSize = 9;
+                //LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
+                // ###############################################################
                 var image = sonogram.GetImage(false, false);
 
                 Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
