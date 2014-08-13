@@ -114,6 +114,27 @@ namespace TowseyLibrary
         }
 
 
+        public static double[,] FrameMatrixWithZeros(double[,] M, int frameWidth)
+        {            
+            int inRowCount = M.GetLength(0);
+            int inColCount = M.GetLength(1);
+
+            int outRowCount = inRowCount + (2 * frameWidth);
+            int outColCount = inRowCount + (2 * frameWidth);
+
+            var outputMatrix = new double[outRowCount, outColCount];
+
+            for (int r = 0; r < inRowCount; r++)
+            {
+                for (int c = 0; c < inColCount; c++)
+                {
+                    outputMatrix[r + frameWidth, c + frameWidth] = M[r, c];
+                }
+            }
+
+            return outputMatrix;
+        }
+
 
 
 
