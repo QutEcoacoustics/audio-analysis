@@ -38,7 +38,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            if (true)  // concatenating spectrogram images with gaps between them.
+            if (false)  // concatenating spectrogram images with gaps between them.
             {
                 int spectralDim = 256;
                 double[] spectralIndices = new double[spectralDim];
@@ -63,7 +63,7 @@ namespace AnalysisPrograms
                         int colourIndex = (int)(255 * array[p]);
                         if (colourIndex > 255) colourIndex = 255;
                         else
-                        if (colourIndex < 0) colourIndex = 0;
+                            if (colourIndex < 0) colourIndex = 0;
                         bmp.SetPixel(d, spectralDim - p - 1, Color.FromArgb(colourIndex, colourIndex, colourIndex));
                     }
 
@@ -81,8 +81,6 @@ namespace AnalysisPrograms
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
-
-
 
 
             if (false)  // concatenating spectrogram images with gaps between them.
@@ -112,13 +110,13 @@ namespace AnalysisPrograms
             {
                 SpectralClustering.Sandpit();
             } // end if (true)
-            
+
 
             // experiments with false colour images - categorising/discretising the colours
             if (false)
             {
                 LDSpectrogramDiscreteColour.DiscreteColourSpectrograms();
-            } 
+            }
 
             Log.WriteLine("# Finished!");
         }
