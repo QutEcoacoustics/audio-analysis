@@ -38,6 +38,20 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
+            if (true)  // do 2D-FFT of an image.
+            {
+                string imageFilePath = @"C:\SensorNetworks\Output\FFT2D\test5.png";
+                bool reversed = false;
+                double[,] matrix = FFT2D.GetImageDataAsGrayIntensity(imageFilePath, reversed);
+                //matrix = MatrixTools.normalise(matrix);
+                double[,] output = FFT2D.FFT2Dimensional(matrix);
+                Console.WriteLine("Sum={0}", (MatrixTools.Matrix2Array(output)).Sum());
+                //draws matrix after normalisation with white=low and black=high
+                ImageTools.DrawReversedMatrix(output, @"C:\SensorNetworks\Output\FFT2D\test5_2DFFT.png");
+            }
+
+
+
             if (false)  // concatenating spectrogram images with gaps between them.
             {
                 int spectralDim = 256;

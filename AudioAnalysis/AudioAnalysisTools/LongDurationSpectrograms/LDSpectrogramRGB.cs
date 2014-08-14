@@ -540,7 +540,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return null;
             }
 
-            Image bmp = ImageTools.DrawMatrixWithoutNormalisation(matrix);
+            Image bmp = ImageTools.DrawReversedMatrixWithoutNormalisation(matrix);
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             int nyquist = this.SampleRate / 2; 
             int herzInterval = 1000;

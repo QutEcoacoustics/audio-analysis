@@ -187,9 +187,9 @@ using System.Drawing;
 
 
             var list = new List<Image>();
-            Image image1 = ImageTools.DrawMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogram));
+            Image image1 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(amplitudeSpectrogram));
 
-            Image image2 = ImageTools.DrawMatrix(MatrixTools.MatrixRotate90Anticlockwise(deciBelSpectrogram));
+            Image image2 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(deciBelSpectrogram));
 
 
             //BaseSonogram sonogram = SpectrogramTools.Audio2Sonogram(fiAudio, configDict);

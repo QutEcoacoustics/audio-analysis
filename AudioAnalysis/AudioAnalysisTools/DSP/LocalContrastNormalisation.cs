@@ -17,7 +17,7 @@ namespace AudioAnalysisTools.DSP
         public static double[,] ComputeLCN(double[,] inputM, int fieldSize)
         {
             var inputM2 = MatrixTools.MatrixRotate90Anticlockwise(inputM);
-            ImageTools.DrawMatrix(inputM2, @"C:\SensorNetworks\Output\Test\TESTMATRIX1.png");
+            ImageTools.DrawReversedMatrix(inputM2, @"C:\SensorNetworks\Output\Test\TESTMATRIX1.png");
 
             int rowCount = inputM.GetLength(0);
             int colCount = inputM.GetLength(1);
@@ -51,7 +51,7 @@ namespace AudioAnalysisTools.DSP
                 }
             }
             outputM = MatrixTools.MatrixRotate90Anticlockwise(outputM);
-            ImageTools.DrawMatrix(outputM, @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png");
+            ImageTools.DrawReversedMatrix(outputM, @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png");
 
 
 
