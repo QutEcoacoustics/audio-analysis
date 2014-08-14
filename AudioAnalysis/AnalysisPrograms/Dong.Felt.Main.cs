@@ -342,7 +342,7 @@ namespace AnalysisPrograms
 
             // This config is to set up the parameters used in ridge Detection, the parameters can be changed. 
             var ridgeConfig = new RidgeDetectionConfiguration {
-                RidgeDetectionmMagnitudeThreshold = 6.5,
+                RidgeDetectionmMagnitudeThreshold = 5.5,
                 RidgeMatrixLength = 5,
                 FilterRidgeMatrixLength = 7,
                 MinimumNumberInRidgeInMatrix = 3
