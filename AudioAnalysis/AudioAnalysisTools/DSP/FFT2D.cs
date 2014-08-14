@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Numerics;  // this is needed for the use of complex numbers. 
 using MathNet.Numerics; // this is needed for the class ComplexExtensions which does the calculation of the magnitude of a complex number.
 using MathNet.Numerics.Transformations; // this is needed for the 2D FFT
 //using MathNet.Numerics.ComplexExtensions;
 
 using TowseyLibrary;
+using System.Drawing;
 
 
 
@@ -19,93 +19,191 @@ namespace AudioAnalysisTools.DSP
     /// IMPORTANT: The matrix passed to this class for performing of 2D FFT need not necessarily have width equal to height
     /// but both width and height MUST be a power of two.
     /// </summary>
-    class FFT2D
+    public class FFT2D
     {
-
-        public double[,] FFT2Dimensional(double[,] M)
+        /// <summary>
+        /// Performs a 2D-Fourier transform on data in the passed Matrix/image.
+        /// </summary>
+        /// <param name="M"></param>
+        /// <returns></returns>
+        public static double[,] FFT2Dimensional(double[,] M)
         {
-            double[] sampleData = this.Matrix2PaddedVector(M);
+            // Step 1: convert matrix to complex array
+            double[] sampleData = Matrix2PaddedVector(M);
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
-            int[] dims = { rowCount, colCount };
 
+            // Step 2: do 2d fft 
+            int[] dims = { rowCount, colCount };
             var cft = new ComplexFourierTransformation();
             cft.TransformForward(sampleData, dims);
-            System.Numerics.Complex[] sampleComplexPairs = new System.Numerics.Complex[sampleData.Length / 2];
 
-            // After transformation, sampleData now has real and imaginary values in alternating blocks of rowCount / 2.
-            // For example: if the passed image/matrix is 16 * 16, sampleData now has 8 reals followed by 8 imaginary numbers
-            // repeated 32 times. The Re and Im values are combined into MAGNITUDES
-            for (int i = 0; i < sampleData.Length; i++)
-            {
-                var step = rowCount / 2;
-                var ite = i / step;
-                var mod = i % step;
-                var sampleDataColCount = sampleData.Length / rowCount;
+            // Step 3: Convert complex output array to array of real magnitude values
+            var magnitudeMatrix = FFT2DOutput2MatrixOfMagnitude(sampleData, dims);  
 
-                System.Numerics.Complex item = new System.Numerics.Complex();
-                if (ite % 2 == 0)
-                {
-                    //item.Real = sampleData[(ite * step) + mod];
-                    //item.Im = sampleData[((ite + 1) * step) + mod];
-                    //sampleComplexPairs[(ite * step / 2) + mod] = item;
-                    double real      = sampleData[ (ite      * step) + mod];
-                    double imaginary = sampleData[((ite + 1) * step) + mod];
-                    item = new System.Numerics.Complex(real, imaginary);
-                    double magnitude = ComplexExtensions.MagnitudeSquared(item);
+            // Step 3: do the shift for array of magnitude values.
+            // var outputData = magnitudeMatrix; // no shifting
+            var outputData = fftShift(magnitudeMatrix);
 
-                }
-            }
-
-            var outputData = new double[rowCount, colCount];
-            for (var r = 0; r < rowCount; r++)
-            {
-                for (var c = 0; c < colCount; c++)
-                {
-                    //outputData[c, r] = ComplexExtensions.MagnitudeSquared(item[c]);
-                    //outputData[c, r] = Math.Sqrt(Math.Pow(sampleComplexPairs[r * rowCount + c].Real, 2.0)
-                    //    + Math.Pow(sampleComplexPairs[r * rowCount + c].Imag, 2.0));
-                }
-            }
             return outputData;
         }
 
 
         /// <summary>
         /// Concatenates the columns of the passed matrix and inserts zeros in every second position.
-        /// The output vector is now assumed to be a vector of Complex numbers, 
+        /// The matrix is assumed to be an image and therefore read it using image coordinates.
+        /// The output vector is now assumed to be a vector of Complex numbers,
         /// with the real values in the even positions and the imaginary numbers in the odd positions.
         /// </summary>
         /// <param name="M"></param>
         /// <returns></returns>
-        private double[] Matrix2PaddedVector(double[,] M)
+        public static double[] Matrix2PaddedVector(double[,] M)
         {
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
-            var vector = new double[rowCount * colCount];
-
-            // set up vector with additional space for padding zeroes.
+            // set up sampleData with additional space for padding zeroes.
             var sampleData = new double[rowCount * colCount * 2];
-            for (var r = 0; r < rowCount * 2; r++)
+            for (var r = 0; r < rowCount; r++)
             {
-                var colData = MatrixTools.GetColumn(M, r / 2);
-                if (r % 2 == 0)
+                for (var c = 0; c < colCount; c++)
                 {
-                    for (var c = 0; c < colData.Length; c++)
-                    {
-                        sampleData[(r * rowCount) + c] = colData[c];
-                    }
+                    sampleData[((r * rowCount) + c) * 2] = M[r, c];
+                    sampleData[((r * rowCount) + c) * 2 + 1] = 0.0;
                 }
-                else
+            }
+            return sampleData;
+        }
+
+
+        /// <summary>
+        /// First construct complex sampleData, then calculate the magnitude of sampleData.
+        /// </summary>
+        /// <param name="sampleData"></param>
+        /// <param name="dims"></param>
+        /// <returns></returns>
+        public static double[,] FFT2DOutput2MatrixOfMagnitude(double[] sampleData, int[] dims)
+        {
+
+            // After 2D-FFT transformation, the sampleData array now has alternating real and imaginary values.
+            // Create an array of class Complex.
+            Complex[] sampleComplexPairs = new Complex[sampleData.Length / 2];
+            for (int i = 0; i < sampleData.Length; i++)
+            {
+                var item = new Complex();
+                // even number save real values for complex
+                if (i % 2 == 0)
                 {
-                    for (var c = 0; c < colData.Length; c++)
+                    item.Real = sampleData[i];
+                    item.Imag = sampleData[i + 1];
+                    sampleComplexPairs[i / 2]= item;
+                }
+            }
+
+
+            //int[] dims = { rowCount, colCount };
+            int rowCount = dims[0];
+            int colCount = dims[1];
+
+            var outputData = new double[rowCount, colCount];
+            for (var r = 0; r < rowCount; r++)
+            {
+                for (var c = 0; c < colCount; c++)
+                {
+                    outputData[r, c] = Math.Sqrt(Math.Pow(sampleComplexPairs[(r * rowCount) + c].Real, 2.0)
+                                               + Math.Pow(sampleComplexPairs[(r * rowCount) + c].Imag, 2.0));
+                    //var magnitude = ComplexExtensions.SquareRoot(sampleComplexPairs[r * matrixRowCount + c]);
+                }
+            }
+            return outputData;
+        }
+ 
+
+
+
+        /// <summary>
+        /// This method "shifts" (that is, "rearranges") the quadrants of the magnitude matrix generated by the 2DFourierTransform
+        /// such that the Top Left  quadrant is swapped with the Bottom-Right quadrant 
+        ///       and the Top-Right quadrant is swapped with the Bottom-Left. 
+        /// This has the effect of shifting the low frequency coefficients into the centre of the matrix and the high frequency
+        /// coefficients are shifted to the edge of the image. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] fftShift(double[,] matrix)
+        {
+            var rowCount = matrix.GetLength(0);
+            var colCount = matrix.GetLength(1);
+ 
+            var shiftedMatrix = new double[rowCount, colCount];
+            var quadrantLength = rowCount / 2;
+ 
+            for (int r = 0; r < rowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    if (r < quadrantLength)
                     {
-                        sampleData[r * rowCount + c] = 0.0;
+                        if (c < quadrantLength)
+                        {
+                            // the first quadrant.
+                            shiftedMatrix[r + quadrantLength, c + quadrantLength] = matrix[r, c];
+                        }
+                        else
+                        {
+                            // the second quadrant.
+                            shiftedMatrix[r + quadrantLength, c - quadrantLength] = matrix[r, c];
+                        }
+                    }
+                    else{
+                        // the third quadrant.
+                        if (c < quadrantLength)
+                        {
+                            shiftedMatrix[r - quadrantLength, c + quadrantLength] = matrix[r, c];
+                        }
+                        else
+                        {
+                            // the fourth quadrant
+                            shiftedMatrix[r - quadrantLength, c - quadrantLength] = matrix[r, c];
+                        }
                     }
                 }
             }
-            return vector;
+            return shiftedMatrix;
         }
 
+
+
+        /// <summary>
+        /// reads an image into a matrix.
+        /// Takes weighted average of the RGB colours in each pixel.
+        /// </summary>
+        /// <param name="imageFilePath"></param>
+        /// <returns></returns>
+        public static double[,] GetImageDataAsGrayIntensity(string imageFilePath, bool reversed)
+        {
+            Bitmap image = (Bitmap)Image.FromFile(imageFilePath, true);         
+            var rowCount = image.Height;
+            var colCount = image.Width;
+            var result = new double[rowCount, colCount];
+            for (int r = 0; r < rowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    result[r, c] = (0.299 * image.GetPixel(c, r).R) 
+                                 + (0.587 * image.GetPixel(c, r).G) 
+                                 + (0.114 * image.GetPixel(c, r).B);
+                    if (reversed) // reverse the image
+                    {
+                        result[r, c] = 255 - result[r, c];
+                    }  
+                }
+            }
+            return result;
+        }
+
+
+
     }
+
+
 }

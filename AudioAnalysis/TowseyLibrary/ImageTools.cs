@@ -2000,9 +2000,19 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
+        public static void DrawReversedMatrix(double[,] matrix, string pathName)
+        {
+            Image bmp = DrawReversedMatrix(matrix);
+            bmp.Save(pathName);
+        }
+        /// <summary>
+        /// Draws matrix and save image
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
         public static void DrawMatrix(double[,] matrix, string pathName)
         {
-            Image bmp = DrawMatrix(matrix);
+            Image bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
         /// <summary>
@@ -2010,10 +2020,51 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static Image DrawMatrix(double[,] matrix)
+        public static Image DrawNormalisedMatrix(double[,] matrix)
         {
             double[,] norm = DataTools.normalise(matrix);
-            return DrawMatrixWithoutNormalisation(matrix);
+            return DrawMatrixWithoutNormalisation(norm);
+        }
+        /// <summary>
+        /// Draws matrix after first normalising the data
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static Image DrawReversedMatrix(double[,] matrix)
+        {
+            double[,] norm = DataTools.normalise(matrix);
+            return DrawReversedMatrixWithoutNormalisation(norm);
+        }
+
+        /// <summary>
+        /// Draws matrix without normkalising the values in the matrix.
+        /// Assume some form of normalisation already done.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static Image DrawReversedMatrixWithoutNormalisation(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+
+            Color[] grayScale = GrayScale();
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int greyId = (int)Math.Floor(matrix[r, c] * 255);
+                    if (greyId < 0) { greyId = 0; }
+                    else
+                    { if (greyId > 255) greyId = 255; }
+
+                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
+                    bmp.SetPixel(c, r, grayScale[greyId]);
+                }//end all columns
+            }//end all rows
+            return bmp;
         }
 
         /// <summary>
@@ -2036,17 +2087,18 @@ namespace TowseyLibrary
                 for (int c = 0; c < cols; c++)
                 {
                     int greyId = (int)Math.Floor(matrix[r, c] * 255);
-                    if (greyId < 0) greyId = 0;
-                    else
-                    if (greyId > 255) greyId = 255;
 
-                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
+                    if (greyId < 0) { greyId = 0; }
+                    else
+                    { if (greyId > 255) greyId = 255; }
+
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
             }//end all rows
             return bmp;
         }
 
+        
         public static Image DrawHistogram(string label, int[] histogram, Dictionary<string, double> statistics, int imageWidth, int height)
         {
             int sum = histogram.Sum();
