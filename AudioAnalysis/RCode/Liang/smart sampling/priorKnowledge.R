@@ -1,4 +1,4 @@
-priorKnowledge <- function(filepath){
+priorKnowledge <- function(callFile, total){
   source('C:/Work/GitHub/audio-analysis/AudioAnalysis/RCode/Liang/smart sampling/Accumulative Curve.R')
   calls <- read.csv(callFile)
   
@@ -7,10 +7,13 @@ priorKnowledge <- function(filepath){
   priorKnow <- cbind(index, speciesNum)
   rm(index,speciesNum)
   
-  priorKnowIndex <- sort(priorKnow[,2],decreasing=TRUE,index.return=TRUE)
+  #re-order the minutes
+  priorKnowIndex <- sort(priorKnow[,2],decreasing=TRUE,index.return=TRUE)  
   priorKnowRanked <- priorKnow[priorKnowIndex[[2]], ]
   priorCalls<-calls[priorKnowRanked[ ,1], ]
-  Acurve <- drawAC(priorCalls[1:100, ], nrow(priorCalls[1:100, ]), total)
+  priorCalls<-priorCalls[ , 4:80]
   
+  #accumulative curve
+  Acurve <- drawAC(priorCalls[1:100, ], nrow(priorCalls[1:100, ]), total)
   return(Acurve)
 }
