@@ -8,7 +8,7 @@
 detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
-InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\test.png
+InputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\test5.png
 #
 
 #C:\Training recordings2 

@@ -23,8 +23,8 @@ namespace Dong.Felt
             var dims = new int[] { matrixRowCount, matrixColCount };
             var magnitude = Magnitude2DFourierTransform(sampleData, dims);           
             // Step 3: do the shift for array of magnitude values.
-            var outputData = fftShift(magnitude);
-            return outputData;
+           //var outputData = fftShift(magnitude);
+            return magnitude;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Dong.Felt
             {
                 for (var c = 0; c < colCount; c++)
                 {                             
-                    sampleData[((r * rowCount) + c) * 2] = M[c, r];
+                    sampleData[((r * rowCount) + c) * 2] = M[r, c];
                     sampleData[((r * rowCount) + c) * 2 + 1] = 0.0;
                 }
             }
@@ -52,7 +52,8 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// do 2d fourier transform on complex sampleData,
+        /// do 2d fourier transform on complex sampleData, so first construct complex sampleData, then calculate 
+        /// the magnitude of sampleData.
         /// </summary>
         /// <param name="sampleData"></param>
         /// <param name="dims"></param>
@@ -62,27 +63,11 @@ namespace Dong.Felt
             var cft = new ComplexFourierTransformation();           
             cft.TransformForward(sampleData, dims);
             Complex[] sampleComplexPairs = new Complex[sampleData.Length / 2];
-            // In sampleData, each column data the first 8 contribute to the real value in complex, 
-            // the second 8 contribute to the imaginary part in complex. 
-            //for (int i = 0; i < sampleData.Length; i++)
-            //{
-            //    var step = dims[0] / 2;
-            //    var ite = i / step;
-            //    var mod = i % step;
-            //    var sampleDataColCount = sampleData.Length / dims[0];
-
-            //    var item = new Complex();
-            //    if (ite % 2 == 0)
-            //    {
-            //        item.Real = sampleData[(ite * step) + mod];
-            //        item.Imag = sampleData[(ite * step + 1) + mod];
-            //        sampleComplexPairs[(ite * step / 2) + mod] = item;
-            //    }
-            //}
             for (int i = 0; i < sampleData.Length; i++)
             {
                 var item = new Complex();
                 // even number save real values for complex
+                // odd number save imaginary values for complex
                 if (i % 2 == 0)
                 {
                     item.Real = sampleData[i];
@@ -90,14 +75,13 @@ namespace Dong.Felt
                     sampleComplexPairs[i / 2]= item;
                 }
             }
-            var outputData = new double[dims[0], dims[0]];
+            var outputData = new double[dims[0], dims[1]];
             for (var r = 0; r < dims[0]; r++)
             {
                 for (var c = 0; c < dims[1]; c++)
                 {
-                    outputData[c, r] = Math.Sqrt(Math.Pow(sampleComplexPairs[r * dims[0] + c].Real, 2.0)
+                    outputData[r, c] = Math.Sqrt(Math.Pow(sampleComplexPairs[r * dims[0] + c].Real, 2.0)
                         + Math.Pow(sampleComplexPairs[r * dims[0] + c].Imag, 2.0));
-                    //var magnitude = ComplexExtensions.SquareRoot(sampleComplexPairs[r * matrixRowCount + c]);
                 }
             }
             return outputData;
