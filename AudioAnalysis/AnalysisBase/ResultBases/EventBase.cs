@@ -44,7 +44,12 @@ namespace AnalysisBase.ResultBases
                 return result;
             }
 
-            return this.EventStartSeconds.CompareTo(((EventBase) other).EventStartSeconds);
+            return this.EventStartSeconds.CompareTo(((EventBase)other).EventStartSeconds);
+        }
+
+        public override int CompareTo(object obj)
+        {
+            return this.CompareTo((EventBase)obj);
         }
     }
 }

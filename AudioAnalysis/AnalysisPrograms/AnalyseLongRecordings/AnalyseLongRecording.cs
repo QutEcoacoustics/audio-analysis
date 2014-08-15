@@ -77,7 +77,7 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
 
-            // 2. get the analysis config dictionary
+            // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
 
             bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
@@ -88,6 +88,12 @@ Output  to  directory: {1}
             ////bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
+            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
+
+            if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
+            {
+                Log.Warn("IndexProperties config can not be found! This will result in an excpetion if it is needed later on.");
+            }
 
             double scoreThreshold = 0.2; // min score for an acceptable event
             scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
@@ -243,7 +249,10 @@ Output  to  directory: {1}
             }
             else
             {
-                var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
+                if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
+                {
+                    throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
+                }
 
                 string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
                 string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
