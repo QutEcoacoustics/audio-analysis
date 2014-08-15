@@ -342,24 +342,11 @@ namespace AudioAnalysisTools.Indices
             {
                 SonogramConfig sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FileName;
-                sonoConfig.WindowSize = 1024; // the default
-                if (config.ContainsKey(AnalysisKeys.FrameLength))
-                {
-                    sonoConfig.WindowSize = ConfigDictionary.GetInt(AnalysisKeys.FrameLength, config);
-                }
-
-                sonoConfig.WindowOverlap = 0.0; // the default
-                if (config.ContainsKey(AnalysisKeys.FrameOverlap))
-                {
-                    sonoConfig.WindowOverlap = ConfigDictionary.GetDouble(AnalysisKeys.FrameOverlap, config);
-                }
+                sonoConfig.WindowSize = (int?)config[AnalysisKeys.FrameLength] ?? 1024; // the default
+                sonoConfig.WindowOverlap = (double?)config[AnalysisKeys.FrameOverlap] ?? 0.0; // the default
 
                 sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
-                bool doNoiseReduction = false;  // the default
-                if (config.ContainsKey(AnalysisKeys.NoiseDoReduction))
-                {
-                    doNoiseReduction = ConfigDictionary.GetBoolean(AnalysisKeys.NoiseDoReduction, config);
-                }
+                bool doNoiseReduction = (bool?)config[AnalysisKeys.NoiseDoReduction] ?? false;  // the default
 
                 if (doNoiseReduction)
                 {
