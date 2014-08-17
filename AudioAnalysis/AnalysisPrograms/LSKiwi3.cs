@@ -241,9 +241,9 @@ namespace AnalysisPrograms
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFileName = fName;
+                    ev.FileName = fName;
                     //ev.Name = analysisName; //name was added previously
-                    ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
+                    ev.SegmentDuration = recordingTimeSpan;
                 }
                 //write events to a data table to return.
                 dataTableOfEvents = WriteEvents2DataTable(predictedEvents);
@@ -784,8 +784,8 @@ namespace AnalysisPrograms
         //this method assumes that the array has had backgroundnoise removed
         public static double CalculatePeakSnrScore(AcousticEvent ev, double[] dBarray)
         {
-            int start = ev.oblong.r1;
-            int end = ev.oblong.r2;
+            int start = ev.Oblong.RowTop;
+            int end = ev.Oblong.RowBottom;
             if (end > dBarray.Length) end = dBarray.Length - 1;
             int length = end - start + 1;
 
@@ -817,7 +817,7 @@ namespace AnalysisPrograms
                 //string name2    = events[i+1].Name; 
                 if ((startEv2 - endEv1) < 10) /*&& (name1 == name2))*/ // events are close so MergeEvents them
                 {
-                    events[i].oblong = null;
+                    events[i].Oblong = null;
                     events[i].TimeEnd = events[i + 1].TimeEnd;
                     events[i].Duration = events[i + 1].TimeEnd - events[i].TimeStart;
                     if (events[i + 1].kiwi_intensityScore > events[i].kiwi_intensityScore) events[i].kiwi_intensityScore = events[i + 1].kiwi_intensityScore;
@@ -846,8 +846,8 @@ namespace AnalysisPrograms
             {
                 int start = (int)(ev.TimeStart * ev.FramesPerSecond);
                 int end = (int)(ev.TimeEnd * ev.FramesPerSecond);
-                //int start = ev.oblong.r1;
-                //int end = ev.oblong.r2;
+                //int start = ev.oblong.RowTop;
+                //int end = ev.oblong.RowBottom;
                 double[] subArray = DataTools.Subarray(activity, start, end - start + 1);
                 int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, croppingSeverity);
 
@@ -855,7 +855,7 @@ namespace AnalysisPrograms
                 int newMaxRow = start + bounds[1];
                 if (newMaxRow >= length) newMaxRow = length - 1;
 
-                ev.oblong = null;
+                ev.Oblong = null;
                 ev.TimeStart = newMinRow * ev.FrameOffset;
                 ev.TimeEnd = newMaxRow * ev.FrameOffset;
                 ev.Duration = ev.TimeEnd - ev.TimeStart;
@@ -883,8 +883,8 @@ namespace AnalysisPrograms
             {
                 foreach (AcousticEvent ev in predictedEvents) // set colour for the events
                 {
-                    ev.BorderColour = AcousticEvent.DEFAULT_BORDER_COLOR;
-                    ev.ScoreColour  = AcousticEvent.DEFAULT_SCORE_COLOR;
+                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
+                    ev.ScoreColour  = AcousticEvent.DefaultScoreColor;
                 }
                 image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }

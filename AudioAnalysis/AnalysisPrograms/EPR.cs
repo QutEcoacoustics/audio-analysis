@@ -309,7 +309,7 @@ namespace AnalysisPrograms
 
             // #############################################################################################################################################
             // vii: LOOK FOR GROUND PARROTS USING TEMPLATE
-            var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram.FrameOffset, (int)sonogram.FBinWidth);
+            var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram);
             double[] gpScores = DetectEPR(template, sonogram, odScores, odThreshold);
             gpScores = DataTools.normalise(gpScores); //normalise 0 - 1
 
@@ -334,9 +334,9 @@ namespace AnalysisPrograms
         {
             int length = sonogram.FrameCount;
             double[] eprScores = new double[length];
-            Oblong ob1 = template[0].oblong; // the first chirp in template
-            Oblong obZ = template[template.Count-1].oblong; // the last  chirp in template
-            int templateLength = obZ.r2;
+            Oblong ob1 = template[0].Oblong; // the first chirp in template
+            Oblong obZ = template[template.Count-1].Oblong; // the last  chirp in template
+            int templateLength = obZ.RowBottom;
 
             for (int frame = 0; frame < length - templateLength; frame++)
             {
@@ -347,7 +347,7 @@ namespace AnalysisPrograms
                 int freqBinOffset = 0;
                 for (int bin = -5; bin < 15; bin++)
                 {
-                    Oblong ob = new Oblong(ob1.r1 + frame, ob1.c1 + bin, ob1.r2 + frame, ob1.c2 + bin);
+                    Oblong ob = new Oblong(ob1.RowTop + frame, ob1.ColumnLeft + bin, ob1.RowBottom + frame, ob1.ColumnRight + bin);
                     double score = GetLocationScore(sonogram, ob);
                     if (score > maxScore)
                     {
@@ -361,7 +361,7 @@ namespace AnalysisPrograms
 
                 foreach(AcousticEvent ae in template)
                 {
-                    Oblong ob = new Oblong(ae.oblong.r1 + frame, ae.oblong.c1 + freqBinOffset, ae.oblong.r2 + frame, ae.oblong.c2 + freqBinOffset);
+                    Oblong ob = new Oblong(ae.Oblong.RowTop + frame, ae.Oblong.ColumnLeft + freqBinOffset, ae.Oblong.RowBottom + frame, ae.Oblong.ColumnRight + freqBinOffset);
                     double score = GetLocationScore(sonogram, ob);
                     eprScores[frame] += score;
                 }
@@ -380,17 +380,17 @@ namespace AnalysisPrograms
         public static double GetLocationScore(BaseSonogram sonogram, Oblong ob)
         {
             double max = -Double.MaxValue;
-            for (int r = ob.r1; r < ob.r2; r++)
-                for (int c = ob.c1; c < ob.c2; c++)
+            for (int r = ob.RowTop; r < ob.RowBottom; r++)
+                for (int c = ob.ColumnLeft; c < ob.ColumnRight; c++)
                 {
                     if (sonogram.Data[r, c] > max) max = sonogram.Data[r, c];
                 }
 
             //calculate average boundary value
-            int boundaryLength = 2 * (ob.r2 - ob.r1 + 1 + ob.c2 - ob.c1 + 1);
+            int boundaryLength = 2 * (ob.RowBottom - ob.RowTop + 1 + ob.ColumnRight - ob.ColumnLeft + 1);
             double boundaryValue = 0.0;
-            for (int r = ob.r1; r < ob.r2; r++) boundaryValue += (sonogram.Data[r, ob.c1] + sonogram.Data[r, ob.c2]);
-            for (int c = ob.c1; c < ob.c2; c++) boundaryValue += (sonogram.Data[ob.r1, c] + sonogram.Data[ob.r2, c]);
+            for (int r = ob.RowTop; r < ob.RowBottom; r++) boundaryValue += (sonogram.Data[r, ob.ColumnLeft] + sonogram.Data[r, ob.ColumnRight]);
+            for (int c = ob.ColumnLeft; c < ob.ColumnRight; c++) boundaryValue += (sonogram.Data[ob.RowTop, c] + sonogram.Data[ob.RowBottom, c]);
             boundaryValue /= boundaryLength;
 
             double score = max - boundaryValue;

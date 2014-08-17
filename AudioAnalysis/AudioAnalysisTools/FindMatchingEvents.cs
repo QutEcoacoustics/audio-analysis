@@ -239,9 +239,9 @@ namespace AudioAnalysisTools
                                     if (template[i, j] == '-') offSum += sonogram.Data[r + i, c + j];
                                     else
                                     {
-                                        //char c1 = charogram[r + i, c + j];
-                                        //char c2 = template[i, j];
-                                        //int difference = (int)c1 - (int)c2;
+                                        //char ColumnLeft = charogram[r + i, c + j];
+                                        //char ColumnRight = template[i, j];
+                                        //int difference = (int)ColumnLeft - (int)ColumnRight;
                                         int diff = SprTools.SymbolDifference(charogram[r + i, c + j], template[i, j]);
                                         onSum += ((90 - diff) / (double)90 * sonogram.Data[r + i, c + j]);
                                     }
@@ -297,9 +297,9 @@ namespace AudioAnalysisTools
                         if (template[i, j] == '-') offSum += dataMatrix[i, j];
                         else
                         {
-                            //char c1 = charogram[i, j];
-                            //char c2 = template[i, j];
-                            //int difference = (int)c1 - (int)c2;
+                            //char ColumnLeft = charogram[i, j];
+                            //char ColumnRight = template[i, j];
+                            //int difference = (int)ColumnLeft - (int)ColumnRight;
                             int diff = SprTools.SymbolDifference(charogram[i, j], template[i, j]);
                             //LoggedConsole.WriteLine("{0},{1}  diff={2}", i,j, diff);
                             onSum += ((90 - diff) / (double)90 * dataMatrix[i, j]);

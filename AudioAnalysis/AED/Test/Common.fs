@@ -4,6 +4,9 @@ open System.IO
 
 open QutSensors.AudioAnalysis.AED.Util
 open Xunit
+open System
+open System.Reflection
+open QutSensors.AudioAnalysis.AED.GetAcousticEvents
                        
 type TestMetadata = {Dir:string; BWthresh:double; smallThreshIn:int; smallThreshOut:int}
 let BAC2_20071015_045040 =
@@ -13,11 +16,20 @@ let GParrots_JB2_20090607_173000_wav_minute_3 =
                           
 let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
                 
+
+
 /// Sets the current directory to be trunk\AudioAnalysis\AED\Test
-let matlabPath = @"..\..\AudioAnalysis\AED\Test\matlab\"
+let matlabPath = @"..\..\..\..\AED\Test\matlab\"
+
+let basePath relativePath = 
+    let codeBaseUrl = new Uri(Assembly.GetExecutingAssembly().CodeBase);
+    let codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
+    let dirPath = Path.GetDirectoryName(codeBasePath);
+    Path.Combine(dirPath, relativePath);
 
 let loadTestFile2 d f = 
-    csvToMatrix (matlabPath + d + Path.DirectorySeparatorChar.ToString() + f) 
+    let p = Path.Combine( (basePath matlabPath), d, f)
+    csvToMatrix p 
 
 let loadTestFile f md = loadTestFile2 md.Dir f 
 
@@ -44,6 +56,7 @@ let matrixFloatEquals (a:matrix) (b:matrix) d =
      
 let defToString x = sprintf "%A" x
 let rectToString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
+let rectToStringI r = sprintf "%i, %i, %i, %i" (left r) (right r) (bottom r) (top r)
 
 let seqEqual eq toS xs' ys' =
     let xs, ys = Seq.sort xs', Seq.sort ys'
@@ -70,4 +83,66 @@ let assertSeqEqual eq toS xs ys =
     else
         Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n" )
 
+let selectBounds (aes:seq<AcousticEvent>) = Seq.map (fun ae -> ae.Bounds) aes
+let createEvents (rs:seq<Rectangle<int, int>>) = Seq.map (fun r -> { Bounds = r; Elements = Set.empty }) rs
 
+
+
+let parseStringAsMatrix (input:string) =
+    let split = input.Split([|Environment.NewLine|], StringSplitOptions.RemoveEmptyEntries)
+
+    Matrix.init (split.Length) (split.[0].Length) (fun x y -> split.[x].[y] |> string |> Double.Parse)
+
+
+[<Fact>]
+let ``matrix parsing test`` () = 
+    let pattern = @"
+1010101010101010
+1010101010101010
+1010101010101010
+"
+    let expected = 
+        matrix [|
+            [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
+            [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
+            [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
+        |]
+
+    let actual = parseStringAsMatrix pattern
+    Assert.Equal(expected, actual)
+
+let matrixToCoordinates predicate matrix =
+    let f i j s x = if predicate x then Set.add (i,j) s else s
+    Matrix.foldi f Set.empty matrix
+
+let hitsToCoordinates =
+    matrixToCoordinates (fun x -> x = 1.0)
+
+[<Fact>]
+let ``matrix parsing hit to coordinates test`` () = 
+    let pattern = @"
+1000000010000001
+1000000101000001
+1000000010000001
+"
+    let expected = [(0,0); (0,8); (0,15); (1,0); (1,7); (1,9); (1,15); (2,0); (2,8); (2,15);] |> Set.ofList
+
+    let actual = parseStringAsMatrix pattern |> hitsToCoordinates
+    Assert.Equal(expected, actual)
+
+
+[<Fact>]
+let ``matrix order tests for sanities`` () = 
+    let pattern = @"
+1470
+2581
+3692
+"
+    let mString = pattern |> parseStringAsMatrix
+    let m = matrix [ [1.0;4.0;7.0;0.0]; [2.0;5.0;8.0;1.0]; [3.0;6.0;9.0;2.0]]
+    
+    Assert.Equal(mString, m)
+    Assert.Equal(5.0, m.[1,1])
+    Assert.Equal(9.0, m.[2,2])
+    Assert.Equal(1.0, m.[1, 3]) // row, then column - y, then x
+    Assert.Equal(3.0, m.[2, 0]) // row, then column - y, then x

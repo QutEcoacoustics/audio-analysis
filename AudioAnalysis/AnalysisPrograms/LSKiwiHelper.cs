@@ -137,8 +137,8 @@ namespace AnalysisPrograms
 
         public static double CalculateAverageEventScore(AcousticEvent ae, double[] scoreArray)
         {
-            int start = ae.oblong.r1;
-            int end = ae.oblong.r2;
+            int start = ae.Oblong.RowTop;
+            int end = ae.Oblong.RowBottom;
             if (end > scoreArray.Length) end = scoreArray.Length - 1;
             int length = end - start + 1;
             double sum = 0.0;

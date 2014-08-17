@@ -734,7 +734,7 @@
 
         /// <summary>
         /// Returns the submatrix of passed matrix.
-        /// Assume that r1 less than r2, c1 less than c2. 
+        /// Assume that RowTop less than RowBottom, ColumnLeft less than ColumnRight. 
         /// Row, column indices start at 0.
         /// </summary>
         /// <param name="M"></param>

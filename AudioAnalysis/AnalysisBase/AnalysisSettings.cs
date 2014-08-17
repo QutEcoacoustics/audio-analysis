@@ -13,12 +13,13 @@ namespace AnalysisBase
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Reflection;
 
     using Acoustics.Shared;
 
     using GeorgeCloney;
+
     using log4net;
-    using System.Reflection;
 
     /// <summary>
     /// The analysis settings for processing one audio file.
@@ -61,7 +62,7 @@ namespace AnalysisBase
         {
             get
             {
-                if (!instanceId.HasValue)
+                if (!this.instanceId.HasValue)
                 {
                     // counter increment moved out of constructor because binary serializer does not use constructors
                     instanceCounter++;
@@ -246,51 +247,6 @@ namespace AnalysisBase
         /// Gets or sets the object of other configuration properties. Should be mutually exclusive with ConfigFile.
         /// </summary>
         public dynamic Configuration { get; set; }
-
-        /*
-        /// <summary>
-        /// Creates a clone of this AnalysisSettings object.
-        /// 
-        /// </summary>
-        /// <returns>A clone of this AnalysisSettings object.</returns>
-        /// <remarks>
-        /// see: http://msdn.microsoft.com/en-us/library/system.icloneable.aspx
-        /// see: http://msdn.microsoft.com/en-us/library/system.object.memberwiseclone.aspx
-        /// </remarks>
-        public AnalysisSettings ShallowClone()
-        {
-            // all these must copy the VALUE not the REFERENCE!!!!
-            // TODO: If lots more properties are added, this needs to be changed.
-            var newSettings = new AnalysisSettings();
-
-            newSettings.AnalysisBaseOutputDirectory = this.AnalysisBaseOutputDirectory != null ? new DirectoryInfo(this.AnalysisBaseOutputDirectory.FullName) : null;
-            newSettings.AnalysisInstanceOutputDirectory = this.AnalysisInstanceOutputDirectory != null ? new DirectoryInfo(this.AnalysisInstanceOutputDirectory.FullName) : null;
-
-            newSettings.AnalysisBaseTempDirectory = this.AnalysisBaseTempDirectory != null ? new DirectoryInfo(this.AnalysisBaseTempDirectory.FullName) : null;
-            newSettings.AnalysisInstanceTempDirectory = this.AnalysisInstanceTempDirectory != null ? new DirectoryInfo(this.AnalysisInstanceTempDirectory.FullName) : null;
-
-            newSettings.SourceFile = this.SourceFile != null ? new FileInfo(this.SourceFile.FullName) : null;
-            newSettings.AudioFile = this.AudioFile != null ? new FileInfo(this.AudioFile.FullName) : null;
-            newSettings.EventsFile = this.EventsFile != null ? new FileInfo(this.EventsFile.FullName) : null;
-            newSettings.IndicesFile = this.IndicesFile != null ? new FileInfo(this.IndicesFile.FullName) : null;
-            newSettings.ImageFile = this.ImageFile != null ? new FileInfo(this.ImageFile.FullName) : null;
-
-            newSettings.SegmentOverlapDuration = TimeSpan.FromTicks(this.SegmentOverlapDuration.Ticks);
-            newSettings.SegmentMinDuration = SegmentMinDuration.HasValue ? TimeSpan.FromTicks(this.SegmentMinDuration.Value.Ticks) : new TimeSpan?();
-            newSettings.SegmentMaxDuration = SegmentMaxDuration.HasValue ? TimeSpan.FromTicks(this.SegmentMaxDuration.Value.Ticks) : new TimeSpan?();
-
-            newSettings.StartOfSegment = StartOfSegment.HasValue ? TimeSpan.FromTicks(this.StartOfSegment.Value.Ticks) : new TimeSpan?();
-
-            newSettings.SegmentTargetSampleRate = this.SegmentTargetSampleRate;
-            newSettings.SampleRateOfOriginalAudioFile = this.SampleRateOfOriginalAudioFile.HasValue ? this.SampleRateOfOriginalAudioFile.Value : new int?();
-            newSettings.SegmentMediaType = this.SegmentMediaType;
-
-            newSettings.ConfigFile = new FileInfo(this.ConfigFile.FullName);
-            newSettings.ConfigDict = new Dictionary<string, string>(this.ConfigDict);
-
-            return newSettings;
-        }
-         * */
 
         public object Clone()
         {

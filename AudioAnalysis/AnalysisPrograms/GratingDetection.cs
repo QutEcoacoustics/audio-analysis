@@ -214,9 +214,9 @@ namespace AnalysisPrograms
                 string fName = Path.GetFileNameWithoutExtension(fiSegmentOfSourceFile.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFileName = fName;
+                    ev.FileName = fName;
                     //ev.Name = analysisName; //name is the periodicity
-                    ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
+                    ev.SegmentDuration = recordingTimeSpan;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(segmentStartMinute, recordingTimeSpan, predictedEvents);
@@ -336,7 +336,7 @@ namespace AnalysisPrograms
                 if (maxRow >= rowCount) maxRow = rowCount-1;
 
                 Oblong o = new Oblong(minRow, minCol, maxRow, maxCol);
-                var ae = new AcousticEvent(o, frameOffset, binWidth);
+                var ae = new AcousticEvent(o, results2.NyquistFreq, frameSize, frameDuration, frameOffset, frameCount);
                 ae.Name = String.Format("p={0:f0}", periodicity);
                 ae.Score = item[key_SCORE];
                 ae.ScoreNormalised = item[key_SCORE] / 0.5;

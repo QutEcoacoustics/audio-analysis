@@ -7,6 +7,9 @@ namespace Dong.Felt
     using System.Linq;
     using System.Text;
     using System.IO;
+
+    using Acoustics.Shared.Csv;
+
     using Representations;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;

@@ -310,6 +310,49 @@ namespace System
             return retVal;
         }
 
+        ///http://stackoverflow.com/questions/2109756/how-to-get-color-from-hexadecimal-color-code-using-net
+        public static Color ParseAsColor(this string str)
+        {
+            var hex = str.Replace("#", string.Empty);
+
+            Color color;
+
+            switch (hex.Length)
+            {
+                case 3:
+                    color = Color.FromArgb(
+                        int.Parse(hex.Substring(0, 1), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(1, 1), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(2, 1), NumberStyles.HexNumber));
+                    break;
+                case 4:
+                    color = Color.FromArgb(
+                        int.Parse(hex.Substring(0, 1), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(1, 1), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(2, 1), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(3, 1), NumberStyles.HexNumber));
+                    break;
+                case 6:
+                    color = Color.FromArgb(
+                        int.Parse(hex.Substring(0, 2), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(2, 2), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(4, 2), NumberStyles.HexNumber));
+                    break;
+                case 8:
+                    color = Color.FromArgb(
+                        int.Parse(hex.Substring(0, 2), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(2, 2), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(4, 2), NumberStyles.HexNumber),
+                        int.Parse(hex.Substring(6, 2), NumberStyles.HexNumber));
+                    break;
+                default:
+                    throw new FormatException("The color format was not recofnised");
+            }
+
+
+            return color;
+        }
+
         public static string ToCommaSeparatedList<T>(this IEnumerable<T> items)
         {
             if (items == null || !items.Any())

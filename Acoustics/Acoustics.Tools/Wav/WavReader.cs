@@ -149,6 +149,7 @@
         /// <param name="interval">
         /// Keeps every <paramref name="interval"/> sample.
         /// </param>
+        [Obsolete("Does not remove high frequency artefacts")]
         public void SubSample(int interval)
         {
             if (interval <= 1)

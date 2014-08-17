@@ -79,9 +79,9 @@ namespace TowseyLibrary
          * Calculates the t-statistic.
          * t(df) = (m1-m2)/SE
          * where SE^2 = s^2(m+n)/(mn)
-         * where s^2 = estimated variance = ((c1-1)v1 + (c2-1)v2)/(c1+c2-2)
+         * where s^2 = estimated variance = ((ColumnLeft-1)v1 + (ColumnRight-1)v2)/(ColumnLeft+ColumnRight-2)
          * where v1 = sd1^2 and v2 =  sd2^2 
-         * To calculate ASSUME df = c1+c2-2 = infinity
+         * To calculate ASSUME df = ColumnLeft+ColumnRight-2 = infinity
          * @param m1
          * @param sd1
          * @param count1
