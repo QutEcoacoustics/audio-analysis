@@ -17,7 +17,7 @@ namespace AnalysisBase.ResultBases
     /// This includes: events, summary indices, and spectral indices.
     /// These classes will hold much redundant information - the flat format is useful for CSV output.
     /// </summary>
-    public abstract class ResultBase
+    public abstract class ResultBase : IComparable<ResultBase>, IComparable
     {
         private TimeSpan startOffset;
 
@@ -78,6 +78,11 @@ namespace AnalysisBase.ResultBases
             }
 
             return this.StartOffset.CompareTo(other.StartOffset);
+        }
+
+        public virtual int CompareTo(object obj)
+        {
+            return this.CompareTo((ResultBase)obj);
         }
     }
 }

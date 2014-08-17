@@ -16,6 +16,7 @@ namespace AnalysisPrograms
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.WavTools;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using QutSensors.AudioAnalysis.AED;
 
@@ -134,7 +135,7 @@ namespace AnalysisPrograms
 
             SonogramConfig config = aed.Item3.Configuration;
             double framesPerSec = 1 / config.GetFrameOffset(); // Surely this should go somewhere else
-            double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
+            double freqBinWidth = config.NyquistFreq / (double)config.FreqBinCount;
 
             // TODO this is common with AED
             var eprEvents = new List<AcousticEvent>();

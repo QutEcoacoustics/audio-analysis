@@ -30,6 +30,8 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
+    using AudioAnalysisTools.StandardSpectrograms;
+
     public class Rain : IAnalyser
     {
         public const string key_LOW_FREQ_BOUND = "LOW_FREQ_BOUND";
@@ -193,6 +195,8 @@ namespace AnalysisPrograms
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
             TimeSpan offsetStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
+            int resampleRate = ConfigDictionary.GetInt(AnalysisKeys.ResampleRate, analysisSettings.ConfigDict);
+
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
@@ -204,12 +208,12 @@ namespace AnalysisPrograms
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = resampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 ////var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.ResampleRate, OffsetStart = offsetStart, OffsetEnd = offsetStart.Add(duration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = resampleRate, OffsetStart = offsetStart, OffsetEnd = offsetStart.Add(duration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
                 ////var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
             }
 
@@ -303,8 +307,8 @@ namespace AnalysisPrograms
             // get parameters for the analysis
             int frameSize = IndexCalculate.DefaultWindowSize;
             double windowOverlap = 0.0;
-            int lowFreqBound = IndexCalculate.LowFreqBound;
-            int midFreqBound = IndexCalculate.MidFreqBound;
+            int lowFreqBound = IndexCalculate.DefaultLowFreqBound;
+            int midFreqBound = IndexCalculate.DefaultMidFreqBound;
 
             if (config.ContainsKey(AnalysisKeys.FrameLength))
             {

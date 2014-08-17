@@ -1,8 +1,18 @@
-﻿namespace Acoustics.Shared
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AppConfigHelper.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the AppConfigHelper type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
     using System.Configuration;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -11,6 +21,16 @@
 
     public static class AppConfigHelper
     {
+        public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
+
+        public static int DefaultTargetSampleRate
+        {
+            get
+            {
+                return GetInt(DefaultTargetSampleRateKey);
+            }
+        }
+
         /// <summary>
         /// Gets FfmpegExe.
         /// </summary>
@@ -191,7 +211,7 @@
             {
                 var assemblyDirString = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-                if (!string.IsNullOrEmpty(assemblyDirString))
+                if (!String.IsNullOrEmpty(assemblyDirString))
                 {
                     var assemblyDir = new DirectoryInfo(assemblyDirString);
 
@@ -217,7 +237,7 @@
                 try
                 {
                     var appDomainPath = HttpRuntime.AppDomainAppVirtualPath;
-                    var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                    var processName = Process.GetCurrentProcess().ProcessName;
                     var interactive = Environment.UserInteractive;
                     var entryAssembly = Assembly.GetEntryAssembly();
                     var currentContext = HttpContext.Current;
@@ -232,7 +252,7 @@
                     }
 
                     // app virtual path should not be null and current context usually not null
-                    if (!string.IsNullOrEmpty(appDomainPath) || currentContext != null)
+                    if (!String.IsNullOrEmpty(appDomainPath) || currentContext != null)
                     {
                         return true;
                     }
@@ -276,12 +296,12 @@
             if (!ConfigurationManager.AppSettings.AllKeys.Any(k => k == key))
             {
                 //throw new ConfigurationErrorsException("Could not find key: " + key);
-                return string.Empty;
+                return String.Empty;
             }
 
             var value = ConfigurationManager.AppSettings[key];
 
-            if (string.IsNullOrEmpty(value))
+            if (String.IsNullOrEmpty(value))
             {
                 throw new ConfigurationErrorsException("Found key, but it did not have a value: " + key);
             }
@@ -301,9 +321,9 @@
             var values = value
                 .Split(separators, StringSplitOptions.RemoveEmptyEntries)
                 .Select(s => s.Trim())
-                .Where(v => !string.IsNullOrEmpty(v));
+                .Where(v => !String.IsNullOrEmpty(v));
 
-            if (!values.Any() || values.All(s => string.IsNullOrEmpty(s)))
+            if (!values.Any() || values.All(s => String.IsNullOrEmpty(s)))
             {
                 throw new ConfigurationErrorsException("Key " + key + " exists but does not have a value");
             }
@@ -316,7 +336,7 @@
             var value = GetString(key);
 
             bool valueParsed;
-            if (bool.TryParse(value, out valueParsed))
+            if (Boolean.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -330,7 +350,7 @@
             var value = GetString(key);
 
             int valueParsed;
-            if (int.TryParse(value, out valueParsed))
+            if (Int32.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -344,7 +364,7 @@
             var value = GetString(key);
 
             double valueParsed;
-            if (double.TryParse(value, out valueParsed))
+            if (Double.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -398,11 +418,11 @@
             var value = GetString(key);
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-            var files = values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new FileInfo(v)).ToList();
+            var files = values.Where(v => !String.IsNullOrEmpty(v)).Select(v => new FileInfo(v)).ToList();
 
             if (checkAnyExist && files.All(f => !File.Exists(f.FullName)))
             {
-                throw new FileNotFoundException("None of the given files exist: " + string.Join(", ", files.Select(f => f.FullName)));
+                throw new FileNotFoundException("None of the given files exist: " + String.Join(", ", files.Select(f => f.FullName)));
             }
 
             return files;
@@ -413,7 +433,7 @@
             var value = GetString(key);
 
             long valueParsed;
-            if (long.TryParse(value, out valueParsed))
+            if (Int64.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -450,13 +470,13 @@
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             var dirs =
-                values.Where(v => !string.IsNullOrEmpty(v)).Select(
+                values.Where(v => !String.IsNullOrEmpty(v)).Select(
                     v => v.StartsWith("..") ? new DirectoryInfo(webConfigRealDirectory + v) : new DirectoryInfo(v))
                     .ToList();
 
             if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
             {
-                throw new DirectoryNotFoundException("None of the given directories exist: " + string.Join(", ", dirs.Select(a => a.FullName)));
+                throw new DirectoryNotFoundException("None of the given directories exist: " + String.Join(", ", dirs.Select(a => a.FullName)));
             }
 
             return dirs;
@@ -469,11 +489,11 @@
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             var dirs =
-                values.Where(v => !string.IsNullOrEmpty(v)).Select( v => new DirectoryInfo(v)).ToList();
+                values.Where(v => !String.IsNullOrEmpty(v)).Select( v => new DirectoryInfo(v)).ToList();
 
             if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
             {
-                throw new DirectoryNotFoundException("None of the given directories exist: " + string.Join(", ", dirs.Select(a => a.FullName)));
+                throw new DirectoryNotFoundException("None of the given directories exist: " + String.Join(", ", dirs.Select(a => a.FullName)));
             }
 
             return dirs;

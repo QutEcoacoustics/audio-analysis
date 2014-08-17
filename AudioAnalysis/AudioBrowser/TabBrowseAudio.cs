@@ -20,6 +20,7 @@ using TowseyLibrary;
 namespace AudioBrowser
 {
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     public class TabBrowseAudio
     {
@@ -222,10 +223,16 @@ namespace AudioBrowser
             var st = new Stopwatch();
 
             var adjustedStart = offsetStart;
-            if (adjustedStart < TimeSpan.Zero) { adjustedStart = TimeSpan.Zero; }
+            if (adjustedStart < TimeSpan.Zero)
+            {
+                adjustedStart = TimeSpan.Zero;
+            }
 
             var adjustedEnd = offsetEnd;
-            if (adjustedEnd > audioDuration) { adjustedEnd = audioDuration; }
+            if (adjustedEnd > audioDuration)
+            {
+                adjustedEnd = audioDuration;
+            }
 
             // delete sonogram if it already exists
 
@@ -244,7 +251,7 @@ namespace AudioBrowser
                 adjustedStart,
                 adjustedEnd,
                 segmentBuffer,
-                analysisParams,
+                int.Parse(analysisParams[AnalysisKeys.ResampleRate]),
                 audioSegmentFile);
 
             st.Stop();

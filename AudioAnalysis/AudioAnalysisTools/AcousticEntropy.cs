@@ -11,6 +11,8 @@ namespace AudioAnalysisTools
 {
     using System;
 
+    using AudioAnalysisTools.StandardSpectrograms;
+
     using TowseyLibrary;
 
     public static class AcousticEntropy

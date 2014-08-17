@@ -8,6 +8,8 @@
     using System.Text;
 
     using Acoustics.Tools.Wav;
+
+    using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.DSP;
 
@@ -116,7 +118,7 @@
             //set config params to the current recording
             this.SampleRate = wav.SampleRate;
             this.Configuration.Duration = wav.Time;
-            this.Configuration.fftConfig.SampleRate = wav.SampleRate; //also set the Nyquist
+            this.Configuration.SampleRate = wav.SampleRate; //also set the Nyquist
             this.Duration = wav.Time;
             double minDuration = 1.0;
             if (this.Duration.TotalSeconds < minDuration)
@@ -159,7 +161,7 @@
 
             //generate the spectra of FFT AMPLITUDES
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
-            FFT.WindowFunc w = FFT.GetWindowFunction(this.Configuration.fftConfig.WindowFunction);
+            FFT.WindowFunc w = FFT.GetWindowFunction(this.Configuration.WindowFunction);
             double power;
             var amplitudeM = BaseSonogram.MakeAmplitudeSonogram(signal, frameIDs, w, out power);
             this.Configuration.WindowPower = power;
@@ -199,7 +201,7 @@
         {
             Configuration = config;
             this.FrameCount = amplitudeSpectrogram.GetLength(0);
-            this.SampleRate = this.Configuration.fftConfig.SampleRate;
+            this.SampleRate = this.Configuration.SampleRate;
 
             //init normalised signal energy array but do nothing with it. This has to be done from outside
             this.DecibelsNormalised = new double[this.FrameCount];
@@ -221,7 +223,7 @@
 
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             double power;
-            var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, FFT.GetWindowFunction(this.Configuration.fftConfig.WindowFunction), out power);
+            var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, FFT.GetWindowFunction(this.Configuration.WindowFunction), out power);
             //this.ExtractSubband = true;
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
@@ -272,70 +274,19 @@
 
         public Image GetImage(bool doHighlightSubband, bool add1kHzLines)
         {
-            // Log.WriteIfVerbose("BaseSonogram.GetImage(bool doHighlightSubband, bool add1kHzLines)");
-            // Log.WriteIfVerbose("    doHighlightSubband=" + doHighlightSubband + "   add1kHzLines=" + add1kHzLines);
             return GetImage(this.NyquistFrequency, 1, doHighlightSubband, add1kHzLines);
         }
 
         public virtual Image GetImage(int maxFrequency, int binHeight, bool doHighlightSubband, bool add1kHzLines)
         {
-            int width = this.Data.GetLength(0); // Number of spectra in sonogram
-            int fftBins = this.Data.GetLength(1);
-            int maxBin = (int)Math.Floor(fftBins * maxFrequency / (double)this.NyquistFrequency);
 
-            int imageHeight = maxBin * binHeight; // image ht = sonogram ht. Later include grid and score scales
-
-            //set up min, max, range for normalising of dB values
-            double min; double max;
-            DataTools.MinMax(this.Data, out min, out max);
-            double range = max - min;
-
-            //int? minHighlightFreq = this.subBand_MinHz;
-            //int? maxHighlightFreq = this.subBand_MaxHz;
-            //int minHighlightBin = (minHighlightFreq == null) ? 0 : (int)Math.Round((double)minHighlightFreq / (double)NyquistFrequency * fftBins);
-            //int maxHighlightBin = (maxHighlightFreq == null) ? 0 : (int)Math.Round((double)maxHighlightFreq / (double)NyquistFrequency * fftBins);
-            //calculate top and bottom of sub-band 
-            int minHighlightBin = (int)Math.Round((double)this.subBand_MinHz / (double)NyquistFrequency * fftBins);
-            int maxHighlightBin = (int)Math.Round((double)this.subBand_MaxHz / (double)NyquistFrequency * fftBins);
-            if (this.Configuration.DoMelScale)
-            {
-                double maxMel = MFCCStuff.Mel(this.NyquistFrequency);
-                int melRange = (int)(maxMel - 0 + 1);
-                double pixelPerMel = imageHeight / (double)melRange;
-                double minBandMel = MFCCStuff.Mel(this.subBand_MinHz);
-                double maxBandMel = MFCCStuff.Mel(this.subBand_MaxHz);
-                minHighlightBin = (int)Math.Round((double)minBandMel * pixelPerMel);
-                maxHighlightBin = (int)Math.Round((double)maxBandMel * pixelPerMel);
-            }
-            Color[] grayScale = ImageTools.GrayScale();
-
-            Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
-            int yOffset = imageHeight;
-            for (int y = 0; y < maxBin; y++) //over all freq bins
-            {
-                for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
-                {
-                    for (int x = 0; x < width; x++) //for pixels in the line
-                    {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
-                        double value = (this.Data[x, y] - min) / (double)range;
-                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                        if (c < 0)
-                            c = 0;
-                        else if (c >= 256)
-                            c = 255;
-
-                        int g = c + 40; // green tinge used in the template scan band 
-                        if (g >= 256) g = 255;
-                        Color col = (doHighlightSubband && IsInBand(y, minHighlightBin, maxHighlightBin)) ? Color.FromArgb(c, g, c) : grayScale[c];
-                        bmp.SetPixel(x, yOffset - 1, col);
-                    }//for all pixels in line
-                    yOffset--;
-                } //end repeats over one track
-            }//end over all freq bins
-
-            if (add1kHzLines) Draw1kHzLines(bmp);
-            return (Image)bmp;
+            Image image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
+                                             doHighlightSubband, this.subBand_MinHz, this.subBand_MaxHz);
+            bool doMelScale = false;
+            double freqBinWidth = 0.0;
+            if (add1kHzLines) 
+                SpectrogramTools.Draw1kHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
+            return image;
         }
 
         public StringBuilder GetSegmentationText()
@@ -425,8 +376,8 @@
             Color[] grayScale = ImageTools.GrayScale();
 
             //set up the 1000kHz scale
-            int[] vScale = CreateLinearYaxis(1000, imageHeight); //calculate location of 1000Hz grid lines
-
+            int herzInterval = 1000;
+            int[] vScale = SpectrogramTools.CreateLinearYaxis(herzInterval, this.NyquistFrequency, imageHeight); //calculate location of 1000Hz grid lines
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
             for (int w = 0; w < imageWidth; w++)
             {
@@ -472,98 +423,6 @@
             return bmp;
         }
 
-
-        private void Draw1kHzLines(Bitmap bmp)
-        {
-            const int kHz = 1000;
-            double kHzBinWidth = kHz / this.FBinWidth;
-            int width = bmp.Width;
-            int height = bmp.Height;
-
-            int bandCount = (int)Math.Floor(height / kHzBinWidth);
-            int[] gridLineLocations = new int[bandCount];
-            for (int b = 0; b < bandCount; b++)
-            {
-                gridLineLocations[b] = (int)(height - ((b + 1) * kHzBinWidth));
-            }
-
-            //get melscale locations
-            if (this.Configuration.DoMelScale) gridLineLocations = CreateMelYaxis(kHz, height);//WARNING!!!! NEED TO REWORK THIS BUT NOW SELDOM USED
-
-            Graphics g = Graphics.FromImage(bmp);
-            //g.SmoothingMode = SmoothingMode.AntiAlias;
-            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            for (int b = 0; b < bandCount; b++) //over each band
-            {
-                int y = gridLineLocations[b];
-                for (int x = 1; x < width; x++)
-                {
-                    bmp.SetPixel(x - 1, y, Color.White);
-                    bmp.SetPixel(x,     y, Color.Black);
-                    x++;
-                }
-                g.DrawString(((b+1) +" kHz"), new Font("Thachoma", 8), Brushes.Black, 2, y+1);
-            }
-
-            //g.Flush();
-        }//end AddGridLines()
-
-
-        public int[] CreateLinearYaxis(int herzInterval, int imageHt)
-        {
-            //int freqRange = this.maxFreq - this.minFreq + 1;
-            int minFreq = 0;
-            int maxFreq = this.NyquistFrequency;
-            int freqRange = maxFreq - minFreq + 1;
-            double pixelPerHz = imageHt / (double)freqRange;
-            int[] vScale = new int[imageHt];
-            //LoggedConsole.WriteLine("freqRange=" + freqRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerHz=" + pixelPerHz);
-
-            for (int f = minFreq + 1; f < maxFreq; f++)
-            {
-                if (f % 1000 == 0)  //convert freq value to pixel id
-                {
-                    int hzOffset = f - minFreq;
-                    int pixelID = (int)(hzOffset * pixelPerHz) + 1;
-                    if (pixelID >= imageHt) pixelID = imageHt - 1;
-                    //LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
-                    vScale[pixelID] = 1;
-                }
-            }
-            return vScale;
-        }
-
-
-        /// <summary>
-        /// use this method to generate grid lines for mel scale image
-        /// </summary>
-        public int[] CreateMelYaxis(int herzInterval, int imageHt)
-        {
-            int minFreq = 0;
-            int maxFreq = this.NyquistFrequency;
-            //int freqRange = maxFreq - minFreq + 1;
-            double minMel = MFCCStuff.Mel(minFreq);
-            int melRange = (int)(MFCCStuff.Mel(maxFreq) - minMel + 1);
-            //double pixelPerHz = imageHt / (double)freqRange;
-            double pixelPerMel = imageHt / (double)melRange;
-            int[] vScale = new int[imageHt];
-            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
-
-            for (int f = minFreq + 1; f < maxFreq; f++)
-            {
-                if (f % 1000 == 0)  //convert freq value to pixel id
-                {
-                    //int hzOffset  = f - this.minFreq;
-                    int melOffset = (int)(MFCCStuff.Mel(f) - minMel);
-                    int pixelID = (int)(melOffset * pixelPerMel) + 1;
-                    if (pixelID >= imageHt) pixelID = imageHt - 1;
-                    //LoggedConsole.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
-                    vScale[pixelID] = 1;
-                }
-            }
-            return vScale;
-        }
 
         public void Dispose()
         {
@@ -720,6 +579,81 @@
             return (Image)bmp;
         }
 
+
+
+        public static Image GetSonogramImage(double[,] data, int nyquistFreq, int maxFrequency, bool doMelScale, int binHeight, 
+                                             bool doHighlightSubband, int subBand_MinHz, int subBand_MaxHz)
+        {
+            int width = data.GetLength(0); // Number of spectra in sonogram
+            int fftBins = data.GetLength(1);
+            int maxBin = (int)Math.Floor(fftBins * maxFrequency / (double)nyquistFreq);
+
+            int imageHeight = maxBin * binHeight; // image ht = sonogram ht. Later include grid and score scales
+
+
+            //set up min, max, range for normalising of dB values
+            double min; double max;
+            DataTools.MinMax(data, out min, out max);
+
+            //the following lines do not seem to wor well??
+            //int minPercentile = 1;
+            //int maxPercentile = 100;
+            //double[] lowAverage = BaseSonogram.GetAvSpectrum_LowestPercentile(data, minPercentile);
+            //double[] hihAverage = BaseSonogram.GetAvSpectrum_HighestPercentile(data, maxPercentile);
+            //double min = lowAverage.Min();
+            //double max = hihAverage.Max();
+
+            double range = max - min;
+
+            //int? minHighlightFreq = this.subBand_MinHz;
+            //int? maxHighlightFreq = this.subBand_MaxHz;
+            //int minHighlightBin = (minHighlightFreq == null) ? 0 : (int)Math.Round((double)minHighlightFreq / (double)NyquistFrequency * fftBins);
+            //int maxHighlightBin = (maxHighlightFreq == null) ? 0 : (int)Math.Round((double)maxHighlightFreq / (double)NyquistFrequency * fftBins);
+
+            //calculate top and bottom of sub-band 
+            int minHighlightBin = (int)Math.Round((double)subBand_MinHz / (double)nyquistFreq * fftBins);
+            int maxHighlightBin = (int)Math.Round((double)subBand_MaxHz / (double)nyquistFreq * fftBins);
+            if (doMelScale)
+            {
+                double maxMel = MFCCStuff.Mel(nyquistFreq);
+                int melRange = (int)(maxMel - 0 + 1);
+                double pixelPerMel = imageHeight / (double)melRange;
+                double minBandMel = MFCCStuff.Mel(subBand_MinHz);
+                double maxBandMel = MFCCStuff.Mel(subBand_MaxHz);
+                minHighlightBin = (int)Math.Round((double)minBandMel * pixelPerMel);
+                maxHighlightBin = (int)Math.Round((double)maxBandMel * pixelPerMel);
+            }
+            Color[] grayScale = ImageTools.GrayScale();
+
+            Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
+            int yOffset = imageHeight;
+            for (int y = 0; y < maxBin; y++) //over all freq bins
+            {
+                for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
+                {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        double value = (data[x, y] - min) / (double)range;
+                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                        if (c < 0)
+                            c = 0;
+                        else if (c >= 256)
+                            c = 255;
+
+                        int g = c + 40; // green tinge used in the template scan band 
+                        if (g >= 256) g = 255;
+                        Color col = (doHighlightSubband && IsInBand(y, minHighlightBin, maxHighlightBin)) ? Color.FromArgb(c, g, c) : grayScale[c];
+                        bmp.SetPixel(x, yOffset - 1, col);
+                    }//for all pixels in line
+                    yOffset--;
+                } //end repeats over one track
+            }//end over all freq bins
+
+            return (Image)bmp;
+        }
+
+
         /// <summary>
         /// Returns an image of the data matrix.
         /// Normalises the values from min->max according to passed rank values.
@@ -864,12 +798,18 @@
         }
 
 
-
-
-        public static Image FrameSpectrogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, 
-                                             TimeSpan xAxisPixelDuration, TimeSpan labelInterval, int Y_interval)
+        public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
+                                          TimeSpan labelInterval, int nyquist, int herzInterval)
         {
-            ImageTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
+            int Y_interval = (int)(image.Height / (double)(nyquist / (double)herzInterval));
+            image = FrameSonogram(image, titleBar, minOffset, xAxisTicInterval, xAxisPixelDuration, labelInterval, Y_interval);
+            return image;
+        }
+
+        public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, 
+                                          TimeSpan labelInterval, int Y_interval)
+        {
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
 
             int imageWidth = image.Width;
             int trackHeight = 20;
@@ -980,6 +920,14 @@
         public AmplitudeSonogram(SonogramConfig config, WavReader wav)
             : base(config, wav, false)
         { }
+
+        public AmplitudeSonogram(SonogramConfig config, double[,] amplitudeData)
+            : base(config, amplitudeData)
+        {
+            var frames = new double[4,4];
+            this.SnrFullband = new SNR(frames);
+            this.SnrFullband.Decibels = new double[amplitudeData.GetLength(0)];
+        }
 
         /// <summary>
         /// This method does nothing because do not want to change the amplitude sonogram in any way.

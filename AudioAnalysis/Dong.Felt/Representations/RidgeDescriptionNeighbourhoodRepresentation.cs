@@ -17,6 +17,8 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet3 = "FeaturePropSet3";
         public const string FeaturePropSet4 = "FeaturePropSet4";
         public const string FeaturePropSet5 = "FeaturePropSet5";
+        // global features, ridge histogram
+        public const string FeaturePropSet6 = "FeaturePropSet6";
 
         #region Properties
 
@@ -476,6 +478,7 @@ namespace Dong.Felt.Representations
             }
         }
 
+        // 
         public void HistogramOfOrientatedGradient(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
             var histogramOfGradient = new List<double>();

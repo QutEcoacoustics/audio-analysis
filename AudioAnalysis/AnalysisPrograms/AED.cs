@@ -176,7 +176,7 @@ namespace AnalysisPrograms
                 aedConfiguration.IntensityThreshold,
                 aedConfiguration.SmallAreaThreshold,
                 aedConfiguration.BandpassMinimum ?? 0.0,
-                aedConfiguration.BandpassMaximum ?? config.fftConfig.NyquistFreq,
+                aedConfiguration.BandpassMaximum ?? config.NyquistFreq,
                 aedConfiguration.NoiseReductionType == NoiseReductionType.NONE,
                 sonogram.Data);
             Log.Info("AED finished");

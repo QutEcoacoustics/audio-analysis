@@ -7,8 +7,6 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-
-
 namespace TowseyLibrary
 {
     public enum Kernal
@@ -2094,43 +2092,6 @@ namespace TowseyLibrary
         }
 
 
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int yInterval)
-        {
-            int rows = bmp.Height;
-            int cols = bmp.Width;
-            // for rows draw in Y-axis line
-            for (int row = 0; row < rows; row++)
-            {
-                if ((row > 0) && (row % yInterval == 0))
-                {
-                    int rowFromBottom = rows - row;
-                    for (int column = 0; column < cols; column++)
-                    {
-                        bmp.SetPixel(column, rowFromBottom, Color.Gray);
-                        column++;
-                    }
-                }
-            }
-            // for columns, draw in X-axis hour lines
-            int xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
-            int min = (int)minOffset.TotalMinutes;
-            min += 1; //skip first column
-            for (int column = 1; column < cols; column++)
-            {
-                //if ((column > 0) && (column % xInterval == 0))
-                if (min % xInterval == 0)
-                {
-                    for (int row = 0; row < rows; row++)
-                    {
-                        bmp.SetPixel(column, row, Color.Gray);
-                        row++;
-                    }
-                }
-                min++;
-            }
-        } // DrawGridLInesOnImage()
-
-
         /// <summary>
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
@@ -2316,7 +2277,6 @@ namespace TowseyLibrary
         public static Image CombineImagesVertically(Image[] array)
         {
             int width = array[0].Width;   // assume all images have the same width
-            int height = array[0].Height; // assume all images have the same height
 
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
@@ -2333,6 +2293,35 @@ namespace TowseyLibrary
             {
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top spectrogram
                 yOffset += array[i].Height;
+            }
+            return (Image)compositeBmp;
+        }
+
+        /// <summary>
+        /// Stacks the passed images one on top of the other. 
+        /// Assumes that all images have the same width.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static Image CombineImagesInLine(Image[] array)
+        {
+            int height = array[0].Height; // assume all images have the same height
+
+            int compositeWidth = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                compositeWidth += array[i].Width;
+            }
+
+            Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
+            int xOffset = 0;
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                gr.DrawImage(array[i], xOffset, 0); //draw in the top spectrogram
+                xOffset += array[i].Width;
             }
             return (Image)compositeBmp;
         }

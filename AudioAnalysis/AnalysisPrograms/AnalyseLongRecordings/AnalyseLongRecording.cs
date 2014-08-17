@@ -32,6 +32,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using log4net;
     using log4net.Repository.Hierarchy;
 
+
     public partial class AnalyseLongRecording
     {
         private const string ImagefileExt = ".png";
@@ -76,7 +77,7 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
 
-            // 2. get the analysis config dictionary
+            // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
 
             bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
@@ -87,6 +88,12 @@ Output  to  directory: {1}
             ////bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
+            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
+
+            if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
+            {
+                Log.Warn("IndexProperties config can not be found! This will result in an excpetion if it is needed later on.");
+            }
 
             double scoreThreshold = 0.2; // min score for an acceptable event
             scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
@@ -134,8 +141,8 @@ Output  to  directory: {1}
             }
             catch (Exception ex)
             {
-                Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value used)", ex);
                 analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(1.0);
+                Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
             }
 
             // set overlap
@@ -146,8 +153,19 @@ Output  to  directory: {1}
             }
             catch (Exception ex)
             {
-                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squahsed, default value used)", ex);
+                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value used)");
                 analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
+            }
+
+            // set target sample rate
+            try
+            {
+                int rawSampleRate = configuration[AnalysisKeys.ResampleRate];
+                analysisSettings.SegmentTargetSampleRate = rawSampleRate;
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value used)");
             }
 
             // 7. ####################################### DO THE ANALYSIS ###################################
@@ -224,16 +242,31 @@ Output  to  directory: {1}
             var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectralIndexResults);
 
             // 12. Convert summary indices to tracks (black and white rows) image
-            var indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
+            if (mergedIndicesResults == null)
+            {
+                Log.Info("No summary indices produced");
+            }
+            else
+            {
+                if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
+                {
+                    throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
+                }
 
-            string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-            string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(IndexProperties.GetIndexProperties(indicesPropertiesConfig), indicesFile, imageTitle);
-            var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
-            tracksImage.Save(imagePath);
+                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                Bitmap tracksImage =
+                    DrawSummaryIndices.DrawImageOfSummaryIndices(
+                        IndexProperties.GetIndexProperties(indicesPropertiesConfig),
+                        indicesFile,
+                        imageTitle);
+                var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
+                tracksImage.Save(imagePath);
+            }
 
             // 13. wrap up, write stats
-            LoggedConsole.WriteLine("INDICES CSV file(s) = " + indicesFile.Name);
+            LoggedConsole.WriteLine(
+                "INDICES CSV file(s) = " + (indicesFile == null ? "<<No indices result, no file!>>" : indicesFile.Name));
             LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
                                     numberOfRowsOfIndices);
             LoggedConsole.WriteLine(string.Empty);

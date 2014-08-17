@@ -12,6 +12,9 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using System.Drawing.Imaging;
+    using AForge.Math;
+    using AudioAnalysisTools.DSP;
+    
 
 
     class ImageAnalysisTools
@@ -119,6 +122,13 @@ namespace Dong.Felt
 
         #region Public Methods
 
+        public static double RGBtoIntensity(Color color)
+        {
+            var result = 0.0;
+            return result;
+        }
+
+        
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -157,19 +167,19 @@ namespace Dong.Felt
         public static Image DrawQueryBoundary(Image image)
         {
             var bmp = new Bitmap(image);
-            var rect = new Rectangle(0,0,5,5);
+            var rect = new Rectangle(0, 0, 5, 5);
             Graphics g = Graphics.FromImage(bmp);
             var pen = new Pen(Color.Cyan);
             g.DrawRectangle(pen, rect);
             g.Flush();
-            return bmp; 
+            return bmp;
         }
 
         public static Image DrawVerticalLine(Image image)
         {
             var bmp = new Bitmap(image);
             Graphics g = Graphics.FromImage(bmp);
-            var brush = new SolidBrush(Color.Black);           
+            var brush = new SolidBrush(Color.Black);
             var rect = new Rectangle(0, 0, 3, image.Height);
             g.FillRectangle(brush, rect);
             g.Flush();
@@ -186,11 +196,12 @@ namespace Dong.Felt
             RectangleF rectf1 = new RectangleF(10, height - 39, 260, 70);
             RectangleF rectf2 = new RectangleF(10, height - 15, 70, 30);
             Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7,FontStyle.Bold), Brushes.Black, rectf2);
+            g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf2);
             g.DrawString(audioFileName, new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf1);
             g.Flush();
             return bmp;
         }
+
         public static Bitmap DrawFrequencyIndicator(Bitmap bitmap, List<double> frequencyBands, double herzScale, double nyquistFrequency, int frameOffset)
         {
             var i = 0;
@@ -236,7 +247,7 @@ namespace Dong.Felt
             {
                 int width = array[0].Width;   // assume all images have the same width
                 height = array[0].Height; // assume all images have the same height
-               
+
                 for (int i = 0; i < array.Length; i++)
                 {
                     compositeWidth += array[i].Width;
