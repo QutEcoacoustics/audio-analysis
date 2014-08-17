@@ -523,6 +523,50 @@ namespace TowseyLibrary
         }
 
 
+        public static double[,] ContrastStretching(double[,] M, double fractionalStretching)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            double[,] norm = MatrixTools.normalise(M);
+
+            int binCount = 100;
+            double binWidth = 0.01; 
+            double min = 0.0; 
+            double max = 1.0;
+            int[] histo = Histogram.Histo(M, binCount, min, max, binWidth);
+
+            int cellCount = rowCount * colCount;
+            int thresholdCount = (int)(cellCount * fractionalStretching);
+
+            // get low side stretching bound
+            int bottomSideCount = 0;
+            for (int i = 0; i < binCount; i++)
+            {
+                bottomSideCount += histo[i];
+                if (bottomSideCount > thresholdCount)
+                {
+                    min = i * binWidth;
+                    break;
+                }
+            }
+
+            // get high side stretching bound
+            int topSideCount = 0;
+            for (int i = binCount-1; i >= 0; i--)
+            {
+                topSideCount += histo[i];
+                if (topSideCount > thresholdCount)
+                {
+                    max = 1 - ((binCount - i) * binWidth);
+                    break;
+                }
+            }
+
+            // truncate min and max and thereby contrast stretch.
+            norm = MatrixTools.NormaliseInZeroOne(norm, min, max);
+            return norm;
+        }
+
         public static double[,] SobelEdgeDetection(double[,] m)
         {
             double relThreshold = 0.2;
@@ -1996,7 +2040,8 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Draws matrix and save image
+        /// Normalises the matrix between zero and one. 
+        /// Then draws the reversed matrix and saves image to passed path.
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>

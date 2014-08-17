@@ -9,33 +9,58 @@ namespace AudioAnalysisTools.DSP
 {
 
     /// <summary>
-    /// Performs local contrast normalisation on a matrix of values where the matrix is assume to be an image of some kind.
+    /// Performs local contrast normalisation on a matrix of values where the matrix is assumed to be derived from an image.
     /// </summary>
     public class LocalContrastNormalisation
     {
 
+
+        /// <summary>
+        /// This method does local contrast normalisation. Typically LCN normalises by division only and is motivated by what is known
+        /// to happen in the visual cortext.
+        /// Every matrix element or pixel value is divided by the (scaled) standard deviation of pixel values 
+        /// in a local field centred on the pixel. Scaling affects the severity of the normalisation.
+        /// There are several ways of doing LCN. That is can divide by the local sum of squares. Or can calculate the local z-score
+        /// which effectively normalises by both subtraction and division.
+        /// This method is based on formula given by LeCun. Python code at the bottom of this class is the actual
+        /// code used by LeCun which appears to do something different.
+        /// Wish I knew Python!
+        /// 
+        /// </summary>
+        /// <param name="inputM"></param>
+        /// <param name="fieldSize"></param>
+        /// <returns></returns>
         public static double[,] ComputeLCN(double[,] inputM, int fieldSize)
         {
+            /*
+             * // FOLLOWING LINES ARE FOR DEBUGGING AND TESTING
             var inputM2 = MatrixTools.MatrixRotate90Anticlockwise(inputM);
-            ImageTools.DrawReversedMatrix(inputM2, @"C:\SensorNetworks\Output\Test\TESTMATRIX1.png");
+            ImageTools.DrawReversedMatrix(inputM2, @"C:\SensorNetworks\Output\Sonograms\TESTMATRIX0.png");
+            double fractionalStretching = 0.05;
+            inputM2 = ImageTools.ContrastStretching(inputM2, fractionalStretching);
+            ImageTools.DrawReversedMatrix(inputM2, @"C:\SensorNetworks\Output\Sonograms\TESTMATRIX1.png");
+             * */
 
             int rowCount = inputM.GetLength(0);
             int colCount = inputM.GetLength(1);
 
             int frameWidth = fieldSize / 2;
 
+            /// add frame around matrix to compensate for edge effects.
             double[,] framedM = MatrixTools.FrameMatrixWithZeros(inputM, frameWidth);
-
+            // output matrix is same size as input.
             double[,] outputM = new double[rowCount, colCount];
             double[,] subMatrix;
             double NSquared = fieldSize * fieldSize;
-            double alpha = 0.0001;
+            // alpha is a scaling factor. LeCun set it = 0.00001. Here set much higher to have a noticeable effect!
+            double alpha = 0.5;
 
+            // convolve gaussian with the matrix
             for (int r1 = 0; r1 < rowCount-frameWidth; r1++)
             {
                 for (int c1 = 0; c1 < colCount - frameWidth; c1++)
                 {
-
+                    // get field
                     int r2 = r1 + fieldSize -1;
                     int c2 = c1 + fieldSize - 1;
                     subMatrix = MatrixTools.Submatrix(framedM, r1, c1, r2, c2);
@@ -43,22 +68,24 @@ namespace AudioAnalysisTools.DSP
                     double av, variance;
                     NormalDist.AverageAndVariance(V, out av, out variance);
 
-                    //double numerator = (inputM[r1, c1]);
-                    double numerator = (inputM[r1, c1] - av);
+                    double numerator = (inputM[r1, c1]);
+                    //double numerator = (inputM[r1, c1] - av);
                     double denominator = Math.Sqrt(1 + (alpha * variance));
-                    //double denominator = 1 + (alpha * variance);
                     outputM[r1, c1] = numerator / denominator;
                 }
             }
+
+            /*
+             * // FOLLOWING LINES ARE FOR DEBUGGING AND TESTING
             outputM = MatrixTools.MatrixRotate90Anticlockwise(outputM);
-            ImageTools.DrawReversedMatrix(outputM, @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png");
-
-
-
+            ImageTools.DrawReversedMatrix(outputM, @"C:\SensorNetworks\Output\Sonograms\TESTMATRIX2.png");
+            fractionalStretching = 0.05;
+            outputM = ImageTools.ContrastStretching(outputM, fractionalStretching);
+            ImageTools.DrawReversedMatrix(outputM, @"C:\SensorNetworks\Output\Sonograms\TESTMATRIX3.png");
+             * */
+            
             return outputM;
         }
-
-
 
 
     }
