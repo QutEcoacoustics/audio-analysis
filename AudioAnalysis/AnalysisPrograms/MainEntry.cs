@@ -43,7 +43,6 @@ namespace AnalysisPrograms
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             Execute(Arguments);
 
-            
             HangBeforeExit();
 
             // finally return error level

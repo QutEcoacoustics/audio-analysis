@@ -1,15 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using TowseyLibrary;
-using AudioAnalysisTools.DSP;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SpectrogramConstants.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the SpectrogramConstants type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-
-namespace AudioAnalysisTools
+namespace AudioAnalysisTools.LongDurationSpectrograms
 {
+    using System;
 
+    using Acoustics.Shared;
+
+    using AnalysisBase;
 
     public static class SpectrogramConstants
     {
@@ -29,17 +33,15 @@ namespace AudioAnalysisTools
         public const string RGBMap_ACI_CVR_ENT = "ACI-CVR-ENT";
 
 
-        //these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram
+        // these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram
         public const double BACKGROUND_FILTER_COEFF = 0.75; //must be value <=1.0
         public const double COLOUR_GAIN = 2.0;
 
         // These parameters describe the time and frequency scales for drawing X and Y axes on LONG DURATION spectrograms
         public static TimeSpan X_AXIS_TIC_INTERVAL = TimeSpan.FromMinutes(60);  // default assumes one minute spectra and 60 spectra per hour
         public static TimeSpan MINUTE_OFFSET       = TimeSpan.Zero;    // assume recording starts at zero minute of day i.e. midnight
-        public const int SAMPLE_RATE = 17640;  // default value - after resampling
+        public static int SAMPLE_RATE = AppConfigHelper.GetInt(AppConfigHelper.DefaultTargetSampleRateKey);  // default value - after resampling
         public const int FRAME_WIDTH = 512;    // default value - from which spectrogram was derived
         public const int HEIGHT_OF_TITLE_BAR = 20;
-
-
-    } // SpectrogramConstants
+    }
 }

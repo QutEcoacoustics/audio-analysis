@@ -14,6 +14,7 @@
 
     using TowseyLibrary;
     using AudioAnalysisTools.DSP;
+    using AnalysisBase;
 
 
 	public class AudioRecording : IDisposable
@@ -428,7 +429,7 @@
 
 
         /// <summary>
-        /// 
+        /// This method extracts a recording segment and saves it to disk at the location fiOutputSegment.
         /// </summary>
         /// <param name="fiSource"></param>
         /// <param name="start"></param>
@@ -436,30 +437,27 @@
         /// <param name="buffer"></param>
         /// <param name="resampleRate"></param>
         /// <param name="fiOutputSegment"></param>
-        public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, Dictionary<string, string> configDict, FileInfo fiOutputSegment)
+        public static void ExtractSegment(FileInfo fiSource, TimeSpan start, TimeSpan end, TimeSpan buffer, int sampleRate, FileInfo fiOutputSegment)
         {
-            int DEFAULT_SAMPLE_RATE = 22050;
-
-
-            int resampleRate = DEFAULT_SAMPLE_RATE;
-            if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
-                resampleRate = ConfigDictionary.GetInt(AnalysisKeys.ResampleRate, configDict);
-
-            //EXTRACT RECORDING SEGMENT
+            // EXTRACT RECORDING SEGMENT
             int startMilliseconds = (int)(start.TotalMilliseconds - buffer.TotalMilliseconds);
             int endMilliseconds = (int)(end.TotalMilliseconds + buffer.TotalMilliseconds);
-            if (startMilliseconds < 0) startMilliseconds = 0;
-            //if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;//no need to worry about end
+            if (startMilliseconds < 0)
+            {
+                startMilliseconds = 0;
+            }
+
+            ////if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;//no need to worry about end
             MasterAudioUtility.SegmentToWav(
                 fiSource,
                 fiOutputSegment,
                 new AudioUtilityRequest
                     {
-                        TargetSampleRate = resampleRate,
+                        TargetSampleRate = sampleRate,
                         OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
                         OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
-                        //Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
-                        //MixDownToMono  =true
+                        ////Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
+                        ////MixDownToMono  =true
                     });
         }
 

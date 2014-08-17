@@ -16,6 +16,7 @@ namespace AudioAnalysisTools.Indices
     using System.Text;
 
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using TowseyLibrary;
 

@@ -34,7 +34,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             Configuration = config;
             this.FrameCount = amplitudeSpectrogram.GetLength(0);
-            this.SampleRate = config.fftConfig.SampleRate;
             this.Data = amplitudeSpectrogram;
             Make(this.Data);
         }
@@ -74,14 +73,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //sg.MaxAmplitude { get; private set; }
             this.SampleRate = sg.SampleRate;
             this.Duration = TimeSpan.FromSeconds(endTime - startTime);
-            //sg.FrameDuration ={ get { return Configuration.WindowSize / (double)SampleRate; } } // Duration of full frame or window in seconds
-            //sg.FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
-            //sg.FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }
-            //sg.FramesPerSecond { get { return 1 / FrameOffset; } }
             this.FrameCount = frameCount;
 
             ////energy and dB per frame
-            //public SNR SnrFrames { get; private set; }
             this.DecibelsPerFrame = new double[frameCount];  // Normalised decibels per signal frame
             for (int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
 
@@ -93,7 +87,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
             for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
 
-            //public double[] DecibelsNormalised { get; private set; } 
             this.Max_dBReference = sg.Max_dBReference; // Used to normalise the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
             for (int i = 0; i < frameCount; i++) this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame + i];
@@ -113,7 +106,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public override void Make(double[,] amplitudeM)
         {
-            this.SampleRate = this.Configuration.fftConfig.SampleRate;
             double[,] m = amplitudeM;
 
             // (i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
@@ -182,7 +174,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             sonoConfig.NoiseReductionType = nrt;
             sonoConfig.epsilon = Math.Pow(0.5, bitsPerSample - 1);
             sonoConfig.WindowPower = windowPower;
-            sonoConfig.fftConfig.SampleRate = sr;
+            sonoConfig.SampleRate = sr;
             sonoConfig.Duration = duration;
             var sonogram = new SpectrogramStandard(sonoConfig, amplitudeSpectrogram);
             sonogram.SetTimeScale(duration);

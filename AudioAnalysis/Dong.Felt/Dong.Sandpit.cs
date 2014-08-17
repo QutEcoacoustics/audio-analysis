@@ -79,9 +79,10 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
-
+                  //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                  //ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
+                                     
+ 
                     /// RidgeDetectionBatchProcess                    
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
                 }
@@ -94,11 +95,36 @@
                     filterRidgeMatrixLength,
                     minimumNumberInRidgeInMatrix,
                     neighbourhoodLength);
-                    string outputFilePath = outputDirectory.FullName + outputFileName + ".csv";                    
-                    
+                    string outputFilePath = outputDirectory.FullName + outputFileName + ".csv";                   
                     //OutputResults.MatchingResultsSummary(inputDirectory, new FileInfo(outputFilePath));
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
-
+                    ///extract POI based on structure tensor
+                    //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength); 
+                    //var imageData = GetImageData(inputDirectory.FullName);
+                    //var imageData = new double[4, 4] {{0,    0,    0,  0},
+                    //                                  {0,  255,  255, 0},
+                    //                                  {0,  255,  255, 0},
+                    //                                  {0,    0,    0, 0}};
+                    double[,] imageData = {{0, 0, 0, 0, 0, 0, 0,  0,   0,   0,    0,   5, 6, 5.5, 0,  5},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   0, 5.5,   6,   6,    5, 5.5,  5},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   0,   5, 6.5,  6.5, 6.5,   6,  5},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   0,   6,   7,   8,    7, 5.5,  6},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 5.8, 6.5, 7.5,   9,    9,   8,  8},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 5.8,   7, 7.5,   7,    9,   9,  9},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 5.8, 7.2, 7.2,   6,  6.5,   8,  7},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   6, 7.2, 7.2,   6,  6.2, 5.5,  5},
+                                          {0, 0, 0, 0, 0, 0, 0, 0,5.8,6.2, 7.2,   7, 5.3,  5.5, 5.2,  5},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 6.5, 7.2,   7, 6.8,  5.5,   5,  0},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 6.5, 7.2,   7, 6.8,  5.3,   5,  0},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 5, 6.5, 7.2, 6.5, 5.2,    5,   5, 5.2},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 5, 5.5,   6, 6.5, 5.5,    5,   5, 5.2},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 5, 5.5,   6,   6,   0,    0,   0,  5},
+                                          {0, 0, 0, 0, 0, 0, 0, 0, 5,   5, 5.5,   6,   0,    0,   0,  0},
+                                          {5, 5, 5, 5, 0, 0, 0, 0, 5,   5,   5,   0,   0,    0,   0,  0}};
+                    var dataMatrix = _2DFourierTransform.DiscreteFourierTransform(imageData);
+                    var outputImagePath = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png";
+                    Bitmap bitmap = (Bitmap)Image.FromFile(inputDirectory.FullName, true);
+                    DrawDFTImage(outputImagePath, dataMatrix, bitmap);                    
                 }
                 else
                 {
@@ -107,8 +133,6 @@
                 DateTime tEnd = DateTime.Now;
                 Log.Info("# Done Time = " + tEnd.ToString());
             }
-
-
             //// experiments with similarity search with ridgeNeighbourhoodRepresentation.
             //if (true)
             //{                  
@@ -342,7 +366,62 @@
             //image = DrawSonogram(spectrogram, scores, finalAcousticEvents, eventThreshold, ridges);
             //image.Save(imagePath, ImageFormat.Png);
             //}
-        } // Dev()      
+        } // Dev() 
+
+        double[,] imageData = {{0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,  11,     11,  0, 0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5, 11,     11,   0,   0,  0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11, 0, 0,   0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,     11,   0,   0, 0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,   11,    11,  0,  0,   0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,   11,   11,  0,  0,   0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,10.5,   11,   11,   0,  0,   0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,  10.5,   11,   11,   0, 0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0,0,10.5,  11, 10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11, 10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11, 10.5,   0, 0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11,   10.5,   0,   0,   0, 0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11,    10.5,   0,   0,    0, 0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11,    10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  10.8,  10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  10.8,  10.5,   0,   0,    0,   0}};
+
+        public static void DrawDFTImage(string outputImagePath, double[,] imageData, Bitmap bitmap)
+        {
+            imageData = MatrixTools.normalise(imageData);
+            for (var i = 0; i < imageData.GetLength(0); i++)
+            {
+                for (var j = 0; j < imageData.GetLength(1); j++)
+                {
+                    var color = Color.Black;
+                    if (imageData[i, j] > 0.0)
+                    {
+                        double v = imageData[i, j];
+                        int R = (int)(255 * v * 5);
+                        if (R > 255) R = 255;
+                        color = Color.FromArgb(R, R, R);
+                    }                
+                    bitmap.SetPixel(i, j, color);
+                }
+            }
+            var image = (Image)bitmap;
+            image.Save(outputImagePath);
+        }
+        
+        public static double[,] GetImageData(string imageFilePath)
+        {
+            Bitmap image = (Bitmap)Image.FromFile(imageFilePath, true);          
+            var rowLength = image.Width;
+            var colLength = image.Height;
+            var result = new double[rowLength, colLength];
+            for (int i = 0; i < rowLength; i++)
+            {
+                for (int j = 0; j < colLength; j++)
+                {
+                    result[i, j] = 0.299 * image.GetPixel(i, j).R + 0.587 * image.GetPixel(i, j).G + 0.114 * image.GetPixel(i, j).B;
+                }
+            }
+            return result;
+        }
 
         public static void ParameterMixture(dynamic configuration, string featurePropertySet, DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, DirectoryInfo tempDirectory)
         {
@@ -511,6 +590,48 @@
                     var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in ridges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                        Point point = new Point(poi.Point.Y, poi.Point.X);
+                        double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+                        var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                        double herzScale = spectrogram.FBinWidth; //43 hz
+                        TimeSpan time = TimeSpan.FromSeconds(poi.Point.Y * secondsScale);
+                        double herz = (256 - poi.Point.X - 1) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        var poi1 = new PointOfInterest(time, herz);
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                    }
+                    var FileName = new FileInfo(audioFiles[i]);
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-ridge detection.png");
+                    string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
+                    image = (Image)bmp;
+                    image.Save(annotatedImagePath);
+                }
+            }
+        }
+
+        public static void POIStrctureTensorDetectionBatchProcess(string audioFileDirectory, SonogramConfig config,
+            int neighbourhoodSize)
+        {
+            if (Directory.Exists(audioFileDirectory))
+            {
+                var audioFiles = Directory.GetFiles(audioFileDirectory, @"*.wav", SearchOption.TopDirectoryOnly);
+                var audioFilesCount = audioFiles.Count();
+                for (int i = 0; i < audioFilesCount; i++)
+                {
+                    var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                    /// spectrogram drawing setting
+                    var scores = new List<double>();
+                    scores.Add(1.0);
+                    var acousticEventlist = new List<AcousticEvent>();
+                    var poiList = new List<PointOfInterest>();
+                    double eventThreshold = 0.5; // dummy variable - not used                               
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    poiList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, neighbourhoodSize);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in poiList)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     }
@@ -984,7 +1105,6 @@
 
             return result;
         }
-
 
         public static void MatchingStatisticalAnalysis(DirectoryInfo matchResultsDirectory, FileInfo outputPath, string featurePropertySet)
         {

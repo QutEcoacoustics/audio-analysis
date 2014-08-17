@@ -480,6 +480,12 @@ namespace AudioAnalysisTools
 
         public static DirectoryInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectralIndexBase> spectra)
         {
+            if (spectra == null)
+            {
+                Log.Debug("No spectral indicies returned... file not written");
+                return null;
+            }
+
             analyser2.WriteSpectrumIndicesFiles(outputDirectory, fileName, spectra);
             return outputDirectory;
         }
@@ -488,6 +494,7 @@ namespace AudioAnalysisTools
         {
             if (results == null)
             {
+                Log.Debug("No results returned... file not written:" + resultFilenamebase + ReportFileExt);
                 return null;    
             }
 

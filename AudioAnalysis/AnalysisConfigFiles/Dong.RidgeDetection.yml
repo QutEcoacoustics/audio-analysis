@@ -8,4 +8,6 @@ SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: true
 SaveSonogramFiles: false
 ParallelProcessing: true
+
+IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
 ...
