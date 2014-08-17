@@ -113,7 +113,12 @@ namespace TowseyLibrary
             return true;
         }
 
-
+        /// <summary>
+        /// Adds a frame around a matrix by adding row and columns of zeros.
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="frameWidth">The number of rows/columns of zeros to be added</param>
+        /// <returns></returns>
         public static double[,] FrameMatrixWithZeros(double[,] M, int frameWidth)
         {            
             int inRowCount = M.GetLength(0);

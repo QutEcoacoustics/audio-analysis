@@ -235,6 +235,7 @@
     <Compile Include="DataTableTools.cs" />
     <Compile Include="DictionaryTools.cs" />
     <Compile Include="Distribution.cs" />
+    <Compile Include="GaussianTools.cs" />
     <Compile Include="Gratings.cs" />
     <Compile Include="Histogram.cs" />
     <Compile Include="ImageTools.cs" />
