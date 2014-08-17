@@ -74,8 +74,13 @@ namespace AnalysisPrograms
         /// Detect using EPR.
         /// </summary>
         /// <param name="wavFilePath">
-        /// The wav file path.
+        ///     The wav file path.
         /// </param>
+        /// <param name="aedConfiguration"></param>
+        /// <param name="eprNormalisedMinScore">
+        ///     The epr Normalised Min Score.
+        /// </param>
+        /// <param name="segmentStartOffset"></param>
         /// <param name="intensityThreshold">
         /// The intensity Threshold.
         /// </param>
@@ -88,18 +93,12 @@ namespace AnalysisPrograms
         /// <param name="smallAreaThreshold">
         /// The small Area Threshold.
         /// </param>
-        /// <param name="eprNormalisedMinScore">
-        /// The epr Normalised Min Score.
-        /// </param>
         /// <returns>
         /// Tuple containing base Sonogram and list of acoustic events.
         /// </returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
-            FileInfo wavFilePath,
-            Aed.AedConfiguration aedConfiguration,
-            double eprNormalisedMinScore)
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(FileInfo wavFilePath, Aed.AedConfiguration aedConfiguration, double eprNormalisedMinScore, TimeSpan segmentStartOffset)
         {
-            Tuple<AcousticEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration);
+            Tuple<AcousticEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration, segmentStartOffset);
 
             return Detect(aed, eprNormalisedMinScore, wavFilePath);
         }
@@ -172,7 +171,7 @@ namespace AnalysisPrograms
             // READ PARAMETER VALUES FROM INI FILE
             var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(arguments.Config);
 
-            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, aedConfig, Default.eprNormalisedMinScore);
+            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, aedConfig, Default.eprNormalisedMinScore, TimeSpan.Zero);
             List<AcousticEvent> eprEvents = result.Item2;
 
             eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
@@ -251,8 +250,10 @@ namespace AnalysisPrograms
             return gpTemplate;
         }
 
-        public static List<AcousticEvent> ReadGroundParrotTemplateAsList(double timeScale, int hzScale)
+        public static List<AcousticEvent> ReadGroundParrotTemplateAsList(BaseSonogram sonogram)
         {
+            var timeScale = sonogram.FrameOffset;
+            var hzScale = (int)sonogram.FBinWidth;
             int rows = groundParrotTemplate1.GetLength(0);
             int cols = groundParrotTemplate1.GetLength(1);
             double timeOffset = groundParrotTemplate1[0, 0];
@@ -264,7 +265,14 @@ namespace AnalysisPrograms
                 int f2 = (int)Math.Round(groundParrotTemplate1[r, 2] / hzScale);
                 int f1 = (int)Math.Round(groundParrotTemplate1[r, 3] / hzScale);
                 Oblong o = new Oblong(t1, f1, t2, f2);
-                gpTemplate.Add(new AcousticEvent(o, timeScale, hzScale));
+                gpTemplate.Add(
+                    new AcousticEvent(
+                        o,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FrameDuration,
+                        sonogram.FrameOffset,
+                        sonogram.FrameCount));
             }
             return gpTemplate;
         }

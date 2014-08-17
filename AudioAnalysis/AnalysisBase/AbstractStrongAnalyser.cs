@@ -72,8 +72,7 @@ namespace AnalysisBase
 
             foreach (var anEvent in events)
             {
-                double eventStart = anEvent.EventStartAbsolute ?? anEvent.EventStartSeconds;
-                //// (double)ev[AudioAnalysisTools.Keys.EVENT_START_ABS];
+                double eventStart = anEvent.EventStartSeconds;
                 double eventScore = anEvent.Score; // (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
                 var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 

@@ -134,6 +134,6 @@ let detectEventsMinor intensityThreshold smallAreaThreshold (bandPassFilter:floa
 let detectEvents intensityThreshold smallAreaThreshold bandPassFilter doNoiseRemoval a =
     detectEventsMinor intensityThreshold smallAreaThreshold bandPassFilter doNoiseRemoval a
     |> Seq.map (fun ae ->
-        let points = new System.Collections.Generic.HashSet<Point>(Seq.map toPoint ae.Elements)
+        let points = new System.Collections.Generic.HashSet<Point>(Seq.map toPoint2 ae.Elements)
         new Oblong(ae.Bounds.Left, ae.Bounds.Top, right ae.Bounds, bottom ae.Bounds, points))
     

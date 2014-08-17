@@ -165,6 +165,7 @@
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="CompareFeatures.cs" />
     <Compile Include="Coordinate.cs" />
+    <Compile Include="Csv\CsvExtensions.cs" />
     <Compile Include="Csv\Csv.cs" />
     <Compile Include="Csv\ISetPointConverter.cs" />
     <Compile Include="Debugging\AutoAttachVs.cs" />

@@ -11,8 +11,21 @@ namespace TowseyLibrary
     using System.Drawing;
     using System.Drawing.Imaging;
 
+    using CsvHelper.Configuration;
+
     public class Oblong
     {
+        public sealed class OblongClassMap : CsvClassMap<Oblong>
+        {
+            public OblongClassMap()
+            {
+                this.Map(m => m.ColumnLeft).Name("Bottom");
+                this.Map(m => m.ColumnRight).Name("Top");
+                this.Map(m => m.RowTop).Name("Left");
+                this.Map(m => m.RowBottom).Name("Right");
+            }
+        }
+
         #region Static Fields
 
         // number of fuzzy membership values over range of col centroid values

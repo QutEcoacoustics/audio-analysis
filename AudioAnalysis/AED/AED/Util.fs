@@ -157,6 +157,7 @@ let inline toFloatRect r =
     cornersToRect (left r |> float) (right r |> float) (top r |> float) (bottom r |> float)
 
 let inline toPoint (x, y) = new Point(x, y)
+let inline toPoint2 (y, x) = new Point(x, y)
     
 (* This is currently done the easy, inefficient way.
 

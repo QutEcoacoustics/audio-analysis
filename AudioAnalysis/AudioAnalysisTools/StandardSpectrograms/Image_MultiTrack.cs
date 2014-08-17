@@ -152,6 +152,7 @@ namespace AudioAnalysisTools
 
             // set up a new image having the correct dimensions
             var imageToReturn = new Bitmap(this.sonogramImage.Width, height, PixelFormat.Format32bppArgb);
+            
 
             // need to do this before get Graphics because cannot PutPixels into Graphics object.
             if (this.SuperimposedRedTransparency != null)
@@ -170,12 +171,16 @@ namespace AudioAnalysisTools
                 GraphicsSegmented.Draw(g, this.sonogramImage);  // USE THIS CALL INSTEAD.
 
                 // draw events first because their rectangles can cover other features
-                if (this.eventList != null) 
+                if (this.eventList != null)
                 {
+                    var hitImage = new Bitmap(imageToReturn.Width, height, PixelFormat.Format32bppArgb);
+                    //hitImage.MakeTransparent();
                     foreach (AcousticEvent e in this.eventList)
                     {
-                        e.DrawEvent(g, imageToReturn, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
+                        e.DrawEvent(g, hitImage, this.framesPerSecond, this.freqBinWidth, this.sonogramImage.Height);
                     }
+
+                    g.DrawImage(hitImage, 0, 0);
                 }
 
                 // draw events first because their rectangles can cover other features

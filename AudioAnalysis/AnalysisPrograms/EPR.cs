@@ -309,7 +309,7 @@ namespace AnalysisPrograms
 
             // #############################################################################################################################################
             // vii: LOOK FOR GROUND PARROTS USING TEMPLATE
-            var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram.FrameOffset, (int)sonogram.FBinWidth);
+            var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram);
             double[] gpScores = DetectEPR(template, sonogram, odScores, odThreshold);
             gpScores = DataTools.normalise(gpScores); //normalise 0 - 1
 

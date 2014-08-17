@@ -293,6 +293,7 @@ namespace AnalysisPrograms
     {
         public RidgeEvent(PointOfInterest pointOfInterest, AnalysisSettings analysisSettings, SpectrogramStandard sonogram)
         {
+            this.SegmentStartOffset = analysisSettings.SegmentStartOffset.Value;
             this.MinHz = pointOfInterest.Herz;
             this.Frame = pointOfInterest.Point.X;
             this.Bin = sonogram.Configuration.FreqBinCount - pointOfInterest.Point.Y;

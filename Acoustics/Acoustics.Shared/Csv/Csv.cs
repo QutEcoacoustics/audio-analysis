@@ -13,11 +13,16 @@ namespace Acoustics.Shared.Csv
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Contracts;
+    using System.Drawing;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
 
     using CsvHelper;
     using CsvHelper.Configuration;
+    using CsvHelper.TypeConversion;
+
+    using Fasterflect;
 
     /// <summary>
     /// Generic methods for reading and writing Csv file.
@@ -26,12 +31,51 @@ namespace Acoustics.Shared.Csv
     /// </summary>
     public static class Csv
     {
+        private static readonly List<CsvClassMap> ClassMapsToRegister = new List<CsvClassMap>();
+
+        static Csv()
+        {
+            RegisterAnalysisProgramsTypeConverters();
+
+            // Find all of our custom class maps
+            var type = typeof(CsvClassMap);
+            var classMapTypes =
+                AppDomain.CurrentDomain.GetAssemblies()
+                         .Where(
+                             a =>
+                                 {
+                                     var assemblyCompanyAttribute = (AssemblyCompanyAttribute)
+                                                                    a.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false).FirstOrDefault();
+                                     return assemblyCompanyAttribute != null && assemblyCompanyAttribute.Company == "QUT";
+                                 })
+                         .SelectMany(s => s.GetTypes())
+                         .Where(type.IsAssignableFrom);
+
+            // initialise and store
+            foreach (var classMapType in classMapTypes)
+            {
+                var instance = classMapType.CreateInstance() as CsvClassMap;
+                ClassMapsToRegister.Add(instance);
+            }
+        }
+
+        public static void RegisterAnalysisProgramsTypeConverters()
+        {
+            // This is a manually maintained method
+            TypeConverterFactory.AddConverter<ISet<Point>>(new CsvSetPointConverter());
+            
+        }
+
         public static CsvConfiguration DefaultConfiguration
         {
             get
             {
                 // change the defaults here if you want
                 var settings = new CsvConfiguration();
+                foreach (var classMap in ClassMapsToRegister)
+                {
+                    settings.RegisterClassMap(classMap);
+                }
 
                 return settings;
             }
