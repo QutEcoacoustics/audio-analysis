@@ -25,16 +25,16 @@ namespace TowseyLibrary
                 ////LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
                 //DataTools.writeMatrix(matrix);
                 //LoggedConsole.WriteLine("");
-                //int r1 = 2;
-                //int c1 = 3;
-                //int r2 = 4;
-                //int c2 = 6;
-                //LoggedConsole.WriteLine("r1="+r1+" c1="+c1+" r2="+r2+" c2="+c2);
+                //int RowTop = 2;
+                //int ColumnLeft = 3;
+                //int RowBottom = 4;
+                //int ColumnRight = 6;
+                //LoggedConsole.WriteLine("RowTop="+RowTop+" ColumnLeft="+ColumnLeft+" RowBottom="+RowBottom+" ColumnRight="+ColumnRight);
                 //LoggedConsole.WriteLine("Indices start at [0,0] in top left.");
-                //int smRows = r2 - r1 + 1;
-                //int smCols = c2 - c1 + 1;
+                //int smRows = RowBottom - RowTop + 1;
+                //int smCols = ColumnRight - ColumnLeft + 1;
                 //LoggedConsole.WriteLine("Submatrix has " + smRows + " rows and " + smCols + " columns");
-                //double[,] sub = Submatrix(matrix, r1, c1, r2, c2);
+                //double[,] sub = Submatrix(matrix, RowTop, ColumnLeft, RowBottom, ColumnRight);
                 //DataTools.writeMatrix(sub);
             }//end test ReadDoubles2Matrix(string fName)
 
@@ -120,7 +120,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// The returned submatrix includes the rows and column passed as bounds.
-        /// Assume that r1 < r2, c1 < c2. 
+        /// Assume that RowTop < RowBottom, ColumnLeft < ColumnRight. 
         /// Row, column indices start at 0
         /// </summary>
         /// <param name="M"></param>
@@ -150,7 +150,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns an array of row averages in the submatrix of passed matrix.
         /// This method combines two methods, Submatrix() & GetRowAverages(), for efficiency
-        /// Assume that r1 < r2, c1 < c2. 
+        /// Assume that RowTop < RowBottom, ColumnLeft < ColumnRight. 
         /// Row, column indices start at 0
         /// </summary>
         /// <param name="M"></param>

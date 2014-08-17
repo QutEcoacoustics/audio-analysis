@@ -7,6 +7,7 @@ open Xunit
 open QutSensors.AudioAnalysis.AED.EventPatternRecog
 open QutSensors.AudioAnalysis.AED.EventPatternRecog.EprInternals
 open QutSensors.AudioAnalysis.AED.Util
+open System.IO
 
 let convert s = Seq.map (fun r -> addDimensions 1.0<s> 1.0<Hz> r) s
 let rem r = removeDimensions r 1.0<s> 1.0<Hz>
@@ -24,7 +25,7 @@ let testTemplateBounds () =
 let fromCsv =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let aes = loadFloatEventsFile "EPRAE.csv" md
-    let f = Common.matlabPath + md.Dir + @"\" + "EPRCandidates.csv"
+    let f = Path.Combine( (Common.basePath Common.matlabPath), md.Dir , "EPRCandidates.csv")
     let ls = System.IO.File.ReadAllLines f |> List.ofArray
     
     let g x = split [|' '|] x |> Seq.map (fun s -> let n = System.Convert.ToInt32 s - 1 in Seq.nth n aes)    

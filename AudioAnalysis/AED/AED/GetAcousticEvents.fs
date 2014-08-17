@@ -2,17 +2,23 @@
 
 open Util
 
-// WARNING, DANGER! m is mutated
+/// Spiders from an anchor. Returns all points that are connected.
+/// xs: anchors to check (recursive function multiplies with this list)
+/// WARNING, DANGER! m is mutated
 let rec spider (m:matrix) xs (v:(int * int) Set) =
     match xs with
     | []    -> v
-    | p::ps -> let (i,j) = p
-               let (v', ps') = if j < 0 || j >= m.NumCols || i < 0 || i >= m.NumRows || m.[i,j] = 0.0 then (v, ps)
-                               else m.[i,j] <- 0.0
-                                    (Set.add p v, [(i-1,j-1);(i-1,j);(i-1,j+1);(i,j-1);(i,j+1);(i+1,j-1);(i+1,j);(i+1,j+1)] @ ps) 
-               spider m ps' v'
+    | p::ps ->  let (i,j) = p
+                let (v', ps') = 
+                    if j < 0 || j >= m.NumCols || i < 0 || i >= m.NumRows || m.[i,j] = 0.0 then 
+                        (v, ps)
+                    else 
+                        m.[i,j] <- 0.0
+                        (Set.add p v, [(i-1,j-1);(i-1,j);(i-1,j+1);(i,j-1);(i,j+1);(i+1,j-1);(i+1,j);(i+1,j+1)] @ ps) 
+                spider m ps' v'
     
 type AcousticEvent = {Bounds: Rectangle<int, int>; Elements:(int * int) Set}
+let getBounds ae = ae.Bounds
 let bounds aes = Seq.map (fun ae -> ae.Bounds) aes
     
 let getAcousticEvents m =

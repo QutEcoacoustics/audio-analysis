@@ -119,10 +119,10 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Calls AED.Execute():  ACOUSTIC EVENT DETECTION.")]
-        public AED.Arguments AedArgs { get; set; }
-        public static Action<AED.Arguments> Aed()
+        public Aed.Arguments AedArgs { get; set; }
+        public static Action<Aed.Arguments> Aed()
         {
-            return AED.Execute;
+            return AnalysisPrograms.Aed.Execute;
         }
 
         [ArgDescription("Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.")]

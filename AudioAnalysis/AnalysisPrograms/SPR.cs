@@ -155,7 +155,7 @@ namespace AnalysisPrograms
                                                               eventThreshold, minDuration, maxDuration);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFileName = audioFileName;
+                    ev.FileName = audioFileName;
                     ev.Name = callName;
                 }
 
@@ -199,7 +199,7 @@ namespace AnalysisPrograms
                                                               eventThreshold, minDuration, maxDuration);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFileName = audioFileName;
+                    ev.FileName = audioFileName;
                     ev.Name = callName;
                 }
 
@@ -235,7 +235,7 @@ namespace AnalysisPrograms
                                                               eventThreshold, 0.5, maxDuration);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFileName = audioFileName;
+                    ev.FileName = audioFileName;
                     //ev.Name = callName;
                 }
             }

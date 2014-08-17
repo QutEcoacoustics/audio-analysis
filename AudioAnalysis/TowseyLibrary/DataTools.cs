@@ -30,7 +30,7 @@ namespace TowseyLibrary
                 int c1 = 3;
                 int r2 = 4;
                 int c2 = 6;
-                LoggedConsole.WriteLine("r1="+r1+" c1="+c1+" r2="+r2+" c2="+c2);
+                LoggedConsole.WriteLine("RowTop="+r1+" ColumnLeft="+c1+" RowBottom="+r2+" ColumnRight="+c2);
                 LoggedConsole.WriteLine("Indices start at [0,0] in top left.");
                 int smRows = r2 - r1 + 1;
                 int smCols = c2 - c1 + 1;
@@ -140,7 +140,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Returns the submatrix of passed matrix.
-        /// Assume that r1 < r2, c1 < c2. 
+        /// Assume that RowTop < RowBottom, ColumnLeft < ColumnRight. 
         /// Row, column indices start at 0
         /// </summary>
         /// <param name="M"></param>

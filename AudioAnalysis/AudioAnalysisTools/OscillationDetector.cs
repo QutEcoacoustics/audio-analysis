@@ -270,7 +270,7 @@ namespace AudioAnalysisTools
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
                         //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                        ev.SourceFileName = fileName;
+                        ev.FileName = fileName;
                         //obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];

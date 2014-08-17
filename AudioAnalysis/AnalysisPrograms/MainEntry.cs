@@ -9,27 +9,11 @@
 
 namespace AnalysisPrograms
 {
-    using System.Text;
-
-    using PowerArgs;
+    #if DEBUG
+#endif
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.Linq;
     using System.Reflection;
 
-#if DEBUG
-    using Acoustics.Shared.Debugging;
-#endif
-
-    using AnalysisPrograms.Production;
-    using System.IO;
-    using Acoustics.Tools.Audio;
-    using Acoustics.Tools;
-    using System.Security.Cryptography;
-    using Dong.Felt;
     using log4net;
 
     /// <summary>
@@ -48,8 +32,8 @@ namespace AnalysisPrograms
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
             // HACK: Remove the following two line when argument refactoring is done
-            //var options = DebugOptions.Yes;
-            //AttachDebugger(ref options);
+            ////var options = DebugOptions.Yes;
+            ////AttachDebugger(ref options);
 
             Arguments = ParseArguments(args);
 

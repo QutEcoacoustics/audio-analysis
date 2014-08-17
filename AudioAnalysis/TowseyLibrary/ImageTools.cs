@@ -1445,7 +1445,7 @@ namespace TowseyLibrary
                     if (tmpM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(m2, x, y, out colWidth);
+                    Oblong.ColumnWidth(m2, x, y, out colWidth);
                     int x2 = x + colWidth;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
 
@@ -1470,7 +1470,7 @@ namespace TowseyLibrary
                     //int rowWidth; //rowWidth of object
                     //Shape.Row_Width(m2, x, y, out rowWidth);
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(tmpM, x, y, out colWidth);
+                    Oblong.ColumnWidth(tmpM, x, y, out colWidth);
                     int x2 = x + colWidth;
                     //check to see if object is in blob
                     bool overlapsHighEnergy = false;
@@ -1514,7 +1514,7 @@ namespace TowseyLibrary
                     if (tmpM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(m2, x, y, out colWidth);
+                    Oblong.ColumnWidth(m2, x, y, out colWidth);
                     int x2 = x + colWidth - 1;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
 
@@ -1539,7 +1539,7 @@ namespace TowseyLibrary
                     if (outM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(tmpM, x, y, out colWidth);
+                    Oblong.ColumnWidth(tmpM, x, y, out colWidth);
 
                     int x2 = x + colWidth;
                     //check to see if object is in high energy region
@@ -1612,7 +1612,7 @@ namespace TowseyLibrary
                     if (tmpM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(m2, x, y, out colWidth);
+                    Oblong.ColumnWidth(m2, x, y, out colWidth);
                     int x2 = x + colWidth - 1;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
 
@@ -1637,7 +1637,7 @@ namespace TowseyLibrary
                     if (outM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(tmpM, x, y, out colWidth);
+                    Oblong.ColumnWidth(tmpM, x, y, out colWidth);
 
                     int x2 = x + colWidth;
                     //check to see if object is in high energy region
@@ -1781,7 +1781,7 @@ namespace TowseyLibrary
                     int rowWidth; //rowWidth of object
                     Oblong.Row_Width(m, x, y, out rowWidth);
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(m, x, y, out colWidth);
+                    Oblong.ColumnWidth(m, x, y, out colWidth);
                     bool sizeOK = false;
                     if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
 
@@ -1820,7 +1820,7 @@ namespace TowseyLibrary
                     int rowWidth; //rowWidth of object
                     Oblong.Row_Width(m, x, y, out rowWidth);
                     int colWidth; //colWidth of object
-                    Oblong.Col_Width(m, x, y, out colWidth);
+                    Oblong.ColumnWidth(m, x, y, out colWidth);
                     bool sizeOK = false;
                     if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
 

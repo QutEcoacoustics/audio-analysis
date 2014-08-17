@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;

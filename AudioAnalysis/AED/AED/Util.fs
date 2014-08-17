@@ -1,6 +1,9 @@
 ﻿module QutSensors.AudioAnalysis.AED.Util
 
 open Microsoft.FSharp.Math.SI
+open System.Drawing
+open System.Text
+open System.IO
 
 // If the first Option is not empty return it, else return the second. Copy of Scala Option.orElse.
 let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
@@ -8,6 +11,8 @@ let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
 let (|?) = orElse
 
 let (|?|) = defaultArg
+
+let (|?>) item (condition, f) = if condition then f item else item
 
 // Haskell catMaybes
 let catOptions xs = Seq.filter Option.isSome xs |> Seq.map Option.get
@@ -25,6 +30,7 @@ let inline sqr x = x*x
 
 let (><) x (l,u) = x > l && x < u // in open interval
 let (>==<) x (l,u) = x >= l && x <= u // in closed interval
+
 
 let boundedInterval (p:float<_>) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> roundDownTo ub)
 
@@ -79,8 +85,10 @@ type Pixel = float<px>
     
 let inline s x y = x - y
 //type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
+[<StructuredFormatDisplayAttribute("Rectangle: L:{Left}, R:{Right}, T:{Top}, B:{Bottom}")>]
 type Rectangle<'a, 'b> = 
     {Left:'a; Top:'b; Right:'a; Bottom:'b; }
+    override m.ToString() = sprintf "Rectangle: L:{%A}, R:{%A}, T:{%A}, B:{%A}" m.Left m.Right m.Top m.Bottom
         
 
 type Rectangle2<'a> = Rectangle<'a, 'a>
@@ -133,13 +141,23 @@ let inline bottomLeft r = (r.Left, r.Bottom)
 let inline increment n = n + LanguagePrimitives.GenericOne
 let inline width r = (right r) - (left r) |> abs |> increment
 let inline width2 (right:float<_>) (left:float<_>) = right - left |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
+// for event pattern recog compatibility
+let inline oldWidth r = (right r) - (left r)
 
 let inline height r = (top r) - (bottom r) |> abs |> increment
 let inline height2 (top:float<_>) (bottom:float<_>) = top - bottom |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
 let inline area r = (width r) * (height r)
+let inline isWithin r (x,y) =
+    not (x < r.Left || x > r.Right || y < r.Top || y > r.Bottom)
+    //x >= r.Left && x < r.Right && y >= r.Top && y < r.Bottom
+let inline isWithin2 r (y,x) =
+    isWithin r (y, x)
 
 let inline toFloatRect r =
     cornersToRect (left r |> float) (right r |> float) (top r |> float) (bottom r |> float)
+
+let inline toPoint (x, y) = new Point(x, y)
+let inline toPoint2 (y, x) = new Point(x, y)
     
 (* This is currently done the easy, inefficient way.
 
@@ -166,3 +184,8 @@ let csvToMatrix f =
 let matrixToCsv (m:matrix) f =
     let g i = m.Row i |> Seq.map (sprintf "%A") |> String.concat ","
     System.IO.File.WriteAllLines(f, Array.init m.NumRows g)
+
+let itemsToFile path (transformer: 'a -> string) items = 
+    use file = File.CreateText(path)
+    Seq.iter (fun x ->  x |> transformer |> file.WriteLine) items
+

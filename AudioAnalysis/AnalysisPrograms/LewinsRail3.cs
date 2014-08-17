@@ -248,9 +248,9 @@ namespace AnalysisPrograms
                 string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFileName = fName;
+                    ev.FileName = fName;
                     ev.Name = analysisName;
-                    ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
+                    ev.SegmentDuration = recordingTimeSpan;
                 }
                 //write events to a data table to return.
                 dataTable = WriteEvents2DataTable(predictedEvents);
@@ -410,8 +410,8 @@ namespace AnalysisPrograms
 
             foreach (AcousticEvent ev in events)
             {
-                int start = ev.oblong.r1;
-                int end   = ev.oblong.r2;
+                int start = ev.Oblong.RowTop;
+                int end   = ev.Oblong.RowBottom;
                 double[] subArray = DataTools.Subarray(intensity, start, end-start+1);
                 int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
 
@@ -419,8 +419,8 @@ namespace AnalysisPrograms
                 int newMaxRow = start + bounds[1];
                 if (newMaxRow >= length) newMaxRow = length - 1;
 
-                Oblong o = new Oblong(newMinRow, ev.oblong.c1, newMaxRow, ev.oblong.c2);
-                ev.oblong = o;
+                Oblong o = new Oblong(newMinRow, ev.Oblong.ColumnLeft, newMaxRow, ev.Oblong.ColumnRight);
+                ev.Oblong = o;
                 ev.TimeStart = newMinRow * ev.FrameOffset;
                 ev.TimeEnd   = newMaxRow * ev.FrameOffset;
             }

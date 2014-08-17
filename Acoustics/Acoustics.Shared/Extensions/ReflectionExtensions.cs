@@ -65,6 +65,61 @@ namespace System
             return propInfo;
         }
 
+        /// <summary>
+        /// Gets the property from the expression.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <param name="expression">The expression.</param>
+        /// <returns>The <see cref="PropertyInfo"/> for the expression.</returns>
+        public static PropertyInfo GetProperty<TModel>(this Expression<Func<TModel, object>> expression)
+        {
+            var member = GetMemberExpression(expression).Member;
+            var property = member as PropertyInfo;
+            if (property == null)
+            {
+                throw new Exception(string.Format("'{0}' is not a property.", member.Name));
+            }
+
+            return property;
+        }
+
+        /// <summary>
+        /// Gets the member expression.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="expression">The expression.</param>
+        /// <returns></returns>
+        private static MemberExpression GetMemberExpression<TModel, T>(this Expression<Func<TModel, T>> expression)
+        {
+            // This method was taken from FluentNHibernate.Utils.ReflectionHelper.cs and modified.
+            // http://fluentnhibernate.org/
+
+            MemberExpression memberExpression = null;
+            if (expression.Body.NodeType == ExpressionType.Convert)
+            {
+                var body = (UnaryExpression)expression.Body;
+                memberExpression = body.Operand as MemberExpression;
+            }
+            else if (expression.Body.NodeType == ExpressionType.MemberAccess)
+            {
+                memberExpression = expression.Body as MemberExpression;
+            }
+
+            if (memberExpression == null)
+            {
+                throw new ArgumentException("Not a member access", "expression");
+            }
+
+            return memberExpression;
+        }
+
+        public static bool PropertyInfoMetaDataEquality(this PropertyInfo propertyInfoA, PropertyInfo propertyInfoB)
+        {
+            return propertyInfoA.Module == propertyInfoB.Module
+                   && propertyInfoA.MetadataToken == propertyInfoB.MetadataToken;
+        }
+
 
         public static Dictionary<string, Func<TBase, TType>> GetGetters<TBase, TType>()
         {
