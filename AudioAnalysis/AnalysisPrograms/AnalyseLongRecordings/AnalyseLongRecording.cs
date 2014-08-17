@@ -135,7 +135,7 @@ Output  to  directory: {1}
             catch (Exception ex)
             {
                 Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value used)", ex);
-                analysisSettings.SegmentMaxDuration = null;
+                analysisSettings.SegmentMaxDuration = TimeSpan.FromMinutes(1.0);
             }
 
             // set overlap

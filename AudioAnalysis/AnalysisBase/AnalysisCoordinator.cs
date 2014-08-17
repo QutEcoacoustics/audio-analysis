@@ -482,6 +482,12 @@
                Debug.Assert(
                    eventBase.StartOffset >= result.SegmentStartOffset,
                    "Every event detected by this analysis should of been found within the bounds of the segment analysed");
+               Debug.Assert(
+                   Math.Abs((eventBase.EventStartSeconds % 60.0) - (eventBase.StartOffset.TotalSeconds % 60)) < 0.001,
+                   "The relative EventStartSeconds should equal the seconds component of StartOffset");
+               Debug.Assert(
+                   eventBase.SegmentStartOffset == result.SegmentStartOffset,
+                   "Segment start offsets must match");
            }
 
            foreach (var summaryIndexBase in result.SummaryIndices)

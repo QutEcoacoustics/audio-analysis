@@ -336,7 +336,7 @@ namespace AnalysisPrograms
                 if (maxRow >= rowCount) maxRow = rowCount-1;
 
                 Oblong o = new Oblong(minRow, minCol, maxRow, maxCol);
-                var ae = new AcousticEvent(o, frameOffset, binWidth);
+                var ae = new AcousticEvent(o, results2.NyquistFreq, frameSize, frameDuration, frameOffset, frameCount);
                 ae.Name = String.Format("p={0:f0}", periodicity);
                 ae.Score = item[key_SCORE];
                 ae.ScoreNormalised = item[key_SCORE] / 0.5;

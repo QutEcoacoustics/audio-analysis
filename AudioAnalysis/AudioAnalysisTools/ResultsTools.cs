@@ -212,13 +212,9 @@ namespace AudioAnalysisTools
             // TODO: check with michael what this should be (totalEventsSoFa or totalEventsInResultSoFar)
             eventToBeFixed.EventCount = totalEventsSoFar;
 
-            var resultStartSeconds = eventToBeFixed.StartOffset.TotalSeconds;
-            var absoluteOffset = resultStartSeconds + eventToBeFixed.EventStartSeconds;
-            eventToBeFixed.EventStartAbsolute = absoluteOffset;
-
             // just in case the event was in a segment longer than 60 seconds, rebase values
             ////eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
-            eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
+            //eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
         }
 
         public static void CorrectSummaryIndex(AnalysisResult2 result, SummaryIndexBase indexToBeFixed, int totalSummaryIndicesSoFar, int totalSumaryIndicesInJustThisResultSoFar)

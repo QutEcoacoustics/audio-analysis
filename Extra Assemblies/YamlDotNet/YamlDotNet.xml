@@ -564,7 +564,7 @@
         </member>
         <member name="T:YamlDotNet.Core.Events.IParsingEventVisitor">
             <summary>
-            Callback interface for external event Visitr.
+            Callback interface for external event Visitor.
             </summary>
         </member>
         <member name="T:YamlDotNet.Core.Events.MappingStyle">
@@ -1305,6 +1305,11 @@
             </summary>
             <param name="input">The input where the YAML stream is to be read.</param>
         </member>
+        <member name="M:YamlDotNet.Core.Parser.#ctor(YamlDotNet.Core.Scanner)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Parser"/> class.
+            </summary>
+        </member>
         <member name="M:YamlDotNet.Core.Parser.MoveNext">
             <summary>
             Moves to the next event.
@@ -1486,16 +1491,64 @@
             Gets the current event.
             </summary>
         </member>
+        <member name="T:YamlDotNet.Core.Tokens.Comment">
+            <summary>
+            Represents a comment
+            </summary>
+        </member>
+        <member name="T:YamlDotNet.Core.Tokens.Token">
+            <summary>
+            Base class for YAML tokens.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Token.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Token"/> class.
+            </summary>
+            <param name="start">The start position of the token.</param>
+            <param name="end">The end position of the token.</param>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Token.Start">
+            <summary>
+            Gets the start of the token in the input stream.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Token.End">
+            <summary>
+            Gets the end of the token in the input stream.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Comment.#ctor(System.String,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Comment"/> class.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Core.Tokens.Comment.#ctor(System.String,System.Boolean,YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
+            <summary>
+            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Comment"/> class.
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Comment.Value">
+            <summary>
+            Gets the value of the comment
+            </summary>
+        </member>
+        <member name="P:YamlDotNet.Core.Tokens.Comment.IsInline">
+            <summary>
+            Gets a value indicating whether the comment appears other tokens on that line.
+            </summary>
+        </member>
         <member name="T:YamlDotNet.Core.Scanner">
             <summary>
             Converts a sequence of characters into a sequence of YAML tokens.
             </summary>
         </member>
-        <member name="M:YamlDotNet.Core.Scanner.#ctor(System.IO.TextReader)">
+        <member name="M:YamlDotNet.Core.Scanner.#ctor(System.IO.TextReader,System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:YamlDotNet.Core.Scanner"/> class.
             </summary>
             <param name="input">The input.</param>
+            <param name="skipComments">Indicates whether comments should be ignored</param>
         </member>
         <member name="M:YamlDotNet.Core.Scanner.MoveNext">
             <summary>
@@ -1818,28 +1871,6 @@
         <member name="T:YamlDotNet.Core.Tokens.AnchorAlias">
             <summary>
             Represents an alias token.
-            </summary>
-        </member>
-        <member name="T:YamlDotNet.Core.Tokens.Token">
-            <summary>
-            Base class for YAML tokens.
-            </summary>
-        </member>
-        <member name="M:YamlDotNet.Core.Tokens.Token.#ctor(YamlDotNet.Core.Mark,YamlDotNet.Core.Mark)">
-            <summary>
-            Initializes a new instance of the <see cref="T:YamlDotNet.Core.Tokens.Token"/> class.
-            </summary>
-            <param name="start">The start position of the token.</param>
-            <param name="end">The end position of the token.</param>
-        </member>
-        <member name="P:YamlDotNet.Core.Tokens.Token.Start">
-            <summary>
-            Gets the start of the token in the input stream.
-            </summary>
-        </member>
-        <member name="P:YamlDotNet.Core.Tokens.Token.End">
-            <summary>
-            Gets the end of the token in the input stream.
             </summary>
         </member>
         <member name="M:YamlDotNet.Core.Tokens.AnchorAlias.#ctor(System.String)">
@@ -3610,6 +3641,12 @@
             The type returned will always be the static type.
             </summary>
         </member>
+        <member name="T:YamlDotNet.Serialization.Utilities.IPostDeserializationCallback">
+            <summary>
+            Indicates that a class used as deserialization state
+            needs to be notified after deserialization.
+            </summary>
+        </member>
         <member name="M:YamlDotNet.Serialization.Utilities.ObjectAnchorCollection.Add(System.String,System.Object)">
             <summary>
             Adds the specified anchor.
@@ -3644,6 +3681,12 @@
             <summary>
             A generic container that is preserved during the entire deserialization process.
             Any disposable object added to this collecion will be disposed when this object is disposed.
+            </summary>
+        </member>
+        <member name="M:YamlDotNet.Serialization.Utilities.SerializerState.OnDeserialization">
+            <summary>
+            Invokes <see cref="M:YamlDotNet.Serialization.Utilities.IPostDeserializationCallback.OnDeserialization"/> on all
+            objects added to this collection that implement <see cref="T:YamlDotNet.Serialization.Utilities.IPostDeserializationCallback"/>.
             </summary>
         </member>
         <member name="T:YamlDotNet.Serialization.Utilities.StringExtensions">

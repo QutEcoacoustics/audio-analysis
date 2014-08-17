@@ -72,6 +72,11 @@ namespace AnalysisBase.ResultBases
         /// <returns>A integer representing the relative order between the two instances.</returns>
         public virtual int CompareTo(ResultBase other)
         {
+            if (other == null)
+            {
+                return 1;
+            }
+
             return this.StartOffset.CompareTo(other.StartOffset);
         }
     }

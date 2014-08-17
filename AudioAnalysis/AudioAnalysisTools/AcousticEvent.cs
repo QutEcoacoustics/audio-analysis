@@ -19,19 +19,61 @@ namespace AudioAnalysisTools
     using System.Text.RegularExpressions;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
 
     using AnalysisBase.ResultBases;
 
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
 
+    using CsvHelper.Configuration;
+    using CsvHelper.TypeConversion;
+
     using TowseyLibrary;
 
     public class AcousticEvent : EventBase
     {
-        public static readonly Color DefaultBorderColor = Color.Crimson;
+        public sealed class AcousticEventClassMap : CsvClassMap<AcousticEvent>
+        {
 
-        public static readonly Color DefaultScoreColor = Color.Black;
+
+            private static readonly string[] IgnoredProperties =
+                {
+                    "TimeStart", "TimeEnd", "MinFreq", "MaxFreq",
+                    "FreqRange", "IsMelscale", "FrameOffset",
+                    "FramesPerSecond", "Name", "Name2", "ScoreComment",
+                    "ScoreNormalised", "Score_MaxPossible",
+                    "Score_MaxInEvent", "Score_TimeOfMaxInEvent",
+                    "Score2Name", "Score2", "Periodicity", "DominantFreq",
+                    "Tag", "Intensity", "Quality", "HitColour",
+                    "Duration"
+                };
+
+            public AcousticEventClassMap()
+            {
+                this.AutoMap();
+
+                foreach (var ignoredProperty in IgnoredProperties)
+                {
+                    var index = this.PropertyMaps.IndexOf(pm => pm.Data.Property.Name == ignoredProperty);
+                    this.PropertyMaps.RemoveAt(index);
+                }
+
+                this.GetPropertyMap(m => ((EventBase)m).EventStartSeconds).Index(0);
+                this.Map(m => m.TimeEnd).Name("EventEndSeconds").Index(2);
+                this.Map(m => m.Duration).Index(3);
+                this.GetPropertyMap(m => ((EventBase)m).MinHz).Index(4);
+                this.Map(m => m.MaxFreq).Name("MaxHz").Index(5);
+                this.References<Oblong.OblongClassMap>(m => m.Oblong);
+
+                // Make sure HitElements is always in the last column!
+                this.PropertyMap<AcousticEvent>(m => m.HitElements).Index(1000);
+            }
+        }
+
+        public static readonly Color DefaultBorderColor = Color.FromArgb(255, Color.Crimson);
+
+        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.Black);
 
         /// <summary>in seconds
         /// within current recording.
@@ -139,7 +181,8 @@ namespace AudioAnalysisTools
         /// checks required for research papers.</para>
         /// <para>Do not include Name, NormalisedScore, StartTime, EndTime, MinFreq or MaxFreq, as these are stored by default.</para>
         /// </summary>
-        public List<ResultProperty> ResultPropertyList { get; set; }
+        // AT: disabled, not used
+        ////public List<ResultProperty> ResultPropertyList { get; set; }
 
         public Color BorderColour { get; set; }
         public Color ScoreColour  { get; set; }
@@ -172,26 +215,31 @@ namespace AudioAnalysisTools
         /// <param name="o"></param>
         /// <param name="frameOffset">seconds between frame starts i.e. inverse of frames per second. Sets the time scale for an event</param>
         /// <param name="binWidth">sets the frequency scale for an event</param>
-        public AcousticEvent(Oblong o, double frameOffset, double binWidth) : this()
+        public AcousticEvent(Oblong o, int NyquistFrequency, int binCount, double frameDuation, double frameOffset, int frameCount) : this()
         {
             this.Oblong = o;
-            this.FreqBinWidth = binWidth;
+            this.FreqBinWidth = NyquistFrequency / (double)binCount;
+            this.FrameDuration = frameDuation;
             this.FrameOffset = frameOffset;
+            this.FreqBinCount = binCount;
+            this.FrameCount = frameCount;
 
-            double startTime; 
-            double duration;
-            RowIDs2Time(o.RowTop, o.RowBottom, frameOffset, out startTime, out duration);
+            double startTime = o.RowTop * this.FrameOffset;
+            double end = (o.RowBottom + 1) * this.FrameOffset;
             this.TimeStart = startTime;
-            this.Duration = duration;
-            this.TimeEnd = startTime + duration;
-            int minF; 
-            int maxF;
-            HerzBinIDs2Freq(o.ColumnLeft, o.ColumnRight, binWidth, out minF, out maxF);
-            this.MinFreq = minF;
-            this.MaxFreq = maxF;
+            this.Duration = end - startTime;
+            this.TimeEnd = end;
+            
+            this.MinFreq = (int)Math.Round(o.ColumnLeft * this.FreqBinWidth);
+            this.MaxFreq = (int)Math.Round(o.ColumnRight * this.FreqBinWidth);
+            ////if (doMelscale) // convert min max Hz to mel scale
+            ////{
+            ////}
 
             this.HitElements = o.HitElements;
         }
+
+        public int FrameCount { get; set; }
 
         public ISet<Point> HitElements { get; set; }
         public Color? HitColour { get; set; }
@@ -313,7 +361,7 @@ namespace AudioAnalysisTools
             {
                 foreach (var hitElement in this.HitElements)
                 {
-                    imageToReturn.SetPixel(hitElement.X, hitElement.Y, HitColour.Value);
+                    imageToReturn.SetPixel(hitElement.X, sonogramHeight - hitElement.Y, HitColour.Value);
                 }
             }
 
@@ -433,34 +481,8 @@ namespace AudioAnalysisTools
             rightCol = (int)Math.Round((double)MFCCStuff.Mel(maxFreq) * binsPerMel);
         }
 
-        /// <summary>
-        /// converts left and right column IDs to min and max frequency bounds of an event
-        /// WARNING!!! ONLY WORKS FOR LINEAR HERZ SCALE. NEED TO WRITE ANOTHER METHOD FOR MEL SCALE ############################
-        /// </summary>
-        /// <param name="leftCol"></param>
-        /// <param name="rightCol"></param>
-        /// <param name="minFreq"></param>
-        /// <param name="maxFreq"></param>
-        public static void HerzBinIDs2Freq(int leftCol, int rightCol, double binWidth, out int minFreq, out int maxFreq)
-        {
-            minFreq = (int)Math.Round(leftCol * binWidth);
-            maxFreq = (int)Math.Round(rightCol * binWidth);
-            //if (doMelscale) //convert min max Hz to mel scale
-            //{
-            //}
-        }
-
-
-
-
         //#################################################################################################################
         //METHODS TO CONVERT BETWEEN TIME BIN AND SECONDS 
-        public static void RowIDs2Time(int topRow, int bottomRow, double frameOffset, out double startTime, out double duration)
-        {
-            startTime = topRow * frameOffset;
-            double end = (bottomRow + 1) * frameOffset;
-            duration = end - startTime;
-        }
 
         public static void Time2RowIDs(double startTime, double duration, double frameOffset, out int topRow, out int bottomRow)
         {
