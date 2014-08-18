@@ -256,6 +256,7 @@
     <Compile Include="Statistics.cs" />
     <Compile Include="TextUtilities.cs" />
     <Compile Include="FunctionalTests.cs" />
+    <Compile Include="Wavelets.cs" />
     <Compile Include="ZipUnzip.cs" />
   </ItemGroup>
   <ItemGroup>

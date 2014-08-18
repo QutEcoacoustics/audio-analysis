@@ -2548,6 +2548,12 @@ namespace TowseyLibrary
       return logArray;
   }
 
+  public static int PowerOf2Exponent(int number)
+  {
+      int exponent = (int)(Math.Log(number) / DataTools.ln2);
+      return exponent;
+  }
+
 
 
 //***************************************************************************************************************************************
