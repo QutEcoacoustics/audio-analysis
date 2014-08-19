@@ -19,6 +19,8 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet5 = "FeaturePropSet5";
         // global features, ridge histogram
         public const string FeaturePropSet6 = "FeaturePropSet6";
+        // fft features
+        public const string FeaturePropSet7 = "FeaturePropSet7";
 
         #region Properties
 

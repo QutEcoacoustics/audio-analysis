@@ -103,7 +103,7 @@
                     //OutputResults.MatchingResultsSummary(inputDirectory, new FileInfo(outputFilePath));
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                     ///extract POI based on structure tensor
-                    POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength); 
+                    //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength); 
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
                     //                                  {0,  255,  255, 0},
@@ -129,17 +129,19 @@
                     //var filterDataMatrix = _2DFourierTransform.CropDFTMatrix(dataMatrix, 1);
                     //var outputImagePath = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png";
                     //Bitmap bitmap = (Bitmap)Image.FromFile(inputDirectory.FullName, true);
-                    //DrawDFTImage(outputImagePath, filterDataMatrix, bitmap);                
-                    //var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputDirectory.FullName);
-                    //var stConfiguation = new StructureTensorConfiguration
-                    //{
-                    //    Threshold = 0.2,
-                    //    AvgStNhLenght = 11,
-                    //    FFTNeighbourhoodLength = 16,
+                    //DrawDFTImage(outputImagePath, filterDataMatrix, bitmap);   
+             
+                    /// test fft calculation for poi(based on structure tensor) list 
+                    var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputDirectory.FullName);
+                    var stConfiguation = new StructureTensorConfiguration
+                    {
+                        Threshold = 0.2,
+                        AvgStNhLength = 11,
+                        FFTNeighbourhoodLength = 16,
 
-                    //};
-                    //var stList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, stConfiguation.AvgStNhLenght);
-                    //var poiList = StructureTensorAnalysis.StructureTensorFV(spectrogram, stList, stConfiguation);
+                    };
+                    var stList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, stConfiguation.AvgStNhLength);
+                    var poiList = StructureTensorAnalysis.StructureTensorFV(spectrogram, stList, stConfiguation);
                 }
                 else
                 {
@@ -978,6 +980,141 @@
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
 
+        public static void MatchingBatchProcessSt(string queryFilePath, string inputFileDirectory, 
+                                                  StructureTensorConfiguration stConfiguation, 
+                                                  SonogramConfig config, int rank, string featurePropSet,
+                                                  string outputPath, DirectoryInfo tempDirectory)
+        {
+            /// To read the query file
+            var constructed = Path.GetFullPath(inputFileDirectory + queryFilePath);
+            if (!Directory.Exists(constructed))
+            {
+                throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", constructed));
+            }
+            Log.Info("# read the query csv files and audio files");
+            var queryCsvFiles = Directory.GetFiles(constructed, "*.csv", SearchOption.AllDirectories);
+            var queryAduioFiles = Directory.GetFiles(constructed, "*.wav", SearchOption.AllDirectories);
+            var csvFilesCount = queryCsvFiles.Count();
+
+            /// this loop is used for searching query folder.
+            for (int i = 0; i < csvFilesCount; i++)
+            {
+                /// to get the query's region representation
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
+                var data = spectrogram.Data;
+                var secondToMillionSecondUnit = 1000;
+                var spectrogramConfig = new SpectrogramConfiguration
+                {
+                    FrequencyScale = spectrogram.FBinWidth,
+                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameOffset) * secondToMillionSecondUnit,
+                    NyquistFrequency = spectrogram.NyquistFrequency
+                };
+                var queryAudioPOIs = StructureTensorAnalysis.ExtractfftFeaturesFromPOI(spectrogram, stConfiguation);
+                var rows = data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
+                var cols = data.GetLength(0);
+
+                /// 1. Read the query csv file by parsing the queryCsvFilePath
+                var queryCsvFile = new FileInfo(queryCsvFiles[i]);
+                // read query poiList                
+                var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile);
+                var queryRepresentation = Indexing.ExtractQRepreFromAudioStRepr(query, queryAudioPOIs,queryAduioFiles[i], spectrogram);
+                /// To get all the candidates  
+                var candidatesList = new List<RegionRerepresentation>();
+                var seperateCandidatesList = new List<List<Candidates>>();
+                if (!Directory.Exists(inputFileDirectory))
+                {
+                    throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", inputFileDirectory));
+                }
+                Log.Info("# read all the training/test audio files");
+                var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
+                var audioFilesCount = candidatesAudioFiles.Count();
+                /// to get candidate region Representation                      
+                var finalOutputCandidates = new List<Candidates>();
+
+                for (int j = 0; j < audioFilesCount; j++)
+                {
+                    Log.Info("# read each training/test audio file");
+                    /// 2. Read the candidates 
+                    var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
+                    var candidatePoiList = StructureTensorAnalysis.ExtractfftFeaturesFromPOI(candidateSpectrogram, stConfiguation);
+                    var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
+                    var cols1 = candidateSpectrogram.Data.GetLength(0);
+                    var candidatesRegionList = Indexing.ExtractCandiRegionRepreFromAudioStList(query, candidateSpectrogram,
+                        candidatesAudioFiles[j], candidatePoiList);
+                    foreach (var c in candidatesRegionList) 
+                    {
+                        candidatesList.Add(c);
+                    }
+                }// end of the loop for candidates
+                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
+                var candidateDistanceList = new List<Candidates>();
+                Log.Info("# calculate the distance between a query and a candidate");
+                /// To calculate the distance                
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet7)
+                {
+                    candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList);
+                }
+                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
+
+                /// To save all matched acoustic events                        
+                if (candidateDistanceList.Count != 0)
+                {
+                    for (int l = 0; l < audioFilesCount; l++)
+                    {
+                        var temp = new List<Candidates>();
+                        foreach (var s in candidateDistanceList)
+                        {
+                            if (s.SourceFilePath == candidatesAudioFiles[l])
+                            {
+                                temp.Add(s);
+                            }
+                        }
+                        seperateCandidatesList.Add(temp);
+                    }
+                }
+                for (int index = 0; index < audioFilesCount; index++)
+                {
+                    seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
+                    if (seperateCandidatesList[index].Count != 0)
+                    {
+                        var top1 = seperateCandidatesList[index][0];
+                        finalOutputCandidates.Add(top1);
+                    }
+                }
+                finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
+                var candidateList = new List<Candidates>();
+                rank = finalOutputCandidates.Count;
+                if (finalOutputCandidates != null)
+                {
+                    for (int k = 0; k < rank; k++)
+                    {
+                        candidateList.Add(finalOutputCandidates[k]);
+                    }
+                }
+                var queryTempFile = new FileInfo(queryCsvFiles[i]);
+                var tempFileName = featurePropSet + queryTempFile.Name + "-matched candidates.csv";
+                var matchedCandidateCsvFileName = outputPath + tempFileName;
+                var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
+                CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
+                Log.Info("# draw combined spectrogram for returned hits");
+                /// Drawing the combined image
+                if (rank > 5)
+                {
+                    rank = 5;
+                }
+                //if (matchedCandidateFile != null)
+                //{
+                //    DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                //        outputPath,
+                //        rank, config,
+                //        featurePropSet, tempDirectory);
+                //}
+                Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
+            } // end of for searching the query folder
+            Log.Info("# finish reading the query csv files and audio files one by one");
+        }
+
+        
         public static void DrawingCandiOutputSpectrogram(string candidateCsvFilePath, string queryCsvFilePath, string queryAudioFilePath,
             string outputPath, int rank, RidgeDetectionConfiguration ridgeConfig, SonogramConfig config, string featurePropSet, DirectoryInfo tempDirectory)
         {
