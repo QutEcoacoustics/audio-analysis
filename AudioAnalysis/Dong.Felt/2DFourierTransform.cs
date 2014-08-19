@@ -6,6 +6,7 @@ using MathNet.Numerics.Transformations;
 using TowseyLibrary;
 //using System.Numerics;
 using MathNet.Numerics;
+using System.Globalization;
 
 
 namespace Dong.Felt
@@ -23,8 +24,40 @@ namespace Dong.Felt
             var dims = new int[] { matrixRowCount, matrixColCount };
             var magnitude = Magnitude2DFourierTransform(sampleData, dims);           
             // Step 3: do the shift for array of magnitude values.
-           //var outputData = fftShift(magnitude);
-            return magnitude;
+            var outputData = fftShift(magnitude);
+            return outputData;
+        }
+
+        /// <summary>
+        /// Crop the DFT matrix into a new matrix with (size - step * 2)*(size - step * 2), 16*16 -> 14*14
+        /// </summary>
+        /// <param name="imageData"></param>
+        /// <param name="step">
+        /// step is crop step on each side of the matrix. 
+        /// </param>
+        /// <returns></returns>
+        public static double[,] CropDFTMatrix(double[,] matrix, int step)
+        {
+            var matrixRowCount = matrix.GetLength(0);
+            var matrixColCount = matrix.GetLength(1);
+
+            var rowEndIndex = matrixRowCount - 2 * step;
+            var colEndIndex = matrixColCount - 2 * step;
+            var outputData = new double[rowEndIndex, colEndIndex];
+
+            var rowStartIndex = step;
+            var colStartIndex = step;
+
+
+            for (int r = rowStartIndex; r < rowEndIndex; r++)
+            {
+                for (int c = colStartIndex; c < colEndIndex; c++)
+                {
+                    var formatData = Convert.ToDouble(matrix[r, c].ToString("F03", CultureInfo.InvariantCulture));
+                    outputData[r - step, c - step] = formatData;
+                }
+            }
+            return outputData;
         }
 
         /// <summary>

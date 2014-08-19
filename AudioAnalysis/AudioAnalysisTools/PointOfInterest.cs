@@ -92,6 +92,10 @@ namespace AudioAnalysisTools
         public double HerzScale { get; set; }
 
         /// <summary>
+        /// Gets or sets the matrix of fft. 
+        /// </summary>
+        public double[,] fftMatrix { get; set; }
+        /// <summary>
         /// Gets or sets the draw color.
         /// </summary>
         public Color DrawColor

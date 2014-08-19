@@ -52,6 +52,10 @@
             int filterRidgeMatrixLength = configuration.FilterRidgeMatrixLength;
             int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
 
+            //double structureTensorThreshold = configuration.StThreshold;
+            //int stNeighbourhoodLength = configuration.StNeighbourhoodLength;
+            //int filterStep = configuration.FilterStep;
+
             int neighbourhoodLength = configuration.NeighbourhoodLength;          
             int rank = configuration.Rank;
 
@@ -95,36 +99,47 @@
                     filterRidgeMatrixLength,
                     minimumNumberInRidgeInMatrix,
                     neighbourhoodLength);
-                    string outputFilePath = outputDirectory.FullName + outputFileName + ".csv";                   
+                    //string outputFilePath = outputDirectory.FullName + outputFileName + ".csv";                   
                     //OutputResults.MatchingResultsSummary(inputDirectory, new FileInfo(outputFilePath));
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                     ///extract POI based on structure tensor
-                    //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength); 
+                    POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength); 
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
                     //                                  {0,  255,  255, 0},
                     //                                  {0,  255,  255, 0},
                     //                                  {0,    0,    0, 0}};
-                    double[,] imageData = {{0, 0, 0, 0, 0, 0, 0,  0,   0,   0,    0,   5, 6, 5.5, 0,  5},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   0, 5.5,   6,   6,    5, 5.5,  5},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   0,   5, 6.5,  6.5, 6.5,   6,  5},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   0,   6,   7,   8,    7, 5.5,  6},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 5.8, 6.5, 7.5,   9,    9,   8,  8},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 5.8,   7, 7.5,   7,    9,   9,  9},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 5.8, 7.2, 7.2,   6,  6.5,   8,  7},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0,   6, 7.2, 7.2,   6,  6.2, 5.5,  5},
-                                          {0, 0, 0, 0, 0, 0, 0, 0,5.8,6.2, 7.2,   7, 5.3,  5.5, 5.2,  5},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 6.5, 7.2,   7, 6.8,  5.5,   5,  0},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 0, 6.5, 7.2,   7, 6.8,  5.3,   5,  0},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 5, 6.5, 7.2, 6.5, 5.2,    5,   5, 5.2},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 5, 5.5,   6, 6.5, 5.5,    5,   5, 5.2},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 5, 5.5,   6,   6,   0,    0,   0,  5},
-                                          {0, 0, 0, 0, 0, 0, 0, 0, 5,   5, 5.5,   6,   0,    0,   0,  0},
-                                          {5, 5, 5, 5, 0, 0, 0, 0, 5,   5,   5,   0,   0,    0,   0,  0}};
-                    var dataMatrix = _2DFourierTransform.DiscreteFourierTransform(imageData);
-                    var outputImagePath = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png";
-                    Bitmap bitmap = (Bitmap)Image.FromFile(inputDirectory.FullName, true);
-                    DrawDFTImage(outputImagePath, dataMatrix, bitmap);                    
+                    //double[,] imageData = {{0, 0, 0, 0, 0, 0, 0, 0, 0,   0,   0,   4,   5,  4.2,   0,  4},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0,   0, 4.2,   5,   5,    4, 4.2,  4},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0,   0,   4, 6.5, 6.5, 6.5,   5,   4},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0,   0,   6,   7,   8,    7, 4.2,  6},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0,   4, 6.5, 7.5,   9,    9,   8,  8},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0,   4,   7, 7.5,   7,    9,   9,  9},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0,   4, 7.2, 7.2, 4.5,    6,   7,  7},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0,   5, 7.2, 7.2, 4.5,  4.5, 4.3,  4},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0,4.2,  6, 7.2,   7, 4.3,  4.3, 4.2,  4},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0, 6.5, 7.2,   7, 4.2,  4.2, 4.1,  4},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 0, 6.5, 7.2,   7,   0,    4,   4, 4.2},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 4, 6.5, 7.2, 6.8, 5.2,    4,   4, 4.2},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 4, 6.2,   7, 5.3,   0,    0,   0, 4.2},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 4, 6.2,   7, 5.3,   0,    0,   0,  0},
+                    //                       {0, 0, 0, 0, 0, 0, 0, 0, 4,   6,   6,   5,   0,    0,   0,  0},
+                    //                       {4, 4, 4, 4, 0, 0, 0, 0, 4,   6,   6,   0,   0,    0,   0,  0}};
+                    //var dataMatrix = _2DFourierTransform.DiscreteFourierTransform(imageData);
+                    //var filterDataMatrix = _2DFourierTransform.CropDFTMatrix(dataMatrix, 1);
+                    //var outputImagePath = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png";
+                    //Bitmap bitmap = (Bitmap)Image.FromFile(inputDirectory.FullName, true);
+                    //DrawDFTImage(outputImagePath, filterDataMatrix, bitmap);                
+                    //var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputDirectory.FullName);
+                    //var stConfiguation = new StructureTensorConfiguration
+                    //{
+                    //    Threshold = 0.2,
+                    //    AvgStNhLenght = 11,
+                    //    FFTNeighbourhoodLength = 16,
+
+                    //};
+                    //var stList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, stConfiguation.AvgStNhLenght);
+                    //var poiList = StructureTensorAnalysis.StructureTensorFV(spectrogram, stList, stConfiguation);
                 }
                 else
                 {
@@ -368,39 +383,41 @@
             //}
         } // Dev() 
 
-        double[,] imageData = {{0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,  11,     11,  0, 0,    0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5, 11,     11,   0,   0,  0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11, 0, 0,   0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,     11,   0,   0, 0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,   11,    11,  0,  0,   0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,   11,   11,  0,  0,   0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0,10.5,   11,   11,   0,  0,   0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0,  10.5,   11,   11,   0, 0,    0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0,0,10.5,  11, 10.5,   0,   0,    0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11, 10.5,   0,   0,    0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11, 10.5,   0, 0,    0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11,   10.5,   0,   0,   0, 0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11,    10.5,   0,   0,    0, 0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  11,    10.5,   0,   0,    0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  10.8,  10.5,   0,   0,    0,   0},
-                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 10.5,  10.8,  10.5,   0,   0,    0,   0}};
+        double[,] imageData = {{0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,   11,   11,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,  11,  10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,  11,  10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,   10.5,  11,  10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,  10.5,   11,  10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,  10.5,   11,  10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,  10.5,   11,  10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,  10.5,  10.8, 10.5,   0,   0,    0,   0},
+                               {0, 0, 0, 0, 0, 0, 0, 0, 0,  10.5,  10.8, 10.5,   0,   0,    0,   0}};
 
         public static void DrawDFTImage(string outputImagePath, double[,] imageData, Bitmap bitmap)
         {
-            imageData = MatrixTools.normalise(imageData);
+            //imageData = MatrixTools.normalise(imageData);
+
             for (var i = 0; i < imageData.GetLength(0); i++)
             {
                 for (var j = 0; j < imageData.GetLength(1); j++)
                 {
-                    var color = Color.Black;
+                    var color = Color.White;
                     if (imageData[i, j] > 0.0)
                     {
                         double v = imageData[i, j];
-                        int R = (int)(255 * v * 5);
+                       // int R = (int)(255 * v);  
+                        int R = (int)v;
                         if (R > 255) R = 255;
                         color = Color.FromArgb(R, R, R);
                     }                
-                    bitmap.SetPixel(i, j, color);
+                    bitmap.SetPixel(j, i, color);
                 }
             }
             var image = (Image)bitmap;

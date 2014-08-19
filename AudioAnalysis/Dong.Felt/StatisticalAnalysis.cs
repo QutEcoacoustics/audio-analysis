@@ -14,6 +14,45 @@
 
     class StatisticalAnalysis
     {
+        /// <summary>
+        /// Returns the submatrix of passed matrix.
+        /// Row, column indices start at 0
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="r1"></param>
+        /// <param name="c1"></param>
+        /// <param name="r2"></param>
+        /// <param name="c2"></param>
+        /// <returns></returns>
+        public static double[,] SubEvenLengthmatrix(double[,] M, int r1, int c1, int matrixLength)
+        {
+            var matrixRowCount = M.GetLength(0);
+            var matrixColCount = M.GetLength(1);
+            double[,] sm = new double[matrixLength, matrixLength];
+            var leftRowOffset = matrixLength / 2 - 1;
+            var rightRowOffset = matrixLength / 2;
+
+            var topColOffset = matrixLength / 2 - 1;
+            var bottomColOffset = matrixLength / 2;
+
+            var startRowIndex = r1 - leftRowOffset;
+            var startLeftColIndex = c1 - topColOffset;
+
+            for (int i = r1 - leftRowOffset; i < r1 + rightRowOffset; i++)
+            {
+                for (int j = c1 - topColOffset; j < c1 + bottomColOffset; j++)
+                {
+                    // Four center point 
+                    // Top left center point
+                    if (checkBoundary(i, j, matrixRowCount, matrixColCount, 0, 0))
+                    {
+                        sm[i - startRowIndex, j - startLeftColIndex] = M[i, j];
+                    }
+                }
+            }
+            return sm;
+        }
+
         public static List<List<RegionRerepresentation>> SplitRegionRepresentationListToBlock(List<RegionRerepresentation> regionRepresentationList)
         {
             var result = new List<List<RegionRerepresentation>>();
