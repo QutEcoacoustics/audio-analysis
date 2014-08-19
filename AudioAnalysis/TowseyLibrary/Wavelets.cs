@@ -7,11 +7,21 @@ namespace TowseyLibrary
 {
 
     /// <summary>
-    /// implements a simple wavelet packet decomposition algorithm
+    /// An implementation of wavelet pack decomposition (WPD) using the Haar wavelet.
+    /// For details on the Haar wavelet, and the source for the details in this code,
+    /// read "WAVELETS FOR KIDS, A Tutorial Introduction", by Brani Vidakovic and Peter Mueller, Duke University.
+    /// WARNING: This article on the Haar wavelet is NOT for kids!
     /// </summary>
     public static class Wavelets
     {
+        public const double SQRT2 = 1.4142135623730950488016887242097;
 
+        
+        /// <summary>
+        /// Represents a node in the WPD tree.
+        /// THe nodes are usually called "bin vectors".
+        /// At the bottom of the WPD tree each bin vector contains only one element.
+        /// </summary>
         public class BinVector
         {
             public int levelNumber;
@@ -56,6 +66,70 @@ namespace TowseyLibrary
                 int number = (2 * this.sequenceNumber) - (int)Math.Pow(2.0, this.levelNumber) + 1;
                 return number + 1;
             }
+        } // END of class BinVector each of which is a node in the WPD tree.
+
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="fftWindowWidth"></param>
+        /// <param name="wpdLevelNumber"></param>
+        /// <returns></returns>
+        public static double[,] GetFrequencyByOscillationsMatrix(double[] signal, int fftWindowWidth, int wpdLevelNumber)
+        {
+            // produce spectrogram
+
+
+
+            int wpdWindowWidth = (int)Math.Pow(2, wpdLevelNumber);
+            int sampleCount = signal.Length / wpdWindowWidth;
+            double[,] wpdByTime = new double[wpdWindowWidth, sampleCount];
+            double[,] freqByOscillationsMatrix = new double[fftWindowWidth, wpdWindowWidth];
+
+            // do a WPD over each frequency bin
+
+
+            // accumulate the WPD spectra into a frequency bin by oscillations per second matrix.
+
+            //double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, wpdLevelNumber);
+            double[,] matrix = Wavelets.GetWPDEnergySequence(signal, wpdLevelNumber);
+
+            double[] V = MatrixTools.GetRowAverages(matrix);
+
+
+
+            return freqByOscillationsMatrix;
+        }
+
+
+
+
+        /// <summary>
+        /// Returns a universal threshold which is used to zero small or insignificant wavelet coefficients.
+        /// See pages 15 & 16 of "Wavelets for kids"!!
+        /// The coefficients should be derived from the bottom row of the WPD tree.
+        /// I think n = the level number of the coefficients being thresholded.
+        /// In other words, the standard deviation is calculated from the bottom row of coeficients but is increased for the higher rows.
+        /// THis is because the coefficients in the lower rows have a lower SNR.
+        /// </summary>
+        /// <param name="n">level number</param>
+        /// <param name="coefficients"></param>
+        /// <returns></returns>
+        public static double CalculateUniversalThreshold(int n, double[] coefficients)
+        {
+            double factor = Math.Sqrt(2 * Math.Log10(n));
+            double av, sd;
+            NormalDist.AverageAndSD(coefficients, out av, out sd);
+            return factor * sd;
+        }
+        public static double CalculateUniversalThreshold(int n, double sdOfCoefficients)
+        {
+            double factor = Math.Sqrt(2 * Math.Log10(n));
+            return factor * sdOfCoefficients;
         }
 
 
@@ -106,33 +180,22 @@ namespace TowseyLibrary
         }
 
 
-
-
-
-
-        public static double[,] GetFrequencyByOscillationsMatrix(double[] signal, int fftWindowWidth, int wpdLevelNumber)
+        /// <summary>
+        /// assume tree is full decomposed WPD tree.
+        /// Assume original signal is power of 2 in length
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public static double[] GetWPDEnergyVector(List<BinVector> list)
         {
-            // produce spectrogram
+            int nodeCount = list.Count;
+            double[] wpdEnergyVector = new double[list.Count];
 
-
-
-            int wpdWindowWidth = (int)Math.Pow(2, wpdLevelNumber);
-            int sampleCount = signal.Length / wpdWindowWidth;
-            double[,] wpdByTime = new double[wpdWindowWidth, sampleCount];
-            double[,] freqByOscillationsMatrix = new double[fftWindowWidth, wpdWindowWidth]; 
-
-            // do a WPD over each ferquency bin
-
-
-            // accumulate the WPD spectra into a frequency bin by oscillations per second matrix.
-
-            double[,] matrix = Wavelets.GetWPDSequence(signal, wpdLevelNumber);
-
-            double[] V = MatrixTools.GetRowAverages(matrix);
-
-
-
-            return freqByOscillationsMatrix;
+            foreach (BinVector bv in list)
+            {
+                wpdEnergyVector[bv.sequenceNumber - 1] = bv.energy;
+            }
+            return wpdEnergyVector;
         }
 
 
@@ -143,9 +206,9 @@ namespace TowseyLibrary
         /// <param name="signal"></param>
         /// <param name="levelNumber"></param>
         /// <returns></returns>
-        public static double[] GetWPDSequenceAveraged(double[] signal, int levelNumber)
+        public static double[] GetWPDSpectralSequenceAveraged(double[] signal, int levelNumber)
         {
-            double[,] matrix = Wavelets.GetWPDSequence(signal, levelNumber);
+            double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, levelNumber);
 
             // save image for debugging
             string path = @"C:\SensorNetworks\Output\Test\waveletTestImageWaveletSpectrumSequence.png";
@@ -155,8 +218,41 @@ namespace TowseyLibrary
             return V;
         }
 
+        /// <summary>
+        /// Accumulates the bottom line "spectrum" of the WPD tree, puts them into a matrix and then takes the average of the rows
+        /// to produce an average WPD spectrum.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="levelNumber"></param>
+        /// <returns></returns>
+        public static double[] GetWPDEnergySequenceAveraged(double[] signal, int levelNumber)
+        {
+            double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
 
-        public static double[,] GetWPDSequence(double[] signal, int levelNumber)
+
+            double[,] svd = MatrixTools.SingularValueDecompositionMatrix(matrix);
+            double ratio = (svd[0, 0] - svd[1, 1]) / svd[0, 0]; 
+            Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
+
+            // save image for debugging
+            string path1 = @"C:\SensorNetworks\Output\Test\waveletTestEnergySequence.png";
+            ImageTools.DrawReversedMatrix(matrix, path1);
+            string path2 = @"C:\SensorNetworks\Output\Test\waveletTestEnergySequenceSVD.png";
+            ImageTools.DrawReversedMatrix(svd, path2);
+
+            double[] V = MatrixTools.GetRowAverages(matrix);
+            return V;
+        }
+
+        
+        /// <summary>
+        /// Returns a matrix whose columns consist of the bottom row of the WPD tree for each WPD window of length 2^L where L= levelNumber.
+        /// The WPD windows do not overlap.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="levelNumber"></param>
+        /// <returns></returns>
+        public static double[,] GetWPDSpectralSequence(double[] signal, int levelNumber)
         {
             int windowWidth = (int)Math.Pow(2, levelNumber);
             int sampleCount = signal.Length / windowWidth;
@@ -168,6 +264,7 @@ namespace TowseyLibrary
                 double[] subArray = DataTools.Subarray(signal, start, windowWidth);
                 List<Wavelets.BinVector> list = Wavelets.GetTreeOfBinVectors(subArray);
                 double[,] treeMatrix = Wavelets.GetWPDSignalTree(list);
+
                 // get bottom row of the tree matrix i.e. the WPD spectrum
                 double[] wpdSpectrum = MatrixTools.GetRow(treeMatrix, levelNumber);
                 wpdSpectrum = DataTools.reverseArray(wpdSpectrum);
@@ -177,8 +274,44 @@ namespace TowseyLibrary
             return wpdByTime;
         }
 
+        /// <summary>
+        /// Returns a matrix whose columns consist of the energy vector derived from the WPD tree for each WPD window of length 2^L where L= levelNumber.
+        /// The WPD windows do not overlap.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="levelNumber"></param>
+        /// <returns></returns>
+        public static double[,] GetWPDEnergySequence(double[] signal, int levelNumber)
+        {
+            int windowWidth = (int)Math.Pow(2, levelNumber);
+            int sampleCount = signal.Length / windowWidth;
+            int lengthOfEnergyVector = (int)Math.Pow(2, levelNumber+1) - 1;
+            double[,] wpdByTime = new double[lengthOfEnergyVector, sampleCount];
 
+            for (int s = 0; s < sampleCount; s++)
+            {
+                int start = s * windowWidth;
+                double[] subArray = DataTools.Subarray(signal, start, windowWidth);
+                List<Wavelets.BinVector> list = Wavelets.GetTreeOfBinVectors(subArray);
+                double[] energyVector = Wavelets.GetWPDEnergyVector(list);
+
+                // reverse the energy vector so that low resolution coefficients are at the bottom. 
+                energyVector = DataTools.reverseArray(energyVector);
+                MatrixTools.SetColumn(wpdByTime, s, energyVector);
+            }
+
+            return wpdByTime;
+        }
             
+
+        /// <summary>
+        /// NOTE: THIS METHOD IS RECURSIVE.
+        /// It performs a depth first calculation of the wavelet coefficients.
+        /// Depth first search terminates when the bin vector contains only one element.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="bv"></param>
+        /// <returns></returns>
         public static List<BinVector> GetTreeOfBinVectors(List<BinVector>list, BinVector bv)
         {
             int level = bv.levelNumber;
@@ -202,12 +335,17 @@ namespace TowseyLibrary
             bv.childDetail = detailBin;
 
             list.Add(approxBin);
-            GetTreeOfBinVectors(list, approxBin);
+            Wavelets.GetTreeOfBinVectors(list, approxBin);
             list.Add(detailBin);
-            GetTreeOfBinVectors(list, detailBin);
+            Wavelets.GetTreeOfBinVectors(list, detailBin);
             return list;
         }
 
+        /// <summary>
+        /// implements the Haar low pass filter
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
         public static double[] LowPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;
@@ -218,11 +356,17 @@ namespace TowseyLibrary
             for (int i = 0; i < halfLength; i++)
             {
                 int index = 2 * i;
-                lowPass[i] = (signal[index] + signal[index + 1]) / (double)2;
+                lowPass[i] = (signal[index] + signal[index + 1]) / (double)SQRT2;
             }
             return lowPass;
         }
 
+
+        /// <summary>
+        /// implements the Haar high pass filter
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
         public static double[] HiPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;
@@ -233,7 +377,7 @@ namespace TowseyLibrary
             for (int i = 0; i < halfLength; i++)
             {
                 int index = 2 * i;
-                hiPass[i] = (signal[index] - signal[index + 1]) / (double)2;
+                hiPass[i] = (signal[index] - signal[index + 1]) / (double)SQRT2;
             }
             return hiPass;
         }

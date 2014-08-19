@@ -38,8 +38,44 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
+            if (false)  // do SVD of a matrix
+            {
+                double[,] matrix1 = {
+                                        { 3.0, -1.0 },
+                                        { -1.0, 3.0 }
+                                    };
+                MatrixTools.EigenVectors(matrix1);
 
-            if (true)  // do 2D-FFT of an image.
+
+                //double[,] matrix2 = {
+                //                        {1, 1},
+                //                        {0, 0},
+                //                        {Wavelets.SQRT2, -Wavelets.SQRT2}
+                //                     };
+                double[,] matrix2 = {
+                                        {2, 4},
+                                        {1, 3},
+                                        {0, 0},
+                                        {0, 0}
+                                     };
+                double[,] svd = MatrixTools.SingularValueDecompositionMatrix(matrix2);
+                MatrixTools.writeMatrix(svd);
+
+                // save image for debugging
+                string path1 = @"C:\SensorNetworks\Output\Test\testMatrix.png";
+                ImageTools.DrawReversedMatrix(matrix2, path1);
+                string path2 = @"C:\SensorNetworks\Output\Test\SvdMatrix.png";
+                ImageTools.DrawReversedMatrix(svd, path2);
+
+
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
+
+
+
+            if (true)  // do wavelets of a signal
             {
                 //double[] signal = {1,0,0,0,0,0,0,0};
                 //double[] signal = { 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
@@ -59,6 +95,11 @@ namespace AnalysisPrograms
                                     1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
                                     1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
                                     1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0 };
+                // add noise to signal
+                RandomNumber rn = new RandomNumber();
+                double[] rv = RandomNumber.GetRandomVector(128, rn);
+                DataTools.Normalise(rv, 0.0, 1.0);
+                signal = DataTools.AddVectors(signal, rv);
 
                 //this signal contains four step cycles
                 //double[] signal = { 1, 1, 0.5, 0, -0.5, -1.0, -1.0, -0.5, 0, 0.5, 1.0, 1.0, 0.5, 0.0, -0.5, -1, -1, -0.5, 0, 0.5, 1.0, 1.0, 0.5, 0.0, -0.5, -1.0, -1.0,  -0.5, 0, 0.5, 1.0, 1.0,
@@ -66,7 +107,8 @@ namespace AnalysisPrograms
                 signal = DataTools.normalise(signal);
 
                 int levelNumber = 5;
-                double[] V = Wavelets.GetWPDSequenceAveraged(signal, levelNumber);
+                //double[] V = Wavelets.GetWPDSpectralSequenceAveraged(signal, levelNumber);
+                double[] V = Wavelets.GetWPDEnergySequenceAveraged(signal, levelNumber);
 
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
