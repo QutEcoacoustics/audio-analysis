@@ -10,6 +10,8 @@
     using Acoustics.Shared.Extensions;
     using System.Drawing;
     using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
+    using Dong.Felt.Configuration;
 
     class StructureTensorAnalysis
     {
@@ -32,22 +34,22 @@
             {
                 // j = rowIndex
                 for (int j = 0; j < matrixLength; j++)
-                {                                   
+                {
                     if (i < 4)
                     {
-                        vector1[j + i * 16] = dftMatrix[j, i];                   
+                        vector1[j + i * 16] = dftMatrix[j, i];
                     }
                     if (i >= 4 && i < 8)
-                    {                       
-                        vector2[j + (i - 4) * 16] = dftMatrix[j, i];                     
+                    {
+                        vector2[j + (i - 4) * 16] = dftMatrix[j, i];
                     }
                     if (i >= 8 && i < 12)
-                    {                       
-                        vector3[j + (i - 8) * 16] = dftMatrix[j, i];                      
+                    {
+                        vector3[j + (i - 8) * 16] = dftMatrix[j, i];
                     }
                     if (i >= 12 && i < 16)
-                    {                      
-                        vector4[j + (i - 12) * 16] = dftMatrix[j, i];                        
+                    {
+                        vector4[j + (i - 12) * 16] = dftMatrix[j, i];
                     }
                 }
             }
@@ -76,55 +78,81 @@
             var vector6 = new double[4 * matrixLength];
             var vector7 = new double[4 * matrixLength];
             var vector8 = new double[4 * matrixLength];
-                // 16 rows are processed like obove
-                // i = rowIndex
-                for (int i = 0; i < matrixLength; i++)
+            // 16 rows are processed like obove
+            // i = rowIndex
+            for (int i = 0; i < matrixLength; i++)
+            {
+                // j = colIndex
+                for (int j = 0; j < matrixLength; j++)
                 {
-                    // j = colIndex
-                    for (int j = 0; j < matrixLength; j++)
-                    {
-                        
-                        if (i < 4)
-                        {
-                            vector5[j + i * 16] = dftMatrix[i, j];
-                        }
-                        if (i >= 4 && i < 8)
-                        {
-                            vector6[j + (i - 4) * 16] = dftMatrix[i, j];
-                        }
-                        if (i >= 8 && i < 12)
-                        {
-                            vector7[j + (i - 8) * 16] = dftMatrix[i, j];
-                        }
 
-                        if (i >= 12 && i < 16)
-                        {
-                            vector8[j + (i - 12) * 16] = dftMatrix[i, j];
-                        }
+                    if (i < 4)
+                    {
+                        vector5[j + i * 16] = dftMatrix[i, j];
+                    }
+                    if (i >= 4 && i < 8)
+                    {
+                        vector6[j + (i - 4) * 16] = dftMatrix[i, j];
+                    }
+                    if (i >= 8 && i < 12)
+                    {
+                        vector7[j + (i - 8) * 16] = dftMatrix[i, j];
+                    }
+
+                    if (i >= 12 && i < 16)
+                    {
+                        vector8[j + (i - 12) * 16] = dftMatrix[i, j];
                     }
                 }
-                var scalorPropertyBe2Vec7 = 0.0;
-                var scalorPropertyBe2Vec8 = 0.0;
-                var scalorPropertyBe2Vec9 = 0.0;
-                var scalorPropertyBe2Vec10 = 0.0;
-                var scalorPropertyBe2Vec11 = 0.0;
-                var scalorPropertyBe2Vec12 = 0.0;
-                for (var k = 0; k < matrixLength; k++)
-                {
-                    scalorPropertyBe2Vec7 += vector5[k] * vector6[k];
-                    scalorPropertyBe2Vec8 += vector5[k] * vector7[k];
-                    scalorPropertyBe2Vec9 += vector5[k] * vector8[k];
-                    scalorPropertyBe2Vec10 += vector6[k] * vector7[k];
-                    scalorPropertyBe2Vec11 += vector6[k] * vector8[k];
-                    scalorPropertyBe2Vec12 += vector7[k] * vector8[k];
-                }
-                result[6] = scalorPropertyBe2Vec7;
-                result[7] = scalorPropertyBe2Vec8;
-                result[8] = scalorPropertyBe2Vec9;
-                result[9] = scalorPropertyBe2Vec10;
-                result[10] = scalorPropertyBe2Vec11;
-                result[11] = scalorPropertyBe2Vec12;
+            }
+            var scalorPropertyBe2Vec7 = 0.0;
+            var scalorPropertyBe2Vec8 = 0.0;
+            var scalorPropertyBe2Vec9 = 0.0;
+            var scalorPropertyBe2Vec10 = 0.0;
+            var scalorPropertyBe2Vec11 = 0.0;
+            var scalorPropertyBe2Vec12 = 0.0;
+            for (var k = 0; k < matrixLength; k++)
+            {
+                scalorPropertyBe2Vec7 += vector5[k] * vector6[k];
+                scalorPropertyBe2Vec8 += vector5[k] * vector7[k];
+                scalorPropertyBe2Vec9 += vector5[k] * vector8[k];
+                scalorPropertyBe2Vec10 += vector6[k] * vector7[k];
+                scalorPropertyBe2Vec11 += vector6[k] * vector8[k];
+                scalorPropertyBe2Vec12 += vector7[k] * vector8[k];
+            }
+            result[6] = scalorPropertyBe2Vec7;
+            result[7] = scalorPropertyBe2Vec8;
+            result[8] = scalorPropertyBe2Vec9;
+            result[9] = scalorPropertyBe2Vec10;
+            result[10] = scalorPropertyBe2Vec11;
+            result[11] = scalorPropertyBe2Vec12;
             return result;
+        }
+
+        /// <summary>
+        /// Calculate the feature vector for poiList, 14 * 14 values, here it refers to structure tensor list. 
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="stList"></param>
+        /// <param name="stConfiguration"></param>
+        /// <returns></returns>
+        public static List<PointOfInterest> StructureTensorFV(SpectrogramStandard spectrogram, List<PointOfInterest> stList,
+            StructureTensorConfiguration stConfiguration)
+        {
+            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            int nhLength = stConfiguration.FFTNeighbourhoodLength;
+            var outputList = new List<PointOfInterest>();
+            foreach (var st in stList)
+            {
+                // point.X corresponds to time, point.Y refers to frequency bin. 
+                var rowIndex = st.Point.Y;
+                var colIndex = st.Point.X;
+                var subM = StatisticalAnalysis.SubEvenLengthmatrix(matrix, rowIndex, colIndex, nhLength); // extract NxN submatrix
+                var dftMatrix = _2DFourierTransform.DiscreteFourierTransform(subM);
+                var featureVectorMatrix = _2DFourierTransform.CropDFTMatrix(dftMatrix, 1);
+                st.fftMatrix = featureVectorMatrix;                          
+            }
+            return stList;
         }
 
         // Step 1: calculate the structure tensor for each pixel in the spectrogram. It is calculated based on one neighbouring pixel. 
@@ -305,8 +333,8 @@
                 {
                     if (s.Item2 > threshold)
                     {
-                        // To make it thin
-                        if (s.Item1.Point.Y % 3 == 0)
+                        // To make it thin, check the center band of 300 Hz frequency band.  
+                        if ((s.Item1.Point.Y - 3) % 7 == 0 )
                         {
                             Point point = new Point(s.Item1.Point.X, s.Item1.Point.Y);
                             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
