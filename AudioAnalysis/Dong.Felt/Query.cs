@@ -1,5 +1,6 @@
 ﻿namespace Dong.Felt
 {
+    using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using Dong.Felt.Configuration;
     using System;
@@ -110,6 +111,19 @@
             GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
+        public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime)
+        {
+            // the unit is confusing
+            var secondToMillisecond = 1000;
+            this.maxFrequency = maximumFrequency;
+            this.minFrequency = minimumFrequency;
+            this.startTime = startTime * secondToMillisecond; // millisecond
+            this.endTime = endTime * secondToMillisecond; // millisecond
+            this.duration = this.endTime - this.startTime;
+            this.frequencyRange = this.maxFrequency - this.minFrequency;  
+          
+        }
+
         // to get the nhCountInRow, nhCountInColumn, nhStartRowIndex, nhStartColIndex.
         public void GetNhProperties(int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig)
         {
@@ -159,6 +173,15 @@
                 nhCountInRow, nhCountInColumn, spectrogramConfig);
             return result;
         }
+
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile)
+        {
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
+                queryInfo.TimeEnd);
+            return result; 
+        }
+
         #endregion
 
     }

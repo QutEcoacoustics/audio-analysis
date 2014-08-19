@@ -13,7 +13,11 @@ namespace Dong.Felt.Representations
     public class RegionRerepresentation : RidgeDescriptionNeighbourhoodRepresentation
     {
         #region public properties.
-        
+
+        /// <summary>
+        /// gets or sets the fft features for a region. This is based on Bardeli's algorithm.
+        /// </summary>
+        public PointOfInterest[,] fftFeatures { get; set; }
 
         /// <summary>
         /// Index (0-based) for this region's highest frequency in the source audio file, its unit is hz.

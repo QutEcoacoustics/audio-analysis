@@ -372,6 +372,16 @@
             var poi = ExtractPOI(attentionList, spectrogram, overlap, maxRowIndex, maxColIndex);
             return poi;
         }
+
+        public static List<PointOfInterest> ExtractfftFeaturesFromPOI(SpectrogramStandard spectrogram,
+             StructureTensorConfiguration stConfiguation)
+        {
+            var avgStnhSize = stConfiguation.AvgStNhLength;
+            var stList = ExtractPOIFromStructureTensor(spectrogram, avgStnhSize);
+            var poiList = StructureTensorFV(spectrogram, stList, stConfiguation);
+            return poiList;
+        }
+        
         // Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
         /// <summary>
         /// Get the threshold for keeping points of interest

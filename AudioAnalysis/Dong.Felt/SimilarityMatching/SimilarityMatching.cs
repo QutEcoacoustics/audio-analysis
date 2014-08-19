@@ -367,6 +367,38 @@
             return result;
         }
 
+        public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate)
+        {
+            var result = 0.0;
+            var fftDifference = 0.0;
+            var positionDifference = 0.0;
+            if (query != null && candidate != null)
+            {
+                var queryPOIMatrix = query.fftFeatures;
+                var candidatePOIMatrix = candidate.fftFeatures;
+                var rowsCount = queryPOIMatrix.GetLength(0);
+                var colsCount = candidatePOIMatrix.GetLength(1);               
+                for (int i = 0; i < rowsCount; i++)
+                {
+                    for (int j = 0; j < colsCount; j++)
+                    {
+                        var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
+                        var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
+                        positionDifference = Math.Sqrt(Math.Pow(queryPOIMatrix[i,j].Point.X - candidatePOIMatrix[i,j].Point.X, 2.0)
+                    + Math.Pow(queryPOIMatrix[i,j].Point.Y - candidatePOIMatrix[i,j].Point.Y, 2.0));
+                        for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
+                        {
+                            for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                            {
+                                fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                            }
+                        }
+                    }
+                }
+            }
+            result = fftDifference + positionDifference;
+            return result;
+        }
         /// <summary>
         /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
         /// based on the sum of sub-region in the process of calculation.
@@ -778,6 +810,7 @@
             }
 
         }
+        
         #endregion
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Dong.Felt.Configuration
 {
-    class StructureTensorConfiguration
+    public class StructureTensorConfiguration
     {
         public double Threshold { get; set; }
 
@@ -22,6 +22,6 @@ namespace Dong.Felt.Configuration
         /// <summary>
         /// gets or sets the neighbourhood length for averaging the structure tensor.
         /// </summary>
-        public int AvgStNhLenght { get; set; }
+        public int AvgStNhLength { get; set; }
     }
 }

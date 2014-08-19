@@ -11,6 +11,7 @@
     using Representations;
     using System.Globalization;
     using AForge.Math;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     class StatisticalAnalysis
     {
@@ -712,6 +713,32 @@
         /// <param name="row2"></param>
         /// <param name="col2"></param>
         /// <returns></returns>
+        public static PointOfInterest[,] SubRegionMatrix(PointOfInterest[,] matrix, int row1, int col1, int row2, int col2)
+        {
+            var maxRowIndex = matrix.GetLength(0);
+            var maxColIndex = matrix.GetLength(1);
+            int subRowCount = row2 - row1;
+            int subColCount = col2 - col1;
+
+            var subMatrix = new PointOfInterest[subRowCount, subColCount];
+            for (int row = 0; row < subRowCount; row++)
+            {
+                for (int col = 0; col < subColCount; col++)
+                {
+                    subMatrix[row, col] = new PointOfInterest(new Point(0,0));
+
+                    if (checkBoundary(row1 + row, col1 + col, maxRowIndex, maxColIndex))
+                    {
+                        if (matrix[row1 + row, col1 + col] != null)
+                        {
+                            subMatrix[row, col] = matrix[row1 + row, col1 + col];
+                        }
+                    }
+                }
+            }
+            return subMatrix;
+        }
+
         public static RidgeDescriptionNeighbourhoodRepresentation[,] SubRegionMatrix(RidgeDescriptionNeighbourhoodRepresentation[,] matrix, int row1, int col1, int row2, int col2)
         {
             var maxRowIndex = matrix.GetLength(0);
@@ -766,6 +793,18 @@
         /// if it is not out of index range, it will return true, otherwise it will return false. 
         /// </returns> 
         public static bool checkBoundary(int indexX, int indexY, int maxiXIndex, int maxYIndex, int miniXIndex = 0, int miniYIndex = 0)
+        {
+            if (indexX >= miniXIndex && indexX < maxiXIndex && indexY >= miniYIndex && indexY < maxYIndex)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool checkBoundary(double indexX, double indexY, double maxiXIndex, double maxYIndex, double miniXIndex = 0, double miniYIndex = 0)
         {
             if (indexX >= miniXIndex && indexX < maxiXIndex && indexY >= miniYIndex && indexY < maxYIndex)
             {
