@@ -53,7 +53,7 @@ namespace AudioAnalysisTools.DSP
             double[,] subMatrix;
             double NSquared = fieldSize * fieldSize;
             // alpha is a scaling factor. LeCun set it = 0.00001. Here set much higher to have a noticeable effect!
-            double alpha = 0.5;
+            double alpha = 1.0;
 
             // convolve gaussian with the matrix
             for (int r1 = 0; r1 < rowCount-frameWidth; r1++)
@@ -75,14 +75,14 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
+            // FOLLOWING LINES ARE FOR DEBUGGING AND TESTING
             /*
-             * // FOLLOWING LINES ARE FOR DEBUGGING AND TESTING
             outputM = MatrixTools.MatrixRotate90Anticlockwise(outputM);
             ImageTools.DrawReversedMatrix(outputM, @"C:\SensorNetworks\Output\Sonograms\TESTMATRIX2.png");
-            fractionalStretching = 0.05;
+            double fractionalStretching = 0.05;
             outputM = ImageTools.ContrastStretching(outputM, fractionalStretching);
             ImageTools.DrawReversedMatrix(outputM, @"C:\SensorNetworks\Output\Sonograms\TESTMATRIX3.png");
-             * */
+            */
             
             return outputM;
         }

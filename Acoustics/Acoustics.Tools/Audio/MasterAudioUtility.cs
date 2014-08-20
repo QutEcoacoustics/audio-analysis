@@ -121,6 +121,18 @@ namespace Acoustics.Tools.Audio
         {
             var audioUtility = new MasterAudioUtility();
 
+            // allows start and end offsets to be specified independently or not all
+            if (!request.OffsetStart.HasValue)
+            {
+                request.OffsetStart = TimeSpan.Zero;
+            }
+
+            if (!request.OffsetEnd.HasValue)
+            {
+                var info = audioUtility.Info(source);
+                request.OffsetEnd = info.Duration;
+            }
+
             audioUtility.Modify(
                 source,
                 MediaTypes.GetMediaType(source.Extension),
