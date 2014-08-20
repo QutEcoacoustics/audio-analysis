@@ -725,7 +725,7 @@
             {
                 for (int col = 0; col < subColCount; col++)
                 {
-                    subMatrix[row, col] = new PointOfInterest(new Point(0,0));
+                    subMatrix[row, col] = new PointOfInterest(new Point(0, 0));
 
                     if (checkBoundary(row1 + row, col1 + col, maxRowIndex, maxColIndex))
                     {
@@ -816,6 +816,28 @@
             }
         }
 
+        public static bool checkNullRegion(PointOfInterest[,] matrix)
+        {
+            var poiCount = 0;
+            for (var r = 0; r < matrix.GetLength(0); r++)
+            {
+                for (var c = 0; c < matrix.GetLength(1); c++)
+                {
+                    if (matrix[r, c].fftMatrix != null)
+                    {
+                        poiCount++;
+                    }
+                }
+            }
+            if (poiCount == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         /// <summary>
         /// To calculate how many edges per timeUnit(such as per second)
         /// </summary>

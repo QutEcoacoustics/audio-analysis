@@ -105,12 +105,17 @@ namespace Dong.Felt
             // be careful about the index here.
             var rowStart = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.maxFrequency / frequencyScale);
             var rowEnd = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency / frequencyScale); 
-            var colStart = (int)(query.startTime / timeScale);
-            var colEnd = (int)(query.endTime/ timeScale);     
+            var colStart = (int)(query.startTime / 1000 / timeScale);
+            var colEnd = (int)(query.endTime / 1000 / timeScale);     
       
             var regionMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(stMatrix, rowStart, colStart, rowEnd, colEnd);
             var result = new RegionRerepresentation();
-            result.fftFeatures = regionMatrix;           
+            result.fftFeatures = regionMatrix;
+            result.TimeIndex = query.startTime;
+            result.FrequencyIndex = query.minFrequency;
+            result.FrequencyRange = query.maxFrequency - query.minFrequency;
+            result.Duration = TimeSpan.FromMilliseconds(query.endTime - query.startTime);
+            result.SourceAudioFile = audioFileName;
             return result;
         }
 
@@ -174,20 +179,31 @@ namespace Dong.Felt
             var rowsCount = matrix.GetLength(0);
             var colsCount = matrix.GetLength(1);
 
-            var startRowIndex = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.maxFrequency);
-            var endRowIndex = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency);
+            var freqScale = spectrogram.FBinWidth;
+            var startRowIndex = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.maxFrequency / freqScale);
+            var endRowIndex = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency / freqScale);
             var timeScale = spectrogram.FrameDuration;
-            var colRange = (int)(query.duration / timeScale);
+            var colRange = (int)(query.duration / 1000 / timeScale);
             var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix(stList, rowsCount, colsCount);
-            for (int colIndex = 0; colIndex < colsCount; colIndex+=5)
+            var searchStep = 5;
+            for (int colIndex = 0; colIndex < colsCount; colIndex += searchStep)
             {
                 if (StatisticalAnalysis.checkBoundary(startRowIndex, colIndex, endRowIndex, colsCount))
                 {
                     var subRegionMatrix = StatisticalAnalysis.SubRegionMatrix(stMatrix, startRowIndex, colIndex, 
-                                                                    endRowIndex, colIndex + colRange);                  
-                    var regionItem = new RegionRerepresentation();
-                    regionItem.fftFeatures = subRegionMatrix;
-                    result.Add(regionItem);               
+                                                                    endRowIndex, colIndex + colRange);
+                    // check whether the region is null
+                    if (!StatisticalAnalysis.checkNullRegion(subRegionMatrix))
+                    {
+                        var regionItem = new RegionRerepresentation();
+                        regionItem.fftFeatures = subRegionMatrix;
+                        regionItem.TimeIndex = colIndex;
+                        regionItem.FrequencyIndex = query.maxFrequency;
+                        regionItem.FrequencyRange = query.maxFrequency - query.minFrequency;
+                        regionItem.Duration = TimeSpan.FromMilliseconds(query.endTime - query.startTime);
+                        regionItem.SourceAudioFile = audioFileName;
+                        result.Add(regionItem);
+                    }
                 }
             }
             return result;
@@ -226,7 +242,6 @@ namespace Dong.Felt
             return result;
         }
 
-
         // Need to be changed. 
         public static List<Candidates> EuclideanDistanceOnFFTMatrix(RegionRerepresentation query, List<RegionRerepresentation> candidates)
         {
@@ -234,8 +249,8 @@ namespace Dong.Felt
             foreach (var c in candidates)
             {
                 var distance = SimilarityMatching.EuclideanDistanceScore(query, c);
-                var item = new Candidates(distance, c.FrameIndex,
-                        0.0, c.FrequencyIndex, c.FrequencyIndex - c.FrequencyRange,
+                var item = new Candidates(distance, c.TimeIndex,
+                        c.Duration.TotalMilliseconds, c.FrequencyIndex, c.FrequencyIndex - c.FrequencyRange,
                         c.SourceAudioFile);
                 result.Add(item);
             }
