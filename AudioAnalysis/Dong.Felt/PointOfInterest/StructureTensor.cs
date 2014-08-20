@@ -317,7 +317,7 @@
         // Step 5. Extract PointOfIntest
         public static List<PointOfInterest> ExtractPOI(List<Tuple<PointOfInterest, double>> attentionList,
             SpectrogramStandard spectrogram,
-            double overlap, int maximumRowIndex, int maximumColIndex)
+            double overlap, int maximumRowIndex, int maximumColIndex, double t)
         {
             var result = new List<PointOfInterest>();
             // segment spectrogram for calculating threshold for each segment
@@ -328,7 +328,7 @@
             for (int i = 0; i < countOfSegments; i++)
             {
                 var segment = spectroSegment[i];
-                var threshold = SetThreshold(segment);
+                var threshold = SetThreshold(segment, t);
                 foreach (var s in segment)
                 {
                     if (s.Item2 > threshold)
@@ -359,7 +359,7 @@
 
         // Step 6. the flowchart of structure tensor calculation
         public static List<PointOfInterest> ExtractPOIFromStructureTensor(SpectrogramStandard spectrogram,
-            int neighbourhoodSize)
+            int neighbourhoodSize, double t)
         {
             var maxRowIndex = spectrogram.Data.GetLength(0);
             var maxColIndex = spectrogram.Data.GetLength(1);
@@ -369,15 +369,14 @@
             var eigenValues = EignvalueDecomposition(averageStructureTensor);
             var attentionList = CalculateAttention(eigenValues);
             var overlap = 0.0;
-            var poi = ExtractPOI(attentionList, spectrogram, overlap, maxRowIndex, maxColIndex);
+            var poi = ExtractPOI(attentionList, spectrogram, overlap, maxRowIndex, maxColIndex, t);
             return poi;
         }
 
         public static List<PointOfInterest> ExtractfftFeaturesFromPOI(SpectrogramStandard spectrogram,
              StructureTensorConfiguration stConfiguation)
-        {
-            var avgStnhSize = stConfiguation.AvgStNhLength;
-            var stList = ExtractPOIFromStructureTensor(spectrogram, avgStnhSize);
+        {          
+            var stList = ExtractPOIFromStructureTensor(spectrogram, stConfiguation.AvgStNhLength, stConfiguation.Threshold);
             var poiList = StructureTensorFV(spectrogram, stList, stConfiguation);
             return poiList;
         }
@@ -395,11 +394,11 @@
         /// <returns>
         /// return a threshold  
         /// </returns>
-        public static double SetThreshold(List<Tuple<PointOfInterest, double>> attentionList)
+        public static double SetThreshold(List<Tuple<PointOfInterest, double>> attentionList, double threshold)
         {
             const int numberOfColumn = 1000;
             var maxAttention = MaximumOfAttention(attentionList);
-            var l = GetMaximumLength(attentionList, maxAttention);
+            var l = GetMaximumLength(attentionList, maxAttention, threshold);
             return l * maxAttention / numberOfColumn;
         }
 
@@ -481,12 +480,11 @@
             return maxAttention;
         }
         // Step 5.3: bardeli: get the l(a scaling parameter) 
-        public static int GetMaximumLength(List<double> listOfAttention, double maxOfAttention)
+        public static int GetMaximumLength(List<double> listOfAttention, double maxOfAttention, double threshold)
         {
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
-            var p = 0.0002;  //  a fixed parameterl Bardeli : 0.96
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -495,7 +493,7 @@
                 {
                     sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[numberOfBins - l];
                     sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
-                    if (sumOfLargePart >= p * sumOfLowerPart)
+                    if (sumOfLargePart >= threshold * sumOfLowerPart)
                     {
                         break;
                     }
@@ -507,7 +505,7 @@
                 {
                     sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[numberOfBins - l];
                     sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
-                    if (sumOfLargePart >= p * sumOfLowerPart)
+                    if (sumOfLargePart >= threshold * sumOfLowerPart)
                     {
                         break;
                     }
@@ -538,7 +536,7 @@
             return histogram;
         }
         // according to Bardeli, keep points of interest, whose attention value is greater than the threshold
-        public static List<PointOfInterest> ExtractPointsOfInterest(List<Tuple<PointOfInterest, double>> attention)
+        public static List<PointOfInterest> ExtractPointsOfInterest(List<Tuple<PointOfInterest, double>> attention, double t)
         {
             const int numberOfIncludedBins = 1000;
             var LenghOfAttention = attention.Count();
@@ -568,7 +566,7 @@
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
                     }
-                    threshold[i] = GetThreshold(tempAttention);
+                    threshold[i] = GetThreshold(tempAttention, t);
 
                     foreach (var ev in tempAttention)
                     {
@@ -588,7 +586,7 @@
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
                     }
-                    threshold[i] = GetThreshold(tempAttention);
+                    threshold[i] = GetThreshold(tempAttention, t);
 
                     foreach (var ev in tempAttention)
                     {
@@ -792,13 +790,12 @@
             return result;
         }
 
-        // bardeli: get the l(a scaling parameter) 
-        public static int GetMaximumLength(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention)
+        // bardeli: get the l(a scaling parameter) threshold is a fixed parameterl Bardeli : in our case is 0.0002
+        public static int GetMaximumLength(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention, double threshold)
         {
             const int numberOfBins = 1000;
             var sumOfLargePart = 0;
-            var sumOfLowerPart = 0;
-            var p = 0.0002;  //  a fixed parameterl Bardeli : mine is 0.0002
+            var sumOfLowerPart = 0;           
             var l = 0;
 
             if (listOfAttention.Count >= numberOfBins)
@@ -807,7 +804,7 @@
                 {
                     sumOfLargePart = sumOfLargePart + CalculateHistogram1(listOfAttention, maxOfAttention)[numberOfBins - l];
                     sumOfLowerPart = sumOfLowerPart + CalculateHistogram1(listOfAttention, maxOfAttention)[l];
-                    if (sumOfLargePart >= p * sumOfLowerPart)
+                    if (sumOfLargePart >= threshold * sumOfLowerPart)
                     {
                         break;
                     }
@@ -819,7 +816,7 @@
                 {
                     sumOfLargePart = sumOfLargePart + CalculateHistogram1(listOfAttention, maxOfAttention)[numberOfBins - l];
                     sumOfLowerPart = sumOfLowerPart + CalculateHistogram1(listOfAttention, maxOfAttention)[l];
-                    if (sumOfLargePart >= p * sumOfLowerPart)
+                    if (sumOfLargePart >= threshold * sumOfLowerPart)
                     {
                         break;
                     }
@@ -838,12 +835,11 @@
         /// <returns>
         /// return a threshold  
         /// </returns>
-        public static double GetThreshold(List<Tuple<PointOfInterest, double>> attention)
+        public static double GetThreshold(List<Tuple<PointOfInterest, double>> attention, double threshold)
         {
             const int numberOfColumn = 1000;
             var maxAttention = MaximumOfAttention(attention);
-            var l = GetMaximumLength(attention, maxAttention);
-
+            var l = GetMaximumLength(attention, maxAttention, threshold);
             return l * maxAttention / numberOfColumn;
         }
 
@@ -1123,7 +1119,7 @@
         }
 
         // according to Bardeli, keep points of interest, whose attention value is greater than the threshold
-        public static List<PointOfInterest> ExtractPointsOfInterest1(List<Tuple<PointOfInterest, double>> attention)
+        public static List<PointOfInterest> ExtractPointsOfInterest1(List<Tuple<PointOfInterest, double>> attention, double t)
         {
             const int numberOfIncludedBins = 1000;
             var LenghOfAttention = attention.Count();
@@ -1163,7 +1159,7 @@
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
                     }
-                    threshold[i] = GetThreshold(tempAttention);
+                    threshold[i] = GetThreshold(tempAttention, t);
 
                     foreach (var ev in tempAttention)
                     {
@@ -1183,7 +1179,7 @@
                             tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
                         }
                     }
-                    threshold[i] = GetThreshold(tempAttention);
+                    threshold[i] = GetThreshold(tempAttention, t);
 
                     foreach (var ev in tempAttention)
                     {

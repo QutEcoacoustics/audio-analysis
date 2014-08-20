@@ -371,7 +371,7 @@
         {
             var result = 0.0;
             var fftDifference = 0.0;
-            var positionDifference = 0.0;
+            var notNullCount = 0;
             if (query != null && candidate != null)
             {
                 var queryPOIMatrix = query.fftFeatures;
@@ -382,21 +382,32 @@
                 {
                     for (int j = 0; j < colsCount; j++)
                     {
-                        var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
-                        var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
-                        positionDifference = Math.Sqrt(Math.Pow(queryPOIMatrix[i,j].Point.X - candidatePOIMatrix[i,j].Point.X, 2.0)
-                    + Math.Pow(queryPOIMatrix[i,j].Point.Y - candidatePOIMatrix[i,j].Point.Y, 2.0));
-                        for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
+                        if (queryPOIMatrix[i, j].fftMatrix != null && candidatePOIMatrix[i, j].fftMatrix != null)
                         {
-                            for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                            var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
+                            var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
+
+                            for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
                             {
-                                fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                                {
+                                    fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                }
                             }
-                        }
+                            notNullCount++;
+                        }                      
                     }
                 }
             }
-            result = fftDifference + positionDifference;
+            if (fftDifference != 0)
+            {
+                result = fftDifference / notNullCount;
+            }
+            else
+            {
+                // no matching point, it will be assigned a maximum distance. 
+                result = 1000;
+            }           
             return result;
         }
         /// <summary>
