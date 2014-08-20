@@ -7,6 +7,11 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
 
+//using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Generic;
+
+
 namespace TowseyLibrary
 {
     public enum Kernal
@@ -2039,6 +2044,18 @@ namespace TowseyLibrary
             return grayScale;
         }
 
+        /// <summary>
+        /// Normalises the matrix between zero and one. 
+        /// Then draws the reversed matrix and saves image to passed path.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawReversedMDNMatrix(Matrix<double> matrix, string pathName)
+        {
+            double[,] matrix1 = matrix.ToArray();
+            Image bmp = DrawReversedMatrix(matrix1);
+            bmp.Save(pathName);
+        }
         /// <summary>
         /// Normalises the matrix between zero and one. 
         /// Then draws the reversed matrix and saves image to passed path.
