@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra.Generic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -228,20 +229,36 @@ namespace TowseyLibrary
         public static double[] GetWPDEnergySequenceAveraged(double[] signal, int levelNumber)
         {
             double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
+            double[] V = MatrixTools.GetRowAverages(matrix);
+            return V;
+        }
+        /// <summary>
+        /// Accumulates the bottom line "spectrum" of the WPD tree, puts them into a matrix and then takes the average of the rows
+        /// to produce an average WPD spectrum.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="levelNumber"></param>
+        /// <returns></returns>
+        public static double[] GetWPDSequenceFollowedBySVD(double[] signal, int levelNumber)
+        {
+            // double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
+            double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, levelNumber);
+            var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix);
+            Vector<double> sdValues = tuple.Item1;
+            Matrix<double> UMatrix  = tuple.Item2;
 
-
-            double[,] svd = MatrixTools.SingularValueDecompositionMatrix(matrix);
-            double ratio = (svd[0, 0] - svd[1, 1]) / svd[0, 0]; 
+            foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
+            double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
             Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
 
             // save image for debugging
             string path1 = @"C:\SensorNetworks\Output\Test\waveletTestEnergySequence.png";
             ImageTools.DrawReversedMatrix(matrix, path1);
             string path2 = @"C:\SensorNetworks\Output\Test\waveletTestEnergySequenceSVD.png";
-            ImageTools.DrawReversedMatrix(svd, path2);
+            ImageTools.DrawReversedMDNMatrix(UMatrix, path2);
 
-            double[] V = MatrixTools.GetRowAverages(matrix);
-            return V;
+            Vector<double> column1 = UMatrix.Column(0);
+            return column1.ToArray();
         }
 
         
@@ -316,7 +333,9 @@ namespace TowseyLibrary
         {
             int level = bv.levelNumber;
             int bin   = bv.binNumber;
-            Console.WriteLine("nodeCount={0}   level={1}   bin={2}  seqNum={3}  sigLength={4}", list.Count, level, bin, bv.sequenceNumber, bv.signal.Length);
+
+            // display info about nodes
+            // Console.WriteLine("nodeCount={0}   level={1}   bin={2}  seqNum={3}  sigLength={4}", list.Count, level, bin, bv.sequenceNumber, bv.signal.Length);
             
             double[] approxVector = LowPassAndDecimate(bv.signal);
             double[] detailVector = HiPassAndDecimate(bv.signal);
