@@ -247,7 +247,9 @@ namespace TowseyLibrary
             Vector<double> sdValues = tuple.Item1;
             Matrix<double> UMatrix  = tuple.Item2;
 
-            foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
+            //foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
+            Console.WriteLine("First  sd Value = {0}", sdValues[0]);
+            Console.WriteLine("Second sd Value = {0}", sdValues[1]);
             double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
             Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
 
@@ -272,8 +274,9 @@ namespace TowseyLibrary
         public static double[,] GetWPDSpectralSequence(double[] signal, int levelNumber)
         {
             int windowWidth = (int)Math.Pow(2, levelNumber);
+            int halfWindow = windowWidth / 2;
             int sampleCount = signal.Length / windowWidth;
-            double[,] wpdByTime = new double[windowWidth, sampleCount];
+            double[,] wpdByTime = new double[halfWindow, sampleCount];
             
             for (int s = 0; s < sampleCount; s++)
             {
@@ -284,6 +287,16 @@ namespace TowseyLibrary
 
                 // get bottom row of the tree matrix i.e. the WPD spectrum
                 double[] wpdSpectrum = MatrixTools.GetRow(treeMatrix, levelNumber);
+                wpdSpectrum = DataTools.Subarray(wpdSpectrum, 0, halfWindow);
+
+                // tried thresholding the coefficients but it did not work with first try!!!
+                //double[] arrayForcalculatingThreshold = DataTools.Subarray(wpdSpectrum, 1, halfWindow-1);
+                //double threshold = Wavelets.CalculateUniversalThreshold(levelNumber, arrayForcalculatingThreshold);
+                //for (int x = 0; x < wpdSpectrum.Length; x++)
+                //{
+                //    if (wpdSpectrum[x] < threshold) wpdSpectrum[x] = 0.0;
+                //}
+
                 wpdSpectrum = DataTools.reverseArray(wpdSpectrum);
                 MatrixTools.SetColumn(wpdByTime, s, wpdSpectrum);
             }

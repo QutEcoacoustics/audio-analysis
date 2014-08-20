@@ -1,12 +1,12 @@
 ---
 #FRAME LENGTH in samples - must be power of 2
-FrameLength: 512
+FrameLength: 256
 
 #Frame Overlap as fraction: default=0.0 
 FrameOverlap: 0.25
 
 #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
-ResampleRate: 17640
+ResampleRate: 16000
 
 #MinHz: 500
 #MaxHz: 3500
@@ -16,17 +16,7 @@ DoNoiseReduction: true
 NoiseReductionType: STANDARD
 BgNoiseThreshold: 3.0
 
-
 AddAxes: true
 AddSegmentationTrack: true
 
-# REDUCTION FACTORS for freq and time dimensions
-#TimeReductionFactor: 1          
-#FreqReductionFactor: 1
-
-MakeSoxSonogram: false
-SonogramTitle: Sonogram
-SonogramComment: "Sonogram produced using SOX"
-#SonogramColored: false
-SonogramQuantisation: 128
 ...

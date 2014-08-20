@@ -135,7 +135,7 @@ namespace TowseyLibrary
             int inColCount = M.GetLength(1);
 
             int outRowCount = inRowCount + (2 * frameWidth);
-            int outColCount = inRowCount + (2 * frameWidth);
+            int outColCount = inColCount + (2 * frameWidth);
 
             var outputMatrix = new double[outRowCount, outColCount];
 

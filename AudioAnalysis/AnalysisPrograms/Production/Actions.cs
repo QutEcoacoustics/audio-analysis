@@ -421,7 +421,20 @@ namespace AnalysisPrograms.Production
         public static Action<Create4Sonograms.Arguments> Create4Sonograms()
         {
             return AnalysisPrograms.Create4Sonograms.Main;
-        }  
+        }
+
+        [ArgDescription("Calls AnalysisPrograms.WaveletPacketDecomp.Main(): This is experimental as of Audust 2014")]
+        public WaveletPacketDecomp.Arguments WaveletPacketDecompArgs { get; set; }
+        public static Action<WaveletPacketDecomp.Arguments> WaveletPacketDecomp()
+        {
+            return AnalysisPrograms.WaveletPacketDecomp.Main;
+        }
+
+
+
+
+
+
         #endregion
     }
 }

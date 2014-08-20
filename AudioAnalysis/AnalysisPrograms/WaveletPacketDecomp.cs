@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Audio2Sonogram.cs" company="QutBioacoustics">
+// <copyright file="WaveletPacketDecomp.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
@@ -44,10 +44,14 @@ namespace AnalysisPrograms
 
     using TowseyLibrary;
 
-    public class Audio2Sonogram
+    /// <summary>
+    /// ACTIVITY NAME = WaveletPacketDecomp
+    /// does wavelet packet decomposition on an audio file.
+    /// </summary>
+    public class WaveletPacketDecomp
     {
         // use the following paths for the command line for the <audio2sonogram> task. 
-        // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
+        // WaveletPacketDecomp "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [CustomDetailedDescription]
         [CustomDescription]
         public class Arguments : SourceAndConfigArguments
@@ -70,7 +74,7 @@ namespace AnalysisPrograms
 
             public static string Description()
             {
-                return "Does cool stuff";
+                return "Does Wavelet Packet Decomposition on the passed audio file.";
             }
 
             public static string AdditionalNotes()
@@ -92,7 +96,7 @@ namespace AnalysisPrograms
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\Sonograms\CaneToads_rural1_20_MONO.png".ToFileInfo(),
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
+                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.WPD.yml".ToFileInfo(),
                 // StartOffset = 0,
                 // ################################ THERE IS AMBIGUITY IN NEXT ARGUMENT THAT COULD ACTUALLY BE A BUG - SEE ANTHONY
                 // EndOffset = 0,
@@ -164,17 +168,6 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
             configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
 
-            // # REDUCTION FACTORS for freq and time dimensions
-            // #TimeReductionFactor: 1          
-            // #FreqReductionFactor: 1
-
-
-            bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            configDict[AnalysisKeys.SonogramTitle]   = (string)configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
-            configDict[AnalysisKeys.SonogramComment] = (string)configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
-            configDict[AnalysisKeys.SonogramColored] = (string)configuration[AnalysisKeys.SonogramColored] ?? "false";
-            configDict[AnalysisKeys.SonogramQuantisation] = (string)configuration[AnalysisKeys.SonogramQuantisation] ?? "128";
-
             configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
             configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
 
@@ -195,122 +188,136 @@ namespace AnalysisPrograms
 
             // 3: GET RECORDING
             FileInfo outputSegment = sourceRecording;
-            if (!((startOffset == null) || (endOffset == null)))
+            outputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
+            
+            // This line creates a downsampled version of the source file
+            MasterAudioUtility.SegmentToWav(sourceRecording, outputSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
+
+            // init the image stack
+            var list = new List<Image>();
+
+            // 1) draw amplitude spectrogram
+            AudioRecording recordingSegment = new AudioRecording(outputSegment.FullName);
+            SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
+
+            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            // ###############################################################
+            // DO LocalContrastNormalisation
+            int fieldSize = 9;
+            sonogram.Data = LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
+            double fractionalStretching = 0.05;
+            sonogram.Data = ImageTools.ContrastStretching(sonogram.Data, fractionalStretching);
+
+            // ###############################################################
+            int levelNumber = 7;
+            int wpdWindow = (int)Math.Pow(2, levelNumber);
+            int binID = 11;
+
+            Console.WriteLine("FramesPerSecond = {0}", sonogram.FramesPerSecond);
+            double secondsPerWPDwindow = wpdWindow / sonogram.FramesPerSecond;
+            Console.WriteLine("secondsPerWPDwindow = {0}", secondsPerWPDwindow);
+
+
+            double[] spectrogramBin = MatrixTools.GetColumn(sonogram.Data, binID);
+            double[] V = Wavelets.GetWPDSequenceFollowedBySVD(spectrogramBin, levelNumber);
+            double threshold = 0.03;  // previous used 0.3
+            Console.WriteLine("Threshold={0}", threshold);
+            for (int i = 0; i < V.Length; i++)
             {
-                outputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
-                AudioRecording.ExtractSegment(sourceRecording, startOffset.Value, endOffset.Value, TimeSpan.Zero, resampleRate, outputSegment);
+                int coeffIndex = V.Length - i - 1;
+                double cps = coeffIndex / secondsPerWPDwindow;
+                if (V[i] > threshold)
+                {
+                    Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, V[i], cps);
+                }
+                else
+                {
+                    Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, " ", cps);
+                }
             }
 
-            // ###### get sonogram image ##############################################################################################
-            if (makeSoxSonogram)
-            {
-                SpectrogramTools.MakeSonogramWithSox(outputSegment, configDict, outputImage);
-            }
-            else
-            {
-                // init the image stack
-                var list = new List<Image>();
+            // ###############################################################
 
-                // 1) draw amplitude spectrogram
-                AudioRecording recordingSegment = new AudioRecording(outputSegment.FullName);
-                SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
+            var image = sonogram.GetImage(false, false);
 
-                BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-                // ###############################################################
-                // TEMPORARY TRIAL OF LocalContrastNormalisation
-                //int fieldSize = 9;
-                //LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
-                // ###############################################################
-                var image = sonogram.GetImage(false, false);
+            Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
 
-                Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+            // initialise parameters for drawing gridlines on images
+            var minuteOffset = TimeSpan.Zero;
+            int nyquist = sonogram.NyquistFrequency;
+            var xInterval = TimeSpan.FromSeconds(10);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(sonogram.Duration.Ticks / (double)image.Width));
+            const int HertzInterval = 1000;
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
-                // initialise parameters for drawing gridlines on images
-                var minuteOffset = TimeSpan.Zero;
-                int nyquist = sonogram.NyquistFrequency;
-                var xInterval = TimeSpan.FromSeconds(10);
-                TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(sonogram.Duration.Ticks / (double)image.Width));
-                const int HertzInterval = 1000;
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
+            // add title bar and time scale
+            string title = "AMPLITUDE SPECTROGRAM";
+            var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(sonogram.Duration, image.Width);
 
-                // add title bar and time scale
-                string title = "AMPLITUDE SPECTROGRAM";
-                var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
-                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-                Bitmap timeBmp = Image_Track.DrawTimeTrack(sonogram.Duration, image.Width);
+            list.Add(titleBar);
+            list.Add(timeBmp);
+            list.Add(image);
+            list.Add(timeBmp);
+            list.Add(envelopeImage);
 
-                list.Add(titleBar);
-                list.Add(timeBmp);
-                list.Add(image);
-                list.Add(timeBmp);
-                list.Add(envelopeImage);
+            // 2) now draw the standard decibel spectrogram
+            //title = "DECIBEL SPECTROGRAM";
+            //sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            //image = sonogram.GetImage(false, false);
+            //SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
-                // 2) now draw the standard decibel spectrogram
-                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-                image = sonogram.GetImage(false, false);
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
+            //titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            //Image segmentationImage = Image_Track.DrawSegmentationTrack(
+            //    sonogram,
+            //    EndpointDetectionConfiguration.K1Threshold,
+            //    EndpointDetectionConfiguration.K2Threshold,
+            //    image.Width);
 
-                // add title bar and time scale
-                title = "DECIBEL SPECTROGRAM";
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-                Image segmentationImage = Image_Track.DrawSegmentationTrack(
-                    sonogram,
-                    EndpointDetectionConfiguration.K1Threshold,
-                    EndpointDetectionConfiguration.K2Threshold,
-                    image.Width);
+            //list.Add(titleBar);
+            //list.Add(timeBmp);
+            //list.Add(image);
+            //list.Add(timeBmp);
+            //list.Add(segmentationImage);
 
-                list.Add(titleBar);
-                list.Add(timeBmp);
-                list.Add(image);
-                list.Add(timeBmp);
-                list.Add(segmentationImage);
+            // keep the sonogram data for later use
+            double[,] dbSpectrogramData = sonogram.Data;
 
-                // keep the sonogram data for later use
-                double[,] dbSpectrogramData = sonogram.Data;
+            // 3) now draw the noise reduced decibel spectrogram
+            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0; 
 
-                // 3) now draw the noise reduced decibel spectrogram
-                sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-                sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0; 
+            sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            image = sonogram.GetImage(false, false);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
-                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-                image = sonogram.GetImage(false, false);
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
+            // keep the sonogram data for later use
+            double[,] nrSpectrogramData = sonogram.Data;
 
-                // keep the sonogram data for later use
-                double[,] nrSpectrogramData = sonogram.Data;
+            // add title bar and time scale
+            title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
 
-                // add title bar and time scale
-                title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            list.Add(titleBar);
+            list.Add(timeBmp);
+            list.Add(image);
+            list.Add(timeBmp);
 
-                list.Add(titleBar);
-                list.Add(timeBmp);
-                list.Add(image);
-                list.Add(timeBmp);
+            // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
+            //title = "FALSE-COLOUR SPECTROGRAM";
+            //image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
+            //SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
-                // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
-                image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
+            //// add title bar and time scale
+            //titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            //list.Add(titleBar);
+            //list.Add(timeBmp);
+            //list.Add(image);
+            //list.Add(timeBmp);
 
-                // add title bar and time scale
-                title = "FALSE-COLOUR SPECTROGRAM";
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-
-                list.Add(titleBar);
-                list.Add(timeBmp);
-                list.Add(image);
-                list.Add(timeBmp);
-
-                // 5) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
-                ////SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
-                ////var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-                ////var image3 = mti3.GetImage();
-                ////image3.Save(fiImage.FullName + "3", ImageFormat.Png);
-
-
-                Image compositeImage = ImageTools.CombineImagesVertically(list);
-                compositeImage.Save(outputImage.FullName, ImageFormat.Png);
-            }
+            Image compositeImage = ImageTools.CombineImagesVertically(list);
+            compositeImage.Save(outputImage.FullName, ImageFormat.Png);
 
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
