@@ -3,7 +3,7 @@
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
-//   Defines the Audio2Sonogram type.
+//   Defines the WaveletPacketDecomp activity.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -92,10 +92,10 @@ namespace AnalysisPrograms
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-062040.png".ToFileInfo(),
                 // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 // Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\CaneToads_rural1_20_MONO.png".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\CaneToads_rural1_20_MONO.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.WPD.yml".ToFileInfo(),
                 // StartOffset = 0,
                 // ################################ THERE IS AMBIGUITY IN NEXT ARGUMENT THAT COULD ACTUALLY BE A BUG - SEE ANTHONY
@@ -211,30 +211,13 @@ namespace AnalysisPrograms
             // ###############################################################
             int levelNumber = 7;
             int wpdWindow = (int)Math.Pow(2, levelNumber);
-            int binID = 11;
 
             Console.WriteLine("FramesPerSecond = {0}", sonogram.FramesPerSecond);
             double secondsPerWPDwindow = wpdWindow / sonogram.FramesPerSecond;
             Console.WriteLine("secondsPerWPDwindow = {0}", secondsPerWPDwindow);
 
+            double[,] freqOscilMatrix = Wavelets.GetFrequencyByOscillationsMatrix(sonogram.Data, levelNumber, sonogram.FramesPerSecond);
 
-            double[] spectrogramBin = MatrixTools.GetColumn(sonogram.Data, binID);
-            double[] V = Wavelets.GetWPDSequenceFollowedBySVD(spectrogramBin, levelNumber);
-            double threshold = 0.03;  // previous used 0.3
-            Console.WriteLine("Threshold={0}", threshold);
-            for (int i = 0; i < V.Length; i++)
-            {
-                int coeffIndex = V.Length - i - 1;
-                double cps = coeffIndex / secondsPerWPDwindow;
-                if (V[i] > threshold)
-                {
-                    Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, V[i], cps);
-                }
-                else
-                {
-                    Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, " ", cps);
-                }
-            }
 
             // ###############################################################
 
