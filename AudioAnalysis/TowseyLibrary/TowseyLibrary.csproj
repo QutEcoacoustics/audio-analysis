@@ -254,6 +254,7 @@
     <Compile Include="Oblong.cs" />
     <Compile Include="Spectrum.cs" />
     <Compile Include="Statistics.cs" />
+    <Compile Include="SvdAndPca.cs" />
     <Compile Include="TextUtilities.cs" />
     <Compile Include="FunctionalTests.cs" />
     <Compile Include="Wavelets.cs" />

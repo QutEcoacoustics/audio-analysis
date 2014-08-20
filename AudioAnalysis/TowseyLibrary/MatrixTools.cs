@@ -6,12 +6,12 @@ using System.Linq;
 
 using System.Numerics;
 
-using MathNet.Numerics;
-//using MathNet.Numerics.ComplexExtensions;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
-using MathNet.Numerics.LinearAlgebra.Generic;
+//using MathNet.Numerics;
+////using MathNet.Numerics.ComplexExtensions;
+//using MathNet.Numerics.LinearAlgebra;
+//using MathNet.Numerics.LinearAlgebra.Double;
+//using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
+//using MathNet.Numerics.LinearAlgebra.Generic;
 
 
 namespace TowseyLibrary
@@ -1455,94 +1455,6 @@ namespace TowseyLibrary
 
   //=============================================================================
 
-        /// <summary>
-        /// The singular value decomposition of an M by N rectangular matrix A has the form
-        ///        A(mxn) = U(mxm) * S(mxn) * V'(nxn)
-        /// where
-        ///     U is an orthogonal matrix, whose columns are the left singular vectors;
-        ///     S is a diagonal matrix, whose min(m,n) diagonal entries are the singular values;
-        ///     V is an orthogonal matrix, whose columns are the right singular vectors;
-        ///     Note 1: the transpose of V is used in the decomposition, and that the diagonal matrix S is typically stored as a vector.
-        ///     Note 2: the values on the diagonal of S are the square-root of the eigenvalues.
-        ///     
-        /// THESE TWO METHODS HAVE BEEN TESTED ON TOY EXAMPLES AND WORKED i.e. returned conrrect values
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
-        public static double[] SingularValueDecompositionVector(double[,] matrix)
-        {
-            bool computeVectors = false;
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), computeVectors);
-            Vector<double> singularValues = svd.S();
-            return singularValues.ToArray();
-        }
-        public static double[,] SingularValueDecompositionMatrix(double[,] matrix)
-        {
-            bool computeVectors = false;
-            var svd = new MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseSvd(DenseMatrix.OfArray(matrix), computeVectors);
-
-            // svd.W returns the singular values as diagonal in matrix
-            Matrix<double> singularValues = svd.W();
-            // svd.U returns the singular vectors in matrix
-            Matrix<double> singularVectors = svd.U();
-            return singularValues.ToArray();
-        }
-
-
-        /// <summary>
-        /// returns the eigen values and eigen vectors of a matrix
-        /// IMPORTANT: THIS METHOD NEEDS DEBUGGING.
-        /// IT RETURNS THE NEGATIVE VALUES OF HTE EIGEN VECTORS ON A TOY EXMAPLE
-        ///                 double[,] matrix = {
-        ///                                { 3.0, -1.0 },
-        ///                                { -1.0, 3.0 }
-        ///                            };
-        /// eigen values are correct ie, 2.0, 4.0; but in the wrong order????
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
-        public static System.Tuple<double[], double[,]> EigenVectors(double[,] matrix)
-        {
-            Evd<double> eigen = DenseMatrix.OfArray(matrix).Evd();
-            Vector<System.Numerics.Complex> eigenvaluesComplex = eigen.EigenValues();
-
-            //WriteArrayOfComplexNumbers(eigenvalues);
-
-            double[] eigenvaluesReal = new double[eigenvaluesComplex.Count];
-            for (int i = 0; i < eigenvaluesComplex.Count; i++)
-            {
-                System.Numerics.Complex c = eigenvaluesComplex[i];
-                double magnitude = c.Magnitude;
-                Console.WriteLine("eigen value[{0}]     {1}     Magnitude={2}", i, c.ToString(), magnitude);
-            }
-
-            MathNet.Numerics.LinearAlgebra.Generic.Matrix<double> eigenvectorsComplex = eigen.EigenVectors();
-            double[,] eigenvectorsReal = new double[eigenvaluesComplex.Count, matrix.GetLength(0)];
-            for (int col = 0; col < eigenvectorsComplex.RowCount; col++)
-            {
-                Vector<double> ev = eigenvectorsComplex.Column(col);
-                for (int i = 0; i < ev.Count; i++)
-                {
-                    eigenvectorsReal[col, i] = ev[i];
-                    Console.WriteLine("eigen vector {0}, value {1} = {2}", col, i, ev[i]);
-                }
-            }
-
-            return Tuple.Create(eigenvaluesReal, eigenvectorsReal);
-        }
-
-        public static void WriteArrayOfComplexNumbers(Vector<System.Numerics.Complex> v)
-        {
-            Console.WriteLine("A column vector of complex numbers");
-            for(int i = 0; i < v.Count; i++)
-            {
-                System.Numerics.Complex c = v[i];
-                double magnitude = c.Magnitude;
-                Console.WriteLine("eigen value[{0}]     {1}     Magnitude={2}", i, c.ToString(), magnitude);
-            }
-        }
-
-        //=============================================================================
 
         public static double[,] SmoothInTemporalDirectionOnly(double[,] matrix, int window)
         {
