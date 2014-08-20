@@ -278,7 +278,7 @@ namespace TowseyLibrary
             signal = DataTools.normalise(signal);
 
             int levelNumber = 5;
-            double[] V = Wavelets.GetWPDSequenceFollowedBySVD(signal, levelNumber);
+            double[] V = Wavelets.GetWPDSequenceAggregated(signal, levelNumber);
 
             for (int i = 0; i < V.Length; i++)
             {
