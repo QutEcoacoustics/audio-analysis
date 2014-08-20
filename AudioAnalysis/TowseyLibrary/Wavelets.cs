@@ -199,68 +199,112 @@ namespace TowseyLibrary
             return wpdEnergyVector;
         }
 
-
         /// <summary>
-        /// Accumulates the bottom line "spectrum" of the WPD tree, puts them into a matrix and then takes the average of the rows
-        /// to produce an average WPD spectrum.
+        /// UNFINISHED #########################################################################################
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="M"></param>
         /// <param name="levelNumber"></param>
+        /// <param name="framesPerSecond"></param>
         /// <returns></returns>
-        public static double[] GetWPDSpectralSequenceAveraged(double[] signal, int levelNumber)
+        public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, int levelNumber, double framesPerSecond)
         {
-            double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, levelNumber);
+            int wpdWindow = (int)Math.Pow(2, levelNumber);
+            double secondsPerWPDwindow = wpdWindow / framesPerSecond;
 
-            // save image for debugging
-            string path = @"C:\SensorNetworks\Output\Test\waveletTestImageWaveletSpectrumSequence.png";
-            ImageTools.DrawReversedMatrix(matrix, path);
+            double threshold = 0.03;  // previous used 0.3
+            Console.WriteLine("Threshold={0}", threshold);
 
-            double[] V = MatrixTools.GetRowAverages(matrix);
-            return V;
+
+            double[,] freqByOscMatrix = new double[3, 3];
+
+            for (int bin = 0; bin < 3; bin++)
+            {
+
+                double[] spectrogramBin = MatrixTools.GetColumn(M, bin);
+                double[] V = Wavelets.GetWPDSequenceAggregated(spectrogramBin, levelNumber);
+
+                // over all frequency bins
+                for (int i = 0; i < V.Length; i++)
+                {
+                    int coeffIndex = V.Length - i - 1;
+                    double cps = coeffIndex / secondsPerWPDwindow;
+                    if (V[i] > threshold)
+                    {
+                        Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, V[i], cps);
+                    }
+                    //else
+                    //{
+                    //    Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, " ", cps);
+                    //}
+                }
+            } // over all frequency bins
+            return freqByOscMatrix;
         }
 
+
         /// <summary>
-        /// Accumulates the bottom line "spectrum" of the WPD tree, puts them into a matrix and then takes the average of the rows
-        /// to produce an average WPD spectrum.
+        /// ##########################################################################  UNFINISHED
+        /// Accumulates the bottom line "spectrum" of the WPD tree, puts them into a matrix 
+        /// and then aggregates them in some way to produce a single WPD spectrum that summarises the entire recording.
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="levelNumber"></param>
         /// <returns></returns>
-        public static double[] GetWPDEnergySequenceAveraged(double[] signal, int levelNumber)
-        {
-            double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
-            double[] V = MatrixTools.GetRowAverages(matrix);
-            return V;
-        }
-        /// <summary>
-        /// Accumulates the bottom line "spectrum" of the WPD tree, puts them into a matrix and then takes the average of the rows
-        /// to produce an average WPD spectrum.
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
-        /// <returns></returns>
-        public static double[] GetWPDSequenceFollowedBySVD(double[] signal, int levelNumber)
+        public static double[] GetWPDSequenceAggregated(double[] signal, int levelNumber)
         {
             // double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
             double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, levelNumber);
-            var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix);
-            Vector<double> sdValues = tuple.Item1;
-            Matrix<double> UMatrix  = tuple.Item2;
 
-            //foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
-            Console.WriteLine("First  sd Value = {0}", sdValues[0]);
-            Console.WriteLine("Second sd Value = {0}", sdValues[1]);
-            double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
-            Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
+            double[] V = null;
 
-            // save image for debugging
-            string path1 = @"C:\SensorNetworks\Output\Test\waveletTestEnergySequence.png";
+            // return row averages of the WPDSpectralSequence
+            if (false)
+            {
+                V = MatrixTools.GetRowAverages(matrix);
+                return V;
+            }
+
+            // return row maxima of the WPDSpectralSequence
+            if (false)
+            {
+                V = MatrixTools.GetRowAverages(matrix);
+                return V;
+            }
+
+            // return vector of summed peaks in the WPDSpectralSequence
+            if (false)
+            {
+                V = MatrixTools.GetRowAverages(matrix);
+                return V;
+            }
+
+
+            if (true)
+            {
+                var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix);
+                Vector<double> sdValues = tuple.Item1;
+                Matrix<double> UMatrix = tuple.Item2;
+
+                //foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
+                Console.WriteLine("First  sd Value = {0}", sdValues[0]);
+                Console.WriteLine("Second sd Value = {0}", sdValues[1]);
+                double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
+                Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
+
+                // save image for debugging
+                string path2 = @"C:\SensorNetworks\Output\Test\wpdSpectralSequenceSVD_Umatrix.png";
+                ImageTools.DrawReversedMDNMatrix(UMatrix, path2);
+
+                Vector<double> column1 = UMatrix.Column(0);
+                V = column1.ToArray();
+            }
+
+            // draw the input matrix of sequence of WPD spectra
+            string path1 = @"C:\SensorNetworks\Output\Test\wpdSpectralSequence.png";
             ImageTools.DrawReversedMatrix(matrix, path1);
-            string path2 = @"C:\SensorNetworks\Output\Test\waveletTestEnergySequenceSVD.png";
-            ImageTools.DrawReversedMDNMatrix(UMatrix, path2);
 
-            Vector<double> column1 = UMatrix.Column(0);
-            return column1.ToArray();
+
+            return V;
         }
 
         
