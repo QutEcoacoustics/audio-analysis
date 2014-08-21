@@ -48,9 +48,9 @@ namespace AnalysisPrograms
 
 
 
-            if (true)  // test examples of wavelets and SVD
+            if (true)  // test examples of wavelets
             {
-                SvdAndPca.ExampleOfSVD_3();
+                Wavelets.ExampleOfWavelets_1();
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
