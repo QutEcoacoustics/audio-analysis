@@ -601,6 +601,29 @@
         }
 
         /// <summary>
+        /// It is a reverse process to TransposePOIsToMatrix.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static List<double> TransposeMatrixToDoublelist(double[,] matrix)
+        {
+            var result = new List<double>();
+            var rowsMax = matrix.GetLength(0);
+            var colsMax = matrix.GetLength(1);
+            for (int r = 0; r < rowsMax; r++)
+            {
+                for (int c = 0; c < colsMax; c++)
+                {
+                    if (matrix[r, c] != null)
+                    {
+                        result.Add(matrix[r, c]);
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// this method can be used for transforming a double 2 Dimension array to a double 1D array  
         /// </summary>
         /// <param name="matrix"></param>
@@ -855,25 +878,7 @@
             var numberOfframePerTimeunit = (int)(timeUnit * (SecondToMillionSecondUnit / (secondScale * SecondToMillionSecondUnit)));
             var UnitCount = (int)(colsCount / numberOfframePerTimeunit);
             var countOfpoi = poiList.Count();
-            var avgEdgePerTimeunit = (int)(countOfpoi / UnitCount);
-            //var Matrix = PointOfInterest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
-            //var result = new int[CeilCount];
-            //for (int i = 0; i < CeilCount; i++)
-            //{
-            //    for (int col = i * numberOfframePerTimeunit; col < (i + 1) * numberOfframePerTimeunit; col++)
-            //    {
-            //         for (int row = 0; row < rowsCount; row++)
-            //         {
-            //             if (StatisticalAnalysis.checkBoundary(row, col, rowsCount, colsCount))
-            //             {
-            //                 if (Matrix[row, col] != null)
-            //                 {
-            //                     result[i]++;
-            //                 }
-            //             }
-            //         }
-            //    }
-            //}
+            var avgEdgePerTimeunit = (int)(countOfpoi / UnitCount);           
             return avgEdgePerTimeunit;
         }
 
@@ -1155,25 +1160,6 @@
             }
             return 0.0;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="region"></param>
-        /// <returns></returns>
-        //public static RidgeDescriptionNeighbourhoodRepresentation[,] RegionRepresentationToNHArray(RegionRerepresentation region)
-        //{           
-        //    var rowsCount = region.NhCountInRow;
-        //    var colsCount = region.NhCountInCol;
-        //    var result = new RidgeDescriptionNeighbourhoodRepresentation[rowsCount, colsCount];
-        //    var neighbourhoodList = region.ridgeNeighbourhoods;
-        //    var listLength = neighbourhoodList.Count;
-        //    for (int i = 0; i < listLength; i++)
-        //    {
-        //        result[i / colsCount, i % colsCount] = neighbourhoodList[i];
-        //    }
-        //    return result;
-        //}
 
         /// <summary>
         /// 
