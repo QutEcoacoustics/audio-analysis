@@ -156,45 +156,43 @@
         }
 
         // Step 1: calculate the structure tensor for each pixel in the spectrogram. It is calculated based on one neighbouring pixel. 
-        public static List<Tuple<PointOfInterest, double[,]>> StructureTensorOnePixel(double[,] spectroMatrix)
+        public static List<double[,]> StructureTensorOnePixel(double[,] spectroData)
         {
-            var result = new List<Tuple<PointOfInterest, double[,]>>();
-
-            int maximumXIndex = spectroMatrix.GetLength(0);
-            int maximumYIndex = spectroMatrix.GetLength(1);
-
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectroData);
+            int rowsCount = matrix.GetLength(0);
+            int colsCount = matrix.GetLength(1);
+            var result = new List<double[,]>();
             // ignore the pixels in the boundary  
-            for (int i = 0; i < maximumXIndex; i++)
+            for (int i = 0; i < rowsCount; i++)
             {
-                for (int j = 0; j < maximumYIndex; j++)
+                for (int j = 0; j < colsCount; j++)
                 {
                     var partialDifferenceX = 0.0;
                     var partialDifferenceY = 0.0;
-                    if (i + 1 < maximumXIndex)
+                    if (i + 1 < rowsCount)
                     {
-                        partialDifferenceX = spectroMatrix[i + 1, j] - spectroMatrix[i, j];
+                        partialDifferenceX = matrix[i + 1, j] - matrix[i, j];
                     }
-                    if (j + 1 < maximumYIndex)
+                    if (j + 1 < colsCount)
                     {
-                        partialDifferenceY = spectroMatrix[i, j + 1] - spectroMatrix[i, j];
+                        partialDifferenceY = matrix[i, j + 1] - matrix[i, j];
                     }
                     var structureTensorItem = new double[2, 2];
                     structureTensorItem[0, 0] = Math.Pow(partialDifferenceX, 2.0);
                     structureTensorItem[0, 1] = partialDifferenceX * partialDifferenceY;
                     structureTensorItem[1, 0] = partialDifferenceX * partialDifferenceY;
                     structureTensorItem[1, 1] = Math.Pow(partialDifferenceY, 2.0);
-                    result.Add(Tuple.Create(new PointOfInterest(new Point(i, j)), structureTensorItem)); ;
+                    result.Add(structureTensorItem);
                 }
             }
-
             return result;
         }
 
         // Step 2: averaging the strcture tensor in a 11*11 neighbourhood.
-        public static List<Tuple<PointOfInterest, double[,]>> AverageStructureTensor(List<Tuple<PointOfInterest, double[,]>> structureTensor, int neighbourhoodSize,
+        public static List<double[,]> AverageStructureTensor(List<double[,]> structureTensor, int neighbourhoodSize,
             int maximumRowIndex, int maximumColIndex)
         {
-            var result = new List<Tuple<PointOfInterest, double[,]>>();
+            var result = new List<double[,]>();
             // convert list into a matrix
             var TopLeftList = new List<double>();
             var TopRightList = new List<double>();
@@ -204,10 +202,10 @@
 
             foreach (var s in structureTensor)
             {
-                TopLeftList.Add(s.Item2[0, 0]);
-                TopRightList.Add(s.Item2[0, 1]);
-                BottormLeftList.Add(s.Item2[1, 0]);
-                BottormRightList.Add(s.Item2[1, 1]);
+                TopLeftList.Add(s[0, 0]);
+                TopRightList.Add(s[0, 1]);
+                BottormLeftList.Add(s[1, 0]);
+                BottormRightList.Add(s[1, 1]);
             }
             var matrixTopLeft = StatisticalAnalysis.DoubleListToArray(TopLeftList, maximumRowIndex, maximumColIndex);
             var matrixTopRight = StatisticalAnalysis.DoubleListToArray(TopRightList, maximumRowIndex, maximumColIndex);
@@ -245,7 +243,7 @@
                         averageStructureTensor[1, 0] = 0;
                         averageStructureTensor[1, 1] = 0;
                     }
-                    result.Add(Tuple.Create(new PointOfInterest(new Point(i, j)), averageStructureTensor));
+                    result.Add(averageStructureTensor);
                 }
             }
             return result;
@@ -270,17 +268,16 @@
         /// <returns>
         /// return the eignvalue of each structure for a point. 
         /// </returns>
-        public static List<Tuple<PointOfInterest, double[]>> EignvalueDecomposition(List<Tuple<PointOfInterest, double[,]>> structureTensors)
+        public static List<double[]> EignvalueDecomposition(List<double[,]> structureTensors)
         {
-            var result = new List<Tuple<PointOfInterest, double[]>>();
+            var result = new List<double[]>();
 
             foreach (var st in structureTensors)
             {
-                var evd = new EigenvalueDecomposition(st.Item2);
+                var evd = new EigenvalueDecomposition(st);
                 var realEigenValue = evd.RealEigenvalues;
-                result.Add(Tuple.Create(new PointOfInterest(st.Item1.Point), realEigenValue));
+                result.Add(realEigenValue);
             }
-
             return result;
         }
 
@@ -294,65 +291,87 @@
         /// <returns>
         /// return the list of attentions. 
         /// </returns>
-        public static List<Tuple<PointOfInterest, double>> CalculateAttention(List<Tuple<PointOfInterest, double[]>> eigenValue)
+        public static List<double> CalculateAttention(List<double[]> eigenValue, int rowsCount, int colsCount)
         {
-            var result = new List<Tuple<PointOfInterest, double>>();
-
+            var result = new List<double>();           
             foreach (var ev in eigenValue)
             {
                 // by default, the eigenvalue is in a ascend order, so just check whether they are equal
-                if (ev.Item2[1] > 0.0)
+                if (ev[1] > 0.0)
                 {
-                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), ev.Item2[1]));
+                    result.Add(ev[1]);
                 }
                 else
                 {
-                    result.Add(Tuple.Create(new PointOfInterest(ev.Item1.Point), 0.0));
+                    result.Add(0.0);
                 }
             }
-
+            //var eigenValueMatrix = StatisticalAnalysis.DoubleListToArray(result, rowsCount, colsCount);
+            //var list = new List<Tuple<PointOfInterest, double>>();
+            //for (var r = 0; r < rowsCount; r++)
+            //{
+            //    for (var c = 0; c < colsCount; c++)
+            //    {
+            //        var point = new Point(r, c);
+            //        var poi = new PointOfInterest(point);
+            //        list.Add(Tuple.Create(poi, eigenValueMatrix[r, c])); 
+            //    }
+            //}
             return result;
         }
 
         // Step 5. Extract PointOfIntest
-        public static List<PointOfInterest> ExtractPOI(List<Tuple<PointOfInterest, double>> attentionList,
+        public static List<PointOfInterest> ExtractPOI(List<double> attentionList,
             SpectrogramStandard spectrogram,
             double overlap, int maximumRowIndex, int maximumColIndex, double t)
         {
             var result = new List<PointOfInterest>();
             // segment spectrogram for calculating threshold for each segment
-            const int numberOfColumn = 1000;
+            const int numberOfColumn = 100;
             // the count of segments means how many local threshold we will get. 
             var countOfSegments = maximumColIndex / numberOfColumn + 1;
-            var spectroSegment = SpectrogramDivision(attentionList);
+            var modSegments = maximumColIndex % numberOfColumn;
+            var spectroSegment = SpectrogramDivision(attentionList, maximumRowIndex, maximumColIndex, numberOfColumn);
             for (int i = 0; i < countOfSegments; i++)
             {
                 var segment = spectroSegment[i];
-                var threshold = SetThreshold(segment, t);
-                foreach (var s in segment)
+                var threshold = SetThreshold(segment, t, numberOfColumn);
+                for (var r = 0; r < segment.GetLength(0); r++)
                 {
-                    if (s.Item2 > threshold)
+                    for (var c = 0; c < segment.GetLength(1); c++)
                     {
-                        // To make it thin, check the center band of 300 Hz frequency band.  
-                        if ((s.Item1.Point.Y - 3) % 7 == 0 )
+                        if (segment[r, c] > threshold)
                         {
-                            Point point = new Point(s.Item1.Point.X, s.Item1.Point.Y);
-                            double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
-                            var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
-                            double herzScale = spectrogram.FBinWidth; //43 hz
-                            TimeSpan time = TimeSpan.FromSeconds(s.Item1.Point.X * secondsScale);
-                            double herz = (s.Item1.Point.Y - 1) * herzScale;
-                            // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
-                            var poi = new PointOfInterest(time, herz);
-                            poi.Point = point;
-                            poi.OrientationCategory = 0;
-                            poi.TimeScale = timeScale;
-                            poi.HerzScale = herzScale;
-                            poi.RidgeMagnitude = s.Item2;
-                            result.Add(poi);
+                            if ((r - 3) % 7 == 0)
+                            {
+                                var point = new Point(r, c + i * numberOfColumn);
+                                //if (i < countOfSegments - 1)
+                                //{
+                                //    point.X = r;
+                                //    point.Y = c + i * numberOfColumn;
+                                //}
+                                //else
+                                //{
+                                //    point.X = r;
+                                //    point.Y = c + (countOfSegments - 1) * numberOfColumn;                                  
+                                //}
+                                double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+                                var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                                double herzScale = spectrogram.FBinWidth; //43 hz
+                                TimeSpan time = TimeSpan.FromSeconds(c + i * numberOfColumn * secondsScale);
+                                double herz = (r - 1) * herzScale;
+                                // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                                var poi = new PointOfInterest(time, herz);
+                                poi.Point = point;
+                                poi.OrientationCategory = 0;
+                                poi.TimeScale = timeScale;
+                                poi.HerzScale = herzScale;
+                                poi.RidgeMagnitude = segment[r, c];
+                                result.Add(poi);
+                            }
                         }
                     }
-                }
+                }                                   
             }
             return result;
         }
@@ -361,13 +380,13 @@
         public static List<PointOfInterest> ExtractPOIFromStructureTensor(SpectrogramStandard spectrogram,
             int neighbourhoodSize, double t)
         {
-            var maxRowIndex = spectrogram.Data.GetLength(0);
-            var maxColIndex = spectrogram.Data.GetLength(1);
+            var maxColIndex = spectrogram.Data.GetLength(0);
+            var maxRowIndex = spectrogram.Data.GetLength(1);
             var basicStructureTensor = StructureTensorOnePixel(spectrogram.Data);
             var averageStructureTensor = AverageStructureTensor(basicStructureTensor, neighbourhoodSize,
                 maxRowIndex, maxColIndex);
             var eigenValues = EignvalueDecomposition(averageStructureTensor);
-            var attentionList = CalculateAttention(eigenValues);
+            var attentionList = CalculateAttention(eigenValues, maxRowIndex, maxColIndex);
             var overlap = 0.0;
             var poi = ExtractPOI(attentionList, spectrogram, overlap, maxRowIndex, maxColIndex, t);
             return poi;
@@ -381,75 +400,47 @@
             return poiList;
         }
         
-        // Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
-        /// <summary>
-        /// Get the threshold for keeping points of interest
-        /// </summary>
-        /// <param name="attention">
-        /// A list of attentions 
-        /// </param>
-        /// <param name="overlap">
-        /// the overlap is probably used to divide the spectrogram into small segments. 
-        /// </param>
-        /// <returns>
-        /// return a threshold  
-        /// </returns>
-        public static double SetThreshold(List<Tuple<PointOfInterest, double>> attentionList, double threshold)
+        //// Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
+        ///// <summary>
+        ///// Get the threshold for keeping points of interest
+        ///// </summary>
+        ///// <param name="attention">
+        ///// A list of attentions 
+        ///// </param>
+        ///// <param name="overlap">
+        ///// the overlap is probably used to divide the spectrogram into small segments. 
+        ///// </param>
+        ///// <returns>
+        ///// return a threshold  
+        ///// </returns>
+        public static double SetThreshold(double[,] attentionMatrix, double threshold, int numberOfColumn)
         {
-            const int numberOfColumn = 1000;
-            var maxAttention = MaximumOfAttention(attentionList);
-            var l = GetMaximumLength(attentionList, maxAttention, threshold);
+            var maxAttention = MaximumOfAttention(attentionMatrix);
+            var attentions = StatisticalAnalysis.TransposeMatrixToDoublelist(attentionMatrix);
+            var l = GetMaximumLength(attentions, maxAttention, threshold, numberOfColumn);
             return l * maxAttention / numberOfColumn;
         }
 
         // Step 5.1 divide the spectrogram into segments that have 1000 columns 
-        public static List<List<Tuple<PointOfInterest, double>>> SpectrogramDivision(List<Tuple<PointOfInterest, double>> attentionList)
-        {
-            var result = new List<List<Tuple<PointOfInterest, double>>>();
-            //var maxRowIndex = attentionMatrix.GetLength(0);
-            //var maxColIndex = attentionMatrix.GetLength(1);
-            var subList0 = new List<Tuple<PointOfInterest, double>>();
-            var subList1 = new List<Tuple<PointOfInterest, double>>();
-            var subList2 = new List<Tuple<PointOfInterest, double>>();
-            var subList3 = new List<Tuple<PointOfInterest, double>>();
-            var subList4 = new List<Tuple<PointOfInterest, double>>();
-            var subList5 = new List<Tuple<PointOfInterest, double>>();
-            foreach (var a in attentionList)
+        public static List<double[,]> SpectrogramDivision(List<double> attentionList, int rowsCount, int colsCount, 
+            int cols)
+        {           
+            var attentionMatrix = StatisticalAnalysis.DoubleListToArray(attentionList, rowsCount, colsCount);
+            var segmentCount = colsCount / cols + 1;
+            var modValue = colsCount % cols;
+            var resultList = new List<double[,]>();
+            
+            for (var c = 0; c < colsCount - cols; c += cols)
             {
-                var columnIndex = a.Item1.Point.Y;
-
-                if (columnIndex >= 0 && columnIndex < 1000)
-                {
-                    subList0.Add(a);
-                }
-                if (columnIndex >= 1000 && columnIndex < 2000)
-                {
-                    subList1.Add(a);
-                }
-                if (columnIndex >= 2000 && columnIndex < 3000)
-                {
-                    subList2.Add(a);
-                }
-                if (columnIndex >= 3000 && columnIndex < 4000)
-                {
-                    subList3.Add(a);
-                }
-                if (columnIndex >= 4000 && columnIndex < 5000)
-                {
-                    subList4.Add(a);
-                }
-                else
-                {
-                    subList5.Add(a);
-                }
+                var subMatrix = StatisticalAnalysis.Submatrix(attentionMatrix, 0, c, rowsCount - 1, c + cols);                
+                resultList.Add(subMatrix);                             
             }
-            result.Add(subList0);
-            result.Add(subList1);
-            result.Add(subList2);
-            result.Add(subList3);
-            result.Add(subList4);
-            result.Add(subList5);
-            return result;
+            if (modValue > 0)
+            {
+                var subMatrix = StatisticalAnalysis.Submatrix(attentionMatrix, 0, (segmentCount - 1) * cols, rowsCount - 1, colsCount - 1);
+                resultList.Add(subMatrix);
+            }
+            return resultList;
         }
 
         // Step 5.2 calculate the maximum of attention 
@@ -479,10 +470,34 @@
             }
             return maxAttention;
         }
-        // Step 5.3: bardeli: get the l(a scaling parameter) 
-        public static int GetMaximumLength(List<double> listOfAttention, double maxOfAttention, double threshold)
+
+        /// <summary>
+        /// Find out the maximum of a list of attention
+        /// </summary>
+        /// <param name="attention">
+        /// A list of attentions 
+        /// </param>
+        /// <returns>
+        /// return the maximum attention
+        /// </returns>
+        public static double MaximumOfAttention(double[,] attention)
         {
-            const int numberOfBins = 1000;
+            double maxAttention = double.MinValue;
+            for (var i = 0; i < attention.GetLength(0); i++)
+            {
+                for (var j = 0; j < attention.GetLength(1); j++)
+                {
+                    if (attention[i, j] > maxAttention)
+                    {
+                        maxAttention = attention[i, j];
+                    }
+                }
+            }
+            return maxAttention;
+        }
+        // Step 5.3: bardeli: get the l(a scaling parameter) 
+        public static int GetMaximumLength(List<double> listOfAttention, double maxOfAttention, double threshold, int numberOfBins)
+        {            
             var sumOfLargePart = 0;
             var sumOfLowerPart = 0;
             var l = 0;
@@ -491,8 +506,8 @@
             {
                 for (l = 1; l < numberOfBins; l++)
                 {
-                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[numberOfBins - l];
-                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[numberOfBins - l];
+                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[l];
                     if (sumOfLargePart >= threshold * sumOfLowerPart)
                     {
                         break;
@@ -503,8 +518,8 @@
             {
                 for (l = 1; l < listOfAttention.Count; l++)
                 {
-                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention)[numberOfBins - l];
-                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention)[l];
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[numberOfBins - l];
+                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[l];
                     if (sumOfLargePart >= threshold * sumOfLowerPart)
                     {
                         break;
@@ -517,9 +532,8 @@
 
         // Step 5.4
         // according to Bardeli, Calculate the Histogram
-        public static int[] CalculateHistogram(List<double> listOfAttention, double maxOfAttention)
-        {
-            const int numberOfBins = 1000;
+        public static int[] CalculateHistogram(List<double> listOfAttention, double maxOfAttention, int numberOfBins)
+        {          
             var histogram = new int[numberOfBins];
 
             foreach (var la in listOfAttention)
@@ -535,73 +549,7 @@
             }
             return histogram;
         }
-        // according to Bardeli, keep points of interest, whose attention value is greater than the threshold
-        public static List<PointOfInterest> ExtractPointsOfInterest(List<Tuple<PointOfInterest, double>> attention, double t)
-        {
-            const int numberOfIncludedBins = 1000;
-            var LenghOfAttention = attention.Count();
-            var numberOfColumn = attention[LenghOfAttention - 1].Item1.Point.X;
-            var maxIndexOfPart = (int)(numberOfColumn / numberOfIncludedBins) + 1;
-
-            // each part with 1000 columns has a different threshold 
-            var threshold = new double[maxIndexOfPart];
-
-            // for our data, the threshold is best between 150 - 200
-            //double threshold = 150.0;                       
-            var result = new List<PointOfInterest>();
-
-            /// calculate the threshold for each distinct part
-            for (int i = 0; i < maxIndexOfPart; i++)
-            {
-                // first, it is required to divided the original data into several parts with the width of 1000 colomn
-                var tempAttention = new List<Tuple<PointOfInterest, double>>();
-
-                if (numberOfColumn >= numberOfIncludedBins * (i + 1))
-                {
-                    // var tempAttention = new List<Tuple<Point, double>>();
-                    foreach (var a in attention)
-                    {
-                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X < (i + 1) * numberOfIncludedBins)
-                        {
-                            tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
-                        }
-                    }
-                    threshold[i] = GetThreshold(tempAttention, t);
-
-                    foreach (var ev in tempAttention)
-                    {
-                        if (ev.Item2 > threshold[i])
-                        {
-                            result.Add(ev.Item1);
-                            ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var a in attention)
-                    {
-                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X <= numberOfColumn)
-                        {
-                            tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
-                        }
-                    }
-                    threshold[i] = GetThreshold(tempAttention, t);
-
-                    foreach (var ev in tempAttention)
-                    {
-                        if (ev.Item2 > threshold[i])
-                        {
-                            result.Add(ev.Item1);
-                            ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
+        
         /// <summary>
         /// The get the partial difference in a neighbourhood by using Gaussiandifferences.
         /// </summary>
@@ -825,24 +773,7 @@
 
             return l;
         }
-
-        /// <summary>
-        /// Get the threshold for keeping points of interest
-        /// </summary>
-        /// <param name="attention">
-        /// A list of attentions 
-        /// </param>
-        /// <returns>
-        /// return a threshold  
-        /// </returns>
-        public static double GetThreshold(List<Tuple<PointOfInterest, double>> attention, double threshold)
-        {
-            const int numberOfColumn = 1000;
-            var maxAttention = MaximumOfAttention(attention);
-            var l = GetMaximumLength(attention, maxAttention, threshold);
-            return l * maxAttention / numberOfColumn;
-        }
-
+       
         /// <summary>
         /// Calculate the magnitude of partialDifference.
         /// </summary>
@@ -1069,33 +1000,7 @@
 
             return result;
         }
-        /// <summary>
-        /// Find out the maximum  of a list of attention
-        /// </summary>
-        /// <param name="attention">
-        /// A list of attentions 
-        /// </param>
-        /// <returns>
-        /// return the maximum attention
-        /// </returns>
-        public static double MaximumOfAttention(List<Tuple<PointOfInterest, double>> attention)
-        {
-            if (attention.Count == 0)
-            {
-                throw new InvalidOperationException("Empty list");
-            }
-            double maxAttention = double.MinValue;
-
-            foreach (var la in attention)
-            {
-                if (la.Item2 > maxAttention)
-                {
-                    maxAttention = la.Item2;
-                }
-            }
-
-            return maxAttention;
-        }
+        
 
         // according to Bardeli, Calculate the Histogram
         public static int[] CalculateHistogram1(List<Tuple<PointOfInterest, double>> listOfAttention, double maxOfAttention)
@@ -1116,84 +1021,7 @@
             }
 
             return histogram;
-        }
-
-        // according to Bardeli, keep points of interest, whose attention value is greater than the threshold
-        public static List<PointOfInterest> ExtractPointsOfInterest1(List<Tuple<PointOfInterest, double>> attention, double t)
-        {
-            const int numberOfIncludedBins = 1000;
-            var LenghOfAttention = attention.Count();
-            var numberOfColumn = attention[LenghOfAttention - 1].Item1.Point.X;
-            var maxIndexOfPart = (int)(numberOfColumn / numberOfIncludedBins) + 1;
-
-            // each part with 1000 columns has a different threshold 
-            var threshold = new double[maxIndexOfPart];
-
-            // for our data, the threshold is best between 150 - 200
-            //double threshold = 150.0;                       
-            var result = new List<PointOfInterest>();
-
-            //foreach (var ev in attention)
-            //{
-            //    if (ev.Item2 > threshold)
-            //    {
-            //         result.Add(ev.Item1);
-            //         ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
-            //    }
-            //}
-
-            /// calculate the threshold for each distinct part
-            // calculate the threshold for each distinct part
-            for (int i = 0; i < maxIndexOfPart; i++)
-            {
-                // first, it is required to divided the original data into several parts with the width of 1000 colomn
-                var tempAttention = new List<Tuple<PointOfInterest, double>>();
-
-                if (numberOfColumn >= numberOfIncludedBins * (i + 1))
-                {
-                    // var tempAttention = new List<Tuple<Point, double>>();
-                    foreach (var a in attention)
-                    {
-                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X < (i + 1) * numberOfIncludedBins)
-                        {
-                            tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
-                        }
-                    }
-                    threshold[i] = GetThreshold(tempAttention, t);
-
-                    foreach (var ev in tempAttention)
-                    {
-                        if (ev.Item2 > threshold[i])
-                        {
-                            result.Add(ev.Item1);
-                            ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var a in attention)
-                    {
-                        if (a.Item1.Point.X >= i * numberOfIncludedBins && a.Item1.Point.X <= numberOfColumn)
-                        {
-                            tempAttention.Add(Tuple.Create(new PointOfInterest(a.Item1.Point), a.Item2));
-                        }
-                    }
-                    threshold[i] = GetThreshold(tempAttention, t);
-
-                    foreach (var ev in tempAttention)
-                    {
-                        if (ev.Item2 > threshold[i])
-                        {
-                            result.Add(ev.Item1);
-                            ev.Item1.DrawColor = PointOfInterest.DefaultBorderColor;
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
+        }      
 
         /// <summary>
         ///  get a list of structure Tensor hit 
