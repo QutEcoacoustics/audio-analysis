@@ -84,7 +84,10 @@ namespace TowseyLibrary
             return Math.Exp(value * Math.Log(logBase));
         }
 
-
+        public static bool IsPowerOfTwo(ulong x)
+        {
+            return (x != 0) && ((x & (x - 1)) == 0);
+        }
 
         /// <summary>
         /// 
