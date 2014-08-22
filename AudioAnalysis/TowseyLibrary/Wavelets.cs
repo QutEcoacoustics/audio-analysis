@@ -282,18 +282,18 @@ namespace TowseyLibrary
         {
             int wpdWindow = (int)Math.Pow(2, levelNumber);
             double secondsPerWPDwindow = wpdWindow / framesPerSecond;
+            int wpdSpectrumLength = (wpdWindow / 2);
+            int freqBinCount = M.GetLength(1);
 
-            double threshold = 0.03;  // previous used 0.3
+            double threshold = 0.0;  // previous used 0.3
             Console.WriteLine("Threshold={0}", threshold);
 
 
-            double[,] freqByOscMatrix = new double[3, 3];
+            double[,] freqByOscMatrix = new double[freqBinCount, wpdSpectrumLength];
 
             // over all frequency bins
-            for (int bin = 0; bin < 3; bin++)
+            for (int bin = 0; bin < freqBinCount; bin++)
             {
-                bin = 65;
-
                 double[] spectrogramBin = MatrixTools.GetColumn(M, bin);
                 double[] V = Wavelets.GetWPDSequenceAggregated(spectrogramBin, levelNumber);
 
@@ -303,7 +303,8 @@ namespace TowseyLibrary
                     double cps = coeffIndex / secondsPerWPDwindow;
                     if (V[i] > threshold)
                     {
-                        Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, V[i], cps);
+                        freqByOscMatrix[bin, i] = V[i];
+                        //Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, V[i], cps);
                     }
                     //else
                     //{
@@ -331,16 +332,16 @@ namespace TowseyLibrary
             double[] V = null;
 
             // return row averages of the WPDSpectralSequence
-            if (true)
+            if (false)
             {
                 V = MatrixTools.GetRowAverages(matrix);
                 return V;
             }
 
             // return row maxima of the WPDSpectralSequence
-            if (false)
+            if (true)
             {
-                V = MatrixTools.GetRowAverages(matrix);
+                V = MatrixTools.GetMaximumRowValues(matrix);
                 return V;
             }
 
@@ -413,13 +414,18 @@ namespace TowseyLibrary
                 var wpd = new Wavelets(subArray);
                 double[] energySpectrumWithoutDC = wpd.GetWPDEnergySpectrumWithoutDC();
 
-                energySpectrumWithoutDC = DataTools.reverseArray(energySpectrumWithoutDC);
-                MatrixTools.SetColumn(wpdByTime, s, energySpectrumWithoutDC);
+                // there should only be one dominant oscilation in any one freq band at one time.
+                // keep only the maximum value but divide by the total energy in the spectrum.
+                // Energy dispersed through the spectrum is indicative of a single impulse, not an oscilation.
+                int index = DataTools.GetMaxIndex(energySpectrumWithoutDC);
+                double[] spectrum = new double[halfWindow];
+                spectrum[index] = energySpectrumWithoutDC[index] / energySpectrumWithoutDC.Sum();
+                MatrixTools.SetColumn(wpdByTime, s, spectrum);
             }
 
             // calculate statistics for values in matrix
-            string imagePath = @"C:\SensorNetworks\Output\Sonograms\wpdHistogram.png";
-            Histogram.DrawDistributionsAndSaveImage(wpdByTime, imagePath);
+            //string imagePath = @"C:\SensorNetworks\Output\Sonograms\wpdHistogram.png";
+            //Histogram.DrawDistributionsAndSaveImage(wpdByTime, imagePath);
 
             string path = @"C:\SensorNetworks\Output\Sonograms\testwavelet.png";
             ImageTools.DrawReversedMatrix(wpdByTime, path);
