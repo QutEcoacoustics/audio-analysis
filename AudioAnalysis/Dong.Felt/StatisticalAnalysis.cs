@@ -534,18 +534,46 @@
             int subRowCount = r2 - r1 + 1;
             int subColCount = c2 - c1 + 1;
 
-            PointOfInterest[,] sm = new PointOfInterest[subRowCount, subColCount];
+            PointOfInterest[,] sm = new PointOfInterest[subRowCount, subColCount];            
+            var rowsCount = poiMatrix.GetLength(0);
+            var colsCount = poiMatrix.GetLength(1);
 
             for (int i = 0; i < subRowCount; i++)
             {
                 for (int j = 0; j < subColCount; j++)
                 {
-                    sm[i, j] = poiMatrix[r1 + i, c1 + j];
+                    if (checkBoundary(r1 + i, c1 + j, rowsCount, colsCount))
+                    {
+                        sm[i, j] = poiMatrix[r1 + i, c1 + j];
+                    }
                 }
             }
             return sm;
         }
-
+        public static bool CheckFullMatrix(PointOfInterest[,] poiMatrix)
+        {
+            var count = 0;
+            var rowsCount = poiMatrix.GetLength(0);
+            var colsCount = poiMatrix.GetLength(1);
+            for (var i = 0; i < rowsCount; i++)
+            {
+                for (var j = 0; j < colsCount; j++)
+                {
+                    if (poiMatrix[i, j] != null)
+                    {
+                        count++;
+                    }
+                }
+            }
+            if (count == rowsCount * colsCount)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         /// <summary>
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
         /// </summary>
@@ -556,6 +584,10 @@
         public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
+            //var fftMatrix = list[0].fftMatrix; 
+            //var matrixRowCount = fftMatrix.GetLength(0);
+            //var matrixColCount = fftMatrix.GetLength(1);
+            //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount]; 
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -563,6 +595,7 @@
                     var point = new Point(colIndex, rowIndex);
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
+                   // tempPoi.fftMatrix = defaultFFTMatrix;
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }
@@ -572,11 +605,43 @@
                 // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
                 // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
                 // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                m[poi.Point.Y, poi.Point.X] = poi;
+                //m[poi.Point.Y, poi.Point.X] = poi;
+                // Changed 2014-8-22
+                m[poi.Point.X, poi.Point.Y] = poi;
             }
             return m;
         }
 
+        public static PointOfInterest[,] TransposePOIsToMatrix2(List<PointOfInterest> list, int rows, int cols)
+        {
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
+            var fftMatrix = list[0].fftMatrix;
+            var matrixRowCount = fftMatrix.GetLength(0);
+            var matrixColCount = fftMatrix.GetLength(1);
+            var defaultFFTMatrix = new double[matrixRowCount, matrixColCount]; 
+            for (int colIndex = 0; colIndex < cols; colIndex++)
+            {
+                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+                {
+                    var point = new Point(colIndex, rowIndex);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    tempPoi.fftMatrix = defaultFFTMatrix;
+                    m[rowIndex, colIndex] = tempPoi;
+                }
+            }
+            foreach (PointOfInterest poi in list)
+            {
+                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
+                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
+                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
+                // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
+                //m[poi.Point.Y, poi.Point.X] = poi;
+                // Changed 2014-8-22
+                m[poi.Point.X, poi.Point.Y] = poi;
+            }
+            return m;
+        }
         /// <summary>
         /// It is a reverse process to TransposePOIsToMatrix.
         /// </summary>
@@ -727,40 +792,7 @@
             return sum / maxXIndex * maxYIndex;
         }
 
-        /// <summary>
-        /// Substract matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix. 
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="row1"></param>
-        /// <param name="col1"></param>
-        /// <param name="row2"></param>
-        /// <param name="col2"></param>
-        /// <returns></returns>
-        public static PointOfInterest[,] SubRegionMatrix(PointOfInterest[,] matrix, int row1, int col1, int row2, int col2)
-        {
-            var maxRowIndex = matrix.GetLength(0);
-            var maxColIndex = matrix.GetLength(1);
-            int subRowCount = row2 - row1;
-            int subColCount = col2 - col1;
-
-            var subMatrix = new PointOfInterest[subRowCount, subColCount];
-            for (int row = 0; row < subRowCount; row++)
-            {
-                for (int col = 0; col < subColCount; col++)
-                {
-                    subMatrix[row, col] = new PointOfInterest(new Point(0, 0));
-
-                    if (checkBoundary(row1 + row, col1 + col, maxRowIndex, maxColIndex))
-                    {
-                        if (matrix[row1 + row, col1 + col] != null)
-                        {
-                            subMatrix[row, col] = matrix[row1 + row, col1 + col];
-                        }
-                    }
-                }
-            }
-            return subMatrix;
-        }
+        
 
         public static RidgeDescriptionNeighbourhoodRepresentation[,] SubRegionMatrix(RidgeDescriptionNeighbourhoodRepresentation[,] matrix, int row1, int col1, int row2, int col2)
         {
@@ -846,7 +878,7 @@
             {
                 for (var c = 0; c < matrix.GetLength(1); c++)
                 {
-                    if (matrix[r, c].fftMatrix != null)
+                    if (matrix[r, c] != null)
                     {
                         poiCount++;
                     }
@@ -1248,12 +1280,13 @@
             foreach (var c in candidates)
             {
                 distanceList.Add(c.Score);
-            }
+            }           
             var max = distanceList.Max();
             foreach (var c in candidates)
             {
                 var similarityScore = 1 - c.Score / max;
                 var score = Convert.ToDouble(similarityScore.ToString("F03", CultureInfo.InvariantCulture));
+
                 var item = new Candidates(score, c.StartTime, c.EndTime - c.StartTime, c.MaxFrequency, c.MinFrequency, c.SourceFilePath);
                 result.Add(item);
             }
