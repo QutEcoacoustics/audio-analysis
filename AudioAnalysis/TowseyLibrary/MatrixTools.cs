@@ -1859,5 +1859,31 @@ namespace TowseyLibrary
         }
 
 
+
+        /*
+         * writes the r, c location of the maximum valuesin the matrix
+         */
+        public static void WriteLocationOfMaximumValues(double[,] M)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            double max = -Double.MaxValue;
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    if (M[r, c] > max)
+                    {
+                        max = M[r, c];
+                        Console.WriteLine("Max value to now at r={0}, c={1},  value={2}", r, c, M[r, c]);
+                    }
+                }
+            }
+        }
+
+
+
+
     } //class MatrixTools
 }

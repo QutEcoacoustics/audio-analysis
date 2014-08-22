@@ -891,6 +891,25 @@ namespace TowseyLibrary
         return troughs;
     }
 
+    public static int[] GetHistogramOfDistancesBetweenEveryPairOfPeaks(double[] data, double threshold)
+    {
+        List<int> peakLocations = DataTools.PeakLocations(data, threshold);
+
+        List<int> list = new List<int>();
+
+        for (int i = 0; i < peakLocations.Count - 1; i++)
+        {
+            for (int j = i+1; j < peakLocations.Count - 1; j++)
+            {
+                list.Add(peakLocations[j] - peakLocations[i]);
+            }
+        }
+
+        int[] histo = Histogram.Histo(list.ToArray());
+        return histo;
+    }
+
+
     public static void CountPeaks(double[] array, out int count, out double sum)
     {
         count = 0;
@@ -927,6 +946,29 @@ namespace TowseyLibrary
             }
         }
     }
+
+    /// <summary>
+    /// returns a list containing integer index of every peak > threshold
+    /// </summary>
+    /// <param name="array"></param>
+    /// <param name="count"></param>
+    /// <param name="sum"></param>
+    public static List<int> PeakLocations(double[] array, double threshold)
+    {
+        int L = array.Length;
+        var locations = new List<int>();
+
+        for (int i = 1; i < L - 1; i++) // iterate through array
+        {
+            if (array[i] < threshold) continue;
+            if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
+            {
+                locations.Add(i);
+            }
+        }
+        return locations;
+    }
+
 
     /// <summary>
     /// returns an array showing values at the peaks
@@ -1019,22 +1061,7 @@ namespace TowseyLibrary
 
 //=============================================================================
 
-    public static double[] AutoCorrelation(double[] X, int minLag, int maxLag)
-    {
-        if(maxLag > X.Length) maxLag = X.Length;
-        int lagCount = maxLag - minLag + 1;
-        var A = new double[lagCount];
-        for (int lag = minLag; lag <= maxLag; lag++)
-        {
-            double sum = 0.0;
-            for (int i = 0; i < X.Length-lag; i++)
-            {
-                sum += (X[i] * X[i+lag]);
-            }
-            A[lag - minLag] = sum / (X.Length - lag);
-        }
-        return A;
-    }
+
 
     //=============================================================================
 
