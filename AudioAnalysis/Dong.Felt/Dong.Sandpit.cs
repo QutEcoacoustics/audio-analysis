@@ -75,7 +75,7 @@
                 };
                 var stConfiguation = new StructureTensorConfiguration
                 {
-                    Threshold = 0.02,
+                    Threshold = 0.015,
                     AvgStNhLength = 11,
                     FFTNeighbourhoodLength = 16,
                 };
@@ -662,7 +662,7 @@
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-ridge detection.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-sturcture tensor detection.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -1046,8 +1046,8 @@
                     var candidatePoiList = StructureTensorAnalysis.ExtractfftFeaturesFromPOI(candidateSpectrogram, stConfiguation);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    var candidatesRegionList = Indexing.ExtractCandiRegionRepreFromAudioStList(query, candidateSpectrogram,
-                        candidatesAudioFiles[j], candidatePoiList);
+                    var candidatesRegionList = Indexing.ExtractCandiRegionRepreFromAudioStList(candidateSpectrogram,
+                        candidatesAudioFiles[j], candidatePoiList, queryRepresentation);
                     foreach (var c in candidatesRegionList) 
                     {
                         candidatesList.Add(c);

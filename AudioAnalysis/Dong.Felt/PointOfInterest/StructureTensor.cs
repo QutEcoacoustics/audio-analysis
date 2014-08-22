@@ -306,17 +306,6 @@
                     result.Add(0.0);
                 }
             }
-            //var eigenValueMatrix = StatisticalAnalysis.DoubleListToArray(result, rowsCount, colsCount);
-            //var list = new List<Tuple<PointOfInterest, double>>();
-            //for (var r = 0; r < rowsCount; r++)
-            //{
-            //    for (var c = 0; c < colsCount; c++)
-            //    {
-            //        var point = new Point(r, c);
-            //        var poi = new PointOfInterest(point);
-            //        list.Add(Tuple.Create(poi, eigenValueMatrix[r, c])); 
-            //    }
-            //}
             return result;
         }
 
@@ -498,17 +487,16 @@
         // Step 5.3: bardeli: get the l(a scaling parameter) 
         public static int GetMaximumLength(List<double> listOfAttention, double maxOfAttention, double threshold, int numberOfBins)
         {            
-            var sumOfLargePart = 0;
-            var sumOfLowerPart = 0;
+            var sumOfLargePart = 0;          
+            var attentionCount = listOfAttention.Count;
             var l = 0;
 
-            if (listOfAttention.Count >= numberOfBins)
+            if (attentionCount >= numberOfBins)
             {
                 for (l = 1; l < numberOfBins; l++)
                 {
-                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[numberOfBins - l];
-                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[l];
-                    if (sumOfLargePart >= threshold * sumOfLowerPart)
+                    sumOfLargePart += CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[numberOfBins - l];                   
+                    if (sumOfLargePart >= threshold * attentionCount)
                     {
                         break;
                     }
@@ -518,9 +506,8 @@
             {
                 for (l = 1; l < listOfAttention.Count; l++)
                 {
-                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[numberOfBins - l];
-                    sumOfLowerPart = sumOfLowerPart + CalculateHistogram(listOfAttention, maxOfAttention, numberOfBins)[l];
-                    if (sumOfLargePart >= threshold * sumOfLowerPart)
+                    sumOfLargePart = sumOfLargePart + CalculateHistogram(listOfAttention, maxOfAttention, attentionCount)[attentionCount - l];                                    
+                    if (sumOfLargePart >= threshold * attentionCount)
                     {
                         break;
                     }
@@ -540,13 +527,14 @@
             {
                 // be careful about / operatoration
                 var attentionValue = la * numberOfBins / maxOfAttention;
-                var temp = (int)attentionValue;
+                var lowerIndex = (int)attentionValue;
                 // need to think about its effiency 
-                if (temp < numberOfBins)
+                if (lowerIndex < numberOfBins)
                 {
-                    histogram[temp]++;
+                    histogram[lowerIndex]++;
                 }
             }
+           
             return histogram;
         }
         

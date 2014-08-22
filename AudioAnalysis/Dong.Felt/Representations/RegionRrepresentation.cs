@@ -30,6 +30,16 @@ namespace Dong.Felt.Representations
         public double TimeIndex { get; set; }
 
         /// <summary>
+        /// start row index for a region
+        /// </summary>
+        public int StartRowIndex { get; set; }
+
+        public int EndRowIndex { get; set; }
+
+        public int StartColIndex { get; set; }
+
+        public int EndColIndex { get; set; }
+        /// <summary>
         /// For each nh in a region, NhRowIndex will indicate its row index. 
         /// </summary>
         public int NhRowIndex { get; set; }

@@ -96,12 +96,19 @@ namespace Dong.Felt
             List<PointOfInterest> stList, string audioFileName, SpectrogramStandard spectrogram)
         {
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            var rowsCount = matrix.GetLength(0);
+            var rowsCount = matrix.GetLength(0) - 1;
             var colsCount = matrix.GetLength(1);
             var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix(stList, rowsCount, colsCount);
-
+            var m = new double[14, 14];
+            foreach (var s in stList)
+            {
+                if ((s.Point.X == 87) && (s.Point.Y == 4032))
+                {
+                    m = s.fftMatrix;
+                }
+            }
             var frequencyScale = spectrogram.FBinWidth;
-            var timeScale = spectrogram.FrameDuration;
+            var timeScale = spectrogram.FrameDuration / 2;
             // be careful about the index here.
             var rowStart = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.maxFrequency / frequencyScale);
             var rowEnd = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency / frequencyScale); 
@@ -110,9 +117,13 @@ namespace Dong.Felt
       
             var regionMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(stMatrix, rowStart, colStart, rowEnd, colEnd);
             var result = new RegionRerepresentation();
+            result.StartRowIndex = rowStart;
+            result.EndRowIndex = rowEnd;
+            result.StartColIndex = colStart;
+            result.EndColIndex = colEnd;
             result.fftFeatures = regionMatrix;
             result.TimeIndex = query.startTime;
-            result.FrequencyIndex = query.minFrequency;
+            result.FrequencyIndex = query.maxFrequency;
             result.FrequencyRange = query.maxFrequency - query.minFrequency;
             result.Duration = TimeSpan.FromMilliseconds(query.endTime - query.startTime);
             result.SourceAudioFile = audioFileName;
@@ -171,36 +182,40 @@ namespace Dong.Felt
             return results;
         }
 
-        public static List<RegionRerepresentation> ExtractCandiRegionRepreFromAudioStList(Query query,SpectrogramStandard spectrogram,
-            string audioFileName, List<PointOfInterest> stList)
+        public static List<RegionRerepresentation> ExtractCandiRegionRepreFromAudioStList(SpectrogramStandard spectrogram,
+            string audioFileName, List<PointOfInterest> stList, RegionRerepresentation queryRepresentation)
         {
             var result = new List<RegionRerepresentation>();
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            var rowsCount = matrix.GetLength(0);
+            var rowsCount = matrix.GetLength(0) - 1;
             var colsCount = matrix.GetLength(1);
-
+             
             var freqScale = spectrogram.FBinWidth;
-            var startRowIndex = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.maxFrequency / freqScale);
-            var endRowIndex = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency / freqScale);
-            var timeScale = spectrogram.FrameDuration;
-            var colRange = (int)(query.duration / 1000 / timeScale);
-            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix(stList, rowsCount, colsCount);
+            var startRowIndex = queryRepresentation.StartRowIndex;
+            var endRowIndex = queryRepresentation.EndRowIndex;         
+            var colRange = queryRepresentation.fftFeatures.GetLength(1) - 1;
+            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix2(stList, rowsCount, colsCount);
+            
             var searchStep = 5;
             for (int colIndex = 0; colIndex < colsCount; colIndex += searchStep)
             {
                 if (StatisticalAnalysis.checkBoundary(startRowIndex, colIndex, endRowIndex, colsCount))
                 {
-                    var subRegionMatrix = StatisticalAnalysis.SubRegionMatrix(stMatrix, startRowIndex, colIndex, 
+                    var subRegionMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(stMatrix, startRowIndex, colIndex, 
                                                                     endRowIndex, colIndex + colRange);
                     // check whether the region is null
                     if (!StatisticalAnalysis.checkNullRegion(subRegionMatrix))
                     {
-                        var regionItem = new RegionRerepresentation();
+                        var regionItem = new RegionRerepresentation();                      
                         regionItem.fftFeatures = subRegionMatrix;
+                        regionItem.StartRowIndex = startRowIndex;
+                        regionItem.EndRowIndex = endRowIndex;
+                        regionItem.StartColIndex = colIndex;
+                        regionItem.EndColIndex = colIndex + colRange;
                         regionItem.TimeIndex = colIndex;
-                        regionItem.FrequencyIndex = query.maxFrequency;
-                        regionItem.FrequencyRange = query.maxFrequency - query.minFrequency;
-                        regionItem.Duration = TimeSpan.FromMilliseconds(query.endTime - query.startTime);
+                        regionItem.FrequencyIndex = queryRepresentation.FrequencyIndex;
+                        regionItem.FrequencyRange = queryRepresentation.FrequencyRange;
+                        regionItem.Duration = queryRepresentation.Duration;
                         regionItem.SourceAudioFile = audioFileName;
                         result.Add(regionItem);
                     }

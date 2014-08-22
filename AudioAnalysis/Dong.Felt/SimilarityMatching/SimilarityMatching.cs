@@ -370,8 +370,8 @@
         public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate)
         {
             var result = 0.0;
-            var fftDifference = 0.0;
-            var notNullCount = 0;
+            var notNullPOIInQuery = 0;  
+            var sumDisdistance = 0.0;
             if (query != null && candidate != null)
             {
                 var queryPOIMatrix = query.fftFeatures;
@@ -382,31 +382,33 @@
                 {
                     for (int j = 0; j < colsCount; j++)
                     {
-                        if (queryPOIMatrix[i, j].fftMatrix != null && candidatePOIMatrix[i, j].fftMatrix != null)
+                        if (queryPOIMatrix[i, j] != null)
                         {
-                            var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
-                            var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
-
-                            for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
+                            if (queryPOIMatrix[i, j].fftMatrix != null)
                             {
-                                for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                                notNullPOIInQuery++;
+                                if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
                                 {
-                                    fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                    var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
+                                    var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
+                                    var fftDifference = 0.0;
+                                    for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
+                                    {
+                                        for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                                        {
+                                            fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                        }
+                                    }
+                                    sumDisdistance += fftDifference;
                                 }
                             }
-                            notNullCount++;
-                        }                      
+                       }                      
                     }
                 }
-            }
-            if (fftDifference != 0)
+            }           
+            if (notNullPOIInQuery != 0)
             {
-                result = fftDifference / notNullCount;
-            }
-            else
-            {
-                // no matching point, it will be assigned a maximum distance. 
-                result = 1000;
+                result = sumDisdistance / notNullPOIInQuery;
             }           
             return result;
         }
