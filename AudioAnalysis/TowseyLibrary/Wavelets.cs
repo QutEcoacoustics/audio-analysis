@@ -272,7 +272,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// UNFINISHED #########################################################################################
+        /// UNFINISHED ###########################################################################################################################################
         /// </summary>
         /// <param name="M"></param>
         /// <param name="levelNumber"></param>
@@ -289,13 +289,14 @@ namespace TowseyLibrary
 
             double[,] freqByOscMatrix = new double[3, 3];
 
+            // over all frequency bins
             for (int bin = 0; bin < 3; bin++)
             {
+                bin = 65;
 
                 double[] spectrogramBin = MatrixTools.GetColumn(M, bin);
                 double[] V = Wavelets.GetWPDSequenceAggregated(spectrogramBin, levelNumber);
 
-                // over all frequency bins
                 for (int i = 0; i < V.Length; i++)
                 {
                     int coeffIndex = V.Length - i - 1;
@@ -330,7 +331,7 @@ namespace TowseyLibrary
             double[] V = null;
 
             // return row averages of the WPDSpectralSequence
-            if (false)
+            if (true)
             {
                 V = MatrixTools.GetRowAverages(matrix);
                 return V;
@@ -351,7 +352,7 @@ namespace TowseyLibrary
             }
 
 
-            if (true)
+            if (false)
             {
                 var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix);
                 Vector<double> sdValues = tuple.Item1;
@@ -392,31 +393,38 @@ namespace TowseyLibrary
             int windowWidth = (int)Math.Pow(2, levelNumber);
             int halfWindow = windowWidth / 2;
             int sampleCount = signal.Length / windowWidth;
+            //int minLag, 
+            //int maxLag
             double[,] wpdByTime = new double[halfWindow, sampleCount];
             
             for (int s = 0; s < sampleCount; s++)
             {
                 int start = s * windowWidth;
                 double[] subArray = DataTools.Subarray(signal, start, windowWidth);
+
+                //double[] autocor = AutoCorrelation.MyAutoCorrelation(subArray);
+                //autocor = DataTools.filterMovingAverage(autocor, 5);
+                //autocor = DataTools.Subarray(autocor, autocor.Length / 4, windowWidth);
+                //DataTools.writeBarGraph(autocor);
+                // only interested in autocorrelation peaks > half max. An oscillation spreads autocor energy.
+                //double threshold = autocor.Max() / 2;
+                //int[] histo = DataTools.GetHistogramOfDistancesBetweenEveryPairOfPeaks(autocor, threshold);
+
                 var wpd = new Wavelets(subArray);
-                double[] energyVector = wpd.GetWPDEnergyVector();
-                double[,] treeMatrix = wpd.GetWPDSignalTree();
+                double[] energySpectrumWithoutDC = wpd.GetWPDEnergySpectrumWithoutDC();
 
-                // get bottom row of the tree matrix i.e. the WPD spectrum
-                double[] wpdSpectrum = MatrixTools.GetRow(treeMatrix, levelNumber);
-                wpdSpectrum = DataTools.Subarray(wpdSpectrum, 0, halfWindow);
-
-                // tried thresholding the coefficients but it did not work with first try!!!
-                //double[] arrayForcalculatingThreshold = DataTools.Subarray(wpdSpectrum, 1, halfWindow-1);
-                //double threshold = Wavelets.CalculateUniversalThreshold(levelNumber, arrayForcalculatingThreshold);
-                //for (int x = 0; x < wpdSpectrum.Length; x++)
-                //{
-                //    if (wpdSpectrum[x] < threshold) wpdSpectrum[x] = 0.0;
-                //}
-
-                wpdSpectrum = DataTools.reverseArray(wpdSpectrum);
-                MatrixTools.SetColumn(wpdByTime, s, wpdSpectrum);
+                energySpectrumWithoutDC = DataTools.reverseArray(energySpectrumWithoutDC);
+                MatrixTools.SetColumn(wpdByTime, s, energySpectrumWithoutDC);
             }
+
+            // calculate statistics for values in matrix
+            string imagePath = @"C:\SensorNetworks\Output\Sonograms\wpdHistogram.png";
+            Histogram.DrawDistributionsAndSaveImage(wpdByTime, imagePath);
+
+            string path = @"C:\SensorNetworks\Output\Sonograms\testwavelet.png";
+            ImageTools.DrawReversedMatrix(wpdByTime, path);
+            // MatrixTools.writeMatrix(wpdByTime);
+
 
             return wpdByTime;
         }
@@ -497,6 +505,17 @@ namespace TowseyLibrary
         /// </summary>
         public static void ExampleOfWavelets_1()
         {
+
+            //this signal contains one block impulse in centre
+            //double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+            //                    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            //double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            //                    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+
+
+
             //double[] signal = {1,0,0,0,0,0,0,0};
             //double[] signal = { 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
             //double[] signal = { 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
@@ -525,10 +544,10 @@ namespace TowseyLibrary
             //this 128 sample signal contains 64 cycles
             //The output bin vector tree and image will show strong energy at level level 8, bin zero and bin 64.
             //i.e. bin 64 implies 64 cycles within the length of the WPD window of 128. 
-            double[] signal = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                                1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                                1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                                1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
+            //double[] signal = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+            //                    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+            //                    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+            //                    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
 
             // add noise to signal
             //RandomNumber rn = new RandomNumber();
@@ -551,7 +570,8 @@ namespace TowseyLibrary
 
             string path = @"C:\SensorNetworks\Output\Test\testwavelet.png";
             ImageTools.DrawReversedMatrix(M, path);
-            // MatrixTools.writeMatrix(M);
+            //MatrixTools.writeMatrix(M);
+            MatrixTools.WriteLocationOfMaximumValues(M);
 
             double[] energySpectrumWithoutDC = wpd.GetWPDEnergySpectrumWithoutDC();
 

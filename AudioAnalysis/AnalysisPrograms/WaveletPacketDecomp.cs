@@ -109,6 +109,7 @@ namespace AnalysisPrograms
 
         public static void Main(Arguments arguments)
         {
+
             if (arguments == null)
             {
                 arguments = Dev();
