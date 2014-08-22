@@ -198,6 +198,9 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
+    </Reference>
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
@@ -236,6 +239,7 @@
     <Compile Include="DataTableTools.cs" />
     <Compile Include="DictionaryTools.cs" />
     <Compile Include="Distribution.cs" />
+    <Compile Include="FFT.cs" />
     <Compile Include="GaussianTools.cs" />
     <Compile Include="Gratings.cs" />
     <Compile Include="Histogram.cs" />

@@ -427,7 +427,7 @@ namespace AudioAnalysisTools
                 upperSubarray = DataTools.SubtractMean(upperSubarray);
                 //upperSubarray = lowerSubarray;
 
-                var xCorSpectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray); //sub-arrays already normalised
+                var xCorSpectrum = AutoAndCrossCorrelation.CrossCorr(lowerSubarray, upperSubarray); //sub-arrays already normalised
                 //DataTools.writeBarGraph(xCorSpectrum);
 
                 //Set the minimum OscilFreq of interest = 8 per second. Therefore max period ~ 125ms;
