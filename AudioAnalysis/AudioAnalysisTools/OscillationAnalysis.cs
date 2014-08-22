@@ -589,7 +589,7 @@ namespace AudioAnalysisTools
         public static double[] PeriodicityAnalysis(double[] array)
         {
             //DataTools.writeBarGraph(array);
-            var A = AutoCorrelation.MyAutoCorrelation(array, 0, array.Length * 3 / 4); // do 2/3rds of maximum possible lag
+            var A = AutoAndCrossCorrelation.MyAutoCorrelation(array, 0, array.Length * 3 / 4); // do 2/3rds of maximum possible lag
             int dctLength = A.Length;
 
             A = DataTools.SubtractMean(A);

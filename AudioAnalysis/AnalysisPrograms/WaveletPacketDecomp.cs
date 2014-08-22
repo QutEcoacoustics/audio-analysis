@@ -218,6 +218,8 @@ namespace AnalysisPrograms
             Console.WriteLine("secondsPerWPDwindow = {0}", secondsPerWPDwindow);
 
             double[,] freqOscilMatrix = Wavelets.GetFrequencyByOscillationsMatrix(sonogram.Data, levelNumber, sonogram.FramesPerSecond);
+            string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix.png";
+            ImageTools.DrawReversedMatrix(freqOscilMatrix, path);
 
 
             // ###############################################################

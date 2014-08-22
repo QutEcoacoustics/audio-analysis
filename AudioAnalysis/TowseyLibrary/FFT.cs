@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 //using MathNet.Numerics;
 using MathNet.Numerics.Transformations;
-using TowseyLibrary;
 
 
-namespace AudioAnalysisTools.DSP
+namespace TowseyLibrary
 {
 
     public enum WindowFunctions { NONE, HAMMING };

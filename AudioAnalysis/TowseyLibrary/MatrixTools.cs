@@ -1883,6 +1883,31 @@ namespace TowseyLibrary
         }
 
 
+        /*
+         * 
+         */
+        public static double[] GetMaximumRowValues(double[,] M)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            double max;
+            double[] returnV = new double[rowCount];
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                max = -Double.MaxValue;
+                for (int c = 0; c < colCount; c++)
+                {
+                    if (M[r, c] > max)
+                    {
+                        max = M[r, c];
+                    }
+                }
+                returnV[r] = max;
+            }
+            return returnV;
+        }
+
 
 
     } //class MatrixTools
