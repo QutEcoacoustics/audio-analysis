@@ -1063,32 +1063,6 @@ namespace TowseyLibrary
 
 
 
-    //=============================================================================
-
-    /// <summary>
-    /// Pearsons correlation coefficient.
-    /// Equals the covariance normalised by the sd's.
-    /// </summary>
-    /// <param name="seriesX"></param>
-    /// <param name="seriesY"></param>
-    /// <returns></returns>
-    public static double CorrelationCoefficient(double[] seriesX, double[] seriesY)
-    {
-        double meanX, sdX, meanY, sdY;
-        NormalDist.AverageAndSD(seriesX, out meanX, out sdX);
-        NormalDist.AverageAndSD(seriesX, out meanY, out sdY);
-
-        double covar = 0.0;
-        for (int i = 0; i < seriesX.Length; i++)
-        {
-            covar += ((seriesX[i] - meanX) * (seriesY[i] - meanY));
-        }
-        covar = covar / (sdX * sdX) / (seriesX.Length-1);
-        return covar;
-    }
-    //=============================================================================
-
-
   static public double[] counts2RF(int[] counts)
   { int L = counts.Length;
   	double[] rf = new double[L];

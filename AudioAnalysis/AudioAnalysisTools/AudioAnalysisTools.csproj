@@ -138,9 +138,6 @@
     <Reference Include="AForge.Math">
       <HintPath>..\packages\AForge.Math.2.2.5\lib\AForge.Math.dll</HintPath>
     </Reference>
-    <Reference Include="alglibnet2">
-      <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
-    </Reference>
     <Reference Include="ColorMine">
       <HintPath>..\packages\ColorMine.1.1.3.0\lib\ColorMine.dll</HintPath>
     </Reference>
@@ -204,7 +201,6 @@
     <Compile Include="DSP\DSP_Filters.cs" />
     <Compile Include="DSP\DSP_Frames.cs" />
     <Compile Include="DSP\DSP_IIRFilter.cs" />
-    <Compile Include="DSP\FFT.cs" />
     <Compile Include="DSP\FFT2D.cs" />
     <Compile Include="DSP\LocalContrastNormalisation.cs" />
     <Compile Include="DSP\NoiseRemoval_Briggs.cs" />

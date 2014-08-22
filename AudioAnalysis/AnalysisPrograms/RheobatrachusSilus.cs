@@ -402,7 +402,7 @@ namespace AnalysisPrograms
                 double[] upperSubarray = DataTools.Subarray(upperArray, start, sampleLength);
                 if ((lowerSubarray == null) || (upperSubarray == null)) break;
                 if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
-                var spectrum = CrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
+                var spectrum = AutoAndCrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
                 //DataTools.writeBarGraph(spectrum);
                 int zeroCount = 2;
                 for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
