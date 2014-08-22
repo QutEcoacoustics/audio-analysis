@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 
@@ -174,6 +175,33 @@ namespace TowseyLibrary
             return bins;
         }
 
+        /// <summary>
+        /// HISTOGRAM from an array of int
+        /// assume all values are postiive
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="binCount"></param>
+        /// <param name="binWidth"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        static public int[] Histo(int[] data)
+        {
+            int length = data.Length;
+            int min = Int32.MaxValue;
+            int max = -Int32.MaxValue;
+            DataTools.MinMax(data, out min, out max);
+
+            int[] histo = new int[max+1];
+
+
+            for (int i = 0; i < length; i++)
+            {
+                histo[data[i]]++;
+            }
+
+            return histo;
+        }
 
         /// <summary>
         /// HISTOGRAM from an array of int
@@ -277,6 +305,35 @@ namespace TowseyLibrary
                 }
                 LoggedConsole.WriteLine();
             }
+        }
+
+
+        public static void DrawDistributionsAndSaveImage(double[,] matrix, string imagePath)
+        {
+
+            // calculate statistics for values in matrix
+            double[] values = DataTools.Matrix2Array(matrix);
+            const bool DisplayHistogram = false;
+            double min, max, mode, SD;
+            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
+
+            int width = 100;  // pixels 
+            int height = 100; // pixels
+
+            string title = "wpd";
+            int[] histogram = Histogram.Histo(matrix, width);
+            Image image = ImageTools.DrawHistogram(title, histogram,
+                        new Dictionary<string, double>()
+                            {
+                                { "min", min },
+                                { "max", max },
+                                { "mode", mode },
+                                { "sd", SD },
+                            },
+                        width,
+                        height);
+
+            image.Save(imagePath);
         }
 
 
