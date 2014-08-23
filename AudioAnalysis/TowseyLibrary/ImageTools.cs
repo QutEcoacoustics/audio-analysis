@@ -2160,7 +2160,26 @@ namespace TowseyLibrary
             return bmp;
         }
 
-        
+
+        public static Image DrawYaxisScale(Image image, int scaleWidth, double ticInterval)
+        {
+            Image scaleImage = new Bitmap(scaleWidth, image.Height);
+            int ticCount = (int)(image.Height / ticInterval);
+            Graphics g = Graphics.FromImage(scaleImage);
+            Pen pen = new Pen(Color.White);
+            g.Clear(Color.DarkGray);
+            for (int i = 0; i < ticCount; i++)
+            {
+                int y1 = image.Height - (int)(i * ticInterval);
+                g.DrawLine(pen, 0, y1, scaleWidth-1, y1);
+            }
+            Image[] array = new Image[2];
+            array[0] = scaleImage;
+            array[1] = image;
+            return ImageTools.CombineImagesInLine(array);
+        }
+
+
         public static Image DrawHistogram(string label, int[] histogram, Dictionary<string, double> statistics, int imageWidth, int height)
         {
             int sum = histogram.Sum();

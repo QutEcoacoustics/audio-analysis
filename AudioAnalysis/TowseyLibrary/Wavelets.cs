@@ -264,124 +264,14 @@ namespace TowseyLibrary
             NormalDist.AverageAndSD(coefficients, out av, out sd);
             return factor * sd;
         }
+
+
         public static double CalculateUniversalThreshold(int n, double sdOfCoefficients)
         {
             double factor = Math.Sqrt(2 * Math.Log10(n));
             return factor * sdOfCoefficients;
         }
 
-
-        /// <summary>
-        /// UNFINISHED ###########################################################################################################################################
-        /// </summary>
-        /// <param name="M"></param>
-        /// <param name="levelNumber"></param>
-        /// <param name="framesPerSecond"></param>
-        /// <returns></returns>
-        public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, int levelNumber, double framesPerSecond)
-        {
-            int wpdWindow = (int)Math.Pow(2, levelNumber);
-            double secondsPerWPDwindow = wpdWindow / framesPerSecond;
-            int wpdSpectrumLength = (wpdWindow / 2);
-            int freqBinCount = M.GetLength(1);
-
-            double threshold = 0.0;  // previous used 0.3
-            Console.WriteLine("Threshold={0}", threshold);
-
-
-            double[,] freqByOscMatrix = new double[freqBinCount, wpdSpectrumLength];
-
-            // over all frequency bins
-            for (int bin = 0; bin < freqBinCount; bin++)
-            {
-                double[] spectrogramBin = MatrixTools.GetColumn(M, bin);
-                double[] V = Wavelets.GetWPDSequenceAggregated(spectrogramBin, levelNumber);
-
-                for (int i = 0; i < V.Length; i++)
-                {
-                    int coeffIndex = V.Length - i - 1;
-                    double cps = coeffIndex / secondsPerWPDwindow;
-                    if (V[i] > threshold)
-                    {
-                        freqByOscMatrix[bin, i] = V[i];
-                        //Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, V[i], cps);
-                    }
-                    //else
-                    //{
-                    //    Console.WriteLine("{0}    V[i]={1:f2}  cps={2:f1}", coeffIndex, " ", cps);
-                    //}
-                }
-            } // over all frequency bins
-            return freqByOscMatrix;
-        }
-
-
-        /// <summary>
-        /// ##########################################################################  UNFINISHED
-        /// Accumulates the bottom line "spectrum" of the WPD tree, puts them into a matrix 
-        /// and then aggregates them in some way to produce a single WPD spectrum that summarises the entire recording.
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
-        /// <returns></returns>
-        public static double[] GetWPDSequenceAggregated(double[] signal, int levelNumber)
-        {
-            // double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
-            double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, levelNumber);
-
-            double[] V = null;
-
-            // return row averages of the WPDSpectralSequence
-            if (false)
-            {
-                V = MatrixTools.GetRowAverages(matrix);
-                return V;
-            }
-
-            // return row maxima of the WPDSpectralSequence
-            if (true)
-            {
-                V = MatrixTools.GetMaximumRowValues(matrix);
-                return V;
-            }
-
-            // return vector of summed peaks in the WPDSpectralSequence
-            if (false)
-            {
-                V = MatrixTools.GetRowAverages(matrix);
-                return V;
-            }
-
-
-            if (false)
-            {
-                var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix);
-                Vector<double> sdValues = tuple.Item1;
-                Matrix<double> UMatrix = tuple.Item2;
-
-                //foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
-                Console.WriteLine("First  sd Value = {0}", sdValues[0]);
-                Console.WriteLine("Second sd Value = {0}", sdValues[1]);
-                double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
-                Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
-
-                // save image for debugging
-                string path2 = @"C:\SensorNetworks\Output\Test\wpdSpectralSequenceSVD_Umatrix.png";
-                ImageTools.DrawReversedMDNMatrix(UMatrix, path2);
-
-                Vector<double> column1 = UMatrix.Column(0);
-                V = column1.ToArray();
-            }
-
-            // draw the input matrix of sequence of WPD spectra
-            string path1 = @"C:\SensorNetworks\Output\Test\wpdSpectralSequence.png";
-            ImageTools.DrawReversedMatrix(matrix, path1);
-
-
-            return V;
-        }
-
-        
         /// <summary>
         /// Returns a matrix whose columns consist of the bottom row of the WPD tree for each WPD window of length 2^L where L= levelNumber.
         /// The WPD windows do not overlap.

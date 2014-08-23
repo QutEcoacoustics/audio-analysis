@@ -164,6 +164,31 @@ out double[] r)
         }//CrossCorrelation()
 
 
+        //=============================================================================
+
+        /// <summary>
+        /// Pearsons correlation coefficient.
+        /// Equals the covariance normalised by the sd's.
+        /// </summary>
+        /// <param name="seriesX"></param>
+        /// <param name="seriesY"></param>
+        /// <returns></returns>
+        public static double CorrelationCoefficient(double[] seriesX, double[] seriesY)
+        {
+            double meanX, sdX, meanY, sdY;
+            NormalDist.AverageAndSD(seriesX, out meanX, out sdX);
+            NormalDist.AverageAndSD(seriesX, out meanY, out sdY);
+
+            double covar = 0.0;
+            for (int i = 0; i < seriesX.Length; i++)
+            {
+                covar += ((seriesX[i] - meanX) * (seriesY[i] - meanY));
+            }
+            covar = covar / (sdX * sdX) / (seriesX.Length - 1);
+            return covar;
+        }
+        //=============================================================================
+
 
 
         public static Tuple<double, double> DetectPeriodicityInArray(double[] array, int zeroBinCount)
@@ -255,6 +280,12 @@ out double[] r)
 
 
 
+
+        // ##########################################################################################################
+        // THE BELOW FIVE METHODS WORK ATOGEHTER.
+        // DO NOT KNOW HWERE I GOT THEM FROM!
+
+
         public static double GetAverage(double[] data)
         {
             int len = data.Length;
@@ -330,39 +361,18 @@ out double[] r)
 
 
         /// <summary>
-        /// my own effort at autocorrelation.
+        /// my own effort at Crosscorrelation.
+        /// Input array is assumed to be of even length.
+        /// It returns an array twice length of input array. 
+        /// The first and last entries of the returned array will not be written to and contain zeros.
         /// </summary>
         /// <param name="X"></param>
         /// <param name="minLag"></param>
         /// <param name="maxLag"></param>
         /// <returns></returns>
-        public static double[] MyAutoCorrelation(double[] X, int minLag, int maxLag)
+        public static double[] MyCrossCorrelation(double[] X1, double[] X2)
         {
-            if (maxLag > X.Length) maxLag = X.Length;
-            int lagCount = maxLag - minLag + 1;
-            var A = new double[lagCount];
-            for (int lag = minLag; lag <= maxLag; lag++)
-            {
-                double sum = 0.0;
-                for (int i = 0; i < X.Length - lag; i++)
-                {
-                    sum += (X[i] * X[i + lag]);
-                }
-                A[lag - minLag] = sum / (X.Length - lag);
-            }
-            return A;
-        }
-
-        /// <summary>
-        /// my own effort at autocorrelation.
-        /// </summary>
-        /// <param name="X"></param>
-        /// <param name="minLag"></param>
-        /// <param name="maxLag"></param>
-        /// <returns></returns>
-        public static double[] MyAutoCorrelation(double[] X)
-        {
-            int length = X.Length;
+            int length = X1.Length;
             int outputLength = length * 2;
             int centralIndex = length - 1;
             var AC = new double[outputLength];
@@ -372,7 +382,7 @@ out double[] r)
                 int count = 0;
                 for (int i = lag; i < length; i++)
                 {
-                    rigtShiftSum += (X[i] * X[i - lag]);
+                    rigtShiftSum += (X1[i] * X2[i - lag]);
                     count++;
                 }
                 // get average
@@ -385,7 +395,7 @@ out double[] r)
                 int count = 0;
                 for (int i = 0; i < length - lag; i++) 
                 {
-                    leftShiftSum += (X[i] * X[i + lag]);
+                    leftShiftSum += (X1[i] * X2[i + lag]);
                     count++;
                 }
                 // get average
@@ -396,10 +406,10 @@ out double[] r)
         }
 
         /// <summary>
-        /// A Java version of Kalman's below C++ code for the  autocorrelation function.
+        /// A Java version of autocorrelation
         /// </summary>
         /// <param name="size"></param>
-        public static double[] autoCorrelationOldJavaVersion(double[] X)
+        public static double[] AutoCorrelationOldJavaVersion(double[] X)
         {
 
             int size = X.Length; 
@@ -418,31 +428,6 @@ out double[] r)
             return R;
         }
 
-
-        //=============================================================================
-
-        /// <summary>
-        /// Pearsons correlation coefficient.
-        /// Equals the covariance normalised by the sd's.
-        /// </summary>
-        /// <param name="seriesX"></param>
-        /// <param name="seriesY"></param>
-        /// <returns></returns>
-        public static double CorrelationCoefficient(double[] seriesX, double[] seriesY)
-        {
-            double meanX, sdX, meanY, sdY;
-            NormalDist.AverageAndSD(seriesX, out meanX, out sdX);
-            NormalDist.AverageAndSD(seriesX, out meanY, out sdY);
-
-            double covar = 0.0;
-            for (int i = 0; i < seriesX.Length; i++)
-            {
-                covar += ((seriesX[i] - meanX) * (seriesY[i] - meanY));
-            }
-            covar = covar / (sdX * sdX) / (seriesX.Length - 1);
-            return covar;
-        }
-        //=============================================================================
 
 
     }

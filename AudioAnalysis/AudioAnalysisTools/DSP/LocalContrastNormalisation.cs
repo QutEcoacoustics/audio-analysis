@@ -56,9 +56,9 @@ namespace AudioAnalysisTools.DSP
             double alpha = 1.0;
 
             // convolve gaussian with the matrix
-            for (int r1 = 0; r1 < rowCount-frameWidth; r1++)
+            for (int r1 = 0; r1 < rowCount; r1++)
             {
-                for (int c1 = 0; c1 < colCount - frameWidth; c1++)
+                for (int c1 = 0; c1 < colCount; c1++)
                 {
                     // get field
                     int r2 = r1 + fieldSize -1;
