@@ -278,13 +278,13 @@ namespace TowseyLibrary
             signal = DataTools.normalise(signal);
 
             int levelNumber = 5;
-            double[] V = Wavelets.GetWPDSequenceAggregated(signal, levelNumber);
+            //double[] V = Wavelets.GetWPDSequenceAggregated(signal, levelNumber);
 
-            for (int i = 0; i < V.Length; i++)
-            {
-                if (Math.Abs(V[i]) > 0.01) Console.WriteLine("energy[{0}] = {1}", i, V[i]);
-                else Console.WriteLine("energy[{0}] = {1}", i, " ");
-            }
+            //for (int i = 0; i < V.Length; i++)
+            //{
+            //    if (Math.Abs(V[i]) > 0.01) Console.WriteLine("energy[{0}] = {1}", i, V[i]);
+            //    else Console.WriteLine("energy[{0}] = {1}", i, " ");
+            //}
         }
 
 
