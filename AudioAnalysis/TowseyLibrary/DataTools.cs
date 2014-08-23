@@ -413,8 +413,71 @@ namespace TowseyLibrary
             for (int i = 0; i < v.Length; i++) vOut[i] = v[i] - mean;
             return vOut;
         }
+        /// <summary>
+        /// subtracts the value from each value of an array 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] SubtractValue(double[] v, double value)
+        {
+            double[] vOut = new double[v.Length];
+            for (int i = 0; i < v.Length; i++)
+            { 
+                vOut[i] = v[i] - value; 
+            }
+            return vOut;
+        }
 
 
+        /// <summary>
+        /// counts the zero crossings in a signal
+        /// 
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int ZeroCrossings(double[] signal)
+        {
+            int length = signal.Length;
+            int count = 0;
+            for (int j = 1; j < length; j++)  //foreach sample
+            {
+                count += Math.Abs(Math.Sign(signal[j]) - Math.Sign(signal[j - 1]));
+            }
+            return count / 2;
+        }
+
+
+        /// <summary>
+        /// counts the times signal drops from above to below zero
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int ZeroDippings(double[] signal)
+        {
+            int length = signal.Length;
+            int count = 0;
+            for (int j = 1; j < length; j++)  //foreach sample
+            {
+                if ((signal[j - 1] >= 0.0) && (signal[j] < 0.0)) count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// counts the times signal rises from below to above zero
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int ZeroRisings(double[] signal)
+        {
+            int length = signal.Length;
+            int count = 0;
+            for (int j = 1; j < length; j++)  //foreach sample
+            {
+                if ((signal[j - 1] <= 0.0) && (signal[j] > 0.0)) count++;
+            }
+            return count;
+        }
 
 
 

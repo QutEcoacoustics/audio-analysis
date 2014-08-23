@@ -232,7 +232,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoCorrelation.cs" />
+    <Compile Include="AutoAndCrossCorrelation.cs" />
     <Compile Include="ConfigDict.cs" />
     <Compile Include="ConfigDictionary.cs" />
     <Compile Include="CsvTools.cs" />

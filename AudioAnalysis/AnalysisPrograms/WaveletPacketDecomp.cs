@@ -206,25 +206,27 @@ namespace AnalysisPrograms
             // DO LocalContrastNormalisation
             int fieldSize = 9;
             sonogram.Data = LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
+
             double fractionalStretching = 0.05;
             sonogram.Data = ImageTools.ContrastStretching(sonogram.Data, fractionalStretching);
 
             // ###############################################################
-            int levelNumber = 7;
-            int wpdWindow = (int)Math.Pow(2, levelNumber);
 
             Console.WriteLine("FramesPerSecond = {0}", sonogram.FramesPerSecond);
-            double secondsPerWPDwindow = wpdWindow / sonogram.FramesPerSecond;
-            Console.WriteLine("secondsPerWPDwindow = {0}", secondsPerWPDwindow);
-
-            double[,] freqOscilMatrix = Wavelets.GetFrequencyByOscillationsMatrix(sonogram.Data, levelNumber, sonogram.FramesPerSecond);
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount-1, sonogram.Configuration.FreqBinCount);
+            double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond);
+            Image image1 = ImageTools.DrawReversedMatrix(freqOscilMatrix);
+            image1 = ImageTools.DrawYaxisScale(image1, 5, 1000 / sonogram.FBinWidth);
             string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix.png";
-            ImageTools.DrawReversedMatrix(freqOscilMatrix, path);
+            image1.Save(path, ImageFormat.Png);
 
 
             // ###############################################################
 
             var image = sonogram.GetImage(false, false);
+            string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";
+            image.Save(testPath, ImageFormat.Png);
+
 
             Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
 
@@ -309,6 +311,168 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
 
         }
+
+
+
+
+        /// <summary>
+        /// UNFINISHED ###########################################################################################################################################
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="levelNumber"></param>
+        /// <param name="framesPerSecond"></param>
+        /// <returns></returns>
+        public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, double framesPerSecond)
+        {
+            //int levelNumber = 7;
+            //int wpdWindow = (int)Math.Pow(2, levelNumber);
+            //double secondsPerWPDwindow = wpdWindow / framesPerSecond;
+            //Console.WriteLine("secondsPerWPDwindow = {0}", secondsPerWPDwindow);
+            //int sampleLength = (wpdWindow / 2);
+
+            int sampleLength = (int)Math.Ceiling(framesPerSecond);
+            int freqBinCount = M.GetLength(1);
+
+            double threshold = 0.00;  // previous used 0.3
+            Console.WriteLine("Threshold={0}", threshold);
+
+
+            double[,] freqByOscMatrix = new double[freqBinCount, sampleLength/2];
+
+            // over all frequency bins
+            for (int bin = 0; bin < freqBinCount; bin++)
+            {
+                double[] freqBin = MatrixTools.GetColumn(M, bin);
+                double[] V = GetOscillationArray(freqBin, sampleLength, framesPerSecond);
+
+                for (int i = 0; i < V.Length; i++)
+                {
+                    if (V[i] > threshold)
+                    {
+                        freqByOscMatrix[freqBinCount - bin - 1, i] = V[i];
+                    }
+                }
+            } // over all frequency bins
+            return freqByOscMatrix;
+        }
+
+
+        public static double[] GetOscillationArray(double[] signal, int sampleLength, double framesPerSecond)
+        {
+            // double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
+            double[,] matrix = GetSampleSequence(signal, sampleLength, framesPerSecond);
+
+            double[] V = null;
+
+            // return row averages of the WPDSpectralSequence
+            if (true)
+            {
+                V = MatrixTools.GetRowAverages(matrix);
+            }
+
+            // return row maxima
+            if (false)
+            {
+                V = MatrixTools.GetMaximumRowValues(matrix);
+            }
+
+            if (false)
+            {
+                //var tuple = SvdAndPca.SingularValueDecompositionOutput(matrix);
+                //Vector<double> sdValues = tuple.Item1;
+                //Matrix<double> UMatrix = tuple.Item2;
+
+                ////foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
+                //Console.WriteLine("First  sd Value = {0}", sdValues[0]);
+                //Console.WriteLine("Second sd Value = {0}", sdValues[1]);
+                //double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
+                //Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
+
+                //// save image for debugging
+                //string path2 = @"C:\SensorNetworks\Output\Test\wpdSpectralSequenceSVD_Umatrix.png";
+                //ImageTools.DrawReversedMDNMatrix(UMatrix, path2);
+
+                //Vector<double> column1 = UMatrix.Column(0);
+                //V = column1.ToArray();
+            }
+
+            // draw the input matrix of sequence of oscillation spectra
+            Image image1 = ImageTools.DrawReversedMatrix(matrix);
+            string path1 = @"C:\SensorNetworks\Output\Sonograms\oscillationSequence.png";
+            image1.Save(path1, ImageFormat.Png);
+
+
+            return V;
+        }
+
+
+        /// <summary>
+        /// Returns a matrix whose columns consist of the bottom row of the WPD tree for each WPD window of length 2^L where L= levelNumber.
+        /// The WPD windows do not overlap.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="levelNumber"></param>
+        /// <returns></returns>
+        public static double[,] GetSampleSequence(double[] signal, int sampleLength, double framesPerSecond)
+        {
+            int halfWindow = sampleLength / 2;
+            int sampleCount = signal.Length / sampleLength;
+            int subSampleLength = (int)(sampleLength * 0.75);
+            double min, max;
+           
+            double[,] wpdByTime = new double[halfWindow, sampleCount];
+
+            for (int s = 0; s < sampleCount; s++)
+            {
+                int start = (int)Math.Round(s * framesPerSecond);
+                double[] subArray = DataTools.Subarray(signal, start, sampleLength);
+                DataTools.MinMax(subArray, out min, out max);
+                double range = max - min;
+
+                double[] autocor = AutoAndCrossCorrelation.AutoCorrelationOldJavaVersion(subArray);
+
+                autocor = DataTools.filterMovingAverage(autocor, 3);
+                autocor = DataTools.Subarray(autocor, 0, subSampleLength);
+                //DataTools.writeBarGraph(autocor);
+
+
+                // only interested in autocorrelation peaks > half max. An oscillation spreads autocor energy.
+                double threshold = autocor[0] / 2;
+                autocor = DataTools.SubtractValue(autocor, threshold);
+                int zc = DataTools.ZeroCrossings(autocor);
+                zc = (int)Math.Ceiling(zc / (double)2);
+                //int zc1 = DataTools.ZeroRisings(autocor);
+                //int zc2 = DataTools.ZeroDippings(autocor);
+
+                //for (int z = 0; z < autocor.Length; z++) if (autocor[z] < 0.0) autocor[z] = 0.0;
+                //DataTools.writeBarGraph(autocor);
+                //Console.WriteLine("zerocrossings = {0}", zc);
+
+                //int[] histo = DataTools.GetHistogramOfDistancesBetweenEveryPairOfPeaks(autocor, threshold);
+                // there should only be one dominant oscilation in any one freq band at one time.
+                // keep only the maximum value but divide by the total energy in the spectrum.
+                // Energy dispersed through the spectrum is indicative of a single impulse, not an oscilation.
+                //int index = DataTools.GetMaxIndex(energySpectrumWithoutDC);
+                double[] spectrum = new double[halfWindow];
+                if (zc > 0) spectrum[zc-1] = range;
+                //spectrum[index] = energySpectrumWithoutDC[index] / energySpectrumWithoutDC.Sum();
+                MatrixTools.SetColumn(wpdByTime, s, spectrum);
+            }
+
+            // calculate statistics for values in matrix
+            //string imagePath = @"C:\SensorNetworks\Output\Sonograms\wpdHistogram.png";
+            //Histogram.DrawDistributionsAndSaveImage(wpdByTime, imagePath);
+
+            //string path = @"C:\SensorNetworks\Output\Sonograms\testwavelet.png";
+            //ImageTools.DrawReversedMatrix(wpdByTime, path);
+            // MatrixTools.writeMatrix(wpdByTime);
+
+
+            return wpdByTime;
+        }
+
+
+
     }
 }
 
