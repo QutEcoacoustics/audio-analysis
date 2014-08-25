@@ -53,13 +53,13 @@ namespace AnalysisPrograms
     using TowseyLibrary;
 
     /// <summary>
-    /// ACTIVITY NAME = WaveletPacketDecomp
-    /// does wavelet packet decomposition on an audio file.
+    /// ACTIVITY NAME = oscillationsGeneric
+    /// does a general search for oscillation in an audio file.
     /// </summary>
-    public class WaveletPacketDecomp
+    public class OscillationsGeneric
     {
         // use the following paths for the command line for the <audio2sonogram> task. 
-        // WaveletPacketDecomp "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
+        // oscillationsGeneric "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [CustomDetailedDescription]
         [CustomDescription]
         public class Arguments : SourceAndConfigArguments
@@ -98,16 +98,18 @@ namespace AnalysisPrograms
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-062040.png".ToFileInfo(),
-                // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                // Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+
+                //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\canetoad_CubberlaCreek_100529_16bitPCM.png".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\canetoad_CubberlaCreek_100530_1.png".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\CaneToads_rural1_20_MONO.png".ToFileInfo(),
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.WPD.yml".ToFileInfo(),
-                // StartOffset = 0,
-                // ################################ THERE IS AMBIGUITY IN NEXT ARGUMENT THAT COULD ACTUALLY BE A BUG - SEE ANTHONY
-                // EndOffset = 0,
+                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.OscillationsGeneric.yml".ToFileInfo(),
                 Verbose = true
             };
 
@@ -224,13 +226,16 @@ namespace AnalysisPrograms
 
             Console.WriteLine("FramesPerSecond = {0}", sonogram.FramesPerSecond);
             // window width when sampling along freq bins
-            int sampleLength = 64;
+            //int sampleLength = 64;
+            int sampleLength = 128;
             Console.WriteLine("Sample Length = {0}", sampleLength);
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength);
 
-            Image image1 = ImageTools.DrawReversedMatrix(freqOscilMatrix);
+            bool doScale = false;
+            Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, doScale);
+            //Image image1 = ImageTools.DrawReversedMatrix(freqOscilMatrix);
             image1 = ImageTools.DrawYaxisScale(image1, 5, 1000 / sonogram.FBinWidth);
-            string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix.png";
+            string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrixColour.png";
             image1.Save(path, ImageFormat.Png);
 
 
@@ -307,7 +312,7 @@ namespace AnalysisPrograms
 
             // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
             //title = "FALSE-COLOUR SPECTROGRAM";
-            //image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
+            image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
             //SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
 
             //// add title bar and time scale
@@ -339,10 +344,8 @@ namespace AnalysisPrograms
         {
             int frameCount   = M.GetLength(0);
             int freqBinCount = M.GetLength(1);
-
-
-            double[,] freqByOscMatrix = new double[freqBinCount, sampleLength/2];
             double[] freqBin;
+            double[,] freqByOscMatrix = new double[freqBinCount, (int)Math.Ceiling(framesPerSecond / (double)2)];
 
             // over all frequency bins
             for (int bin = 0; bin < freqBinCount; bin++)
@@ -512,6 +515,8 @@ namespace AnalysisPrograms
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
             int sampleCount = xCorrByTimeMatrix.GetLength(1);
             int halfWindow = xCorrLength / 2;
+            int maxCyclesPerSecond = (int)Math.Ceiling(framesPerSecond / (double)2);
+
 
             // do singular value decomp on the xcorrelation vectors.
             // we want to compute the U and V matrices of singular vectors.
@@ -557,7 +562,7 @@ namespace AnalysisPrograms
 
 
 
-            double[] oscillationsVector = new double[halfWindow];
+            double[] oscillationsVector = new double[maxCyclesPerSecond];
 
             for (int e = 0; e < eigenVectorCount; e++)
             {
@@ -575,13 +580,13 @@ namespace AnalysisPrograms
 
                 var spectrum = fft.Invoke(power2Length);
                 // power in bottom bin is DC therefore set = zero.
-                // reduce the power in 2nd coeff because it can dominate - this is a hack
+                // reduce the power in 2nd coeff because it can dominate - this is a hack!
                 spectrum[0] *= 0.0;
-                spectrum[1] *= 0.5;
-                //spectrum[2] *= 0.8;
-                // correct for reduced length
-                //int cyclesPerSecond = (int)Math.Ceiling(DataTools.GetMaxIndex(spectrum) * autocor.Length / (double)64);
+                spectrum[1] *= 0.4;
+                // convert spectrum index to oscillations per second
                 int cyclesPerSecond = (int)Math.Round(DataTools.GetMaxIndex(spectrum) * framesPerSecond / autocor.Length);
+                if (cyclesPerSecond >= oscillationsVector.Length) 
+                    cyclesPerSecond = oscillationsVector.Length - 1;
                 
                 //double oscValue = (singularValues[e] * singularValues[e]);
                 double oscAmplitude = 2 * Math.Log10(singularValues[e]);

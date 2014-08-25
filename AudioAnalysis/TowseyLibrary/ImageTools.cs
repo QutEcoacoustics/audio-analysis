@@ -11,6 +11,9 @@ using System.Drawing.Imaging;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Generic;
 
+using ColorMine.ColorSpaces;
+
+
 
 namespace TowseyLibrary
 {
@@ -2287,15 +2290,25 @@ namespace TowseyLibrary
         }
 
 
+        public static void DrawMatrixInColour(double[,] matrix, string pathName, bool doScale)
+        {
+            Image image = DrawMatrixInColour(matrix, doScale);
+            image.Save(pathName);
+        }
+
         /// <summary>
         /// Draws colour matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static void DrawMatrixInColour(double[,] matrix, string pathName, bool doScale)
+        public static Image DrawMatrixInColour(double[,] matrix, bool doScale)
         {
-            int paletteSize = 50;
-            var pens = ImageTools.GetColorPalette(paletteSize);
+            Hsv myHsv;
+            Rgb myRgb;
+            Color colour;
+            int bottomColour = 1;     // to avoid using the reds
+            int topColour = 250;      // to avoid using the magentas
+            int hueRange = topColour - bottomColour;
 
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
@@ -2319,32 +2332,45 @@ namespace TowseyLibrary
             //LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
             //LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
 
+            double[,] norm = DataTools.normalise(matrix);
+
             Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
 
-            double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    //double val = norm[r, c];
-                    int greyId = (int)Math.Floor(norm[r, c] * 255);
                     int xOffset = (XpixelsPerCell * c);
                     int yOffset = (YpixelsPerCell * r);
                     //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
 
+                    // use HSV colour space
+                    //int hue = bottomColour + (int)Math.Floor(hueRange * norm[r, c]);
+                    int hue = topColour - (int)Math.Floor(hueRange * norm[r, c]);
+
+                    double saturation = 1.0;
+                    //double saturation = 0.75 + (norm[r, c] * 0.25);
+                    //double saturation = norm[r, c] * 0.5;
+                    //double saturation = (1 - norm[r, c]) * 0.5;
+
+                    double value = 1.0;
+                    //double value = 0.60 + (norm[r, c] * 0.40);
+
+                    myHsv = new Hsv { H = hue, S = saturation, V = value };
+                    myRgb = myHsv.To<Rgb>();
+                    colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                    
                     for (int x = 0; x < XpixelsPerCell; x++)
                     {
                         for (int y = 0; y < YpixelsPerCell; y++)
                         {
-                            //LoggedConsole.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
-                            //bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
-                            bmp.SetPixel(xOffset + x, yOffset + y, pens[(int)(paletteSize * norm[r, c])].Color);
+                            bmp.SetPixel(xOffset + x, yOffset + y, colour);
                         }
                     }
                 }//end all columns
             }//end all rows
 
-            bmp.Save(pathName);
+            return bmp;
         }
 
         /// <summary>
