@@ -12,6 +12,7 @@ namespace Dong.Felt
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools;
     using TowseyLibrary;
+    using System.Globalization;
     public class Indexing
     {
 
@@ -191,10 +192,14 @@ namespace Dong.Felt
             var colsCount = matrix.GetLength(1);
              
             var freqScale = spectrogram.FBinWidth;
+            var timeScale = spectrogram.FrameDuration / 2.0;
             var startRowIndex = queryRepresentation.StartRowIndex;
             var endRowIndex = queryRepresentation.EndRowIndex;         
             var colRange = queryRepresentation.fftFeatures.GetLength(1) - 1;
-            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix2(stList, rowsCount, colsCount);
+            // The one sets all the features in the region to 0,  this one is useful to calculate the distance based on purely Euclidean
+            //var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix2(stList, rowsCount, colsCount);
+            // The one sets the none structure tensor point to null features. 
+            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix(stList, rowsCount, colsCount);
             
             var searchStep = 5;
             for (int colIndex = 0; colIndex < colsCount; colIndex += searchStep)
@@ -212,7 +217,7 @@ namespace Dong.Felt
                         regionItem.EndRowIndex = endRowIndex;
                         regionItem.StartColIndex = colIndex;
                         regionItem.EndColIndex = colIndex + colRange;
-                        regionItem.TimeIndex = colIndex;
+                        regionItem.TimeIndex = colIndex * timeScale * 1000;
                         regionItem.FrequencyIndex = queryRepresentation.FrequencyIndex;
                         regionItem.FrequencyRange = queryRepresentation.FrequencyRange;
                         regionItem.Duration = queryRepresentation.Duration;
@@ -258,12 +263,14 @@ namespace Dong.Felt
         }
 
         // Need to be changed. 
-        public static List<Candidates> EuclideanDistanceOnFFTMatrix(RegionRerepresentation query, List<RegionRerepresentation> candidates)
+        public static List<Candidates> EuclideanDistanceOnFFTMatrix(RegionRerepresentation query, List<RegionRerepresentation> candidates,
+            double matchedThreshold)
         {
             var result = new List<Candidates>();
             foreach (var c in candidates)
             {
-                var distance = SimilarityMatching.EuclideanDistanceScore(query, c);
+                var distance = SimilarityMatching.EuclideanDistanceScore(query, c, matchedThreshold);
+                var formattedDistance = Convert.ToDouble(distance.ToString("F03", CultureInfo.InvariantCulture));
                 var item = new Candidates(distance, c.TimeIndex,
                         c.Duration.TotalMilliseconds, c.FrequencyIndex, c.FrequencyIndex - c.FrequencyRange,
                         c.SourceAudioFile);
