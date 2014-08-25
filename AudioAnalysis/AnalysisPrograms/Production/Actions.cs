@@ -423,11 +423,11 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.Create4Sonograms.Main;
         }
 
-        [ArgDescription("Calls AnalysisPrograms.WaveletPacketDecomp.Main(): This is experimental as of Audust 2014")]
-        public WaveletPacketDecomp.Arguments WaveletPacketDecompArgs { get; set; }
-        public static Action<WaveletPacketDecomp.Arguments> WaveletPacketDecomp()
+        [ArgDescription("Calls AnalysisPrograms.OscillationsGeneric.Main(): Searches for oscillations")]
+        public OscillationsGeneric.Arguments oscillationsGenericArgs { get; set; }
+        public static Action<OscillationsGeneric.Arguments> oscillationsGeneric()
         {
-            return AnalysisPrograms.WaveletPacketDecomp.Main;
+            return AnalysisPrograms.OscillationsGeneric.Main;
         }
 
 
