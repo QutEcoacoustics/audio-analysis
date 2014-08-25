@@ -367,11 +367,12 @@
             return result;
         }
 
-        public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate)
+        public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate, double matchedDistanceThreshold)
         {
             var result = 0.0;
             var notNullPOIInQuery = 0;  
-            var sumDisdistance = 0.0;
+            //var sumDisdistance = 0.0;
+            var matchedPOICount = 0;
             if (query != null && candidate != null)
             {
                 var queryPOIMatrix = query.fftFeatures;
@@ -387,8 +388,25 @@
                             if (queryPOIMatrix[i, j].fftMatrix != null)
                             {
                                 notNullPOIInQuery++;
+                                /// One is based on Euclidean distance
+                                //if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
+                                //{
+                                //    var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
+                                //    var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
+                                //    var fftDifference = 0.0;
+                                //    for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
+                                //    {
+                                //        for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                                //        {
+                                //            fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                //        }
+                                //    }
+                                //    sumDisdistance += fftDifference;
+                                //}
+                                /// One is based on position matching                          
                                 if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
                                 {
+                                    
                                     var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
                                     var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
                                     var fftDifference = 0.0;
@@ -399,17 +417,27 @@
                                             fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
                                         }
                                     }
-                                    sumDisdistance += fftDifference;
+                                    if (fftDifference < matchedDistanceThreshold)
+                                    {
+                                        matchedPOICount++;
+                                    }
+                                    //sumDisdistance += matchedPOICount;
                                 }
                             }
                        }                      
                     }
                 }
-            }           
+            }       
+            /// The one is based on purely Euclidean distance
+            //if (notNullPOIInQuery != 0)
+            //{
+            //    result = sumDisdistance / notNullPOIInQuery;
+            //}         
+            /// The one is based on position matching
             if (notNullPOIInQuery != 0)
             {
-                result = sumDisdistance / notNullPOIInQuery;
-            }           
+                result = (double)matchedPOICount / notNullPOIInQuery;
+            } 
             return result;
         }
         /// <summary>

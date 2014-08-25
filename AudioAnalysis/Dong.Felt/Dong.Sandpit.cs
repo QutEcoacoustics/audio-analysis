@@ -78,6 +78,8 @@
                     Threshold = 0.015,
                     AvgStNhLength = 11,
                     FFTNeighbourhoodLength = 16,
+                    MatchedThreshold = 500,
+
                 };
                 if (action == "batch")
                 {
@@ -1059,17 +1061,17 @@
                 /// To calculate the distance                
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet7)
                 {
-                    candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList);
+                    candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList, stConfiguation.MatchedThreshold);
                 }
                 var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
                 /// To save all matched acoustic events                        
-                if (simiScoreCandidatesList.Count != 0)
+                if (candidateDistanceList.Count != 0)
                 {
                     for (int l = 0; l < audioFilesCount; l++)
                     {
                         var temp = new List<Candidates>();
-                        foreach (var s in simiScoreCandidatesList)
+                        foreach (var s in candidateDistanceList)
                         {
                             if (s.SourceFilePath == candidatesAudioFiles[l])
                             {

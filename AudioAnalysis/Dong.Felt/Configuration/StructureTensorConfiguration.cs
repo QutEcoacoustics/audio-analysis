@@ -23,5 +23,10 @@ namespace Dong.Felt.Configuration
         /// gets or sets the neighbourhood length for averaging the structure tensor.
         /// </summary>
         public int AvgStNhLength { get; set; }
+
+        /// <summary>
+        /// gets or sets the threshold for judging the matching between two feature sets.
+        /// </summary>
+        public double MatchedThreshold { get; set; }
     }
 }

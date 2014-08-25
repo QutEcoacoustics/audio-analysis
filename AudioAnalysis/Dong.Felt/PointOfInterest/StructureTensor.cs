@@ -145,8 +145,8 @@
             foreach (var st in stList)
             {
                 // point.X corresponds to time, point.Y refers to frequency bin. 
-                var rowIndex = st.Point.Y;
-                var colIndex = st.Point.X;
+                var rowIndex = st.Point.X;
+                var colIndex = st.Point.Y;
                 var subM = StatisticalAnalysis.SubEvenLengthmatrix(matrix, rowIndex, colIndex, nhLength); // extract NxN submatrix
                 var dftMatrix = _2DFourierTransform.DiscreteFourierTransform(subM);
                 var featureVectorMatrix = _2DFourierTransform.CropDFTMatrix(dftMatrix, 1);
