@@ -78,7 +78,7 @@
                     Threshold = 0.015,
                     AvgStNhLength = 11,
                     FFTNeighbourhoodLength = 16,
-                    MatchedThreshold = 500,
+                    MatchedThreshold = 800,
 
                 };
                 if (action == "batch")
