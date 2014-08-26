@@ -372,13 +372,15 @@
             var result = 0.0;
             var notNullPOIInQuery = 0;  
             //var sumDisdistance = 0.0;
-            var matchedPOICount = 0;
+            var matchedNotNullPOICount = 0;
+            var matchedNullPOICount = 0;
+            var queryPOIMatrix = query.fftFeatures;
+            var rowsCount = queryPOIMatrix.GetLength(0);
+            var colsCount = queryPOIMatrix.GetLength(1); 
             if (query != null && candidate != null)
-            {
-                var queryPOIMatrix = query.fftFeatures;
+            {            
                 var candidatePOIMatrix = candidate.fftFeatures;
-                var rowsCount = queryPOIMatrix.GetLength(0);
-                var colsCount = candidatePOIMatrix.GetLength(1);               
+                              
                 for (int i = 0; i < rowsCount; i++)
                 {
                     for (int j = 0; j < colsCount; j++)
@@ -405,8 +407,7 @@
                                 //}
                                 /// One is based on position matching                          
                                 if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
-                                {
-                                    
+                                {                                
                                     var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
                                     var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
                                     var fftDifference = 0.0;
@@ -419,12 +420,19 @@
                                     }
                                     if (fftDifference < matchedDistanceThreshold)
                                     {
-                                        matchedPOICount++;
+                                        matchedNotNullPOICount++;
                                     }
                                     //sumDisdistance += matchedPOICount;
-                                }
+                                }                                
                             }
-                       }                      
+                       }
+                        if (candidatePOIMatrix[i,j] != null)
+                        {
+                            if (queryPOIMatrix[i, j].RidgeMagnitude == 0.0 && candidatePOIMatrix[i, j].RidgeMagnitude == 0.0)
+                            {
+                                matchedNullPOICount++;
+                            }
+                        }                       
                     }
                 }
             }       
@@ -436,7 +444,7 @@
             /// The one is based on position matching
             if (notNullPOIInQuery != 0)
             {
-                result = (double)matchedPOICount / notNullPOIInQuery;
+                result = (double)(matchedNotNullPOICount + 0.1 * matchedNullPOICount) / (rowsCount * colsCount);
             } 
             return result;
         }

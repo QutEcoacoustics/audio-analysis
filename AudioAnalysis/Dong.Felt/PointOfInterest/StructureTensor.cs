@@ -281,6 +281,25 @@
             return result;
         }
 
+        // Step 4-new: Calculate the fraction of the difference of two eigenValues
+        public static List<double> CalculateDeltaEigenValue(List<double[]> eigenValue)
+        {
+            var result = new List<double>();
+            foreach (var ev in eigenValue)
+            {
+                // by default, the eigenvalue is in a ascend order, so just check whether they are equal
+                var difference = ev[1] - ev[0];
+                var fraction = 0.0;
+                if (difference != 0)
+                {
+                    fraction = difference / ev[1];
+                }
+                result.Add(fraction);
+                
+            }
+            return result;
+        }
+
         // Step 4: Attention calculation
         /// <summary>
         /// Get the attention from the eigenvalues, it's actually the largest eigenvalue in the eigenvalues --- Bardeli.
@@ -365,6 +384,52 @@
             return result;
         }
 
+        // Step 5. Extract PointOfIntest
+        public static List<PointOfInterest> ExtractPOI2(List<double> attentionList,
+            SpectrogramStandard spectrogram,
+            double overlap, int maximumRowIndex, int maximumColIndex, double t)
+        {
+            var result = new List<PointOfInterest>();
+            // segment spectrogram for calculating threshold for each segment
+            const int numberOfColumn = 100;
+            // the count of segments means how many local threshold we will get. 
+            var countOfSegments = maximumColIndex / numberOfColumn + 1;
+            var modSegments = maximumColIndex % numberOfColumn;
+            var spectroSegment = SpectrogramDivision(attentionList, maximumRowIndex, maximumColIndex, numberOfColumn);
+            for (int i = 0; i < countOfSegments; i++)
+            {
+                var segment = spectroSegment[i];
+                //var threshold = SetThreshold(segment, t, numberOfColumn);
+                for (var r = 0; r < segment.GetLength(0); r++)
+                {
+                    for (var c = 0; c < segment.GetLength(1); c++)
+                    {
+                        if (segment[r, c] > t)
+                        {
+                            if ((r - 3) % 7 == 0)
+                            {
+                                var point = new Point(r, c + i * numberOfColumn);
+                                double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+                                var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                                double herzScale = spectrogram.FBinWidth; //43 hz
+                                TimeSpan time = TimeSpan.FromSeconds(c + i * numberOfColumn * secondsScale);
+                                double herz = (r - 1) * herzScale;
+                                // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                                var poi = new PointOfInterest(time, herz);
+                                poi.Point = point;
+                                poi.OrientationCategory = 0;
+                                poi.TimeScale = timeScale;
+                                poi.HerzScale = herzScale;
+                                poi.RidgeMagnitude = segment[r, c];
+                                result.Add(poi);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
         // Step 6. the flowchart of structure tensor calculation
         public static List<PointOfInterest> ExtractPOIFromStructureTensor(SpectrogramStandard spectrogram,
             int neighbourhoodSize, double t)
@@ -376,6 +441,7 @@
                 maxRowIndex, maxColIndex);
             var eigenValues = EignvalueDecomposition(averageStructureTensor);
             var attentionList = CalculateAttention(eigenValues, maxRowIndex, maxColIndex);
+            //var attentionList = CalculateDeltaEigenValue(eigenValues);
             var overlap = 0.0;
             var poi = ExtractPOI(attentionList, spectrogram, overlap, maxRowIndex, maxColIndex, t);
             return poi;
@@ -388,20 +454,20 @@
             var poiList = StructureTensorFV(spectrogram, stList, stConfiguation);
             return poiList;
         }
-        
-        //// Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
-        ///// <summary>
-        ///// Get the threshold for keeping points of interest
-        ///// </summary>
-        ///// <param name="attention">
-        ///// A list of attentions 
-        ///// </param>
-        ///// <param name="overlap">
-        ///// the overlap is probably used to divide the spectrogram into small segments. 
-        ///// </param>
-        ///// <returns>
-        ///// return a threshold  
-        ///// </returns>
+
+        // Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
+        /// <summary>
+        /// Get the threshold for keeping points of interest
+        /// </summary>
+        /// <param name="attention">
+        /// A list of attentions 
+        /// </param>
+        /// <param name="overlap">
+        /// the overlap is probably used to divide the spectrogram into small segments. 
+        /// </param>
+        /// <returns>
+        /// return a threshold  
+        /// </returns>
         public static double SetThreshold(double[,] attentionMatrix, double threshold, int numberOfColumn)
         {
             var maxAttention = MaximumOfAttention(attentionMatrix);
