@@ -21,7 +21,9 @@ namespace AnalysisPrograms
     using System.Runtime.Serialization;
     using System.Text;
 
+#if DEBUG
     using Acoustics.Shared.Debugging;
+#endif
 
     using AnalysisPrograms.Production;
 
