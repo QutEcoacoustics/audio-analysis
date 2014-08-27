@@ -3298,40 +3298,176 @@ namespace TowseyLibrary
     for(int i=0; i<length; i++) dbSignal[i] = (double)signal[i];//clone
     return filterMovingAverage(dbSignal, width);
   }
-  
 
 
-  public static double[] filterMovingAverage(double[] signal, int width)
-  { 
-    int  length = signal.Length;
-    if(length <= 3) return signal;   // not worth the effort!
-    
-    double[] fs = new double[length]; // filtered signal
-    int    edge = width/2;            // half window width.
-    //int    odd  = width%2;          // odd or even filter window.
-    double  sum = 0.0;
-    // filter leading edge
-    for(int i=0; i<edge; i++)
-    { sum = 0.0;
-      for(int j=0; j<=(i+edge); j++) {sum += signal[j];}
-      fs[i] = sum / (double)(i+edge+1);
-    }
-    
-    for(int i=edge; i<length-edge; i++)
-    { sum = 0.0;
-      for(int j=0; j<width; j++) {sum += signal[i-edge+j];}
-      //sum = signal[i-1]+signal[i]+signal[i+1];
-      fs[i] = sum / (double)width;
-    }
-    
-    // filter trailing edge
-    for(int i=length-edge; i<length; i++)
-    { sum = 0.0;
-      for(int j=i; j<length; j++) {sum += signal[j];}
-      fs[i] = sum / (double)(length - i);
-    }
-    return fs;
+/// <summary>
+/// An old and now deprecated version of the moving averge filter.
+/// </summary>
+/// <param name="signal"></param>
+/// <param name="width"></param>
+/// <returns></returns>
+  public static double[] filterMovingAverageOLD(double[] signal, int width)
+  {
+      int length = signal.Length;
+      if (length <= 3) return signal;   // not worth the effort!
+
+      double[] fs = new double[length]; // filtered signal
+      int edge = width / 2;            // half window width.
+      //int    odd  = width%2;          // odd or even filter window.
+      double sum = 0.0;
+      // filter leading edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum = 0.0;
+          for (int j = 0; j <= (i + edge); j++) { sum += signal[j]; }
+          fs[i] = sum / (double)(i + edge + 1);
+      }
+
+      for (int i = edge; i < length - edge; i++)
+      {
+          sum = 0.0;
+          for (int j = 0; j < width; j++) { sum += signal[i - edge + j]; }
+          //sum = signal[i-1]+signal[i]+signal[i+1];
+          fs[i] = sum / (double)width;
+      }
+
+      // filter trailing edge
+      for (int i = length - edge; i < length; i++)
+      {
+          sum = 0.0;
+          for (int j = i; j < length; j++) { sum += signal[j]; }
+          fs[i] = sum / (double)(length - i);
+      }
+      return fs;
   }
+
+/// <summary>
+/// A new and more accurate version of the moving average filter.
+/// The previous version had some errors in calculation of the trailing edge.
+/// This version is also more efficient because it does not have a double loop.
+/// It also makes a distinction between odd and even window width.
+/// </summary>
+/// <param name="signal"></param>
+/// <param name="width"></param>
+/// <returns></returns>
+  public static double[] filterMovingAverage(double[] signal, int width)
+  {
+      int length = signal.Length;
+
+      if (width >= length) return null;
+
+      if (length < 3) return signal;   // not worth the effort!
+
+      if (width % 2 == 0) 
+          return filterMovingAverageEven(signal, width);
+      else
+          return filterMovingAverageOdd(signal, width);
+  }
+
+  public static double[] filterMovingAverageEven(double[] signal, int width)
+  {
+      int length = signal.Length;
+      double[] fs = new double[length]; // filtered signal
+      int edge = width / 2;             // half window width.
+
+      double sum = 0.0;
+      // sum leading edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[i];
+      }
+      // filter leading edge
+      for (int i = 0; i <= edge; i++)
+      {
+          sum += signal[edge + i];
+          fs[i] = sum / (double)(edge + i + 1);
+      }
+
+      // sum the start
+      sum = 0.0;
+      for (int i = 0; i < width; i++)
+      {
+          sum += signal[i];
+      }
+      //Console.WriteLine("sum={0}", sum);
+      // sum the central part of signal
+      for (int i = edge+1; i < length - edge; i++)
+      {
+          // sum = sum - left edge + right edge
+          sum = sum - signal[i - edge] + signal[i + edge];
+          fs[i] = sum / (double)width;
+      }
+
+      // sum trailing edge
+      sum = 0.0;
+      for (int i = 0; i <= edge; i++)
+      {
+          sum += signal[length - i - 1];
+      }
+      // filter trailing edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[length - edge - i];
+          fs[length - i - 1] = sum / (double)(edge + i + 2);
+      }
+      return fs;
+  }
+  
+  public static double[] filterMovingAverageOdd(double[] signal, int width)
+  {
+      int length = signal.Length;
+      if (length == 3)
+      {
+          signal[0] = (signal[0] + signal[1]) / (double)2;
+          signal[1] = (signal[0] + signal[1] + signal[2]) / (double)3;
+          signal[2] = (signal[1] + signal[2]) / (double)2;
+          return signal;   
+      }
+
+      double[] fs = new double[length]; // filtered signal
+      int edge = width / 2;             // half window width.
+
+      double sum = 0.0;
+      // sum leading edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[i];
+      }
+      // filter leading edge
+      for (int i = 0; i <= edge; i++)
+      {
+          sum += signal[edge + i];
+          fs[i] = sum / (double)(edge + i + 1);
+      }
+
+      sum = 0.0;
+      for (int i = 0; i < width; i++)
+      {
+          sum += signal[i];
+      }
+      //Console.WriteLine("sum={0}", sum);
+      for (int i = edge + 1; i < length - edge; i++)
+      {
+          // sum = sum - left edge + right edge
+          sum = sum - signal[i - edge - 1] + signal[i + edge];
+          fs[i] = sum / (double)width;
+      }
+
+      // sum trailing edge
+      sum = 0.0;
+      for (int i = 0; i < edge-1; i++)
+      {
+          sum += signal[length - i - 1];
+      }
+      // filter trailing edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[length - edge - i];
+          fs[length - i - 1] = sum / (double)(edge + i);
+      }
+      return fs;
+  }
+
 
 
 //=========================================================================================================================

@@ -238,6 +238,7 @@
     <Compile Include="AutoAndCrossCorrelation.cs" />
     <Compile Include="ConfigDict.cs" />
     <Compile Include="ConfigDictionary.cs" />
+    <Compile Include="WaveletTransformContinuous.cs" />
     <Compile Include="CsvTools.cs" />
     <Compile Include="DataTableTools.cs" />
     <Compile Include="DictionaryTools.cs" />
@@ -265,7 +266,7 @@
     <Compile Include="SvdAndPca.cs" />
     <Compile Include="TextUtilities.cs" />
     <Compile Include="FunctionalTests.cs" />
-    <Compile Include="Wavelets.cs" />
+    <Compile Include="WaveletPacketDecomposition.cs" />
     <Compile Include="ZipUnzip.cs" />
   </ItemGroup>
   <ItemGroup>
