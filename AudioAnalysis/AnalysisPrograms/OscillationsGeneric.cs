@@ -198,6 +198,10 @@ namespace AnalysisPrograms
             // 3: GET RECORDING
             FileInfo outputSegment = sourceRecording;
             outputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
+            if (File.Exists(outputSegment.FullName))
+            {
+                File.Delete(outputSegment.FullName);
+            }
             
             // This line creates a downsampled version of the source file
             MasterAudioUtility.SegmentToWav(sourceRecording, outputSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
@@ -233,7 +237,7 @@ namespace AnalysisPrograms
             Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, doScale);
             //Image image1 = ImageTools.DrawReversedMatrix(freqOscilMatrix);
             image1 = ImageTools.DrawYaxisScale(image1, 5, 1000 / sonogram.FBinWidth);
-            string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrixColour.png";
+            string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix_" + sourceRecording.Name + ".png";
             image1.Save(path, ImageFormat.Png);
 
             // ###############################################################

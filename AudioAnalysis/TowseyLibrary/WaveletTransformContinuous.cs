@@ -9,12 +9,12 @@ namespace TowseyLibrary
 {
 
     /// <summary>
-    /// An implementation of wavelet pack decomposition (WPD) using the Haar wavelet.
+    /// An implementation of Continuous Wavelet Transform (CWT) using the Haar wavelet.
     /// For details on the Haar wavelet, and the source for the details in this code,
     /// read "WAVELETS FOR KIDS, A Tutorial Introduction", by Brani Vidakovic and Peter Mueller, Duke University.
     /// WARNING: This article on the Haar wavelet is NOT for kids!
     /// </summary>
-    public class Wavelets
+    public class WaveletTransformContinuous
     {
         public const double SQRT2 = 1.4142135623730950488016887242097;
 
@@ -25,7 +25,7 @@ namespace TowseyLibrary
         /// Assume the signal is power of 2 in length
         /// </summary>
         /// <param name="signal"></param>
-        public Wavelets(double[] signal)
+        public WaveletTransformContinuous(double[] signal)
         {
             if(! DataTools.IsPowerOfTwo((ulong)signal.Length))
             {
@@ -33,7 +33,7 @@ namespace TowseyLibrary
             }
             this.NumberOfLevels = DataTools.PowerOf2Exponent(signal.Length);
 
-            this.listOfBinVectors = Wavelets.GetTreeOfBinVectors(signal);
+            this.listOfBinVectors = WaveletTransformContinuous.GetTreeOfBinVectors(signal);
         }
 
 
@@ -163,7 +163,7 @@ namespace TowseyLibrary
 
             list.Add(sigBin);
             // call recursive method to construct tree
-            Wavelets.GetTreeOfBinVectors(list, sigBin);
+            WaveletTransformContinuous.GetTreeOfBinVectors(list, sigBin);
             return list;
         }
 
@@ -201,9 +201,9 @@ namespace TowseyLibrary
             bv.childDetail = detailBin;
 
             list.Add(approxBin);
-            Wavelets.GetTreeOfBinVectors(list, approxBin);
+            WaveletTransformContinuous.GetTreeOfBinVectors(list, approxBin);
             list.Add(detailBin);
-            Wavelets.GetTreeOfBinVectors(list, detailBin);
+            WaveletTransformContinuous.GetTreeOfBinVectors(list, detailBin);
             return list;
         }
 
@@ -234,7 +234,7 @@ namespace TowseyLibrary
             // accumulate the WPD spectra into a frequency bin by oscillations per second matrix.
 
             //double[,] matrix = Wavelets.GetWPDSpectralSequence(signal, wpdLevelNumber);
-            double[,] matrix = Wavelets.GetWPDEnergySequence(signal, wpdLevelNumber);
+            double[,] matrix = WaveletPacketDecomposition.GetWPDEnergySequence(signal, wpdLevelNumber);
 
             double[] V = MatrixTools.GetRowAverages(matrix);
 
@@ -279,7 +279,7 @@ namespace TowseyLibrary
         /// <param name="signal"></param>
         /// <param name="levelNumber"></param>
         /// <returns></returns>
-        public static double[,] GetWPDSpectralSequence(double[] signal, int levelNumber)
+        public static double[,] GetCWTSpectralSequence(double[] signal, int levelNumber)
         {
             int windowWidth = (int)Math.Pow(2, levelNumber);
             int halfWindow = windowWidth / 2;
@@ -301,7 +301,7 @@ namespace TowseyLibrary
                 //double threshold = autocor.Max() / 2;
                 //int[] histo = DataTools.GetHistogramOfDistancesBetweenEveryPairOfPeaks(autocor, threshold);
 
-                var wpd = new Wavelets(subArray);
+                var wpd = new WaveletTransformContinuous(subArray);
                 double[] energySpectrumWithoutDC = wpd.GetWPDEnergySpectrumWithoutDC();
 
                 // there should only be one dominant oscilation in any one freq band at one time.
@@ -343,7 +343,7 @@ namespace TowseyLibrary
             {
                 int start = s * windowWidth;
                 double[] subArray = DataTools.Subarray(signal, start, windowWidth);
-                var wpd = new Wavelets(subArray);
+                var wpd = new WaveletTransformContinuous(subArray);
                 double[] energyVector = wpd.GetWPDEnergyVector();
 
                 // reverse the energy vector so that low resolution coefficients are at the bottom. 
@@ -461,7 +461,7 @@ namespace TowseyLibrary
 
             //int levelNumber = 7;
 
-            Wavelets wpd = new Wavelets(signal);
+            WaveletTransformContinuous wpd = new WaveletTransformContinuous(signal);
             double[,] M = wpd.GetWPDSignalTree();
 
             string path = @"C:\SensorNetworks\Output\Test\testwavelet.png";
