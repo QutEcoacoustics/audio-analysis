@@ -30,13 +30,15 @@ WindowOverlap: 0.5
 # RidgeDetection Config 
 RidgeDetectionMagnitudeThreshold: 5.5
 RidgeMatrixLength: 5
-FilterRidgeMatrixLength : 7
-MinimumNumberInRidgeInMatrix : 3
+FilterRidgeMatrixLength: 7
+MinimumNumberInRidgeInMatrix: 3
 
-StThreshold : 0.2
-StNeighbourhoodLength : 11
-FilterStep: 1
+
 # Structure Tensor Config
+StThreshold: 0.015
+StAvgNhLength: 11
+StFFTNeighbourhoodLength: 16
+StMatchedThreshold: 600
 
 # For ridge neighbourhood representation
 NeighbourhoodLength: 11

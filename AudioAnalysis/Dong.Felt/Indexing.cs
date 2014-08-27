@@ -264,12 +264,12 @@ namespace Dong.Felt
 
         // Need to be changed. 
         public static List<Candidates> EuclideanDistanceOnFFTMatrix(RegionRerepresentation query, List<RegionRerepresentation> candidates,
-            double matchedThreshold)
+            double matchedThreshold, double weight)
         {
             var result = new List<Candidates>();
             foreach (var c in candidates)
             {
-                var distance = SimilarityMatching.EuclideanDistanceScore(query, c, matchedThreshold);
+                var distance = SimilarityMatching.EuclideanDistanceScore(query, c, matchedThreshold, weight);
                 var formattedDistance = Convert.ToDouble(distance.ToString("F03", CultureInfo.InvariantCulture));
                 var item = new Candidates(distance, c.TimeIndex,
                         c.Duration.TotalMilliseconds, c.FrequencyIndex, c.FrequencyIndex - c.FrequencyRange,

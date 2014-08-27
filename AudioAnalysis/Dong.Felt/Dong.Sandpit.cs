@@ -52,9 +52,10 @@
             int filterRidgeMatrixLength = configuration.FilterRidgeMatrixLength;
             int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
 
-            //double structureTensorThreshold = configuration.StThreshold;
-            //int stNeighbourhoodLength = configuration.StNeighbourhoodLength;
-            //int filterStep = configuration.FilterStep;
+            double stThreshold = configuration.StThreshold;
+            int stAvgNhLength = configuration.StAvgNhLength;
+            int stFFTNhLength = configuration.StFFTNeighbourhoodLength;
+            int stMatchedThreshold = configuration.StMatchedThreshold;
 
             int neighbourhoodLength = configuration.NeighbourhoodLength;          
             int rank = configuration.Rank;
@@ -75,11 +76,10 @@
                 };
                 var stConfiguation = new StructureTensorConfiguration
                 {
-                    Threshold = 0.015,
-                    AvgStNhLength = 11,
-                    FFTNeighbourhoodLength = 16,
-                    MatchedThreshold = 800,
-
+                    Threshold = stThreshold,
+                    AvgStNhLength = stAvgNhLength,
+                    FFTNeighbourhoodLength = stFFTNhLength,
+                    MatchedThreshold = stMatchedThreshold,
                 };
                 if (action == "batch")
                 {
@@ -112,7 +112,7 @@
                     //OutputResults.MatchingResultsSummary(inputDirectory, new FileInfo(outputFilePath));
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                     ///extract POI based on structure tensor
-                    POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold); 
+                    POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);                     
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
                     //                                  {0,  255,  255, 0},
@@ -457,11 +457,15 @@
             var parameterMixtures = new[] 
             {
                 new { 
-                    RidgeDetectionMagnitudeThreshold = (double)configuration.RidgeDetectionMagnitudeThreshold,
-                    RidgeMatrixLength = (int)configuration.RidgeMatrixLength,
-                    FilterRidgeMatrixLength = (int)configuration.FilterRidgeMatrixLength,
-                    MinimumNumberInRidgeInMatrix = (int)configuration.MinimumNumberInRidgeInMatrix,
-                    NeighbourhoodLength = (int)configuration.NeighbourhoodLength
+                    //RidgeDetectionMagnitudeThreshold = (double)configuration.RidgeDetectionMagnitudeThreshold,
+                    //RidgeMatrixLength = (int)configuration.RidgeMatrixLength,
+                    //FilterRidgeMatrixLength = (int)configuration.FilterRidgeMatrixLength,
+                    //MinimumNumberInRidgeInMatrix = (int)configuration.MinimumNumberInRidgeInMatrix,
+                    //NeighbourhoodLength = (int)configuration.NeighbourhoodLength
+                    StThreshold = (double)configuration.StThreshold,
+                    StAvgNhLength = (int)configuration.StAvgNhLength,
+                    StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
+                    StMatchedThreshold = (int)configuration.StMatchedThreshold
                     },
                     //new { 
                     //RidgeDetectionMagnitudeThreshold = 6.0,
@@ -474,12 +478,17 @@
 
             foreach (var entry in parameterMixtures)
             {
-                var folderName = string.Format("Run_{0}_{1}_{2}_{3}_{4}",
-                    entry.RidgeDetectionMagnitudeThreshold,
-                    entry.RidgeMatrixLength,
-                    entry.FilterRidgeMatrixLength,
-                    entry.MinimumNumberInRidgeInMatrix,
-                    entry.NeighbourhoodLength);
+                //var folderName = string.Format("Run_{0}_{1}_{2}_{3}_{4}",
+                //    entry.RidgeDetectionMagnitudeThreshold,
+                //    entry.RidgeMatrixLength,
+                //    entry.FilterRidgeMatrixLength,
+                //    entry.MinimumNumberInRidgeInMatrix,
+                //    entry.NeighbourhoodLength);
+                var folderName = string.Format("Run_{0}_{1}_{2}",
+                    entry.StThreshold,
+                    entry.StAvgNhLength,
+                    entry.StFFTNeighbourhoodLength,
+                    entry.StMatchedThreshold);
 
                 var fullPath = Path.Combine(outputDirectory.FullName, folderName);
 
@@ -494,11 +503,16 @@
                     NoiseReductionType = configuration.NoiseReductionType,
                     WindowOverlap = configuration.WindowOverlap,
 
-                    RidgeDetectionMagnitudeThreshold = entry.RidgeDetectionMagnitudeThreshold,
-                    RidgeMatrixLength = entry.RidgeMatrixLength,
-                    FilterRidgeMatrixLength = entry.FilterRidgeMatrixLength,
-                    MinimumNumberInRidgeInMatrix = entry.MinimumNumberInRidgeInMatrix,
-                    NeighbourhoodLength = entry.NeighbourhoodLength,
+                    RidgeDetectionMagnitudeThreshold = configuration.RidgeDetectionMagnitudeThreshold,
+                    RidgeMatrixLength = configuration.RidgeMatrixLength,
+                    FilterRidgeMatrixLength = configuration.FilterRidgeMatrixLength,
+                    MinimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix,
+                    NeighbourhoodLength = configuration.NeighbourhoodLength,
+
+                    StThreshold = entry.StThreshold,
+                    StAvgNhLength = entry.StAvgNhLength,
+                    StFFTNeighbourhoodLength = entry.StFFTNeighbourhoodLength,
+                    StMatchedThreshold = entry.StMatchedThreshold,
 
                     SecondToMillionSecondUnit = configuration.SecondToMillionSecondUnit,                  
                     Rank = configuration.Rank,
@@ -1058,10 +1072,12 @@
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
                 var candidateDistanceList = new List<Candidates>();
                 Log.Info("# calculate the distance between a query and a candidate");
+                double weight = 0.15;
                 /// To calculate the distance                
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet7)
                 {
-                    candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList, stConfiguation.MatchedThreshold);
+                    candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList, 
+                        stConfiguation.MatchedThreshold, weight);
                 }
                 var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
@@ -1122,6 +1138,7 @@
             } // end of for searching the query folder
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
+
         public static void DrawingCandiOutputStSpectrogram(string candidateCsvFilePath, string queryCsvFilePath, string queryAudioFilePath,
             string outputPath, int rank, StructureTensorConfiguration stConfig, SonogramConfig config, string featurePropSet, DirectoryInfo tempDirectory)
         {
