@@ -38,8 +38,23 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            if (false)  // do SVD of a matrix
+            if (false)  // do test of new moving average method
             {
+                int window = 99;
+                double[] V0 = new double[100];
+                for (int i = 0; i < V0.Length; i++) 
+                    V0[i] = i;
+                //for (int i = 0; i < V0.Length; i++)
+                //    V0[i] = 1.0; 
+
+                double[] V1 = DataTools.filterMovingAverageOLD(V0, window);
+                double[] V2 = DataTools.filterMovingAverage(V0, window);
+
+                for (int i = 0; i < V1.Length; i++)
+                    if (V1[i] != V2[i]) 
+                        Console.WriteLine("index {0}: V0={1}    {2} != {3}", i, V0[i], V1[i], V2[i]);
+                    else
+                        Console.WriteLine("index {0}: V0={1} ",              i, V0[i], V1[i], V2[i]);
 
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
@@ -50,7 +65,8 @@ namespace AnalysisPrograms
 
             if (true)  // test examples of wavelets
             {
-                Wavelets.ExampleOfWavelets_1();
+                WaveletTransformContinuous.ExampleOfWavelets_1();
+                //WaveletPacketDecomposition.ExampleOfWavelets_1();
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
