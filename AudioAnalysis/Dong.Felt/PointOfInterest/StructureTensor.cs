@@ -287,7 +287,7 @@
             var result = new List<double>();
             foreach (var ev in eigenValue)
             {
-                // by default, the eigenvalue is in a ascend order, so just check whether they are equal
+                // by default, the eigenvalue is in a ascend order
                 var difference = ev[1] - ev[0];
                 var fraction = 0.0;
                 if (difference != 0)
@@ -592,7 +592,11 @@
             foreach (var la in listOfAttention)
             {
                 // be careful about / operatoration
-                var attentionValue = la * numberOfBins / maxOfAttention;
+                var attentionValue = 0.0;
+                if (maxOfAttention != 0.0)
+                {
+                    attentionValue = la * numberOfBins / maxOfAttention;
+                }
                 var lowerIndex = (int)attentionValue;
                 // need to think about its effiency 
                 if (lowerIndex < numberOfBins)

@@ -367,7 +367,8 @@
             return result;
         }
 
-        public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate, double matchedDistanceThreshold)
+        public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate,
+            double matchedDistanceThreshold, double weight)
         {
             var result = 0.0;
             var notNullPOIInQuery = 0;  
@@ -444,7 +445,7 @@
             /// The one is based on position matching
             if (notNullPOIInQuery != 0)
             {
-                result = (double)(matchedNotNullPOICount + 0.1 * matchedNullPOICount) / (rowsCount * colsCount);
+                result = (double)(matchedNotNullPOICount + weight * matchedNullPOICount) / (rowsCount * colsCount);
             } 
             return result;
         }
