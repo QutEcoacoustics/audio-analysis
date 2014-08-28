@@ -1280,11 +1280,19 @@
             foreach (var c in candidates)
             {
                 distanceList.Add(c.Score);
-            }           
-            var max = distanceList.Max();
+            }
+            var max = 0.0;
+            if (candidates != null)
+            {
+                max = distanceList.Max();
+            }
             foreach (var c in candidates)
             {
-                var similarityScore = 1 - c.Score / max;
+                var similarityScore = 0.0;
+                if (max != 0.0)
+                {
+                    similarityScore = 1 - c.Score / max;
+                }
                 var score = Convert.ToDouble(similarityScore.ToString("F03", CultureInfo.InvariantCulture));
 
                 var item = new Candidates(score, c.StartTime, c.EndTime - c.StartTime, c.MaxFrequency, c.MinFrequency, c.SourceFilePath);

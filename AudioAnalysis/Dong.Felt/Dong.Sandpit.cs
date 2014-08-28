@@ -1079,7 +1079,7 @@
                     candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList, 
                         stConfiguation.MatchedThreshold, weight);
                 }
-                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
+                //var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
 
                 /// To save all matched acoustic events                        
                 if (candidateDistanceList.Count != 0)
