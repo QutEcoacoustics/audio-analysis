@@ -743,6 +743,13 @@ namespace TowseyLibrary
       for (int i = 0; i < cols; i++) row[i] = m[rowID, i];
       return row;
   }
+  public static void SetRow(double[,] m, int rowID, double[] array)
+  {
+      int cols = m.GetLength(1);
+      for (int c = 0; c < cols; c++) m[rowID, c] = array[c];
+  }
+
+
 
   public static double GetRowSum(double[,] m, int rowID)
   {
