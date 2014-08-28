@@ -97,11 +97,11 @@ namespace AnalysisPrograms
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-062040.png".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
 
-                Source = @"Z:\Jie Frogs\Recording_1.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\Frogs_Recording_1.png".ToFileInfo(),
+                //Source = @"Z:\Jie Frogs\Recording_1.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\Frogs_Recording_1.png".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\canetoad_CubberlaCreek_100529_16bitPCM.png".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1.wav".ToFileInfo(),
@@ -225,26 +225,11 @@ namespace AnalysisPrograms
             sonogram.Data = ImageTools.ContrastStretching(sonogram.Data, fractionalStretching);
 
             // ###############################################################
-
-            Console.WriteLine("FramesPerSecond = {0}", sonogram.FramesPerSecond);
-            // window width when sampling along freq bins
-            //int sampleLength = 64;
-            int sampleLength = 128;
-            Console.WriteLine("Sample Length = {0}", sampleLength);
-            double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength);
-
-            bool doScale = false;
-            Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, doScale);
-            //Image image1 = ImageTools.DrawReversedMatrix(freqOscilMatrix);
-            image1 = ImageTools.DrawYaxisScale(image1, 5, 1000 / sonogram.FBinWidth);
-            string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix_" + sourceRecording.Name + ".png";
-            image1.Save(path, ImageFormat.Png);
-
+            OscillationsGeneric.GetOscillationsGraph(sonogram);
             // ###############################################################
 
             // add title bar and time scale etc
-            string title = "AMPLITUDE SPECTROGRAM";
-            Image image = AnnotateSonogram(sonogram, title);
+            Image image = AnnotateSonogram(sonogram, "AMPLITUDE SPECTROGRAM");
             list.Add(image);
             //string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";
             //image.Save(testPath, ImageFormat.Png);
@@ -253,9 +238,11 @@ namespace AnalysisPrograms
             list.Add(envelopeImage);
 
             // 2) now draw the standard decibel spectrogram
-            //title = "DECIBEL SPECTROGRAM";
-            //sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-            //image = AnnotateSonogram(sonogram, title);            
+            sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            // ###############################################################
+            //OscillationsGeneric.GetOscillationsGraph(sonogram);
+            // ###############################################################
+            //image = AnnotateSonogram(sonogram, "DECIBEL SPECTROGRAM");            
             //list.Add(image);
 
             Image segmentationImage = Image_Track.DrawSegmentationTrack(
@@ -270,9 +257,12 @@ namespace AnalysisPrograms
             sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0; 
 
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-            title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
-            image = AnnotateSonogram(sonogram, title);
+            image = AnnotateSonogram(sonogram, "NOISE-REDUCED DECIBEL SPECTROGRAM");
             list.Add(image);
+            // ###############################################################
+            // deriving osscilation graph from this noise reduced spectrogram did not work well
+            //OscillationsGeneric.GetOscillationsGraph(sonogram);
+            // ###############################################################
 
             Image compositeImage = ImageTools.CombineImagesVertically(list);
             compositeImage.Save(outputImage.FullName, ImageFormat.Png);
@@ -319,33 +309,33 @@ namespace AnalysisPrograms
                 }
                 freqBin = MatrixTools.GetRowAverages(subM);
 
-                // normalise freq bin values to z-score using mode rather than average.
-                // This is required. If do not do, get spurious results
-                SNR.BackgroundNoise bgn = SNR.CalculateModalBackgroundNoiseFromSignal(freqBin, 1.0);
-                for (int i = 0; i < freqBin.Length; i++)
-                {
-                    freqBin[i] = (freqBin[i] - bgn.NoiseMode) / bgn.NoiseSd;
-                }
-
                 // double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
-                double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
-                xcorCount += xCorrByTimeMatrix.GetLength(1);
-                //double[] dynamicRanges = GetVectorOfDynamicRanges(freqBin, sampleLength);
-                double[] V = GetOscillationArray(xCorrByTimeMatrix, framesPerSecond, /*freqBinCount-*/bin);
+
+                // vector to store the oscilations in bin.
+                double[] OscPerSec;
+                // set true to use the Continuous Wavelet Transform
+                //if (false)
+                //{
+                //    double[,] xCorrByTimeMatrix1 = GetXcorrByTimeMatrix(freqBin, sampleLength);
+                //    xcorCount += xCorrByTimeMatrix1.GetLength(1);
+                //    //double[] dynamicRanges = GetVectorOfDynamicRanges(freqBin, sampleLength);
+                //    OscPerSec = GetOscillationArray(xCorrByTimeMatrix1, framesPerSecond, /*freqBinCount-*/bin);
+                //}
+                // set true to use the Autocorrelation - SVD - FFT option.
+                if (true)
+                {
+                    double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
+                    xcorCount += xCorrByTimeMatrix.GetLength(1);
+                    OscPerSec = GetOscillationArray(xCorrByTimeMatrix, framesPerSecond, bin);
+                }
 
                 // transfer final oscillation data to the freq by Oscillation matrix.
-                // optional threshold - for initial tests = zero
-                double threshold = 0.00;
-                //Console.WriteLine("Threshold={0}", threshold);
-                for (int i = 0; i < V.Length; i++)
+                // skip OscPerSec[0] because it is zero oscillations/sec 
+                for (int i = 1; i < OscPerSec.Length; i++)
                 {
-                    if (V[i] > threshold)
-                    {
-                        freqByOscMatrix[freqBinCount - bin - 1, i-1] = V[i];
-                    }
+                        freqByOscMatrix[freqBinCount - bin - 1, i-1] = OscPerSec[i];
                 }
             } // over all frequency bins
-            //Console.WriteLine("Xcorr Count= {0}", xcorCount);
             return freqByOscMatrix;
         }
 
@@ -388,8 +378,8 @@ namespace AnalysisPrograms
             {
                 energySum += (singularValues[n] * singularValues[n]);
             }
-            // get the 90% most significant ################ SIGNIFICANT PARAMETER
-            double significanceThreshold = 0.95;
+            // get the 95% most significant ################ SIGNIFICANT PARAMETER
+            double significanceThreshold = 0.9;
             double energy = 0.0;
             int countOfSignificantSingularValues= 0;
             for (int n = 0; n < singularValues.Count; n++)
@@ -434,9 +424,6 @@ namespace AnalysisPrograms
                 //DataTools.writeBarGraph(autocor);
 
                 // ##########################################################\
-                // want power of 2
-                int sublength = 64;
-                //autocor = DataTools.Subarray(autocor, 0, sublength);
                 double[] power2Length = DataTools.DiffFromMean(autocor);
                 FFT.WindowFunc wf = FFT.Hamming;
                 var fft = new FFT(autocor.Length, wf);
@@ -448,6 +435,7 @@ namespace AnalysisPrograms
                 spectrum[1] *= 0.4;
                 // convert spectrum index to oscillations per second
                 int cyclesPerSecond = (int)Math.Round(DataTools.GetMaxIndex(spectrum) * framesPerSecond / autocor.Length);
+                // check for boundary overrun
                 if (cyclesPerSecond >= oscillationsVector.Length) 
                     cyclesPerSecond = oscillationsVector.Length - 1;
                 
@@ -493,6 +481,15 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static double[,] GetXcorrByTimeMatrix(double[] signal, int sampleLength)
         {
+            // normalise freq bin values to z-score using mode rather than average.
+            // This is required. If do not do, get spurious results
+            SNR.BackgroundNoise bgn = SNR.CalculateModalBackgroundNoiseFromSignal(signal, 1.0);
+            for (int i = 0; i < signal.Length; i++)
+            {
+                signal[i] = (signal[i] - bgn.NoiseMode) / bgn.NoiseSd;
+            }
+
+
             int sampleCount = signal.Length / sampleLength;
             double min, max;
 
@@ -507,7 +504,7 @@ namespace AnalysisPrograms
 
                 // This could be important parameter. Should check if something not right.  ################ SIGNIFICANT PARAMETER
                 // Signal is z-scored. Ignore signals that do not have a high SNR. i.e. high range
-                if (range < 10.0) continue;
+                //if (range < 10.0) continue;
 
                 double[] autocor = AutoAndCrossCorrelation.AutoCorrelationOldJavaVersion(subArray);
                 // do not need to smooth. Would cuase loss of detection of high oscil rate.
@@ -549,6 +546,27 @@ namespace AnalysisPrograms
 
             Image compositeImage = ImageTools.CombineImagesVertically(list);
             return compositeImage;
+        }
+
+        public static void GetOscillationsGraph(BaseSonogram sonogram)
+        {        
+            Console.WriteLine("FramesPerSecond = {0}", sonogram.FramesPerSecond);
+            // window width when sampling along freq bins
+            // 64 is better where many birds and fast chaning activity
+            int sampleLength = 64;
+            // 128 is better where slow moving changes to acoustic activity
+            //int sampleLength = 128;
+
+            Console.WriteLine("Sample Length = {0}", sampleLength);
+            double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength);
+
+            bool doScale = false;
+            Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, doScale);
+            //Image image1 = ImageTools.DrawReversedMatrix(freqOscilMatrix);
+            image1 = ImageTools.DrawYaxisScale(image1, 5, 1000 / sonogram.FBinWidth);
+            string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix_" + sonogram.Configuration.SourceFName + ".png";
+            image1.Save(path, ImageFormat.Png);
+
         }
 
     }

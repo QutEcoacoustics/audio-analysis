@@ -1,6 +1,8 @@
 ﻿using MathNet.Numerics.LinearAlgebra.Generic;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,196 +20,121 @@ namespace TowseyLibrary
     {
         public const double SQRT2 = 1.4142135623730950488016887242097;
 
-        public int NumberOfLevels { private set; get; }
-        private List<BinVector> listOfBinVectors;
+        public int MaxScale { private set; get; }
+        private double[] Signal { set; get; }
 
         /// <summary>
-        /// Assume the signal is power of 2 in length
+        /// The signal can be any length. Need not be power of 2 in length
         /// </summary>
         /// <param name="signal"></param>
-        public WaveletTransformContinuous(double[] signal)
+        public WaveletTransformContinuous(double[] signal, int maxScale)
         {
-            if(! DataTools.IsPowerOfTwo((ulong)signal.Length))
-            {
-                throw new Exception("Wavelets CONSTUCTOR FATAL ERROR: Length of signal is not power of 2.");
-            }
-            this.NumberOfLevels = DataTools.PowerOf2Exponent(signal.Length);
-
-            this.listOfBinVectors = WaveletTransformContinuous.GetTreeOfBinVectors(signal);
+            //if(! DataTools.IsPowerOfTwo((ulong)signal.Length))
+            //{
+            //    throw new Exception("Wavelets CONSTUCTOR FATAL ERROR: Length of signal is not power of 2.");
+            //}
+            this.MaxScale = maxScale;
+            this.Signal = signal;
         }
 
 
-        /// <summary>
-        /// assume tree is full decomposed WPD tree.
-        /// Assume original signal is power of 2 in length
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public double[,] GetWPDSignalTree()
+
+        public double[,] GetScaleTimeMatrix()
         {
-            int nodeCount = this.listOfBinVectors.Count;
-            int signalLength = (nodeCount + 1) / 2;
+            int length = this.Signal.Length;
+            int seed = 123;
 
-            double[,] wpdTree = new double[this.NumberOfLevels + 1, signalLength];
+            var scaleTimeMatrix = new double[this.MaxScale, length];
+            double[] averagedSignal;
+            double[] randomisedSignal = RandomNumber.RandomizeArray(this.Signal, seed);
+            double[] avRandomSignal;
+            double[] waveletCoefficients = new double[length];
+            double[] randomCoefficients = new double[length];
 
-            foreach (BinVector bv in this.listOfBinVectors)
+            //this.Signal = DataTools.SubtractMean(this.Signal);
+
+            for (int scale = 1; scale < this.MaxScale; scale++)
             {
-                int level = bv.levelNumber;
-                int bin = bv.binNumber;
-                int start = (bin - 1) * bv.binLength;
-                double[] signal = bv.signal;
-                // normalise each row
-                //signal = DataTools.normalise(signal);
-                for (int i = 0; i < signal.Length; i++)
+                //int waveletLength = 2 * scale;
+                if (scale > 1)
                 {
-                    wpdTree[level - 1, start + i] = bv.signal[i];
+                    averagedSignal = DataTools.filterMovingAverage(this.Signal, scale);
+                }
+                else averagedSignal = (double[])this.Signal.Clone();
+
+                for (int t = 0; t < length - scale; t++)
+                {
+                    double coeff = (averagedSignal[t] - averagedSignal[t + scale]);
+                    waveletCoefficients[t + scale - 1] = coeff;
+                }
+
+
+                if (scale > 1)
+                {
+                    avRandomSignal = DataTools.filterMovingAverage(randomisedSignal, scale);
+                }
+                else avRandomSignal = (double[])randomisedSignal.Clone();
+                for (int t = 0; t < length - scale; t++)
+                {
+                    double coeff = (averagedSignal[t] - averagedSignal[t + scale]);
+                    randomCoefficients[t + scale - 1] = coeff;
+                }
+                double av, sd;
+                NormalDist.AverageAndSD(randomCoefficients, out av, out sd);
+                Console.WriteLine("scale={0}   av={1}    sd={2}", scale, av, sd);
+
+                double[] zScoreCoeff = new double[length];
+                for (int t = scale - 1; t < length - scale; t++)
+                {
+                    double zscore = (waveletCoefficients[t] - av) / sd;
+                    if (zscore > 0.1) zScoreCoeff[t] = zscore;
+                    else zScoreCoeff[t] = 0.0;
+                }
+
+                MatrixTools.SetRow(scaleTimeMatrix, scale - 1, zScoreCoeff);
+            }
+
+
+
+            return scaleTimeMatrix;
+        }
+
+
+
+        public static double[,] ProcessScaleTimeMatrix(double[,] inputM, int minOscilCount)
+        {
+            int scaleCount = inputM.GetLength(0);
+            int length = inputM.GetLength(1);
+
+
+            var scaleTimeMatrix = new double[scaleCount, length];
+
+            //double[] waveletCoefficients = new double[length];
+            //double[] randomCoefficients = new double[length];
+
+
+            for (int scale = 1; scale <= scaleCount; scale++)
+            {
+                for (int t = scale - 1; t < length - scale; t++)
+                {
+                    double coeff = inputM[scale - 1, t];
+                    for (int offset = 1-scale; offset <= scale; offset++)
+                    {
+                        if (scaleTimeMatrix[scale - 1, t + offset] < coeff) 
+                            scaleTimeMatrix[scale - 1, t + offset] = coeff;
+                    }
                 }
             }
-            return wpdTree;
-        }
-
-        /// <summary>
-        /// assume tree is full decomposed WPD tree.
-        /// Assume original signal is power of 2 in length
-        /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public double[] GetWPDEnergyVector()
-        {
-            int nodeCount = this.listOfBinVectors.Count;
-            double[] wpdEnergyVector = new double[nodeCount];
-
-            foreach (BinVector bv in this.listOfBinVectors)
-            {
-                wpdEnergyVector[bv.sequenceNumber - 1] = bv.energy;
-            }
-            return wpdEnergyVector;
-        }
-
-        public double[] GetWPDEnergySpectrumWithoutDC()
-        {
-            var wpdEnergyVector = this.GetWPDEnergyVector();
-            int signalLength = (wpdEnergyVector.Length + 1) / 2;
-            int startID = signalLength - 1 + 1; // to avoid DC
-            int vectorLength = (signalLength / 2); // half the signal length
-            wpdEnergyVector = DataTools.Subarray(wpdEnergyVector, startID, vectorLength);
-            return wpdEnergyVector;
-        }
-
-        
-        /// <summary>
-        /// Represents a single node in the WPD tree.
-        /// THe nodes are usually called "bin vectors".
-        /// At the bottom of the WPD tree each bin vector contains only one element.
-        /// </summary>
-        public class BinVector
-        {
-            public int levelNumber;
-            public int binNumber;
-            public int sequenceNumber;
-            public double[] signal;
-            public double energy;
-            public int binLength;
-            public BinVector parent;
-            public BinVector childApprox;
-            public BinVector childDetail;
-
-            public BinVector(int _levelNumber, int _binNumber, double[] _signal)
-            {
-                this.levelNumber = _levelNumber;
-                this.binNumber   = _binNumber;
-                this.sequenceNumber = (int)Math.Pow(2, (_levelNumber - 1)) - 1 + _binNumber; 
-                this.signal      = _signal;
-                this.binLength = 0;
-                if (_signal != null) binLength = _signal.Length;
-                this.energy = 0.0;
-                if (_signal != null) this.energy = this.CalculateEnergy();
-            }
-
-            private double CalculateEnergy()
-            {
-                double E = 0.0;
-                for (int i = 0; i < signal.Length; i++)
-                {
-                    E += (signal[i] * signal[i]);
-                }
-                return E / (double)signal.Length;
-            }
-
-            private int CalculateBinNumberOfApproxChild()
-            {
-                int number = (2 * this.sequenceNumber) - (int)Math.Pow(2.0, this.levelNumber) + 1;
-                return number;
-            }
-            private int CalculateBinNumberOfDetailChild()
-            {
-                int number = (2 * this.sequenceNumber) - (int)Math.Pow(2.0, this.levelNumber) + 1;
-                return number + 1;
-            }
-        } // END of class BinVector each of which is a node in the WPD tree.
-
-
-        // ############################### NEXT TWO METHODS CREATE THE TREE. SECOND METHOD IS RECURSIVE ###########################
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public static List<BinVector> GetTreeOfBinVectors(double[] signal)
-        {
-            var list = new List<BinVector>();
-            BinVector sigBin = new BinVector(1, 1, signal);
-            sigBin.childApprox = null;
-            sigBin.childDetail = null;
-
-            list.Add(sigBin);
-            // call recursive method to construct tree
-            WaveletTransformContinuous.GetTreeOfBinVectors(list, sigBin);
-            return list;
+            return scaleTimeMatrix;
         }
 
 
-        /// <summary>
-        /// NOTE: THIS METHOD IS RECURSIVE.
-        /// It performs a depth first calculation of the wavelet coefficients.
-        /// Depth first search terminates when the bin vector contains only one element.
-        /// </summary>
-        /// <param name="list"></param>
-        /// <param name="bv"></param>
-        /// <returns></returns>
-        public static List<BinVector> GetTreeOfBinVectors(List<BinVector> list, BinVector bv)
-        {
-            int level = bv.levelNumber;
-            int bin = bv.binNumber;
 
-            // display info about nodes
-            // Console.WriteLine("nodeCount={0}   level={1}   bin={2}  seqNum={3}  sigLength={4}", list.Count, level, bin, bv.sequenceNumber, bv.signal.Length);
 
-            double[] approxVector = LowPassAndDecimate(bv.signal);
-            double[] detailVector = HiPassAndDecimate(bv.signal);
 
-            if ((approxVector == null) || (approxVector == null))
-            {
-                //list.Add(null);
-                return list;
-            }
 
-            BinVector approxBin = new BinVector((level + 1), (2 * bin) - 1, approxVector);
-            approxBin.parent = bv;
-            bv.childApprox = approxBin;
-            BinVector detailBin = new BinVector((level + 1), (2 * bin), detailVector);
-            detailBin.parent = bv;
-            bv.childDetail = detailBin;
 
-            list.Add(approxBin);
-            WaveletTransformContinuous.GetTreeOfBinVectors(list, approxBin);
-            list.Add(detailBin);
-            WaveletTransformContinuous.GetTreeOfBinVectors(list, detailBin);
-            return list;
-        }
 
-        // ####################### ABOVE TWO METHODS CREATE THE TREE.###########################################################################
 
 
         /// <summary>
@@ -244,115 +171,6 @@ namespace TowseyLibrary
         }
 
 
-
-
-        /// <summary>
-        /// Returns a universal threshold which is used to zero small or insignificant wavelet coefficients.
-        /// See pages 15 & 16 of "Wavelets for kids"!!
-        /// The coefficients should be derived from the bottom row of the WPD tree.
-        /// I think n = the level number of the coefficients being thresholded.
-        /// In other words, the standard deviation is calculated from the bottom row of coeficients but is increased for the higher rows.
-        /// THis is because the coefficients in the lower rows have a lower SNR.
-        /// </summary>
-        /// <param name="n">level number</param>
-        /// <param name="coefficients"></param>
-        /// <returns></returns>
-        public static double CalculateUniversalThreshold(int n, double[] coefficients)
-        {
-            double factor = Math.Sqrt(2 * Math.Log10(n));
-            double av, sd;
-            NormalDist.AverageAndSD(coefficients, out av, out sd);
-            return factor * sd;
-        }
-
-
-        public static double CalculateUniversalThreshold(int n, double sdOfCoefficients)
-        {
-            double factor = Math.Sqrt(2 * Math.Log10(n));
-            return factor * sdOfCoefficients;
-        }
-
-        /// <summary>
-        /// Returns a matrix whose columns consist of the bottom row of the WPD tree for each WPD window of length 2^L where L= levelNumber.
-        /// The WPD windows do not overlap.
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
-        /// <returns></returns>
-        public static double[,] GetCWTSpectralSequence(double[] signal, int levelNumber)
-        {
-            int windowWidth = (int)Math.Pow(2, levelNumber);
-            int halfWindow = windowWidth / 2;
-            int sampleCount = signal.Length / windowWidth;
-            //int minLag, 
-            //int maxLag
-            double[,] wpdByTime = new double[halfWindow, sampleCount];
-            
-            for (int s = 0; s < sampleCount; s++)
-            {
-                int start = s * windowWidth;
-                double[] subArray = DataTools.Subarray(signal, start, windowWidth);
-
-                //double[] autocor = AutoCorrelation.MyAutoCorrelation(subArray);
-                //autocor = DataTools.filterMovingAverage(autocor, 5);
-                //autocor = DataTools.Subarray(autocor, autocor.Length / 4, windowWidth);
-                //DataTools.writeBarGraph(autocor);
-                // only interested in autocorrelation peaks > half max. An oscillation spreads autocor energy.
-                //double threshold = autocor.Max() / 2;
-                //int[] histo = DataTools.GetHistogramOfDistancesBetweenEveryPairOfPeaks(autocor, threshold);
-
-                var wpd = new WaveletTransformContinuous(subArray);
-                double[] energySpectrumWithoutDC = wpd.GetWPDEnergySpectrumWithoutDC();
-
-                // there should only be one dominant oscilation in any one freq band at one time.
-                // keep only the maximum value but divide by the total energy in the spectrum.
-                // Energy dispersed through the spectrum is indicative of a single impulse, not an oscilation.
-                int index = DataTools.GetMaxIndex(energySpectrumWithoutDC);
-                double[] spectrum = new double[halfWindow];
-                spectrum[index] = energySpectrumWithoutDC[index] / energySpectrumWithoutDC.Sum();
-                MatrixTools.SetColumn(wpdByTime, s, spectrum);
-            }
-
-            // calculate statistics for values in matrix
-            //string imagePath = @"C:\SensorNetworks\Output\Sonograms\wpdHistogram.png";
-            //Histogram.DrawDistributionsAndSaveImage(wpdByTime, imagePath);
-
-            string path = @"C:\SensorNetworks\Output\Sonograms\testwavelet.png";
-            ImageTools.DrawReversedMatrix(wpdByTime, path);
-            // MatrixTools.writeMatrix(wpdByTime);
-
-
-            return wpdByTime;
-        }
-
-        /// <summary>
-        /// Returns a matrix whose columns consist of the energy vector derived from the WPD tree for each WPD window of length 2^L where L= levelNumber.
-        /// The WPD windows do not overlap.
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
-        /// <returns></returns>
-        public static double[,] GetWPDEnergySequence(double[] signal, int levelNumber)
-        {
-            int windowWidth = (int)Math.Pow(2, levelNumber);
-            int sampleCount = signal.Length / windowWidth;
-            int lengthOfEnergyVector = (int)Math.Pow(2, levelNumber+1) - 1;
-            double[,] wpdByTime = new double[lengthOfEnergyVector, sampleCount];
-
-            for (int s = 0; s < sampleCount; s++)
-            {
-                int start = s * windowWidth;
-                double[] subArray = DataTools.Subarray(signal, start, windowWidth);
-                var wpd = new WaveletTransformContinuous(subArray);
-                double[] energyVector = wpd.GetWPDEnergyVector();
-
-                // reverse the energy vector so that low resolution coefficients are at the bottom. 
-                energyVector = DataTools.reverseArray(energyVector);
-                MatrixTools.SetColumn(wpdByTime, s, energyVector);
-            }
-
-            return wpdByTime;
-        }
             
 
         /// <summary>
@@ -407,8 +225,8 @@ namespace TowseyLibrary
             //                    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             //double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
             //                    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+            //double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            //                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 
 
 
@@ -433,9 +251,15 @@ namespace TowseyLibrary
 
             //this 128 sample signal contains 32 cycles
             //double[] signal = { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-            //                        1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-            //                        1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-            //                        1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0 };
+            //                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+            //                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+            //                    1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0 };
+
+            //this 128 sample signal contains 32 cycles
+            double[] signal = { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+                                1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+                                1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
+                                1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0 };
 
             //this 128 sample signal contains 64 cycles
             //The output bin vector tree and image will show strong energy at level level 8, bin zero and bin 64.
@@ -459,17 +283,19 @@ namespace TowseyLibrary
             //// normalising seems to make little difference to the result
             //signal = DataTools.normalise(signal);
 
-            //int levelNumber = 7;
+            int maxScale = 6;
 
-            WaveletTransformContinuous wpd = new WaveletTransformContinuous(signal);
-            double[,] M = wpd.GetWPDSignalTree();
-
-            string path = @"C:\SensorNetworks\Output\Test\testwavelet.png";
-            ImageTools.DrawReversedMatrix(M, path);
+            WaveletTransformContinuous cwt = new WaveletTransformContinuous(signal, maxScale);
+            double[,] M;
+            M = cwt.GetScaleTimeMatrix();
+            int minOscilCount = 4;
+            M = WaveletTransformContinuous.ProcessScaleTimeMatrix(M, minOscilCount);
+            bool doScale = false;
+            Image image1 = ImageTools.DrawMatrixInColour(M, doScale);
+            string path = @"C:\SensorNetworks\Output\Test\testContWaveletTransform.png";
+            image1.Save(path, ImageFormat.Png);
             //MatrixTools.writeMatrix(M);
-            MatrixTools.WriteLocationOfMaximumValues(M);
-
-            double[] energySpectrumWithoutDC = wpd.GetWPDEnergySpectrumWithoutDC();
+            //MatrixTools.WriteLocationOfMaximumValues(M);
 
         }
 
