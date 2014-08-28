@@ -286,8 +286,9 @@ namespace AnalysisPrograms
             int frameCount   = M.GetLength(0);
             int freqBinCount = M.GetLength(1);
             double[] freqBin;
-            double[,] freqByOscMatrix = new double[freqBinCount, (int)Math.Ceiling(framesPerSecond / (double)2)];
-            int xcorCount = 0;
+            //double[,] freqByOscMatrix = new double[freqBinCount, (int)Math.Ceiling(framesPerSecond / (double)2)];
+            double[,] freqByOscMatrix = new double[freqBinCount, sampleLength/2];
+            //int xcorCount = 0;
 
             // over all frequency bins
             for (int bin = 0; bin < freqBinCount; bin++)
@@ -322,11 +323,16 @@ namespace AnalysisPrograms
                 //    OscPerSec = GetOscillationArray(xCorrByTimeMatrix1, framesPerSecond, /*freqBinCount-*/bin);
                 //}
                 // set true to use the Autocorrelation - SVD - FFT option.
+                if (false)
+                {
+                    double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
+                    //xcorCount += xCorrByTimeMatrix.GetLength(1);
+                    OscPerSec = GetOscillationArrayUsingSVDAndFFT(xCorrByTimeMatrix, framesPerSecond, bin);
+                }
                 if (true)
                 {
                     double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
-                    xcorCount += xCorrByTimeMatrix.GetLength(1);
-                    OscPerSec = GetOscillationArray(xCorrByTimeMatrix, framesPerSecond, bin);
+                    OscPerSec = GetOscillationArrayUsingFFT(xCorrByTimeMatrix, framesPerSecond, bin);
                 }
 
                 // transfer final oscillation data to the freq by Oscillation matrix.
@@ -358,7 +364,7 @@ namespace AnalysisPrograms
         /// <param name="framesPerSecond"></param>
         /// <param name="binNumber">only used when debugging</param>
         /// <returns></returns>
-        public static double[] GetOscillationArray(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
+        public static double[] GetOscillationArrayUsingSVDAndFFT(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
             int sampleCount = xCorrByTimeMatrix.GetLength(1);
@@ -444,6 +450,63 @@ namespace AnalysisPrograms
                 // add in a new oscillation only if its singular value is greater than the value already present.
                 if (oscAmplitude > oscillationsVector[cyclesPerSecond])
                     oscillationsVector[cyclesPerSecond] = oscAmplitude;
+            }
+            return oscillationsVector;
+        }
+
+        public static double[] GetOscillationArrayUsingFFT(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
+        {
+            int xCorrLength = xCorrByTimeMatrix.GetLength(0);
+            int sampleCount = xCorrByTimeMatrix.GetLength(1);
+            //int maxCyclesPerSecond = (int)Math.Ceiling(framesPerSecond / (double)2);
+
+            // loop over the Auto-correlation vectors and do FFT
+            //double[] oscillationsVector = new double[maxCyclesPerSecond];
+            double[] oscillationsVector = new double[xCorrLength/2];
+
+            for (int e = 0; e < sampleCount; e++)
+            {
+                double[] autocor = MatrixTools.GetColumn(xCorrByTimeMatrix, e);
+                //DataTools.writeBarGraph(autocor);
+
+                // ##########################################################\
+                autocor = DataTools.DiffFromMean(autocor);
+                FFT.WindowFunc wf = FFT.Hamming;
+                var fft = new FFT(autocor.Length, wf);
+
+                var spectrum = fft.Invoke(autocor);
+                // power in bottom bin is DC therefore set = zero.
+                // reduce the power in 2nd coeff because it can dominate - this is a hack!
+                spectrum[0] *= 0.0;
+                spectrum[1] *= 0.9;
+
+                spectrum = DataTools.SquareValues(spectrum);
+                double sumOfSquares = spectrum.Sum();
+                int maxIndex = DataTools.GetMaxIndex(spectrum);
+                double powerAtMax = spectrum[maxIndex];
+                double relativePower = powerAtMax / sumOfSquares;
+
+                if (relativePower > 0.01)
+                {
+                    // convert spectrum index to oscillations per second
+                    //double cyclesPerSecond = maxIndex * framesPerSecond / (double)autocor.Length;
+                    int indexID = maxIndex;
+                    //int indexID = (int)Math.Round(cyclesPerSecond);
+                    // check for boundary overrun
+                    if (indexID >= oscillationsVector.Length)
+                        indexID = oscillationsVector.Length - 1;
+
+                    // add in a new oscillation
+                    oscillationsVector[indexID] += powerAtMax;
+                    //oscillationsVector[cyclesPerSecond] += relativePower;
+                }
+            }
+            for (int i = 0; i < oscillationsVector.Length; i++)
+            {
+                // normalise by sample count
+                //oscillationsVector[i] /= sampleCount;
+                if (oscillationsVector[i] <= 1.0) oscillationsVector[i] = 0.0;
+                else oscillationsVector[i] = Math.Log10(oscillationsVector[i]);
             }
             return oscillationsVector;
         }
@@ -553,16 +616,18 @@ namespace AnalysisPrograms
             Console.WriteLine("FramesPerSecond = {0}", sonogram.FramesPerSecond);
             // window width when sampling along freq bins
             // 64 is better where many birds and fast chaning activity
-            int sampleLength = 64;
+            //int sampleLength = 64;
             // 128 is better where slow moving changes to acoustic activity
-            //int sampleLength = 128;
+            int sampleLength = 128;
 
             Console.WriteLine("Sample Length = {0}", sampleLength);
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength);
 
+            double fractionalStretching = 0.05;
+            freqOscilMatrix = ImageTools.ContrastStretching(freqOscilMatrix, fractionalStretching);
+
             bool doScale = false;
             Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, doScale);
-            //Image image1 = ImageTools.DrawReversedMatrix(freqOscilMatrix);
             image1 = ImageTools.DrawYaxisScale(image1, 5, 1000 / sonogram.FBinWidth);
             string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix_" + sonogram.Configuration.SourceFName + ".png";
             image1.Save(path, ImageFormat.Png);
