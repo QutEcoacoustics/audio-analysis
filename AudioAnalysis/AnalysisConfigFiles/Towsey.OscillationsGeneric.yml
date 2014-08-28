@@ -6,7 +6,7 @@ FrameLength: 256
 FrameOverlap: 0.25
 
 #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
-ResampleRate: 16000
+ResampleRate: 20000
 
 #MinHz: 500
 #MaxHz: 3500
