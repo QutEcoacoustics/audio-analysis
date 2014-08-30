@@ -273,21 +273,20 @@ namespace AnalysisPrograms
 
 
 
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="M"></param>
-        /// <param name="levelNumber"></param>
         /// <param name="framesPerSecond"></param>
+        /// <param name="sampleLength"></param>
         /// <returns></returns>
+ 
         public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, double framesPerSecond, int sampleLength)
         {
             int frameCount   = M.GetLength(0);
             int freqBinCount = M.GetLength(1);
             double[] freqBin;
-            //double[,] freqByOscMatrix = new double[freqBinCount, (int)Math.Ceiling(framesPerSecond / (double)2)];
-            double[,] freqByOscMatrix = new double[freqBinCount, sampleLength/2];
+            double[,] freqByOscMatrix = new double[(sampleLength/2), freqBinCount];
             //int xcorCount = 0;
 
             // over all frequency bins
@@ -312,35 +311,31 @@ namespace AnalysisPrograms
 
                 // double[,] matrix = Wavelets.GetWPDEnergySequence(signal, levelNumber);
 
-                // vector to store the oscilations in bin.
-                double[] OscPerSec;
+                // vector to store the oscilations vector derived from one frequency bin.
+                double[] oscillationsSpectrum;
                 // set true to use the Continuous Wavelet Transform
                 //if (false)
                 //{
                 //    double[,] xCorrByTimeMatrix1 = GetXcorrByTimeMatrix(freqBin, sampleLength);
                 //    xcorCount += xCorrByTimeMatrix1.GetLength(1);
                 //    //double[] dynamicRanges = GetVectorOfDynamicRanges(freqBin, sampleLength);
-                //    OscPerSec = GetOscillationArray(xCorrByTimeMatrix1, framesPerSecond, /*freqBinCount-*/bin);
+                //    oscillationsSpectrum = GetOscillationArray(xCorrByTimeMatrix1, framesPerSecond, /*freqBinCount-*/bin);
                 //}
                 // set true to use the Autocorrelation - SVD - FFT option.
                 if (false)
                 {
                     double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
                     //xcorCount += xCorrByTimeMatrix.GetLength(1);
-                    OscPerSec = GetOscillationArrayUsingSVDAndFFT(xCorrByTimeMatrix, framesPerSecond, bin);
+                    oscillationsSpectrum = GetOscillationArrayUsingSVDAndFFT(xCorrByTimeMatrix, framesPerSecond, bin);
                 }
                 if (true)
                 {
                     double[,] xCorrByTimeMatrix = GetXcorrByTimeMatrix(freqBin, sampleLength);
-                    OscPerSec = GetOscillationArrayUsingFFT(xCorrByTimeMatrix, framesPerSecond, bin);
+                    oscillationsSpectrum = GetOscillationArrayUsingFFT(xCorrByTimeMatrix, framesPerSecond, bin);
                 }
 
-                // transfer final oscillation data to the freq by Oscillation matrix.
-                // skip OscPerSec[0] because it is zero oscillations/sec 
-                for (int i = 1; i < OscPerSec.Length; i++)
-                {
-                        freqByOscMatrix[freqBinCount - bin - 1, i-1] = OscPerSec[i];
-                }
+                // transfer final oscillation vector to the Oscillations by frequency matrix.
+                MatrixTools.SetColumn(freqByOscMatrix, bin, oscillationsSpectrum);
             } // over all frequency bins
             return freqByOscMatrix;
         }
@@ -430,26 +425,44 @@ namespace AnalysisPrograms
                 //DataTools.writeBarGraph(autocor);
 
                 // ##########################################################\
-                double[] power2Length = DataTools.DiffFromMean(autocor);
+                autocor = DataTools.DiffFromMean(autocor);
                 FFT.WindowFunc wf = FFT.Hamming;
                 var fft = new FFT(autocor.Length, wf);
+                var spectrum = fft.Invoke(autocor);
 
-                var spectrum = fft.Invoke(power2Length);
-                // power in bottom bin is DC therefore set = zero.
-                // reduce the power in 2nd coeff because it can dominate - this is a hack!
-                spectrum[0] *= 0.0;
-                spectrum[1] *= 0.4;
-                // convert spectrum index to oscillations per second
-                int cyclesPerSecond = (int)Math.Round(DataTools.GetMaxIndex(spectrum) * framesPerSecond / autocor.Length);
-                // check for boundary overrun
-                if (cyclesPerSecond >= oscillationsVector.Length) 
-                    cyclesPerSecond = oscillationsVector.Length - 1;
-                
-                //double oscValue = (singularValues[e] * singularValues[e]);
-                double oscAmplitude = 2 * Math.Log10(singularValues[e]);
-                // add in a new oscillation only if its singular value is greater than the value already present.
-                if (oscAmplitude > oscillationsVector[cyclesPerSecond])
-                    oscillationsVector[cyclesPerSecond] = oscAmplitude;
+                // skip spectrum[0] because it is DC or zero oscillations/sec 
+                spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
+
+                // reduce the power in first coeff because it can dominate - this is a hack!
+                spectrum[0] *= 0.5;
+
+                spectrum = DataTools.SquareValues(spectrum);
+                double avPower = spectrum.Sum() / spectrum.Length;
+                int maxIndex = DataTools.GetMaxIndex(spectrum);
+                double powerAtMax = spectrum[maxIndex];
+                //double relativePower1 = powerAtMax / sumOfSquares;
+                double relativePower2 = powerAtMax / avPower;
+
+                //if (relativePower1 > 0.05)
+                if (relativePower2 > 10.0)
+                {
+                    // check for boundary overrun
+                    if (maxIndex < oscillationsVector.Length)
+                    {
+                        // add in a new oscillation
+                        oscillationsVector[maxIndex] += powerAtMax;
+                        //oscillationsVector[maxIndex] += relativePower;
+                    }
+                }
+            }
+
+            for (int i = 0; i < oscillationsVector.Length; i++)
+            {
+                // normalise by sample count
+                oscillationsVector[i] /= sampleCount;
+                // do log transform
+                if (oscillationsVector[i] < 1.0) oscillationsVector[i] = 0.0;
+                else oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
             }
             return oscillationsVector;
         }
@@ -473,40 +486,41 @@ namespace AnalysisPrograms
                 autocor = DataTools.DiffFromMean(autocor);
                 FFT.WindowFunc wf = FFT.Hamming;
                 var fft = new FFT(autocor.Length, wf);
-
                 var spectrum = fft.Invoke(autocor);
-                // power in bottom bin is DC therefore set = zero.
-                // reduce the power in 2nd coeff because it can dominate - this is a hack!
-                spectrum[0] *= 0.0;
-                spectrum[1] *= 0.9;
+
+                // skip spectrum[0] because it is DC or zero oscillations/sec 
+                spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
+
+                // reduce the power in first coeff because it can dominate - this is a hack!
+                spectrum[0] *= 0.5;
 
                 spectrum = DataTools.SquareValues(spectrum);
-                double sumOfSquares = spectrum.Sum();
+                double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
-                double relativePower = powerAtMax / sumOfSquares;
+                //double relativePower1 = powerAtMax / sumOfSquares;
+                double relativePower2 = powerAtMax / avPower;
 
-                if (relativePower > 0.01)
+                //if (relativePower1 > 0.05)
+                if (relativePower2 > 10.0)
                 {
-                    // convert spectrum index to oscillations per second
-                    //double cyclesPerSecond = maxIndex * framesPerSecond / (double)autocor.Length;
-                    int indexID = maxIndex;
-                    //int indexID = (int)Math.Round(cyclesPerSecond);
                     // check for boundary overrun
-                    if (indexID >= oscillationsVector.Length)
-                        indexID = oscillationsVector.Length - 1;
-
-                    // add in a new oscillation
-                    oscillationsVector[indexID] += powerAtMax;
-                    //oscillationsVector[cyclesPerSecond] += relativePower;
+                    if (maxIndex < oscillationsVector.Length)
+                    {
+                        // add in a new oscillation
+                        oscillationsVector[maxIndex] += powerAtMax;
+                        //oscillationsVector[maxIndex] += relativePower;
+                    }
                 }
             }
+
             for (int i = 0; i < oscillationsVector.Length; i++)
             {
                 // normalise by sample count
-                //oscillationsVector[i] /= sampleCount;
-                if (oscillationsVector[i] <= 1.0) oscillationsVector[i] = 0.0;
-                else oscillationsVector[i] = Math.Log10(oscillationsVector[i]);
+                oscillationsVector[i] /= sampleCount;
+                // do log transform
+                if (oscillationsVector[i] < 1.0) oscillationsVector[i] = 0.0;
+                else oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
             }
             return oscillationsVector;
         }
@@ -623,12 +637,26 @@ namespace AnalysisPrograms
             Console.WriteLine("Sample Length = {0}", sampleLength);
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength);
 
+            freqOscilMatrix = MatrixTools.MatrixRotate90Anticlockwise(freqOscilMatrix);
             double fractionalStretching = 0.05;
             freqOscilMatrix = ImageTools.ContrastStretching(freqOscilMatrix, fractionalStretching);
 
-            bool doScale = false;
-            Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, doScale);
-            image1 = ImageTools.DrawYaxisScale(image1, 5, 1000 / sonogram.FBinWidth);
+
+            // convert spectrum index to oscillations per second
+            //double sampleDurationInSeconds = sampleLength / sonogram.FramesPerSecond;
+            //double maxOscillationRate = sonogram.FramesPerSecond / (double)2; // equivalent to Nyquist.
+            //double oscResolutionInOscillationSpectrum = maxOscillationRate / sampleLength / (double)2;
+            double oscResolutionInOscillationSpectrum = sonogram.FramesPerSecond / (double)sampleLength;
+            //int cyclesPerSecond = (int)Math.Round(DataTools.GetMaxIndex(spectrum) * framesPerSecond / sampleLength);
+            //double cyclesPerSecond = maxIndex * framesPerSecond / (double)autocor.Length;
+
+
+            int xscale = 16;
+            int yscale = 16;
+            Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
+            double xTicInterval = 5.0 / oscResolutionInOscillationSpectrum * xscale;
+            double yTicInterval = 1000 / sonogram.FBinWidth * yscale;
+            image1 = ImageTools.DrawXandYaxes(image1, 30, xTicInterval, yTicInterval);
             string path = @"C:\SensorNetworks\Output\Sonograms\freqOscilMatrix_" + sonogram.Configuration.SourceFName + ".png";
             image1.Save(path, ImageFormat.Png);
 
