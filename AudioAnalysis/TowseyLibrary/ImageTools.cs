@@ -2164,22 +2164,75 @@ namespace TowseyLibrary
         }
 
 
-        public static Image DrawYaxisScale(Image image, int scaleWidth, double ticInterval)
+        public static Image DrawXandYaxes(Image image, int scaleWidth, double xTicInterval, double yTicInterval)
+        {            
+            Image returnImage = DrawYaxisScale(image, scaleWidth, yTicInterval);
+            returnImage = DrawXaxisScale(returnImage, scaleWidth, xTicInterval);
+            return returnImage;
+        }
+
+        public static Image DrawYaxisScale(Image image, int scaleWidth, double yTicInterval)
         {
-            Image scaleImage = new Bitmap(scaleWidth, image.Height);
-            int ticCount = (int)(image.Height / ticInterval);
-            Graphics g = Graphics.FromImage(scaleImage);
+            int ticCount = (int)(image.Height / yTicInterval);
+            // draw gridlines on Image
             Pen pen = new Pen(Color.White);
-            g.Clear(Color.DarkGray);
+            Graphics g = Graphics.FromImage(image);
             for (int i = 0; i < ticCount; i++)
             {
-                int y1 = image.Height - (int)(i * ticInterval);
-                g.DrawLine(pen, 0, y1, scaleWidth-1, y1);
+                int y1 = image.Height - (int)(i * yTicInterval);
+                g.DrawLine(pen, 0, y1, image.Width - 1, y1);
             }
+
+            Image yAxisImage = new Bitmap(scaleWidth, image.Height);
+            g = Graphics.FromImage(yAxisImage);
+            pen = new Pen(Color.Black);
+            g.Clear(Color.LightGray);
+            for (int i = 0; i < ticCount; i++)
+            {
+                int y1 = image.Height - (int)(i * yTicInterval);
+                g.DrawLine(pen, 0, y1, scaleWidth - 1, y1);
+                g.DrawLine(pen, 0, y1 - 1, scaleWidth - 1, y1 - 1);
+            }
+            g.DrawRectangle(pen, 0, 0, scaleWidth - 1, image.Height - 1);
             Image[] array = new Image[2];
-            array[0] = scaleImage;
+            array[0] = yAxisImage;
             array[1] = image;
             return ImageTools.CombineImagesInLine(array);
+        }
+        /// <summary>
+        /// assumes the y-axis has been drawn already
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="scaleHeight"></param>
+        /// <param name="yTicInterval"></param>
+        /// <returns></returns>
+        public static Image DrawXaxisScale(Image image, int scaleHeight, double xTicInterval)
+        {
+            int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
+            // draw gridlines on Image
+            Pen pen = new Pen(Color.White);
+            Graphics g = Graphics.FromImage(image);
+            for (int i = 0; i < ticCount; i++)
+            {
+                int x1 = scaleHeight + (int)(i * xTicInterval);
+                g.DrawLine(pen, x1, 0, x1, image.Height - 1);
+            }
+            
+            Image scaleImage = new Bitmap(image.Width, scaleHeight);
+            g = Graphics.FromImage(scaleImage);
+            pen = new Pen(Color.Black);
+            g.Clear(Color.LightGray);            
+            for (int i = 0; i < ticCount; i++)
+            {
+                int x1 = scaleHeight + (int)(i * xTicInterval);
+                g.DrawLine(pen, x1, 0, x1, scaleHeight-1);
+                g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
+            }
+            g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
+            Image[] array = new Image[2];
+            array[0] = image;
+            array[1] = scaleImage;
+            return ImageTools.CombineImagesVertically(array);
         }
 
 
@@ -2303,6 +2356,12 @@ namespace TowseyLibrary
         /// <param name="pathName"></param>
         public static Image DrawMatrixInColour(double[,] matrix, bool doScale)
         {
+            int xscale = 10;
+            int yscale = 5;
+            return DrawMatrixInColour(matrix, xscale, yscale);
+        }
+        public static Image DrawMatrixInColour(double[,] matrix, int xscale, int yscale)
+        {
             Hsv myHsv;
             Rgb myRgb;
             Color colour;
@@ -2315,17 +2374,17 @@ namespace TowseyLibrary
 
             int maxYpixels = rows;
             int maxXpixels = cols;
-            int YpixelsPerCell = 1;
-            int XpixelsPerCell = 1;
-            if (doScale)
-            {
-                maxYpixels = 1000;
-                maxXpixels = 2500;
-                YpixelsPerCell = maxYpixels / rows;
-                XpixelsPerCell = maxXpixels / cols;
-                if (YpixelsPerCell == 0) YpixelsPerCell = 1;
-                if (XpixelsPerCell == 0) XpixelsPerCell = 1;
-            }
+            int YpixelsPerCell = yscale;
+            int XpixelsPerCell = xscale;
+            //if (doScale)
+            //{
+            //    maxYpixels = 1000;
+            //    maxXpixels = 2500;
+            //    YpixelsPerCell = maxYpixels / rows;
+            //    XpixelsPerCell = maxXpixels / cols;
+            //    if (YpixelsPerCell == 0) YpixelsPerCell = 1;
+            //    if (XpixelsPerCell == 0) XpixelsPerCell = 1;
+            //}
 
             int Ypixels = YpixelsPerCell * rows;
             int Xpixels = XpixelsPerCell * cols;
