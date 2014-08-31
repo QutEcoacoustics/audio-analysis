@@ -2164,22 +2164,22 @@ namespace TowseyLibrary
         }
 
 
-        public static Image DrawXandYaxes(Image image, int scaleWidth, double xTicInterval, double yTicInterval)
-        {            
-            Image returnImage = DrawYaxisScale(image, scaleWidth, yTicInterval);
-            returnImage = DrawXaxisScale(returnImage, scaleWidth, xTicInterval);
+        public static Image DrawXandYaxes(Image image, int scaleWidth, double xTicInterval, int xOffset, double yTicInterval, int yOffset)
+        {
+            Image returnImage = DrawYaxisScale(image, scaleWidth, yTicInterval, yOffset);
+            returnImage = DrawXaxisScale(returnImage, scaleWidth, xTicInterval, xOffset);
             return returnImage;
         }
 
-        public static Image DrawYaxisScale(Image image, int scaleWidth, double yTicInterval)
+        public static Image DrawYaxisScale(Image image, int scaleWidth, double yTicInterval, int yOffset)
         {
             int ticCount = (int)(image.Height / yTicInterval);
             // draw gridlines on Image
             Pen pen = new Pen(Color.White);
             Graphics g = Graphics.FromImage(image);
-            for (int i = 0; i < ticCount; i++)
+            for (int i = 1; i <= ticCount; i++)
             {
-                int y1 = image.Height - (int)(i * yTicInterval);
+                int y1 = image.Height - (int)(i * yTicInterval) + yOffset;
                 g.DrawLine(pen, 0, y1, image.Width - 1, y1);
             }
 
@@ -2187,9 +2187,9 @@ namespace TowseyLibrary
             g = Graphics.FromImage(yAxisImage);
             pen = new Pen(Color.Black);
             g.Clear(Color.LightGray);
-            for (int i = 0; i < ticCount; i++)
+            for (int i = 1; i <= ticCount; i++)
             {
-                int y1 = image.Height - (int)(i * yTicInterval);
+                int y1 = yAxisImage.Height - (int)(i * yTicInterval) + yOffset;
                 g.DrawLine(pen, 0, y1, scaleWidth - 1, y1);
                 g.DrawLine(pen, 0, y1 - 1, scaleWidth - 1, y1 - 1);
             }
@@ -2206,15 +2206,15 @@ namespace TowseyLibrary
         /// <param name="scaleHeight"></param>
         /// <param name="yTicInterval"></param>
         /// <returns></returns>
-        public static Image DrawXaxisScale(Image image, int scaleHeight, double xTicInterval)
+        public static Image DrawXaxisScale(Image image, int scaleHeight, double xTicInterval, int xOffset)
         {
             int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
             // draw gridlines on Image
             Pen pen = new Pen(Color.White);
             Graphics g = Graphics.FromImage(image);
-            for (int i = 0; i < ticCount; i++)
+            for (int i = 1; i <= ticCount; i++)
             {
-                int x1 = scaleHeight + (int)(i * xTicInterval);
+                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
                 g.DrawLine(pen, x1, 0, x1, image.Height - 1);
             }
             
@@ -2222,9 +2222,9 @@ namespace TowseyLibrary
             g = Graphics.FromImage(scaleImage);
             pen = new Pen(Color.Black);
             g.Clear(Color.LightGray);            
-            for (int i = 0; i < ticCount; i++)
+            for (int i = 0; i <= ticCount; i++)
             {
-                int x1 = scaleHeight + (int)(i * xTicInterval);
+                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
                 g.DrawLine(pen, x1, 0, x1, scaleHeight-1);
                 g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
             }
