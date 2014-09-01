@@ -1069,9 +1069,9 @@
                         candidatesList.Add(c);
                     }
                 }// end of the loop for candidates
-                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
-                var candidateDistanceList = new List<Candidates>();
+                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.               
                 Log.Info("# calculate the distance between a query and a candidate");
+                var candidateDistanceList = new List<Candidates>();
                 double weight = 0.15;
                 /// To calculate the distance                
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet7)
@@ -1097,14 +1097,12 @@
                         seperateCandidatesList.Add(temp);
                     }
                 }
-                for (int index = 0; index < audioFilesCount; index++)
+                var sepCandiListCount = seperateCandidatesList.Count;
+                for (int index = 0; index < sepCandiListCount; index++)
                 {
                     seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
-                    if (seperateCandidatesList[index].Count != 0)
-                    {
-                        var top1 = seperateCandidatesList[index][0];
-                        finalOutputCandidates.Add(top1);
-                    }
+                    var top1 = seperateCandidatesList[index][0];
+                    finalOutputCandidates.Add(top1);
                 }
                 finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
                 var candidateList = new List<Candidates>();

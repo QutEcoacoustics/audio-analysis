@@ -271,7 +271,7 @@ namespace Dong.Felt
             {
                 var distance = SimilarityMatching.EuclideanDistanceScore(query, c, matchedThreshold, weight);
                 var formattedDistance = Convert.ToDouble(distance.ToString("F03", CultureInfo.InvariantCulture));
-                var item = new Candidates(distance, c.TimeIndex,
+                var item = new Candidates(formattedDistance, c.TimeIndex,
                         c.Duration.TotalMilliseconds, c.FrequencyIndex, c.FrequencyIndex - c.FrequencyRange,
                         c.SourceAudioFile);
                 result.Add(item);
