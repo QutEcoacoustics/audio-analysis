@@ -221,7 +221,7 @@ namespace AnalysisPrograms
             double[] tsdScores = NormalDist.Values2Probabilities(tsd);
 
             //vii: GET OSCILLATION SCORE AND NORMALIZE
-            double[] rawOscillations = OscillationAnalysis.DetectOscillationsInScoreArray(dBarray, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilRate, maxOscilRate);
+            double[] rawOscillations = Oscillations2010.DetectOscillationsInScoreArray(dBarray, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilRate, maxOscilRate);
             //normalise oscillation scores wrt scores obtained on a training.
             //double maxOscillationScore = rawOscillations[DataTools.GetMaxIndex(rawOscillations)];
             //LoggedConsole.WriteLine("maxOscillationScore=" + maxOscillationScore);
@@ -241,7 +241,7 @@ namespace AnalysisPrograms
             }
 
             //ix: fill in the oscillation scores
-            combinedScores = OscillationAnalysis.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
+            combinedScores = Oscillations2010.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
             return System.Tuple.Create(combinedScores, filteredRecording, dBarray, tsd);
         }
 

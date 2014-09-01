@@ -10,7 +10,7 @@ using AudioAnalysisTools.DSP;
 
 namespace AudioAnalysisTools
 {
-    public static class OscillationAnalysis
+    public static class Oscillations2010
     {
 
 

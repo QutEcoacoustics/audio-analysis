@@ -19,7 +19,7 @@ namespace AudioAnalysisTools
     /// This method should be called in preference to those in the class OscillationAnalysis.
     /// (The latter hsould be depracated.)
     /// </summary>
-    public static class OscillationDetector
+    public static class Oscillations2012
     {
         /// <summary>
         /// 
