@@ -118,6 +118,7 @@ namespace Dong.Felt
       
             var regionMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(stMatrix, rowStart, colStart, rowEnd, colEnd);
             var result = new RegionRerepresentation();
+            result.POICount = StructureTensorAnalysis.StructureTensorCountInEvent(regionMatrix);
             result.StartRowIndex = rowStart;
             result.EndRowIndex = rowEnd;
             result.StartColIndex = colStart;

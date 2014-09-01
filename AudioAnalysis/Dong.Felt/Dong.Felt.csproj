@@ -139,6 +139,7 @@
     <Compile Include="Indexing.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Preprocessing\AudioPreprosessing.cs" />
+    <Compile Include="Representations\ClusterAnalysis.cs" />
     <Compile Include="Representations\RegionRrepresentation.cs" />
     <Compile Include="Representations\RidgeDescriptionRegionRepresentation.cs" />
     <Compile Include="Representations\RidgeNeighbourhoodFeatureVector.cs" />

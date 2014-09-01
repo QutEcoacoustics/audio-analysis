@@ -596,6 +596,7 @@
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
                    // tempPoi.fftMatrix = defaultFFTMatrix;
+                    tempPoi.OrientationCategory = 10;
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }
@@ -605,9 +606,9 @@
                 // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
                 // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
                 // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                //m[poi.Point.Y, poi.Point.X] = poi;
-                // Changed 2014-8-22
-                m[poi.Point.X, poi.Point.Y] = poi;
+                m[poi.Point.Y, poi.Point.X] = poi;
+                // Changed 2014-8-22 for structure tensor calculation
+                //m[poi.Point.X, poi.Point.Y] = poi;
             }
             return m;
         }
