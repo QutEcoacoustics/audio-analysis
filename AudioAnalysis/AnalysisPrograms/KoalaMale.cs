@@ -330,7 +330,7 @@ namespace AnalysisPrograms
             }
 
             int frameSize = 512; //seems to work  -- frameSize = 1024 takes too long to compute; 
-            double windowOverlap = OscillationDetector.CalculateRequiredFrameOverlap(recording.SampleRate, frameSize, maxOscilFreq);
+            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(recording.SampleRate, frameSize, maxOscilFreq);
 
 
             //i: MAKE SONOGRAM
@@ -361,7 +361,7 @@ namespace AnalysisPrograms
             double[] scores;                      //predefinition of score array
             List<AcousticEvent> events;
             double[,] hits;
-            OscillationDetector.Execute((SpectrogramStandard)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, eventThreshold,
+            Oscillations2012.Execute((SpectrogramStandard)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, eventThreshold,
                                         minDuration, maxDuration, out scores, out events, out hits);
             events = KoalaMale.FilterMaleKoalaEvents(events); //remove isolated koala events - 
 
