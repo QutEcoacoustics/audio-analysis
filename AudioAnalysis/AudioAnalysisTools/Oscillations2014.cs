@@ -43,7 +43,7 @@ namespace AudioAnalysisTools
     {
 
 
-        public static void SaveFreqVsOscillationsDataAndImage(BaseSonogram sonogram, int sampleLength, string algorithmName, DirectoryInfo dir)
+        public static Image SaveFreqVsOscillationsDataAndImage(BaseSonogram sonogram, int sampleLength, string algorithmName, DirectoryInfo dir)
         {
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength, algorithmName);
 
@@ -63,6 +63,7 @@ namespace AudioAnalysisTools
             int xscale = 16;
             int yscale = 16;
             Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
+            // a tic every 5cpsec and every 1000 Hz.
             double xTicInterval = (5.0 / oscillationBinWidth) * xscale;
             double yTicInterval = (1000 / sonogram.FBinWidth) * yscale;
             int xOffset = xscale / 2;
@@ -70,6 +71,8 @@ namespace AudioAnalysisTools
             image1 = ImageTools.DrawXandYaxes(image1, 30, xTicInterval, xOffset, yTicInterval, yOffset);
             string imagePath = pathName + ".png";
             image1.Save(imagePath, ImageFormat.Png);
+            // return image just in case it is used elsewhere.
+            return image1;
         }
 
 
