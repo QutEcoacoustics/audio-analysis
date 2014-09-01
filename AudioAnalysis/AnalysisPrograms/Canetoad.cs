@@ -329,7 +329,7 @@ namespace AnalysisPrograms
             }
 
             int frameSize = 1024; //seems to work
-            double windowOverlap = OscillationDetector.CalculateRequiredFrameOverlap(recording.SampleRate, frameSize, maxOscilFreq);
+            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(recording.SampleRate, frameSize, maxOscilFreq);
 
 
             //i: MAKE SONOGRAM
@@ -363,7 +363,7 @@ namespace AnalysisPrograms
             double[] scores;                      //predefinition of score array
             List<AcousticEvent> events;
             double[,] hits;
-            OscillationDetector.Execute((SpectrogramStandard)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, eventThreshold,
+            Oscillations2012.Execute((SpectrogramStandard)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, eventThreshold,
                                         minDuration, maxDuration, out scores, out events, out hits);
 
             //######################################################################

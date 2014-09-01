@@ -14,6 +14,7 @@
     using AudioAnalysisTools.DSP;
 
     using TowseyLibrary;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Sonogram type.
@@ -267,6 +268,30 @@
             this.Data = m;
         }
 
+        public Image GetImageFullyAnnotated(string title)
+        {
+            Image image = GetImage(this.NyquistFrequency, 1, false, false);
+
+            var minuteOffset = TimeSpan.Zero;
+            var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
+            var xInterval = TimeSpan.FromSeconds(10);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
+            const int HertzInterval = 1000;
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, this.NyquistFrequency, HertzInterval);
+
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
+
+            var list = new List<Image>();
+            list.Add(titleBar);
+            list.Add(timeBmp);
+            list.Add(image);
+            list.Add(timeBmp);
+
+            Image compositeImage = ImageTools.CombineImagesVertically(list);
+            return compositeImage;
+        }
+
         public Image GetImage()
         {
             return GetImage(this.NyquistFrequency, 1, false, false);
@@ -279,8 +304,11 @@
 
         public virtual Image GetImage(int maxFrequency, int binHeight, bool doHighlightSubband, bool add1kHzLines)
         {
+            // stretch the data slightly because it enhances the spectrogram
+            double fractionalStretching = 0.01;
+            double[,] contrastStretchedData = ImageTools.ContrastStretching(this.Data, fractionalStretching);
 
-            Image image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
+            Image image = BaseSonogram.GetSonogramImage(contrastStretchedData, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
                                              doHighlightSubband, this.subBand_MinHz, this.subBand_MaxHz);
             bool doMelScale = false;
             double freqBinWidth = 0.0;
