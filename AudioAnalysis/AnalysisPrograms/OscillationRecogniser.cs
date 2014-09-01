@@ -201,7 +201,7 @@ namespace AnalysisPrograms
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] segments;                    //predefinition of segmentation of recording
             TimeSpan analysisTime;                //predefinition of Time duration taken to do analysis on this file  
-            OscillationAnalysis.Execute((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
+            Oscillations2010.Execute((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out scores, out predictedEvents, out hits, out segments, out analysisTime);
 
