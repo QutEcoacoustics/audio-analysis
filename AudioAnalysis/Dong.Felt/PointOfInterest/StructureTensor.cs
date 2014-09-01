@@ -455,6 +455,29 @@
             return poiList;
         }
 
+        public static int StructureTensorCountInEvent(PointOfInterest[,] eventMatrix)
+        {
+            var rowsCount = eventMatrix.GetLength(0);
+            var colsCount = eventMatrix.GetLength(1);
+
+            var count = 0;
+
+            for (int r = 0; r < rowsCount; r++)
+            {
+                for (int c = 0; c < colsCount; c++)
+                {
+                    if (eventMatrix[r, c] != null)
+                    {
+                        if (eventMatrix[r, c].fftMatrix != null)
+                        {
+                            count++;
+                        }
+                    }
+                }
+            }
+            return count; 
+        }
+
         // Step 5.5 set up a local threshold. it is based on l calculated in fuction of GetMaximumLength, it will be used to determine whether a given pixel is p. 
         /// <summary>
         /// Get the threshold for keeping points of interest
