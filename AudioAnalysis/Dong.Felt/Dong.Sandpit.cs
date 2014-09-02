@@ -93,8 +93,8 @@
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
                   //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                   //ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
-                    //MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
-                    //    outputDirectory.FullName, tempDirectory);
+                    MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
+                        outputDirectory.FullName, tempDirectory);
  
                                      
                    
@@ -114,8 +114,8 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
-                    GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 5);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
+                    //GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
                     //                                  {0,  255,  255, 0},
@@ -1322,6 +1322,19 @@
             }
             return result;
         }
+
+        /// <summary>
+        /// Drawing Candidate spectrogram
+        /// </summary>
+        /// <param name="candidateCsvFilePath"></param>
+        /// <param name="queryCsvFilePath"></param>
+        /// <param name="queryAudioFilePath"></param>
+        /// <param name="outputPath"></param>
+        /// <param name="rank"></param>
+        /// <param name="ridgeConfig"></param>
+        /// <param name="config"></param>
+        /// <param name="featurePropSet"></param>
+        /// <param name="tempDirectory"></param>
         public static void DrawingCandiOutputSpectrogram(string candidateCsvFilePath, string queryCsvFilePath, string queryAudioFilePath,
             string outputPath, int rank, RidgeDetectionConfiguration ridgeConfig, SonogramConfig config, string featurePropSet, DirectoryInfo tempDirectory)
         {
