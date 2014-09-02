@@ -10,7 +10,7 @@ using AudioAnalysisTools.DSP;
 
 namespace AudioAnalysisTools
 {
-    public static class OscillationAnalysis
+    public static class Oscillations2010
     {
 
 
@@ -589,7 +589,7 @@ namespace AudioAnalysisTools
         public static double[] PeriodicityAnalysis(double[] array)
         {
             //DataTools.writeBarGraph(array);
-            var A = DataTools.AutoCorrelation(array, 0, array.Length * 3 / 4); // do 2/3rds of maximum possible lag
+            var A = AutoAndCrossCorrelation.MyCrossCorrelation(array, array); // do 2/3rds of maximum possible lag
             int dctLength = A.Length;
 
             A = DataTools.SubtractMean(A);

@@ -548,6 +548,8 @@ namespace AudioAnalysisTools.DSP
 
             double Q = min + ((indexOfMode + 1) * binWidth); // modal noise level
             double noise_SD = (indexOfMode - indexOfOneSD) * binWidth; // SD of the noise
+            // check for noise_SD = zero which can cause possible division by zero later on
+            if (indexOfMode == indexOfOneSD) noise_SD = binWidth;
             double threshold = Q + (noise_SD * SD_COUNT);
             double snr = max - threshold;
             return new BackgroundNoise()
@@ -805,7 +807,8 @@ namespace AudioAnalysisTools.DSP
             mnr = NoiseReduce_Standard(matrix, modalNoise, neighbourhoodBackgroundThreshold);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
 
-            byte[,] binary = MatrixTools.IdentifySpectralRidges(mnr);
+            double ridgeThreshold = 0.1;
+            byte[,] binary = MatrixTools.IdentifySpectralRidges(mnr, ridgeThreshold);
             double[,] op = MatrixTools.SpectralRidges2Intensity(binary, mnr);
             return op;
         }

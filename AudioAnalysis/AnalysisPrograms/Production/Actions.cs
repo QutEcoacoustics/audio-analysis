@@ -421,7 +421,20 @@ namespace AnalysisPrograms.Production
         public static Action<Create4Sonograms.Arguments> Create4Sonograms()
         {
             return AnalysisPrograms.Create4Sonograms.Main;
-        }  
+        }
+
+        [ArgDescription("Calls AnalysisPrograms.OscillationsGeneric.Main(): Searches for oscillations")]
+        public OscillationsGeneric.Arguments oscillationsGenericArgs { get; set; }
+        public static Action<OscillationsGeneric.Arguments> oscillationsGeneric()
+        {
+            return AnalysisPrograms.OscillationsGeneric.Main;
+        }
+
+
+
+
+
+
         #endregion
     }
 }

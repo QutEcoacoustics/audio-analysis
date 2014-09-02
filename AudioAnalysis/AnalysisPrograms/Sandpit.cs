@@ -38,7 +38,59 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            if (true)  // concatenating spectrogram images with gaps between them.
+            if (false)  // do test of new moving average method
+            {
+                int window = 99;
+                double[] V0 = new double[100];
+                for (int i = 0; i < V0.Length; i++) 
+                    V0[i] = i;
+                //for (int i = 0; i < V0.Length; i++)
+                //    V0[i] = 1.0; 
+
+                double[] V1 = DataTools.filterMovingAverageOLD(V0, window);
+                double[] V2 = DataTools.filterMovingAverage(V0, window);
+
+                for (int i = 0; i < V1.Length; i++)
+                    if (V1[i] != V2[i]) 
+                        Console.WriteLine("index {0}: V0={1}    {2} != {3}", i, V0[i], V1[i], V2[i]);
+                    else
+                        Console.WriteLine("index {0}: V0={1} ",              i, V0[i], V1[i], V2[i]);
+
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
+
+
+
+            if (true)  // test examples of wavelets
+            {
+                WaveletTransformContinuous.ExampleOfWavelets_1();
+                //WaveletPacketDecomposition.ExampleOfWavelets_1();
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
+
+
+            if (false)  // do 2D-FFT of an image.
+            {
+                string imageFilePath = @"C:\SensorNetworks\Output\FFT2D\test5.png";
+                bool reversed = false;
+                double[,] matrix = FFT2D.GetImageDataAsGrayIntensity(imageFilePath, reversed);
+                //matrix = MatrixTools.normalise(matrix);
+                double[,] output = FFT2D.FFT2Dimensional(matrix);
+                Console.WriteLine("Sum={0}", (MatrixTools.Matrix2Array(output)).Sum());
+                //draws matrix after normalisation with white=low and black=high
+                ImageTools.DrawReversedMatrix(output, @"C:\SensorNetworks\Output\FFT2D\test5_2DFFT.png");
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
+
+
+
+            if (false)  // concatenating spectrogram images with gaps between them.
             {
                 int spectralDim = 256;
                 double[] spectralIndices = new double[spectralDim];
@@ -63,7 +115,7 @@ namespace AnalysisPrograms
                         int colourIndex = (int)(255 * array[p]);
                         if (colourIndex > 255) colourIndex = 255;
                         else
-                        if (colourIndex < 0) colourIndex = 0;
+                            if (colourIndex < 0) colourIndex = 0;
                         bmp.SetPixel(d, spectralDim - p - 1, Color.FromArgb(colourIndex, colourIndex, colourIndex));
                     }
 
@@ -81,8 +133,6 @@ namespace AnalysisPrograms
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
-
-
 
 
             if (false)  // concatenating spectrogram images with gaps between them.
@@ -112,13 +162,13 @@ namespace AnalysisPrograms
             {
                 SpectralClustering.Sandpit();
             } // end if (true)
-            
+
 
             // experiments with false colour images - categorising/discretising the colours
             if (false)
             {
                 LDSpectrogramDiscreteColour.DiscreteColourSpectrograms();
-            } 
+            }
 
             Log.WriteLine("# Finished!");
         }

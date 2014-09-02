@@ -5,7 +5,7 @@ SegmentDuration: 1
 SegmentOverlap: 0
 
 #FRAME LENGTH in samples - must be power of 2
-FrameLength: 1024
+FrameLength: 512
 
 #Frame Overlap as fraction: default=0.0 
 FrameOverlap: 0.25

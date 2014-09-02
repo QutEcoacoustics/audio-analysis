@@ -399,7 +399,7 @@ namespace AnalysisPrograms
 
             double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), minBin + bandWidth);
             double[] dBArray = MatrixTools.GetRowAverages(subMatrix);
-            var result1 = CrossCorrelation.DetectXcorrelationInTwoArrays(dBArray, dBArray, step, sampleLength, minFramePeriod, maxFramePeriod);
+            var result1 = AutoAndCrossCorrelation.DetectXcorrelationInTwoArrays(dBArray, dBArray, step, sampleLength, minFramePeriod, maxFramePeriod);
             double[] intensity1 = result1.Item1;
             double[] periodicity1 = result1.Item2;
             intensity1 = DataTools.filterMovingAverage(intensity1, 5);
@@ -715,8 +715,8 @@ namespace AnalysisPrograms
             for (int r = 0; r < span; r++) upper_dB[r] /= halfHt;
             for (int r = 0; r < span; r++) lower_dB[r] /= halfHt;
 
-            double upperCC = DataTools.CorrelationCoefficient(band_dB, upper_dB);
-            double lowerCC = DataTools.CorrelationCoefficient(band_dB, lower_dB);
+            double upperCC = AutoAndCrossCorrelation.CorrelationCoefficient(band_dB, upper_dB);
+            double lowerCC = AutoAndCrossCorrelation.CorrelationCoefficient(band_dB, lower_dB);
             if (upperCC < 0.0) upperCC = 0.0;
             if (lowerCC < 0.0) lowerCC = 0.0;
             double CCscore = upperCC + lowerCC;

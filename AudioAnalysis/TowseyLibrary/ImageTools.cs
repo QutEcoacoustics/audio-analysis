@@ -7,6 +7,14 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
 
+//using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Generic;
+
+using ColorMine.ColorSpaces;
+
+
+
 namespace TowseyLibrary
 {
     public enum Kernal
@@ -522,6 +530,50 @@ namespace TowseyLibrary
             return outM;
         }
 
+
+        public static double[,] ContrastStretching(double[,] M, double fractionalStretching)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            double[,] norm = MatrixTools.normalise(M);
+
+            int binCount = 100;
+            double binWidth = 0.01; 
+            double min = 0.0; 
+            double max = 1.0;
+            int[] histo = Histogram.Histo(M, binCount, min, max, binWidth);
+
+            int cellCount = rowCount * colCount;
+            int thresholdCount = (int)(cellCount * fractionalStretching);
+
+            // get low side stretching bound
+            int bottomSideCount = 0;
+            for (int i = 0; i < binCount; i++)
+            {
+                bottomSideCount += histo[i];
+                if (bottomSideCount > thresholdCount)
+                {
+                    min = i * binWidth;
+                    break;
+                }
+            }
+
+            // get high side stretching bound
+            int topSideCount = 0;
+            for (int i = binCount-1; i >= 0; i--)
+            {
+                topSideCount += histo[i];
+                if (topSideCount > thresholdCount)
+                {
+                    max = 1 - ((binCount - i) * binWidth);
+                    break;
+                }
+            }
+
+            // truncate min and max and thereby contrast stretch.
+            norm = MatrixTools.NormaliseInZeroOne(norm, min, max);
+            return norm;
+        }
 
         public static double[,] SobelEdgeDetection(double[,] m)
         {
@@ -1996,13 +2048,36 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Normalises the matrix between zero and one. 
+        /// Then draws the reversed matrix and saves image to passed path.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawReversedMDNMatrix(Matrix<double> matrix, string pathName)
+        {
+            double[,] matrix1 = matrix.ToArray();
+            Image bmp = DrawReversedMatrix(matrix1);
+            bmp.Save(pathName);
+        }
+        /// <summary>
+        /// Normalises the matrix between zero and one. 
+        /// Then draws the reversed matrix and saves image to passed path.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawReversedMatrix(double[,] matrix, string pathName)
+        {
+            Image bmp = DrawReversedMatrix(matrix);
+            bmp.Save(pathName);
+        }
+        /// <summary>
         /// Draws matrix and save image
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
         public static void DrawMatrix(double[,] matrix, string pathName)
         {
-            Image bmp = DrawMatrix(matrix);
+            Image bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
         /// <summary>
@@ -2010,10 +2085,51 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static Image DrawMatrix(double[,] matrix)
+        public static Image DrawNormalisedMatrix(double[,] matrix)
         {
             double[,] norm = DataTools.normalise(matrix);
-            return DrawMatrixWithoutNormalisation(matrix);
+            return DrawMatrixWithoutNormalisation(norm);
+        }
+        /// <summary>
+        /// Draws matrix after first normalising the data
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static Image DrawReversedMatrix(double[,] matrix)
+        {
+            double[,] norm = DataTools.normalise(matrix);
+            return DrawReversedMatrixWithoutNormalisation(norm);
+        }
+
+        /// <summary>
+        /// Draws matrix without normkalising the values in the matrix.
+        /// Assume some form of normalisation already done.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static Image DrawReversedMatrixWithoutNormalisation(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+
+            Color[] grayScale = GrayScale();
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int greyId = (int)Math.Floor(matrix[r, c] * 255);
+                    if (greyId < 0) { greyId = 0; }
+                    else
+                    { if (greyId > 255) greyId = 255; }
+
+                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
+                    bmp.SetPixel(c, r, grayScale[greyId]);
+                }//end all columns
+            }//end all rows
+            return bmp;
         }
 
         /// <summary>
@@ -2036,16 +2152,89 @@ namespace TowseyLibrary
                 for (int c = 0; c < cols; c++)
                 {
                     int greyId = (int)Math.Floor(matrix[r, c] * 255);
-                    if (greyId < 0) greyId = 0;
-                    else
-                    if (greyId > 255) greyId = 255;
 
-                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
+                    if (greyId < 0) { greyId = 0; }
+                    else
+                    { if (greyId > 255) greyId = 255; }
+
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
             }//end all rows
             return bmp;
         }
+
+
+        public static Image DrawXandYaxes(Image image, int scaleWidth, double xTicInterval, int xOffset, double yTicInterval, int yOffset)
+        {
+            Image returnImage = DrawYaxisScale(image, scaleWidth, yTicInterval, yOffset);
+            returnImage = DrawXaxisScale(returnImage, scaleWidth, xTicInterval, xOffset);
+            return returnImage;
+        }
+
+        public static Image DrawYaxisScale(Image image, int scaleWidth, double yTicInterval, int yOffset)
+        {
+            int ticCount = (int)(image.Height / yTicInterval);
+            // draw gridlines on Image
+            Pen pen = new Pen(Color.White);
+            Graphics g = Graphics.FromImage(image);
+            for (int i = 1; i <= ticCount; i++)
+            {
+                int y1 = image.Height - (int)(i * yTicInterval) + yOffset;
+                g.DrawLine(pen, 0, y1, image.Width - 1, y1);
+            }
+
+            Image yAxisImage = new Bitmap(scaleWidth, image.Height);
+            g = Graphics.FromImage(yAxisImage);
+            pen = new Pen(Color.Black);
+            g.Clear(Color.LightGray);
+            for (int i = 1; i <= ticCount; i++)
+            {
+                int y1 = yAxisImage.Height - (int)(i * yTicInterval) + yOffset;
+                g.DrawLine(pen, 0, y1, scaleWidth - 1, y1);
+                g.DrawLine(pen, 0, y1 - 1, scaleWidth - 1, y1 - 1);
+            }
+            g.DrawRectangle(pen, 0, 0, scaleWidth - 1, image.Height - 1);
+            Image[] array = new Image[2];
+            array[0] = yAxisImage;
+            array[1] = image;
+            return ImageTools.CombineImagesInLine(array);
+        }
+        /// <summary>
+        /// assumes the y-axis has been drawn already
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="scaleHeight"></param>
+        /// <param name="yTicInterval"></param>
+        /// <returns></returns>
+        public static Image DrawXaxisScale(Image image, int scaleHeight, double xTicInterval, int xOffset)
+        {
+            int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
+            // draw gridlines on Image
+            Pen pen = new Pen(Color.White);
+            Graphics g = Graphics.FromImage(image);
+            for (int i = 1; i <= ticCount; i++)
+            {
+                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
+                g.DrawLine(pen, x1, 0, x1, image.Height - 1);
+            }
+            
+            Image scaleImage = new Bitmap(image.Width, scaleHeight);
+            g = Graphics.FromImage(scaleImage);
+            pen = new Pen(Color.Black);
+            g.Clear(Color.LightGray);            
+            for (int i = 0; i <= ticCount; i++)
+            {
+                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
+                g.DrawLine(pen, x1, 0, x1, scaleHeight-1);
+                g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
+            }
+            g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
+            Image[] array = new Image[2];
+            array[0] = image;
+            array[1] = scaleImage;
+            return ImageTools.CombineImagesVertically(array);
+        }
+
 
         public static Image DrawHistogram(string label, int[] histogram, Dictionary<string, double> statistics, int imageWidth, int height)
         {
@@ -2154,64 +2343,93 @@ namespace TowseyLibrary
         }
 
 
+        public static void DrawMatrixInColour(double[,] matrix, string pathName, bool doScale)
+        {
+            Image image = DrawMatrixInColour(matrix, doScale);
+            image.Save(pathName);
+        }
+
         /// <summary>
         /// Draws colour matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static void DrawMatrixInColour(double[,] matrix, string pathName, bool doScale)
+        public static Image DrawMatrixInColour(double[,] matrix, bool doScale)
         {
-            int paletteSize = 50;
-            var pens = ImageTools.GetColorPalette(paletteSize);
+            int xscale = 10;
+            int yscale = 5;
+            return DrawMatrixInColour(matrix, xscale, yscale);
+        }
+        public static Image DrawMatrixInColour(double[,] matrix, int xscale, int yscale)
+        {
+            Hsv myHsv;
+            Rgb myRgb;
+            Color colour;
+            int bottomColour = 1;     // to avoid using the reds
+            int topColour = 250;      // to avoid using the magentas
+            int hueRange = topColour - bottomColour;
 
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
 
             int maxYpixels = rows;
             int maxXpixels = cols;
-            int YpixelsPerCell = 1;
-            int XpixelsPerCell = 1;
-            if (doScale)
-            {
-                maxYpixels = 1000;
-                maxXpixels = 2500;
-                YpixelsPerCell = maxYpixels / rows;
-                XpixelsPerCell = maxXpixels / cols;
-                if (YpixelsPerCell == 0) YpixelsPerCell = 1;
-                if (XpixelsPerCell == 0) XpixelsPerCell = 1;
-            }
+            int YpixelsPerCell = yscale;
+            int XpixelsPerCell = xscale;
+            //if (doScale)
+            //{
+            //    maxYpixels = 1000;
+            //    maxXpixels = 2500;
+            //    YpixelsPerCell = maxYpixels / rows;
+            //    XpixelsPerCell = maxXpixels / cols;
+            //    if (YpixelsPerCell == 0) YpixelsPerCell = 1;
+            //    if (XpixelsPerCell == 0) XpixelsPerCell = 1;
+            //}
 
             int Ypixels = YpixelsPerCell * rows;
             int Xpixels = XpixelsPerCell * cols;
             //LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
             //LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
 
+            double[,] norm = DataTools.normalise(matrix);
+
             Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
 
-            double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    //double val = norm[r, c];
-                    int greyId = (int)Math.Floor(norm[r, c] * 255);
                     int xOffset = (XpixelsPerCell * c);
                     int yOffset = (YpixelsPerCell * r);
                     //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
 
+                    // use HSV colour space
+                    //int hue = bottomColour + (int)Math.Floor(hueRange * norm[r, c]);
+                    int hue = topColour - (int)Math.Floor(hueRange * norm[r, c]);
+
+                    double saturation = 1.0;
+                    //double saturation = 0.75 + (norm[r, c] * 0.25);
+                    //double saturation = norm[r, c] * 0.5;
+                    //double saturation = (1 - norm[r, c]) * 0.5;
+
+                    double value = 1.0;
+                    //double value = 0.60 + (norm[r, c] * 0.40);
+
+                    myHsv = new Hsv { H = hue, S = saturation, V = value };
+                    myRgb = myHsv.To<Rgb>();
+                    colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                    
                     for (int x = 0; x < XpixelsPerCell; x++)
                     {
                         for (int y = 0; y < YpixelsPerCell; y++)
                         {
-                            //LoggedConsole.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
-                            //bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
-                            bmp.SetPixel(xOffset + x, yOffset + y, pens[(int)(paletteSize * norm[r, c])].Color);
+                            bmp.SetPixel(xOffset + x, yOffset + y, colour);
                         }
                     }
                 }//end all columns
             }//end all rows
 
-            bmp.Save(pathName);
+            return bmp;
         }
 
         /// <summary>

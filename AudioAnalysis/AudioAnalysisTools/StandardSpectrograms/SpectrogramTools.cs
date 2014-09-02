@@ -23,6 +23,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using AudioAnalysisTools.WavTools;
 
     using TowseyLibrary;
+    using ColorMine.ColorSpaces;
 
     public static class SpectrogramTools
     {
@@ -172,7 +173,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             return sonogram;
         }
-        
+
+
+        public static double[,] NormaliseSpectrogramMatrix(double[,] matrix, double truncateMin, double truncateMax, double backgroundFilterCoeff)
+        {
+            double[,] m = MatrixTools.NormaliseInZeroOne(matrix, truncateMin, truncateMax);
+            m = MatrixTools.FilterBackgroundValues(m, backgroundFilterCoeff); // to de-demphasize the background small values
+            return m;
+        }
+
         
         /// <summary>
         /// 
@@ -273,6 +282,109 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //if (addScale) image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
             return image.GetImage();
         } //CSV2SonogramImage()
+
+
+        public static Image CreateFalseColourSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData)
+        {
+            double truncateMin = -120.0;
+            double truncateMax = -30.0;
+            double filterCoefficient = 1.0;
+            double[,] dbSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(dbSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+            truncateMin = 0;
+            truncateMax = 60;
+            double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+
+            double ridgeThreshold = 6.0;
+            byte[,] hits = MatrixTools.IdentifySpectralRidges(dbSpectrogramData, ridgeThreshold);
+
+
+            int width = dbSpectrogramData.GetLength(0);
+            int height = dbSpectrogramData.GetLength(1);
+            Bitmap image = new Bitmap(width, height);
+            Color colour;
+            Hsv myHsv;
+            Rgb myRgb;
+
+            for (int y = 0; y < height; y++) //over all freq bins
+            {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        double dbValue = dbSpectrogramNorm[x, y];
+                        int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
+                        //int c1 = (int)Math.Floor(255.0 * dbValue);
+                        if (c1 < 0) c1 = 0;
+                        else
+                            if (c1 > 255) c1 = 255;
+                        colour = Color.FromArgb(c1, c1, c1);
+
+                        if (nrSpectrogramNorm[x, y] > 0)
+                        {
+                            double nrValue = nrSpectrogramData[x, y];
+                            //    int grn = (int)Math.Floor(255.0 * nrValue); // get colour for noise reduced portion
+                        //    int red = 255 - grn;
+                        //    if (red < 125) red = 125;
+                        //    colour = Color.FromArgb(red, grn, 0);
+                        //    //if (c2 < 0) c2 = 0;
+                        //    //else
+                        //    //if (c2 > 255) c2 = 255;
+                        //    //int c3 = c2 * 2;
+                        //    //if (c3 > 255) c3 = 255;
+
+                        //    if (nrSpectrogramData[x, y] > 4.0)
+                        //    {
+                        //        colour = Color.FromArgb(125, grn, 0); // values > 3dB are in green
+                        //    }
+
+                            // PRODUCES COLOUR PIXELLATED SPECTRGRAM
+                            /*
+                            colour = Color.OrangeRed;
+                            if (nrValue > 12.0) colour = Color.Green;
+                            else if (nrValue > 10.0) colour = Color.LightGreen;
+                            else if (nrValue > 8.0) colour = Color.Yellow;
+                            else if (nrValue > 6.0) colour = Color.Orange;
+                            */
+
+
+                            // use HSV colour space
+                            int bottomColour = 30;    // to avoid using the reds
+                            int topColour    = 320;   // to avoid using the magentas
+                            int hueRange = topColour - bottomColour;
+                            int hue = bottomColour + (int)Math.Floor(hueRange * nrSpectrogramNorm[x, y]);
+
+                            double saturation = 1.0;
+                            //double saturation = 0.75 + (nrSpectrogramNorm[x, y] * 0.25);
+                            //double saturation = nrSpectrogramNorm[x, y] * 0.5;
+                            //double saturation = (1 - nrSpectrogramNorm[x, y]) * 0.5;
+
+                            double value = 1.0;
+                            //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
+
+                            //var myRgb = new Rgb { R = 149, G = 13, B = 12 };
+                            myHsv = new Hsv { H = hue, S = saturation, V = value };
+                            myRgb = myHsv.To<Rgb>();
+                            colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+
+
+                            // get colour for noise reduced portion
+                            // superimpose ridge detection
+                            if (hits[x, y] > 0)
+                            {
+                                //value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
+                                //myHsv = new Hsv { H = 260, S = saturation, V = value };
+                                //myRgb = myHsv.To<Rgb>();
+                                //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                                colour = Color.Blue;
+                            }
+                        }
+                        image.SetPixel(x, height - y - 1, colour);
+                    }
+            }//end over all freq bins
+
+
+            return image;
+        }
+
 
 
 
