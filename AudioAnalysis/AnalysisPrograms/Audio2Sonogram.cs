@@ -323,6 +323,7 @@ namespace AnalysisPrograms
 
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImage(false, false);
+
                 SpectrogramTools.DrawGridLinesOnImage(
                     (Bitmap)image,
                     minOffset,
