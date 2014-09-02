@@ -97,6 +97,23 @@ namespace TowseyLibrary
 			return rArray;
 		}
 
+        /// <summary>
+        /// returns the passed array but with the elements in a random order
+        /// see method above which was originally written for FuzzyART in 1995
+        /// </summary>
+        public static double[] RandomizeArray(double[] array, int seed)
+        {
+            int L = array.Length;
+            double[] rArray = new double[L];
+
+            int[] numberOrder = RandomizeNumberOrder(L, seed);
+            for (int i = 0; i < L; i++)  // select instances at random without replacement
+            {
+                rArray[i] = array[numberOrder[i]];
+            }
+            return rArray;
+        }
+
 
         /// <summary>
         /// Returns N random integers between 0 - K-1 without replacement.

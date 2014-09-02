@@ -157,6 +157,18 @@ namespace TowseyLibrary
          */
         static public void AverageAndSD(double[] data, out double av, out double sd)
         {
+            double var;
+            AverageAndVariance(data, out av, out var);
+            sd = Math.Sqrt(var);
+        }
+
+        /**
+         * returns the average and variance of a set of real values
+         * @param data
+         * @return
+         */
+        static public void AverageAndVariance(double[] data, out double av, out double variance)
+        {
             int N = data.Length;
             double sum = 0.0;
             for (int i = 0; i < N; i++)
@@ -165,22 +177,21 @@ namespace TowseyLibrary
             }
             av = sum / (double)N;
 
-            double var = 0.0;
+            variance = 0.0;
             for (int i = 0; i < N; i++)
             {
-                var += ((data[i] - av) * (data[i] - av));
+                variance += ((data[i] - av) * (data[i] - av));
             }
 
-            if (N > 30) var /= (double)N;
+            if (N > 30) variance /= (double)N;
             else
-                if (N > 2) var /= (double)(N - 1);
-                else var = 0.0;
-
-            sd = Math.Sqrt(var);
+                if (N > 2) variance /= (double)(N - 1);
+                else variance = 0.0;
 
             //LoggedConsole.WriteLine("av="+av+" SD="+SD);
         }
 
+        
         static public void AverageAndSD(List<double> data, out double av, out double sd)
         {
             AverageAndSD(data.ToArray(), out av, out sd);

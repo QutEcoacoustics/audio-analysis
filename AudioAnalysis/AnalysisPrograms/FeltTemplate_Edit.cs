@@ -117,14 +117,14 @@ namespace AnalysisPrograms
             // oscillations in time
             double[,] rotatedtarget = DataTools.MatrixRotate90Clockwise(target);
             var colSums = DataTools.GetColumnsAverages(rotatedtarget);
-            double[] periods = OscillationAnalysis.PeriodicityAnalysis(colSums); // frame periodicity
+            double[] periods = Oscillations2010.PeriodicityAnalysis(colSums); // frame periodicity
             LoggedConsole.WriteLine("Periodicity (sec) = {0:f3},  {1:f3},  {2:f3}",
                               periods[0] * FeltTemplates_Use.FeltFrameOffset, periods[1] * FeltTemplates_Use.FeltFrameOffset, periods[2] * FeltTemplates_Use.FeltFrameOffset);
             //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
             // oscillations in freq i.e. harmonics
             colSums = DataTools.GetColumnsAverages(target);
-            periods = OscillationAnalysis.PeriodicityAnalysis(colSums);
+            periods = Oscillations2010.PeriodicityAnalysis(colSums);
             LoggedConsole.WriteLine("Periodicity (Hz) = {0:f0},  {1:f0},  {2:f0}.",
                               periods[0]*FeltTemplates_Use.FeltFreqBinWidth, periods[1]*FeltTemplates_Use.FeltFreqBinWidth, periods[2]*FeltTemplates_Use.FeltFreqBinWidth);
             //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi

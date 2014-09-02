@@ -84,7 +84,10 @@ namespace TowseyLibrary
             return Math.Exp(value * Math.Log(logBase));
         }
 
-
+        public static bool IsPowerOfTwo(ulong x)
+        {
+            return (x != 0) && ((x & (x - 1)) == 0);
+        }
 
         /// <summary>
         /// 
@@ -410,8 +413,71 @@ namespace TowseyLibrary
             for (int i = 0; i < v.Length; i++) vOut[i] = v[i] - mean;
             return vOut;
         }
+        /// <summary>
+        /// subtracts the value from each value of an array 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] SubtractValue(double[] v, double value)
+        {
+            double[] vOut = new double[v.Length];
+            for (int i = 0; i < v.Length; i++)
+            { 
+                vOut[i] = v[i] - value; 
+            }
+            return vOut;
+        }
 
 
+        /// <summary>
+        /// counts the zero crossings in a signal
+        /// 
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int ZeroCrossings(double[] signal)
+        {
+            int length = signal.Length;
+            int count = 0;
+            for (int j = 1; j < length; j++)  //foreach sample
+            {
+                count += Math.Abs(Math.Sign(signal[j]) - Math.Sign(signal[j - 1]));
+            }
+            return count / 2;
+        }
+
+
+        /// <summary>
+        /// counts the times signal drops from above to below zero
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int ZeroDippings(double[] signal)
+        {
+            int length = signal.Length;
+            int count = 0;
+            for (int j = 1; j < length; j++)  //foreach sample
+            {
+                if ((signal[j - 1] >= 0.0) && (signal[j] < 0.0)) count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// counts the times signal rises from below to above zero
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int ZeroRisings(double[] signal)
+        {
+            int length = signal.Length;
+            int count = 0;
+            for (int j = 1; j < length; j++)  //foreach sample
+            {
+                if ((signal[j - 1] <= 0.0) && (signal[j] > 0.0)) count++;
+            }
+            return count;
+        }
 
 
 
@@ -888,6 +954,25 @@ namespace TowseyLibrary
         return troughs;
     }
 
+    public static int[] GetHistogramOfDistancesBetweenEveryPairOfPeaks(double[] data, double threshold)
+    {
+        List<int> peakLocations = DataTools.PeakLocations(data, threshold);
+
+        List<int> list = new List<int>();
+
+        for (int i = 0; i < peakLocations.Count - 1; i++)
+        {
+            for (int j = i+1; j < peakLocations.Count - 1; j++)
+            {
+                list.Add(peakLocations[j] - peakLocations[i]);
+            }
+        }
+
+        int[] histo = Histogram.Histo(list.ToArray());
+        return histo;
+    }
+
+
     public static void CountPeaks(double[] array, out int count, out double sum)
     {
         count = 0;
@@ -924,6 +1009,29 @@ namespace TowseyLibrary
             }
         }
     }
+
+    /// <summary>
+    /// returns a list containing integer index of every peak > threshold
+    /// </summary>
+    /// <param name="array"></param>
+    /// <param name="count"></param>
+    /// <param name="sum"></param>
+    public static List<int> PeakLocations(double[] array, double threshold)
+    {
+        int L = array.Length;
+        var locations = new List<int>();
+
+        for (int i = 1; i < L - 1; i++) // iterate through array
+        {
+            if (array[i] < threshold) continue;
+            if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
+            {
+                locations.Add(i);
+            }
+        }
+        return locations;
+    }
+
 
     /// <summary>
     /// returns an array showing values at the peaks
@@ -1016,47 +1124,6 @@ namespace TowseyLibrary
 
 //=============================================================================
 
-    public static double[] AutoCorrelation(double[] X, int minLag, int maxLag)
-    {
-        if(maxLag > X.Length) maxLag = X.Length;
-        int lagCount = maxLag - minLag + 1;
-        var A = new double[lagCount];
-        for (int lag = minLag; lag <= maxLag; lag++)
-        {
-            double sum = 0.0;
-            for (int i = 0; i < X.Length-lag; i++)
-            {
-                sum += (X[i] * X[i+lag]);
-            }
-            A[lag - minLag] = sum / (X.Length - lag);
-        }
-        return A;
-    }
-
-    //=============================================================================
-
-    /// <summary>
-    /// Pearsons correlation coefficient.
-    /// Equals the covariance normalised by the sd's.
-    /// </summary>
-    /// <param name="seriesX"></param>
-    /// <param name="seriesY"></param>
-    /// <returns></returns>
-    public static double CorrelationCoefficient(double[] seriesX, double[] seriesY)
-    {
-        double meanX, sdX, meanY, sdY;
-        NormalDist.AverageAndSD(seriesX, out meanX, out sdX);
-        NormalDist.AverageAndSD(seriesX, out meanY, out sdY);
-
-        double covar = 0.0;
-        for (int i = 0; i < seriesX.Length; i++)
-        {
-            covar += ((seriesX[i] - meanX) * (seriesY[i] - meanY));
-        }
-        covar = covar / (sdX * sdX) / (seriesX.Length-1);
-        return covar;
-    }
-    //=============================================================================
 
 
   static public double[] counts2RF(int[] counts)
@@ -1612,6 +1679,26 @@ namespace TowseyLibrary
 		  return (array);
 		}
 
+
+
+        public double NormaliseValue(double val, double normMin, double normMax)
+        {
+            double range = normMax - normMin;
+            double norm = (val - normMin) / range;
+            if (norm > 1.0)
+            {
+                norm = 1.0;
+            }
+            else if (norm < 0.0)
+            {
+                norm = 0.0;
+            }
+
+            return norm;
+        }
+
+
+
 		/// <summary>
 		/// normalised matrix of real values to [0,1].
 		/// </summary>
@@ -2065,6 +2152,7 @@ namespace TowseyLibrary
             return orderedArray;
         }
 
+
         /// <summary>
         /// normalises the values in a matrix between the passed min and max.
         /// </summary>
@@ -2244,6 +2332,29 @@ namespace TowseyLibrary
 
             return (ret);
         }
+
+
+        public static double[] NormaliseValues(int[] val, int normMin, int normMax)
+        {
+            double range = normMax - normMin;
+            double[] norms = new double[val.Length];
+            for (int i = 0; i < val.Length; i++)
+            {
+                norms[i] = (val[i] - normMin) / range;
+                if (norms[i] > 1.0)
+                {
+                    norms[i] = 1.0;
+                }
+                else if (norms[i] < 0.0)
+                {
+                    norms[i] = 0.0;
+                }
+            }
+
+            return norms;
+        }
+
+
         /// <summary>
         /// normalizes the passed array between 0,1.
         /// Ensures all values are positive
@@ -2502,6 +2613,12 @@ namespace TowseyLibrary
           logArray[i] = Math.Log10(data[i]);
       }
       return logArray;
+  }
+
+  public static int PowerOf2Exponent(int number)
+  {
+      int exponent = (int)(Math.Log(number) / DataTools.ln2);
+      return exponent;
   }
 
 
@@ -3181,40 +3298,176 @@ namespace TowseyLibrary
     for(int i=0; i<length; i++) dbSignal[i] = (double)signal[i];//clone
     return filterMovingAverage(dbSignal, width);
   }
-  
 
 
-  public static double[] filterMovingAverage(double[] signal, int width)
-  { 
-    int  length = signal.Length;
-    if(length <= 3) return signal;   // not worth the effort!
-    
-    double[] fs = new double[length]; // filtered signal
-    int    edge = width/2;            // half window width.
-    //int    odd  = width%2;          // odd or even filter window.
-    double  sum = 0.0;
-    // filter leading edge
-    for(int i=0; i<edge; i++)
-    { sum = 0.0;
-      for(int j=0; j<=(i+edge); j++) {sum += signal[j];}
-      fs[i] = sum / (double)(i+edge+1);
-    }
-    
-    for(int i=edge; i<length-edge; i++)
-    { sum = 0.0;
-      for(int j=0; j<width; j++) {sum += signal[i-edge+j];}
-      //sum = signal[i-1]+signal[i]+signal[i+1];
-      fs[i] = sum / (double)width;
-    }
-    
-    // filter trailing edge
-    for(int i=length-edge; i<length; i++)
-    { sum = 0.0;
-      for(int j=i; j<length; j++) {sum += signal[j];}
-      fs[i] = sum / (double)(length - i);
-    }
-    return fs;
+/// <summary>
+/// An old and now deprecated version of the moving averge filter.
+/// </summary>
+/// <param name="signal"></param>
+/// <param name="width"></param>
+/// <returns></returns>
+  public static double[] filterMovingAverageOLD(double[] signal, int width)
+  {
+      int length = signal.Length;
+      if (length <= 3) return signal;   // not worth the effort!
+
+      double[] fs = new double[length]; // filtered signal
+      int edge = width / 2;            // half window width.
+      //int    odd  = width%2;          // odd or even filter window.
+      double sum = 0.0;
+      // filter leading edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum = 0.0;
+          for (int j = 0; j <= (i + edge); j++) { sum += signal[j]; }
+          fs[i] = sum / (double)(i + edge + 1);
+      }
+
+      for (int i = edge; i < length - edge; i++)
+      {
+          sum = 0.0;
+          for (int j = 0; j < width; j++) { sum += signal[i - edge + j]; }
+          //sum = signal[i-1]+signal[i]+signal[i+1];
+          fs[i] = sum / (double)width;
+      }
+
+      // filter trailing edge
+      for (int i = length - edge; i < length; i++)
+      {
+          sum = 0.0;
+          for (int j = i; j < length; j++) { sum += signal[j]; }
+          fs[i] = sum / (double)(length - i);
+      }
+      return fs;
   }
+
+/// <summary>
+/// A new and more accurate version of the moving average filter.
+/// The previous version had some errors in calculation of the trailing edge.
+/// This version is also more efficient because it does not have a double loop.
+/// It also makes a distinction between odd and even window width.
+/// </summary>
+/// <param name="signal"></param>
+/// <param name="width"></param>
+/// <returns></returns>
+  public static double[] filterMovingAverage(double[] signal, int width)
+  {
+      int length = signal.Length;
+
+      if (width >= length) return null;
+
+      if (length < 3) return signal;   // not worth the effort!
+
+      if (width % 2 == 0) 
+          return filterMovingAverageEven(signal, width);
+      else
+          return filterMovingAverageOdd(signal, width);
+  }
+
+  public static double[] filterMovingAverageEven(double[] signal, int width)
+  {
+      int length = signal.Length;
+      double[] fs = new double[length]; // filtered signal
+      int edge = width / 2;             // half window width.
+
+      double sum = 0.0;
+      // sum leading edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[i];
+      }
+      // filter leading edge
+      for (int i = 0; i <= edge; i++)
+      {
+          sum += signal[edge + i];
+          fs[i] = sum / (double)(edge + i + 1);
+      }
+
+      // sum the start
+      sum = 0.0;
+      for (int i = 0; i < width; i++)
+      {
+          sum += signal[i];
+      }
+      //Console.WriteLine("sum={0}", sum);
+      // sum the central part of signal
+      for (int i = edge+1; i < length - edge; i++)
+      {
+          // sum = sum - left edge + right edge
+          sum = sum - signal[i - edge] + signal[i + edge];
+          fs[i] = sum / (double)width;
+      }
+
+      // sum trailing edge
+      sum = 0.0;
+      for (int i = 0; i <= edge; i++)
+      {
+          sum += signal[length - i - 1];
+      }
+      // filter trailing edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[length - edge - i];
+          fs[length - i - 1] = sum / (double)(edge + i + 2);
+      }
+      return fs;
+  }
+  
+  public static double[] filterMovingAverageOdd(double[] signal, int width)
+  {
+      int length = signal.Length;
+      if (length == 3)
+      {
+          signal[0] = (signal[0] + signal[1]) / (double)2;
+          signal[1] = (signal[0] + signal[1] + signal[2]) / (double)3;
+          signal[2] = (signal[1] + signal[2]) / (double)2;
+          return signal;   
+      }
+
+      double[] fs = new double[length]; // filtered signal
+      int edge = width / 2;             // half window width.
+
+      double sum = 0.0;
+      // sum leading edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[i];
+      }
+      // filter leading edge
+      for (int i = 0; i <= edge; i++)
+      {
+          sum += signal[edge + i];
+          fs[i] = sum / (double)(edge + i + 1);
+      }
+
+      sum = 0.0;
+      for (int i = 0; i < width; i++)
+      {
+          sum += signal[i];
+      }
+      //Console.WriteLine("sum={0}", sum);
+      for (int i = edge + 1; i < length - edge; i++)
+      {
+          // sum = sum - left edge + right edge
+          sum = sum - signal[i - edge - 1] + signal[i + edge];
+          fs[i] = sum / (double)width;
+      }
+
+      // sum trailing edge
+      sum = 0.0;
+      for (int i = 0; i < edge-1; i++)
+      {
+          sum += signal[length - i - 1];
+      }
+      // filter trailing edge
+      for (int i = 0; i < edge; i++)
+      {
+          sum += signal[length - edge - i];
+          fs[length - i - 1] = sum / (double)(edge + i);
+      }
+      return fs;
+  }
+
 
 
 //=========================================================================================================================
