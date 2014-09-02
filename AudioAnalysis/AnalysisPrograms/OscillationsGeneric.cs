@@ -85,10 +85,10 @@ namespace AnalysisPrograms
             return new Arguments
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
 
-                Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
                 //Source = @"Y:\Jie Frogs\Recording_1.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1.wav".ToFileInfo(),
@@ -215,7 +215,7 @@ namespace AnalysisPrograms
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
             // init the image stack
-            var list = new List<Image>();
+            var sonogramList = new List<Image>();
 
             // 1) get amplitude spectrogram
             AudioRecording recordingSegment = new AudioRecording(tempAudioSegment.FullName);
@@ -232,41 +232,63 @@ namespace AnalysisPrograms
             sonogram.Data = LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
 
             // ###############################################################
-            //Image image1 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram,  64, "Autocorr-FFT",     opDir);
-            //Image image2 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT", opDir);
-            //Image image3 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram,  64, "Autocorr-SVD-FFT", opDir);
-            //Image image4 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT", opDir);
-            // ###############################################################
-
-            // add title bar and time scale etc
-            var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM");
-            list.Add(image);
-            //string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";
-            //image.Save(testPath, ImageFormat.Png);
-
-            Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
-            list.Add(envelopeImage);
-
-            // 2) now draw the standard decibel spectrogram
-            sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-            // ###############################################################
             //Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, sampleLength, algorithmName, opDir);
-            Image image1 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT", opDir);
+            Image image1 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram,  64, "Autocorr-FFT", opDir);
             Image image2 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT", opDir);
-            Image image3 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-SVD-FFT", opDir);
+            Image image3 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram,  64, "Autocorr-SVD-FFT", opDir);
             Image image4 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT", opDir);
-            // ###############################################################
-            //image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
-            //list.Add(image);
+            string imagePath = Path.Combine(opDir.FullName, "freqOscilMatrix_" + sourceName + ".128.LCN.Autocorr-SVD-FFT.png");
+            image4.Save(imagePath, ImageFormat.Png);
 
             var list1 = new List<Image>();
             list1.Add(image1);
             list1.Add(image2);
             list1.Add(image3);
             list1.Add(image4);
+
             Image compositeImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
-            string imagePath1 = Path.Combine(opDir.FullName, sourceName + ".dB.png");
-            compositeImage1.Save(imagePath1, ImageFormat.Png);
+            // ###############################################################
+
+            // add title bar and time scale etc
+            var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM");
+            sonogramList.Add(image);
+            //string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";
+            //image.Save(testPath, ImageFormat.Png);
+
+            Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+            sonogramList.Add(envelopeImage);
+
+            // 2) now draw the standard decibel spectrogram
+            sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            // ###############################################################
+            //Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, sampleLength, algorithmName, opDir);
+            Image image5 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT", opDir);
+            Image image6 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT", opDir);
+            Image image7 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-SVD-FFT", opDir);
+            Image image8 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT", opDir);
+            imagePath = Path.Combine(opDir.FullName, "freqOscilMatrix_" + sourceName + ".128.dBs.Autocorr-SVD-FFT.png");
+            image8.Save(imagePath, ImageFormat.Png);
+
+            var list2 = new List<Image>();
+            list2.Add(image5);
+            list2.Add(image6);
+            list2.Add(image7);
+            list2.Add(image8);
+
+            Image compositeImage2 = ImageTools.CombineImagesInLine(list2.ToArray());
+            // ###############################################################
+            //image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
+            //list.Add(image);
+
+
+            // combine eight images
+            var list3 = new List<Image>();
+            list3 = new List<Image>();
+            list3.Add(compositeImage1);
+            list3.Add(compositeImage2);
+            Image compositeImage3 = ImageTools.CombineImagesVertically(list3.ToArray());
+            string imagePath3 = Path.Combine(opDir.FullName, "freqOscilMatrix_" + sourceName + ".png");
+            compositeImage3.Save(imagePath3, ImageFormat.Png);
 
 
             Image segmentationImage = Image_Track.DrawSegmentationTrack(
@@ -274,7 +296,7 @@ namespace AnalysisPrograms
                 EndpointDetectionConfiguration.K1Threshold,
                 EndpointDetectionConfiguration.K2Threshold,
                 image.Width);
-            list.Add(segmentationImage);
+            sonogramList.Add(segmentationImage);
 
             // 3) now draw the noise reduced decibel spectrogram
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
@@ -282,15 +304,15 @@ namespace AnalysisPrograms
 
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             image = sonogram.GetImageFullyAnnotated("NOISE-REDUCED DECIBEL  SPECTROGRAM");
-            list.Add(image);
+            sonogramList.Add(image);
             // ###############################################################
             // deriving osscilation graph from this noise reduced spectrogram did not work well
             //Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, sampleLength, algorithmName, opDir);
             // ###############################################################
 
-            Image compositeImage2 = ImageTools.CombineImagesVertically(list);
+            Image compositeSonogram = ImageTools.CombineImagesVertically(sonogramList);
             string imagePath2 = Path.Combine(opDir.FullName, sourceName +".png");
-            compositeImage2.Save(imagePath2, ImageFormat.Png);
+            compositeSonogram.Save(imagePath2, ImageFormat.Png);
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
 

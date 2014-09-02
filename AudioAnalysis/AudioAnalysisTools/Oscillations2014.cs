@@ -242,7 +242,7 @@ namespace AudioAnalysisTools
                 energySum += (singularValues[n] * singularValues[n]);
             }
             // get the 95% most significant ################ SIGNIFICANT PARAMETER
-            double significanceThreshold = 0.9;
+            double significanceThreshold = 0.95;
             double energy = 0.0;
             int countOfSignificantSingularValues = 0;
             for (int n = 0; n < singularValues.Count; n++)
@@ -299,21 +299,27 @@ namespace AudioAnalysisTools
                 spectrum[0] *= 0.5;
 
                 spectrum = DataTools.SquareValues(spectrum);
+                // get relative power in the three bins around max.
+                double sumOfSquares = spectrum.Sum();
                 double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
-                //double relativePower1 = powerAtMax / sumOfSquares;
-                double relativePower2 = powerAtMax / avPower;
+                if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
+                else               powerAtMax += spectrum[maxIndex - 1];
+                if (maxIndex >= spectrum.Length-1) powerAtMax += spectrum[maxIndex];
+                else                               powerAtMax += spectrum[maxIndex + 1];
+                double relativePower1 = powerAtMax / sumOfSquares;
+                //double relativePower2 = powerAtMax / avPower;
 
-                //if (relativePower1 > 0.05)
-                if (relativePower2 > 10.0)
+                if (relativePower1 > 0.1)
+                //if (relativePower2 > 1.0)
                 {
                     // check for boundary overrun
                     if (maxIndex < oscillationsVector.Length)
                     {
                         // add in a new oscillation
-                        //oscillationsVector[maxIndex] += powerAtMax;
-                        oscillationsVector[maxIndex] += relativePower2;
+                        oscillationsVector[maxIndex] += powerAtMax;
+                        //oscillationsVector[maxIndex] += relativePower2;
                     }
                 }
             }
@@ -356,14 +362,20 @@ namespace AudioAnalysisTools
                 spectrum[0] *= 0.5;
 
                 spectrum = DataTools.SquareValues(spectrum);
+                // get relative power in the three bins around max.
+                double sumOfSquares = spectrum.Sum();
                 double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
-                //double relativePower1 = powerAtMax / sumOfSquares;
+                if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
+                else powerAtMax += spectrum[maxIndex - 1];
+                if (maxIndex >= spectrum.Length - 1) powerAtMax += spectrum[maxIndex];
+                else powerAtMax += spectrum[maxIndex + 1];
+                double relativePower1 = powerAtMax / sumOfSquares;
                 double relativePower2 = powerAtMax / avPower;
 
-                //if (relativePower1 > 0.05)
-                if (relativePower2 > 10.0)
+                if (relativePower1 > 0.1)
+                //if (relativePower2 > 10.0)
                 {
                     // check for boundary overrun
                     if (maxIndex < oscillationsVector.Length)
