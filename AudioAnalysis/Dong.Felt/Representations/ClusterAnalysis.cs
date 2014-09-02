@@ -62,12 +62,12 @@ namespace Dong.Felt.Representations
                                         // check wheter need to change it. 
                                         var tempMagnitude = centralMagnitude * gaussianKernal[radius+ i, radius + j];
 
-                                        //if (result[r + i, c + j].RidgeMagnitude < tempMagnitude)
-                                        //{
+                                        if (result[r + i, c + j].RidgeMagnitude < tempMagnitude)
+                                        {
                                             result[r + i, c + j].RidgeMagnitude = tempMagnitude;
                                             result[r + i, c + j].RidgeOrientation = centralRidgeOrientation;
                                             result[r + i, c + j].OrientationCategory = centralOrientationCateg;
-                                        //}
+                                        }
                                     }
                                 }
                             }

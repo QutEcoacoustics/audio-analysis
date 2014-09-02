@@ -352,6 +352,9 @@ namespace AudioAnalysisTools
             // This ones for structure tensor
             int x = this.Point.X;
             int y = this.Point.Y;
+            // this one for ridges. 
+            //int x = this.Point.X;
+            //int y = this.Point.Y;
             //int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
             //int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
             //int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);

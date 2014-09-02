@@ -114,7 +114,7 @@ namespace Dong.Felt
                     bool isRidge = false;
                     // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
                     ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
-                    if (magnitude > magnitudeThreshold)
+                    if (magnitude > magnitudeThreshold && isRidge == true)
                     {
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
@@ -143,7 +143,8 @@ namespace Dong.Felt
             }  /// filter out some redundant ridges
             var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
             var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            //var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            var filteredPoiList = ImageAnalysisTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
             poiList = filteredPoiList;
         }
 
