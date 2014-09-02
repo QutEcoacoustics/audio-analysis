@@ -79,15 +79,16 @@ namespace AnalysisPrograms
 
             return new Arguments
             {
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-062040.png".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-062040.png".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                StartOffset = 0,
-                EndOffset = 0,
+                //StartOffset = 0,
+                // ################################ THERE IS AMBIGUITY IN NEXT ARGUMENT THAT COULD ACTUALLY BE A BUG - SEE ANTHONY
+                //EndOffset = 0,
                 Verbose = true
             };
 
@@ -251,11 +252,12 @@ namespace AnalysisPrograms
                 Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
 
                 // initialise parameters for drawing gridlines on images
-                var minOffset = TimeSpan.Zero;
+                var minuteOffset = TimeSpan.Zero;
                 int nyquist = sonogram.NyquistFrequency;
                 var xInterval = TimeSpan.FromSeconds(10);
                 TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(sonogram.Duration.Ticks / (double)image.Width));
                 const int HertzInterval = 1000;
+
                 SpectrogramTools.DrawGridLinesOnImage(
                     (Bitmap)image,
                     minOffset,
@@ -280,6 +282,7 @@ namespace AnalysisPrograms
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 result.DecibelSpectrogram = (SpectrogramStandard)sonogram;
                 image = sonogram.GetImage(false, false);
+
                 SpectrogramTools.DrawGridLinesOnImage(
                     (Bitmap)image,
                     minOffset,
@@ -303,6 +306,9 @@ namespace AnalysisPrograms
                 list.Add(timeBmp);
                 list.Add(segmentationImage);
 
+                // keep the sonogram data for later use
+                double[,] dbSpectrogramData = sonogram.Data;
+
                 // 3) now draw the noise reduced decibel spectrogram
                 // #NOISE REDUCTION PARAMETERS - restore noise reduction
                 sonoConfig.NoiseReductionType = disabledNoiseReductionType;
@@ -318,6 +324,8 @@ namespace AnalysisPrograms
                     nyquist,
                     HertzInterval);
 
+                // keep the sonogram data for later use
+                double[,] nrSpectrogramData = sonogram.Data;
 
                 // add title bar and time scale
                 title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
@@ -328,7 +336,20 @@ namespace AnalysisPrograms
                 list.Add(image);
                 list.Add(timeBmp);
 
-                // 4) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
+                // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
+                image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
+
+                // add title bar and time scale
+                title = "FALSE-COLOUR SPECTROGRAM";
+                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+
+                list.Add(titleBar);
+                list.Add(timeBmp);
+                list.Add(image);
+                list.Add(timeBmp);
+
+                // 5) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
                 ////SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
                 ////var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
                 ////var image3 = mti3.GetImage();

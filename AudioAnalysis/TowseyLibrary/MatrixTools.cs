@@ -1249,13 +1249,13 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// normalises the values in a matrix between the passed min and max.
+        /// Rescales the values of a matrix so that its in and max values are those passed.
         /// </summary>
         /// <param name="m"></param>
         /// <param name="normMin"></param>
         /// <param name="normMax"></param>
         /// <returns></returns>
-        public static double[,] Normalise(double[,] m, double normMin, double normMax)
+        public static double[,] RescaleMatrixBetweenMinAndMax(double[,] m, double normMin, double normMax)
         {
             //m = normalise(m);
             double min = Double.MaxValue;
@@ -1285,6 +1285,40 @@ namespace TowseyLibrary
 
             return (ret);
         }
+
+        /// <summary>
+        /// Normalises a matrix so that all values below the passed MIN are truncated to 0 and all values greater than the
+        /// passed MAX are truncated to 1.
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="truncateMin"></param>
+        /// <param name="normMax"></param>
+        /// <returns></returns>
+        public static double[,] NormaliseInZeroOne(double[,] M, double truncateMin, double truncateMax)
+        {
+            int rows = M.GetLength(0);
+            int cols = M.GetLength(1);
+            double range = truncateMax - truncateMin;
+            double[,] M2return = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    M2return[r, c] = (M[r, c] - truncateMin) / range;
+                    if (M2return[r, c] > 1.0)
+                    {
+                        M2return[r, c] = 1.0;
+                    }
+                    else if (M2return[r, c] < 0.0)
+                    {
+                        M2return[r, c] = 0.0;
+                    }
+                }
+            }
+
+            return M2return;
+        }
+
 
 
         /// <summary>
