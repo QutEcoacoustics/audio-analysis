@@ -972,7 +972,7 @@ namespace TowseyLibrary
 
 
 		/// <summary>
-		/// normalise matrix of real values to [0,1].
+		/// Normalises matrix values so that the min and max values become [0,1], respectively.
 		/// </summary>
 		public static double[,] normalise(double[,] m)
 		{
@@ -1478,6 +1478,21 @@ namespace TowseyLibrary
             return smoothMatrix;
         }
 
+        public static double[,] SmoothRows(double[,] matrix, int window)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            var smoothMatrix = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+            {
+                var row = DataTools.GetRow(matrix, r);
+                row = DataTools.filterMovingAverage(row, window);
+                MatrixTools.SetRow(smoothMatrix, r, row);
+            }
+            return smoothMatrix;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -1492,6 +1507,7 @@ namespace TowseyLibrary
             var binary2 = IdentifyHorizontalRidges(m2, threshold);
             //binary2 = JoinDisconnectedRidgesInBinaryMatrix(binary2, m2, threshold);
             binary2 = DataTools.MatrixTranspose(binary2);
+            //ImageTools.Sobel5X5RidgeDetection();
 
             //merge the two binary matrices
             int rows = binary1.GetLength(0);

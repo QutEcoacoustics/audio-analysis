@@ -253,13 +253,13 @@ namespace AnalysisPrograms
             //System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, upperPercentileBound);
 
             // (H) ################################## Calculate BRIGGS noise removal from amplitude spectrum 
-            double upperPercentileBound = 0.20; // lowest percentile for noise removal            
+            int percentileBound = 20; // low energy percentile for noise removal            
             //double binaryThreshold   = 0.6;   //works for higher SNR recordings
             double binaryThreshold = 0.4; //works for lower SNR recordings
             //double binaryThreshold = 0.3;   //works for lower SNR recordings
             double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilterAndGetMask(
                 amplitudeSpectrogram,
-                upperPercentileBound,
+                percentileBound,
                 binaryThreshold);
 
             string title = "TITLE";

@@ -4,6 +4,7 @@
 // </copyright>
 // <summary>
 //   Defines the Audio2Sonogram type.
+//   ACTIVITY CODE: audio2sonogram
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -19,6 +20,8 @@ namespace AnalysisPrograms
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -160,7 +163,6 @@ namespace AnalysisPrograms
             // #TimeReductionFactor: 1          
             // #FreqReductionFactor: 1
 
-
             bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
             configDict[AnalysisKeys.SonogramTitle]   = (string)configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
             configDict[AnalysisKeys.SonogramComment] = (string)configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
@@ -173,6 +175,22 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+            // ####################################################################
+            // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
+            // window width when sampling along freq bins
+            // 64 is better where many birds and fast chaning activity
+            //int sampleLength = 64;
+            // 128 is better where slow moving changes to acoustic activity
+            int sampleLength = 128;
+
+            // use this if want only dominant oscillations
+            //string algorithmName = "Autocorr-SVD-FFT";
+            // use this if want more detailed output - but not necessrily accurate!
+            string algorithmName = "Autocorr-FFT";
+            // tried but not working
+            //string algorithmName = "CwtWavelets";
+            // ####################################################################
+
 
 
             // print out the sonogram parameters
@@ -183,28 +201,35 @@ namespace AnalysisPrograms
                 {
                     LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
                 }
+                LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", sampleLength);
             }
 
             // 3: GET RECORDING
-            FileInfo outputSegment = sourceRecording;
-            if (!((startOffset == null) || (endOffset == null)))
+            // put temp FileSegment in same directory as the required output image.
+            FileInfo tempAudioSegment = new FileInfo(Path.Combine(outputImage.DirectoryName, "tempWavFile.wav"));
+            // delete the temp audio file if it already exists.
+            if (File.Exists(tempAudioSegment.FullName))
             {
-                outputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
-                AudioRecording.ExtractSegment(sourceRecording, startOffset.Value, endOffset.Value, TimeSpan.Zero, resampleRate, outputSegment);
+                File.Delete(tempAudioSegment.FullName);
             }
+            // This line creates a temporary version of the source file downsampled as per entry in the config file
+            MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
             // ###### get sonogram image ##############################################################################################
-            GenerateSpectrogram(outputSegment, configDict, outputImage, dataOnly: false, makeSoxSonogram: makeSoxSonogram);
-            
-
+            GenerateSpectrogram(tempAudioSegment, configDict, outputImage, dataOnly: false, makeSoxSonogram: makeSoxSonogram);           
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
 
+
+        /// <summary>
+        /// In line class used to return results from the static method Audio2Sonogram.GenerateSpectrogram();
+        /// </summary>
         public class AudioToSonogramResult
         {
             public SpectrogramStandard DecibelSpectrogram { get; set; }
 
+            //  path to spectrogram image
             public FileInfo OutputImage { get; set; }
         }
 
@@ -249,72 +274,33 @@ namespace AnalysisPrograms
                 sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
 
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-                // ###############################################################
-                // TEMPORARY TRIAL OF LocalContrastNormalisation
-                //int fieldSize = 9;
-                //LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
-                // ###############################################################
-                var image = sonogram.GetImage(false, false);
+                // remove the DC bin
+                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
+                //sonogram.Data = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(sonogram.Data, 20);
+                sonogram.Data = NoiseRemoval_Briggs.FilterGlobalLocal(sonogram.Data, 20); 
+                int neighbourhood = 21;
+                //sonogram.Data = NoiseRemoval_Briggs.FilterLocal(sonogram.Data, neighbourhood);                
+                var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Whitening Filter");
+                list.Add(image);
 
                 Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
-
-                // initialise parameters for drawing gridlines on images
-                var minuteOffset = TimeSpan.Zero;
-                int nyquist = sonogram.NyquistFrequency;
-                var xInterval = TimeSpan.FromSeconds(10);
-                TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(sonogram.Duration.Ticks / (double)image.Width));
-                const int HertzInterval = 1000;
-
-                SpectrogramTools.DrawGridLinesOnImage(
-                    (Bitmap)image,
-                    minOffset,
-                    xInterval,
-                    xAxisPixelDuration,
-                    nyquist,
-                    HertzInterval);
-
-                // add title bar and time scale
-                string title = "AMPLITUDE SPECTROGRAM";
-                var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
-                Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-                Bitmap timeBmp = Image_Track.DrawTimeTrack(sonogram.Duration, image.Width);
-
-                list.Add(titleBar);
-                list.Add(timeBmp);
-                list.Add(image);
-                list.Add(timeBmp);
                 list.Add(envelopeImage);
 
                 // 2) now draw the standard decibel spectrogram
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 result.DecibelSpectrogram = (SpectrogramStandard)sonogram;
-                image = sonogram.GetImage(false, false);
+                image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
+                list.Add(image);
 
-                SpectrogramTools.DrawGridLinesOnImage(
-                    (Bitmap)image,
-                    minOffset,
-                    xInterval,
-                    xAxisPixelDuration,
-                    nyquist,
-                    HertzInterval);
-
-                // add title bar and time scale
-                title = "DECIBEL SPECTROGRAM";
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
                 Image segmentationImage = Image_Track.DrawSegmentationTrack(
                     sonogram,
                     EndpointDetectionConfiguration.K1Threshold,
                     EndpointDetectionConfiguration.K2Threshold,
                     image.Width);
-
-                list.Add(titleBar);
-                list.Add(timeBmp);
-                list.Add(image);
-                list.Add(timeBmp);
                 list.Add(segmentationImage);
 
                 // keep the sonogram data for later use
-                double[,] dbSpectrogramData = sonogram.Data;
+                double[,] dbSpectrogramData = (double[,])sonogram.Data.Clone();
 
                 // 3) now draw the noise reduced decibel spectrogram
                 // #NOISE REDUCTION PARAMETERS - restore noise reduction
@@ -322,40 +308,15 @@ namespace AnalysisPrograms
                 sonoConfig.NoiseReductionParameter = double.Parse(configDict[AnalysisKeys.NoiseBgThreshold] ?? "3.0");
 
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-                image = sonogram.GetImage(false, false);
-
-                SpectrogramTools.DrawGridLinesOnImage(
-                    (Bitmap)image,
-                    minOffset,
-                    xInterval,
-                    xAxisPixelDuration,
-                    nyquist,
-                    HertzInterval);
+                image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM + Lamel noise subtraction");
+                list.Add(image);
 
                 // keep the sonogram data for later use
                 double[,] nrSpectrogramData = sonogram.Data;
 
-                // add title bar and time scale
-                title = "NOISE-REDUCED DECIBEL SPECTROGRAM";
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-
-                list.Add(titleBar);
-                list.Add(timeBmp);
-                list.Add(image);
-                list.Add(timeBmp);
-
                 // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
-                image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
-                SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, nyquist, HertzInterval);
-
-                // add title bar and time scale
-                title = "FALSE-COLOUR SPECTROGRAM";
-                titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-
-                list.Add(titleBar);
-                list.Add(timeBmp);
+                image = sonogram.GetColourSpectrogramFullyAnnotated("DECIBEL SPECTROGRAM - Colour annotated", dbSpectrogramData, nrSpectrogramData);
                 list.Add(image);
-                list.Add(timeBmp);
 
                 // 5) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
                 ////SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);

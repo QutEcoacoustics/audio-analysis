@@ -659,7 +659,7 @@ namespace AnalysisPrograms
         public static double[] CalculateKiwiBandWidthScore(BaseSonogram sonogram, int minHz, int maxHz, double[] peakPeriodicity)
         {
             int frameCount = sonogram.FrameCount;
-            double sonogramDuration = sonogram.FrameOffset * frameCount;
+            double sonogramDuration = sonogram.FrameStep * frameCount;
             var scores = new double[frameCount];
             int secondsSpan = 10;
             TimeSpan span = new TimeSpan(0, 0, secondsSpan);
@@ -869,8 +869,7 @@ namespace AnalysisPrograms
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            int maxFreq = sonogram.NyquistFrequency / 2;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
             {

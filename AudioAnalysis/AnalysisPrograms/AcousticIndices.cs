@@ -461,9 +461,7 @@ namespace AnalysisPrograms
         {
             const bool DoHighlightSubband = false; 
             const bool Add1KHzLines = true;
-            int maxFreq = sonogram.NyquistFrequency;
-            //int maxFreq = sonogram.NyquistFrequency / 2;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, DoHighlightSubband, Add1KHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(1, DoHighlightSubband, Add1KHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 

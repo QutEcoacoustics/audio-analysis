@@ -764,7 +764,7 @@
                 var spectrogramConfig = new SpectrogramConfiguration
                     {
                         FrequencyScale = spectrogram.FBinWidth,
-                        TimeScale = (spectrogram.FrameDuration - spectrogram.FrameOffset) * secondToMillionSecondUnit,
+                        TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
                         NyquistFrequency = spectrogram.NyquistFrequency
                     };
                 var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
@@ -847,7 +847,7 @@
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
                     FrequencyScale = spectrogram.FBinWidth,
-                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameOffset) * secondToMillionSecondUnit,
+                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency
                 };
                 var queryRidges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
@@ -891,7 +891,7 @@
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
                     FrequencyScale = spectrogram.FBinWidth,
-                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameOffset) * secondToMillionSecondUnit,
+                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency
                 };
                 var queryRidges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
@@ -1078,7 +1078,7 @@
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
                     FrequencyScale = spectrogram.FBinWidth,
-                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameOffset) * secondToMillionSecondUnit,
+                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency
                 };
                 var queryAudioPOIs = StructureTensorAnalysis.ExtractfftFeaturesFromPOI(spectrogram, stConfiguation);

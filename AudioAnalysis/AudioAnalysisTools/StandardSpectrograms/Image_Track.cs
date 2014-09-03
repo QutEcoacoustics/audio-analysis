@@ -62,7 +62,7 @@
         public int bottomOffset { get; set; } //set to track's BOTTOM pixel row in final image
         private int height = DefaultHeight;
         public int Height { get { return height; } set { height = value; } }
-        private int[] intData = null;
+        private int[] intData = null; // used to store segmentation state for example
         private double[] doubleData = null;
         private double[,] doubleMatrix = null;
 
@@ -597,7 +597,7 @@
         }
 
             
-        public static Bitmap DrawSegmentationTrack(double[] data, int[] intData, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
+        public static Bitmap DrawSegmentationTrack(double[] data, int[] stateData, double segmentationThreshold_k1, double segmentationThreshold_k2, int imageWidth)
         {
             if (data == null) return null;
             Bitmap segmentBmp = Image_Track.DrawDecibelTrack(data, imageWidth, segmentationThreshold_k1, segmentationThreshold_k2);
@@ -614,16 +614,16 @@
             {
                 int location = x * subSample;
                 if (location > dataLength - 1) continue;
-                Color col = stateColors[intData[location]];
+                Color col = stateColors[stateData[location]];
                 stateBmp.SetPixel(x, 0, col);
                 stateBmp.SetPixel(x, 1, col);
                 stateBmp.SetPixel(x, 2, col);
                 stateBmp.SetPixel(x, 3, col);
             }
 
+            // surround the whole by a frame
             Graphics g = Graphics.FromImage(segmentBmp);
             g.DrawImage(stateBmp, 0, 1);
-            // surround the whole by a frame
             g.DrawRectangle(new Pen(Color.Black), 0, 0, imageWidth, Image_Track.DefaultHeight);
 
             return segmentBmp;

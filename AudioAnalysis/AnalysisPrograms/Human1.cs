@@ -482,9 +482,7 @@ namespace AnalysisPrograms
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, Plot scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            int maxFreq = sonogram.NyquistFrequency / 2;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(maxFreq, 1, doHighlightSubband, add1kHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));

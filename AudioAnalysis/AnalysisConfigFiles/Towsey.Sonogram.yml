@@ -24,6 +24,8 @@ BgNoiseThreshold: 3.0
 
 AddAxes: true
 AddSegmentationTrack: true
+VOCAL_GAP: 0.1
+MIN_VOCAL_DURATION: 0.1
 
 # REDUCTION FACTORS for freq and time dimensions
 #TimeReductionFactor: 1          

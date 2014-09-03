@@ -156,7 +156,6 @@ namespace AnalysisPrograms
             // Resample rate must be 2 X the desired Nyquist. Default is that of recording.
             var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
 
-
             var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             // #NOISE REDUCTION PARAMETERS
             //string noisereduce = configDict[ConfigKeys.Mfcc.Key_NoiseReductionType];
@@ -173,33 +172,13 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
-
-            // print out the sonogram parameters
-            if (verbose)
-            {
-                LoggedConsole.WriteLine("\nPARAMETERS");
-                foreach (KeyValuePair<string, string> kvp in configDict)
-                {
-                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
-                }
-            }
-
-            // 3: GET RECORDING
-            FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
-            if (File.Exists(tempAudioSegment.FullName))
-            {
-                File.Delete(tempAudioSegment.FullName);
-            }
-
-
             // ####################################################################
-            // SET THE 2 OSCILLATION PARAMETERS HERE
+            // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
             // window width when sampling along freq bins
             // 64 is better where many birds and fast chaning activity
             //int sampleLength = 64;
             // 128 is better where slow moving changes to acoustic activity
             int sampleLength = 128;
-            Console.WriteLine("Sample Length = {0}", sampleLength);
 
             // use this if want only dominant oscillations
             //string algorithmName = "Autocorr-SVD-FFT";
@@ -209,13 +188,27 @@ namespace AnalysisPrograms
             //string algorithmName = "CwtWavelets";
             // ####################################################################
 
+            // print out the sonogram parameters
+            if (verbose)
+            {
+                LoggedConsole.WriteLine("\nPARAMETERS");
+                foreach (KeyValuePair<string, string> kvp in configDict)
+                {
+                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
+                }
+                LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", sampleLength);
+            }
 
-            
-            // This line creates a downsampled version of the source file
+            // 3: GET RECORDING
+            FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
+            // delete the temp audio file if it already exists.
+            if (File.Exists(tempAudioSegment.FullName))
+            {
+                File.Delete(tempAudioSegment.FullName);
+            }
+            // This line creates a temporary version of the source file downsampled as per entry in the config file
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
-            // init the image stack
-            var sonogramList = new List<Image>();
 
             // 1) get amplitude spectrogram
             AudioRecording recordingSegment = new AudioRecording(tempAudioSegment.FullName);
@@ -249,7 +242,8 @@ namespace AnalysisPrograms
             Image compositeImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
             // ###############################################################
 
-            // add title bar and time scale etc
+            // init the sonogram image stack
+            var sonogramList = new List<Image>();
             var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM");
             sonogramList.Add(image);
             //string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";

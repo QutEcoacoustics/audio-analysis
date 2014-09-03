@@ -702,13 +702,15 @@ namespace AudioAnalysisTools.DSP
                     break;
                 case NoiseReductionType.LOWEST_PERCENTILE:
                     {
-                        double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, parameter);
+                        double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, (int)parameter);
                         smoothedNoiseProfile = DataTools.filterMovingAverage(profile, 7); //smooth the modal profile
                         m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
                     }
                     break;
                 case NoiseReductionType.BRIGGS_PERCENTILE:
-                    m = NoiseRemoval_Briggs.BriggsNoiseFilterTwice(m, parameter);
+                    // Briggs filters twice
+                    m = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(m, (int)parameter);
+                    m = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(m, (int)parameter);
                     break;
                 case NoiseReductionType.BINARY:
                     {
