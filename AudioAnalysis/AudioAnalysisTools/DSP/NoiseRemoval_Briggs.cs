@@ -88,7 +88,9 @@ namespace AudioAnalysisTools.DSP
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, 15);
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
-                    outM[y, col] = matrix[y, col] / (profile[col] + localVariance[y]);
+                    //outM[y, col] = matrix[y, col] / (localVariance[y]);
+                    outM[y, col] = matrix[y, col] / profile[col];
+                    //outM[y, col] = matrix[y, col] / (profile[col] + localVariance[y]);
                 } //end for all rows
             } //end for all cols
             return outM;

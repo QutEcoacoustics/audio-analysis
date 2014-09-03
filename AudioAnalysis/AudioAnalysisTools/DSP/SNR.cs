@@ -810,8 +810,8 @@ namespace AudioAnalysisTools.DSP
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
 
             double ridgeThreshold = 0.1;
-            byte[,] binary = MatrixTools.IdentifySpectralRidges(mnr, ridgeThreshold);
-            double[,] op = MatrixTools.SpectralRidges2Intensity(binary, mnr);
+            byte[,] binary = RidgeDetection.IdentifySpectralRidges(mnr, ridgeThreshold);
+            double[,] op = RidgeDetection.SpectralRidges2Intensity(binary, mnr);
             return op;
         }
 
@@ -830,7 +830,7 @@ namespace AudioAnalysisTools.DSP
             mnr = NoiseReduce_Standard(matrix, modalNoise, neighbourhoodBackgroundThreshold);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
 
-            double[,] peaks = MatrixTools.IdentifySpectralPeaks(mnr);
+            double[,] peaks = RidgeDetection.IdentifySpectralPeaks(mnr);
             //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
             //return outM;
             return peaks;

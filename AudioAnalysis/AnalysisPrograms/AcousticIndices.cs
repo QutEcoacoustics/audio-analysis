@@ -459,9 +459,7 @@ namespace AnalysisPrograms
 
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
-            const bool DoHighlightSubband = false; 
-            const bool Add1KHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(1, DoHighlightSubband, Add1KHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 

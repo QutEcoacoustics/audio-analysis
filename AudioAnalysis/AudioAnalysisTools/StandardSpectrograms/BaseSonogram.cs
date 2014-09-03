@@ -641,10 +641,10 @@
 
             double range = max - min;
             // readjust min and max to create the effect of contrast stretching. It enhances the spectrogram a bit
-            double fractionalStretching = 0.01;
-            min = min + (range * fractionalStretching);
-            max = max - (range * fractionalStretching);
-            range = max - min;
+            //double fractionalStretching = 0.01;
+            //min = min + (range * fractionalStretching);
+            //max = max - (range * fractionalStretching);
+            //range = max - min;
 
             //int? minHighlightFreq = this.subBand_MinHz;
             //int? maxHighlightFreq = this.subBand_MaxHz;
