@@ -295,7 +295,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
 
             double ridgeThreshold = 6.0;
-            byte[,] hits = MatrixTools.IdentifySpectralRidges(dbSpectrogramData, ridgeThreshold);
+            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(dbSpectrogramData, ridgeThreshold);
 
 
             int width = dbSpectrogramData.GetLength(0);
@@ -304,6 +304,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Color colour;
             Hsv myHsv;
             Rgb myRgb;
+            Color[] ridgeColours = { Color.Red, Color.Black, Color.Blue, Color.Black };
 
             for (int y = 0; y < height; y++) //over all freq bins
             {
@@ -347,7 +348,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                                 //myHsv = new Hsv { H = 260, S = saturation, V = value };
                                 //myRgb = myHsv.To<Rgb>();
                                 //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
-                                colour = Color.Blue;
+                                colour = ridgeColours[hits[x, y] - 1];
                             }
                         }
                         image.SetPixel(x, height - y - 1, colour);

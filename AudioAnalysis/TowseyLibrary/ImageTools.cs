@@ -907,7 +907,8 @@ namespace TowseyLibrary
             double threshold = 0; // dB
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax/2;
-            direction = indexMax * Math.PI / (double)4;
+            //direction = indexMax * Math.PI / (double)4;
+            direction = indexMax;
         }
 
         public static void Sobel5X5CornerDetection(double[,] m, out bool isCorner, out double magnitude, out double direction)

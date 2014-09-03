@@ -226,7 +226,7 @@
     <Compile Include="DSP\AudioSegmentation.cs" />
     <Compile Include="AnalysisKeys.cs" />
     <Compile Include="Oscillations2014.cs" />
-    <Compile Include="RidgeDetectionh.cs" />
+    <Compile Include="RidgeDetection.cs" />
     <Compile Include="WavTools\AudioRecording.cs" />
     <Compile Include="WavTools\RecordingFetcher.cs" />
     <Compile Include="WavTools\WavChooser.cs" />
