@@ -194,7 +194,7 @@ namespace AnalysisPrograms
                             sonogram.NyquistFrequency,
                             sonogram.Configuration.FreqBinCount,
                             sonogram.FrameDuration,
-                            sonogram.FrameOffset,
+                            sonogram.FrameStep,
                             sonogram.FrameCount)
                                    {
                                        SegmentStartOffset = segmentStartOffset,

@@ -253,7 +253,7 @@ namespace AnalysisPrograms
 
         public static List<AcousticEvent> ReadGroundParrotTemplateAsList(BaseSonogram sonogram)
         {
-            var timeScale = sonogram.FrameOffset;
+            var timeScale = sonogram.FrameStep;
             var hzScale = (int)sonogram.FBinWidth;
             int rows = groundParrotTemplate1.GetLength(0);
             int cols = groundParrotTemplate1.GetLength(1);
@@ -272,7 +272,7 @@ namespace AnalysisPrograms
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
                         sonogram.FrameDuration,
-                        sonogram.FrameOffset,
+                        sonogram.FrameStep,
                         sonogram.FrameCount));
             }
             return gpTemplate;

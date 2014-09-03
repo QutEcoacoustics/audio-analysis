@@ -320,32 +320,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                         if (nrSpectrogramNorm[x, y] > 0)
                         {
-                            double nrValue = nrSpectrogramData[x, y];
-                            //    int grn = (int)Math.Floor(255.0 * nrValue); // get colour for noise reduced portion
-                        //    int red = 255 - grn;
-                        //    if (red < 125) red = 125;
-                        //    colour = Color.FromArgb(red, grn, 0);
-                        //    //if (c2 < 0) c2 = 0;
-                        //    //else
-                        //    //if (c2 > 255) c2 = 255;
-                        //    //int c3 = c2 * 2;
-                        //    //if (c3 > 255) c3 = 255;
-
-                        //    if (nrSpectrogramData[x, y] > 4.0)
-                        //    {
-                        //        colour = Color.FromArgb(125, grn, 0); // values > 3dB are in green
-                        //    }
-
-                            // PRODUCES COLOUR PIXELLATED SPECTRGRAM
-                            /*
-                            colour = Color.OrangeRed;
-                            if (nrValue > 12.0) colour = Color.Green;
-                            else if (nrValue > 10.0) colour = Color.LightGreen;
-                            else if (nrValue > 8.0) colour = Color.Yellow;
-                            else if (nrValue > 6.0) colour = Color.Orange;
-                            */
-
-
                             // use HSV colour space
                             int bottomColour = 30;    // to avoid using the reds
                             int topColour    = 320;   // to avoid using the magentas
@@ -360,7 +334,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
                             double value = 1.0;
                             //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
 
-                            //var myRgb = new Rgb { R = 149, G = 13, B = 12 };
                             myHsv = new Hsv { H = hue, S = saturation, V = value };
                             myRgb = myHsv.To<Rgb>();
                             colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
@@ -381,6 +354,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     }
             }//end over all freq bins
 
+            //image.Save(@"C:\SensorNetworks\Output\Sonograms\TEST3.png", ImageFormat.Png);
 
             return image;
         }

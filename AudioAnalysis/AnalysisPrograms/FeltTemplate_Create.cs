@@ -205,7 +205,7 @@ namespace AnalysisPrograms
             recording.Dispose();
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
+                                      (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             
@@ -217,7 +217,7 @@ namespace AnalysisPrograms
             double[] noiseSubband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
             
             //extract data values of the required event
-            double[,] target = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
+            double[,] target = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameStep,
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
 
             // create acoustic event with defined boundaries
@@ -228,7 +228,7 @@ namespace AnalysisPrograms
             sonogram.Data = SNR.TruncateBgNoiseFromSpectrogram(sonogram.Data, modalNoise);
             sonogram.Data = SNR.RemoveNeighbourhoodBackgroundNoise(sonogram.Data, backgroundThreshold);
 
-            double[,] targetMinusNoise = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
+            double[,] targetMinusNoise = SpectrogramTools.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameStep,
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
 
             return System.Tuple.Create(sonogram, ae, target, noiseSubband, targetMinusNoise);

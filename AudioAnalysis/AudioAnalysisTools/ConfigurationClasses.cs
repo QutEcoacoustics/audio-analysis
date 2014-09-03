@@ -113,89 +113,6 @@ namespace AudioAnalysisTools
 
     }
 
-    /*
-    [Serializable]
-    public static class FftConfiguration
-    {
-
-
-        public static void SetConfig(Configuration config)
-        {
-            int sr = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
-            SetSampleRate(sr);
-            WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
-            NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Mfcc.Key_NPointSmoothFFT) ?? 0;
-        }
-
-        public static void SetSampleRate(int sr)
-        {
-            SampleRate = sr;
-            NyquistFreq = sr / 2;
-        }
-
-        public static void Save(TextWriter writer)
-        {
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
-            writer.Flush();
-        }
-
-        #region Properties
-        public static int SampleRate { get; set; }
-        public static int NyquistFreq { get; set; }
-        private static string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
-        public static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
-        public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
-        #endregion
-    }*/
-
-
-
-    //[Serializable]
-    //public class FftConfiguration
-    //{
-    //    #region Properties
-    //    private int sampleRate = 0;
-    //    public int SampleRate { get { return sampleRate; } 
-    //                            set { sampleRate  = value;
-    //                                  NyquistFreq = value / 2;
-    //                                }
-    //    }
-    //    public int NyquistFreq { get; private set; }
-    //    private string windowFunction = WindowFunctions.HAMMING.ToString();
-    //    public string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
-    //    private int smoothingWindow = 3;
-    //    public int NPointSmoothFFT { get { return smoothingWindow; } set { smoothingWindow = value; } } // Number of points to smooth FFT spectra
-    //    #endregion
-
-
-    //    public FftConfiguration(int sr)
-    //    {
-    //        sampleRate = sr;
-    //    }
-
-    //    public FftConfiguration(ConfigDictionary config)
-    //    {
-    //        SetConfig(config);
-    //    }
-
-    //    public void SetConfig(ConfigDictionary config)
-    //    {
-    //        this.sampleRate = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
-    //        //at present time following parameters are preset.
-    //        //WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
-    //        //NPointSmoothFFT = config.GetInt(ConfigKeys.Mfcc.Key_NPointSmoothFFT); 
-    //    }
-
-    //    public void Save(TextWriter writer)
-    //    {
-    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
-    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
-    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
-    //        writer.Flush();
-    //    }
-    //} // end class FftConfiguration
 
     [Serializable]
     public class MfccConfiguration
@@ -236,13 +153,21 @@ namespace AudioAnalysisTools
     [Serializable]
     public static class EndpointDetectionConfiguration
 	{
+        public static void SetDefaultSegmentationConfig()
+        {
+		    K1Threshold = 1.0;   // dB threshold for recognition of vocalisations
+		    K2Threshold = 1.0;	 // dB threshold for recognition of vocalisations
+		    K1K2Latency = 0.05;  // Seconds delay between signal reaching k1 and k2 thresholds
+		    VocalGap    = 0.1;	 // Seconds gap required to separate vocalisations 
+		    MinPulseDuration = 0.05;	// Minimum length of energy pulse - do not use this
+        }
 
 		public static void SetConfig(ConfigDictionary config)
 		{
             K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold); //dB threshold for recognition of vocalisations
             K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold); //dB threshold for recognition of vocalisations
             K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);			  //seconds delay between signal reaching k1 and k2 thresholds
-            VocalGap  = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap);                //seconds gap required to separate vocalisations 
+            VocalGap    = (double?)config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap) ?? 0.1; //seconds gap required to separate vocalisations 
             MinPulseDuration = config.GetDouble(ConfigKeys.EndpointDetection.Key_MinVocalDuration);   //minimum length of energy pulse - do not use this - 
         }
 
@@ -285,11 +210,11 @@ namespace AudioAnalysisTools
         /// <param name="syllableDelay"></param>
         /// <param name="minPulse"></param>
         /// <returns></returns>
-        public static int[] DetermineVocalisationEndpoints(double[] dbArray, double frameOffset)
+        public static int[] DetermineVocalisationEndpoints(double[] dbArray, double frameStep)
         {
-            var k1_k2delay = (int)(K1K2Latency / frameOffset);    //=5  frames delay between signal reaching k1 and k2 thresholds
-            var frameGap   = (int)(VocalGap / frameOffset);  //=10 frames delay required to separate vocalisations 
-            var minPulse   = (int)(MinPulseDuration / frameOffset); //=2  frames is min vocal length
+            var k1_k2delay = (int)(EndpointDetectionConfiguration.K1K2Latency / frameStep);    //=5  frames delay between signal reaching k1 and k2 thresholds
+            var frameGap = (int)(EndpointDetectionConfiguration.VocalGap / frameStep);  //=10 frames delay required to separate vocalisations 
+            var minPulse   = (int)(MinPulseDuration / frameStep); //=2  frames is min vocal length
             //LoggedConsole.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableGap=" + syllableGap + "  minPulse=" + minPulse);
             return MFCCStuff.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, frameGap, minPulse, null);
         }

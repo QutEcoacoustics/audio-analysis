@@ -530,7 +530,15 @@ namespace TowseyLibrary
             return outM;
         }
 
-
+        /// <summary>
+        /// this method assumes that all the values in the passed matrix are between zero & one.
+        /// Will truncate all values > 1 to 1.0.
+        /// Spurious results will occur if have negative values or values > 1.
+        /// Should normalise matrix first if these conditions do not apply.
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="fractionalStretching"></param>
+        /// <returns></returns>
         public static double[,] ContrastStretching(double[,] M, double fractionalStretching)
         {
             int rowCount = M.GetLength(0);

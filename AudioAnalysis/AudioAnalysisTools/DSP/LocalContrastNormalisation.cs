@@ -16,6 +16,9 @@ namespace AudioAnalysisTools.DSP
 
 
         /// <summary>
+        /// WARNING!!: This method implements a convolution and like all convolutions is very slow (unless it can be fully parellised);
+        ///            Consider using another noise normalisation method such as in the class NoiseRemoval_Briggs. 
+        /// 
         /// This method does local contrast normalisation. Typically LCN normalises by division only and is motivated by what is known
         /// to happen in the visual cortext.
         /// Every matrix element or pixel value is divided by the (scaled) standard deviation of pixel values 

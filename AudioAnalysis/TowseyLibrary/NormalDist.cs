@@ -212,6 +212,28 @@ namespace TowseyLibrary
             AverageAndSD(values, out av, out sd);
         }
 
+        static public double[] CalculateLocalVariance(double[] data, int window)
+        {
+            int L = data.Length;
+            int halfwindow = window / 2;
+            double[] variances = new double[L];
+            double av, variance;
+
+            for (int i = 0; i < (L - window); i++)
+            {
+                double[] subV = DataTools.Subarray(data, i, window);
+                NormalDist.AverageAndVariance(subV, out av, out variance);
+                variances[i + halfwindow] = variance;
+            }
+            // plug up the ends
+            for (int i = 0; i < halfwindow; i++)
+            {
+                variances[i] = variances[halfwindow];
+                variances[L - i - 1] = variances[L - halfwindow - 1];
+            }
+            return variances;
+        }
+
 
         public static double[] Normalise(double[] data)
         {

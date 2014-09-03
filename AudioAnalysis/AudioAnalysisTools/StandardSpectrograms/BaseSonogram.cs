@@ -63,12 +63,15 @@
         // the following values are dependent on sampling rate.
         public int NyquistFrequency { get { return SampleRate / 2; } }
 
-        /// Duration of full frame or window in seconds
-        public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } }     
-        ////public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } }
-        public double FrameOffset { get { return this.Configuration.GetFrameOffset(SampleRate); } } // Duration of non-overlapped part of window/frame in seconds
+        // Duration of full frame or window in seconds
+        public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } }
+        
+        // Duration of non-overlapped part of window/frame in seconds
+        public double FrameStep { get { return this.Configuration.GetFrameOffset(SampleRate); } }
+        //public double FrameStep { get { return FrameDuration * (1 - Configuration.WindowOverlap); } }
+        
         public double FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }// FreqBinCount=WindowSize/2
-        public double FramesPerSecond { get { return 1 / FrameOffset; } }
+        public double FramesPerSecond { get { return 1 / FrameStep; } }
         public int FrameCount { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
         // energy and dB per frame
@@ -147,9 +150,6 @@
                 this.Max_dBReference = SnrFullband.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
                 this.DecibelsNormalised = SnrFullband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
 
-                //AUDIO SEGMENTATION
-                SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
-
                 var fractionOfHighEnergyFrames = SnrFullband.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
                 if (fractionOfHighEnergyFrames > SNR.FRACTIONAL_BOUND_FOR_MODE)
                 {
@@ -158,6 +158,12 @@
                                               fractionOfHighEnergyFrames * 100, SNR.FRACTIONAL_BOUND_FOR_MODE * 100);
                     Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
                 }
+
+                //AUDIO SEGMENTATION/END POINT DETECTION - based on Lamel
+                // next line is a hack since setting segmentation/endpoinht detection parameters apepars to be broken as of September 2014.
+                EndpointDetectionConfiguration.SetDefaultSegmentationConfig();
+                SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameStep);
+
             }
 
             //generate the spectra of FFT AMPLITUDES
@@ -247,7 +253,7 @@
             this.Max_dBReference = SnrSubband.MaxReference_dBWrtNoise;
             this.DecibelsNormalised = SnrSubband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
             //RECALCULATE ENDPOINTS OF VOCALISATIONS
-            SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameOffset);
+            SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameStep);
         }
 
         public void SetTimeScale(TimeSpan duration)
@@ -270,7 +276,20 @@
 
         public Image GetImageFullyAnnotated(string title)
         {
-            Image image = GetImage(this.NyquistFrequency, 1, false, false);
+            Image image = this.GetImage();
+            image = this.GetImageFullyAnnotated(image, title);
+            return image;
+        }
+
+        public Image GetColourSpectrogramFullyAnnotated(string title, double[,] dbSpectrogramData, double[,] nrSpectrogramData)
+        {
+            Image image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
+            image = this.GetImageFullyAnnotated(image, title);
+            return image;
+        }
+
+        public Image GetImageFullyAnnotated(Image image, string title)
+        {
 
             var minuteOffset = TimeSpan.Zero;
             var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
@@ -294,21 +313,18 @@
 
         public Image GetImage()
         {
-            return GetImage(this.NyquistFrequency, 1, false, false);
+            return GetImage(1, false, false);
         }
 
         public Image GetImage(bool doHighlightSubband, bool add1kHzLines)
         {
-            return GetImage(this.NyquistFrequency, 1, doHighlightSubband, add1kHzLines);
+            return GetImage(1, doHighlightSubband, add1kHzLines);
         }
 
-        public virtual Image GetImage(int maxFrequency, int binHeight, bool doHighlightSubband, bool add1kHzLines)
+        public virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
         {
-            // stretch the data slightly because it enhances the spectrogram
-            double fractionalStretching = 0.01;
-            double[,] contrastStretchedData = ImageTools.ContrastStretching(this.Data, fractionalStretching);
-
-            Image image = BaseSonogram.GetSonogramImage(contrastStretchedData, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
+            int maxFrequency = this.NyquistFrequency;
+            Image image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
                                              doHighlightSubband, this.subBand_MinHz, this.subBand_MaxHz);
             bool doMelScale = false;
             double freqBinWidth = 0.0;
@@ -340,7 +356,7 @@
                 if ((this.SigState[i] > 0) && (prevState == 0))
                 {
                     prevState = 1;
-                    time = i * this.FrameOffset;
+                    time = i * this.FrameStep;
                     sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
                     sb.Append(name + "\t" + i + "\t" + time.ToString("F4"));
                 }
@@ -348,13 +364,13 @@
                     if ((this.SigState[i] == 0) && (prevState > 0))
                     {
                         prevState = 0;
-                        time = i * this.FrameOffset;
+                        time = i * this.FrameStep;
                         sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
                         sb.Append("SILENCE\t" + i + "\t" + time.ToString("F4"));
                     }
             }
 
-            time = length * this.FrameOffset;
+            time = length * this.FrameStep;
             sb.Append("\t" + (length - 1) + "\t" + time.ToString("F4"));
 
             return sb;
@@ -623,15 +639,12 @@
             double min; double max;
             DataTools.MinMax(data, out min, out max);
 
-            //the following lines do not seem to wor well??
-            //int minPercentile = 1;
-            //int maxPercentile = 100;
-            //double[] lowAverage = BaseSonogram.GetAvSpectrum_LowestPercentile(data, minPercentile);
-            //double[] hihAverage = BaseSonogram.GetAvSpectrum_HighestPercentile(data, maxPercentile);
-            //double min = lowAverage.Min();
-            //double max = hihAverage.Max();
-
             double range = max - min;
+            // readjust min and max to create the effect of contrast stretching. It enhances the spectrogram a bit
+            double fractionalStretching = 0.01;
+            min = min + (range * fractionalStretching);
+            max = max - (range * fractionalStretching);
+            range = max - min;
 
             //int? minHighlightFreq = this.subBand_MinHz;
             //int? maxHighlightFreq = this.subBand_MaxHz;
