@@ -67,9 +67,10 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Obtains a background noise profile from the passed percentile of lowest energy frames.
-        /// Also calculates the local row variance.
+        /// Also calculates the local column variance.
         /// Then divide the cell energy by the row noise + local row variance.
-        /// Taking the square root has the effect of reducing image contrast.
+        /// However the backgroundnoise profile has little effect.
+        /// The dominant effect is due to local column variance.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="percentileThreshold"></param>
@@ -88,15 +89,13 @@ namespace AudioAnalysisTools.DSP
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, 15);
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
-                    //outM[y, col] = matrix[y, col] / (localVariance[y]);
-                    outM[y, col] = matrix[y, col] / profile[col];
-                    //outM[y, col] = matrix[y, col] / (profile[col] + localVariance[y]);
+                    outM[y, col] = matrix[y, col] / (1.0 + profile[col] + localVariance[y]);
                 } //end for all rows
             } //end for all cols
             return outM;
         }
 
-        public static double[,] FilterLocal(double[,] matrix, int neighbourhood)
+        public static double[,] FilterWithLocalColumnVariance(double[,] matrix, int neighbourhood)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -110,7 +109,7 @@ namespace AudioAnalysisTools.DSP
                 // normalise with local column variance
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
-                    outM[y, col] = matrix[y, col] / (0.1 + localVariance[y]);
+                    outM[y, col] = matrix[y, col] / (0.5 + Math.Sqrt(localVariance[y]));
                 } //end for all rows
             } //end for all cols
             return outM;

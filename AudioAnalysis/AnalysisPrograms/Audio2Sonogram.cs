@@ -48,13 +48,8 @@ namespace AnalysisPrograms
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [CustomDetailedDescription]
         [CustomDescription]
-        public class Arguments : SourceAndConfigArguments
+        public class Arguments : SourceConfigOutputDirArguments
         {
-            [ArgDescription("A file path to write output to")]
-            [ArgNotExistingFile]
-            [ArgRequired]
-            public FileInfo Output { get; set; }
-
             public bool Verbose { get; set; }
 
             [ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
@@ -68,7 +63,7 @@ namespace AnalysisPrograms
 
             public static string Description()
             {
-                return "Does cool stuff";
+                return "Generates multiple spectrogram images and ascilllations info";
             }
 
             public static string AdditionalNotes()
@@ -83,17 +78,14 @@ namespace AnalysisPrograms
             return new Arguments
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-062040.png".ToFileInfo(),
                 // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                // Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+
+                Source = @"C:\SensorNetworks\WavFiles\Frogs\JCU\Litoria fellax1.mp3".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\Sonograms\CaneToads_rural1_20_MONO.png".ToFileInfo(),
+
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                // StartOffset = 0,
-                // ################################ THERE IS AMBIGUITY IN NEXT ARGUMENT THAT COULD ACTUALLY BE A BUG - SEE ANTHONY
-                // EndOffset = 0,
+                Output = @"C:\SensorNetworks\Output\Sonograms".ToDirectoryInfo(),
                 Verbose = true
             };
 
@@ -108,7 +100,7 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
-            arguments.Output.CreateParentDirectories();
+            if (!arguments.Output.Exists) arguments.Output.Create();
 
             if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
             {
@@ -138,8 +130,8 @@ namespace AnalysisPrograms
 
             // 1. set up the necessary files
             FileInfo sourceRecording = arguments.Source;
-            FileInfo configFile = arguments.Config;
-            FileInfo outputImage  = arguments.Output;
+            FileInfo configFile  = arguments.Config;
+            DirectoryInfo opDir  = arguments.Output;
 
             // 2. get the config dictionary
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -206,7 +198,7 @@ namespace AnalysisPrograms
 
             // 3: GET RECORDING
             // put temp FileSegment in same directory as the required output image.
-            FileInfo tempAudioSegment = new FileInfo(Path.Combine(outputImage.DirectoryName, "tempWavFile.wav"));
+            FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
             // delete the temp audio file if it already exists.
             if (File.Exists(tempAudioSegment.FullName))
             {
@@ -216,25 +208,31 @@ namespace AnalysisPrograms
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
             // ###### get sonogram image ##############################################################################################
-            GenerateSpectrogram(tempAudioSegment, configDict, outputImage, dataOnly: false, makeSoxSonogram: makeSoxSonogram);           
+            GenerateSpectrogramImages(tempAudioSegment, configDict, opDir, dataOnly: false, makeSoxSonogram: makeSoxSonogram);           
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
 
 
         /// <summary>
-        /// In line class used to return results from the static method Audio2Sonogram.GenerateSpectrogram();
+        /// In line class used to return results from the static method Audio2Sonogram.GenerateSpectrogramImages();
         /// </summary>
         public class AudioToSonogramResult
         {
             public SpectrogramStandard DecibelSpectrogram { get; set; }
 
             //  path to spectrogram image
-            public FileInfo OutputImage { get; set; }
+            public FileInfo SpectrogramImage { get; set; }
+            public FileInfo FreqOscillationImage { get; set; }
+            public FileInfo FreqOscillationData { get; set; }
         }
 
-        public static AudioToSonogramResult GenerateSpectrogram(FileInfo sourceRecording, Dictionary<string, string> configDict, FileInfo outputImage, bool dataOnly = false, bool makeSoxSonogram = false)
+        public static AudioToSonogramResult GenerateSpectrogramImages(FileInfo sourceRecording, Dictionary<string, string> configDict, DirectoryInfo opDir, bool dataOnly = false, bool makeSoxSonogram = false)
         {
+            string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
+            sourceName = Path.GetFileNameWithoutExtension(sourceName);
+            FileInfo outputImage = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".png"));
+
             var result = new AudioToSonogramResult();
 
             if (dataOnly && makeSoxSonogram)
@@ -245,7 +243,7 @@ namespace AnalysisPrograms
             if (makeSoxSonogram)
             {
                 SpectrogramTools.MakeSonogramWithSox(sourceRecording, configDict, outputImage);
-                result.OutputImage = outputImage;
+                result.SpectrogramImage = outputImage;
             }
             else if (dataOnly)
             {
@@ -276,12 +274,14 @@ namespace AnalysisPrograms
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
                 // remove the DC bin
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
+
                 //sonogram.Data = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(sonogram.Data, 20);
-                sonogram.Data = NoiseRemoval_Briggs.FilterGlobalLocal(sonogram.Data, 20); 
-                int neighbourhood = 21;
-                //sonogram.Data = NoiseRemoval_Briggs.FilterLocal(sonogram.Data, neighbourhood);                
-                var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Whitening Filter");
+                int neighbourhood = 15;
+                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood);
+                var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
+                //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
+                //Histogram.DrawDistributionsAndSaveImage(sonogram.Data, path2);
 
                 Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
                 list.Add(envelopeImage);
@@ -325,13 +325,72 @@ namespace AnalysisPrograms
                 ////image3.Save(fiImage.FullName + "3", ImageFormat.Png);
 
 
+                // 6) COMBINE THE SPECTROGRAM IMAGES
                 Image compositeImage = ImageTools.CombineImagesVertically(list);
                 compositeImage.Save(outputImage.FullName, ImageFormat.Png);
-                result.OutputImage = outputImage;
+                result.SpectrogramImage = outputImage;
             }
 
+            // 7) Generate the FREQUENCY x OSCILLATIONS Graphs and csv
+            FileInfo tempAudioSegment = sourceRecording;
+            Oscillations2014.FreqVsOscillationsResult result2 = GenerateOscillationImages(tempAudioSegment, configDict, dataOnly = false);
+
+            FileInfo outputOscImage = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".FreqOscilMatrix.png"));
+            FileInfo outputOscCsv   = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".FreqOscilMatrix.csv"));
+
+            // Save the image and csv files
+            result2.FreqOscillationImage.Save(outputOscImage.FullName, ImageFormat.Png);
+            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(outputOscCsv, result2.FreqOscillationData);
+             // return paths to saved files
+            result.FreqOscillationData  = outputOscCsv;
+            result.FreqOscillationImage = outputOscImage;
             return result;
         }
+
+        /// <summary>
+        /// Generates the FREQUENCY x OSCILLATIONS Graphs and csv
+        /// </summary>
+        /// <param name="sourceRecording"></param>
+        /// <param name="tempAudioSegment"></param>
+        /// <param name="configDict"></param>
+        /// <param name="opDir"></param>
+        /// <param name="dataOnly"></param>
+        /// <returns></returns>
+        public static Oscillations2014.FreqVsOscillationsResult GenerateOscillationImages(FileInfo tempAudioSegment, Dictionary<string, string> configDict, 
+                                                                                          bool dataOnly = false)
+        {
+            SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
+            sonoConfig.WindowSize = 256;
+            AudioRecording recordingSegment = new AudioRecording(tempAudioSegment.FullName);
+            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            Console.WriteLine("Oscillation Detection: FramesPerSecond = {0}", sonogram.FramesPerSecond);
+            // remove the DC bin
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
+
+            // LocalContrastNormalisation over frequency bins is better and faster.
+            int neighbourhood = 15;
+            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood);
+
+            var resultsList = new List<Oscillations2014.FreqVsOscillationsResult>();
+            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT"));
+            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT"));
+
+            // store combined data in the same results class
+            var result = new Oscillations2014.FreqVsOscillationsResult();
+            result.FreqOscillationData = resultsList[1].FreqOscillationData;
+            if (dataOnly)
+            {
+                return result;
+            }
+            else
+            {
+                Image freOscCompositeImage = Oscillations2014.FreqVsOscillationsResult.CombineImages(resultsList);
+                result.FreqOscillationImage = freOscCompositeImage;
+            }
+            return result;
+        }
+
+
     }
 
 
@@ -381,10 +440,10 @@ namespace AnalysisPrograms
             var configurationDictionary = new Dictionary<string, string>((Dictionary<string, string>)configuration);
             configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogram(
+            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(
                 audioFile,
                 configurationDictionary,
-                analysisSettings.ImageFile,
+                analysisSettings.AnalysisInstanceOutputDirectory,
                 dataOnly: analysisSettings.ImageFile == null,
                 makeSoxSonogram: false);
 
