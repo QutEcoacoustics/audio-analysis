@@ -42,37 +42,81 @@ namespace AudioAnalysisTools
     public static class Oscillations2014
     {
 
-
-        public static Image SaveFreqVsOscillationsDataAndImage(BaseSonogram sonogram, int sampleLength, string algorithmName, DirectoryInfo dir)
+        /// <summary>
+        /// In line class used to return results from the static method Oscillations2014.GetFreqVsOscillationsDataAndImage();
+        /// </summary>
+        public class FreqVsOscillationsResult
         {
+            //  path to spectrogram image
+            public string SourceFileName { get; set; }
+            public string AlgorithmName { get; set; }
+            public int BinSampleLength { get; set; }
+            public Image FreqOscillationImage { get; set; }
+            public double[,] FreqOscillationData { get; set; }
+
+            public void Save(DirectoryInfo opDir)
+            {
+                SaveData(opDir);
+                SaveImage(opDir);
+            }
+            public void SaveData(DirectoryInfo opDir)
+            {
+                // write a csv file of this matrix.
+                string fileName = SourceFileName + ".freqOscilMatrix_" + BinSampleLength + AlgorithmName;
+                string pathName = Path.Combine(opDir.FullName, fileName);
+                FileInfo ficsv = new FileInfo(pathName + ".csv");
+                Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(ficsv, FreqOscillationData);
+            }
+
+            public void SaveImage(DirectoryInfo opDir)
+            {
+                // write a csv file of this matrix.
+                string fileName = SourceFileName + ".freqOscilMatrix_" + BinSampleLength + AlgorithmName;
+                string pathName = Path.Combine(opDir.FullName, fileName);
+                string imagePath = pathName + ".png";
+                FreqOscillationImage.Save(imagePath, ImageFormat.Png);
+            }
+
+            public static Image CombineImages(List<FreqVsOscillationsResult> resultsList)
+            {
+                var list = new List<Image>();
+                foreach (FreqVsOscillationsResult result in resultsList)
+                {
+                    list.Add(result.FreqOscillationImage);
+                }
+                Image image = ImageTools.CombineImagesInLine(list.ToArray());
+                return image;
+            }
+        } //  class FreqVsOscillationsResult
+
+
+
+
+        public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, int sampleLength, string algorithmName)
+        {
+            string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength, algorithmName);
 
             // convert spectrum index to oscillations per second
             double oscillationBinWidth = sonogram.FramesPerSecond / (double)sampleLength;
 
-
-            // write a csv file of this matrix.
-            string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
-            string fileName = "freqOscilMatrix_" + sourceName + "." + sampleLength + algorithmName;
-            string pathName = Path.Combine(dir.FullName, fileName);
-            FileInfo ficsv = new FileInfo(pathName + ".csv");
-            //Acoustics.Shared.Csv.WriteMatrixToCsv(ficsv, freqOscilMatrix);
-
             //draw an image
             freqOscilMatrix = MatrixTools.MatrixRotate90Anticlockwise(freqOscilMatrix);
             int xscale = 16;
             int yscale = 16;
-            Image image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
+            Image image = ImageTools.DrawMatrixInColour(freqOscilMatrix, xscale, yscale);
             // a tic every 5cpsec and every 1000 Hz.
             double xTicInterval = (5.0 / oscillationBinWidth) * xscale;
             double yTicInterval = (1000 / sonogram.FBinWidth) * yscale;
             int xOffset = xscale / 2;
             int yOffset = yscale / 2;
-            image1 = ImageTools.DrawXandYaxes(image1, 30, xTicInterval, xOffset, yTicInterval, yOffset);
-            string imagePath = pathName + ".png";
-            image1.Save(imagePath, ImageFormat.Png);
-            // return image just in case it is used elsewhere.
-            return image1;
+            image = ImageTools.DrawXandYaxes(image, 30, xTicInterval, xOffset, yTicInterval, yOffset);
+
+            var result = new FreqVsOscillationsResult();
+            result.SourceFileName = sourceName;
+            result.FreqOscillationImage = image;
+            result.FreqOscillationData = freqOscilMatrix; 
+            return result;
         }
 
 
@@ -168,36 +212,18 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static double[,] GetXcorrByTimeMatrix(double[] signal, int sampleLength)
         {
-            // normalise freq bin values to z-score using mode rather than average.
-            // This is required. If do not do, get spurious results
-            SNR.BackgroundNoise bgn = SNR.CalculateModalBackgroundNoiseFromSignal(signal, 1.0);
-            for (int i = 0; i < signal.Length; i++)
-            {
-                signal[i] = (signal[i] - bgn.NoiseMode) / bgn.NoiseSd;
-            }
-
+            // normalise freq bin values to z-score. This is required else get spurious results
+            signal = DataTools.Vector2Zscores(signal);
 
             int sampleCount = signal.Length / sampleLength;
-            double min, max;
-
             double[,] xCorrelationsByTime = new double[sampleLength, sampleCount];
 
             for (int s = 0; s < sampleCount; s++)
             {
                 int start = s * sampleLength;
                 double[] subArray = DataTools.Subarray(signal, start, sampleLength);
-                DataTools.MinMax(subArray, out min, out max);
-                double range = max - min;
-
-                // This could be important parameter. Should check if something not right.  ################ SIGNIFICANT PARAMETER
-                // Signal is z-scored. Ignore signals that do not have a high SNR. i.e. high range
-                //if (range < 10.0) continue;
-
                 double[] autocor = AutoAndCrossCorrelation.AutoCorrelationOldJavaVersion(subArray);
-                // do not need to smooth. Would cuase loss of detection of high oscil rate.
-                //autocor = DataTools.filterMovingAverage(autocor, 3);
                 //DataTools.writeBarGraph(autocor);
-
                 MatrixTools.SetColumn(xCorrelationsByTime, s, autocor);
             }
             return xCorrelationsByTime;
@@ -242,7 +268,7 @@ namespace AudioAnalysisTools
                 energySum += (singularValues[n] * singularValues[n]);
             }
             // get the 95% most significant ################ SIGNIFICANT PARAMETER
-            double significanceThreshold = 0.95;
+            double significanceThreshold = 0.9;
             double energy = 0.0;
             int countOfSignificantSingularValues = 0;
             for (int n = 0; n < singularValues.Count; n++)
@@ -296,7 +322,7 @@ namespace AudioAnalysisTools
                 spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
 
                 // reduce the power in first coeff because it can dominate - this is a hack!
-                spectrum[0] *= 0.5;
+                spectrum[0] *= 0.66;
 
                 spectrum = DataTools.SquareValues(spectrum);
                 // get relative power in the three bins around max.
@@ -311,7 +337,7 @@ namespace AudioAnalysisTools
                 double relativePower1 = powerAtMax / sumOfSquares;
                 //double relativePower2 = powerAtMax / avPower;
 
-                if (relativePower1 > 0.1)
+                if (relativePower1 > 0.2)
                 //if (relativePower2 > 1.0)
                 {
                     // check for boundary overrun
@@ -359,7 +385,7 @@ namespace AudioAnalysisTools
                 spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
 
                 // reduce the power in first coeff because it can dominate - this is a hack!
-                spectrum[0] *= 0.5;
+                spectrum[0] *= 0.66;
 
                 spectrum = DataTools.SquareValues(spectrum);
                 // get relative power in the three bins around max.
@@ -374,7 +400,7 @@ namespace AudioAnalysisTools
                 double relativePower1 = powerAtMax / sumOfSquares;
                 double relativePower2 = powerAtMax / avPower;
 
-                if (relativePower1 > 0.1)
+                if (relativePower1 > 0.2)
                 //if (relativePower2 > 10.0)
                 {
                     // check for boundary overrun

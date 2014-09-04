@@ -45,8 +45,33 @@ namespace AnalysisPrograms
     /// ACTIVITY NAME = oscillationsGeneric
     /// does a general search for oscillation in an audio file.
     /// </summary>
-    public class OscillationsGeneric
+    public static class OscillationsGeneric
     {
+        // ####################################################################
+
+        // SET THE 3 PARAMETERS HERE FOR DETECTION OF OSCILLATION
+
+        // Sensitivity: 0=detects fewest oscillations; 1=detects most oscillations
+        public static double Sensitivity = 0.2;
+        // Window width when sampling along freq bins to find oscillations.
+        // This is Not the wave form window.
+        // 64 is better where many birds and fast changing acoustic activity
+        //int sampleLength = 64;
+        // 128 is better where slow moving changes to acoustic activity
+        public static int SampleLength = 128;
+
+        // use this if want only dominant oscillations
+        public static string AlgorithmName = "Autocorr-SVD-FFT";
+        // use this if want more detailed output
+        //public static string algorithmName = "Autocorr-FFT";
+        // tried but not working
+        //string algorithmName = "CwtWavelets";
+        // ####################################################################
+
+
+
+
+
         // use the following paths for the command line for the <audio2sonogram> task. 
         // oscillationsGeneric "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [CustomDetailedDescription]
@@ -85,8 +110,8 @@ namespace AnalysisPrograms
             return new Arguments
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
                 //Source = @"Y:\Jie Frogs\Recording_1.wav".ToFileInfo(),
@@ -173,20 +198,6 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             // ####################################################################
-            // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
-            // window width when sampling along freq bins
-            // 64 is better where many birds and fast chaning activity
-            //int sampleLength = 64;
-            // 128 is better where slow moving changes to acoustic activity
-            int sampleLength = 128;
-
-            // use this if want only dominant oscillations
-            //string algorithmName = "Autocorr-SVD-FFT";
-            // use this if want more detailed output - but not necessrily accurate!
-            string algorithmName = "Autocorr-FFT";
-            // tried but not working
-            //string algorithmName = "CwtWavelets";
-            // ####################################################################
 
             // print out the sonogram parameters
             if (verbose)
@@ -196,7 +207,7 @@ namespace AnalysisPrograms
                 {
                     LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
                 }
-                LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", sampleLength);
+                LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", SampleLength);
             }
 
             // 3: GET RECORDING
@@ -221,25 +232,23 @@ namespace AnalysisPrograms
 
             // ###############################################################
             // DO LocalContrastNormalisation
-            int fieldSize = 9;
-            sonogram.Data = LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
+            //int fieldSize = 9;
+            //sonogram.Data = LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
+            // LocalContrastNormalisation over frequency bins is better and faster.
+            int neighbourhood = 15;
+            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood);
 
             // ###############################################################
-            //Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, sampleLength, algorithmName, opDir);
-            Image image1 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram,  64, "Autocorr-FFT", opDir);
-            Image image2 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT", opDir);
-            Image image3 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram,  64, "Autocorr-SVD-FFT", opDir);
-            Image image4 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT", opDir);
-            string imagePath = Path.Combine(opDir.FullName, "freqOscilMatrix_" + sourceName + ".128.LCN.Autocorr-SVD-FFT.png");
-            image4.Save(imagePath, ImageFormat.Png);
-
             var list1 = new List<Image>();
-            list1.Add(image1);
-            list1.Add(image2);
-            list1.Add(image3);
-            list1.Add(image4);
-
-            Image compositeImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
+            var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
+            list1.Add(result.FreqOscillationImage);
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT");
+            list1.Add(result.FreqOscillationImage);
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-SVD-FFT");
+            list1.Add(result.FreqOscillationImage);
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT");
+            list1.Add(result.FreqOscillationImage);
+            Image compositeOscImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
             // ###############################################################
 
             // init the sonogram image stack
@@ -255,34 +264,28 @@ namespace AnalysisPrograms
             // 2) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             // ###############################################################
-            //Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, sampleLength, algorithmName, opDir);
-            Image image5 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT", opDir);
-            Image image6 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT", opDir);
-            Image image7 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-SVD-FFT", opDir);
-            Image image8 = Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT", opDir);
-            imagePath = Path.Combine(opDir.FullName, "freqOscilMatrix_" + sourceName + ".128.dBs.Autocorr-SVD-FFT.png");
-            image8.Save(imagePath, ImageFormat.Png);
-
-            var list2 = new List<Image>();
-            list2.Add(image5);
-            list2.Add(image6);
-            list2.Add(image7);
-            list2.Add(image8);
-
-            Image compositeImage2 = ImageTools.CombineImagesInLine(list2.ToArray());
+            list1 = new List<Image>();
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
+            list1.Add(result.FreqOscillationImage);
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT");
+            list1.Add(result.FreqOscillationImage);
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-SVD-FFT");
+            list1.Add(result.FreqOscillationImage);
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT");
+            list1.Add(result.FreqOscillationImage);
+            Image compositeOscImage2 = ImageTools.CombineImagesInLine(list1.ToArray());
             // ###############################################################
             //image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
             //list.Add(image);
 
 
             // combine eight images
-            var list3 = new List<Image>();
-            list3 = new List<Image>();
-            list3.Add(compositeImage1);
-            list3.Add(compositeImage2);
-            Image compositeImage3 = ImageTools.CombineImagesVertically(list3.ToArray());
-            string imagePath3 = Path.Combine(opDir.FullName, "freqOscilMatrix_" + sourceName + ".png");
-            compositeImage3.Save(imagePath3, ImageFormat.Png);
+            list1 = new List<Image>();
+            list1.Add(compositeOscImage1);
+            list1.Add(compositeOscImage2);
+            Image compositeOscImage3 = ImageTools.CombineImagesVertically(list1.ToArray());
+            string imagePath3 = Path.Combine(opDir.FullName, sourceName + "_freqOscilMatrix.png");
+            compositeOscImage3.Save(imagePath3, ImageFormat.Png);
 
 
             Image segmentationImage = Image_Track.DrawSegmentationTrack(
