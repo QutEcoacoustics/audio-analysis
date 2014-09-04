@@ -606,7 +606,44 @@
                 // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
                 // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
                 // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                //m[poi.Point.Y, poi.Point.X] = poi;
+                m[poi.Point.Y, poi.Point.X] = poi;               
+            }
+            return m;
+        }
+
+        /// <summary>
+        /// This version is for structure tensor matrix 
+        /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <returns></returns>
+        public static PointOfInterest[,] TransposePOIsToMatrix1(List<PointOfInterest> list, int rows, int cols)
+        {
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
+            //var fftMatrix = list[0].fftMatrix; 
+            //var matrixRowCount = fftMatrix.GetLength(0);
+            //var matrixColCount = fftMatrix.GetLength(1);
+            //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount]; 
+            for (int colIndex = 0; colIndex < cols; colIndex++)
+            {
+                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+                {
+                    var point = new Point(colIndex, rowIndex);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    // tempPoi.fftMatrix = defaultFFTMatrix;
+                    tempPoi.OrientationCategory = 10;
+                    m[rowIndex, colIndex] = tempPoi;
+                }
+            }
+            foreach (PointOfInterest poi in list)
+            {
+                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
+                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
+                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
+                // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
                 // Changed 2014-8-22 for structure tensor calculation
                 m[poi.Point.X, poi.Point.Y] = poi;
             }
@@ -881,7 +918,10 @@
                 {
                     if (matrix[r, c] != null)
                     {
-                        poiCount++;
+                        if (matrix[r, c].fftMatrix != null)
+                        {
+                            poiCount++;
+                        }
                     }
                 }
             }

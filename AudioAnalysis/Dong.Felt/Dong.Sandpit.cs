@@ -94,10 +94,7 @@
                   //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                   //ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
                     MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
-                        outputDirectory.FullName, tempDirectory);
- 
-                                     
-                   
+                        outputDirectory.FullName, tempDirectory);       
                 }
                 else if (action == "processOne")
                 {
@@ -114,8 +111,9 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
-                    //GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
+                    GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
+
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
                     //                                  {0,  255,  255, 0},
@@ -487,10 +485,8 @@
                 //    entry.FilterRidgeMatrixLength,
                 //    entry.MinimumNumberInRidgeInMatrix,
                 //    entry.NeighbourhoodLength);
-                var folderName = string.Format("Run_{0}_{1}_{2}",
-                    entry.StThreshold,
-                    entry.StAvgNhLength,
-                    entry.StFFTNeighbourhoodLength,
+                var folderName = string.Format("Run_{0}_{1}",
+                    entry.StThreshold,                   
                     entry.StMatchedThreshold);
 
                 var fullPath = Path.Combine(outputDirectory.FullName, folderName);
@@ -1109,8 +1105,6 @@
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
                     var candidatePoiList = StructureTensorAnalysis.ExtractfftFeaturesFromPOI(candidateSpectrogram, stConfiguation);
-                    var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
-                    var cols1 = candidateSpectrogram.Data.GetLength(0);
                     var candidatesRegionList = Indexing.ExtractCandiRegionRepreFromAudioStList(candidateSpectrogram,
                         candidatesAudioFiles[j], candidatePoiList, queryRepresentation);
                     foreach (var c in candidatesRegionList) 
@@ -1118,19 +1112,21 @@
                         candidatesList.Add(c);
                     }
                 }// end of the loop for candidates
-                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.               
+                Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
                 Log.Info("# calculate the distance between a query and a candidate");
+                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.                
                 var candidateDistanceList = new List<Candidates>();
                 double weight = 0.15;
                 /// To calculate the distance                
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet7)
                 {
+                    Log.Info("# distance caculation based on featurePropSet");
                     candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList, 
                         stConfiguation.MatchedThreshold, weight);
                 }
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
-
-                /// To save all matched acoustic events                        
+                Log.InfoFormat("All potential candidate distances: {0}", candidateDistanceList.Count);
+                                      
                 if (candidateDistanceList.Count != 0)
                 {
                     for (int l = 0; l < audioFilesCount; l++)
@@ -1146,6 +1142,7 @@
                         seperateCandidatesList.Add(temp);
                     }
                 }
+                Log.InfoFormat("All seperated candidates: {0}", seperateCandidatesList.Count);
                 var sepCandiListCount = seperateCandidatesList.Count;
                 for (int index = 0; index < sepCandiListCount; index++)
                 {
@@ -1156,6 +1153,7 @@
                 finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
                 var candidateList = new List<Candidates>();
                 rank = finalOutputCandidates.Count;
+                /// To save all matched acoustic events  
                 if (finalOutputCandidates != null)
                 {
                     for (int k = 0; k < rank; k++)
@@ -1163,11 +1161,17 @@
                         candidateList.Add(finalOutputCandidates[k]);
                     }
                 }
+                var candidatesCount = candidateList.Count;
+                if (candidatesCount == 0)
+                {
+                    Log.Info("the final candidate list is empty");
+                }
                 var queryTempFile = new FileInfo(queryCsvFiles[i]);
                 var tempFileName = featurePropSet + queryTempFile.Name + "-matched candidates.csv";
                 var matchedCandidateCsvFileName = outputPath + tempFileName;
                 var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
                 CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
+                Log.InfoFormat("Candidates: {0}, Path:{1} ", candidatesCount, matchedCandidateCsvFileName);
                 Log.Info("# draw combined spectrogram for returned hits");
                 /// Drawing the combined image
                 if (rank > 5)

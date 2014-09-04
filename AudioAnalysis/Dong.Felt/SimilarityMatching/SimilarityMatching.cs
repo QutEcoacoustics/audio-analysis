@@ -379,61 +379,62 @@
             var rowsCount = queryPOIMatrix.GetLength(0);
             var colsCount = queryPOIMatrix.GetLength(1); 
             if (query != null && candidate != null)
-            {            
-                var candidatePOIMatrix = candidate.fftFeatures;
-                              
-                for (int i = 0; i < rowsCount; i++)
+            {
+                if (candidate.fftFeatures != null)
                 {
-                    for (int j = 0; j < colsCount; j++)
+                    var candidatePOIMatrix = candidate.fftFeatures;
+                    for (int i = 0; i < rowsCount; i++)
                     {
-                        if (queryPOIMatrix[i, j] != null)
+                        for (int j = 0; j < colsCount; j++)
                         {
-                            if (queryPOIMatrix[i, j].fftMatrix != null)
+                            if (queryPOIMatrix[i, j] != null)
                             {
-                                notNullPOIInQuery++;
-                                /// One is based on Euclidean distance
-                                //if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
-                                //{
-                                //    var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
-                                //    var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
-                                //    var fftDifference = 0.0;
-                                //    for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
-                                //    {
-                                //        for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
-                                //        {
-                                //            fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
-                                //        }
-                                //    }
-                                //    sumDisdistance += fftDifference;
-                                //}
-                                /// One is based on position matching                          
-                                if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
-                                {                                
-                                    var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
-                                    var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
-                                    var fftDifference = 0.0;
-                                    for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
+                                if (queryPOIMatrix[i, j].fftMatrix != null)
+                                {
+                                    notNullPOIInQuery++;
+                                    /// One is based on Euclidean distance
+                                    //if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
+                                    //{
+                                    //    var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
+                                    //    var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
+                                    //    var fftDifference = 0.0;
+                                    //    for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
+                                    //    {
+                                    //        for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                                    //        {
+                                    //            fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                    //        }
+                                    //    }
+                                    //    sumDisdistance += fftDifference;
+                                    //}
+                                    /// One is based on position matching                          
+                                    if (candidatePOIMatrix[i, j].fftMatrix != null)
                                     {
-                                        for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                                        var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
+                                        var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
+                                        var fftDifference = 0.0;
+                                        for (int r = 0; r < queryFFTMatrix.GetLength(0); r++)
                                         {
-                                            fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                            for (int c = 0; c < queryFFTMatrix.GetLength(1); c++)
+                                            {
+                                                fftDifference += Math.Sqrt(Math.Pow((queryFFTMatrix[r, c] - candidateFFTMatrix[r, c]), 2.0));
+                                            }
+                                        }
+                                        if (fftDifference < matchedDistanceThreshold)
+                                        {
+                                            matchedNotNullPOICount++;
                                         }
                                     }
-                                    if (fftDifference < matchedDistanceThreshold)
-                                    {
-                                        matchedNotNullPOICount++;
-                                    }
-                                    //sumDisdistance += matchedPOICount;
-                                }                                
+                                }
                             }
-                       }
-                        if (candidatePOIMatrix[i,j] != null)
-                        {
-                            if (queryPOIMatrix[i, j].RidgeMagnitude == 0.0 && candidatePOIMatrix[i, j].RidgeMagnitude == 0.0)
+                            if (candidatePOIMatrix[i, j] != null)
                             {
-                                matchedNullPOICount++;
+                                if (queryPOIMatrix[i, j].RidgeMagnitude == 0.0 && candidatePOIMatrix[i, j].RidgeMagnitude == 0.0)
+                                {
+                                    matchedNullPOICount++;
+                                }
                             }
-                        }                       
+                        }
                     }
                 }
             }       

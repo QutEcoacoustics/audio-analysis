@@ -14,7 +14,14 @@ namespace Dong.Felt.Representations
         #endregion
 
         #region Public Methods
-        //Step 1: do blur to connect broken/seperated poi  
+        //Step 1: do blur to connect broken/seperated poi 
+        /// <summary>
+        /// Gaussian Blur tries to connect broken ridges. 
+        /// </summary>
+        /// <param name="poiMatrix"></param>
+        /// <param name="GaussianBlurSize"></param>
+        /// <param name="sigma"></param>
+        /// <returns></returns>
         public static PointOfInterest[,] GaussianBlurOnPOI(PointOfInterest[,] poiMatrix, int GaussianBlurSize, double sigma)
         {
             var matrixRowlength = poiMatrix.GetLength(0);
@@ -76,6 +83,50 @@ namespace Dong.Felt.Representations
                 }
             }
             return result;
+        }
+
+        // Todo: finish the method. 
+        public static PointOfInterest[,] FilterSmallConnectedRegion(PointOfInterest[,] poiMatrix)
+        {
+            var matrixRowlength = poiMatrix.GetLength(0);
+            var matrixColLength = poiMatrix.GetLength(1);
+
+            var tempPOIlist = new List<PointOfInterest>();
+            if (poiMatrix != null)
+            {
+                for (var r = 0; r < matrixRowlength; r++)
+                {
+                    for (var c = 0; c < matrixColLength; c++)
+                    {
+                        poiMatrix[r, c].IsLocalMaximum = false; 
+                        // traverse each poi in 8 directions within its neighbourhood.
+                        if (poiMatrix[r, c].IsLocalMaximum == false && poiMatrix[r, c].RidgeMagnitude != 0)
+                        {
+                            if(poiMatrix[r, c + 1].RidgeMagnitude != 0)
+                            {
+                                poiMatrix[r, c].IsLocalMaximum = true;
+                                {
+                                    var currentPOI = poiMatrix[r, c + 1];
+                                    if (poiMatrix[r, c + 1].RidgeMagnitude != 0)
+                                    {
+
+                                    }
+                                }
+                            }
+                                if(poiMatrix[r, c + 1].RidgeMagnitude != 0)
+                                {
+
+                                }
+
+                                if(poiMatrix[r, c + 1].RidgeMagnitude != 0)
+                                {
+                                   
+                                }
+                        }
+                    }
+                }
+            }
+            return poiMatrix;
         }
         #endregion
     }

@@ -99,15 +99,7 @@ namespace Dong.Felt
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             var rowsCount = matrix.GetLength(0) - 1;
             var colsCount = matrix.GetLength(1);
-            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix(stList, rowsCount, colsCount);
-            var m = new double[14, 14];
-            foreach (var s in stList)
-            {
-                if ((s.Point.X == 87) && (s.Point.Y == 4032))
-                {
-                    m = s.fftMatrix;
-                }
-            }
+            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix1(stList, rowsCount, colsCount);
             var frequencyScale = spectrogram.FBinWidth;
             var timeScale = spectrogram.FrameDuration / 2;
             // be careful about the index here.
@@ -197,10 +189,10 @@ namespace Dong.Felt
             var startRowIndex = queryRepresentation.StartRowIndex;
             var endRowIndex = queryRepresentation.EndRowIndex;         
             var colRange = queryRepresentation.fftFeatures.GetLength(1) - 1;
+            // The one sets the none structure tensor point to null features. 
+            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix1(stList, rowsCount, colsCount);
             // The one sets all the features in the region to 0,  this one is useful to calculate the distance based on purely Euclidean
             //var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix2(stList, rowsCount, colsCount);
-            // The one sets the none structure tensor point to null features. 
-            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix(stList, rowsCount, colsCount);
             
             var searchStep = 5;
             for (int colIndex = 0; colIndex < colsCount; colIndex += searchStep)
@@ -210,21 +202,26 @@ namespace Dong.Felt
                     var subRegionMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(stMatrix, startRowIndex, colIndex, 
                                                                     endRowIndex, colIndex + colRange);
                     // check whether the region is null
-                    if (!StatisticalAnalysis.checkNullRegion(subRegionMatrix))
-                    {
-                        var regionItem = new RegionRerepresentation();                      
-                        regionItem.fftFeatures = subRegionMatrix;
-                        regionItem.StartRowIndex = startRowIndex;
-                        regionItem.EndRowIndex = endRowIndex;
-                        regionItem.StartColIndex = colIndex;
-                        regionItem.EndColIndex = colIndex + colRange;
-                        regionItem.TimeIndex = colIndex * timeScale * 1000;
-                        regionItem.FrequencyIndex = queryRepresentation.FrequencyIndex;
-                        regionItem.FrequencyRange = queryRepresentation.FrequencyRange;
-                        regionItem.Duration = queryRepresentation.Duration;
-                        regionItem.SourceAudioFile = audioFileName;
-                        result.Add(regionItem);
-                    }
+                    var regionItem = new RegionRerepresentation();
+                    //if (!StatisticalAnalysis.checkNullRegion(subRegionMatrix))
+                    //{                      
+                        regionItem.fftFeatures = subRegionMatrix;                      
+                    //}
+                    //else
+                    //{                        
+                    //    regionItem.fftFeatures = null;
+                       
+                    //}
+                    regionItem.StartRowIndex = startRowIndex;
+                    regionItem.EndRowIndex = endRowIndex;
+                    regionItem.StartColIndex = colIndex;
+                    regionItem.EndColIndex = colIndex + colRange;
+                    regionItem.TimeIndex = colIndex * timeScale * 1000;
+                    regionItem.FrequencyIndex = queryRepresentation.FrequencyIndex;
+                    regionItem.FrequencyRange = queryRepresentation.FrequencyRange;
+                    regionItem.Duration = queryRepresentation.Duration;
+                    regionItem.SourceAudioFile = audioFileName;
+                    result.Add(regionItem);
                 }
             }
             return result;
