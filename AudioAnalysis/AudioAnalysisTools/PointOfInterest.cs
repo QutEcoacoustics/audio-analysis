@@ -350,8 +350,8 @@ namespace AudioAnalysisTools
         public void DrawOrientationPoint(Bitmap bmp, int spectrogramHeight)
         {
             // This ones for structure tensor
-            int x = this.Point.X;
-            int y = this.Point.Y;
+            int x = this.Point.Y;
+            int y = this.Point.X;
             // this one for ridges. 
             //int x = this.Point.X;
             //int y = this.Point.Y;
