@@ -175,7 +175,7 @@ namespace TowseyLibrary
             for (int i = 0; i < subRowCount; i++)
             {
                 for (int j = 0; j < subColCount; j++)
-                {   
+                {                       
                     sm[i, j] = M[r1 + i, c1 + j];
                 }
             }
