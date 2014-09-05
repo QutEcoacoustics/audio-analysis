@@ -275,9 +275,9 @@ namespace AnalysisPrograms
                 // remove the DC bin
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
 
-                //sonogram.Data = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(sonogram.Data, 20);
                 int neighbourhood = 15;
-                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood);
+                double contrastLevel = 0.5;
+                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, contrastLevel);
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
@@ -369,11 +369,15 @@ namespace AnalysisPrograms
 
             // LocalContrastNormalisation over frequency bins is better and faster.
             int neighbourhood = 15;
-            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood);
+            double contrastLevel = 0.5;
+            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, contrastLevel);
+
+            Oscillations2014.SensitivityThreshold = 0.4;
+            Oscillations2014.SampleLength = 128;
 
             var resultsList = new List<Oscillations2014.FreqVsOscillationsResult>();
-            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT"));
-            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT"));
+            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-FFT"));
+            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-SVD-FFT"));
 
             // store combined data in the same results class
             var result = new Oscillations2014.FreqVsOscillationsResult();

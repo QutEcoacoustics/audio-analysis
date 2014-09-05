@@ -236,17 +236,22 @@ namespace AnalysisPrograms
             //sonogram.Data = LocalContrastNormalisation.ComputeLCN(sonogram.Data, fieldSize);
             // LocalContrastNormalisation over frequency bins is better and faster.
             int neighbourhood = 15;
-            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood);
+            double contrastLevel = 0.5;
+            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, contrastLevel);
 
             // ###############################################################
+            // lowering the sensitivity threshold increases the number of hits.
+            Oscillations2014.SensitivityThreshold = 0.4;
+            Oscillations2014.SampleLength = 128;
+
             var list1 = new List<Image>();
-            var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
+            //var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
+            //list1.Add(result.FreqOscillationImage);
+            var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-FFT");
             list1.Add(result.FreqOscillationImage);
-            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT");
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-SVD-FFT");
             list1.Add(result.FreqOscillationImage);
-            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-SVD-FFT");
-            list1.Add(result.FreqOscillationImage);
-            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT");
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-WPD");
             list1.Add(result.FreqOscillationImage);
             Image compositeOscImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
             // ###############################################################
@@ -265,13 +270,13 @@ namespace AnalysisPrograms
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             // ###############################################################
             list1 = new List<Image>();
-            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
+            //result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
+            //list1.Add(result.FreqOscillationImage);
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-FFT");
             list1.Add(result.FreqOscillationImage);
-            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-FFT");
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-SVD-FFT");
             list1.Add(result.FreqOscillationImage);
-            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-SVD-FFT");
-            list1.Add(result.FreqOscillationImage);
-            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 128, "Autocorr-SVD-FFT");
+            result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-WPD");
             list1.Add(result.FreqOscillationImage);
             Image compositeOscImage2 = ImageTools.CombineImagesInLine(list1.ToArray());
             // ###############################################################
