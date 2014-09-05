@@ -95,7 +95,18 @@ namespace AudioAnalysisTools.DSP
             return outM;
         }
 
-        public static double[,] FilterWithLocalColumnVariance(double[,] matrix, int neighbourhood)
+        /// <summary>
+        /// Does column-wise LCN (Local Contrast Normalisation. 
+        /// The denominator = (contrastLevel + Math.Sqrt(localVariance[y])
+        /// A low contrastLevel = 0.5 give more grey image.
+        /// A high contrastLevel = 1.0 give mostly white high contrast image.
+        /// The algorithm is not sensitive to the neighbourhood size.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="neighbourhood">suitable vaues are odd numbers 9 - 29</param>
+        /// <param name="contrastLevel">Suitable values are 0.5 to 1.0.</param>
+        /// <returns></returns>
+        public static double[,] FilterWithLocalColumnVariance(double[,] matrix, int neighbourhood, double contrastLevel)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -109,7 +120,7 @@ namespace AudioAnalysisTools.DSP
                 // normalise with local column variance
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
-                    outM[y, col] = matrix[y, col] / (0.5 + Math.Sqrt(localVariance[y]));
+                    outM[y, col] = matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y]));
                 } //end for all rows
             } //end for all cols
             return outM;

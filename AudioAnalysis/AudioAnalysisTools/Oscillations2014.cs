@@ -41,6 +41,12 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2014
     {
+        // sampleLength is the number of frames taken from a frequency bin on which to do autocorr-fft.
+        // longer sample lengths are better for longer duration, slower moving events.
+        // shorter sample lengths are better for short duration, fast moving events.
+        public static int SampleLength = 128;
+        public static double SensitivityThreshold = 0.3;
+
 
         /// <summary>
         /// In line class used to return results from the static method Oscillations2014.GetFreqVsOscillationsDataAndImage();
@@ -92,10 +98,11 @@ namespace AudioAnalysisTools
 
 
 
-        public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, int sampleLength, string algorithmName)
+        public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, string algorithmName)
         {
+            int sampleLength = Oscillations2014.SampleLength;
             string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
-            double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sonogram.FramesPerSecond, sampleLength, algorithmName);
+            double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, Oscillations2014.SensitivityThreshold, sampleLength, algorithmName);
 
             // convert spectrum index to oscillations per second
             double oscillationBinWidth = sonogram.FramesPerSecond / (double)sampleLength;
@@ -129,7 +136,7 @@ namespace AudioAnalysisTools
         /// <param name="sampleLength"></param>
         /// <returns></returns>
 
-        public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, double framesPerSecond, int sampleLength, string algorithmName)
+        public static double[,] GetFrequencyByOscillationsMatrix(double[,] M, double sensitivity, int sampleLength, string algorithmName)
         {
             int frameCount = M.GetLength(0);
             int freqBinCount = M.GetLength(1);
@@ -166,32 +173,23 @@ namespace AudioAnalysisTools
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
                     //xcorCount += xCorrByTimeMatrix.GetLength(1);
-                    oscillationsSpectrum = GetOscillationArrayUsingSVDAndFFT(xCorrByTimeMatrix, framesPerSecond, bin);
+                    oscillationsSpectrum = GetOscillationArrayUsingSVDAndFFT(xCorrByTimeMatrix, sensitivity, bin);
                 }
                 // set true to use the Autocorrelation - FFT option.
                 if (algorithmName.Equals("Autocorr-FFT"))
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
-                    oscillationsSpectrum = GetOscillationArrayUsingFFT(xCorrByTimeMatrix, framesPerSecond, bin);
+                    oscillationsSpectrum = GetOscillationArrayUsingFFT(xCorrByTimeMatrix, sensitivity, bin);
                 }
-                // set true to use the Continuous Wavelet Transform
-                if (algorithmName.Equals("CwtWavelets"))
+                // set true to use the Wavelet Transform
+                if (algorithmName.Equals("Autocorr-WPD"))
                 {
-                    int maxScale = 10;
-                    WaveletTransformContinuous cwt = new WaveletTransformContinuous(freqBin, maxScale);
-                    double[,] cwtMatrix = cwt.GetScaleTimeMatrix();
-                    //oscillationsSpectrum = WaveletTransformContinuous.ProcessScaleTimeMatrix(cwtMatrix, minOscilCount);
-
-                    //var M1 = MatrixTools.MatrixRotate90Anticlockwise(cwtMatrix);
-
-                    // following is for debug
-                    Image image1 = ImageTools.DrawMatrixInColour(cwtMatrix, 1, 1);
-                    string path = @"C:\SensorNetworks\Output\Test\testContWaveletTransform.png";
-                    image1.Save(path, ImageFormat.Png);
-
-                    //xcorCount += xCorrByTimeMatrix1.GetLength(1);
+                    double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
+                    oscillationsSpectrum = GetOscillationArrayUsingWPD(xCorrByTimeMatrix, sensitivity, bin);
+                    //WaveletTransformContinuous cwt = new WaveletTransformContinuous(freqBin, maxScale);
+                    //double[,] cwtMatrix = cwt.GetScaleTimeMatrix();
+                    //oscillationsSpectrum = GetOscillationArrayUsingCWT(cwtMatrix, sensitivity, bin);
                     //double[] dynamicRanges = GetVectorOfDynamicRanges(freqBin, sampleLength);
-                    oscillationsSpectrum = GetOscillationArrayUsingCWT(cwtMatrix, framesPerSecond, bin);
                 }
 
 
@@ -204,7 +202,7 @@ namespace AudioAnalysisTools
         
         
         /// <summary>
-        /// Returns a matrix whose columns consist 
+        /// Returns a matrix whose columns consist of autocorrelations of freq bin samples.
         /// The columns are non-overlapping.
         /// </summary>
         /// <param name="signal"></param>
@@ -250,7 +248,7 @@ namespace AudioAnalysisTools
         /// <param name="framesPerSecond"></param>
         /// <param name="binNumber">only used when debugging</param>
         /// <returns></returns>
-        public static double[] GetOscillationArrayUsingSVDAndFFT(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
+        public static double[] GetOscillationArrayUsingSVDAndFFT(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
             int sampleCount = xCorrByTimeMatrix.GetLength(1);
@@ -267,7 +265,7 @@ namespace AudioAnalysisTools
             {
                 energySum += (singularValues[n] * singularValues[n]);
             }
-            // get the 95% most significant ################ SIGNIFICANT PARAMETER
+            // get the 90% most significant ####### THis is a significant parameter but not critical. 90% is OK
             double significanceThreshold = 0.9;
             double energy = 0.0;
             int countOfSignificantSingularValues = 0;
@@ -337,7 +335,7 @@ namespace AudioAnalysisTools
                 double relativePower1 = powerAtMax / sumOfSquares;
                 //double relativePower2 = powerAtMax / avPower;
 
-                if (relativePower1 > 0.2)
+                if (relativePower1 > sensitivity)
                 //if (relativePower2 > 1.0)
                 {
                     // check for boundary overrun
@@ -361,13 +359,12 @@ namespace AudioAnalysisTools
             return oscillationsVector;
         }
 
-        public static double[] GetOscillationArrayUsingFFT(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
+        public static double[] GetOscillationArrayUsingFFT(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
             int sampleCount = xCorrByTimeMatrix.GetLength(1);
 
             // loop over the Auto-correlation vectors and do FFT
-            //double[] oscillationsVector = new double[maxCyclesPerSecond];
             double[] oscillationsVector = new double[xCorrLength / 2];
 
             for (int e = 0; e < sampleCount; e++)
@@ -400,7 +397,7 @@ namespace AudioAnalysisTools
                 double relativePower1 = powerAtMax / sumOfSquares;
                 double relativePower2 = powerAtMax / avPower;
 
-                if (relativePower1 > 0.2)
+                if (relativePower1 > sensitivity)
                 //if (relativePower2 > 10.0)
                 {
                     // check for boundary overrun
@@ -423,6 +420,64 @@ namespace AudioAnalysisTools
             }
             return oscillationsVector;
         }
+
+
+        public static double[] GetOscillationArrayUsingWPD(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
+        {
+            int xCorrLength = xCorrByTimeMatrix.GetLength(0);
+            int sampleCount = xCorrByTimeMatrix.GetLength(1);
+
+            double[] oscillationsVector = new double[xCorrLength / 2];
+
+            for (int e = 0; e < sampleCount; e++)
+            {
+                double[] autocor = MatrixTools.GetColumn(xCorrByTimeMatrix, e);
+
+                // ##########################################################\
+                autocor = DataTools.DiffFromMean(autocor);
+                WaveletPacketDecomposition wpd = new WaveletPacketDecomposition(autocor);
+                double[] spectrum = wpd.GetWPDEnergySpectrumWithoutDC();
+
+                // reduce the power in first coeff because it can dominate - this is a hack!
+                spectrum[0] *= 0.66;
+
+                spectrum = DataTools.SquareValues(spectrum);
+                // get relative power in the three bins around max.
+                double sumOfSquares = spectrum.Sum();
+                double avPower = spectrum.Sum() / spectrum.Length;
+                int maxIndex = DataTools.GetMaxIndex(spectrum);
+                double powerAtMax = spectrum[maxIndex];
+                if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
+                else powerAtMax += spectrum[maxIndex - 1];
+                if (maxIndex >= spectrum.Length - 1) powerAtMax += spectrum[maxIndex];
+                else powerAtMax += spectrum[maxIndex + 1];
+                double relativePower1 = powerAtMax / sumOfSquares;
+                double relativePower2 = powerAtMax / avPower;
+
+                if (relativePower1 > sensitivity)
+                //if (relativePower2 > 10.0)
+                {
+                    // check for boundary overrun
+                    if (maxIndex < oscillationsVector.Length)
+                    {
+                        // add in a new oscillation
+                        oscillationsVector[maxIndex] += powerAtMax;
+                        //oscillationsVector[maxIndex] += relativePower;
+                    }
+                }
+            }
+
+            for (int i = 0; i < oscillationsVector.Length; i++)
+            {
+                // normalise by sample count
+                oscillationsVector[i] /= sampleCount;
+                // do log transform
+                if (oscillationsVector[i] < 1.0) oscillationsVector[i] = 0.0;
+                else oscillationsVector[i] = Math.Log10(1 + oscillationsVector[i]);
+            }
+            return oscillationsVector;
+        }
+
 
 
         public static double[] GetOscillationArrayUsingCWT(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
