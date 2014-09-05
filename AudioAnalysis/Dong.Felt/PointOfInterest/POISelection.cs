@@ -109,12 +109,24 @@ namespace Dong.Felt
                 for (int c = halfLength; c < cols - halfLength; c++)
                 {
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    var boundary = StatisticalAnalysis.checkBoundary(r - 3, c - 3, rows - 3, cols - 3);
+                    var boundary2 = StatisticalAnalysis.checkBoundary(r + 3, c + 3, rows - 3, cols - 3);
+                    var subM2 = new double[7,7];
+                    if (boundary == true && boundary2 == true)
+                    {
+                        subM2 = MatrixTools.Submatrix(matrix, r - 3, c - 3, r + 3, c + 3);
+                    }
                     double magnitude;
                     double direction;
                     bool isRidge = false;
                     // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
                     ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
-                    if (magnitude > magnitudeThreshold && isRidge == true)
+                    bool confirmRidge = false;
+                    if (subM2 != null)
+                    {
+                        ImageAnalysisTools.RidgeDetectConfirmation(subM2, out confirmRidge, ridgeConfiguration.AverageIntensityDifferenceInNh);
+                    }
+                    if (magnitude > magnitudeThreshold && isRidge == true && confirmRidge == true)
                     {
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
@@ -130,21 +142,21 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        var neighbourPoint1 = new Point(0, 0);
-                        var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
-                        var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
-                        /// Fill the gap by adding two more neighbourhood points.
-                        FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
+                        //var neighbourPoint1 = new Point(0, 0);
+                        //var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
+                        //var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
+                        ///// Fill the gap by adding two more neighbourhood points.
+                        //FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
                         poiList.Add(poi);
-                        poiList.Add(neighbourPoi1);
-                        poiList.Add(neighbourPoi2);
+                        //poiList.Add(neighbourPoi1);
+                        //poiList.Add(neighbourPoi2);
                     }
                 }
             }  /// filter out some redundant ridges
             var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
             var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            //var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
-            var filteredPoiList = ImageAnalysisTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            //var filteredPoiList = ImageAnalysisTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
             poiList = filteredPoiList;
         }
 
@@ -357,6 +369,46 @@ namespace Dong.Felt
 
                 }
             }
+        }
+
+        /// <summary>
+        /// Divide the poilist into 4 groups according to different orientationCategories. Basically, we have 4 groups: v, h, pd, nd.
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <returns></returns>
+        public List<List<PointOfInterest>> POIListDivision(List<PointOfInterest> poiList)
+        {
+            var poiVerticalGroup = new List<PointOfInterest>();
+            var poiHorizontalGroup = new List<PointOfInterest>();
+            var poiPDGroup = new List<PointOfInterest>();
+            var poiNDGroup = new List<PointOfInterest>();
+            var result = new List<List<PointOfInterest>>();
+
+            foreach (var p in poiList)
+            {
+                if (p.OrientationCategory == (int)Direction.North)
+                {
+                    poiVerticalGroup.Add(p);
+                }
+                if (p.OrientationCategory == (int)Direction.East)
+                {
+                    poiHorizontalGroup.Add(p);
+                }
+                if (p.OrientationCategory == (int)Direction.NorthEast)
+                {
+                    poiPDGroup.Add(p);
+                }
+                if (p.OrientationCategory == (int)Direction.NorthWest)
+                {
+                    poiNDGroup.Add(p);
+                }
+            }
+            result.Add(poiVerticalGroup);
+            result.Add(poiVerticalGroup);
+            result.Add(poiVerticalGroup);
+            result.Add(poiVerticalGroup);
+
+            return result; 
         }
 
         // Copy a pointOfInterst to another pointOfInterest. 

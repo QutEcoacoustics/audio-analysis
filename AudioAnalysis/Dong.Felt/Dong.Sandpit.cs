@@ -51,6 +51,7 @@
             int ridgeMatrixLength = configuration.RidgeMatrixLength;
             int filterRidgeMatrixLength = configuration.FilterRidgeMatrixLength;
             int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
+            double averageIntensityDifferentInNh = configuration.AverageIntensityDifferenceInNh;
 
             double stThreshold = configuration.StThreshold;
             int stAvgNhLength = configuration.StAvgNhLength;
@@ -111,8 +112,8 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
-                    GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
+                    //GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
@@ -468,13 +469,6 @@
                     StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
                     StMatchedThreshold = (int)configuration.StMatchedThreshold
                     },
-                    //new { 
-                    //RidgeDetectionMagnitudeThreshold = 6.0,
-                    //RidgeMatrixLength = 5,
-                    //FilterRidgeMatrixLength = 7,
-                    //MinimumNumberInRidgeInMatrix = 3,
-                    //NeighbourhoodLength = 9
-                    //},
             };
 
             foreach (var entry in parameterMixtures)
@@ -506,6 +500,7 @@
                     RidgeMatrixLength = configuration.RidgeMatrixLength,
                     FilterRidgeMatrixLength = configuration.FilterRidgeMatrixLength,
                     MinimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix,
+                    AverageIntensityDifferenceInNh = configuration.AverageIntensityDifferenceInNh,
                     NeighbourhoodLength = configuration.NeighbourhoodLength,
 
                     StThreshold = entry.StThreshold,
@@ -514,8 +509,7 @@
                     StMatchedThreshold = entry.StMatchedThreshold,
 
                     SecondToMillionSecondUnit = configuration.SecondToMillionSecondUnit,                  
-                    Rank = configuration.Rank,
-                    //FeaturePropertySet = configuration.FeaturePropertySet,                    
+                    Rank = configuration.Rank,                
                 };
 
                 Play(currentConfig, featurePropertySet, inputDirectory, new DirectoryInfo(fullPath), tempDirectory);

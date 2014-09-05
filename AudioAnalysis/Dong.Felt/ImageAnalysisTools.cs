@@ -14,7 +14,7 @@ namespace Dong.Felt
     using System.Drawing.Imaging;
     using AForge.Math;
     using AudioAnalysisTools.DSP;
-    
+
 
 
     class ImageAnalysisTools
@@ -128,7 +128,7 @@ namespace Dong.Felt
             return result;
         }
 
-        
+
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -787,6 +787,40 @@ namespace Dong.Felt
             result = magnitude;
             return result;
         }
+        /// <summary>
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
+        /// which includes C code.
+        /// HOWEVER MODIFED TO PROCESS 5x5 matrix
+        /// MATRIX must be square with odd number dimensions
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static void RidgeDetectConfirmation(double[,] m, out bool isRidge, double averageDiffThresh)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[,] averageMask = { { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
+                                     };
+            double averageRidgeIntensity = MatrixTools.DotProduct(averageMask, m) / (rows * cols);
+
+            isRidge = false;
+            // check whether it is false ridges. 
+            var centerPixelIntensity = m[rows / 2, cols / 2];
+            if ((centerPixelIntensity - averageRidgeIntensity) > averageDiffThresh)
+            {
+                isRidge = true;
+            }
+
+        }
 
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
@@ -809,7 +843,7 @@ namespace Dong.Felt
                 isRidge = false;
                 magnitude = 0.0;
                 direction = 0.0;
-                
+
                 return;
             }
 
@@ -840,12 +874,7 @@ namespace Dong.Felt
                                         {-0.1,-0.1,-0.1, 0.4,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1, 0.4}
                                       };
-            double[,] averageMask = { { 1.0,1.0,1.0,1.0,1.0},
-                                   {1.0, 1.0,1.0,1.0,1.0},
-                                   {1.0,1.0, 1.0,1.0,1.0},
-                                   {1.0,1.0,1.0, 1.0,1.0},
-                                   {1.0,1.0,1.0,1.0, 1.0}
-                                 };
+
 
             double[] ridgeMagnitudes = new double[4];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
@@ -853,23 +882,23 @@ namespace Dong.Felt
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
             var centerPixelIntensity = m[rows / 2, cols / 2];
-            averageIntensity = 1.0/25 * MatrixTools.DotProduct(averageMask, m);
+            //averageIntensity = 1.0/25 * MatrixTools.DotProduct(averageMask, m);
             int indexMin, indexMax;
             double diffMin, diffMax;
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
 
             double threshold = 0; // dB
-            isRidge = false; 
-            // check whether it is false ridges. 
-            if (ridgeMagnitudes[indexMax] > threshold)
-            {
-                if ((centerPixelIntensity - averageIntensity) > 7.0)
-                {
-                    isRidge = true;
-                }               
-            }
-            
-            //isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            //isRidge = false; 
+            //// check whether it is false ridges. 
+            //if (ridgeMagnitudes[indexMax] > threshold)
+            //{
+            //    if ((centerPixelIntensity - averageIntensity) > 7.0)
+            //    {
+            //        isRidge = true;
+            //    }               
+            //}
+
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax / 2;
             /// four directions
             direction = indexMax * Math.PI / (double)4;
@@ -1319,6 +1348,16 @@ namespace Dong.Felt
             return PointOfInterest.TransferPOIMatrix2List(M);
         }
 
+        /// <summary>
+        /// Given a current poi, search in its neighbourhood, check how many pois have the same orientation as the current poi. 
+        /// if the number of pois is less than threshold, it will be set to null. 
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <param name="sizeOfNeighbourhood"></param>
+        /// <param name="thresholdForLeastPoint"></param>
+        /// <returns></returns>
         public static List<PointOfInterest> FilterRidges(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
@@ -1326,36 +1365,36 @@ namespace Dong.Felt
             for (int r = radius; r < rows; r++)
             {
                 for (int c = radius; c < cols; c++)
-                {              
-                        if (M[r, c] != null)
+                {
+                    if (M[r, c] != null)
+                    {
+                        var ridgeOrientation = M[r, c].OrientationCategory;
+                        var numberOfpoi = 1;
+                        // search in a neighbourhood
+                        for (int i = -radius; i < radius; i++)
                         {
-                            var ridgeOrientation = M[r, c].OrientationCategory;
-                            var numberOfpoi = 1;   
-                            // search in a neighbourhood
-                            for (int i = -radius; i < radius; i++)
+                            for (int j = -radius; j < radius; j++)
                             {
-                                for (int j = -radius; j < radius; j++)
+                                if (StatisticalAnalysis.checkBoundary(r + i, c + j, rows, cols))
                                 {
-                                    if (StatisticalAnalysis.checkBoundary(r + i, c + j, rows, cols))
+                                    if (M[r + i, c + j] != null)
                                     {
-                                        if (M[r + i, c + j] != null)
+                                        var orientationCate = M[r + i, c + j].OrientationCategory;
+                                        if (orientationCate == ridgeOrientation)
                                         {
-                                            var orientationCate = M[r + i, c + j].OrientationCategory;
-                                            if (orientationCate == ridgeOrientation)
-                                            {
-                                                numberOfpoi++;
-                                            }
+                                            numberOfpoi++;
                                         }
                                     }
                                 }
                             }
-                            if (numberOfpoi < thresholdForLeastPoint)
-                            {
-                                M[r, c] = null;
-                            }
-                        }              
+                        }
+                        if (numberOfpoi < thresholdForLeastPoint)
+                        {
+                            M[r, c] = null;
+                        }
                     }
                 }
+            }
             return PointOfInterest.TransferPOIMatrix2List(M);
         }
 
