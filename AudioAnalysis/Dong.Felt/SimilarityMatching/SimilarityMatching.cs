@@ -408,7 +408,7 @@
                                     //    sumDisdistance += fftDifference;
                                     //}
                                     /// One is based on position matching                          
-                                    if (candidatePOIMatrix[i, j].fftMatrix != null)
+                                    if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix != null)
                                     {
                                         var queryFFTMatrix = queryPOIMatrix[i, j].fftMatrix;
                                         var candidateFFTMatrix = candidatePOIMatrix[i, j].fftMatrix;
@@ -426,14 +426,11 @@
                                         }
                                     }
                                 }
-                            }
-                            if (candidatePOIMatrix[i, j] != null)
-                            {
-                                if (queryPOIMatrix[i, j].RidgeMagnitude == 0.0 && candidatePOIMatrix[i, j].RidgeMagnitude == 0.0)
+                                else if (candidatePOIMatrix[i, j] != null && candidatePOIMatrix[i, j].fftMatrix == null)
                                 {
                                     matchedNullPOICount++;
                                 }
-                            }
+                            }                        
                         }
                     }
                 }

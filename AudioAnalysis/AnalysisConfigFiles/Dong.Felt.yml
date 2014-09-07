@@ -18,7 +18,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six speci
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [processOne]  
+Actions: [batch]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -32,7 +32,7 @@ RidgeDetectionMagnitudeThreshold: 5.5
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength: 7
 MinimumNumberInRidgeInMatrix: 3
-AverageIntensityDifference: 5.0
+AverageIntensityDifferenceInNh: 5.0
 
 
 # Structure Tensor Config
