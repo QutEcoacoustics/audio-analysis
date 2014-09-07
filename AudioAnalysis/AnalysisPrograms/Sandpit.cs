@@ -61,9 +61,64 @@ namespace AnalysisPrograms
                 System.Environment.Exit(0);
             }
 
+            if (false)  // 
+            {
+
+               double[,] structureTensorMatrix = new double[2,2];
+                structureTensorMatrix[0, 0] = 1.0;
+                structureTensorMatrix[1, 1] = 1.0;
+
+                var st = new StructureTensor(structureTensorMatrix);
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
 
 
-            if (true)  // test examples of wavelets
+        /// eigen values are correct ie, 2.0, 4.0; but in the wrong order????
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+
+            if (true)  
+            {
+
+                //double[,] M = {
+                //                    { 1.0,  1.0 },
+                //                    { 1.0,  1.0 }
+                //                };
+                //double[,] M = {
+                //                    { 2.0,  7.0 },
+                //                    {-1.0, -6.0 }
+                //                };
+                //double[,] M = {
+                //                    { 3.0, -1.0 },
+                //                    {-1.0,  3.0 }
+                //                };
+                double[,] M = {
+                                    { 1.0, -1.0 },
+                                    {4/(double)9,  -1.0/(double)3 }
+                                };
+                System.Tuple<double[], double[,]> result = SvdAndPca.EigenVectors(M);
+
+                Log.WriteLine("\n\n Singlar values");
+                double[] singValues = SvdAndPca.SingularValueDecompositionVector(M);
+                foreach (double value in singValues)
+                {
+                    Console.WriteLine(value);
+                }
+
+
+                double[] eigenValues = StructureTensor.CalculateEigenValues(M);
+                 Console.WriteLine("\n\n EigenValues = {0} and {1}", eigenValues[0], eigenValues[1]);
+
+                 Log.WriteLine("FINSIHED");
+                 Console.ReadLine();
+                 System.Environment.Exit(0);
+            }
+
+
+            if (false)  // test examples of wavelets
             {
                 WaveletTransformContinuous.ExampleOfWavelets_1();
                 //WaveletPacketDecomposition.ExampleOfWavelets_1();

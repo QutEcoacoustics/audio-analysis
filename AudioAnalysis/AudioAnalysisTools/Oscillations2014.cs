@@ -59,6 +59,8 @@ namespace AudioAnalysisTools
             public int BinSampleLength { get; set; }
             public Image FreqOscillationImage { get; set; }
             public double[,] FreqOscillationData { get; set; }
+            // the FreqOscillationData matrix reduced to a vector
+            public double[] OscillationSpectralIndex { get; set; }
 
             public void Save(DirectoryInfo opDir)
             {
@@ -104,7 +106,17 @@ namespace AudioAnalysisTools
             string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
             double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, Oscillations2014.SensitivityThreshold, sampleLength, algorithmName);
 
-            // convert spectrum index to oscillations per second
+            //get the max spectral index
+            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix);
+            
+            ///DEBUGGING
+            // Add spectralIndex into the matrix because want to add it to image.
+            // This is for debugging only and can comment this line
+            //int rowCount = freqOscilMatrix.GetLength(0);
+            //MatrixTools.SetRow(freqOscilMatrix, rowCount - 2, spectralIndex);
+
+
+            // Convert spectrum index to oscillations per second
             double oscillationBinWidth = sonogram.FramesPerSecond / (double)sampleLength;
 
             //draw an image
@@ -122,7 +134,8 @@ namespace AudioAnalysisTools
             var result = new FreqVsOscillationsResult();
             result.SourceFileName = sourceName;
             result.FreqOscillationImage = image;
-            result.FreqOscillationData = freqOscilMatrix; 
+            result.FreqOscillationData = freqOscilMatrix;
+            result.OscillationSpectralIndex = spectralIndex;
             return result;
         }
 
@@ -543,6 +556,31 @@ namespace AudioAnalysisTools
             return oscillationsVector;
         }
 
+
+        /// <summary>
+        /// Note: The columns are freq bins.
+        /// </summary>
+        /// <param name="freqOscilMatrix"></param>
+        /// <returns></returns>
+        public static double[] ConvertMatrix2SpectralIndex(double[,] freqOscilMatrix)
+        {
+            int rowCount = freqOscilMatrix.GetLength(0);
+            int colCount = freqOscilMatrix.GetLength(1);
+            double[] spectralIndex = new double[colCount];
+            // miss the first N rows which have low osc rate.
+            int skipCount = 1;
+            for (int c = 0; c < colCount; c++)
+            {
+                double  sum = 0.0;
+                for (int r = skipCount; r < rowCount; r++)
+                {
+                    sum += freqOscilMatrix[r, c];
+                }
+                spectralIndex[c] = sum;
+            }
+        
+            return spectralIndex;
+        }
 
 
         /// <summary>

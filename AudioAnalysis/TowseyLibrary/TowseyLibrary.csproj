@@ -238,6 +238,7 @@
     <Compile Include="AutoAndCrossCorrelation.cs" />
     <Compile Include="ConfigDict.cs" />
     <Compile Include="ConfigDictionary.cs" />
+    <Compile Include="StructureTensor.cs" />
     <Compile Include="WaveletTransformContinuous.cs" />
     <Compile Include="CsvTools.cs" />
     <Compile Include="DataTableTools.cs" />
