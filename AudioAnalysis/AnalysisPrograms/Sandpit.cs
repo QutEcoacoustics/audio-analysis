@@ -61,26 +61,45 @@ namespace AnalysisPrograms
                 System.Environment.Exit(0);
             }
 
-            if (false)  // 
+            if (true)  // used to test ridge detection using structure tensor.
             {
+               // create a local image matrix
+                double[,] image = { {0.1, 0.1, 0.1, 10.1, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1,  9.5, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1,  9.9, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.2, 0.1, 0.1, 0.1 },
+                                  };
+                double magnitudeThreshold = 6.0;
+                double dominanceThreshold = 0.9;
+                StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(image, magnitudeThreshold, dominanceThreshold);
 
-               double[,] structureTensorMatrix = new double[2,2];
-                structureTensorMatrix[0, 0] = 1.0;
-                structureTensorMatrix[1, 1] = 1.0;
-
-                var st = new StructureTensor(structureTensorMatrix);
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
 
 
-        /// eigen values are correct ie, 2.0, 4.0; but in the wrong order????
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
+            if (false)  // used to test structure tensor code.
+            {
+                // create a local image matrix
+                double[,] image = { {0.9, 10.0,},
+                                    {10.0, 0.0,}
+                                  };
 
-            if (true)  
+                var structureTensorMatrix = StructureTensor.CalculateStructureTensor(image);
+
+                StructureTensor.StructureTensorResult result = StructureTensor.GetStructureTensorInfo(image, structureTensorMatrix);
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
+
+
+            /// used to caluclate eigen values and singular valuse
+            if (false)  
             {
 
                 //double[,] M = {
@@ -91,14 +110,20 @@ namespace AnalysisPrograms
                 //                    { 2.0,  7.0 },
                 //                    {-1.0, -6.0 }
                 //                };
-                //double[,] M = {
-                //                    { 3.0, -1.0 },
-                //                    {-1.0,  3.0 }
-                //                };
+
+                // NOTE: When the matrix is square symmetric, the singular values equal the eigenvalues.
+                // e1=4.0     e2=2.0 and the singular values are the same
                 double[,] M = {
-                                    { 1.0, -1.0 },
-                                    {4/(double)9,  -1.0/(double)3 }
+                                    { 3.0, -1.0 },
+                                    {-1.0,  20.0 }
                                 };
+
+
+                // e1=e2=0.333333
+                //double[,] M = {
+                //                    { 1.0, -1.0 },
+                //                    {4/(double)9,  -1.0/(double)3 }
+                //                };
                 System.Tuple<double[], double[,]> result = SvdAndPca.EigenVectors(M);
 
                 Log.WriteLine("\n\n Singlar values");

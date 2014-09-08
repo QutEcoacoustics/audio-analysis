@@ -87,6 +87,61 @@ namespace AudioAnalysisTools
             return hits;
         }
 
+        /// <summary>
+        /// matrix is assumed to be a spectrogram image spectrogram, whose rows are freq bins and columns are time frames.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="magnitudeThreshold"></param>
+        /// <returns></returns>
+        public static byte[,] StructureTensorRidgeDetection(double[,] matrix, double magnitudeThreshold, double dominanceThreshold)
+        {
+            //int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
+            //double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+
+            //double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+            //var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+            //double herzScale = spectrogram.FBinWidth; //43 hz
+            //double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            // will extract 7x7 image portions 
+            int halfLength = 3;
+
+            //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
+            var hits = new byte[rows, cols];
+
+
+
+            for (int r = halfLength; r < rows - halfLength; r++)
+            {
+                for (int c = halfLength; c < cols - halfLength; c++)
+                {
+                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    double magnitude;
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4. 
+                    double direction;
+                    bool isRidge = false;
+
+                    // magnitude is dB
+                    StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(subM, magnitudeThreshold, dominanceThreshold);
+
+                    //here are the rules for deciding whether have ridge or not.
+                    if ((result.AvMagnitude > magnitudeThreshold) && (result.AvDominance > dominanceThreshold))
+                    {
+                            hits[r, c]     = result.RidgeDirectionCategory;
+                            hits[r - 1, c] = result.RidgeDirectionCategory;
+                            hits[r + 1, c] = result.RidgeDirectionCategory;
+                    }
+                }
+            }
+
+            /// filter out some redundant ridges
+            //var prunedPoiList = ImageTools.PruneAdjacentTracks(poiList, rows, cols);
+            //var prunedPoiList1 = ImageTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
+            ////var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            //var filteredPoiList = ImageTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            return hits;
+        }
 
         // ############################################################################################################################
         // METHODS BELOW HERE ARE OLDER AND TRANSFERED FROM THE MATRIXTOOLS class in September 2014. 
