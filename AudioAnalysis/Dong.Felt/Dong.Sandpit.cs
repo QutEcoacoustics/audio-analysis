@@ -112,9 +112,8 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
-                    //GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
-
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
+                    GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
                     //                                  {0,  255,  255, 0},
@@ -627,8 +626,17 @@
                     var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
                     var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
                     var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
+                    var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
+                    var dividedPOIList = POISelection.POIListDivision(gaussianBlurRidgesList);
+                    var verSegmentList = new List<List<PointOfInterest>>();
+                    var horSegmentList = new List<List<PointOfInterest>>();
+                    var posDiSegmentList = new List<List<PointOfInterest>>();
+                    var negDiSegmentList = new List<List<PointOfInterest>>();
+                    ClusterAnalysis.ClusterRidgesToEvents(dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
+                        rows, cols, ref verSegmentList, ref horSegmentList, ref posDiSegmentList, ref negDiSegmentList);
+                    var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in gaussianBlurRidges)
+                    foreach (PointOfInterest poi in groupedRidges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         Point point = new Point(poi.Point.Y, poi.Point.X);
@@ -643,7 +651,7 @@
                         poi.HerzScale = herzScale;
                     }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Gaussian blur.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Filtered Gaussian blur.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);

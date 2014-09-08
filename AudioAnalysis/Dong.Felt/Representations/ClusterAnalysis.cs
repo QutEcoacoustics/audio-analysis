@@ -14,6 +14,7 @@ namespace Dong.Felt.Representations
         #endregion
 
         #region Public Methods
+
         //Step 1: do blur to connect broken/seperated poi 
         /// <summary>
         /// Gaussian Blur tries to connect broken ridges. 
@@ -85,49 +86,196 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        // Todo: finish the method. 
-        public static PointOfInterest[,] FilterSmallConnectedRegion(PointOfInterest[,] poiMatrix)
+        /// <summary>
+        /// Cluster ridge list into a bunch of small segments which is composed of connected ridges. 
+        /// </summary>
+        /// <param name="verPoiList"></param>
+        /// <param name="horPoiList"></param>
+        /// <param name="posDiaPoiList"></param>
+        /// <param name="negDiaPoiList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="verSegmentList"></param>
+        /// <param name="horSegmentList"></param>
+        /// <param name="posDiSegmentList"></param>
+        /// <param name="negDiSegmentList"></param>
+        public static void ClusterRidgesToEvents(List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
+            List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, int rowsCount, int colsCount,
+            ref List<List<PointOfInterest>> verSegmentList, ref List<List<PointOfInterest>> horSegmentList,
+            ref List<List<PointOfInterest>> posDiSegmentList, ref List<List<PointOfInterest>> negDiSegmentList)
         {
-            var matrixRowlength = poiMatrix.GetLength(0);
-            var matrixColLength = poiMatrix.GetLength(1);
+            var verPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(verPoiList, rowsCount, colsCount);
+            var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
+            var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
+            var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
 
-            var tempPOIlist = new List<PointOfInterest>();
-            if (poiMatrix != null)
+            for (var r = 0; r < rowsCount; r++)
             {
-                for (var r = 0; r < matrixRowlength; r++)
+                for (var c = 0; c < colsCount; c++)
                 {
-                    for (var c = 0; c < matrixColLength; c++)
+                    // cluster vertical ridges into small segments                   
+                    if (verPoiMatrix[r, c] != null && verPoiMatrix[r, c].RidgeMagnitude != 0 && verPoiMatrix[r, c].IsLocalMaximum == false)
                     {
-                        poiMatrix[r, c].IsLocalMaximum = false; 
-                        // traverse each poi in 8 directions within its neighbourhood.
-                        if (poiMatrix[r, c].IsLocalMaximum == false && poiMatrix[r, c].RidgeMagnitude != 0)
-                        {
-                            if(poiMatrix[r, c + 1].RidgeMagnitude != 0)
-                            {
-                                poiMatrix[r, c].IsLocalMaximum = true;
-                                {
-                                    var currentPOI = poiMatrix[r, c + 1];
-                                    if (poiMatrix[r, c + 1].RidgeMagnitude != 0)
-                                    {
-
-                                    }
-                                }
-                            }
-                                if(poiMatrix[r, c + 1].RidgeMagnitude != 0)
-                                {
-
-                                }
-
-                                if(poiMatrix[r, c + 1].RidgeMagnitude != 0)
-                                {
-                                   
-                                }
-                        }
+                        var verSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(verPoiMatrix[r, c], verPoiMatrix, ref verSegmentSubList);
+                        verSegmentList.Add(verSegmentSubList);
+                    }
+                    // cluster horizontal ridges
+                    if (horPoiMatrix[r, c] != null && horPoiMatrix[r, c].RidgeMagnitude != 0 && horPoiMatrix[r, c].IsLocalMaximum == false)
+                    {
+                        var horSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(horPoiMatrix[r, c], horPoiMatrix, ref horSegmentSubList);
+                        horSegmentList.Add(horSegmentSubList);
+                    }
+                    // cluster positiveDiagonal ridges
+                    if (posDiPoiMatrix[r, c] != null && posDiPoiMatrix[r, c].RidgeMagnitude != 0 && posDiPoiMatrix[r, c].IsLocalMaximum == false)
+                    {
+                        var posSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(posDiPoiMatrix[r, c], posDiPoiMatrix, ref posSegmentSubList);
+                        posDiSegmentList.Add(posSegmentSubList);
+                    }
+                    // cluster negativeDiagonal ridges
+                    if (negDiPoiMatrix[r, c] != null && negDiPoiMatrix[r, c].RidgeMagnitude != 0 && negDiPoiMatrix[r, c].IsLocalMaximum == false)
+                    {
+                        var negSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(negDiPoiMatrix[r, c], negDiPoiMatrix, ref negSegmentSubList);
+                        negDiSegmentList.Add(negSegmentSubList);
                     }
                 }
             }
-            return poiMatrix;
         }
+
+        public static List<PointOfInterest> GroupeSepRidges(List<List<PointOfInterest>> verSegmentList, List<List<PointOfInterest>> horSegmentList,
+            List<List<PointOfInterest>> posDiSegmentList, List<List<PointOfInterest>> negDiSegmentList)
+        {
+            var result = new List<PointOfInterest>();
+            var modifiedVerSegmentList = new List<List<PointOfInterest>>();
+            var modifiedHorSegmentList = new List<List<PointOfInterest>>();
+            var modifiedPosSegmentList = new List<List<PointOfInterest>>();
+            var modifiedNegSegmentList = new List<List<PointOfInterest>>();
+
+            foreach (List<PointOfInterest> v in verSegmentList)
+            {
+                if (v.Count() > 12)
+                {
+                    modifiedVerSegmentList.Add(v);
+                }
+            }
+
+            foreach (var h in horSegmentList)
+            {
+                if (h.Count() > 20)
+                {
+                    modifiedHorSegmentList.Add(h);
+                }
+            }
+
+            foreach (var p in posDiSegmentList)
+            {
+                if (p.Count() > 12)
+                {
+                    modifiedPosSegmentList.Add(p);
+                }
+            }
+
+            foreach (var n in negDiSegmentList)
+            {
+                if (n.Count() > 12)
+                {
+                    modifiedNegSegmentList.Add(n);
+                }
+            }
+
+            // Add all sublists into one poi list. 
+            foreach (var v in modifiedVerSegmentList)
+            {
+                foreach (var v1 in v)
+                {
+                    result.Add(v1);
+                }
+            }
+
+            foreach (var h in modifiedHorSegmentList)
+            {
+                foreach (var h1 in h)
+                {
+                    result.Add(h1);
+                }
+            }
+
+            foreach (var p in modifiedPosSegmentList)
+            {
+                foreach (var p1 in p)
+                {
+                    result.Add(p1);
+                }
+            }
+
+            foreach (var n in modifiedNegSegmentList)
+            {
+                foreach (var n1 in n)
+                {
+                    result.Add(n1);
+                }
+            }
+
+            return result; 
+        }
+
+        /// <summary>
+        /// Recursive process to get a connected segment
+        /// </summary>
+        /// <param name="currentPoi"></param>
+        /// <returns></returns>
+        public static void RegionGrow(PointOfInterest currentPoi, PointOfInterest[,] poiMatrix, ref List<PointOfInterest> poiList)
+        {
+            var rowsCount = poiMatrix.GetLength(0);
+            var colsCount = poiMatrix.GetLength(1);
+
+            if (currentPoi != null && currentPoi.IsLocalMaximum == false)
+            {
+                var PointX = currentPoi.Point.X;
+                var PointY = currentPoi.Point.Y;
+                currentPoi.IsLocalMaximum = true;
+                poiList.Add(currentPoi);
+                // clockwise search
+                // first right
+                if ((PointX + 1) < colsCount && poiMatrix[PointY, PointX + 1] != null && poiMatrix[PointY, PointX + 1].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY, PointX + 1].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY, PointX + 1], poiMatrix, ref poiList);
+                }
+                // second bottom right
+                if ((PointX + 1) < colsCount && (PointY + 1) < rowsCount &&
+                    poiMatrix[PointY + 1, PointX + 1] != null && poiMatrix[PointY + 1, PointX + 1].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY + 1, PointX + 1].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY + 1, PointX + 1], poiMatrix, ref poiList);
+                }
+                // third bottom
+                if ((PointY + 1) < rowsCount &&
+                    poiMatrix[PointY + 1, PointX] != null && poiMatrix[PointY + 1, PointX].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY + 1, PointX].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY + 1, PointX], poiMatrix, ref poiList);
+                }
+                // fourth bottom left
+                if ((PointX - 1) > 0 && (PointY - 1) > 0 &&
+                    poiMatrix[PointY - 1, PointX - 1] != null && poiMatrix[PointY - 1, PointX - 1].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY - 1, PointX - 1].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);
+                }
+                // fifth left
+                if ((PointX - 1) > 0 &&
+                    poiMatrix[PointY, PointX - 1] != null && poiMatrix[PointY, PointX - 1].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);
+                }
+            }
+        }
+
         #endregion
     }
 }

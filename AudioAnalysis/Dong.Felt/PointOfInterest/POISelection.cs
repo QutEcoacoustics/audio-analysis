@@ -1,4 +1,5 @@
-﻿
+﻿/// This class works on analysing ridges 
+
 namespace Dong.Felt
 {
     using System;
@@ -12,13 +13,19 @@ namespace Dong.Felt
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.WavTools;
 
-
-
     public class POISelection
     {
         public enum RidgeOrientationType { NONE, HORIZONTAL, POSITIVE_QUATERPI, VERTICAL, NEGATIVE_QUATERPI }
 
         public List<PointOfInterest> poiList { get; set; }
+
+        public List<PointOfInterest> HorPoiList { get; set; }
+
+        public List<PointOfInterest> VerPoiList { get; set; }
+
+        public List<PointOfInterest> PosQuPiPoiList { get; set; }
+
+        public List<PointOfInterest> NegQuPiPoiList { get; set; }
 
         public int RowsCount { get; set; }
 
@@ -86,7 +93,7 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        poiList.Add(poi);                       
+                        poiList.Add(poi);
                     }
                 }
             }  /// filter out some redundant ridges
@@ -111,7 +118,7 @@ namespace Dong.Felt
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     var boundary = StatisticalAnalysis.checkBoundary(r - 3, c - 3, rows - 3, cols - 3);
                     var boundary2 = StatisticalAnalysis.checkBoundary(r + 3, c + 3, rows - 3, cols - 3);
-                    var subM2 = new double[7,7];
+                    var subM2 = new double[7, 7];
                     if (boundary == true && boundary2 == true)
                     {
                         subM2 = MatrixTools.Submatrix(matrix, r - 3, c - 3, r + 3, c + 3);
@@ -220,7 +227,7 @@ namespace Dong.Felt
             var refinedPoiList = POISelection.RefineRidgeDirection(filteredPoiList, rows, cols);
             poiList = refinedPoiList;
         }
-       
+
         /// <summary>
         /// To select ridges on the spectrogram data, matrix. 
         /// </summary>
@@ -376,7 +383,7 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="poiList"></param>
         /// <returns></returns>
-        public List<List<PointOfInterest>> POIListDivision(List<PointOfInterest> poiList)
+        public static List<List<PointOfInterest>> POIListDivision(List<PointOfInterest> poiList)
         {
             var poiVerticalGroup = new List<PointOfInterest>();
             var poiHorizontalGroup = new List<PointOfInterest>();
@@ -404,11 +411,11 @@ namespace Dong.Felt
                 }
             }
             result.Add(poiVerticalGroup);
-            result.Add(poiVerticalGroup);
-            result.Add(poiVerticalGroup);
-            result.Add(poiVerticalGroup);
+            result.Add(poiHorizontalGroup);
+            result.Add(poiPDGroup);
+            result.Add(poiNDGroup);
 
-            return result; 
+            return result;
         }
 
         // Copy a pointOfInterst to another pointOfInterest. 
@@ -635,16 +642,7 @@ namespace Dong.Felt
             var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(pruneAdjacentPoi, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
             return filterPoiList;
         }
-
-        public SpectrogramStandard SpectrogramGeneration(string wavFilePath)
-        {
-            var recording = new AudioRecording(wavFilePath);
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
-            var spectrogram = new SpectrogramStandard(config, recording.WavReader);
-
-            return spectrogram;
-        }
-
+       
         public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
