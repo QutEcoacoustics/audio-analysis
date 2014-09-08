@@ -1025,6 +1025,23 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Turns a matrix upside-down and back-to-front!
+        /// This is  a rotation NOT a transpose.
+        /// </summary>
+        /// <param name="M">the matrix to rotate</param>
+        /// <returns></returns>
+
+        public static double[,] MatrixRotate180(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[r, c] = m[rows - r - 1, cols - c - 1];
+            return ret;
+        }
+        /// <summary>
         /// Rotates a matrix 90 degrees clockwise.
         /// </summary>
         /// <param name="M">the matrix to rotate</param>
@@ -1035,6 +1052,16 @@ namespace TowseyLibrary
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
             var ret = new double[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[rows - r - 1, c];
+            return ret;
+        }
+        public static byte[,] MatrixRotate90Clockwise(byte[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new byte[cols, rows];
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
                     ret[c, r] = m[rows - r - 1, c];
