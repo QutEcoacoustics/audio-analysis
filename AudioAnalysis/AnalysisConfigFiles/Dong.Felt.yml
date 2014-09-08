@@ -18,7 +18,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six speci
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [batch]  
+Actions: [processOne]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -39,7 +39,7 @@ AverageIntensityDifferenceInNh: 5.0
 StThreshold: 0.015
 StAvgNhLength: 11
 StFFTNeighbourhoodLength: 16
-StMatchedThreshold: 600
+StMatchedThreshold: 500
 
 # For ridge neighbourhood representation
 NeighbourhoodLength: 11
