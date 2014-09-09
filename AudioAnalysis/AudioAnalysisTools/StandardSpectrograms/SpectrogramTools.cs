@@ -294,13 +294,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
             truncateMax = 60;
             double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
 
-            //double ridgeThreshold = 6.0;
-            //byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(dbSpectrogramData, ridgeThreshold);
+            // ########################### SOBEL ridge detection
             double ridgeThreshold = 6.0;
-            double dominanceThreshold = 0.9;
-            var rotatedData = MatrixTools.MatrixRotate90Anticlockwise(dbSpectrogramData);
-            byte[,] hits = RidgeDetection.StructureTensorRidgeDetection(rotatedData, ridgeThreshold, dominanceThreshold);
-            hits = MatrixTools.MatrixRotate90Clockwise(hits);
+            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(dbSpectrogramData, ridgeThreshold);
+            // ########################### EIGEN ridge detection
+            //double ridgeThreshold = 6.0;
+            //double dominanceThreshold = 0.7;
+            //var rotatedData = MatrixTools.MatrixRotate90Anticlockwise(dbSpectrogramData);
+            //byte[,] hits = RidgeDetection.StructureTensorRidgeDetection(rotatedData, ridgeThreshold, dominanceThreshold);
+            //hits = MatrixTools.MatrixRotate90Clockwise(hits);
+            // ########################### EIGEN ridge detection
 
 
             int width = dbSpectrogramData.GetLength(0);
@@ -309,7 +312,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Color colour;
             Hsv myHsv;
             Rgb myRgb;
-            Color[] ridgeColours = { Color.White, Color.DarkMagenta, Color.Black, Color.Red };
+            Color[] ridgeColours = { Color.Red, Color.DarkMagenta, Color.Black, Color.LightPink };
 
             for (int y = 0; y < height; y++) //over all freq bins
             {

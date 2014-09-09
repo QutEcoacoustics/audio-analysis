@@ -171,41 +171,50 @@ namespace AnalysisPrograms
                               };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
+            AcousticEvent[] events = CallAed(sonogram, aedConfiguration, segmentStartOffset, segmentDuration);
+            TowseyLibrary.Log.WriteIfVerbose("AED # events: " + events.Length);
+            return Tuple.Create(events, recording, sonogram);
+        }
+
+
+        public static AcousticEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
+        {
             Log.Info("AED start");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
                 aedConfiguration.IntensityThreshold,
                 aedConfiguration.SmallAreaThreshold,
                 aedConfiguration.BandpassMinimum ?? 0.0,
-                aedConfiguration.BandpassMaximum ?? config.NyquistFreq,
+                aedConfiguration.BandpassMaximum ?? sonogram.Configuration.NyquistFreq,
                 aedConfiguration.NoiseReductionType == NoiseReductionType.NONE,
                 sonogram.Data);
             Log.Info("AED finished");
 
             var events = oblongs.Select(
                 o =>
+                {
+                    if (!aedConfiguration.IncludeHitElementsInOutput)
                     {
-                        if (!aedConfiguration.IncludeHitElementsInOutput)
-                        {
-                            o.HitElements = null;
-                        }
+                        o.HitElements = null;
+                    }
 
-                        return new AcousticEvent(
-                            o,
-                            sonogram.NyquistFrequency,
-                            sonogram.Configuration.FreqBinCount,
-                            sonogram.FrameDuration,
-                            sonogram.FrameStep,
-                            sonogram.FrameCount)
-                                   {
-                                       SegmentStartOffset = segmentStartOffset,
-                                       BorderColour = aedConfiguration.AedEventColor,
-                                       HitColour = aedConfiguration.AedHitColor,
-                                       SegmentDuration = segmentDuration
-                                   };
-                    }).ToArray();
-            TowseyLibrary.Log.WriteIfVerbose("AED # events: " + events.Length);
-            return Tuple.Create(events, recording, sonogram);
+                    return new AcousticEvent(
+                        o,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FrameDuration,
+                        sonogram.FrameStep,
+                        sonogram.FrameCount)
+                    {
+                        SegmentStartOffset = segmentStartOffset,
+                        BorderColour = aedConfiguration.AedEventColor,
+                        HitColour = aedConfiguration.AedHitColor,
+                        SegmentDuration = segmentDuration
+                    };
+                }).ToArray();
+            return events;
         }
+
+
 
         public static Arguments Dev(object obj)
         {
