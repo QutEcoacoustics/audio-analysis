@@ -79,10 +79,16 @@ namespace AnalysisPrograms
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
                 // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\JCU\Litoria fellax1.mp3".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
+
+
+                //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Kanowski_651_233394_20120831_072112_4.0__.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\SE_399_188293_20101014_132950_4.0__.wav".ToFileInfo(),
+
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\Sonograms".ToDirectoryInfo(),
@@ -276,8 +282,9 @@ namespace AnalysisPrograms
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
 
                 int neighbourhood = 15;
-                double contrastLevel = 0.5;
-                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, contrastLevel);
+                double LcnContrastLevel = 0.1;
+                //configDict
+                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, LcnContrastLevel);
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
@@ -399,7 +406,8 @@ namespace AnalysisPrograms
 
 
     /// <summary>
-    /// This analyzer simply generates spectrograms and outputs them to CSV files.
+    /// This analyzer simply generates short (i.e. one minute) spectrograms and outputs them to CSV files.
+    /// It does not accumulate data or other indices over a long recording.
     /// </summary>
     public class SpectrogramAnalyzer : IAnalyser2
     {

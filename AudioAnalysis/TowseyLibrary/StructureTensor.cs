@@ -116,64 +116,99 @@ namespace TowseyLibrary
         }
 
 
-        public static StructureTensorResult EdgeDetection_VerticalDirection(double[,] M)
+        public static RidgeTensorResult RidgeDetection_VerticalDirection(double[,] M)
         {
+            // 0,1,2,3 indicate directions East, North, West, South respectively of the position (x,y).
+            //The following variables are required to obtain the local gradient.
+            double dx0, dy1, dx2, dy3;
+            //The following variables are required to construct the structure tensor.
+            double dxdx0, dydy1, dxdx2, dydy3, dydx0, dydx2;
+
             int rowCount = M.GetLength(0);
             int colCount = M.GetLength(1);
             int halfwidth = colCount / 2;
 
             //accumulate info in the positive direction
-            var avMatrixValues = new double[2, 2];
+            //var avMatrixValues = new double[2, 2];
             var avStructTensor = new double[2, 2];
-            var window = new double[2, 2];
+            //var window = new double[2, 2];
 
             //search for ridge in central vertical cells
             int N = 0;
+            dx0 = 0.0;
+            dy1 = 0.0;
+            dx2 = 0.0;
+            dy3 = 0.0;
+            dxdx0 = 0.0;
+            dydy1 = 0.0;
+            dxdx2 = 0.0;
+            dydy3 = 0.0;
+            dydx0 = 0.0;
+            dydx2 = 0.0;
             //avoid the edge rows
             for (int r = 1; r < rowCount-1; r++)
             {
-                // calculate average matrix in positive direction
-                window[0, 0] = M[r - 1, halfwidth];
-                window[0, 1] = M[r - 1, halfwidth + 1];
-                window[1, 0] = M[r, halfwidth];
-                window[1, 1] = M[r, halfwidth + 1];
-                avMatrixValues = MatrixTools.AddMatrices(avMatrixValues, window);
-
-                // calculate structure tensor in positive direction
-                var st = StructureTensor.CalculateStructureTensor(window);
-                avStructTensor = MatrixTools.AddMatrices(avStructTensor, st);
-
+                // calculate gradients in four directions
+                dx0 += M[r, halfwidth + 1] - M[r, halfwidth];
+                dy1 += M[r - 1, halfwidth] - M[r, halfwidth];
+                dx2 += M[r, halfwidth - 1] - M[r, halfwidth];
+                dy3 += M[r + 1, halfwidth] - M[r, halfwidth];
+                // accumulate structure tensor components
+                dxdx0 += dx0 * dx0;
+                dydy1 += dy1 * dy1;
+                dxdx2 += dx2 * dx2;
+                dydy3 += dy3 * dy3;
+                dydx0 += dx0 * dy1;
+                dydx2 += dx2 * dy3;
 
                 // count number of contributing cells so can get average 
                 N++;
             }
             // get average
-            for (int r = 0; r < 2; r++)
-            {
-                for (int c = 0; c < 2; c++)
-                {
-                    avMatrixValues[r, c] /= (double)N;
-                    avStructTensor[r, c] /= (double)N;
-                }
-            }
+            dx0 /= N;
+            dy1 /= N;
+            dx2 /= N;
+            dy3 /= N;
+            dxdx0 /= N;
+            dydy1 /= N;
+            dxdx2 /= N;
+            dydy3 /= N;
+            dydx0 /= N;
+            dydx2 /= N;
 
-            TowseyLibrary.StructureTensor.StructureTensorResult result = StructureTensor.GetStructureTensorInfo(avMatrixValues, avStructTensor);
-            return result;
-        }
+            double[,] stM1 = {
+                         { dxdx0, dydx0},
+                         { dydx0, dydy1}
+                      };
+            double[] eigenvalues1 = CalculateEigenValues(stM1);
+            double[,] stM2 = {
+                         { dxdx2, dydx2},
+                         { dydx2, dydy3}
+                      };
+            double[] eigenvalues2 = CalculateEigenValues(stM2);
 
+            double ridgeMagnitude = (dx0 + dx2) / (double)2;
+            if ((dx0 < 3.0) || (dx2 < 3.0)) ridgeMagnitude = 0.0;
 
-        public static RidgeTensorResult RidgeDetection_VerticalDirection(double[,] M, double magnitudeThreshold, double dominanceThreshold)
-        {
-            TowseyLibrary.StructureTensor.StructureTensorResult result1 = StructureTensor.EdgeDetection_VerticalDirection(M);
-            M = MatrixTools.MatrixRotate180(M);
-            TowseyLibrary.StructureTensor.StructureTensorResult result2 = StructureTensor.EdgeDetection_VerticalDirection(M);
-
+            //accumulate results
             RidgeTensorResult result = new RidgeTensorResult();
-            result.AvMagnitude = (result1.Magnitude + result2.Magnitude) / (double)2;
-            result.AvRadians   = (result1.Radians + result2.Radians) / (double)2;
-            result.DirectionDifference = (result1.Radians - result2.Radians);
-            result.DirectionIndecision = result.DirectionDifference / (result1.Radians + result2.Radians);
-            result.AvDominance = (result1.Dominance + result2.Dominance) / (double)2;
+
+            // this magnitude is equivalent to Sobel calculation over three columns
+            result.AvMagnitude = ridgeMagnitude;
+            double eigenDominance1 = Math.Abs((eigenvalues1[0] - eigenvalues1[1]) / (eigenvalues1[0] + eigenvalues1[1]));
+            double eigenDominance2 = Math.Abs((eigenvalues2[0] - eigenvalues2[1]) / (eigenvalues2[0] + eigenvalues2[1]));
+            result.AvDominance = (eigenDominance1 + eigenDominance2) / (double)2;
+
+
+            double radiansE = Math.Atan2(dy1, dx0);
+            double radiansW = Math.Atan2(dy3, dx2);
+            double degrees1 = radiansE * (180 / Math.PI);
+            double degrees2 = radiansW * (180 / Math.PI);
+
+            result.AvRadians   = (radiansE + radiansW) / (double)2;
+            result.DirectionDifference = (radiansE - radiansW);
+            result.DirectionIndecision = result.DirectionDifference / (radiansE + radiansW);
+
             // ridge direction is at right angles to the slope direction. Add 90 degrees.
             double piDiv2 = Math.PI / (double)2;
             result.RidgeDirection = result.AvRadians + piDiv2;
@@ -204,7 +239,8 @@ namespace TowseyLibrary
                         else
                         if ((ridgeAngle <= -category2Boundary) && (ridgeAngle > -piDiv2))
                             result.RidgeDirectionCategory = 4;
-
+            //over-ride direction for vertical
+            result.RidgeDirectionCategory = 4;
             return result;
         }
 

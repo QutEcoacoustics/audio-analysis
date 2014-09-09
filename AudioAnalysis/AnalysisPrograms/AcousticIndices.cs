@@ -365,11 +365,15 @@ namespace AnalysisPrograms
                 var image = DrawSonogram(indexCalculateResult.Sg, indexCalculateResult.Hits, indexCalculateResult.TrackScores, indexCalculateResult.Tracks);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = new FileInfo(imagePath);
+
+                // ############################### SAVE OSCILLATION IMAGE HERE ###############################
             }
 
             if (analysisSettings.SummaryIndicesFile != null)
             {
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+
+                // ############################### SAVE OSCILLATION CSV HERE ###############################
             }
 
             if (analysisSettings.SpectrumIndicesDirectory != null)

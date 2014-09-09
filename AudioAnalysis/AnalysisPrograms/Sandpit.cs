@@ -74,7 +74,7 @@ namespace AnalysisPrograms
                                   };
                 double magnitudeThreshold = 6.0;
                 double dominanceThreshold = 0.9;
-                StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(image, magnitudeThreshold, dominanceThreshold);
+                StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(image);
 
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();

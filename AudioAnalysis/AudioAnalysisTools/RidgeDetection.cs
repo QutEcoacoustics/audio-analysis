@@ -123,12 +123,12 @@ namespace AudioAnalysisTools
                     bool isRidge = false;
 
                     // magnitude is dB
-                    StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(subM, magnitudeThreshold, dominanceThreshold);
+                    StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(subM);
 
                     //here are the rules for deciding whether have ridge or not.
                     if ((result.AvMagnitude > magnitudeThreshold) && (result.AvDominance > dominanceThreshold))
                     {
-                            hits[r, c]     = result.RidgeDirectionCategory;
+                            hits[r, c] = result.RidgeDirectionCategory;
                             hits[r - 1, c] = result.RidgeDirectionCategory;
                             hits[r + 1, c] = result.RidgeDirectionCategory;
                     }
