@@ -52,15 +52,16 @@ namespace AudioAnalysisTools
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = 2;
+            //double halfThreshold = magnitudeThreshold * 1.0;
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
             var hits = new byte[rows, cols];
 
 
 
-            for (int r = halfLength; r < rows - halfLength; r++)
+            for (int r = halfLength + 1; r < rows - halfLength-1; r++)
             {
-                for (int c = halfLength; c < cols - halfLength; c++)
+                for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
                 {
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude;
@@ -72,6 +73,13 @@ namespace AudioAnalysisTools
                     ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
                     if ((magnitude > magnitudeThreshold) && (isRidge == true))
                     {
+                        // now get average of 7x7 matrix as second check.
+                        double av, sd;
+                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1); // extract NxN submatrix
+                        NormalDist.AverageAndSD(subM2, out av, out sd);
+                        double localThreshold = sd * 0.5;
+                        if ((subM[halfLength, halfLength] - av) < localThreshold) continue;
+
                         // Ridge orientation Category only has four values, they are 0, 1, 2, 3. 
                         //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(direction + 1);
