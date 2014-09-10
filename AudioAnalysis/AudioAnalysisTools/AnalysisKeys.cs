@@ -42,6 +42,9 @@ namespace AudioAnalysisTools
         public const string OscillationRate = "OcillationRate";
         public const string ParallelProcessing = "ParallelProcessing";
         public const string ResampleRate = "ResampleRate";
+        public const string OscilDetection2014FrameSize = "OscilDetection2014FrameSize";
+        public const string OscilDetection2014SampleLength = "OscilDetection2014SampleLength";
+        public const string OscilDetection2014SensitivityThreshold = "OscilDetection2014SensitivityThreshold";
         public const string SaveIntermediateCsvFiles = "SaveIntermediateCsvFiles";
         public const string SaveIntermediateWavFiles = "SaveIntermediateWavFiles";
         public const string SegmentDuration = "SegmentDuration";

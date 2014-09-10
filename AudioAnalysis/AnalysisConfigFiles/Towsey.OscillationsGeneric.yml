@@ -8,8 +8,8 @@ FrameOverlap: 0.25
 #Resample rate must be 2 X the desired Nyquist. Default is that of recording.
 ResampleRate: 20000
 
-#MinHz: 500
-#MaxHz: 3500
+OscillationsSensitivityThreshold: 0.4
+OscillationsSampleLength: 128
 
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true 

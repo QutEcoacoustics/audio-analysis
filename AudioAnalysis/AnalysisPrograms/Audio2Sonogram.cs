@@ -79,11 +79,11 @@ namespace AnalysisPrograms
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
                 // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\JCU\Litoria fellax1.mp3".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
-
+                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Kanowski_651_233394_20120831_072112_4.0__.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
@@ -174,13 +174,18 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+
             // ####################################################################
             // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
+            int oscilDetection2014FrameSize = 256; //often need different frame size doing Oscil Detection
+            configDict[AnalysisKeys.OscilDetection2014FrameSize] = oscilDetection2014FrameSize.ToString();
+
             // window width when sampling along freq bins
             // 64 is better where many birds and fast chaning activity
             //int sampleLength = 64;
             // 128 is better where slow moving changes to acoustic activity
             int sampleLength = 128;
+            configDict[AnalysisKeys.OscilDetection2014SampleLength] = sampleLength.ToString();
 
             // use this if want only dominant oscillations
             //string algorithmName = "Autocorr-SVD-FFT";
@@ -188,6 +193,9 @@ namespace AnalysisPrograms
             string algorithmName = "Autocorr-FFT";
             // tried but not working
             //string algorithmName = "CwtWavelets";
+
+            double sensitivityThreshold = 0.4;
+            configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString();
             // ####################################################################
 
 
@@ -200,7 +208,6 @@ namespace AnalysisPrograms
                 {
                     LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
                 }
-                LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", sampleLength);
             }
 
             // 3: GET RECORDING
@@ -282,10 +289,14 @@ namespace AnalysisPrograms
                 // remove the DC bin
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
 
-                int neighbourhood = 15;
-                double LcnContrastLevel = 0.1;
+                LoggedConsole.WriteLine("FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
+                double neighbourhoodSeconds = 0.25;
+                int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
+                double LcnContrastLevel = 0.3;
+                LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
+                LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
                 //configDict
-                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, LcnContrastLevel);
+                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
@@ -340,65 +351,10 @@ namespace AnalysisPrograms
             }
 
             // 7) Generate the FREQUENCY x OSCILLATIONS Graphs and csv
-            FileInfo tempAudioSegment = sourceRecording;
-            Oscillations2014.FreqVsOscillationsResult result2 = GenerateOscillationImages(tempAudioSegment, configDict, dataOnly = false);
-
-            FileInfo outputOscImage = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".FreqOscilMatrix.png"));
-            FileInfo outputOscCsv   = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".FreqOscilMatrix.csv"));
-
-            // Save the image and csv files
-            result2.FreqOscillationImage.Save(outputOscImage.FullName, ImageFormat.Png);
-            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(outputOscCsv, result2.FreqOscillationData);
-             // return paths to saved files
-            result.FreqOscillationData  = outputOscCsv;
-            result.FreqOscillationImage = outputOscImage;
-            return result;
-        }
-
-        /// <summary>
-        /// Generates the FREQUENCY x OSCILLATIONS Graphs and csv
-        /// </summary>
-        /// <param name="sourceRecording"></param>
-        /// <param name="tempAudioSegment"></param>
-        /// <param name="configDict"></param>
-        /// <param name="opDir"></param>
-        /// <param name="dataOnly"></param>
-        /// <returns></returns>
-        public static Oscillations2014.FreqVsOscillationsResult GenerateOscillationImages(FileInfo tempAudioSegment, Dictionary<string, string> configDict, 
-                                                                                          bool dataOnly = false)
-        {
-            SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
-            sonoConfig.WindowSize = 256;
-            AudioRecording recordingSegment = new AudioRecording(tempAudioSegment.FullName);
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-            Console.WriteLine("Oscillation Detection: FramesPerSecond = {0}", sonogram.FramesPerSecond);
-            // remove the DC bin
-            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
-
-            // LocalContrastNormalisation over frequency bins is better and faster.
-            int neighbourhood = 15;
-            double contrastLevel = 0.5;
-            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, contrastLevel);
-
-            Oscillations2014.SensitivityThreshold = 0.4;
-            Oscillations2014.SampleLength = 128;
-
-            var resultsList = new List<Oscillations2014.FreqVsOscillationsResult>();
-            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-FFT"));
-            resultsList.Add(Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-SVD-FFT"));
-
-            // store combined data in the same results class
-            var result = new Oscillations2014.FreqVsOscillationsResult();
-            result.FreqOscillationData = resultsList[1].FreqOscillationData;
-            if (dataOnly)
-            {
-                return result;
-            }
-            else
-            {
-                Image freOscCompositeImage = Oscillations2014.FreqVsOscillationsResult.CombineImages(resultsList);
-                result.FreqOscillationImage = freOscCompositeImage;
-            }
+            //FileInfo tempAudioSegment = sourceRecording;
+            bool saveData = true;
+            bool saveImage = true;
+            double[] oscillationsSpectrum = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, saveData, saveImage);
             return result;
         }
 
