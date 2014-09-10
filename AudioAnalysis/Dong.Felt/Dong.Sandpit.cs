@@ -113,7 +113,19 @@
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
-                    GaussianBlur(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
+                    GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
+                    //var path = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\2.png";
+                    //var image = AudioPreprosessing.AudioToAmplitudeSpectrogram(config, inputDirectory.FullName);                                    
+                    //var decibelImage = AudioPreprosessing.AudioToSpectrogram(config, inputDirectory.FullName);
+                    //var scores = new List<double>();
+                    //scores.Add(1.0);
+                    //var acousticEventlist = new List<AcousticEvent>();
+                    //var poiList = new List<PointOfInterest>();
+                    //double eventThreshold = 0.5; // dummy variable - not used                               
+                    //Image image = ImageAnalysisTools.DrawSonogram(decibelImage, scores, acousticEventlist, eventThreshold, null);
+                    //var bmp = (Bitmap)image;                   
+                    //bmp.Save(path);
+
                     //var imageData = GetImageData(inputDirectory.FullName);
                     //var imageData = new double[4, 4] {{0,    0,    0,  0},
                     //                                  {0,  255,  255, 0},
@@ -604,7 +616,48 @@
             return result;
         }
 
-        public static void GaussianBlur(string audioFileDirectory, SonogramConfig config,
+        public static void GaussianBlurAmplitudeSpectro(string audioFileDirectory, SonogramConfig config,
+            RidgeDetectionConfiguration ridgeConfig, double sigma, int size)
+        {
+            if (Directory.Exists(audioFileDirectory))
+            {
+                var audioFiles = Directory.GetFiles(audioFileDirectory, @"*.wav", SearchOption.TopDirectoryOnly);
+                var audioFilesCount = audioFiles.Count();
+                for (int i = 0; i < audioFilesCount; i++)
+                {
+                    var sonogram = AudioPreprosessing.AudioToAmplitudeSpectrogram(config, audioFiles[i]);
+                    Image image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
+                    var ridges = POISelection.PostRidgeDetectionAmpSpec(sonogram, ridgeConfig);
+                    var rows = sonogram.Data.GetLength(1) - 1;
+                    var cols = sonogram.Data.GetLength(0);
+                    var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
+                    //var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
+                    //var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
+                    var dividedPOIList = POISelection.POIListDivision(ridges);
+                    var verSegmentList = new List<List<PointOfInterest>>();
+                    var horSegmentList = new List<List<PointOfInterest>>();
+                    var posDiSegmentList = new List<List<PointOfInterest>>();
+                    var negDiSegmentList = new List<List<PointOfInterest>>();
+
+                    //ClusterAnalysis.ClusterRidgesToEvents(dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
+                    //    rows, cols, ref verSegmentList, ref horSegmentList, ref posDiSegmentList, ref negDiSegmentList);
+                    //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in ridges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)sonogram.Configuration.FreqBinCount);
+                        
+                    }
+                    var FileName = new FileInfo(audioFiles[i]);
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Filtered Gaussian blur-improved.png");
+                    string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
+                    image = (Image)bmp;
+                    image.Save(annotatedImagePath);
+                }
+            }
+        }
+
+        public static void GaussianBlur2(string audioFileDirectory, SonogramConfig config,
             RidgeDetectionConfiguration ridgeConfig, double sigma, int size)        
         {
             if (Directory.Exists(audioFileDirectory))
@@ -644,7 +697,7 @@
                         var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
                         double herzScale = spectrogram.FBinWidth; //43 hz
                         TimeSpan time = TimeSpan.FromSeconds(poi.Point.Y * secondsScale);
-                        double herz = (256 - poi.Point.X - 1) * herzScale;
+                        double herz = (256 - poi.Point.X) * herzScale;
                         // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
                         var poi1 = new PointOfInterest(time, herz);
                         poi.TimeScale = timeScale;

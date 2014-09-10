@@ -50,6 +50,51 @@ namespace Dong.Felt.Preprocessing
             return spectrogram;
         }
 
+        public static BaseSonogram AudioToAmplitudeSpectrogram(SonogramConfig config, string audioFilePath)
+        {
+            var recording = new AudioRecording(audioFilePath);
+            config.NoiseReductionType = NoiseReductionType.NONE;
+            BaseSonogram sonogram = new AmplitudeSonogram(config, recording.WavReader);
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
+
+            int neighbourhood = 15;
+            double contrastLevel = 0.9;
+            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, contrastLevel);
+            //sonogram.Data = FilterWithLocalColumnVariance(
+            //var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
+            return sonogram; 
+        }
+
+        /// <summary>
+        /// Does column-wise LCN (Local Contrast Normalisation. 
+        /// The denominator = (contrastLevel + Math.Sqrt(localVariance[y])
+        /// A low contrastLevel = 0.5 give more grey image.
+        /// A high contrastLevel = 1.0 give mostly white high contrast image.
+        /// The algorithm is not sensitive to the neighbourhood size.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="neighbourhood">suitable vaues are odd numbers 9 - 29</param>
+        /// <param name="contrastLevel">Suitable values are 0.5 to 1.0.</param>
+        /// <returns></returns>
+        public static double[,] FilterWithLocalColumnVariance(double[,] matrix, int neighbourhood, double contrastLevel)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            //to contain noise reduced matrix
+            double[,] outM = new double[rowCount, colCount];
+            //for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
+            {
+                double[] column = MatrixTools.GetColumn(matrix, col);
+                double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
+                // normalise with local column variance
+                for (int y = 0; y < rowCount; y++) //for all rows
+                {
+                    outM[y, col] = matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y]));
+                } //end for all rows
+            } //end for all cols
+            return outM;
+        }
         /// <summary>
         /// Reduce the pink noise. 
         /// the result could be a binary spectrogram or original spectrogram.
