@@ -98,13 +98,15 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Does column-wise LCN (Local Contrast Normalisation. 
         /// The denominator = (contrastLevel + Math.Sqrt(localVariance[y])
-        /// A low contrastLevel = 0.5 give more grey image.
+        /// A low contrastLevel = 0.1 give more grey image.
         /// A high contrastLevel = 1.0 give mostly white high contrast image.
-        /// The algorithm is not sensitive to the neighbourhood size.
+        /// It tried various other normalisation equations as can be seen below.
+        /// Taking square-root of top line results in too much background.
+        /// The algorithm is not overly sensitive to the neighbourhood size.
         /// </summary>
         /// <param name="matrix"></param>
-        /// <param name="neighbourhood">suitable vaues are odd numbers 9 - 29</param>
-        /// <param name="contrastLevel">Suitable values are 0.5 to 1.0.</param>
+        /// <param name="neighbourhood">suitable vaues are odd numbers 9 - 59</param>
+        /// <param name="contrastLevel">Suitable values are 0.1 to 1.0.</param>
         /// <returns></returns>
         public static double[,] FilterWithLocalColumnVariance(double[,] matrix, int neighbourhood, double contrastLevel)
         {
@@ -121,6 +123,10 @@ namespace AudioAnalysisTools.DSP
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
                     outM[y, col] = matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y]));
+                    //outM[y, col] = Math.Sqrt(matrix[y, col]) / (contrastLevel + Math.Sqrt(localVariance[y]));
+                    //outM[y, col] = Math.Sqrt(matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y])));
+                    //outM[y, col] = matrix[y, col] / (1 + (1.0 * Math.Sqrt(localVariance[y])));
+                    //outM[y, col] = Math.Sqrt(matrix[y, col] / (1 + (0.10 * localVariance[y])));
                 } //end for all rows
             } //end for all cols
             return outM;

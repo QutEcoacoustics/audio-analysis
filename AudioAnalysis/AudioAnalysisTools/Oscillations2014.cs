@@ -13,6 +13,8 @@ using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
 using MathNet.Numerics.LinearAlgebra.Generic;
+using AudioAnalysisTools.WavTools;
+using AudioAnalysisTools.StandardSpectrograms;
 
 
 
@@ -44,8 +46,8 @@ namespace AudioAnalysisTools
         // sampleLength is the number of frames taken from a frequency bin on which to do autocorr-fft.
         // longer sample lengths are better for longer duration, slower moving events.
         // shorter sample lengths are better for short duration, fast moving events.
-        public static int SampleLength = 128;
-        public static double SensitivityThreshold = 0.3;
+        public static int DefaultSampleLength = 128;
+        public static double DefaultSensitivityThreshold = 0.3;
 
 
         /// <summary>
@@ -61,61 +63,142 @@ namespace AudioAnalysisTools
             public double[,] FreqOscillationData { get; set; }
             // the FreqOscillationData matrix reduced to a vector
             public double[] OscillationSpectralIndex { get; set; }
-
-            public void Save(DirectoryInfo opDir)
-            {
-                SaveData(opDir);
-                SaveImage(opDir);
-            }
-            public void SaveData(DirectoryInfo opDir)
-            {
-                // write a csv file of this matrix.
-                string fileName = SourceFileName + ".freqOscilMatrix_" + BinSampleLength + AlgorithmName;
-                string pathName = Path.Combine(opDir.FullName, fileName);
-                FileInfo ficsv = new FileInfo(pathName + ".csv");
-                Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(ficsv, FreqOscillationData);
-            }
-
-            public void SaveImage(DirectoryInfo opDir)
-            {
-                // write a csv file of this matrix.
-                string fileName = SourceFileName + ".freqOscilMatrix_" + BinSampleLength + AlgorithmName;
-                string pathName = Path.Combine(opDir.FullName, fileName);
-                string imagePath = pathName + ".png";
-                FreqOscillationImage.Save(imagePath, ImageFormat.Png);
-            }
-
-            public static Image CombineImages(List<FreqVsOscillationsResult> resultsList)
-            {
-                var list = new List<Image>();
-                foreach (FreqVsOscillationsResult result in resultsList)
-                {
-                    list.Add(result.FreqOscillationImage);
-                }
-                Image image = ImageTools.CombineImagesInLine(list.ToArray());
-                return image;
-            }
-        } //  class FreqVsOscillationsResult
+        } 
 
 
 
 
-        public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, string algorithmName)
+        /// <summary>
+        /// Generates the FREQUENCY x OSCILLATIONS Graphs and csv
+        /// </summary>
+        /// <param name="sourceRecording"></param>
+        /// <param name="audioSegment"></param>
+        /// <param name="configDict"></param>
+        /// <param name="opDir"></param>
+        /// <param name="dataOnly"></param>
+        /// <returns></returns>
+        public static double[] GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict,
+                                                                                bool saveData = false, bool saveImage = false)
         {
-            int sampleLength = Oscillations2014.SampleLength;
-            string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
-            double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, Oscillations2014.SensitivityThreshold, sampleLength, algorithmName);
-
-            //get the max spectral index
-            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix);
+            // set two oscillation detection parameters
+            double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
+            if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SensitivityThreshold))
+            {
+                sensitivity = Double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
+            }
+            // Sample length i.e. number of frames spanned to calculate oscillations per second
+            int sampleLength = Oscillations2014.DefaultSampleLength;
+            if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
+            {
+                sampleLength = Int32.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
+            }
             
+            SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
+            if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014FrameSize))
+            {
+                sonoConfig.WindowSize = Int32.Parse(configDict[AnalysisKeys.OscilDetection2014FrameSize]);
+            } // else leave unchanged
+
+            AudioRecording recordingSegment = new AudioRecording(audioSegment.FullName);
+            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            // remove the DC bin
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
+
+            //LoggedConsole.WriteLine("Oscillation Detection: Sample rate     = {0}", sonogram.SampleRate);
+            //LoggedConsole.WriteLine("Oscillation Detection: FramesPerSecond = {0}", sonogram.FramesPerSecond);
+
+            // Do LOCAL CONRAST Normalisation first. LCN over frequency bins is better and faster than standard noise removal.
+            double neighbourhoodSeconds = 0.25;
+            int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
+            double LcnContrastLevel = 0.5; // was previously 0.1
+            LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
+            LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
+            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
+
+            string algorithmName = "Autocorr-SVD-FFT";
+            double[,] freqOscilMatrix1 = Oscillations2014.GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
+
+            //get the max spectral index - this reduces the matrix to an array
+            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix1);            
+
             ///DEBUGGING
             // Add spectralIndex into the matrix because want to add it to image.
             // This is for debugging only and can comment this line
-            //int rowCount = freqOscilMatrix.GetLength(0);
-            //MatrixTools.SetRow(freqOscilMatrix, rowCount - 2, spectralIndex);
+            //int rowCount = freqOscilMatrix1.GetLength(0);
+            //MatrixTools.SetRow(freqOscilMatrix1, rowCount - 2, spectralIndex);
+
+            string opDir          = Path.GetDirectoryName(audioSegment.FullName);
+            string sourceFileName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
+            //string sourceFileName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
+            string fileName = sourceFileName + ".freqOscilMatrix_" + sampleLength;
+            string pathName = Path.Combine(opDir, fileName);
+            if (saveData)
+            {
+                // only save the data matrix from one algorithm - write as csv file.
+                FileInfo ficsv = new FileInfo(pathName + ".csv");
+                Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(ficsv, freqOscilMatrix1);
+            }
+
+            if (saveImage)
+            {
+                algorithmName = "Autocorr-FFT";
+                double[,] freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
+
+                Image image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram, sampleLength);
+                Image image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram, sampleLength);
+                string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
+
+                var list = new List<Image>();
+                list.Add(image1);
+                list.Add(image2);
+                Image compositeImage = ImageTools.CombineImagesInLine(list.ToArray());
+
+                // write image file of this matrix.
+                string imagePath = pathName + ".png";
+                compositeImage.Save(imagePath, ImageFormat.Png);
+            }
+
+            //only return the spectrum of oscillation values for accumulation into data from a multi-hour recording.
+            return spectralIndex;
+        }
 
 
+
+        /// <summary>
+        /// Only call this method for short recordings.
+        /// If accumulating data for long recordings then call the method for long recordings - i.e.
+        /// double[] spectralIndex = GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, false, false);
+        /// </summary>
+        /// <param name="sonogram"></param>
+        /// <param name="algorithmName"></param>
+        /// <returns></returns>
+        public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, string algorithmName)
+        {
+            double sensitivity = Oscillations2014.DefaultSensitivityThreshold;
+            int   sampleLength = Oscillations2014.DefaultSampleLength;
+            double[,] freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);
+            Image image = GetFreqVsOscillationsImage(freqOscilMatrix, sonogram, sampleLength);
+            string sourceName = Path.GetFileNameWithoutExtension(sonogram.Configuration.SourceFName);
+            //get the max spectral index
+            double[] spectralIndex = Oscillations2014.ConvertMatrix2SpectralIndex(freqOscilMatrix);
+
+            ///DEBUGGING
+            // Add spectralIndex into the matrix because want to add it to image.
+            // This is for debugging only and can comment this line
+            int rowCount = freqOscilMatrix.GetLength(0);
+            MatrixTools.SetRow(freqOscilMatrix, rowCount - 2, spectralIndex);
+
+            var result = new FreqVsOscillationsResult();
+            result.SourceFileName = sourceName;
+            result.FreqOscillationImage = image;
+            result.FreqOscillationData = freqOscilMatrix;
+            result.OscillationSpectralIndex = spectralIndex;
+            return result;
+        }
+
+
+        public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, BaseSonogram sonogram, int sampleLength)
+        {
             // Convert spectrum index to oscillations per second
             double oscillationBinWidth = sonogram.FramesPerSecond / (double)sampleLength;
 
@@ -131,12 +214,7 @@ namespace AudioAnalysisTools
             int yOffset = yscale / 2;
             image = ImageTools.DrawXandYaxes(image, 30, xTicInterval, xOffset, yTicInterval, yOffset);
 
-            var result = new FreqVsOscillationsResult();
-            result.SourceFileName = sourceName;
-            result.FreqOscillationImage = image;
-            result.FreqOscillationData = freqOscilMatrix;
-            result.OscillationSpectralIndex = spectralIndex;
-            return result;
+            return image;
         }
 
 

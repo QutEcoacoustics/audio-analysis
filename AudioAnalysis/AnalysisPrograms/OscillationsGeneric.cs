@@ -241,8 +241,11 @@ namespace AnalysisPrograms
 
             // ###############################################################
             // lowering the sensitivity threshold increases the number of hits.
-            Oscillations2014.SensitivityThreshold = 0.4;
-            Oscillations2014.SampleLength = 128;
+            if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SensitivityThreshold)) 
+                Oscillations2014.DefaultSensitivityThreshold = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
+
+            if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
+                Oscillations2014.DefaultSampleLength = Int32.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
 
             var list1 = new List<Image>();
             //var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
