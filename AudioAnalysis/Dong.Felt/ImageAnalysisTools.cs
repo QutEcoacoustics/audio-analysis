@@ -788,38 +788,23 @@ namespace Dong.Felt
             return result;
         }
         /// <summary>
-        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
-        /// which includes C code.
-        /// HOWEVER MODIFED TO PROCESS 5x5 matrix
-        /// MATRIX must be square with odd number dimensions
+        /// This function tries to recheck the ridges that haved been detected by sobel ridge detection. 
         /// </summary>
         /// <param name="m"></param>
         /// <returns></returns>
-        public static void RidgeDetectConfirmation(double[,] m, out bool isRidge, double averageDiffThresh)
+        public static void RidgeDetectConfirmation(double[,] m, out bool isRidge)
         {
-            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
-            // Slope categories are 0 to 3.
-            // We calculate the ridge magnitude for each possible ridge direction using masks.
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            double[,] averageMask = { { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-                                      { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
-                                     };
-            double averageRidgeIntensity = MatrixTools.DotProduct(averageMask, m) / (rows * cols);
-
+            double av, sd; 
+            NormalDist.AverageAndSD(m, out av, out sd);
+            double localThreshold = 0.5 * sd;
             isRidge = false;
-            // check whether it is false ridges. 
             var centerPixelIntensity = m[rows / 2, cols / 2];
-            if ((centerPixelIntensity - averageRidgeIntensity) > averageDiffThresh)
+            if ((centerPixelIntensity - av) > localThreshold)
             {
                 isRidge = true;
             }
-
         }
 
         /// <summary>

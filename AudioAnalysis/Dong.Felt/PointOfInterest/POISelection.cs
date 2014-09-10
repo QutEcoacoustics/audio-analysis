@@ -50,6 +50,13 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
+        public static List<PointOfInterest> PostRidgeDetectionAmpSpec(BaseSonogram sonogram, RidgeDetectionConfiguration ridgeConfig)
+        {
+            var instance = new POISelection(new List<PointOfInterest>());
+            instance.FourDirRidgeDetectionAmpSpec(sonogram, ridgeConfig);
+            return instance.poiList;
+        }
+
         public POISelection(List<PointOfInterest> list)
         {
             poiList = list;
@@ -99,6 +106,63 @@ namespace Dong.Felt
             }  /// filter out some redundant ridges
         }
 
+        public void FourDirRidgeDetectionAmpSpec(BaseSonogram spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        {
+            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
+            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+            double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+            var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+            double herzScale = spectrogram.FBinWidth; //43 hz
+            double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int halfLength = ridgeLength / 2;
+            for (int r = halfLength; r < rows - halfLength; r++)
+            {
+                for (int c = halfLength; c < cols - halfLength; c++)
+                {
+                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    var boundary = StatisticalAnalysis.checkBoundary(r - 3, c - 3, rows - 3, cols - 3);
+                    var boundary2 = StatisticalAnalysis.checkBoundary(r + 3, c + 3, rows - 3, cols - 3);
+                    var subM2 = new double[7, 7];
+                    if (boundary == true && boundary2 == true)
+                    {
+                        subM2 = MatrixTools.Submatrix(matrix, r - 3, c - 3, r + 3, c + 3);
+                    }
+                    double magnitude;
+                    double direction;
+                    bool isRidge = false;
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
+                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
+                    if (subM2 != null)
+                    {
+                        ImageAnalysisTools.RidgeDetectConfirmation(subM2, out isRidge);
+                    }
+                    if (magnitude > magnitudeThreshold && isRidge == true)
+                    {
+                        Point point = new Point(c, r);
+                        TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                        double herz = (freqBinCount - r) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        var poi = new PointOfInterest(time, herz);
+                        poi.TimeLocation = time;
+                        poi.Herz = herz;
+                        poi.Point = point;
+                        // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
+                        poi.RidgeOrientation = direction;
+                        // OrientationCategory only has four values, they are 0, 1, 2, 3. 
+                        poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+                        poi.RidgeMagnitude = magnitude;
+                        poi.Intensity = matrix[r, c];
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                        poiList.Add(poi);                        
+                    }
+                }
+            }  /// filter out some redundant ridges   
+        }
+
         public void FourDirectionsRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
@@ -131,7 +195,7 @@ namespace Dong.Felt
                     bool confirmRidge = false;
                     if (subM2 != null)
                     {
-                        ImageAnalysisTools.RidgeDetectConfirmation(subM2, out confirmRidge, ridgeConfiguration.AverageIntensityDifferenceInNh);
+                        ImageAnalysisTools.RidgeDetectConfirmation(subM2, out confirmRidge);
                     }
                     if (magnitude > magnitudeThreshold && isRidge == true && confirmRidge == true)
                     {

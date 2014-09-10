@@ -28,11 +28,11 @@ NoiseReductionType: STANDARD
 WindowOverlap: 0.5
 
 # RidgeDetection Config 
-RidgeDetectionMagnitudeThreshold: 5.5
+RidgeDetectionMagnitudeThreshold: 0.2
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength: 7
 MinimumNumberInRidgeInMatrix: 3
-AverageIntensityDifferenceInNh: 5.0
+AverageIntensityDifferenceInNh: 0.2
 
 
 # Structure Tensor Config

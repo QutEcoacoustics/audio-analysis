@@ -337,8 +337,12 @@
             // segment spectrogram for calculating threshold for each segment
             const int numberOfColumn = 100;
             // the count of segments means how many local threshold we will get. 
-            var countOfSegments = maximumColIndex / numberOfColumn + 1;
+            var countOfSegments = maximumColIndex / numberOfColumn;
             var modSegments = maximumColIndex % numberOfColumn;
+            if (modSegments != 0)
+            {
+                countOfSegments++;
+            }
             var spectroSegment = SpectrogramDivision(attentionList, maximumRowIndex, maximumColIndex, numberOfColumn);
             for (int i = 0; i < countOfSegments; i++)
             {
@@ -504,20 +508,22 @@
             int cols)
         {           
             var attentionMatrix = StatisticalAnalysis.DoubleListToArray(attentionList, rowsCount, colsCount);
-            var segmentCount = colsCount / cols + 1;
+            var segmentCount = colsCount / cols;
             var modValue = colsCount % cols;
+            if (modValue != 0)
+            {
+                segmentCount++;
+            }
             var resultList = new List<double[,]>();
-            
             for (var c = 0; c < colsCount - cols; c += cols)
             {
                 var subMatrix = StatisticalAnalysis.Submatrix(attentionMatrix, 0, c, rowsCount - 1, c + cols);                
                 resultList.Add(subMatrix);                             
             }
-            if (modValue > 0)
-            {
-                var subMatrix = StatisticalAnalysis.Submatrix(attentionMatrix, 0, (segmentCount - 1) * cols, rowsCount - 1, colsCount - 1);
-                resultList.Add(subMatrix);
-            }
+            
+            var addSubMatrix = StatisticalAnalysis.Submatrix(attentionMatrix, 0, (segmentCount - 1) * cols, rowsCount - 1, colsCount);
+            resultList.Add(addSubMatrix);
+            
             return resultList;
         }
 
