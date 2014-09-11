@@ -281,9 +281,16 @@
             return image;
         }
 
-        public Image GetColourSpectrogramFullyAnnotated(string title, double[,] dbSpectrogramData, double[,] nrSpectrogramData)
+        public Image GetColourAmplitudeSpectrogramFullyAnnotated(string title, double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
-            Image image = SpectrogramTools.CreateFalseColourSpectrogram(dbSpectrogramData, nrSpectrogramData);
+            Image image = SpectrogramTools.CreateFalseColourAmplitudeSpectrogram(dbSpectrogramData, nrSpectrogramData, hits);
+            image = this.GetImageFullyAnnotated(image, title);
+            return image;
+        }
+
+        public Image GetColourDecibelSpectrogramFullyAnnotated(string title, double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
+        {
+            Image image = SpectrogramTools.CreateFalseColourDecibelSpectrogram(dbSpectrogramData, nrSpectrogramData, hits);
             image = this.GetImageFullyAnnotated(image, title);
             return image;
         }

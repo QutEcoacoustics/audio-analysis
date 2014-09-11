@@ -284,7 +284,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         } //CSV2SonogramImage()
 
 
-        public static Image CreateFalseColourSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData)
+        public static Image CreateFalseColourDecibelSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
             double truncateMin = -120.0;
             double truncateMax = -30.0;
@@ -293,18 +293,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             truncateMin = 0;
             truncateMax = 60;
             double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
-
-            // ########################### SOBEL ridge detection
-            double ridgeThreshold = 6.0;
-            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(dbSpectrogramData, ridgeThreshold);
-            // ########################### EIGEN ridge detection
-            //double ridgeThreshold = 6.0;
-            //double dominanceThreshold = 0.7;
-            //var rotatedData = MatrixTools.MatrixRotate90Anticlockwise(dbSpectrogramData);
-            //byte[,] hits = RidgeDetection.StructureTensorRidgeDetection(rotatedData, ridgeThreshold, dominanceThreshold);
-            //hits = MatrixTools.MatrixRotate90Clockwise(hits);
-            // ########################### EIGEN ridge detection
-
 
             int width = dbSpectrogramData.GetLength(0);
             int height = dbSpectrogramData.GetLength(1);
@@ -367,6 +355,80 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             return image;
         }
+
+        public static Image CreateFalseColourAmplitudeSpectrogram(double[,] spectrogramData, double[,] nrSpectrogramData, byte[,] hits)
+        {
+            //double min, max;
+            //MatrixTools.MinMax(spectrogramData, out min, out max);
+
+            double truncateMin = 0.0;
+            double truncateMax = 2.0;
+            double filterCoefficient = 1.0;
+            double[,] spectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(spectrogramData, truncateMin, truncateMax, filterCoefficient);
+            //truncateMin = 0.5;
+            //truncateMax = 2.0;
+            //double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
+
+            int width = spectrogramData.GetLength(0);
+            int height = spectrogramData.GetLength(1);
+            Bitmap image = new Bitmap(width, height);
+            Color colour;
+            Hsv myHsv;
+            Rgb myRgb;
+            Color[] ridgeColours = { Color.Red, Color.Lime, Color.Blue, Color.Lime };
+
+            for (int y = 0; y < height; y++) //over all freq bins
+            {
+                for (int x = 0; x < width; x++) //for pixels in the line
+                {
+                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    double dbValue = spectrogramNorm[x, y];
+                    int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
+                    //int c1 = (int)Math.Floor(255.0 * dbValue);
+                    if (c1 < 0) c1 = 0;
+                    else
+                        if (c1 > 255) c1 = 255;
+                    colour = Color.FromArgb(c1, c1, c1);
+
+                    //if (nrSpectrogramNorm[x, y] > 0)
+                    //{
+                    //    // use HSV colour space
+                    //    int bottomColour = 30;    // to avoid using the reds
+                    //    int topColour = 320;   // to avoid using the magentas
+                    //    int hueRange = topColour - bottomColour;
+                    //    int hue = bottomColour + (int)Math.Floor(hueRange * nrSpectrogramNorm[x, y]);
+
+                    //    double saturation = 1.0;
+                    //    //double saturation = 0.75 + (nrSpectrogramNorm[x, y] * 0.25);
+                    //    //double saturation = nrSpectrogramNorm[x, y] * 0.5;
+                    //    //double saturation = (1 - nrSpectrogramNorm[x, y]) * 0.5;
+
+                    //    double value = 1.0;
+                    //    //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
+
+                    //    myHsv = new Hsv { H = hue, S = saturation, V = value };
+                    //    myRgb = myHsv.To<Rgb>();
+                    //    colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                    //}
+
+                    // superimpose ridge detection
+                    if (hits[x, y] > 0)
+                    {
+                        //value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
+                        //myHsv = new Hsv { H = 260, S = saturation, V = value };
+                        //myRgb = myHsv.To<Rgb>();
+                        //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                        colour = ridgeColours[hits[x, y] - 1];
+                    }
+                    image.SetPixel(x, height - y - 1, colour);
+                }
+            }//end over all freq bins
+
+            //image.Save(@"C:\SensorNetworks\Output\Sonograms\TEST3.png", ImageFormat.Png);
+
+            return image;
+        }
+
 
 
 
@@ -554,11 +616,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
                                                     int nyquist, int herzInterval)
         {
-            int Y_interval = (int)(bmp.Height / (double)(nyquist / (double)herzInterval));
+            double Y_interval = bmp.Height / (double)(nyquist / (double)herzInterval);
             DrawGridLinesOnImage(bmp, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
         }
 
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int Y_interval)
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, double Y_interval)
         {
             int rows = bmp.Height;
             int cols = bmp.Width;
@@ -566,20 +628,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Graphics g = Graphics.FromImage(bmp);
 
             // for rows draw in Y-axis line
-            for (int row = 0; row < rows; row++)
+            // number of horozntal grid lines
+            int gridCount = (int)(rows / Y_interval);
+            for (int i = 1; i < gridCount; i++)
             {
-                if ((row > 0) && (row % Y_interval == 0))
+                int row = (int)(i * Y_interval);
+                int rowFromBottom = rows - row;
+                for (int column = 0; column < cols - 1; column++)
                 {
-                    int rowFromBottom = rows - row;
-                    for (int column = 0; column < cols - 1; column++)
-                    {
-                        bmp.SetPixel(column, rowFromBottom, Color.Black);
-                        bmp.SetPixel(column + 1, rowFromBottom, Color.White);
-                        column += 2;
-                    }
-                    int band = rowFromBottom / Y_interval;
-                    g.DrawString(((band) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
+                    bmp.SetPixel(column, rowFromBottom, Color.Black);
+                    bmp.SetPixel(column + 1, rowFromBottom, Color.White);
+                    column += 2;
                 }
+                int band = (int)(rowFromBottom / Y_interval);
+                g.DrawString(((band) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
             }
 
             // for columns, draw in X-axis hour lines
