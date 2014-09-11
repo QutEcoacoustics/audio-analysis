@@ -63,6 +63,8 @@ namespace AudioAnalysisTools
             {
                 for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
                 {
+                    if (hits[r, c] > 0) continue;
+
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude;
                     // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4. 
@@ -77,12 +79,44 @@ namespace AudioAnalysisTools
                         double av, sd;
                         var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1); // extract NxN submatrix
                         NormalDist.AverageAndSD(subM2, out av, out sd);
-                        double localThreshold = sd * 0.5;
+                        double localThreshold = sd * 1.5;
                         if ((subM[halfLength, halfLength] - av) < localThreshold) continue;
 
                         // Ridge orientation Category only has four values, they are 0, 1, 2, 3. 
                         //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(direction + 1);
+                        if (direction == 1)
+                        {
+                            hits[r - 1, c + 1] = (byte)(direction + 1);
+                            hits[r + 1, c - 1]   = (byte)(direction + 1);
+
+                            //hits[r - 2, c + 2] = (byte)(direction + 1);
+                            //hits[r + 2, c - 2] = (byte)(direction + 1);
+                        }
+                        else if (direction == 3)
+                        {
+                            hits[r + 1, c + 1] = (byte)(direction + 1);
+                            hits[r - 1, c - 1] = (byte)(direction + 1);
+
+                            //hits[r + 2, c + 2] = (byte)(direction + 1);
+                            //hits[r - 2, c - 2] = (byte)(direction + 1);
+                        }
+                        else if (direction == 2)
+                        {
+                            hits[r - 1, c] = (byte)(direction + 1);
+                            hits[r + 1, c] = (byte)(direction + 1);
+
+                            hits[r - 2, c] = (byte)(direction + 1);
+                            hits[r + 2, c] = (byte)(direction + 1);
+                        }
+                        else if (direction == 0)
+                        {
+                            hits[r, c - 1] = (byte)(direction + 1);
+                            hits[r, c + 1] = (byte)(direction + 1);
+
+                            hits[r, c - 2] = (byte)(direction + 1);
+                            hits[r, c + 2] = (byte)(direction + 1);
+                        }
                     }
                 }
             }  

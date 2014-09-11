@@ -288,22 +288,31 @@ namespace AnalysisPrograms
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
                 // remove the DC bin
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
+                double[,] spectrogramData = sonogram.Data; 
 
-                LoggedConsole.WriteLine("FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
                 double neighbourhoodSeconds = 0.25;
                 int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
                 double LcnContrastLevel = 0.3;
                 LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
                 LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
                 //configDict
+                int lowPercentile = 20;
+                sonogram.Data = NoiseRemoval_Briggs.BriggsFilter_SubtractFreqBinNoise(sonogram.Data, lowPercentile);
                 sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
                 //Histogram.DrawDistributionsAndSaveImage(sonogram.Data, path2);
 
+                double ridgeThreshold = 0.35;
+                byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(sonogram.Data, ridgeThreshold);
+                image = sonogram.GetColourAmplitudeSpectrogramFullyAnnotated("AMPLITUDE SPECTROGRAM + LCN + ridge detection", spectrogramData, sonogram.Data, hits);
+                list.Add(image);
+
+
                 Image envelopeImage = Image_Track.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
                 list.Add(envelopeImage);
+
 
                 // 2) now draw the standard decibel spectrogram
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
@@ -334,7 +343,17 @@ namespace AnalysisPrograms
                 double[,] nrSpectrogramData = sonogram.Data;
 
                 // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
-                image = sonogram.GetColourSpectrogramFullyAnnotated("DECIBEL SPECTROGRAM - Colour annotated", dbSpectrogramData, nrSpectrogramData);
+                // ########################### SOBEL ridge detection
+                ridgeThreshold = 6.0;
+                hits = RidgeDetection.Sobel5X5RidgeDetection(dbSpectrogramData, ridgeThreshold);
+                // ########################### EIGEN ridge detection
+                //double ridgeThreshold = 6.0;
+                //double dominanceThreshold = 0.7;
+                //var rotatedData = MatrixTools.MatrixRotate90Anticlockwise(dbSpectrogramData);
+                //byte[,] hits = RidgeDetection.StructureTensorRidgeDetection(rotatedData, ridgeThreshold, dominanceThreshold);
+                //hits = MatrixTools.MatrixRotate90Clockwise(hits);
+                // ########################### EIGEN ridge detection
+                image = sonogram.GetColourDecibelSpectrogramFullyAnnotated("DECIBEL SPECTROGRAM - Colour annotated", dbSpectrogramData, nrSpectrogramData, hits);
                 list.Add(image);
 
                 // 5) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
@@ -354,7 +373,7 @@ namespace AnalysisPrograms
             //FileInfo tempAudioSegment = sourceRecording;
             bool saveData = true;
             bool saveImage = true;
-            double[] oscillationsSpectrum = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, saveData, saveImage);
+            //double[] oscillationsSpectrum = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, saveData, saveImage);
             return result;
         }
 

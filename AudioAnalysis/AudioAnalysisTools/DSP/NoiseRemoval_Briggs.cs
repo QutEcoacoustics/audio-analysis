@@ -19,7 +19,7 @@ namespace AudioAnalysisTools.DSP
         /// <param name="matrix"></param>
         /// <param name="percentileThreshold"></param>
         /// <returns></returns>
-        public static double[,] BriggsNoiseFilter(double[,] matrix, int percentileThreshold) 
+        public static double[,] BriggsFilter_DivideByFreqBinNoise(double[,] matrix, int percentileThreshold)
         {
             double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, percentileThreshold);
             profile = DataTools.filterMovingAverage(profile, 3);
@@ -33,6 +33,31 @@ namespace AudioAnalysisTools.DSP
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
                     outM[y, col] = matrix[y, col] / profile[col];
+                } //end for all rows
+            } //end for all cols
+            return outM;
+        }
+
+        /// <summary>
+        /// Obtains a background noise profile from the passed percentile of lowest energy frames and then subtracts the bin profile value from every cell.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="percentileThreshold"></param>
+        /// <returns></returns>
+        public static double[,] BriggsFilter_SubtractFreqBinNoise(double[,] matrix, int percentileThreshold) 
+        {
+            double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, percentileThreshold);
+            profile = DataTools.filterMovingAverage(profile, 3);
+
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
+
+            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
+            {
+                for (int y = 0; y < rowCount; y++) //for all rows
+                {
+                    outM[y, col] = matrix[y, col] - profile[col];
                 } //end for all rows
             } //end for all cols
             return outM;
@@ -122,6 +147,7 @@ namespace AudioAnalysisTools.DSP
                 // normalise with local column variance
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
+                    //outM[y, col] = matrix[y, col] / (contrastLevel + localVariance[y]);
                     outM[y, col] = matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y]));
                     //outM[y, col] = Math.Sqrt(matrix[y, col]) / (contrastLevel + Math.Sqrt(localVariance[y]));
                     //outM[y, col] = Math.Sqrt(matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y])));
@@ -219,7 +245,7 @@ namespace AudioAnalysisTools.DSP
 
         public static double[,] BriggsNoiseFilterAndGetMask(double[,] matrix, int percentileThreshold, double binaryThreshold)
         {
-            double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilter(matrix, percentileThreshold); 
+            double[,] m = NoiseRemoval_Briggs.BriggsFilter_DivideByFreqBinNoise(matrix, percentileThreshold); 
 
             // smooth and truncate
             m = ImageTools.WienerFilter(m, 7); //Briggs uses 17
