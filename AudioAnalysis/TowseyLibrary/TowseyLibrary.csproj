@@ -198,6 +198,12 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AForge">
+      <HintPath>..\packages\AForge.2.2.5\lib\AForge.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Imaging">
+      <HintPath>..\packages\AForge.Imaging.2.2.5\lib\AForge.Imaging.dll</HintPath>
+    </Reference>
     <Reference Include="alglibnet2">
       <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
     </Reference>
@@ -238,6 +244,7 @@
     <Compile Include="AutoAndCrossCorrelation.cs" />
     <Compile Include="ConfigDict.cs" />
     <Compile Include="ConfigDictionary.cs" />
+    <Compile Include="HoughTransform.cs" />
     <Compile Include="StructureTensor.cs" />
     <Compile Include="WaveletTransformContinuous.cs" />
     <Compile Include="CsvTools.cs" />
