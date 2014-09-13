@@ -18,7 +18,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six speci
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [processOne]  
+Actions: [batch]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -27,8 +27,8 @@ QueryInputDirectory: "..\\..\\Query"
 NoiseReductionType: STANDARD
 WindowOverlap: 0.5
 
-# RidgeDetection Config 
-RidgeDetectionMagnitudeThreshold: 0.2
+# RidgeDetection Config # amplitude 0.2
+RidgeDetectionMagnitudeThreshold: 5.5 
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength: 7
 MinimumNumberInRidgeInMatrix: 3

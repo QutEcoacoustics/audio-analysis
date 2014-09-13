@@ -353,11 +353,11 @@ namespace AudioAnalysisTools
             //int x = this.Point.Y;
             //int y = this.Point.X;
             // THis one for decibel ridges
-            //int x = this.Point.X;
-            //int y = this.Point.Y;
-            // this one for amplitude ridges. 
             int x = this.Point.X;
-            int y = this.Point.Y + 36;
+            int y = this.Point.Y;
+            // this one for amplitude ridges. 
+            //int x = this.Point.X;
+            //int y = this.Point.Y + 36;
             //int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
             //int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
             //int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);

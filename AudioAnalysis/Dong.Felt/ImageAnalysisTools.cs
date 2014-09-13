@@ -798,7 +798,7 @@ namespace Dong.Felt
             int cols = m.GetLength(1);
             double av, sd; 
             NormalDist.AverageAndSD(m, out av, out sd);
-            double localThreshold = 0.5 * sd;
+            double localThreshold = 0.8 * sd;
             isRidge = false;
             var centerPixelIntensity = m[rows / 2, cols / 2];
             if ((centerPixelIntensity - av) > localThreshold)
@@ -822,13 +822,11 @@ namespace Dong.Felt
             // We calculate the ridge magnitude for each possible ridge direction using masks.
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            double averageIntensity = 0.0;
             if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
             {
                 isRidge = false;
                 magnitude = 0.0;
                 direction = 0.0;
-
                 return;
             }
 
@@ -873,20 +871,11 @@ namespace Dong.Felt
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
 
             double threshold = 0; // dB
-            //isRidge = false; 
-            //// check whether it is false ridges. 
-            //if (ridgeMagnitudes[indexMax] > threshold)
-            //{
-            //    if ((centerPixelIntensity - averageIntensity) > 7.0)
-            //    {
-            //        isRidge = true;
-            //    }               
-            //}
-
             isRidge = (ridgeMagnitudes[indexMax] > threshold);
             magnitude = diffMax / 2;
             /// four directions
             direction = indexMax * Math.PI / (double)4;
+            //direction = indexMax;
         }
 
         /// <summary>
@@ -1128,6 +1117,108 @@ namespace Dong.Felt
             result = Tuple.Create(result1, result2);
             return result;
         }
+
+        /// To cut off the overlapped lines in the same direction
+        public static List<PointOfInterest> PruneAdjacentTracksBasedOnDirection(List<PointOfInterest> poiList, int rows, int cols)
+        {
+            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            for (int r = 1; r < rows - 1; r++)
+            {
+                for (int c = 1; c < cols - 1; c++)
+                {
+                    if (M[r, c] == null) continue;
+                    if (M[r, c].OrientationCategory == 0)  // horizontal line
+                    {
+                        if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 0))
+                        {
+                             M[r - 1, c] = null;
+                        }
+                        if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 0))
+                        {
+                            M[r + 1, c] = null;
+                        }
+                    }
+                    else if (M[r, c].OrientationCategory == 4) // vertical line
+                    {
+                        if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 4))
+                        {
+                            M[r, c - 1] = null;
+                        }
+                        if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 4))
+                        {
+                             M[r, c + 1] = null;
+                        }
+                    } // if (OrientationCategory)
+                    else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
+                    {
+                        // Check whether it is connected to other poi with orientation 2. 
+                        if ((M[r - 1, c + 1] != null) && (M[r - 1, c + 1].OrientationCategory == 2))
+                        {
+                            /// above and below
+                            if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 2))
+                            {
+                                
+                                    M[r - 1, c] = null;
+                                
+                            }
+                            if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 2))
+                            {
+                                if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r + 1, c] = null;
+                                }
+                            }
+                            /// left and right
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) // 
+                            {
+                                
+                                    M[r, c - 1] = null;
+                                
+                            }
+                            if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 2)) //
+                            {
+                               
+                                    M[r, c + 1] = null;
+                                
+                            }
+                        }
+                    }
+                    else if (M[r, c].OrientationCategory == 6)  // negative diagonal line
+                    {
+                        if ((M[r + 1, c + 1] != null) && (M[r + 1, c + 1].OrientationCategory == 6))
+                        {
+                            /// above and below
+                            if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 6))
+                            {
+                                
+                                    M[r - 1, c] = null;
+                                
+                            }
+                            if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 6))
+                            {
+                                
+                                    M[r + 1, c] = null;
+                                
+                            }
+                            /// left and right
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) // 
+                            {
+                                
+                                    M[r, c - 1] = null;
+                                
+                            }
+                            if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 6)) //
+                            {
+                               
+                                    M[r, c + 1] = null;
+                                
+                            }
+                        }
+                    } // end if (M[r, c].OrientationCategory == 0) 
+                } // c
+            } // for r loop
+            return PointOfInterest.TransferPOIMatrix2List(M);
+        } // PruneAdjacentTracks()
 
         /// To cut off the overlapped lines in the same direction
         public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
