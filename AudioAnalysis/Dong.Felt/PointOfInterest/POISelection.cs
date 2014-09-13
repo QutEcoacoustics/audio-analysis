@@ -46,7 +46,9 @@ namespace Dong.Felt
         public static List<PointOfInterest> PostRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig)
         {
             var instance = new POISelection(new List<PointOfInterest>());
-            instance.FourDirectionsRidgeDetection(spectrogram, ridgeConfig);
+            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            var byteMatrix = FourDirectionsRidgeDetection(matrix, ridgeConfig);
+            instance.ConvertRidgeIndicatorToPOIList(byteMatrix, spectrogram);
             return instance.poiList;
         }
 
@@ -163,72 +165,108 @@ namespace Dong.Felt
             }  /// filter out some redundant ridges   
         }
 
-        public void FourDirectionsRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
+        public void ConvertRidgeIndicatorToPOIList(byte[,] ridgeIndiMatrix, SpectrogramStandard spectrogram)
         {
-            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
             var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
             double herzScale = spectrogram.FBinWidth; //43 hz
             double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            int halfLength = ridgeLength / 2;
-            for (int r = halfLength; r < rows - halfLength; r++)
+            int rows = ridgeIndiMatrix.GetLength(0);
+            int cols = ridgeIndiMatrix.GetLength(1);
+            for (int r = 0; r < rows; r++)
             {
-                for (int c = halfLength; c < cols - halfLength; c++)
+                for (int c = 0; c < cols; c++)
                 {
-                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                    var boundary = StatisticalAnalysis.checkBoundary(r - 3, c - 3, rows - 3, cols - 3);
-                    var boundary2 = StatisticalAnalysis.checkBoundary(r + 3, c + 3, rows - 3, cols - 3);
-                    var subM2 = new double[7, 7];
-                    if (boundary == true && boundary2 == true)
-                    {
-                        subM2 = MatrixTools.Submatrix(matrix, r - 3, c - 3, r + 3, c + 3);
-                    }
-                    double magnitude;
-                    double direction;
-                    bool isRidge = false;
-                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. Because here we just used four different masks.
-                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
-                    bool confirmRidge = false;
-                    if (subM2 != null)
-                    {
-                        ImageAnalysisTools.RidgeDetectConfirmation(subM2, out confirmRidge);
-                    }
-                    if (magnitude > magnitudeThreshold && isRidge == true && confirmRidge == true)
+                    if (ridgeIndiMatrix[r, c] > 0)
                     {
                         Point point = new Point(c, r);
                         TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
                         double herz = (freqBinCount - r - 1) * herzScale;
                         // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
                         var poi = new PointOfInterest(time, herz);
-                        poi.Point = point;
-                        // RidgeOrientation are 0, pi/4, pi/2, 3pi/4.
-                        poi.RidgeOrientation = direction;
+                        poi.Point = point;                          
                         // OrientationCategory only has four values, they are 0, 1, 2, 3. 
-                        poi.OrientationCategory = (int)Math.Round((direction * 8) / Math.PI);
-                        poi.RidgeMagnitude = magnitude;
-                        poi.Intensity = matrix[r, c];
+                        poi.OrientationCategory = ridgeIndiMatrix[r, c] - 1;                    
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        //var neighbourPoint1 = new Point(0, 0);
-                        //var neighbourPoi1 = new PointOfInterest(neighbourPoint1);
-                        //var neighbourPoi2 = new PointOfInterest(neighbourPoint1);
-                        ///// Fill the gap by adding two more neighbourhood points.
-                        //FillinGaps(poi, poiList, rows, cols, matrix, out neighbourPoi1, out neighbourPoi2, secondsScale, freqBinCount);
                         poiList.Add(poi);
-                        //poiList.Add(neighbourPoi1);
-                        //poiList.Add(neighbourPoi2);
                     }
                 }
-            }  /// filter out some redundant ridges
-            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
+            }
+            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracksBasedOnDirection(poiList, rows, cols);
             var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            //var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
             //var filteredPoiList = ImageAnalysisTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
-            poiList = filteredPoiList;
+            poiList = prunedPoiList;
+        }
+
+        public static byte[,] FourDirectionsRidgeDetection(double[,] matrix, RidgeDetectionConfiguration ridgeConfiguration)
+        {         
+            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
+            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;           
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int halfLength = ridgeLength / 2;
+            var hits = new byte[rows, cols];
+
+            for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
+            {
+                for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
+                {
+                    if (hits[r, c] > 0) continue;
+                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    double magnitude;
+                    double direction;
+                    bool isRidge = false;
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
+                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
+                    if (magnitude > magnitudeThreshold && isRidge == true)
+                    {
+                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1);                      
+                        double av, sd;
+                        NormalDist.AverageAndSD(subM2, out av, out sd);
+                        double localThreshold = sd * 1.2;
+                        if ((subM[halfLength, halfLength] - av) < localThreshold) continue;                        
+                        var orientation = (int)Math.Round((direction * 8) / Math.PI);
+                        hits[r, c] = (byte)(orientation+1);
+                        if (orientation == 2)
+                        {
+                            hits[r - 1, c + 1] = (byte)(orientation + 1);
+                            hits[r + 1, c - 1] = (byte)(orientation + 1);
+
+                            //hits[r - 2, c + 2] = (byte)(direction + 1);
+                            //hits[r + 2, c - 2] = (byte)(direction + 1);
+                        }
+                        else if (orientation == 6)
+                        {
+                            hits[r + 1, c + 1] = (byte)(orientation + 1);
+                            hits[r - 1, c - 1] = (byte)(orientation + 1);
+
+                            //hits[r + 2, c + 2] = (byte)(direction + 1);
+                            //hits[r - 2, c - 2] = (byte)(direction + 1);
+                        }
+                        else if (orientation == 4)
+                        {
+                            hits[r - 1, c] = (byte)(orientation + 1);
+                            hits[r + 1, c] = (byte)(orientation + 1);
+
+                            hits[r - 2, c] = (byte)(orientation + 1);
+                            hits[r + 2, c] = (byte)(orientation + 1);
+                        }
+                        else if (orientation == 0)
+                        {
+                            hits[r, c - 1] = (byte)(orientation + 1);
+                            hits[r, c + 1] = (byte)(orientation + 1);
+
+                            hits[r, c - 2] = (byte)(orientation + 1);
+                            hits[r, c + 2] = (byte)(orientation + 1);
+                        }
+                        
+                    }
+                }                   
+            }  /// filter out some redundant ridges
+            
+            return hits;
         }
 
         public void ImprovedRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)

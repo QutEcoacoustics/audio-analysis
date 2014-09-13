@@ -92,10 +92,10 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                  //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  //ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
-                    MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
-                        outputDirectory.FullName, tempDirectory);       
+                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                  ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
+                    //MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
+                    //    outputDirectory.FullName, tempDirectory);       
                 }
                 else if (action == "processOne")
                 {
@@ -113,7 +113,7 @@
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
-                    GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
+                    //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     //var path = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\2.png";
                     //var image = AudioPreprosessing.AudioToAmplitudeSpectrogram(config, inputDirectory.FullName);                                    
                     //var decibelImage = AudioPreprosessing.AudioToSpectrogram(config, inputDirectory.FullName);
@@ -1016,6 +1016,7 @@
                 var weight5 = 1;
                 var weight6 = 1;
                 var candidateDistanceList = new List<Candidates>();
+                Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
                 Log.Info("# calculate the distance between a query and a candidate");
                 /// To calculate the distance                
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
@@ -1039,19 +1040,21 @@
                 }
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
                 {
+                    Log.Info("# distance caculation based on featurePropSet");
                     candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
                 }
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
                 //    candidatesList, weight1, weight2);
+                Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
-
+                Log.InfoFormat("All potential candidate distances: {0}", simiScoreCandidatesList.Count);
                 /// To save all matched acoustic events                        
-                if (candidateDistanceList.Count != 0)
+                if (simiScoreCandidatesList.Count != 0)
                 {
                     for (int l = 0; l < audioFilesCount; l++)
                     {
                         var temp = new List<Candidates>();
-                        foreach (var s in candidateDistanceList)
+                        foreach (var s in simiScoreCandidatesList)
                         {
                             if (s.SourceFilePath == candidatesAudioFiles[l])
                             {
@@ -1061,6 +1064,7 @@
                         seperateCandidatesList.Add(temp);
                     }
                 }
+                Log.InfoFormat("All seperated candidates: {0}", seperateCandidatesList.Count);
                 for (int index = 0; index < audioFilesCount; index++)
                 {
                     seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
