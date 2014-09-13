@@ -61,7 +61,12 @@ namespace AnalysisPrograms
                 System.Environment.Exit(0);
             }
 
-            if (true)  // used to test ridge detection using structure tensor.
+            if (true)
+            {
+                HoughTransform.TestHoughTransform();
+            }
+
+            if (false)  // used to test ridge detection using structure tensor.
             {
                // create a local image matrix
                 double[,] image = { {0.1, 0.1, 0.1, 10.1, 0.1, 0.1, 0.1 },
