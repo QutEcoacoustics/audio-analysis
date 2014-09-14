@@ -203,6 +203,27 @@ namespace TowseyLibrary
             process.Run(imagePath.FullName, outputDir);
         }
 
+        public static Bitmap ApplyInvert(Bitmap bitmapImage)
+        {
+            byte A, R, G, B;
+            Color pixelColor;
+            Bitmap returnImage = new Bitmap(bitmapImage);
+
+            for (int y = 0; y < bitmapImage.Height; y++)
+            {
+                for (int x = 0; x < bitmapImage.Width; x++)
+                {
+                    pixelColor = bitmapImage.GetPixel(x, y);
+                    //A = (byte)(255 - pixelColor.A);
+                    A = pixelColor.A;
+                    R = (byte)(255 - pixelColor.R);
+                    G = (byte)(255 - pixelColor.G);
+                    B = (byte)(255 - pixelColor.B);
+                    returnImage.SetPixel(x, y, Color.FromArgb((int)A, (int)R, (int)G, (int)B));
+                }
+            }
+            return returnImage;
+        }
 
         /// <summary>
         /// reads the intensity of a grey scale image into a matrix of double.
