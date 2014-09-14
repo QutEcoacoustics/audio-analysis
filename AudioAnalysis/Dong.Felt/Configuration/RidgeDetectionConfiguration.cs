@@ -20,8 +20,7 @@
         public int FilterRidgeMatrixLength { get; set; }
 
         public int MinimumNumberInRidgeInMatrix { get; set; }
-
-        public double AverageIntensityDifferenceInNh { get; set; }
+      
     }
 }
 

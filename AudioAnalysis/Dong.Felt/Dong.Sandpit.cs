@@ -50,13 +50,12 @@
             double ridgeDetectionmMagnitudeThreshold = configuration.RidgeDetectionMagnitudeThreshold;
             int ridgeMatrixLength = configuration.RidgeMatrixLength;
             int filterRidgeMatrixLength = configuration.FilterRidgeMatrixLength;
-            int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
-            double averageIntensityDifferentInNh = configuration.AverageIntensityDifferenceInNh;
+            int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;           
 
-            double stThreshold = configuration.StThreshold;
-            int stAvgNhLength = configuration.StAvgNhLength;
-            int stFFTNhLength = configuration.StFFTNeighbourhoodLength;
-            int stMatchedThreshold = configuration.StMatchedThreshold;
+            //double stThreshold = configuration.StThreshold;
+            //int stAvgNhLength = configuration.StAvgNhLength;
+            //int stFFTNhLength = configuration.StFFTNeighbourhoodLength;
+            //int stMatchedThreshold = configuration.StMatchedThreshold;
 
             int neighbourhoodLength = configuration.NeighbourhoodLength;          
             int rank = configuration.Rank;
@@ -75,13 +74,13 @@
                     FilterRidgeMatrixLength = filterRidgeMatrixLength,
                     MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
                 };
-                var stConfiguation = new StructureTensorConfiguration
-                {
-                    Threshold = stThreshold,
-                    AvgStNhLength = stAvgNhLength,
-                    FFTNeighbourhoodLength = stFFTNhLength,
-                    MatchedThreshold = stMatchedThreshold,
-                };
+                //var stConfiguation = new StructureTensorConfiguration
+                //{
+                //    Threshold = stThreshold,
+                //    AvgStNhLength = stAvgNhLength,
+                //    FFTNeighbourhoodLength = stFFTNhLength,
+                //    MatchedThreshold = stMatchedThreshold,
+                //};
                 if (action == "batch")
                 {
                     /// Batch process for FELT
@@ -112,7 +111,7 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     //var path = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\2.png";
                     //var image = AudioPreprosessing.AudioToAmplitudeSpectrogram(config, inputDirectory.FullName);                                    
@@ -470,29 +469,23 @@
             var parameterMixtures = new[] 
             {
                 new { 
-                    //RidgeDetectionMagnitudeThreshold = (double)configuration.RidgeDetectionMagnitudeThreshold,
-                    //RidgeMatrixLength = (int)configuration.RidgeMatrixLength,
-                    //FilterRidgeMatrixLength = (int)configuration.FilterRidgeMatrixLength,
-                    //MinimumNumberInRidgeInMatrix = (int)configuration.MinimumNumberInRidgeInMatrix,
-                    //NeighbourhoodLength = (int)configuration.NeighbourhoodLength
-                    StThreshold = (double)configuration.StThreshold,
-                    StAvgNhLength = (int)configuration.StAvgNhLength,
-                    StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
-                    StMatchedThreshold = (int)configuration.StMatchedThreshold
+                    RidgeDetectionMagnitudeThreshold = (double)configuration.RidgeDetectionMagnitudeThreshold,
+                    NeighbourhoodLength = (int)configuration.NeighbourhoodLength
+                    //StThreshold = (double)configuration.StThreshold,
+                    //StAvgNhLength = (int)configuration.StAvgNhLength,
+                    //StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
+                    //StMatchedThreshold = (int)configuration.StMatchedThreshold
                     },
             };
 
             foreach (var entry in parameterMixtures)
             {
-                //var folderName = string.Format("Run_{0}_{1}_{2}_{3}_{4}",
-                //    entry.RidgeDetectionMagnitudeThreshold,
-                //    entry.RidgeMatrixLength,
-                //    entry.FilterRidgeMatrixLength,
-                //    entry.MinimumNumberInRidgeInMatrix,
-                //    entry.NeighbourhoodLength);
                 var folderName = string.Format("Run_{0}_{1}",
-                    entry.StThreshold,                   
-                    entry.StMatchedThreshold);
+                    entry.RidgeDetectionMagnitudeThreshold,
+                    entry.NeighbourhoodLength);
+                //var folderName = string.Format("Run_{0}_{1}",
+                //    entry.StThreshold,                   
+                //    entry.StMatchedThreshold);
 
                 var fullPath = Path.Combine(outputDirectory.FullName, folderName);
 
@@ -511,13 +504,12 @@
                     RidgeMatrixLength = configuration.RidgeMatrixLength,
                     FilterRidgeMatrixLength = configuration.FilterRidgeMatrixLength,
                     MinimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix,
-                    AverageIntensityDifferenceInNh = configuration.AverageIntensityDifferenceInNh,
                     NeighbourhoodLength = configuration.NeighbourhoodLength,
 
-                    StThreshold = entry.StThreshold,
-                    StAvgNhLength = entry.StAvgNhLength,
-                    StFFTNeighbourhoodLength = entry.StFFTNeighbourhoodLength,
-                    StMatchedThreshold = entry.StMatchedThreshold,
+                    //StThreshold = entry.StThreshold,
+                    //StAvgNhLength = entry.StAvgNhLength,
+                    //StFFTNeighbourhoodLength = entry.StFFTNeighbourhoodLength,
+                    //StMatchedThreshold = entry.StMatchedThreshold,
 
                     SecondToMillionSecondUnit = configuration.SecondToMillionSecondUnit,                  
                     Rank = configuration.Rank,                
@@ -1047,14 +1039,14 @@
                 //    candidatesList, weight1, weight2);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
-                Log.InfoFormat("All potential candidate distances: {0}", simiScoreCandidatesList.Count);
+                Log.InfoFormat("All potential candidate distances: {0}", candidateDistanceList.Count);
                 /// To save all matched acoustic events                        
-                if (simiScoreCandidatesList.Count != 0)
+                if (candidateDistanceList.Count != 0)
                 {
                     for (int l = 0; l < audioFilesCount; l++)
                     {
                         var temp = new List<Candidates>();
-                        foreach (var s in simiScoreCandidatesList)
+                        foreach (var s in candidateDistanceList)
                         {
                             if (s.SourceFilePath == candidatesAudioFiles[l])
                             {
