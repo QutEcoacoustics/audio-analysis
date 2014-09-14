@@ -63,7 +63,16 @@ namespace AnalysisPrograms
 
             if (true)
             {
-                HoughTransform.TestHoughTransform();
+                //HoughTransform.TestHoughTransform();
+                //string path = @"C:\SensorNetworks\Output\Human\DM420036_min465Speech_0min.png";
+                string path = @"C:\SensorNetworks\Output\Sonograms\TestForHoughTransform.png";
+                FileInfo file = new FileInfo(path);
+                Bitmap sourceImage = ImageTools.ReadImage2Bitmap(file.FullName);
+
+                //Bitmap sourceImage = HoughTransform.CreateLargeImageWithLines();
+                sourceImage = HoughTransform.TileWiseHoughTransform(sourceImage);
+                string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
+                sourceImage.Save(path1, ImageFormat.Png);
             }
 
             if (false)  // used to test ridge detection using structure tensor.
