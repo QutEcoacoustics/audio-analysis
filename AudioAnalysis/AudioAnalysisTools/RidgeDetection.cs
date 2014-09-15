@@ -125,6 +125,104 @@ namespace AudioAnalysisTools
             return hits;
         }
 
+        public static byte[,] Sobel5X5RidgeDetectionExperiment(double[,] matrix, double magnitudeThreshold)
+        {
+            //int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
+            //double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int halfLength = 2; // = 5/2
+            //double halfThreshold = magnitudeThreshold * 1.0;
+
+            //A: Init MATRIX FOR INDICATING SPECTRAL RIDGES
+            var directions = new byte[rows, cols];
+            var scores = new double[rows, cols];
+
+
+
+            for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
+            {
+                for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
+                {
+                    //if (hits[r, c] > 0) continue;
+
+                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    double magnitude;
+                    // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4. 
+                    double direction;
+                    bool isRidge = false;
+
+                    // magnitude is dB
+                    //ImageTools.MexicanHat5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
+                    ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
+
+                    scores[r, c] = magnitude;
+                    directions[r, c] = (byte)(direction + 1);
+                }
+            }
+
+            double  av, sd;
+            NormalDist.AverageAndSD(scores, out av, out sd);
+            double threshold = av + (sd * 2.5);
+
+            var hits = new byte[rows, cols];
+            for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
+            {
+                for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
+                {
+                    //if (hits[r, c] > 0) continue;
+                    double magnitude = scores[r, c];
+                    double direction = directions[r, c] - 1;
+                    //if (magnitude > magnitudeThreshold)
+                    if (magnitude > threshold)
+                    {
+                        // now get average of 7x7 matrix as second check.
+                        //double av, sd;
+                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1); // extract NxN submatrix
+                        NormalDist.AverageAndSD(subM2, out av, out sd);
+                        double localThreshold = sd * 0.9;
+                        if ((subM2[halfLength + 1, halfLength + 1] - av) < localThreshold) continue;
+
+                        // Ridge orientation Category only has four values, they are 0, 1, 2, 3. 
+                        //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
+                        if (direction == 1)
+                        {
+                            hits[r - 1, c + 1] = (byte)(direction + 1);
+                            hits[r + 1, c - 1] = (byte)(direction + 1);
+
+                            //hits[r - 2, c + 2] = (byte)(direction + 1);
+                            //hits[r + 2, c - 2] = (byte)(direction + 1);
+                        }
+                        else if (direction == 3)
+                        {
+                            hits[r + 1, c + 1] = (byte)(direction + 1);
+                            hits[r - 1, c - 1] = (byte)(direction + 1);
+
+                            //hits[r + 2, c + 2] = (byte)(direction + 1);
+                            //hits[r - 2, c - 2] = (byte)(direction + 1);
+                        }
+                        else if (direction == 2)
+                        {
+                            hits[r - 1, c] = (byte)(direction + 1);
+                            hits[r + 1, c] = (byte)(direction + 1);
+
+                            hits[r - 2, c] = (byte)(direction + 1);
+                            hits[r + 2, c] = (byte)(direction + 1);
+                        }
+                        else if (direction == 0)
+                        {
+                            hits[r, c - 1] = (byte)(direction + 1);
+                            hits[r, c + 1] = (byte)(direction + 1);
+
+                            hits[r, c - 2] = (byte)(direction + 1);
+                            hits[r, c + 2] = (byte)(direction + 1);
+                        }
+                    }
+                }
+            }
+            return hits;
+        }
+
         /// <summary>
         /// matrix is assumed to be a spectrogram image spectrogram, whose rows are freq bins and columns are time frames.
         /// </summary>

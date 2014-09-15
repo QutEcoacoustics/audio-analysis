@@ -79,11 +79,11 @@ namespace AnalysisPrograms
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
                 // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\JCU\Litoria fellax1.mp3".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Kanowski_651_233394_20120831_072112_4.0__.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
@@ -306,7 +306,7 @@ namespace AnalysisPrograms
 
                 double ridgeThreshold = 0.25;
                 double[,] matrix = ImageTools.WienerFilter(sonogram.Data, 3);
-                byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(matrix, ridgeThreshold);
+                byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
                 hits = RidgeDetection.JoinDisconnectedRidgesInMatrix(hits, matrix, ridgeThreshold);
                 image = sonogram.GetColourAmplitudeSpectrogramFullyAnnotated("AMPLITUDE SPECTROGRAM + LCN + ridge detection", spectrogramDataBeforeNoiseReduction, null, hits);
                 list.Add(image);
@@ -348,7 +348,7 @@ namespace AnalysisPrograms
                 // ########################### SOBEL ridge detection
                 ridgeThreshold = 3.5;
                 matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
-                hits = RidgeDetection.Sobel5X5RidgeDetection(matrix, ridgeThreshold);
+                hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
                 // ########################### EIGEN ridge detection
                 //double ridgeThreshold = 6.0;
                 //double dominanceThreshold = 0.7;
