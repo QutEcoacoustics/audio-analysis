@@ -932,6 +932,72 @@ namespace TowseyLibrary
             direction = indexMax;
         }
 
+        /// <summary>
+        /// This modifies Sobel's ridge detection by using mexican hat filter.
+        /// The mexican hat is the difference of two gaussians on different scales.
+        /// DoG is used in image processing to find ridges.
+        /// MATRIX must be square with odd number dimensions
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static void MexicanHat5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            {
+                isRidge = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+
+            double[,] ridgeDir0Mask = { {-0.2,-0.2,-0.2,-0.2,-0.2},
+                                        {-0.3,-0.3,-0.3,-0.3,-0.3},
+                                        { 1.0, 1.0, 1.0, 1.0, 1.0},
+                                        {-0.3,-0.3,-0.3,-0.3,-0.3},
+                                        {-0.2,-0.2,-0.2,-0.2,-0.2}
+                                      };
+            double[,] ridgeDir1Mask = { {-0.1,-0.2,-0.2,-0.3, 0.8},
+                                        {-0.2,-0.2,-0.3, 1.0,-0.3},
+                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
+                                        {-0.3, 1.0,-0.3,-0.2,-0.2},
+                                        { 0.8,-0.3,-0.2,-0.2,-0.1}
+                                      };
+            double[,] ridgeDir2Mask = { {-0.2,-0.3, 1.0,-0.3,-0.2},
+                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
+                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
+                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
+                                        {-0.2,-0.3, 1.0,-0.3,-0.2}
+                                      };
+            double[,] ridgeDir3Mask = { { 0.8,-0.3,-0.2,-0.2,-0.1},
+                                        {-0.3, 1.0,-0.3,-0.2,-0.2},
+                                        {-0.2,-0.3, 1.0,-0.3,-0.2},
+                                        {-0.2,-0.2,-0.3, 1.0,-0.3},
+                                        {-0.1,-0.2,-0.2,-0.3, 0.8}
+                                      };
+
+            double[] ridgeMagnitudes = new double[4];
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax / 2;
+            //direction = indexMax * Math.PI / (double)4;
+            direction = indexMax;
+        }
+
         public static void Sobel5X5CornerDetection(double[,] m, out bool isCorner, out double magnitude, out double direction)
         {
             // We have eight possible corners in directions 0, Pi/4, pi/2, 3Pi/4

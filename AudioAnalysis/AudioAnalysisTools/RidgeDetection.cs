@@ -44,17 +44,12 @@ namespace AudioAnalysisTools
         {
             //int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
             //double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
-
-            //double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
-            //var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
-            //double herzScale = spectrogram.FBinWidth; //43 hz
-            //double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = 2;
             //double halfThreshold = magnitudeThreshold * 1.0;
 
-            //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
+            //A: Init MATRIX FOR INDICATING SPECTRAL RIDGES
             var hits = new byte[rows, cols];
 
 
@@ -72,6 +67,7 @@ namespace AudioAnalysisTools
                     bool isRidge = false;
 
                     // magnitude is dB
+                    //ImageTools.MexicanHat5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
                     ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
                     if ((magnitude > magnitudeThreshold) && (isRidge == true))
                     {
@@ -79,7 +75,7 @@ namespace AudioAnalysisTools
                         double av, sd;
                         var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1); // extract NxN submatrix
                         NormalDist.AverageAndSD(subM2, out av, out sd);
-                        double localThreshold = sd * 1.5;
+                        double localThreshold = sd * 0.9;
                         if ((subM[halfLength, halfLength] - av) < localThreshold) continue;
 
                         // Ridge orientation Category only has four values, they are 0, 1, 2, 3. 
@@ -288,83 +284,75 @@ namespace AudioAnalysisTools
         ///JOINS DISCONNECTED RIDGES
         /// </summary>
         /// <returns></returns>
-        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix(byte[,] binary, double[,] matrix, double threshold)
+        public static byte[,] JoinDisconnectedRidgesInMatrix(byte[,] hits, double[,] matrix, double threshold)
         {
-            int rows = binary.GetLength(0);
-            int cols = binary.GetLength(1);
+            int rows = hits.GetLength(0);
+            int cols = hits.GetLength(1);
             byte[,] newM = new byte[rows, cols];
 
             for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
             {
                 for (int c = 3; c < cols - 3; c++)
                 {
-                    if (binary[r, c] == 0) continue; //no peak to join
-                    if (matrix[r, c] < threshold)
-                    {
-                        binary[r, c] = 0;
-                        continue; // peak too weak to join
-                    }
+                    if (hits[r, c] == 0) continue; //no peak to join
+                    //if (matrix[r, c] < threshold)
+                    //{
+                    //    hits[r, c] = 0;
+                    //    continue; // peak too weak to join
+                    //}
 
-                    newM[r, c] = 1; // pixel r,c = 1.0
-                    // skip if adjacent pixels in next row also = 1.0
-                    if (binary[r + 1, c] == 1) continue;
-                    if (binary[r + 1, c - 1] == 1) continue;
-                    if (binary[r + 1, c + 1] == 1) continue;
+                    newM[r, c] = hits[r, c]; // pixel r,c = 1.0
+
+                    //FIRST fill in pixels in the same column
+                    // skip if adjacent pixels in next row also > zero
+                    if (hits[r + 1, c] > 0) continue;
+                    if (hits[r + 1, c - 1] > 0) newM[r, c - 1] = hits[r, c];
+                    if (hits[r + 1, c + 1] > 0) newM[r, c + 1] = hits[r, c];
+
+                    //if (hits[r + 1, c - 2] > 0) newM[r + 1, c - 1] = hits[r, c]; //fill gap
+                    //if (hits[r + 1, c + 2] > 0) newM[r + 1, c + 1] = hits[r, c]; //fill gap
 
                     // fill in the same column
-                    if ((binary[r + 3, c] == 1.0)) newM[r + 2, c] = 1; //fill gap
-                    if ((binary[r + 2, c] == 1.0)) newM[r + 1, c] = 1; //fill gap
+                    if ((hits[r + 2, c] > 0) || (hits[r + 3, c] > 0))
+                    {
+                        newM[r + 2, c] = hits[r, c]; //fill gap
+                        newM[r + 3, c] = hits[r, c]; //fill gap
+                    }
 
-                    if ((binary[r + 2, c - 3] == 1.0)) newM[r + 1, c - 2] = 1; //fill gap
-                    if ((binary[r + 2, c + 3] == 1.0)) newM[r + 1, c + 2] = 1; //fill gap
+                    if (hits[r + 2, c - 1] > 0) 
+                        newM[r + 1, c] = hits[r, c]; //fill gap
+                    if (hits[r + 2, c + 1] > 0) 
+                        newM[r + 1, c] = hits[r, c]; //fill gap
+
+                    //if (hits[r + 2, c - 3] > 0) newM[r + 1, c - 2] = hits[r, c]; //fill gap
+                    //if (hits[r + 2, c + 3] > 0) newM[r + 1, c + 2] = hits[r, c]; //fill gap
 
 
-                    //if ((binary[r + 2, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
-                    //if ((binary[r + 2, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
+                    //SECOND fill in pixels in the same row
+                    // skip if adjacent pixels in next column also > zero
+                    if (hits[r, c + 1] > 0) continue;
+                    if (hits[r - 1, c + 1] > 0) newM[r - 1, c] = hits[r, c];
+                    if (hits[r + 1, c + 1] > 0) newM[r + 1, c] = hits[r, c];
 
-                    if ((binary[r + 1, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
-                    if ((binary[r + 1, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
+                    //if (hits[r + 1, c - 2] > 0) newM[r + 1, c - 1] = hits[r, c]; //fill gap
+                    //if (hits[r + 1, c + 2] > 0) newM[r + 1, c + 1] = hits[r, c]; //fill gap
+
+                    // fill in the same row
+                    if ((hits[r, c + 2] > 0) || (hits[r, c + 3] > 0))
+                    {
+                        newM[r, c + 2] = hits[r, c]; //fill gap
+                        newM[r, c + 3] = hits[r, c]; //fill gap
+                    }
+
+                    if (hits[r - 1, c + 2] > 0)
+                        newM[r, c + 1] = hits[r, c]; //fill gap
+                    if (hits[r + 1, c + 2] > 0)
+                        newM[r, c + 1] = hits[r, c]; //fill gap
+
                 }
             }
             return newM;
         }
-
-        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix1(byte[,] binary)
-        {
-            int rows = binary.GetLength(0);
-            int cols = binary.GetLength(1);
-            byte[,] newM = new byte[rows, cols];
-
-            for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
-            {
-                for (int c = 3; c < cols - 3; c++)
-                {
-                    if (binary[r, c] == 0.0) continue;
-
-                    newM[r, c] = 1;
-                    // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
-                    if (binary[r + 1, c] == 1) continue;
-                    if (binary[r + 1, c - 1] == 1) continue;
-                    if (binary[r + 1, c + 1] == 1) continue;
-
-                    //fill in the same column
-                    if ((binary[r + 3, c] == 1.0)) newM[r + 2, c] = 1; //fill gap
-                    if ((binary[r + 2, c] == 1.0)) newM[r + 1, c] = 1; //fill gap
-
-                    if ((binary[r + 2, c - 3] == 1.0)) newM[r + 1, c - 2] = 1; //fill gap
-                    if ((binary[r + 2, c + 3] == 1.0)) newM[r + 1, c + 2] = 1; //fill gap
-
-
-                    //if ((binary[r + 2, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
-                    //if ((binary[r + 2, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
-
-                    if ((binary[r + 1, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
-                    if ((binary[r + 1, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
-                }
-            }
-            return newM;
-        }
-
 
         /// <summary>
         /// CONVERTs a binary matrix of spectral peak tracks to an output matrix containing the acoustic intensity

@@ -288,14 +288,14 @@ namespace AnalysisPrograms
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
                 // remove the DC bin
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
-                double[,] spectrogramData = sonogram.Data; 
+                //save spectrogram data at this point - prior to noise reduction
+                double[,] spectrogramDataBeforeNoiseReduction = sonogram.Data; 
 
                 double neighbourhoodSeconds = 0.25;
                 int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
                 double LcnContrastLevel = 0.3;
                 LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
                 LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-                //configDict
                 int lowPercentile = 20;
                 sonogram.Data = NoiseRemoval_Briggs.BriggsFilter_SubtractFreqBinNoise(sonogram.Data, lowPercentile);
                 sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
@@ -304,9 +304,11 @@ namespace AnalysisPrograms
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
                 //Histogram.DrawDistributionsAndSaveImage(sonogram.Data, path2);
 
-                double ridgeThreshold = 0.35;
-                byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(sonogram.Data, ridgeThreshold);
-                image = sonogram.GetColourAmplitudeSpectrogramFullyAnnotated("AMPLITUDE SPECTROGRAM + LCN + ridge detection", spectrogramData, sonogram.Data, hits);
+                double ridgeThreshold = 0.25;
+                double[,] matrix = ImageTools.WienerFilter(sonogram.Data, 3);
+                byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(matrix, ridgeThreshold);
+                hits = RidgeDetection.JoinDisconnectedRidgesInMatrix(hits, matrix, ridgeThreshold);
+                image = sonogram.GetColourAmplitudeSpectrogramFullyAnnotated("AMPLITUDE SPECTROGRAM + LCN + ridge detection", spectrogramDataBeforeNoiseReduction, null, hits);
                 list.Add(image);
 
 
@@ -344,8 +346,9 @@ namespace AnalysisPrograms
 
                 // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
                 // ########################### SOBEL ridge detection
-                ridgeThreshold = 6.0;
-                hits = RidgeDetection.Sobel5X5RidgeDetection(dbSpectrogramData, ridgeThreshold);
+                ridgeThreshold = 3.5;
+                matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
+                hits = RidgeDetection.Sobel5X5RidgeDetection(matrix, ridgeThreshold);
                 // ########################### EIGEN ridge detection
                 //double ridgeThreshold = 6.0;
                 //double dominanceThreshold = 0.7;
@@ -353,6 +356,7 @@ namespace AnalysisPrograms
                 //byte[,] hits = RidgeDetection.StructureTensorRidgeDetection(rotatedData, ridgeThreshold, dominanceThreshold);
                 //hits = MatrixTools.MatrixRotate90Clockwise(hits);
                 // ########################### EIGEN ridge detection
+
                 image = sonogram.GetColourDecibelSpectrogramFullyAnnotated("DECIBEL SPECTROGRAM - Colour annotated", dbSpectrogramData, nrSpectrogramData, hits);
                 list.Add(image);
 
@@ -369,11 +373,10 @@ namespace AnalysisPrograms
                 result.SpectrogramImage = outputImage;
             }
 
-            // 7) Generate the FREQUENCY x OSCILLATIONS Graphs and csv
-            //FileInfo tempAudioSegment = sourceRecording;
+            // 7) Generate the FREQUENCY x OSCILLATIONS Graphs and csv data
             bool saveData = true;
             bool saveImage = true;
-            //double[] oscillationsSpectrum = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, saveData, saveImage);
+            double[] oscillationsSpectrum = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, saveData, saveImage);
             return result;
         }
 
