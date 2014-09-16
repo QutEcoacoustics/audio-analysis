@@ -446,7 +446,7 @@ namespace AudioAnalysisTools.DSP
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
-            int bandCount = maxBin - minBin + 1;
+            int binCountInBand = maxBin - minBin + 1;
             double[] intensity = new double[frameCount];
             for (int i = 0; i < frameCount; i++)
             {
@@ -455,11 +455,74 @@ namespace AudioAnalysisTools.DSP
                     intensity[i] += sonogram[i, j];
                 }
 
-                intensity[i] /= bandCount;
+                intensity[i] /= binCountInBand;
             }
             return intensity;
         }
 
+
+        public static SNRStatistics CalculateSNRInFreqBand(double[,] sonogram, int minHz, int maxHz, int nyquist)
+        {
+            // set a threshold for determining average SNR
+            double threshold = 1.0;
+            int frameCount = sonogram.GetLength(0);
+            int binCount = sonogram.GetLength(1);
+            double binWidth = nyquist / (double)binCount;
+            int minBin = (int)Math.Round(minHz / binWidth);
+            int maxBin = (int)Math.Round(maxHz / binWidth);
+
+            double[,] bandSonogram = MatrixTools.Submatrix(sonogram, minBin, 0, maxBin, binCount - 1);
+
+            //estimate low energy content from low 20% of frames.
+            int lowEnergyCount = frameCount / 5;
+            int binCountInBand = maxBin - minBin + 1;
+
+            double maxValue = 0.0;
+            double avMaxValue = 0.0;
+            // count the number of spectrogram cells where the energy exceeds the thershold
+            int count = 0;
+
+            double[] intensity = new double[frameCount];
+            for (int bin = 0; bin < binCount; bin++)
+            {
+                double[] freqBin = MatrixTools.GetColumn(bandSonogram, bin);
+                var tuple = DataTools.SortArrayInAscendingOrder(freqBin);
+                double[] orderedArray = tuple.Item2;
+                double sum = 0.0;
+                for (int i = 0; i < lowEnergyCount; i++)
+                {
+                    sum += orderedArray[i];
+                }
+                double bgnEnergyInBin = sum / (double)lowEnergyCount;
+                // subtract the background noise
+                for (int i = 0; i < lowEnergyCount; i++)
+                {
+                    freqBin[i] -= bgnEnergyInBin;
+                }
+                double max = freqBin.Max();
+                if(max > maxValue) maxValue = max;
+                if (max > threshold)
+                {
+                    avMaxValue += max;
+                    count++;
+                }
+
+                for (int j = 0; j < binCountInBand; j++)
+                {
+                    intensity[bin] += sonogram[bin, j];
+                }
+
+                //intensity[i] /= binCountInBand;
+            }
+            avMaxValue /= (double)count;
+            var stats = new SNRStatistics();
+            stats.SnrMax = maxValue;
+            stats.SnrAv = avMaxValue;
+            stats.SnrThreshold = threshold;
+            stats.Cover = count / (double)frameCount;
+
+            return stats;
+        }
 
 
 
@@ -1179,6 +1242,38 @@ namespace AudioAnalysisTools.DSP
             public double[] MinDb { get; set; }
 
             public double[] MaxDb { get; set; }
+        }
+
+        /// <summary>
+        /// used to store info about the SNR in a signal using db units
+        /// </summary>
+        public class SNRStatistics
+        {
+            /// <summary>
+            /// minimum decibel level
+            /// </summary>
+            public double MinDb { get; set; }
+            /// <summary>
+            /// maximum decibel level
+            /// </summary>
+            public double MaxDb { get; set; }
+            /// <summary>
+            /// decibel threshold used to calculate cover and average SNR
+            /// </summary>
+            public double SnrThreshold { get; set; }
+            /// <summary>
+            /// maximum dB value in the signal or spectrogram
+            /// </summary>
+            public double SnrMax { get; set; }
+            /// <summary>
+            /// average SNR for those frames where the energy exceed a threshold
+            /// </summary>
+            public double SnrAv  { get; set; }
+            /// <summary>
+            /// total frame count where energy exceeds a threshold.
+            /// </summary>
+            public double Cover { get; set; }
+
         }
     }
 }
