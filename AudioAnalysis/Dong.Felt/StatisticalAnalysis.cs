@@ -54,6 +54,48 @@
             return sm;
         }
 
+        /// <summary>
+        /// Count ridge poi in an event, e.g. query
+        /// </summary>
+        /// <param name="acousticEvent"></param>
+        /// <returns></returns>
+        public static int CountPOIInEvent(List<RegionRerepresentation> acousticEvent)
+        {
+            var result = 0;
+            foreach (var e in acousticEvent)
+            {
+                if (e != null)
+                {
+                    result += e.POICount;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Count nh which has ridges in it. 
+        /// </summary>
+        /// <param name="acousticEvent"></param>
+        /// <returns></returns>
+        public static int CountNhInEvent(List<RegionRerepresentation> acousticEvent)
+        {
+            var result = 0;
+            foreach (var e in acousticEvent)
+            {
+                if (e != null)
+                {
+
+                    if (e.POICount != 0)
+                    {
+                        result++;
+                    }
+                }
+            }
+            return result;
+        }
+
+
+
         public static List<List<RegionRerepresentation>> SplitRegionRepresentationListToBlock(List<RegionRerepresentation> regionRepresentationList)
         {
             var result = new List<List<RegionRerepresentation>>();
@@ -534,7 +576,7 @@
             int subRowCount = r2 - r1 + 1;
             int subColCount = c2 - c1 + 1;
 
-            PointOfInterest[,] sm = new PointOfInterest[subRowCount, subColCount];            
+            PointOfInterest[,] sm = new PointOfInterest[subRowCount, subColCount];
             var rowsCount = poiMatrix.GetLength(0);
             var colsCount = poiMatrix.GetLength(1);
 
@@ -595,7 +637,7 @@
                     var point = new Point(colIndex, rowIndex);
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
-                   // tempPoi.fftMatrix = defaultFFTMatrix;
+                    // tempPoi.fftMatrix = defaultFFTMatrix;
                     tempPoi.OrientationCategory = 10;
                     m[rowIndex, colIndex] = tempPoi;
                 }
@@ -606,7 +648,7 @@
                 // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
                 // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
                 // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                m[poi.Point.Y, poi.Point.X] = poi;               
+                m[poi.Point.Y, poi.Point.X] = poi;
             }
             return m;
         }
@@ -656,7 +698,7 @@
             var fftMatrix = list[0].fftMatrix;
             var matrixRowCount = fftMatrix.GetLength(0);
             var matrixColCount = fftMatrix.GetLength(1);
-            var defaultFFTMatrix = new double[matrixRowCount, matrixColCount]; 
+            var defaultFFTMatrix = new double[matrixRowCount, matrixColCount];
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -830,7 +872,7 @@
             return sum / maxXIndex * maxYIndex;
         }
 
-        
+
 
         public static RidgeDescriptionNeighbourhoodRepresentation[,] SubRegionMatrix(RidgeDescriptionNeighbourhoodRepresentation[,] matrix, int row1, int col1, int row2, int col2)
         {
@@ -951,7 +993,7 @@
             var numberOfframePerTimeunit = (int)(timeUnit * (SecondToMillionSecondUnit / (secondScale * SecondToMillionSecondUnit)));
             var UnitCount = (int)(colsCount / numberOfframePerTimeunit);
             var countOfpoi = poiList.Count();
-            var avgEdgePerTimeunit = (int)(countOfpoi / UnitCount);           
+            var avgEdgePerTimeunit = (int)(countOfpoi / UnitCount);
             return avgEdgePerTimeunit;
         }
 
