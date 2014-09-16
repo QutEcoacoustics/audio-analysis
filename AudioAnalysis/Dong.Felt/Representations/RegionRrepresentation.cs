@@ -150,6 +150,7 @@ namespace Dong.Felt.Representations
             this.HOrientationPOICount = nh.HOrientationPOICount;
             this.HOrientationPOIMagnitudeSum = nh.HOrientationPOIMagnitudeSum;
             this.VOrientationPOICount = nh.VOrientationPOICount;
+            this.POICount = nh.POICount;
             this.VOrientationPOIMagnitudeSum = nh.VOrientationPOIMagnitudeSum;
             this.PDOrientationPOICount = nh.PDOrientationPOICount;
             this.PDOrientationPOIMagnitudeSum = nh.PDOrientationPOIMagnitudeSum;

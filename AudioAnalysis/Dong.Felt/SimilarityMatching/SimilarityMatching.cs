@@ -9,7 +9,7 @@
     using Dong.Felt.Features;
     using System.Globalization;
 
-    
+
     enum MatchIndex//public enum MatchIndex
     {
         /// <summary>
@@ -27,9 +27,9 @@
 
     public class SimilarityMatching
     {
-        
+
         #region Public Properties
-        
+
         /// <summary>
         /// Gets or sets the SimilarityScore, it can be derived from the calculationg of similarity score. 
         /// </summary>
@@ -42,11 +42,11 @@
         public static double DistanceForOrientationHistogram(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
         {
             var distance = 0;
-            var numberOfBitCount = instance.VerticalBitVector.Count();            
+            var numberOfBitCount = instance.VerticalBitVector.Count();
             for (int i = 0; i < numberOfBitCount; i++)
-            {              
+            {
                 //sumV = sumV + Math.Abs(instance. - template);
-            }            
+            }
             return distance;
         }
 
@@ -143,7 +143,7 @@
                                 horizontalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].HorizontalVector[i], 0.0, (double)query[sliceIndex].HorizontalVector[i], 0.0);
                                 verticalDistance += Distance.EuclideanDistanceForCordinates((double)potentialEvent[sliceIndex].VerticalVector[i], 0.0, (double)query[sliceIndex].VerticalVector[i], 0.0);
                             }
-                        }               
+                        }
                     }
                     for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
                     {
@@ -166,7 +166,7 @@
                 }
                 if (horizontalDistance < distanceThreshold && verticalDistance < distanceThreshold && positiveDiagonalDistance < distanceThreshold && negativeDiagonalDistance < distanceThreshold)
                 {
-                     result++;
+                    result++;
                 }
             }
             return result;
@@ -331,7 +331,7 @@
                     }
                 }
             }
-            return result; 
+            return result;
         }
 
         public static double SimilarityScoreRidgeDiscription(RidgeDescriptionNeighbourhoodRepresentation[,] potentialEvent, RidgeDescriptionNeighbourhoodRepresentation[,] query)
@@ -346,7 +346,7 @@
                     for (int colIndex = 0; colIndex < colsCount; colIndex++)
                     {
                         result += Distance.EuclideanDistanceForCordinates(potentialEvent[rowIndex, colIndex].score, 0, query[rowIndex, colIndex].score, 0);
-                    }                  
+                    }
                 }
             }
             return result;
@@ -356,13 +356,13 @@
         {
             var result = 0.0;
             if (query != null && candidate != null)
-            {                                            
+            {
                 for (int index = 0; index < query.orientationHistogram.Count; index++)
-                {                   
+                {
                     var orientationHisDifference = Math.Abs(query.orientationHistogram[index] -
                         candidate.orientationHistogram[index]);
                     result += orientationHisDifference;
-                }               
+                }
             }
             return result;
         }
@@ -371,13 +371,13 @@
             double matchedDistanceThreshold, double weight)
         {
             var result = 0.0;
-            var notNullPOIInQuery = 0;  
+            var notNullPOIInQuery = 0;
             //var sumDisdistance = 0.0;
             var matchedNotNullPOICount = 0;
             var matchedNullPOICount = 0;
             var queryPOIMatrix = query.fftFeatures;
             var rowsCount = queryPOIMatrix.GetLength(0);
-            var colsCount = queryPOIMatrix.GetLength(1); 
+            var colsCount = queryPOIMatrix.GetLength(1);
             if (query != null && candidate != null)
             {
                 if (candidate.fftFeatures != null)
@@ -430,11 +430,11 @@
                                 {
                                     matchedNullPOICount++;
                                 }
-                            }                        
+                            }
                         }
                     }
                 }
-            }       
+            }
             /// The one is based on purely Euclidean distance
             //if (notNullPOIInQuery != 0)
             //{
@@ -444,7 +444,7 @@
             if (notNullPOIInQuery != 0)
             {
                 result = (double)(matchedNotNullPOICount + weight * matchedNullPOICount) / (rowsCount * colsCount);
-            } 
+            }
             return result;
         }
         /// <summary>
@@ -466,16 +466,16 @@
                 var nhSum2 = 0.0;
                 for (int index = 0; index < nhCount; index++)
                 {
-                   
-                        var queryMagnitude = query[index].magnitude;
-                        var queryOrientation = query[index].orientation;                       
-                        var candidateMagnitude = candidate[index].magnitude;
-                        var candidateOrientation = candidate[index].orientation;                        
-                        
-                        var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
-                        var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);                      
-                       nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
-                   
+
+                    var queryMagnitude = query[index].magnitude;
+                    var queryOrientation = query[index].orientation;
+                    var candidateMagnitude = candidate[index].magnitude;
+                    var candidateOrientation = candidate[index].orientation;
+
+                    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                    var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);
+                    nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
+
                 }
                 result = nhSum2;
             }
@@ -497,12 +497,12 @@
         public static double WeightedDistanceScoreRegionRepresentation3(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate,
             double weight1, double weight2, double weight3, double weight4)
         {
-            var result = 0.0;        
+            var result = 0.0;
             if (query != null && candidate != null)
             {
                 var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
                 var nhSumNotNull = 0.0;
-                var nhSumNull = 0.0;                
+                var nhSumNull = 0.0;
                 for (int index = 0; index < nhCount; index++)
                 {
                     if (query[index].magnitude != 100)
@@ -558,56 +558,60 @@
                 //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
                 var columnEnergyEntropyDiff = 0.0;
                 var rowEnergyEntropyDiff = 0.0;
+                var maxHPOIHistDiff = 1.0;
+                var maxPPOIHistDiff = 1.0;
+                var maxVPOIHistDiff = 1.0;
+                var maxNPOIHistDiff = 1.0;
+                var maxColEnergyEntroDiff = 1.0;
+                var maxRowEnergyEntroDiff = 1.0;
                 var matchedNhCount = 0;
                 for (int index = 0; index < nhCount; index++)
                 {
                     // to check whether they match
                     if (query[index].POICount <= poiCountThreshold && candidate[index].POICount <= poiCountThreshold)
                     {
-                        result += 0.5;
+                        result += 0.2;
                         matchedNhCount++;
                     }
-                    else
+                    else if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
                     {
-                        if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
-                        {
-                            matchedNhCount++;
-                            var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
-                            var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
-                            var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
-                            var queryNDOrientationPOIHistogram = query[index].NDOrientationPOIHistogram;
-                            var queryPOICountPercentage = query[index].POICountPercentage;
-                            var queryColumnEnergyEntropy = query[index].ColumnEnergyEntropy;
-                            var queryRowEnergyEntropy = query[index].RowEnergyEntropy;
+                        matchedNhCount++;
+                        var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
+                        var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
+                        var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
+                        var queryNDOrientationPOIHistogram = query[index].NDOrientationPOIHistogram;
+                        var queryPOICountPercentage = query[index].POICountPercentage;
+                        var queryColumnEnergyEntropy = query[index].ColumnEnergyEntropy;
+                        var queryRowEnergyEntropy = query[index].RowEnergyEntropy;
 
-                            var candidateHOrientationPOIHistogram = candidate[index].HOrientationPOIHistogram;
-                            var candidatePDOrientationPOIHistogram = candidate[index].PDOrientationPOIHistogram;
-                            var candidateVOrientationPOIHistogram = candidate[index].VOrientationPOIHistogram;
-                            var candidateNDOrientationPOIHistogram = candidate[index].NDOrientationPOIHistogram;
-                            //var candidatePOICountPercentage = candidate[index].POICountPercentage;
-                            var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
-                            var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
-                            hOrientationPOIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
-                            pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
-                            vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
-                            nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
-                            //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
-                            columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
-                            rowEnergyEntropyDiff = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
+                        var candidateHOrientationPOIHistogram = candidate[index].HOrientationPOIHistogram;
+                        var candidatePDOrientationPOIHistogram = candidate[index].PDOrientationPOIHistogram;
+                        var candidateVOrientationPOIHistogram = candidate[index].VOrientationPOIHistogram;
+                        var candidateNDOrientationPOIHistogram = candidate[index].NDOrientationPOIHistogram;
+                        //var candidatePOICountPercentage = candidate[index].POICountPercentage;
+                        var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
+                        var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
+                        hOrientationPOIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
+                        pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
+                        vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
+                        nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
+                        //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
+                        columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
+                        rowEnergyEntropyDiff = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
 
-                            var euclideanDistance = Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
-                                              + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
-                                              + Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
-                            var maxDistance = Math.Sqrt(6.0);
-                            result += 1 - euclideanDistance / maxDistance;                         
-                        }
-                    }                        
+                        var euclideanDistance = Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
+                                          + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
+                                          + Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
+                        var maxDistance = Math.Sqrt(maxHPOIHistDiff + maxPPOIHistDiff + maxVPOIHistDiff+
+                            maxNPOIHistDiff + maxColEnergyEntroDiff + maxRowEnergyEntroDiff);
+                        result += 0.8 * (1 - euclideanDistance / maxDistance);
+                    }
                 }
                 var matchedPercentage = matchedNhCount / (double)nhCount;
                 var averageSimilarityScore = result / matchedNhCount;
                 result = matchedPercentage * averageSimilarityScore;
                 result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
-            }          
+            }
             return result;
         }
 
@@ -616,14 +620,14 @@
             var result = 0.0;
             if (query != null && candidate != null)
             {
-                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;               
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
                 for (int index = 0; index < nhCount; index++)
                 {
                     var sum = 0.0;
                     if (query[index].HistogramOfOrientatedGradient != null && candidate[index].HistogramOfOrientatedGradient != null)
                     {
                         List<double> queryHOG = query[index].HistogramOfOrientatedGradient;
-                        List<double> candidateHOG = candidate[index].HistogramOfOrientatedGradient;                        
+                        List<double> candidateHOG = candidate[index].HistogramOfOrientatedGradient;
                         for (int i = 0; i < queryHOG.Count; i++)
                         {
                             if (query[index].POICount != 0)
@@ -633,7 +637,7 @@
                         }
                     }
                     result += sum;
-                }                
+                }
             }
             return result;
         }
@@ -676,12 +680,12 @@
                     var hOrientationDiff = Math.Abs(queryHOrientation - candidateHOrientation);
                     var vMagnitudeDiff = Math.Abs(queryVMagnitude - candidateVMagnitude);
                     var vOrientationDiff = Math.Abs(queryVOrientation - candidateVOrientation);
-                    var hRmeasureDiff = Math.Abs(queryHRmeasure - candidateHRmeasure); 
+                    var hRmeasureDiff = Math.Abs(queryHRmeasure - candidateHRmeasure);
                     var vRmeasureDiff = Math.Abs(queryVRmeasure - candidateVRmeasure);
 
                     nhSum += Math.Sqrt(weight1 * Math.Pow(hMagnitudeDiff, 2) + weight2 * Math.Pow(hOrientationDiff, 2)
                         + weight3 * Math.Pow(vMagnitudeDiff, 2) + weight4 * Math.Pow(vOrientationDiff, 2)
-                        + weight5 * Math.Pow(hRmeasureDiff, 2) + weight6 * Math.Pow(vRmeasureDiff, 2));                   
+                        + weight5 * Math.Pow(hRmeasureDiff, 2) + weight6 * Math.Pow(vRmeasureDiff, 2));
                 }
                 result = nhSum;
             }
@@ -742,25 +746,25 @@
                     {
                         //if (!checkNullFeatureVector(query[sliceIndex]) && !checkNullFeatureVector(potentialEvent[sliceIndex]))
                         //{
-                            for (int i = 0; i < numberOfFeaturevector; i++)
-                            {
-                                var horizontalStartPointX = potentialEvent[sliceIndex].HorizontalVector[i];
-                                var horizontalEndPointX = query[sliceIndex].HorizontalVector[i];
-                                var verticalStartPointX = potentialEvent[sliceIndex].VerticalVector[i];
-                                var verticalEndPointX = query[sliceIndex].VerticalVector[i];
-                                horizontalDistance += Distance.EuclideanDistanceForCordinates(horizontalStartPointX, startPointY, horizontalEndPointX, endPointY);
-                                verticalDistance += Distance.EuclideanDistanceForCordinates(verticalStartPointX, startPointY, verticalEndPointX, endPointY);
-                            }
-                            for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
-                            {
-                                var positiveDiagonalStartPointX = potentialEvent[sliceIndex].PositiveDiagonalVector[j];
-                                var positiveDiagonalEndPointX = query[sliceIndex].PositiveDiagonalVector[j];
-                                var negativeDiagonalStartPointX = potentialEvent[sliceIndex].NegativeDiagonalVector[j];
-                                var negativeDiagonalEndPointX = query[sliceIndex].NegativeDiagonalVector[j];
+                        for (int i = 0; i < numberOfFeaturevector; i++)
+                        {
+                            var horizontalStartPointX = potentialEvent[sliceIndex].HorizontalVector[i];
+                            var horizontalEndPointX = query[sliceIndex].HorizontalVector[i];
+                            var verticalStartPointX = potentialEvent[sliceIndex].VerticalVector[i];
+                            var verticalEndPointX = query[sliceIndex].VerticalVector[i];
+                            horizontalDistance += Distance.EuclideanDistanceForCordinates(horizontalStartPointX, startPointY, horizontalEndPointX, endPointY);
+                            verticalDistance += Distance.EuclideanDistanceForCordinates(verticalStartPointX, startPointY, verticalEndPointX, endPointY);
+                        }
+                        for (int j = 0; j < numberOfdiagonalFeaturevector; j++)
+                        {
+                            var positiveDiagonalStartPointX = potentialEvent[sliceIndex].PositiveDiagonalVector[j];
+                            var positiveDiagonalEndPointX = query[sliceIndex].PositiveDiagonalVector[j];
+                            var negativeDiagonalStartPointX = potentialEvent[sliceIndex].NegativeDiagonalVector[j];
+                            var negativeDiagonalEndPointX = query[sliceIndex].NegativeDiagonalVector[j];
 
-                                positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates(positiveDiagonalStartPointX, 0.0, positiveDiagonalEndPointX, 0.0);
-                                negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates(negativeDiagonalStartPointX, 0.0, negativeDiagonalEndPointX, 0.0);
-                            }// end for
+                            positiveDiagonalDistance += Distance.EuclideanDistanceForCordinates(positiveDiagonalStartPointX, 0.0, positiveDiagonalEndPointX, 0.0);
+                            negativeDiagonalDistance += Distance.EuclideanDistanceForCordinates(negativeDiagonalStartPointX, 0.0, negativeDiagonalEndPointX, 0.0);
+                        }// end for
                         //}// end if (double check)
                         //else
                         //{
@@ -788,7 +792,7 @@
         /// <returns></returns>
         public static bool checkNullFeatureVector(RidgeNeighbourhoodFeatureVector featureVector)
         {
-            
+
             var numberOfHorizontalFeatureVectorBit = featureVector.HorizontalVector.Count();
             var numberOfDiagonalFeatureVectorBit = featureVector.PositiveDiagonalVector.Count();
             var featureVectorBitCount = 0;
@@ -858,7 +862,7 @@
             }
 
         }
-        
+
         #endregion
     }
 }
