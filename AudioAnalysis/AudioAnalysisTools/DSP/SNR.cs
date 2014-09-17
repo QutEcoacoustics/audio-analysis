@@ -1,6 +1,11 @@
-﻿using System;
+﻿using Acoustics.Shared;
+using Acoustics.Shared.Csv;
+using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.WavTools;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TowseyLibrary;
@@ -461,17 +466,22 @@ namespace AudioAnalysisTools.DSP
         }
 
 
-        public static SNRStatistics CalculateSNRInFreqBand(double[,] sonogram, int minHz, int maxHz, int nyquist)
+        public static SNRStatistics CalculateSNRInFreqBand(double[,] sonogram, TimeSpan startTime, TimeSpan endTime, int minHz, int maxHz, int nyquist)
         {
             // set a threshold for determining average SNR
             double threshold = 1.0;
             int frameCount = sonogram.GetLength(0);
             int binCount = sonogram.GetLength(1);
             double binWidth = nyquist / (double)binCount;
-            int minBin = (int)Math.Round(minHz / binWidth);
-            int maxBin = (int)Math.Round(maxHz / binWidth);
+            int minBin = (int)Math.Round(minHz / binWidth) - 3;
+            int maxBin = (int)Math.Round(maxHz / binWidth) + 3;
+            if (minBin < 0) minBin = 0;
+            if (maxBin >= binCount) maxBin = binCount - 1;
 
-            double[,] bandSonogram = MatrixTools.Submatrix(sonogram, minBin, 0, maxBin, binCount - 1);
+            //int startframe = startTime, 
+            //int endFrame = TimeSpan.    TimeSpan endTime
+
+            double[,] bandSonogram = MatrixTools.Submatrix(sonogram, 0, minBin, frameCount - 1, maxBin);
 
             //estimate low energy content from low 20% of frames.
             int lowEnergyCount = frameCount / 5;
@@ -479,11 +489,12 @@ namespace AudioAnalysisTools.DSP
 
             double maxValue = 0.0;
             double avMaxValue = 0.0;
-            // count the number of spectrogram cells where the energy exceeds the thershold
+            // count the number of spectrogram cells where the energy exceeds the threshold
             int count = 0;
 
             double[] intensity = new double[frameCount];
-            for (int bin = 0; bin < binCount; bin++)
+            // loop over all freq bins in the band
+            for (int bin = 0; bin < binCountInBand; bin++)
             {
                 double[] freqBin = MatrixTools.GetColumn(bandSonogram, bin);
                 var tuple = DataTools.SortArrayInAscendingOrder(freqBin);
@@ -499,6 +510,8 @@ namespace AudioAnalysisTools.DSP
                 {
                     freqBin[i] -= bgnEnergyInBin;
                 }
+
+                // NOW search for max within the required time span.
                 double max = freqBin.Max();
                 if(max > maxValue) maxValue = max;
                 if (max > threshold)
@@ -507,10 +520,10 @@ namespace AudioAnalysisTools.DSP
                     count++;
                 }
 
-                for (int j = 0; j < binCountInBand; j++)
-                {
-                    intensity[bin] += sonogram[bin, j];
-                }
+                //for (int j = 0; j < binCountInBand; j++)
+                //{
+                //    intensity[bin] += sonogram[bin, j];
+                //}
 
                 //intensity[i] /= binCountInBand;
             }
@@ -524,6 +537,61 @@ namespace AudioAnalysisTools.DSP
             return stats;
         }
 
+        /// <summary>
+        /// This method written 17-09-2014 to process Xueyan's query recordings.
+        /// Calculate the SNR statistics for each recording and then write info back to csv file
+        /// </summary>
+        public static void Calculate_SNR_ofXueyans_data()
+        {
+            FileInfo csvInfo = @"C:\SensorNetworks\WavFiles\XueyanQueryCalls\frequency band csv files\NEJB_NE465_20101013-065400-0659-0700-Golden Whistler3.csv".ToFileInfo();
+            var sourceDir = csvInfo.Directory.Parent;
+
+            // Read in the csv file
+            // cannot use next line because column headers contain illegal characters
+            //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
+            List<string> rows = FileTools.ReadTextFile(csvInfo.FullName);
+            // remove trailing commas
+            for (int i = 0; i < rows.Count; i++) 
+            {
+                if (rows[i].Length == 0) continue;
+                while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
+                {
+                    rows[i] = rows[i].Substring(0, rows[i].Length - 1);
+                }
+            }
+            var line = rows[1].Split(',');
+            string filename = line[0];
+            int minHz = Int32.Parse(line[1]);
+            int maxHz = Int32.Parse(line[2]);
+            TimeSpan start = TimeSpan.FromSeconds(1.0);
+            TimeSpan end = start + TimeSpan.FromSeconds(Double.Parse(line[5]));
+
+            FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
+            FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+            //FileInfo configDict = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo();
+
+            dynamic configuration = Yaml.Deserialise(configFile);
+            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
+
+            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
+
+
+            // 1) get recording
+            AudioRecording recordingSegment = new AudioRecording(sourceRecording.FullName);
+            SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
+            // 2) get decibel spectrogram
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            // remove the DC column
+            double[,] data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
+
+            SNRStatistics stats = CalculateSNRInFreqBand(data, start, end, minHz, maxHz, sonogram.NyquistFrequency);
+
+            rows[0] = String.Format(rows[0] + ",SnrThreshold,SnrMax,SnrAvg,Cover");
+            rows[1] = String.Format(rows[1] + ",{0},{1},{2},{3}", stats.SnrThreshold, stats.SnrMax, stats.SnrAv, stats.Cover);
+            string path = Path.Combine(sourceDir.FullName, Path.GetFileNameWithoutExtension(csvInfo.FullName) + ".SNR.csv");
+            FileTools.WriteTextFile(path, rows, true);
+        }
 
 
         // ########################################################################################################################################################

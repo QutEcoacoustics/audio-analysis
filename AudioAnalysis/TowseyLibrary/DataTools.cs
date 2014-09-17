@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
+using MathNet.Numerics;
+
 
 namespace TowseyLibrary
 {
@@ -606,23 +608,28 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// sorts an array of doubles in ASCENDING order i.e. max first.
-        /// returns both the sorted array (Item2) and the array indices in rank order (Item1)
+        /// sorts an array of doubles in ASCENDING order.
+        /// Returns both the sorted array (Item2) and the original array indices in sort order (Item1)
+        /// this is a totally crude sort algorithm but I could not find a MathsNet sort 
+        /// that also returned the sorted indices.
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
         public static System.Tuple<int[], double[]> SortArrayInAscendingOrder(double[] array)
         {
+            double[] clone = (double[])array.Clone();
             int[] rankOrder = new int[array.Length];
-            double[] sort   = new double[array.Length];
+
+            double[] sort = new double[clone.Length];
+
             for (int i = 0; i < array.Length; i++)
             {
-                int minIndex = DataTools.GetMinIndex(array);
+                int minIndex = DataTools.GetMinIndex(clone);
                 rankOrder[i] = minIndex;
-                sort[i] = array[minIndex];
+                sort[i] = clone[minIndex];
                 //if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
-                array[minIndex] = Double.MaxValue;
+                clone[minIndex] = Double.MaxValue;
             }
             return Tuple.Create(rankOrder, sort);
         }
@@ -3273,6 +3280,26 @@ namespace TowseyLibrary
   }
 
 //=============================================================================
+
+  public static void TEST_FilterMovingAverage()
+  {
+      int window = 99;
+      double[] V0 = new double[100];
+      for (int i = 0; i < V0.Length; i++)
+          V0[i] = i;
+      //for (int i = 0; i < V0.Length; i++)
+      //    V0[i] = 1.0; 
+
+      double[] V1 = DataTools.filterMovingAverageOLD(V0, window);
+      double[] V2 = DataTools.filterMovingAverage(V0, window);
+
+      for (int i = 0; i < V1.Length; i++)
+          if (V1[i] != V2[i])
+              Console.WriteLine("index {0}: V0={1}    {2} != {3}", i, V0[i], V1[i], V2[i]);
+          else
+              Console.WriteLine("index {0}: V0={1} ", i, V0[i], V1[i], V2[i]);
+  }
+
 
 
   /**

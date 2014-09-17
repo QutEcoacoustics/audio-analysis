@@ -203,6 +203,23 @@ namespace AudioAnalysisTools.DSP
 
 
 
+        /// <summary>
+        /// METHOD to TEST the FFT2D.
+        /// </summary>
+        public static void TestFFT2D()
+        {
+            string imageFilePath = @"C:\SensorNetworks\Output\FFT2D\test5.png";
+            bool reversed = false;
+            double[,] matrix = FFT2D.GetImageDataAsGrayIntensity(imageFilePath, reversed);
+            //matrix = MatrixTools.normalise(matrix);
+            double[,] output = FFT2D.FFT2Dimensional(matrix);
+            Console.WriteLine("Sum={0}", (MatrixTools.Matrix2Array(output)).Sum());
+            //draws matrix after normalisation with white=low and black=high
+            ImageTools.DrawReversedMatrix(output, @"C:\SensorNetworks\Output\FFT2D\test5_2DFFT.png");
+        }
+
+
+
     }
 
 

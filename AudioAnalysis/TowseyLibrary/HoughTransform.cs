@@ -13,6 +13,37 @@ namespace TowseyLibrary
 {
     public static class HoughTransform
     {
+        /// <summary>
+        /// this method is a test method for the Hough transform
+        /// </summary>
+        public static void Test1HoughTransform()
+        {
+            //string path = @"C:\SensorNetworks\Output\Human\DM420036_min465Speech_0min.png";
+            string path = @"C:\SensorNetworks\Output\Sonograms\TestForHoughTransform.png";
+            FileInfo file = new FileInfo(path);
+            Bitmap sourceImage = ImageTools.ReadImage2Bitmap(file.FullName);
+
+            //Bitmap sourceImage = HoughTransform.CreateLargeImageWithLines();
+            sourceImage = HoughTransform.TileWiseHoughTransform(sourceImage);
+            string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
+            sourceImage.Save(path1, ImageFormat.Png);
+        }
+
+        public static void Test2HoughTransform()
+        {
+            Bitmap bmp = HoughTransform.CreateToyTestImageWithLines();
+            //int numberOfDirections = (2 * rowCount) + (2 * colCount) - 4;
+            int numberOfDirections = 32;
+            bool saveTranformImage = true;
+            double[,] rtMatrix = HoughTransform.DoHoughTransform(bmp, numberOfDirections, saveTranformImage);
+            double thresholdIntensity = 2.0;
+            Bitmap opImage = HoughTransform.ConvertRTmatrix2Image(rtMatrix, thresholdIntensity, bmp.Width);
+
+            var list = new List<HoughLine>();
+            string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
+            opImage.Save(path1, ImageFormat.Png);
+
+        }
 
         public static double[,] DoHoughTransform(Bitmap sourceImage, int directionsCount, bool saveTransformImage)
         {
@@ -214,24 +245,7 @@ namespace TowseyLibrary
         }   // TileWiseHoughTransform(Bitmap sourceImage)
 
 
-
-        public static void TestHoughTransform()
-        {
-            Bitmap bmp = CreateImageWithLines();
-            //int numberOfDirections = (2 * rowCount) + (2 * colCount) - 4;
-            int numberOfDirections = 32;
-            bool saveTranformImage = true;
-            double[,] rtMatrix = HoughTransform.DoHoughTransform(bmp, numberOfDirections, saveTranformImage);
-            double thresholdIntensity = 2.0;
-            Bitmap opImage = HoughTransform.ConvertRTmatrix2Image(rtMatrix, thresholdIntensity, bmp.Width);
-
-            var list = new List<HoughLine>();
-            string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
-            opImage.Save(path1, ImageFormat.Png);
-
-        }
-
-        public static Bitmap CreateImageWithLines()
+        public static Bitmap CreateToyTestImageWithLines()
         {
             Bitmap image = new Bitmap(11, 11);
             Graphics g = Graphics.FromImage(image);
