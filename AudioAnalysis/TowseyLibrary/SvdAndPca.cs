@@ -288,7 +288,43 @@ namespace TowseyLibrary
         }
 
 
+        public static void TestEigenValues()
+        {
+            /// used to caluclate eigen values and singular valuse
+                //double[,] M = {
+                //                    { 1.0,  1.0 },
+                //                    { 1.0,  1.0 }
+                //                };
+                //double[,] M = {
+                //                    { 2.0,  7.0 },
+                //                    {-1.0, -6.0 }
+                //                };
 
+                // NOTE: When the matrix is square symmetric, the singular values equal the eigenvalues.
+                // e1=4.0     e2=2.0 and the singular values are the same
+                double[,] M = {
+                                    { 3.0, -1.0 },
+                                    {-1.0,  20.0 }
+                                };
+
+                // e1=e2=0.333333
+                //double[,] M = {
+                //                    { 1.0, -1.0 },
+                //                    {4/(double)9,  -1.0/(double)3 }
+                //                };
+                System.Tuple<double[], double[,]> result = SvdAndPca.EigenVectors(M);
+
+                Log.WriteLine("\n\n Singlar values");
+                double[] singValues = SvdAndPca.SingularValueDecompositionVector(M);
+                foreach (double value in singValues)
+                {
+                    Console.WriteLine(value);
+                }
+
+
+                double[] eigenValues = StructureTensor.CalculateEigenValues(M);
+                Console.WriteLine("\n\n EigenValues = {0} and {1}", eigenValues[0], eigenValues[1]);
+        }
 
     }
 }

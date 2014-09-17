@@ -244,6 +244,35 @@ namespace TowseyLibrary
             return result;
         }
 
+        public static void Test1StructureTensor()
+        {
+            // create a local image matrix
+            double[,] image = { {0.9, 10.0,},
+                                {10.0, 0.0,}
+                                };
+
+            var structureTensorMatrix = StructureTensor.CalculateStructureTensor(image);
+
+            StructureTensor.StructureTensorResult result = StructureTensor.GetStructureTensorInfo(image, structureTensorMatrix);
+        }
+
+        /// <summary>
+        ///  used to test ridge detection using structure tensor.
+        /// </summary>
+        public static void Test2StructureTensor()
+            {
+               // create a local image matrix
+                double[,] image = { {0.1, 0.1, 0.1, 10.1, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1,  9.5, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1,  9.9, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
+                                    {0.1, 0.1, 0.1, 10.2, 0.1, 0.1, 0.1 },
+                                  };
+                StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(image);
+            }
+
 
     }
 }

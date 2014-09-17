@@ -12,6 +12,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Generic;
 
 using ColorMine.ColorSpaces;
+using AForge.Imaging.Filters;
 
 
 
@@ -603,6 +604,64 @@ namespace TowseyLibrary
             norm = MatrixTools.NormaliseInZeroOne(norm, min, max);
             return norm;
         }
+
+        /// <summary>
+        /// This method is a TEST method for Canny edge detection - see below.
+        /// </summary>
+        public static void TestCannyEdgeDetection()
+        {
+            //string path = @"C:\SensorNetworks\Output\Human\DM420036_min465Speech_0min.png";
+            //string path = @"C:\SensorNetworks\Output\Sonograms\TestForHoughTransform.png";
+            //string path = @"C:\SensorNetworks\Output\LewinsRail\BAC1_20071008-081607_0min.png";
+            string path = @"C:\SensorNetworks\Output\LewinsRail\BAC2_20071008-085040_0min.png";
+            FileInfo file = new FileInfo(path);
+            Bitmap sourceImage = ImageTools.ReadImage2Bitmap(file.FullName);
+            ImageTools.ApplyInvert(sourceImage);
+            byte lowThreshold = 0;
+            byte highThreshold = 30;
+            Bitmap bmp2 = ImageTools.CannyEdgeDetection(sourceImage, lowThreshold, highThreshold);
+            string path1 = @"C:\SensorNetworks\Output\LewinsRail\Canny.png";
+            bmp2.Save(path1, ImageFormat.Png);
+        }
+
+
+
+        /// <summary>
+        /// The below method is derived from the following site
+        /// http://premsivakumar.wordpress.com/2010/12/13/edge-detection-using-c-and-aforge-net/
+        /// The author references the following Afroge source code
+        /// http://www.aforgenet.com/framework/features/edge_detectors_filters.html
+        /// See the below link for how to set the thresholds etc
+        /// http://homepages.inf.ed.ac.uk/rbf/HIPR2/canny.htm
+        /// 
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns></returns>
+        public static Bitmap CannyEdgeDetection(Bitmap bmp, byte lowThreshold, byte highThreshold)
+        {
+            //Bitmap image = (Bitmap)bmp.Clone();
+            //convert image to gray scale
+            //Bitmap gsImage = Grayscale.CommonAlgorithms.BT709.Apply(image);
+            Bitmap gsImage = (Bitmap)bmp.Clone();
+            //this filter converts standard pixel format to indexed as used by the hough transform
+            var filter1 = Grayscale.CommonAlgorithms.BT709;
+            gsImage = filter1.Apply(gsImage);
+
+            var filter2 = new GaussianBlur();
+            filter2.Size = 3;
+            filter2.Sigma = 2;
+            //filter2.Threshold = 1;
+            filter2.Apply(gsImage);
+
+            CannyEdgeDetector cannyFilter = new CannyEdgeDetector();
+            cannyFilter.LowThreshold = lowThreshold;
+            cannyFilter.HighThreshold = highThreshold;
+            Bitmap edge = cannyFilter.Apply(gsImage);
+            return edge;
+        }
+
+
+
 
         public static double[,] SobelEdgeDetection(double[,] m)
         {

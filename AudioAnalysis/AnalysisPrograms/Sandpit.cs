@@ -38,74 +38,50 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
+
+            if (true)  // do test of SNR calculation
+            {
+                SNR.Calculate_SNR_ofXueyans_data();
+                Log.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
+
+
+
+
             if (false)  // do test of new moving average method
             {
-                int window = 99;
-                double[] V0 = new double[100];
-                for (int i = 0; i < V0.Length; i++) 
-                    V0[i] = i;
-                //for (int i = 0; i < V0.Length; i++)
-                //    V0[i] = 1.0; 
-
-                double[] V1 = DataTools.filterMovingAverageOLD(V0, window);
-                double[] V2 = DataTools.filterMovingAverage(V0, window);
-
-                for (int i = 0; i < V1.Length; i++)
-                    if (V1[i] != V2[i]) 
-                        Console.WriteLine("index {0}: V0={1}    {2} != {3}", i, V0[i], V1[i], V2[i]);
-                    else
-                        Console.WriteLine("index {0}: V0={1} ",              i, V0[i], V1[i], V2[i]);
-
+                DataTools.TEST_FilterMovingAverage();
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
 
-            if (true)
-            {
-                //HoughTransform.TestHoughTransform();
-                //string path = @"C:\SensorNetworks\Output\Human\DM420036_min465Speech_0min.png";
-                string path = @"C:\SensorNetworks\Output\Sonograms\TestForHoughTransform.png";
-                FileInfo file = new FileInfo(path);
-                Bitmap sourceImage = ImageTools.ReadImage2Bitmap(file.FullName);
 
-                //Bitmap sourceImage = HoughTransform.CreateLargeImageWithLines();
-                sourceImage = HoughTransform.TileWiseHoughTransform(sourceImage);
-                string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
-                sourceImage.Save(path1, ImageFormat.Png);
+            if (false)
+            {
+                ImageTools.TestCannyEdgeDetection();
             }
 
-            if (false)  // used to test ridge detection using structure tensor.
-            {
-               // create a local image matrix
-                double[,] image = { {0.1, 0.1, 0.1, 10.1, 0.1, 0.1, 0.1 },
-                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
-                                    {0.1, 0.1, 0.1,  9.5, 0.1, 0.1, 0.1 },
-                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
-                                    {0.1, 0.1, 0.1,  9.9, 0.1, 0.1, 0.1 },
-                                    {0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1 },
-                                    {0.1, 0.1, 0.1, 10.2, 0.1, 0.1, 0.1 },
-                                  };
-                double magnitudeThreshold = 6.0;
-                double dominanceThreshold = 0.9;
-                StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(image);
 
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
+            if (false)
+            {
+                ImageTools.TestCannyEdgeDetection();
+            }
+
+
+            if (false)
+            {
+                //HoughTransform.Test1HoughTransform();
+                HoughTransform.Test2HoughTransform();
             }
 
 
             if (false)  // used to test structure tensor code.
             {
-                // create a local image matrix
-                double[,] image = { {0.9, 10.0,},
-                                    {10.0, 0.0,}
-                                  };
-
-                var structureTensorMatrix = StructureTensor.CalculateStructureTensor(image);
-
-                StructureTensor.StructureTensorResult result = StructureTensor.GetStructureTensorInfo(image, structureTensorMatrix);
+                StructureTensor.Test1StructureTensor();
+                StructureTensor.Test2StructureTensor();
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
@@ -116,42 +92,8 @@ namespace AnalysisPrograms
             if (false)  
             {
 
-                //double[,] M = {
-                //                    { 1.0,  1.0 },
-                //                    { 1.0,  1.0 }
-                //                };
-                //double[,] M = {
-                //                    { 2.0,  7.0 },
-                //                    {-1.0, -6.0 }
-                //                };
-
-                // NOTE: When the matrix is square symmetric, the singular values equal the eigenvalues.
-                // e1=4.0     e2=2.0 and the singular values are the same
-                double[,] M = {
-                                    { 3.0, -1.0 },
-                                    {-1.0,  20.0 }
-                                };
-
-
-                // e1=e2=0.333333
-                //double[,] M = {
-                //                    { 1.0, -1.0 },
-                //                    {4/(double)9,  -1.0/(double)3 }
-                //                };
-                System.Tuple<double[], double[,]> result = SvdAndPca.EigenVectors(M);
-
-                Log.WriteLine("\n\n Singlar values");
-                double[] singValues = SvdAndPca.SingularValueDecompositionVector(M);
-                foreach (double value in singValues)
-                {
-                    Console.WriteLine(value);
-                }
-
-
-                double[] eigenValues = StructureTensor.CalculateEigenValues(M);
-                 Console.WriteLine("\n\n EigenValues = {0} and {1}", eigenValues[0], eigenValues[1]);
-
-                 Log.WriteLine("FINSIHED");
+                SvdAndPca.TestEigenValues();
+                Log.WriteLine("FINSIHED");
                  Console.ReadLine();
                  System.Environment.Exit(0);
             }
@@ -169,14 +111,7 @@ namespace AnalysisPrograms
 
             if (false)  // do 2D-FFT of an image.
             {
-                string imageFilePath = @"C:\SensorNetworks\Output\FFT2D\test5.png";
-                bool reversed = false;
-                double[,] matrix = FFT2D.GetImageDataAsGrayIntensity(imageFilePath, reversed);
-                //matrix = MatrixTools.normalise(matrix);
-                double[,] output = FFT2D.FFT2Dimensional(matrix);
-                Console.WriteLine("Sum={0}", (MatrixTools.Matrix2Array(output)).Sum());
-                //draws matrix after normalisation with white=low and black=high
-                ImageTools.DrawReversedMatrix(output, @"C:\SensorNetworks\Output\FFT2D\test5_2DFFT.png");
+                FFT2D.TestFFT2D();
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
