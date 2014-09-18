@@ -41,7 +41,8 @@ namespace AnalysisPrograms
 
             if (true)  // do test of SNR calculation
             {
-                SNR.Calculate_SNR_ofXueyans_data();
+                SNR.Calculate_SNR_of_Mangalam_data();
+                //SNR.Calculate_SNR_ofXueyans_data();
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);

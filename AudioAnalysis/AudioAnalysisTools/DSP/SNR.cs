@@ -466,33 +466,23 @@ namespace AudioAnalysisTools.DSP
         }
 
 
-        public static SNRStatistics CalculateSNRInFreqBand(double[,] sonogram, TimeSpan startTime, TimeSpan endTime, int minHz, int maxHz, int nyquist)
+
+        // ########################################################################################################################################################
+        // # NEXT FOUR METHODS USED TO CALCULATE SNR INFO FOR XUEYAN. #############################################################################################
+        // ########################################################################################################################################################
+
+        public static SNRStatistics CalculateSNRInFreqBand(double[,] sonogramData, double threshold, int startframe, int frameSpan, int minBin, int maxBin)
         {
-            // set a threshold for determining average SNR
-            double threshold = 1.0;
-            int frameCount = sonogram.GetLength(0);
-            int binCount = sonogram.GetLength(1);
-            double binWidth = nyquist / (double)binCount;
-            int minBin = (int)Math.Round(minHz / binWidth) - 3;
-            int maxBin = (int)Math.Round(maxHz / binWidth) + 3;
-            if (minBin < 0) minBin = 0;
-            if (maxBin >= binCount) maxBin = binCount - 1;
+            int frameCount = sonogramData.GetLength(0);
+            int binCount = sonogramData.GetLength(1);
 
-            //int startframe = startTime, 
-            //int endFrame = TimeSpan.    TimeSpan endTime
-
-            double[,] bandSonogram = MatrixTools.Submatrix(sonogram, 0, minBin, frameCount - 1, maxBin);
+            double[,] bandSonogram = MatrixTools.Submatrix(sonogramData, 0, minBin, frameCount - 1, maxBin);
 
             //estimate low energy content from low 20% of frames.
             int lowEnergyCount = frameCount / 5;
             int binCountInBand = maxBin - minBin + 1;
 
-            double maxValue = 0.0;
-            double avMaxValue = 0.0;
-            // count the number of spectrogram cells where the energy exceeds the threshold
-            int count = 0;
-
-            double[] intensity = new double[frameCount];
+            double[,] callMatrix = new double[frameSpan, binCountInBand];
             // loop over all freq bins in the band
             for (int bin = 0; bin < binCountInBand; bin++)
             {
@@ -505,93 +495,295 @@ namespace AudioAnalysisTools.DSP
                     sum += orderedArray[i];
                 }
                 double bgnEnergyInBin = sum / (double)lowEnergyCount;
+
+                // NOW get the required time frame
+                double[] callBin = DataTools.Subarray(freqBin, startframe, frameSpan);
+
                 // subtract the background noise
-                for (int i = 0; i < lowEnergyCount; i++)
+                for (int i = 0; i < callBin.Length; i++)
                 {
-                    freqBin[i] -= bgnEnergyInBin;
+                    callBin[i] -= bgnEnergyInBin;
                 }
 
-                // NOW search for max within the required time span.
-                double max = freqBin.Max();
-                if(max > maxValue) maxValue = max;
-                if (max > threshold)
-                {
-                    avMaxValue += max;
-                    count++;
-                }
-
-                //for (int j = 0; j < binCountInBand; j++)
-                //{
-                //    intensity[bin] += sonogram[bin, j];
-                //}
-
-                //intensity[i] /= binCountInBand;
+                MatrixTools.SetColumn(callMatrix, bin, callBin);
             }
-            avMaxValue /= (double)count;
+
+            // now calculate SNR from the call matrix
+            double snr = 0.0;
+            for (int frame = 0; frame < frameSpan; frame++)
+            {
+                for (int bin = 0; bin < binCountInBand; bin++)
+                {
+                    if (callMatrix[frame, bin] > snr) snr = callMatrix[frame, bin];
+                }
+            }
+
+            // now calculate % of frames having high energy.
+            // only count ells which actiually have activity
+            double[] frameAverages = new double[frameSpan];
+            for (int frame = 0; frame < frameSpan; frame++)
+            {
+                int count = 0;
+                double sum = 0.0;
+                for (int bin = 0; bin < binCountInBand; bin++)
+                {
+                    if (callMatrix[frame, bin] > 0.0)
+                    {
+                        count++;
+                        sum += callMatrix[frame, bin];
+                    }
+                }
+                frameAverages[frame] = sum / (double)count;
+            }
+
+            // count the number of spectrogram cells where the energy exceeds the threshold
+            double halfSNR = snr / (double)2;
+            int framesExceedingThreshold = 0;
+            int framesExceedingHalfSNR = 0;
+            for (int frame = 0; frame < frameSpan; frame++)
+            {
+
+                if (frameAverages[frame] > threshold)
+                {
+                    framesExceedingThreshold++;
+                }
+
+                if (frameAverages[frame] > halfSNR)
+                {
+                    framesExceedingHalfSNR++;
+                }
+            }
             var stats = new SNRStatistics();
-            stats.SnrMax = maxValue;
-            stats.SnrAv = avMaxValue;
-            stats.SnrThreshold = threshold;
-            stats.Cover = count / (double)frameCount;
+            stats.Snr = snr;
+            stats.FractionOfFramesExceedingThreshold = framesExceedingThreshold / (double)frameSpan;
+            stats.FractionOfFramesExceedingHalfSNR   = framesExceedingHalfSNR   / (double)frameSpan;
 
             return stats;
         }
 
         /// <summary>
-        /// This method written 17-09-2014 to process Xueyan's query recordings.
+        /// Calculates the matrix row/column bounds given the real world bounds.
+        /// Axis scales are obtained form the passed sonogram instance.
+        /// </summary>
+        /// <param name="sonogram"></param>
+        /// <param name="startTime"></param>
+        /// <param name="duration"></param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <returns></returns>
+        public static SNRStatistics CalculateSNRInFreqBand(BaseSonogram sonogram, TimeSpan startTime, TimeSpan duration, int minHz, int maxHz)
+        {
+            // calculate temporal bounds
+            int frameCount = sonogram.Data.GetLength(0);
+            double frameDuration = sonogram.FrameDuration;
+            //take a bit extra afound the given temporal bounds
+            int bufferFrames = (int)Math.Round(0.25 / frameDuration);
+            // calculate temporal bounds
+            int startFrame = (int)Math.Round(startTime.TotalSeconds / frameDuration) - bufferFrames;
+            int frameSpan  = (int)Math.Round(duration.TotalSeconds  / frameDuration) + bufferFrames;
+            if (startFrame < 0) startFrame = 0;
+            int endframe = startFrame + frameSpan;
+            if (endframe >= frameCount) 
+                frameSpan = frameSpan - (endframe - frameCount) - 1; 
+
+            // calculate frequency bounds
+            int binCount = sonogram.Data.GetLength(1);
+            double binWidth = sonogram.NyquistFrequency / (double)binCount;
+            int bufferBins = (int)Math.Round(500 / binWidth);
+
+            int lowFreqBin = (int)Math.Round(minHz / binWidth) - bufferBins;
+            int hiFreqBin = (int)Math.Round(maxHz / binWidth) + bufferBins;
+            if (lowFreqBin < 0) lowFreqBin = 0;
+            if (hiFreqBin >= binCount) hiFreqBin = binCount - 1;
+
+            // set a threshold for determining energy distribution in call
+            double threshold = 3.0;
+
+            return CalculateSNRInFreqBand(sonogram.Data, threshold, startFrame, frameSpan, lowFreqBin, hiFreqBin);
+        }
+
+        /// <summary>
+        /// This method written 18-09-2014 to process Xueyan's query recordings.
         /// Calculate the SNR statistics for each recording and then write info back to csv file
         /// </summary>
-        public static void Calculate_SNR_ofXueyans_data()
+        public static SNRStatistics Calculate_SNR_ofXueyans_data(FileInfo sourceRecording, FileInfo configFile, TimeSpan start, TimeSpan duration, int minHz, int maxHz)
         {
-            FileInfo csvInfo = @"C:\SensorNetworks\WavFiles\XueyanQueryCalls\frequency band csv files\NEJB_NE465_20101013-065400-0659-0700-Golden Whistler3.csv".ToFileInfo();
-            var sourceDir = csvInfo.Directory.Parent;
-
-            // Read in the csv file
-            // cannot use next line because column headers contain illegal characters
-            //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
-            List<string> rows = FileTools.ReadTextFile(csvInfo.FullName);
-            // remove trailing commas
-            for (int i = 0; i < rows.Count; i++) 
-            {
-                if (rows[i].Length == 0) continue;
-                while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
-                {
-                    rows[i] = rows[i].Substring(0, rows[i].Length - 1);
-                }
-            }
-            var line = rows[1].Split(',');
-            string filename = line[0];
-            int minHz = Int32.Parse(line[1]);
-            int maxHz = Int32.Parse(line[2]);
-            TimeSpan start = TimeSpan.FromSeconds(1.0);
-            TimeSpan end = start + TimeSpan.FromSeconds(Double.Parse(line[5]));
-
-            FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
-            FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
-            //FileInfo configDict = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo();
 
             dynamic configuration = Yaml.Deserialise(configFile);
             var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
 
             configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
             configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
-
+            configDict["NoiseReductionType"] = "None";
 
             // 1) get recording
             AudioRecording recordingSegment = new AudioRecording(sourceRecording.FullName);
             SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
+
             // 2) get decibel spectrogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             // remove the DC column
-            double[,] data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
 
-            SNRStatistics stats = CalculateSNRInFreqBand(data, start, end, minHz, maxHz, sonogram.NyquistFrequency);
-
-            rows[0] = String.Format(rows[0] + ",SnrThreshold,SnrMax,SnrAvg,Cover");
-            rows[1] = String.Format(rows[1] + ",{0},{1},{2},{3}", stats.SnrThreshold, stats.SnrMax, stats.SnrAv, stats.Cover);
-            string path = Path.Combine(sourceDir.FullName, Path.GetFileNameWithoutExtension(csvInfo.FullName) + ".SNR.csv");
-            FileTools.WriteTextFile(path, rows, true);
+            return CalculateSNRInFreqBand(sonogram, start, duration, minHz, maxHz);
         }
+
+
+        /// <summary>
+        /// This method written 18-09-2014 to process Xueyan's query recordings.
+        /// Calculate the SNR statistics for each recording and then write info back to csv file
+        /// </summary>
+        public static void Calculate_SNR_ofXueyans_data()
+        {
+            FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+
+            DirectoryInfo csvDirInfo = @"C:\SensorNetworks\WavFiles\XueyanQueryCalls\frequency band csv files".ToDirectoryInfo();
+            // directory containing recordings
+            var sourceDir = csvDirInfo.Parent;
+            FileInfo[] list = csvDirInfo.GetFiles("*.csv");
+
+            //set up the output file
+            var opText = new List<string>();
+            opText.Add("FileName,MinHz,MaxHz,StartTime,EndTime,Duration,IsAnnotated,AnnotationCorrect,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR");
+
+            foreach (FileInfo csvFile in list)
+            {
+                // Read in the csv file
+                // cannot use next line because column headers contain illegal characters
+                //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
+                List<string> rows = FileTools.ReadTextFile(csvFile.FullName);
+
+                // remove trailing commas, spaces etc
+                for (int i = 0; i < rows.Count; i++) 
+                {
+                    if (rows[i].Length == 0) continue;
+                    while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
+                    {
+                        rows[i] = rows[i].Substring(0, rows[i].Length - 1);
+                    }
+                }
+
+                // split and parse elements of data line
+                var line = rows[1].Split(',');
+                string filename = line[0];
+                int minHz = Int32.Parse(line[1]);
+                int maxHz = Int32.Parse(line[2]);
+                TimeSpan start    = TimeSpan.FromSeconds(1.0);
+                TimeSpan duration = TimeSpan.FromSeconds(Double.Parse(line[5]));
+
+                FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
+
+                if (sourceRecording.Exists)
+                {
+                    SNRStatistics stats = Calculate_SNR_ofXueyans_data(sourceRecording, configFile, start, duration, minHz, maxHz);
+                    opText.Add(String.Format(rows[1] + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingHalfSNR));
+                }
+                else
+                {
+                    opText.Add(String.Format(rows[1] + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
+                }
+            }
+            string path = Path.Combine(csvDirInfo.FullName, "SNRDataFromMichaelForXueyan_18thSept2014.csv");
+            FileTools.WriteTextFile(path, opText, true);
+        }
+
+
+        /// <summary>
+        /// This method written 18-09-2014 to process Mangalam's CNN recordings.
+        /// Calculate the SNR statistics for each recording and then write info back to csv file
+        /// </summary>
+        public static void Calculate_SNR_of_Mangalam_data()
+        {
+            FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo();
+
+            DirectoryInfo csvDirInfo = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToDirectoryInfo();
+            // directory containing recordings
+            var sourceDir = csvDirInfo.Parent;
+            FileInfo[] list = csvDirInfo.GetFiles("*.csv");
+
+            //set up the output file
+            var opText = new List<string>();
+            opText.Add("audio_event_id,audio_recording_id,audio_recording_uuid,event_created_at_utc,projects,site_id,site_name,event_start_date_utc,event_start_seconds,event_end_seconds,event_duration_seconds,low_frequency_hertz,high_frequency_hertz,padding_start_time_seconds,padding_end_time_seconds,common_tags,species_tags,other_tags,listen_url,library_url,path,download_success,skipped");
+
+            // Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
+            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
+
+            //Y:\Results\2014Aug29-000000 - Mangalam Data Export\mangalam_annotation_export_commonNameOnly_withPadding_20140829.csv
+            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
+
+            // try this stream reader
+            //using (StreamReader sr = File.OpenText(fileName))
+            //{
+            //    string s = String.Empty;
+            //    while ((s = sr.ReadLine()) != null)
+            //    {
+            //        //we're just testing read speeds
+            //    }
+            //}
+
+
+            //string strLine;
+            //try
+            //{
+            //    FileStream aFile = new FileStream("Log.txt", FileMode.Open);
+            //    StreamReader sr = new StreamReader(aFile);
+            //    strLine = sr.ReadLine();
+            //    while (strLine != null)
+            //    {
+            //        Console.WriteLine(strLine);
+            //        strLine = sr.ReadLine();
+            //    }
+            //    sr.Close();
+            //}
+            //catch (IOException e)
+            //{
+            //    Console.WriteLine("An IO exception has been thrown!");
+            //    Console.WriteLine(e.ToString());
+            //    return;
+            //}
+
+
+            foreach (FileInfo csvFile in list)
+            {
+                // Read in the csv file
+                // cannot use next line because column headers contain illegal characters
+                //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
+                List<string> rows = FileTools.ReadTextFile(csvFile.FullName);
+
+                // remove trailing commas, spaces etc
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    if (rows[i].Length == 0) continue;
+                    while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
+                    {
+                        rows[i] = rows[i].Substring(0, rows[i].Length - 1);
+                    }
+                }
+
+                // split and parse elements of data line
+                var line = rows[1].Split(',');
+                string filename = line[0];
+                int minHz = Int32.Parse(line[1]);
+                int maxHz = Int32.Parse(line[2]);
+                TimeSpan start = TimeSpan.FromSeconds(1.0);
+                TimeSpan duration = TimeSpan.FromSeconds(Double.Parse(line[5]));
+
+                FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
+
+                if (sourceRecording.Exists)
+                {
+                    SNRStatistics stats = Calculate_SNR_ofXueyans_data(sourceRecording, configFile, start, duration, minHz, maxHz);
+                    opText.Add(String.Format(rows[1] + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingHalfSNR));
+                }
+                else
+                {
+                    opText.Add(String.Format(rows[1] + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
+                }
+            }
+            string path = Path.Combine(csvDirInfo.FullName, "SNRDataFromMichaelForXueyan_18thSept2014.csv");
+            FileTools.WriteTextFile(path, opText, true);
+        }
+
 
 
         // ########################################################################################################################################################
@@ -1318,29 +1510,21 @@ namespace AudioAnalysisTools.DSP
         public class SNRStatistics
         {
             /// <summary>
-            /// minimum decibel level
-            /// </summary>
-            public double MinDb { get; set; }
-            /// <summary>
-            /// maximum decibel level
-            /// </summary>
-            public double MaxDb { get; set; }
-            /// <summary>
             /// decibel threshold used to calculate cover and average SNR
             /// </summary>
-            public double SnrThreshold { get; set; }
+            public double Threshold { get; set; }
             /// <summary>
-            /// maximum dB value in the signal or spectrogram
+            /// maximum dB value in the signal or spectrogram - relative to zero dB background
             /// </summary>
-            public double SnrMax { get; set; }
+            public double Snr { get; set; }
             /// <summary>
-            /// average SNR for those frames where the energy exceed a threshold
+            /// fraction of frames in the call where the average energy exceeds the user specified threshold.
             /// </summary>
-            public double SnrAv  { get; set; }
+            public double FractionOfFramesExceedingThreshold { get; set; }
             /// <summary>
-            /// total frame count where energy exceeds a threshold.
+            /// fraction of frames in the call where the average energy exceeds half the calculated SNR.
             /// </summary>
-            public double Cover { get; set; }
+            public double FractionOfFramesExceedingHalfSNR { get; set; }
 
         }
     }
