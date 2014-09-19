@@ -519,7 +519,7 @@ namespace AudioAnalysisTools.DSP
             }
 
             // now calculate % of frames having high energy.
-            // only count ells which actiually have activity
+            // only count cells which actually have activity
             double[] frameAverages = new double[frameSpan];
             for (int frame = 0; frame < frameSpan; frame++)
             {
@@ -536,10 +536,10 @@ namespace AudioAnalysisTools.DSP
                 frameAverages[frame] = sum / (double)count;
             }
 
-            // count the number of spectrogram cells where the energy exceeds the threshold
-            double halfSNR = snr / (double)2;
+            // count the number of spectrogram frames where the energy exceeds the threshold
+            double thirdSNR = snr * 0.3333;
             int framesExceedingThreshold = 0;
-            int framesExceedingHalfSNR = 0;
+            int framesExceedingThirdSNR = 0;
             for (int frame = 0; frame < frameSpan; frame++)
             {
 
@@ -548,15 +548,15 @@ namespace AudioAnalysisTools.DSP
                     framesExceedingThreshold++;
                 }
 
-                if (frameAverages[frame] > halfSNR)
+                if (frameAverages[frame] > thirdSNR)
                 {
-                    framesExceedingHalfSNR++;
+                    framesExceedingThirdSNR++;
                 }
             }
             var stats = new SNRStatistics();
             stats.Snr = snr;
-            stats.FractionOfFramesExceedingThreshold = framesExceedingThreshold / (double)frameSpan;
-            stats.FractionOfFramesExceedingHalfSNR   = framesExceedingHalfSNR   / (double)frameSpan;
+            stats.FractionOfFramesExceedingThreshold  = framesExceedingThreshold / (double)frameSpan;
+            stats.FractionOfFramesExceedingThirdSNR   = framesExceedingThirdSNR  / (double)frameSpan;
 
             return stats;
         }
@@ -597,7 +597,7 @@ namespace AudioAnalysisTools.DSP
             if (hiFreqBin >= binCount) hiFreqBin = binCount - 1;
 
             // set a threshold for determining energy distribution in call
-            double threshold = 3.0;
+            double threshold = 9.0;
 
             return CalculateSNRInFreqBand(sonogram.Data, threshold, startFrame, frameSpan, lowFreqBin, hiFreqBin);
         }
@@ -606,7 +606,7 @@ namespace AudioAnalysisTools.DSP
         /// This method written 18-09-2014 to process Xueyan's query recordings.
         /// Calculate the SNR statistics for each recording and then write info back to csv file
         /// </summary>
-        public static SNRStatistics Calculate_SNR_ofXueyans_data(FileInfo sourceRecording, FileInfo configFile, TimeSpan start, TimeSpan duration, int minHz, int maxHz)
+        public static SNRStatistics Calculate_SNR_ShortRecording(FileInfo sourceRecording, FileInfo configFile, TimeSpan start, TimeSpan duration, int minHz, int maxHz)
         {
 
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -636,154 +636,69 @@ namespace AudioAnalysisTools.DSP
         public static void Calculate_SNR_ofXueyans_data()
         {
             FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+            // csv file containing recording info, call bounds etc
+            FileInfo csvFileInfo = @"C:\SensorNetworks\WavFiles\XueyanQueryCalls\CallBoundsForXueyanDataSet_19thSept2014.csv".ToFileInfo();
+            var sourceDir = csvFileInfo.Directory;
+            var opDir     = csvFileInfo.Directory;
 
-            DirectoryInfo csvDirInfo = @"C:\SensorNetworks\WavFiles\XueyanQueryCalls\frequency band csv files".ToDirectoryInfo();
-            // directory containing recordings
-            var sourceDir = csvDirInfo.Parent;
-            FileInfo[] list = csvDirInfo.GetFiles("*.csv");
-
-            //set up the output file
+            //set up text for the output file
             var opText = new List<string>();
-            opText.Add("FileName,MinHz,MaxHz,StartTime,EndTime,Duration,IsAnnotated,AnnotationCorrect,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR");
 
-            foreach (FileInfo csvFile in list)
+            string strLine;
+            try
             {
-                // Read in the csv file
-                // cannot use next line because column headers contain illegal characters
-                //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
-                List<string> rows = FileTools.ReadTextFile(csvFile.FullName);
-
-                // remove trailing commas, spaces etc
-                for (int i = 0; i < rows.Count; i++) 
+                FileStream aFile = new FileStream(csvFileInfo.FullName, FileMode.Open);
+                StreamReader sr = new StreamReader(aFile);
+                // read the header
+                strLine = sr.ReadLine();
+                opText.Add(strLine + ",Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR");
+                while ((strLine = sr.ReadLine()) != null)
                 {
-                    if (rows[i].Length == 0) continue;
-                    while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
+                    //    // cannot use next line because column headers contain illegal characters
+                    //    //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
+                    //    List<string> rows = FileTools.ReadTextFile(csvFile.FullName);
+
+                    //    // remove trailing commas, spaces etc
+                    //    for (int i = 0; i < rows.Count; i++) 
+                    //    {
+                    //        if (rows[i].Length == 0) continue;
+                    //        while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
+                    //        {
+                    //            rows[i] = rows[i].Substring(0, rows[i].Length - 1);
+                    //        }
+                    //    }
+
+                    // split and parse elements of data line
+                    var line = strLine.Split(',');
+                    string filename = line[0];
+                    int minHz = Int32.Parse(line[1]);
+                    int maxHz = Int32.Parse(line[2]);
+                    TimeSpan start    = TimeSpan.FromSeconds(1.0);
+                    TimeSpan duration = TimeSpan.FromSeconds(Double.Parse(line[5]));
+
+                    FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
+
+                    if (sourceRecording.Exists)
                     {
-                        rows[i] = rows[i].Substring(0, rows[i].Length - 1);
+                        SNRStatistics stats = Calculate_SNR_ShortRecording(sourceRecording, configFile, start, duration, minHz, maxHz);
+                        opText.Add(String.Format(strLine + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingThirdSNR));
+                    }
+                    else
+                    {
+                        opText.Add(String.Format(strLine + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
                     }
                 }
-
-                // split and parse elements of data line
-                var line = rows[1].Split(',');
-                string filename = line[0];
-                int minHz = Int32.Parse(line[1]);
-                int maxHz = Int32.Parse(line[2]);
-                TimeSpan start    = TimeSpan.FromSeconds(1.0);
-                TimeSpan duration = TimeSpan.FromSeconds(Double.Parse(line[5]));
-
-                FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
-
-                if (sourceRecording.Exists)
-                {
-                    SNRStatistics stats = Calculate_SNR_ofXueyans_data(sourceRecording, configFile, start, duration, minHz, maxHz);
-                    opText.Add(String.Format(rows[1] + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingHalfSNR));
-                }
-                else
-                {
-                    opText.Add(String.Format(rows[1] + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
-                }
+                sr.Close();
             }
-            string path = Path.Combine(csvDirInfo.FullName, "SNRDataFromMichaelForXueyan_18thSept2014.csv");
-            FileTools.WriteTextFile(path, opText, true);
-        }
-
-
-        /// <summary>
-        /// This method written 18-09-2014 to process Mangalam's CNN recordings.
-        /// Calculate the SNR statistics for each recording and then write info back to csv file
-        /// </summary>
-        public static void Calculate_SNR_of_Mangalam_data()
-        {
-            FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo();
-
-            DirectoryInfo csvDirInfo = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToDirectoryInfo();
-            // directory containing recordings
-            var sourceDir = csvDirInfo.Parent;
-            FileInfo[] list = csvDirInfo.GetFiles("*.csv");
-
-            //set up the output file
-            var opText = new List<string>();
-            opText.Add("audio_event_id,audio_recording_id,audio_recording_uuid,event_created_at_utc,projects,site_id,site_name,event_start_date_utc,event_start_seconds,event_end_seconds,event_duration_seconds,low_frequency_hertz,high_frequency_hertz,padding_start_time_seconds,padding_end_time_seconds,common_tags,species_tags,other_tags,listen_url,library_url,path,download_success,skipped");
-
-            // Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
-            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
-
-            //Y:\Results\2014Aug29-000000 - Mangalam Data Export\mangalam_annotation_export_commonNameOnly_withPadding_20140829.csv
-            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
-
-            // try this stream reader
-            //using (StreamReader sr = File.OpenText(fileName))
-            //{
-            //    string s = String.Empty;
-            //    while ((s = sr.ReadLine()) != null)
-            //    {
-            //        //we're just testing read speeds
-            //    }
-            //}
-
-
-            //string strLine;
-            //try
-            //{
-            //    FileStream aFile = new FileStream("Log.txt", FileMode.Open);
-            //    StreamReader sr = new StreamReader(aFile);
-            //    strLine = sr.ReadLine();
-            //    while (strLine != null)
-            //    {
-            //        Console.WriteLine(strLine);
-            //        strLine = sr.ReadLine();
-            //    }
-            //    sr.Close();
-            //}
-            //catch (IOException e)
-            //{
-            //    Console.WriteLine("An IO exception has been thrown!");
-            //    Console.WriteLine(e.ToString());
-            //    return;
-            //}
-
-
-            foreach (FileInfo csvFile in list)
+            catch (IOException e)
             {
-                // Read in the csv file
-                // cannot use next line because column headers contain illegal characters
-                //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
-                List<string> rows = FileTools.ReadTextFile(csvFile.FullName);
-
-                // remove trailing commas, spaces etc
-                for (int i = 0; i < rows.Count; i++)
-                {
-                    if (rows[i].Length == 0) continue;
-                    while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
-                    {
-                        rows[i] = rows[i].Substring(0, rows[i].Length - 1);
-                    }
-                }
-
-                // split and parse elements of data line
-                var line = rows[1].Split(',');
-                string filename = line[0];
-                int minHz = Int32.Parse(line[1]);
-                int maxHz = Int32.Parse(line[2]);
-                TimeSpan start = TimeSpan.FromSeconds(1.0);
-                TimeSpan duration = TimeSpan.FromSeconds(Double.Parse(line[5]));
-
-                FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
-
-                if (sourceRecording.Exists)
-                {
-                    SNRStatistics stats = Calculate_SNR_ofXueyans_data(sourceRecording, configFile, start, duration, minHz, maxHz);
-                    opText.Add(String.Format(rows[1] + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingHalfSNR));
-                }
-                else
-                {
-                    opText.Add(String.Format(rows[1] + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
-                }
+                Console.WriteLine("An IO exception has been thrown!");
+                Console.WriteLine(e.ToString());
+                return;
             }
-            string path = Path.Combine(csvDirInfo.FullName, "SNRDataFromMichaelForXueyan_18thSept2014.csv");
+            string path = Path.Combine(opDir.FullName, "SNRDataFromMichaelForXueyan_19thSept2014.csv");
             FileTools.WriteTextFile(path, opText, true);
         }
-
 
 
         // ########################################################################################################################################################
@@ -1524,7 +1439,7 @@ namespace AudioAnalysisTools.DSP
             /// <summary>
             /// fraction of frames in the call where the average energy exceeds half the calculated SNR.
             /// </summary>
-            public double FractionOfFramesExceedingHalfSNR { get; set; }
+            public double FractionOfFramesExceedingThirdSNR { get; set; }
 
         }
     }
