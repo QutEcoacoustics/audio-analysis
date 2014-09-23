@@ -72,19 +72,19 @@ namespace AnalysisPrograms
             {
 
             // prior to processing
-            //Y:\Results\2014Aug29-000000 - Mangalam Data Export\mangalam_annotation_export_commonNameOnly_withPadding_20140829.csv
+                //Y:\Results\2014Aug29-000000 - ConvDNN Data Export\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.csv
             //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
 
-            // Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
+                // Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
             //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
 
                 // csv file containing recording info, call bounds etc
-                //Source = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-                Source = @"C:\SensorNetworks\Output\ConvCNN\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
+                //Source = @"Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
+                Source = @"C:\SensorNetworks\Output\ConvDNN\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
-                Output = @"C:\SensorNetworks\Output\ConvCNN".ToDirectoryInfo(),
+                Output = @"C:\SensorNetworks\Output\ConvDNN".ToDirectoryInfo(),
                 Verbose = true
             };
 
@@ -97,21 +97,21 @@ namespace AnalysisPrograms
         /// This method written 18-09-2014 to process Mangalam's CNN recordings.
         /// Calculate the SNR statistics for each recording and then write info back to csv file
         /// </summary>
-        public static void PreprocessConvCNNData()
-        {
-            FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo();
+        //public static void PreprocessConvCNNData()
+        //{
+        //    FileInfo configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo();
 
-            // prior to processing
-            //Y:\Results\2014Aug29-000000 - Mangalam Data Export\mangalam_annotation_export_commonNameOnly_withPadding_20140829.csv
-            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
+        //    // prior to processing
+        //    //Y:\Results\2014Aug29-000000 - Mangalam Data Export\mangalam_annotation_export_commonNameOnly_withPadding_20140829.csv
+        //    //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
 
-            // Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
-            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
+        //    // Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
+        //    //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
 
-            // csv file containing recording info, call bounds etc
-            FileInfo csvFileInfo = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo();
+        //    // csv file containing recording info, call bounds etc
+        //    FileInfo csvFileInfo = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo();
 
-        }
+        //}
 
 
 
@@ -176,6 +176,10 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+
+            //IMPORTANT PARAMETER - SET EQUAL TO WHAT ANTHONY HAS EXTRACTED.
+            double extractTimeDuration = 4.0; // fixed length duration of all extracts from the original data - centred on the bounding box.
+
             // print out the parameters
             if (verbose)
             {
@@ -189,10 +193,12 @@ namespace AnalysisPrograms
 
             //set up the output file
             var opText = new List<string>();
-            string header = "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
+            //string header = "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
+            string header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path2Spectrograsms";
             opText.Add(header);
 
             // keep counter on file availability
+            int lineNumber = 0;
             int fileExistsCount = 0;
             int fileLocationNotInCsv = 0;
             int fileInCsvDoesNotExist = 0;
@@ -205,9 +211,13 @@ namespace AnalysisPrograms
                 StreamReader sr = new StreamReader(aFile);
                 // read the header and discard
                 strLine = sr.ReadLine();
+                lineNumber++;
 
                 while ((strLine = sr.ReadLine()) != null)
                 {
+                    lineNumber++;
+                    if (lineNumber % 5000 == 0) Console.WriteLine(lineNumber);
+
                     // cannot use next line because reads the entire file
                     //var data = Csv.ReadFromCsv<string[]>(csvFileInfo).ToList();
                     // read single record from csv file
@@ -226,39 +236,43 @@ namespace AnalysisPrograms
                     //#######################################
                     // my debug code for home to test on subset of data - delete these lines for real thing! 
                     //#######################################
-                    string fileName = sourceRecording.Name;
-                    DirectoryInfo sourceDirectory = sourceRecording.Directory;
-                    string directoryName = sourceDirectory.Name;
-                    string parentDirectoryName = sourceDirectory.Parent.Name;
-                    //sourceRecording = Path.Combine(@"C:\SensorNetworks\Output\ConvCNN\0\" + directoryName, fileName).ToFileInfo();
-                    sourceRecording = Path.Combine(opDir.FullName + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
+                    //string fileName = sourceRecording.Name;
+                    //DirectoryInfo sourceDirectory = sourceRecording.Directory;
+                    //string directoryName = sourceDirectory.Name;
+                    //string parentDirectoryName = sourceDirectory.Parent.Name;
+                    ////sourceRecording = Path.Combine(@"C:\SensorNetworks\Output\ConvCNN\0\" + directoryName, fileName).ToFileInfo();
+                    //sourceRecording = Path.Combine(opDir.FullName + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
                     //#######################################
 
 
                     if (! sourceRecording.Exists)
                     {
                         fileInCsvDoesNotExist ++;
-                        //string warning = String.Format(strLine + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<");
-                        //string warning = String.Format("######### WARNING: line {0}  FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<", fileInCsvDoesNotExist);
-                        //opText.Add(warning);
-                        //LoggedConsole.WriteWarnLine(warning);
+                        string warning = String.Format("FILE DOES NOT EXIST >>>," + sourceRecording.Name);
+                        //string warning = String.Format("{0}######### WARNING: line {1}  FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<", lineNumber, fileInCsvDoesNotExist);
+                        opText.Add(warning + "\n");
+                        LoggedConsole.WriteWarnLine(warning);
                         continue;
                     }
 
                     // everything should be OK - have jumped through all the hoops.
                     fileExistsCount ++;
-                    //string message = String.Format("#########: line {0}  FILE EXISTS >>>" + sourceRecording.Name + "<<<", count);
+                    // string message = String.Format("#########: line {0}  FILE EXISTS >>>" + sourceRecording.Name + "<<<", fileExistsCount);
+                    // LoggedConsole.WriteWarnLine(message);
                     DirectoryInfo sourceDir = sourceRecording.Directory;
                     int minHz = record.low_frequency_hertz;
                     int maxHz = record.high_frequency_hertz;
                     TimeSpan start = record.event_start_seconds;
                     TimeSpan duration = record.event_duration_seconds;
+                    TimeSpan localStart = TimeSpan.Zero;
+                    TimeSpan extractDuration = TimeSpan.FromSeconds(extractTimeDuration);
+                    //TimeSpan paddingStart = record.event_start_seconds;
                     //continue;
 
                     // ####################################################################
 
                     // 1: GET RECORDING and make temporary copy
-                    // put temp FileSegment in same directory as the required output image.
+                    // put temp audio FileSegment in same directory as the required output image.
                     FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
                     // delete the temp audio file if it already exists.
                     if (File.Exists(tempAudioSegment.FullName))
@@ -269,16 +283,21 @@ namespace AnalysisPrograms
                     MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
                     // 2: GET the SNR statistics
-                    SNR.SNRStatistics stats = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configFile, start, duration, minHz, maxHz);
+                    SNR.SNRStatistics stats = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configFile, localStart, extractDuration, minHz, maxHz);
 
                     // 3: Get sonogram image 
-                    var results = Audio2InputForConvCNN.GenerateSpectrogramImages(tempAudioSegment, configDict, opDir);
-                    string path2SpectrogramImage = results.SpectrogramImage.FullName;
+                    //var results = Audio2InputForConvCNN.GenerateSpectrogramImages(tempAudioSegment, configDict, opDir);
+                    //string path2SpectrogramImage = results.SpectrogramImage.FullName;
+                    string path2SpectrogramImage = "DUMMY";
 
-                    // store the results in output file
-                    opText.Add(String.Format(strLine + ",{0},{1},{2},{3},{4}", 
-                             stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingThirdSNR, path2SpectrogramImage));
-
+                    // 4: CONSTRUCT the outputline for csv file
+                    // "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
+                    //  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
+                    string line = String.Format("{0},{1},{2},{3:f2},{4:f3},{5:f3},{6:f3},{7}",
+                                                record.audio_event_id, record.site_name, record.common_tags, stats.Threshold, stats.Snr, 
+                                                stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingThirdSNR, path2SpectrogramImage); 
+                    
+                    opText.Add(String.Format(line));
                 } // end while()
             }
             catch (IOException e)
@@ -292,7 +311,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("fileInCsvDoesNotExist=" + fileInCsvDoesNotExist);
             LoggedConsole.WriteLine("fileExistsCount      =" + fileExistsCount);
 
-            string path = Path.Combine(opDir.FullName, "SNRDataForConvCNNDataSet_20thSept2014.csv");
+            string path = Path.Combine(opDir.FullName, "SNRDataForConvDNN_DataSet_23thSept2014.csv");
             FileTools.WriteTextFile(path, opText, true);
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
@@ -317,9 +336,9 @@ namespace AnalysisPrograms
             public TimeSpan event_duration_seconds { get; set; }
             public int low_frequency_hertz { get; set; }
             public int high_frequency_hertz { get; set; }
-            //padding_start_time_seconds { get; set; }
-            //padding_end_time_seconds { get; set; }
-            //common_tags { get; set; }
+            public TimeSpan padding_start_time_seconds { get; set; }
+            public TimeSpan padding_end_time_seconds { get; set; }
+            public string common_tags { get; set; }
             //species_tags { get; set; }
             //other_tags { get; set; }
             //listen_url { get; set; }
@@ -353,10 +372,15 @@ namespace AnalysisPrograms
                 csvDataRecord.projects = fields[4];
                 csvDataRecord.site_id = Int32.Parse(fields[5]);
                 csvDataRecord.site_name = fields[6];
+
                 csvDataRecord.event_start_seconds = TimeSpan.FromSeconds(Double.Parse(fields[8]));
                 csvDataRecord.event_duration_seconds = TimeSpan.FromSeconds(Double.Parse(fields[10]));
+                csvDataRecord.padding_start_time_seconds = TimeSpan.FromSeconds(Double.Parse(fields[13]));
+                csvDataRecord.padding_end_time_seconds   = TimeSpan.FromSeconds(Double.Parse(fields[14]));
+
                 csvDataRecord.low_frequency_hertz = (int)Math.Round(Double.Parse(fields[11]));
                 csvDataRecord.high_frequency_hertz = (int)Math.Round(Double.Parse(fields[12]));
+                csvDataRecord.common_tags = fields[15];
                 csvDataRecord.path = fields[20].ToFileInfo(); 
                 return csvDataRecord;
             }

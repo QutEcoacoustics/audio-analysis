@@ -554,6 +554,7 @@ namespace AudioAnalysisTools.DSP
                 }
             }
             var stats = new SNRStatistics();
+            stats.Threshold = threshold;
             stats.Snr = snr;
             stats.FractionOfFramesExceedingThreshold  = framesExceedingThreshold / (double)frameSpan;
             stats.FractionOfFramesExceedingThirdSNR   = framesExceedingThirdSNR  / (double)frameSpan;
@@ -972,7 +973,7 @@ namespace AudioAnalysisTools.DSP
                     break;
                 case NoiseReductionType.NONE:
                 default:
-                    Log.WriteIfVerbose("No noise reduction applied");
+                    //Log.WriteIfVerbose("No noise reduction applied");
                     break;
             }
             var tuple = System.Tuple.Create(m, smoothedNoiseProfile);
