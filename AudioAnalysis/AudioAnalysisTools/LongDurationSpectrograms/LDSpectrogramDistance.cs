@@ -124,6 +124,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return;
             }
 
+            int nyquist = cs1.SampleRate / 2; 
+            int herzInterval = 1000;
+
             string title =
                 string.Format(
                     "FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})", 
@@ -135,7 +138,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 titleBar, 
                 minuteOffset, 
                 cs1.XInterval, 
-                cs1.YInterval);
+                nyquist, herzInterval);
 
             string outputFileName2 = inputFileName2.Name;
             var cs2 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
@@ -163,7 +166,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 titleBar, 
                 minuteOffset, 
                 cs2.XInterval, 
-                cs2.YInterval);
+                nyquist, herzInterval);
 
             string outputFileName4 = inputFileName1 + ".EuclidianDistance.png";
             Image deltaSp = DrawDistanceSpectrogram(cs1, cs2);
@@ -174,7 +177,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 colorArray, 
                 deltaSp.Width, 
                 SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
-            deltaSp = LDSpectrogramRGB.FrameLDSpectrogram(deltaSp, titleBar, minuteOffset, cs2.XInterval, cs2.YInterval);
+            deltaSp = LDSpectrogramRGB.FrameLDSpectrogram(deltaSp, titleBar, minuteOffset, cs2.XInterval, nyquist, herzInterval);
             deltaSp.Save(Path.Combine(outputDirectory.FullName, outputFileName4));
 
             string outputFileName5 = inputFileName1 + ".2SpectrogramsAndDistance.png";

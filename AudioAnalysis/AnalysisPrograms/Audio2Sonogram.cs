@@ -85,9 +85,9 @@ namespace AnalysisPrograms
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav".ToFileInfo(),
 
-                //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Kanowski_651_233394_20120831_072112_4.0__.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\CNNRecordings\SE_399_188293_20101014_132950_4.0__.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\Kanowski_651_233394_20120831_072112_4.0__.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\SE_399_188293_20101014_132950_4.0__.wav".ToFileInfo(),
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
                 //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
@@ -297,8 +297,8 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
                 LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
                 int lowPercentile = 20;
-                sonogram.Data = NoiseRemoval_Briggs.BriggsFilter_SubtractFreqBinNoise(sonogram.Data, lowPercentile);
-                sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
+                sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
+                sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";

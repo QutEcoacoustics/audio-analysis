@@ -113,7 +113,7 @@ namespace AudioAnalysisTools
             double LcnContrastLevel = 0.5; // was previously 0.1
             LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
             LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
+            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
 
             string algorithmName = "Autocorr-SVD-FFT";
             double[,] freqOscilMatrix1 = Oscillations2014.GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName);

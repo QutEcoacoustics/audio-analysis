@@ -59,7 +59,7 @@ namespace Dong.Felt.Preprocessing
 
             int neighbourhood = 15;
             double contrastLevel = 0.9;
-            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhood, contrastLevel);
+            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhood, contrastLevel);
             //sonogram.Data = FilterWithLocalColumnVariance(
             //var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
             return sonogram; 

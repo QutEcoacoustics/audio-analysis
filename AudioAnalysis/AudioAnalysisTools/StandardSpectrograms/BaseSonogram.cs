@@ -302,7 +302,9 @@
             var xAxisTicInterval = TimeSpan.FromSeconds(1.0);
             var xInterval = TimeSpan.FromSeconds(10);
             TimeSpan xAxisPixelDuration = TimeSpan.FromTicks((long)(this.Duration.Ticks / (double)this.FrameCount));
-            const int HertzInterval = 1000;
+            int HertzInterval = 1000;
+            if (this.Configuration.WindowSize < 512) 
+                HertzInterval = 2000;
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, this.NyquistFrequency, HertzInterval);
 
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
@@ -850,18 +852,18 @@
         }
 
 
+        //public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
+        //                                  TimeSpan labelInterval, int nyquist, int herzInterval)
+        //{
+        //    int Y_interval = (int)(image.Height / (double)(nyquist / (double)herzInterval));
+        //    image = FrameSonogram(image, titleBar, minOffset, xAxisTicInterval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);
+        //    return image;
+        //}
+
         public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
                                           TimeSpan labelInterval, int nyquist, int herzInterval)
         {
-            int Y_interval = (int)(image.Height / (double)(nyquist / (double)herzInterval));
-            image = FrameSonogram(image, titleBar, minOffset, xAxisTicInterval, xAxisPixelDuration, labelInterval, Y_interval);
-            return image;
-        }
-
-        public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, 
-                                          TimeSpan labelInterval, int Y_interval)
-        {
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xAxisTicInterval, xAxisPixelDuration, nyquist, herzInterval);
 
             int imageWidth = image.Width;
             int trackHeight = 20;

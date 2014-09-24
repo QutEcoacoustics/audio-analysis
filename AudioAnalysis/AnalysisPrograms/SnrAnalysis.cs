@@ -239,8 +239,11 @@ namespace AnalysisPrograms
             // (F) ################################## DRAW IMAGE 1: original spectorgram
             Log.WriteLine("# Start drawing noise reduced sonograms.");
             TimeSpan X_AxisInterval = TimeSpan.FromSeconds(1);
-            int Y_AxisInterval = (int)Math.Round(1000 / dspOutput.FreqBinWidth);
-            Image image1 = DrawSonogram(deciBelSpectrogram, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
+            //int Y_AxisInterval = (int)Math.Round(1000 / dspOutput.FreqBinWidth);
+            int nyquist = recording.SampleRate / 2;
+            int hzInterval = 1000;
+
+            Image image1 = DrawSonogram(deciBelSpectrogram, wavDuration, X_AxisInterval, stepDuration, nyquist, hzInterval);
 
 
             // (G) ################################## Calculate modal background noise spectrum in decibels
@@ -268,7 +271,7 @@ namespace AnalysisPrograms
                 wavDuration,
                 X_AxisInterval,
                 stepDuration,
-                Y_AxisInterval,
+                nyquist, hzInterval,
                 title);
             //Image image2 = NoiseRemoval_Briggs.BriggsNoiseFilterAndGetSonograms(amplitudeSpectrogram, upperPercentileBound, binaryThreshold,
             //                                                                          wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
@@ -311,7 +314,7 @@ namespace AnalysisPrograms
             TimeSpan recordingDuration,
             TimeSpan X_interval,
             TimeSpan xAxisPixelDuration,
-            int Y_interval)
+            int nyquist, int hzInterval)
         {
             //double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
             Image image = BaseSonogram.GetSonogramImage(data);
@@ -327,7 +330,7 @@ namespace AnalysisPrograms
                 X_interval,
                 xAxisPixelDuration,
                 labelInterval,
-                Y_interval);
+                nyquist, hzInterval);
 
             return image;
 

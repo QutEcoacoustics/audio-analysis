@@ -613,14 +613,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         // #######################################################################################################################################
 
 
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
-                                                    int nyquist, int herzInterval)
-        {
-            double Y_interval = bmp.Height / (double)(nyquist / (double)herzInterval);
-            DrawGridLinesOnImage(bmp, minOffset, xAxisTicInterval, xAxisPixelDuration, Y_interval);
-        }
-
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, double Y_interval)
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval)
         {
             int rows = bmp.Height;
             int cols = bmp.Width;
@@ -628,7 +621,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Graphics g = Graphics.FromImage(bmp);
 
             // for rows draw in Y-axis line
-            // number of horozntal grid lines
+            // number of horizontal grid lines
+            int kHzInterval = herzInterval / 1000;
+            double Y_interval = bmp.Height / (double)(nyquist / (double)herzInterval);
             int gridCount = (int)(rows / Y_interval);
             for (int i = 1; i < gridCount; i++)
             {
@@ -641,7 +636,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     column += 2;
                 }
                 int band = (int)(rowFromBottom / Y_interval);
-                g.DrawString(((band) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
+                g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
             }
 
             // for columns, draw in X-axis hour lines

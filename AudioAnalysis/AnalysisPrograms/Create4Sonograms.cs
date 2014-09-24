@@ -174,7 +174,7 @@ using System.Drawing;
 
             // ii: Calculate background noise spectrum in decibels
             double sdCount = 0.0; // number of SDs above the mean for noise removal
-            SNR.NoiseProfile dBProfile = SNR.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
+            NoiseProfile dBProfile = NoiseProfile.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
             //DataTools.writeBarGraph(dBProfile.NoiseMode);
             
             
