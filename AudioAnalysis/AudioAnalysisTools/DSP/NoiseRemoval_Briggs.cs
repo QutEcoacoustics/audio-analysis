@@ -13,16 +13,21 @@ namespace AudioAnalysisTools.DSP
     {
 
         /// <summary>
-        /// Obtains a background noise profile from the passed percentile of lowest energy frames and then divide cell energy by
-        /// the profile.
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
+        /// WARNING: This method should NOT be used for short recordings (i.e LT approx 10-15 seconds long)
+        /// Obtains a background noise profile from the passed percentile of lowest energy frames,
+        /// Then divide cell energy by the profile value.
+        /// This method was adapted from a paper by Briggs.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="percentileThreshold"></param>
         /// <returns></returns>
-        public static double[,] BriggsFilter_DivideByFreqBinNoise(double[,] matrix, int percentileThreshold)
+        public static double[,] NoiseReduction_byDivision(double[,] matrix, int percentileThreshold)
         {
-            double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, percentileThreshold);
+            double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
             profile = DataTools.filterMovingAverage(profile, 3);
+            // to prevent division by zero.
+            double epsilon = 0.0001;
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -30,23 +35,66 @@ namespace AudioAnalysisTools.DSP
 
             for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
             {
+                double denominator = profile[col];
+                if (denominator < epsilon) denominator = epsilon;
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
-                    outM[y, col] = matrix[y, col] / profile[col];
+                    outM[y, col] = matrix[y, col] / denominator;
                 } //end for all rows
             } //end for all cols
             return outM;
         }
 
+
         /// <summary>
-        /// Obtains a background noise profile from the passed percentile of lowest energy frames and then subtracts the bin profile value from every cell.
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
+        /// WARNING: This method should NOT be used for short recordings (i.e LT approx 10-15 seconds long)
+        /// because it obtains a background noise profile from the passed percentile of lowest energy frames.
+        /// 
+        /// Same method as above except take square root of the cell energy divided by the noise.
+        /// Taking the square root has the effect of reducing image contrast.
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="percentileThreshold"></param>
         /// <returns></returns>
-        public static double[,] BriggsFilter_SubtractFreqBinNoise(double[,] matrix, int percentileThreshold) 
+        public static double[,] NoiseReduction_byDivisionAndSqrRoot(double[,] matrix, int percentileThreshold)
         {
-            double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, percentileThreshold);
+            double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
+            profile = DataTools.filterMovingAverage(profile, 3);
+            // to prevent division by zero.
+            double epsilon = 0.0001;
+
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
+
+            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
+            {
+                double denominator = profile[col];
+                if (denominator < epsilon) denominator = epsilon;
+                for (int y = 0; y < rowCount; y++) //for all rows
+                {
+                    outM[y, col] = Math.Sqrt(matrix[y, col] / denominator);
+                } //end for all rows
+            } //end for all cols
+            return outM;
+        }
+
+
+
+        /// <summary>
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
+        /// WARNING: This method should NOT be used for short recordings (i.e LT approx 10-15 seconds long)
+        /// Obtains a background noise profile from the passed percentile of lowest energy frames,
+        /// Then subtracts the noise profile value from every cell.
+        /// This method was adapted from a paper by Briggs.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="percentileThreshold"></param>
+        /// <returns></returns>
+        public static double[,] NoiseReduction_byLowestPercentileSubtraction(double[,] matrix, int percentileThreshold) 
+        {
+            double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
             profile = DataTools.filterMovingAverage(profile, 3);
 
             int rowCount = matrix.GetLength(0);
@@ -63,64 +111,10 @@ namespace AudioAnalysisTools.DSP
             return outM;
         }
 
+
+        
         /// <summary>
-        /// Obtains a background noise profile from the passed percentile of lowest energy frames.
-        /// Then take square root of the cell energy divided by the noise profile.
-        /// Taking the square root has the effect of reducing image contrast.
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="percentileThreshold"></param>
-        /// <returns></returns>
-        public static double[,] BriggsNoiseFilterUsingSqrRoot(double[,] matrix, int percentileThreshold)
-        {
-            double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, percentileThreshold);
-            profile = DataTools.filterMovingAverage(profile, 3);
-
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
-
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-            {
-                for (int y = 0; y < rowCount; y++) //for all rows
-                {
-                    outM[y, col] = Math.Sqrt(matrix[y, col] / profile[col]);
-                } //end for all rows
-            } //end for all cols
-            return outM;
-        }
-
-        /// <summary>
-        /// Obtains a background noise profile from the passed percentile of lowest energy frames.
-        /// Also calculates the local column variance.
-        /// Then divide the cell energy by the row noise + local row variance.
-        /// However the backgroundnoise profile has little effect.
-        /// The dominant effect is due to local column variance.
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="percentileThreshold"></param>
-        /// <returns></returns>
-        public static double[,] FilterGlobalLocal(double[,] matrix, int percentileThreshold)
-        {
-            double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(matrix, percentileThreshold);
-            profile = DataTools.filterMovingAverage(profile, 3);
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
-
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-            {
-                double[] column = MatrixTools.GetColumn(matrix, col);
-                double[] localVariance = NormalDist.CalculateLocalVariance(column, 15);
-                for (int y = 0; y < rowCount; y++) //for all rows
-                {
-                    outM[y, col] = matrix[y, col] / (1.0 + profile[col] + localVariance[y]);
-                } //end for all rows
-            } //end for all cols
-            return outM;
-        }
-
-        /// <summary>
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
         /// Does column-wise LCN (Local Contrast Normalisation. 
         /// The denominator = (contrastLevel + Math.Sqrt(localVariance[y])
         /// A low contrastLevel = 0.1 give more grey image.
@@ -133,7 +127,7 @@ namespace AudioAnalysisTools.DSP
         /// <param name="neighbourhood">suitable vaues are odd numbers 9 - 59</param>
         /// <param name="contrastLevel">Suitable values are 0.1 to 1.0.</param>
         /// <returns></returns>
-        public static double[,] FilterWithLocalColumnVariance(double[,] matrix, int neighbourhood, double contrastLevel)
+        public static double[,] NoiseReduction_byLCNDivision(double[,] matrix, int neighbourhood, double contrastLevel)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -158,94 +152,34 @@ namespace AudioAnalysisTools.DSP
             return outM;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="lowPercentile">The percent of lowest energy frames to be included in estimation of noise profile.</param>
-        /// <returns></returns>
-        public static double[] GetNoiseProfile_LowestPercentile(double[,] matrix, int lowPercentile)
+        public static double[,] NoiseReduction_ShortRecordings_SubtractAndLCN(double[,] matrix, int lowPercent, int neighbourhood, double contrastLevel)
         {
-            double[] energyLevels = MatrixTools.GetRowAverages(matrix);
-            var sorted = DataTools.SortArrayInAscendingOrder(energyLevels);
-            int[] order = sorted.Item1;
-            //double[] values = sorted.Item2;
-            //for (int i = 0; i < 20; i++) Console.WriteLine(values[i]);
-
+            double[] noiseProfile = NoiseProfile.GetNoiseProfile_BinWiseFromLowestPercentileCells(matrix, lowPercent);
+            int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
-            int cutoff = (int)(lowPercentile * matrix.GetLength(0) / 100);
-            if (cutoff == 0) throw new Exception("Illegal zero value for cutoff in method NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile()");
-            double[] noiseProfile = new double[colCount];
-
-            // sum the lowest percentile frames 
-            for (int i = 0; i < cutoff; i++)
+            //to contain noise reduced matrix
+            double[,] outM = new double[rowCount, colCount];
+            //for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
             {
-                double[] row = DataTools.GetRow(matrix, order[i]);
-                for (int c = 0; c < colCount; c++)
+                double[] column = MatrixTools.GetColumn(matrix, col);
+                double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
+                // normalise with local column variance
+                for (int y = 0; y < rowCount; y++) //for all rows
                 {
-                    noiseProfile[c] += row[c];
-                }
-                //Console.WriteLine(values[i]);
-            }
-            // get average of the lowest percentile frames 
-            for (int c = 0; c < colCount; c++)
-            {
-                noiseProfile[c] /= cutoff;
-                if (noiseProfile[c] < 0.00001)
-                    noiseProfile[c] = 0.00001; //to avoid zero values - which is very unlikely if in dB.
-            }
-            //for (int i = 0; i < colCount; i++) Console.WriteLine(noiseProfile[i]);
-
-            return noiseProfile;
+                    //outM[y, col] = matrix[y, col] / (contrastLevel + localVariance[y]);
+                    outM[y, col] = (matrix[y, col] - noiseProfile[col]) / (contrastLevel + Math.Sqrt(localVariance[y]));
+                } //end for all rows
+            } //end for all cols
+            return outM;
         }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="matrix"></param>
-        ///// <returns></returns>
-        //public static double[,] BriggsNoiseDivision(double[,] matrix, double[] noiseProfile)
-        //{
-        //    int rowCount = matrix.GetLength(0);
-        //    int colCount = matrix.GetLength(1);
-        //    double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
 
-        //    for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-        //    {
-        //        for (int y = 0; y < rowCount; y++) //for all rows
-        //        {
-        //            outM[y, col] = matrix[y, col] / noiseProfile[col];
-        //        } //end for all rows
-        //    } //end for all cols
-        //    return outM;
-        //} // end of TruncateModalNoise()
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="matrix"></param>
-        ///// <returns></returns>
-        //public static double[,] BriggsNoiseDivisionUsingSquareroot(double[,] matrix, double[] noiseProfile)
-        //{
-        //    int rowCount = matrix.GetLength(0);
-        //    int colCount = matrix.GetLength(1);
-        //    double[] profile = DataTools.SquareRootOfValues(noiseProfile);
-        //    double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
-
-        //    for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-        //    {
-        //        for (int y = 0; y < rowCount; y++) //for all rows
-        //        {
-        //            outM[y, col] = Math.Sqrt(matrix[y, col]) / profile[col];
-        //        } //end for all rows
-        //    } //end for all cols
-        //    return outM;
-        //} // end of TruncateModalNoise()
-
+// #########################################################################################################################################################
 
         public static double[,] BriggsNoiseFilterAndGetMask(double[,] matrix, int percentileThreshold, double binaryThreshold)
         {
-            double[,] m = NoiseRemoval_Briggs.BriggsFilter_DivideByFreqBinNoise(matrix, percentileThreshold); 
+            double[,] m = NoiseRemoval_Briggs.NoiseReduction_byDivision(matrix, percentileThreshold); 
 
             // smooth and truncate
             m = ImageTools.WienerFilter(m, 7); //Briggs uses 17
@@ -265,21 +199,21 @@ namespace AudioAnalysisTools.DSP
         }
 
         public static Image BriggsNoiseFilterAndGetSonograms(double[,] matrix, int percentileThreshold, double binaryThreshold,
-                                                                  TimeSpan recordingDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, int Y_AxisInterval)
+                                TimeSpan recordingDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, int nyquist, int herzInterval)
         {
             //double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilter(matrix, percentileThreshold);
-            double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(matrix, percentileThreshold);
+            double[,] m = NoiseRemoval_Briggs.NoiseReduction_byDivisionAndSqrRoot(matrix, percentileThreshold);
 
             List<Image> images = new List<Image>();
 
             string title = "TITLE ONE";
-            Image image1 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            Image image1 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
             images.Add(image1);
 
             m = ImageTools.WienerFilter(m, 7); //Briggs uses 17
             m = MatrixTools.SubtractAndTruncate2Zero(m, 1.0);
             title = "TITLE TWO";
-            Image image2 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            Image image2 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
             images.Add(image2);
 
             //int[] histo = Histogram.Histo(m, 100);
@@ -298,7 +232,7 @@ namespace AudioAnalysisTools.DSP
             double binaryThreshold2 = binaryThreshold * 0.8;
             m = MatrixTools.ThresholdMatrix2RealBinary(m, binaryThreshold2); 
             title = "TITLE FOUR";
-            Image image4 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            Image image4 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
             images.Add(image4);
 
             Image combinedImage = ImageTools.CombineImagesVertically(images);
@@ -306,7 +240,8 @@ namespace AudioAnalysisTools.DSP
             return combinedImage;
         }
 
-        public static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, int Y_interval, string title)
+        public static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, 
+                                         int nyquist, int herzInterval, string title)
         {
             // the next two variables determine how the greyscale sonogram image is normalised.
             // The low  normalisation bound is min value of the average spectrogram derived from the lowest  percent of frames
@@ -319,7 +254,7 @@ namespace AudioAnalysisTools.DSP
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
             TimeSpan labelInterval = TimeSpan.FromSeconds(5);
-            image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, Y_interval);
+            image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);
 
             return image;
         }

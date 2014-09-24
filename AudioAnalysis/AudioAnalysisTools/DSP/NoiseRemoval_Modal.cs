@@ -14,7 +14,8 @@ namespace AudioAnalysisTools.DSP
 
 
         public static Image ModalNoiseRemovalAndGetSonograms(double[,] deciBelSpectrogram, double parameter,  
-                                                             TimeSpan wavDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, int Y_AxisInterval)
+                                                             TimeSpan wavDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, 
+                                                             int nyquist, int HzInterval)
         {
             double SD_COUNT = -0.5; // number of SDs above the mean for noise removal
             NoiseReductionType nrt = NoiseReductionType.MODAL;
@@ -24,22 +25,22 @@ namespace AudioAnalysisTools.DSP
             double[] noiseProfile = tuple.Item2;  // smoothed modal profile
 
             string title = "title1";
-            Image image1 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            Image image1 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
 
             double dBThreshold = 0.0; // SPECTRAL dB THRESHOLD for smoothing background
             double[,] noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title2";
-            Image image2 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            Image image2 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
 
             dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title3";
-            Image image3 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            Image image3 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
 
             dBThreshold = 10.0; // SPECTRAL dB THRESHOLD for smoothing background
             noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title4";
-            Image image4 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
+            Image image4 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
 
 
             Image[] array = new Image[4];
@@ -51,36 +52,6 @@ namespace AudioAnalysisTools.DSP
 
             return combinedImage;
         }
-
-
-
-
-
-
-        /// <summary>
-        /// IMPORTANT: this method assumes that the first N frames (N=frameCount) DO NOT contain signal.
-        /// </summary>
-        /// <param name="matrix">the spectrogram rotated with origin is top-left.</param>
-        /// <param name="frameCount">the first N rows of the spectrogram</param>
-        /// <returns></returns>
-        public static double[] CalculateModalNoiseUsingStartFrames(double[,] matrix, int frameCount)
-        {
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[] modalNoise = new double[colCount];
-
-            for (int row = 0; row < frameCount; row++) //for first N rows
-            {
-                for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-                {
-                    modalNoise[col] += matrix[row, col];
-                }
-            } //end for all cols
-            for (int col = 0; col < colCount; col++) modalNoise[col] /= frameCount;
-
-            return modalNoise;
-        }
-
 
 
 
@@ -163,7 +134,7 @@ namespace AudioAnalysisTools.DSP
         }
 
 
-        static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, int Y_interval, string title)
+        static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
         {
             //double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
             Image image = BaseSonogram.GetSonogramImage(data);
@@ -171,7 +142,7 @@ namespace AudioAnalysisTools.DSP
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
             TimeSpan labelInterval = TimeSpan.FromSeconds(5);
-            image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, Y_interval);
+            image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);
             return image;
         }
 

@@ -246,7 +246,7 @@ namespace AudioAnalysisTools.Indices
             // iii: remove background noise from the amplitude spectrogram
             double sdCount = 0.0;
             const double SpectralBgThreshold = 0.015; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            SNR.NoiseProfile profile = SNR.CalculateModalNoiseProfile(amplitudeSpectrogram, sdCount); // calculate noise value for each freq bin.
+            NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(amplitudeSpectrogram, sdCount); // calculate noise value for each freq bin.
             double[] noiseValues = DataTools.filterMovingAverage(profile.NoiseThresholds, 7);      // smooth the modal profile
             amplitudeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(amplitudeSpectrogram, noiseValues);
             amplitudeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(amplitudeSpectrogram, SpectralBgThreshold);
@@ -284,7 +284,7 @@ namespace AudioAnalysisTools.Indices
 
             // ii: Calculate background noise spectrum in decibels
             sdCount = 0.0; // number of SDs above the mean for noise removal
-            SNR.NoiseProfile dBProfile = SNR.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
+            NoiseProfile dBProfile = NoiseProfile.CalculateModalNoiseProfile(deciBelSpectrogram, sdCount);       // calculate noise value for each freq bin.
             
             // smooth modal profile
             spectra.BGN = DataTools.filterMovingAverage(dBProfile.NoiseThresholds, 7);

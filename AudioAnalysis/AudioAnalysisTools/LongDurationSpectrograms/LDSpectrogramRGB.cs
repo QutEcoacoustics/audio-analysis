@@ -642,7 +642,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.MinuteOffset, this.XInterval, xAxisPixelDuration, this.YInterval);
+            int herzInterval = 1000;
+            int nyquist = this.SampleRate / 2;
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.MinuteOffset, this.XInterval, xAxisPixelDuration, nyquist, herzInterval);
             return bmp;
         }
 
@@ -999,10 +1001,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
 
-        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan minOffset, TimeSpan X_interval, int Y_interval)
+        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan minOffset, TimeSpan X_interval, int nyquist, int herzInterval)
         {
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, xAxisPixelDuration, Y_interval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, xAxisPixelDuration, nyquist, herzInterval);
 
             int imageWidth = bmp1.Width;
             int trackHeight = 20;
@@ -1320,7 +1322,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+            int nyquist = cs1.SampleRate / 2;
+            int herzInterval = 1000;
+            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
 
             //Image ribbon1 = cs1.GetSummaryIndexRibbon(colorMap);
             Image ribbon1 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
@@ -1331,7 +1335,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, cs1.YInterval);
+            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
             //Image ribbon2 = cs1.GetSummaryIndexRibbon(colorMap);
             Image ribbon2 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
             Image ribbon3 = cs1.GetSpectrogramRibbon(colorMap, 32);

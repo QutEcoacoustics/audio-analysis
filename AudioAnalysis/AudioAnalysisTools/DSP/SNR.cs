@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.DSP
     /// IMPORTANT NOTE: If you are converting Herz to Mel scale, this conversion must be done BEFORE noise reduction
 
 
-    public enum NoiseReductionType { NONE, STANDARD, MODAL, BINARY, FIXED_DYNAMIC_RANGE, MEAN, MEDIAN, LOWEST_PERCENTILE, BRIGGS_PERCENTILE }
+    public enum NoiseReductionType { NONE, STANDARD, MODAL, BINARY, FIXED_DYNAMIC_RANGE, MEAN, MEDIAN, LOWEST_PERCENTILE, BRIGGS_PERCENTILE, SHORT_RECORDING }
 
 
     public class SNR
@@ -487,8 +487,9 @@ namespace AudioAnalysisTools.DSP
             for (int bin = 0; bin < binCountInBand; bin++)
             {
                 double[] freqBin = MatrixTools.GetColumn(bandSonogram, bin);
-                var tuple = DataTools.SortArrayInAscendingOrder(freqBin);
-                double[] orderedArray = tuple.Item2;
+                double[] orderedArray = (double[])freqBin.Clone();
+                Array.Sort(orderedArray);
+
                 double sum = 0.0;
                 for (int i = 0; i < lowEnergyCount; i++)
                 {
@@ -607,14 +608,8 @@ namespace AudioAnalysisTools.DSP
         /// This method written 18-09-2014 to process Xueyan's query recordings.
         /// Calculate the SNR statistics for each recording and then write info back to csv file
         /// </summary>
-        public static SNRStatistics Calculate_SNR_ShortRecording(FileInfo sourceRecording, FileInfo configFile, TimeSpan start, TimeSpan duration, int minHz, int maxHz)
+        public static SNRStatistics Calculate_SNR_ShortRecording(FileInfo sourceRecording, Dictionary<string, string> configDict, TimeSpan start, TimeSpan duration, int minHz, int maxHz)
         {
-
-            dynamic configuration = Yaml.Deserialise(configFile);
-            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
-
-            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
-            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
             configDict["NoiseReductionType"] = "None";
 
             // 1) get recording
@@ -641,6 +636,9 @@ namespace AudioAnalysisTools.DSP
             FileInfo csvFileInfo = @"C:\SensorNetworks\WavFiles\XueyanQueryCalls\CallBoundsForXueyanDataSet_19thSept2014.csv".ToFileInfo();
             var sourceDir = csvFileInfo.Directory;
             var opDir     = csvFileInfo.Directory;
+
+            dynamic configuration = Yaml.Deserialise(configFile);
+            var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
 
             //set up text for the output file
             var opText = new List<string>();
@@ -681,7 +679,7 @@ namespace AudioAnalysisTools.DSP
 
                     if (sourceRecording.Exists)
                     {
-                        SNRStatistics stats = Calculate_SNR_ShortRecording(sourceRecording, configFile, start, duration, minHz, maxHz);
+                        SNRStatistics stats = Calculate_SNR_ShortRecording(sourceRecording, configDict, start, duration, minHz, maxHz);
                         opText.Add(String.Format(strLine + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingThirdSNR));
                     }
                     else
@@ -898,6 +896,9 @@ namespace AudioAnalysisTools.DSP
                 case "LowestPercentile":
                     result = NoiseReductionType.LOWEST_PERCENTILE;
                     break;
+                case "ShortRecording":
+                    result = NoiseReductionType.SHORT_RECORDING;
+                    break;
                 case "BriggsPercentile":
                     result = NoiseReductionType.BRIGGS_PERCENTILE;
                     break;
@@ -921,41 +922,48 @@ namespace AudioAnalysisTools.DSP
         {
             double SD_COUNT = 0.0; // number of noise standard deviations included in noise threshold - determines severity of noise reduction.
             // Can be over-ridden by the passed parameter.
-            double[] smoothedNoiseProfile = null;
+            double[] bgNoiseProfile = null;
             switch (nrt)
             {
                 case NoiseReductionType.STANDARD:
                     {
-                        NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
-                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
-                        m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
+                        NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
+                        bgNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 5); //smooth the noise profile
+                        m = SNR.NoiseReduce_Standard(m, bgNoiseProfile, parameter); // parameter = nhBackgroundThreshold
                     }
                     break;
                 case NoiseReductionType.MODAL:
                     {
                         SD_COUNT = parameter;
-                        NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate modal profile - any matrix of values
-                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the modal profile
-                        m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
+                        NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(m, SD_COUNT); //calculate modal profile - any matrix of values
+                        bgNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 5); //smooth the modal profile
+                        m = SNR.TruncateBgNoiseFromSpectrogram(m, bgNoiseProfile);
                     }
                     break;
                 case NoiseReductionType.LOWEST_PERCENTILE:
                     {
-                        double[] profile = NoiseRemoval_Briggs.GetNoiseProfile_LowestPercentile(m, (int)parameter);
-                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile, 7); //smooth the modal profile
-                        m = SNR.TruncateBgNoiseFromSpectrogram(m, smoothedNoiseProfile);
+                        bgNoiseProfile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(m, (int)parameter);
+                        bgNoiseProfile = DataTools.filterMovingAverage(bgNoiseProfile, 5); //smooth the modal profile
+                        m = SNR.TruncateBgNoiseFromSpectrogram(m, bgNoiseProfile);
+                    }
+                    break;
+                case NoiseReductionType.SHORT_RECORDING:
+                    {
+                        bgNoiseProfile = NoiseProfile.GetNoiseProfile_BinWiseFromLowestPercentileCells(m, (int)parameter);
+                        bgNoiseProfile = DataTools.filterMovingAverage(bgNoiseProfile, 5); //smooth the modal profile
+                        m = SNR.TruncateBgNoiseFromSpectrogram(m, bgNoiseProfile);
                     }
                     break;
                 case NoiseReductionType.BRIGGS_PERCENTILE:
                     // Briggs filters twice
-                    m = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(m, (int)parameter);
-                    m = NoiseRemoval_Briggs.BriggsNoiseFilterUsingSqrRoot(m, (int)parameter);
+                    m = NoiseRemoval_Briggs.NoiseReduction_byDivisionAndSqrRoot(m, (int)parameter);
+                    m = NoiseRemoval_Briggs.NoiseReduction_byDivisionAndSqrRoot(m, (int)parameter);
                     break;
                 case NoiseReductionType.BINARY:
                     {
-                        NoiseProfile profile = SNR.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile
-                        smoothedNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
-                        m = SNR.NoiseReduce_Standard(m, smoothedNoiseProfile, parameter); // parameter = nhBackgroundThreshold
+                        NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(m, SD_COUNT); //calculate noise profile
+                        bgNoiseProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
+                        m = SNR.NoiseReduce_Standard(m, bgNoiseProfile, parameter); // parameter = nhBackgroundThreshold
                         m = DataTools.Matrix2Binary(m, 2 * parameter);             //convert to binary with backgroundThreshold = 2*parameter
                     }
                     break;
@@ -976,7 +984,7 @@ namespace AudioAnalysisTools.DSP
                     //Log.WriteIfVerbose("No noise reduction applied");
                     break;
             }
-            var tuple = System.Tuple.Create(m, smoothedNoiseProfile);
+            var tuple = System.Tuple.Create(m, bgNoiseProfile);
             return tuple;
         }
 
@@ -998,7 +1006,7 @@ namespace AudioAnalysisTools.DSP
         {
             double SD_COUNT = 0.1; // number of noise standard deviations used to calculate noise threshold - determines severity of noise reduction
             double backgroundThreshold = 2.0; //SETS MIN DECIBEL BOUND
-            NoiseProfile profile = SNR.CalculateModalNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile            
+            NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile            
             double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
             return NoiseReduce_Standard(matrix, smoothedProfile, backgroundThreshold);
         }
@@ -1024,7 +1032,7 @@ namespace AudioAnalysisTools.DSP
         /// <returns></returns>
         public static double[,] NoiseReduce_FixedRange(double[,] matrix, double dynamicRange, double SD_COUNT)
         {
-            NoiseProfile profile = SNR.CalculateModalNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile
+            NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, SD_COUNT); //calculate modal noise profile
             double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, 7); //smooth the noise profile
             double[,] mnr = SNR.SubtractBgNoiseFromSpectrogram(matrix, smoothedProfile);
             mnr = SNR.SetDynamicRange(matrix, 0.0, dynamicRange);
@@ -1043,7 +1051,7 @@ namespace AudioAnalysisTools.DSP
             int smoothingWindow = 7;
             double neighbourhoodBackgroundThreshold = 4.0; //SETS MIN DECIBEL BOUND
 
-            double[] modalNoise = NoiseRemoval_Modal.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            double[] modalNoise = NoiseProfile.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
             modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
             mnr = NoiseReduce_Standard(matrix, modalNoise, neighbourhoodBackgroundThreshold);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
@@ -1064,7 +1072,7 @@ namespace AudioAnalysisTools.DSP
             int NH = 11;
             mnr = ImageTools.WienerFilter(mnr, NH);
 
-            double[] modalNoise = NoiseRemoval_Modal.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            double[] modalNoise = NoiseProfile.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
             modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
             mnr = NoiseReduce_Standard(matrix, modalNoise, neighbourhoodBackgroundThreshold);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
@@ -1080,46 +1088,8 @@ namespace AudioAnalysisTools.DSP
         // #############################################################################################################################
         // ################################# NOISE REDUCTION METHODS #################################################################
 
-        /// <summary>
-        /// calculates the background noise in a spectrogram
-        /// (The spectrogram is rotated so that matrix columns are frequency bins)
-        /// i.e. the origin is top-left.
-        /// </summary>
-        /// <param name="matrix">the rotated spectrogram</param>
-        /// <param name="SD_COUNT"></param>
-        /// <returns></returns>
-        public static NoiseProfile CalculateModalNoiseProfile(double[,] matrix, double SD_COUNT)
-        {
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[] noiseMode = new double[colCount];
-            double[] noiseSD = new double[colCount];
-            double[] noiseThreshold = new double[colCount];
-            double[] minsOfBins = new double[colCount];
-            double[] maxsOfBins = new double[colCount];
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
-            {
-                double[] freqBin = MatrixTools.GetColumn(matrix, col);
-                BackgroundNoise binNoise = SNR.CalculateModalBackgroundNoiseFromSignal(freqBin, SD_COUNT);
-                noiseMode[col] = binNoise.NoiseMode;
-                noiseSD[col] = binNoise.NoiseSd;
-                noiseThreshold[col] = binNoise.NoiseThreshold;
-                minsOfBins[col] = binNoise.MinDb;
-                maxsOfBins[col] = binNoise.MaxDb;
-            }
-
-            var profile = new NoiseProfile()
-                              {
-                                  NoiseMode = noiseMode,
-                                  NoiseSd = noiseSD,
-                                  NoiseThresholds = noiseThreshold,
-                                  MinDb = minsOfBins,
-                                  MaxDb = maxsOfBins
-                              };
-            return profile;
-        }
-
-
+        
+        
         /// <summary>
         /// Subtracts the supplied noise profile from spectorgram AND sets values less than backgroundThreshold to ZERO.
         /// </summary>
@@ -1383,7 +1353,7 @@ namespace AudioAnalysisTools.DSP
                 //    process.Run(imagePath, outputDir);
                 //}
             } // if(true)
-        } // sandpit
+        } 
 
 
 
@@ -1404,21 +1374,6 @@ namespace AudioAnalysisTools.DSP
             public double Snr { get; set; }
         }
 
-        /// <summary>
-        /// contains info re noise profile of an entire spectrogram
-        /// </summary>
-        public class NoiseProfile 
-        {
-            public double[] NoiseMode { get; set; }
-
-            public double[] NoiseSd { get; set; }
-
-            public double[] NoiseThresholds { get; set; }
-
-            public double[] MinDb { get; set; }
-
-            public double[] MaxDb { get; set; }
-        }
 
         /// <summary>
         /// used to store info about the SNR in a signal using db units

@@ -80,7 +80,8 @@ namespace AnalysisPrograms
 
                 // csv file containing recording info, call bounds etc
                 //Source = @"Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-                Source = @"C:\SensorNetworks\Output\ConvDNN\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\Output\ConvDNN\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
@@ -147,11 +148,7 @@ namespace AnalysisPrograms
             // below four lines are examples of retrieving info from dynamic config
             //dynamic configuration = Yaml.Deserialise(configFile);
             // string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
-            // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
-            // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
-
-            // Resample rate must be 2 X the desired Nyquist. Default is that of recording.
-            var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
+            // int resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
 
 
             var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
@@ -160,19 +157,7 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddAxes] = ((bool?)configuration[AnalysisKeys.AddAxes] ?? true).ToString();
             configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? true;
 
-            // # REDUCTION FACTORS for freq and time dimensions
-            // #TimeReductionFactor: 1          
-            // #FreqReductionFactor: 1
-
-            bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            //configDict[AnalysisKeys.SonogramTitle] = (string)configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
-            //configDict[AnalysisKeys.SonogramComment] = (string)configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
-            //configDict[AnalysisKeys.SonogramColored] = (string)configuration[AnalysisKeys.SonogramColored] ?? "false";
-            //configDict[AnalysisKeys.SonogramQuantisation] = (string)configuration[AnalysisKeys.SonogramQuantisation] ?? "128";
-
-            //configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
-            //configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
-
+            //bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
@@ -192,10 +177,13 @@ namespace AnalysisPrograms
 
 
             //set up the output file
-            var opText = new List<string>();
             //string header = "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
             string header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path2Spectrograsms";
-            opText.Add(header);
+            string opPath = Path.Combine(opDir.FullName, "SNRDataForConvDNN_DataSet_23thSept2014.csv");
+            using (StreamWriter writer = new StreamWriter(opPath))
+            {
+                writer.WriteLine(header);
+            }
 
             // keep counter on file availability
             int lineNumber = 0;
@@ -216,7 +204,7 @@ namespace AnalysisPrograms
                 while ((strLine = sr.ReadLine()) != null)
                 {
                     lineNumber++;
-                    if (lineNumber % 5000 == 0) Console.WriteLine(lineNumber);
+                    if (lineNumber % 1000 == 0) Console.WriteLine(lineNumber);
 
                     // cannot use next line because reads the entire file
                     //var data = Csv.ReadFromCsv<string[]>(csvFileInfo).ToList();
@@ -232,16 +220,20 @@ namespace AnalysisPrograms
                     }
 
                     FileInfo sourceRecording = record.path;
+                    string fileName = sourceRecording.Name;
+                    DirectoryInfo sourceDirectory = sourceRecording.Directory;
+                    string directoryName = sourceDirectory.Name;
+                    string parentDirectoryName = sourceDirectory.Parent.Name;
+                    DirectoryInfo imageOpDir = new DirectoryInfo(opDir.FullName + @"\" + parentDirectoryName);
+                    //DirectoryInfo imageOpDir = new DirectoryInfo(opDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName);
 
                     //#######################################
-                    // my debug code for home to test on subset of data - delete these lines for real thing! 
                     //#######################################
-                    //string fileName = sourceRecording.Name;
-                    //DirectoryInfo sourceDirectory = sourceRecording.Directory;
-                    //string directoryName = sourceDirectory.Name;
-                    //string parentDirectoryName = sourceDirectory.Parent.Name;
-                    ////sourceRecording = Path.Combine(@"C:\SensorNetworks\Output\ConvCNN\0\" + directoryName, fileName).ToFileInfo();
-                    //sourceRecording = Path.Combine(opDir.FullName + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
+                    // my debug code for home to test on subset of data - comment these lines when doing the real thing! 
+                    //#######################################
+                    DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
+                    sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
+                    //#######################################
                     //#######################################
 
 
@@ -249,9 +241,11 @@ namespace AnalysisPrograms
                     {
                         fileInCsvDoesNotExist ++;
                         string warning = String.Format("FILE DOES NOT EXIST >>>," + sourceRecording.Name);
-                        //string warning = String.Format("{0}######### WARNING: line {1}  FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<", lineNumber, fileInCsvDoesNotExist);
-                        opText.Add(warning + "\n");
-                        LoggedConsole.WriteWarnLine(warning);
+                        using (StreamWriter writer = new StreamWriter(opPath, true))
+                        {
+                            writer.WriteLine(warning);
+                        }
+                        //LoggedConsole.WriteWarnLine(warning);
                         continue;
                     }
 
@@ -271,38 +265,26 @@ namespace AnalysisPrograms
 
                     // ####################################################################
 
-                    // 1: GET RECORDING and make temporary copy
-                    // put temp audio FileSegment in same directory as the required output image.
-                    FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
-                    // delete the temp audio file if it already exists.
-                    if (File.Exists(tempAudioSegment.FullName))
-                    {
-                        File.Delete(tempAudioSegment.FullName);
-                    }
-                    // This line creates a temporary version of the source file downsampled as per entry in the config file
-                    MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
+                    var result = AnalyseOneRecording(sourceRecording, configDict, localStart, extractDuration, minHz, maxHz, imageOpDir);
 
-                    // 2: GET the SNR statistics
-                    SNR.SNRStatistics stats = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configFile, localStart, extractDuration, minHz, maxHz);
-
-                    // 3: Get sonogram image 
-                    //var results = Audio2InputForConvCNN.GenerateSpectrogramImages(tempAudioSegment, configDict, opDir);
-                    //string path2SpectrogramImage = results.SpectrogramImage.FullName;
-                    string path2SpectrogramImage = "DUMMY";
-
-                    // 4: CONSTRUCT the outputline for csv file
+                    // CONSTRUCT the outputline for csv file
                     // "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
                     //  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
                     string line = String.Format("{0},{1},{2},{3:f2},{4:f3},{5:f3},{6:f3},{7}",
-                                                record.audio_event_id, record.site_name, record.common_tags, stats.Threshold, stats.Snr, 
-                                                stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingThirdSNR, path2SpectrogramImage); 
-                    
-                    opText.Add(String.Format(line));
+                                                record.audio_event_id, record.site_name, record.common_tags, result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
+                                                result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingThirdSNR,
+                                                result.SpectrogramFile.FullName);
+
+                    // It is helpful to opena nd close the output file as we go, so as to keep a record of where we are up to.
+                    using (StreamWriter writer = new StreamWriter(opPath, true))
+                    {
+                        writer.WriteLine(line);
+                    }
                 } // end while()
             }
             catch (IOException e)
             {
-                LoggedConsole.WriteLine("Something went bloody wrong!");
+                LoggedConsole.WriteLine("Something went seriously bloody wrong!");
                 LoggedConsole.WriteLine(e.ToString());
                 return;
             }
@@ -311,11 +293,42 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("fileInCsvDoesNotExist=" + fileInCsvDoesNotExist);
             LoggedConsole.WriteLine("fileExistsCount      =" + fileExistsCount);
 
-            string path = Path.Combine(opDir.FullName, "SNRDataForConvDNN_DataSet_23thSept2014.csv");
-            FileTools.WriteTextFile(path, opText, true);
-
-            LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
+            LoggedConsole.WriteLine("\n##### FINISHED FILE ############################\n");
         } // end MAIN()
+
+
+
+        public static AudioToSonogramResult AnalyseOneRecording(FileInfo sourceRecording, Dictionary<string, string> configDict, TimeSpan localStart, TimeSpan extractDuration,
+                                                                int minHz, int maxHz, DirectoryInfo opDir)
+        {
+            //int resampleRate = AppConfigHelper.DefaultTargetSampleRate;
+            int resampleRate = 22050;
+            if (configDict.ContainsKey(AnalysisKeys.ResampleRate))
+            {
+                resampleRate = Int32.Parse(configDict[AnalysisKeys.ResampleRate]);
+            }
+            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
+
+            // 1: GET RECORDING and make temporary copy
+            // put temp audio FileSegment in same directory as the required output image.
+            FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
+            // delete the temp audio file if it already exists.
+            if (File.Exists(tempAudioSegment.FullName))
+            {
+                File.Delete(tempAudioSegment.FullName);
+            }
+            // This line creates a temporary version of the source file downsampled as per entry in the config file
+            MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
+
+            // 2: Generate sonogram image files 
+            AudioToSonogramResult result = new AudioToSonogramResult();
+            result = Audio2InputForConvCNN.GenerateSpectrogramImages(tempAudioSegment, configDict, opDir);
+
+            // 3: GET the SNR statistics
+            result.SnrStatistics = SNR.Calculate_SNR_ShortRecording(tempAudioSegment, configDict, localStart, extractDuration, minHz, maxHz);
+            return result;
+        }
 
 
         /// <summary>
@@ -395,7 +408,8 @@ namespace AnalysisPrograms
         public class AudioToSonogramResult
         {
             //  path to spectrogram image
-            public FileInfo SpectrogramImage { get; set; }
+            public FileInfo SpectrogramFile { get; set; }
+            public SNR.SNRStatistics SnrStatistics { get; set; }
         }
 
         public static AudioToSonogramResult GenerateSpectrogramImages(FileInfo sourceRecording, Dictionary<string, string> configDict, DirectoryInfo opDir)
@@ -412,23 +426,21 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
                 
             // disable noise removal for first two spectrograms
-            var disabledNoiseReductionType = sonoConfig.NoiseReductionType;
             sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
 
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
             // remove the DC bin
             sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
             //save spectrogram data at this point - prior to noise reduction
-            double[,] spectrogramDataBeforeNoiseReduction = sonogram.Data; 
+            double[,] spectrogramDataBeforeNoiseReduction = sonogram.Data;
 
+            int lowPercentile = 20;
             double neighbourhoodSeconds = 0.25;
             int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
             double LcnContrastLevel = 0.3;
-            LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
-            LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-            int lowPercentile = 20;
-            sonogram.Data = NoiseRemoval_Briggs.BriggsFilter_SubtractFreqBinNoise(sonogram.Data, lowPercentile);
-            sonogram.Data = NoiseRemoval_Briggs.FilterWithLocalColumnVariance(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
+            //LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
+            //LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
+            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_ShortRecordings_SubtractAndLCN(sonogram.Data, lowPercentile, neighbourhoodFrames, LcnContrastLevel);
             var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
             list.Add(image);
             //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
@@ -459,13 +471,14 @@ namespace AnalysisPrograms
                 image.Width);
             list.Add(segmentationImage);
 
-            // keep the sonogram data for later use
+            // keep the sonogram data (NOT noise reduced) for later use
             double[,] dbSpectrogramData = (double[,])sonogram.Data.Clone();
 
             // 3) now draw the noise reduced decibel spectrogram
-            // #NOISE REDUCTION PARAMETERS - restore noise reduction
-            sonoConfig.NoiseReductionType = disabledNoiseReductionType;
-            sonoConfig.NoiseReductionParameter = double.Parse(configDict[AnalysisKeys.NoiseBgThreshold] ?? "3.0");
+            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionParameter = 3;
+            //sonoConfig.NoiseReductionType = NoiseReductionType.SHORT_RECORDING;
+            //sonoConfig.NoiseReductionParameter = 50;
 
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM + Lamel noise subtraction");
@@ -486,7 +499,7 @@ namespace AnalysisPrograms
             Image compositeImage = ImageTools.CombineImagesVertically(list);
             FileInfo outputImage = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".png"));
             compositeImage.Save(outputImage.FullName, ImageFormat.Png);
-            result.SpectrogramImage = outputImage;
+            result.SpectrogramFile = outputImage;
 
             // 7) Generate the FREQUENCY x OSCILLATIONS Graphs and csv data
             //bool saveData = true;
