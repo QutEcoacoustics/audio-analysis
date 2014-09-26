@@ -521,6 +521,39 @@
             return result;
         }
 
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeNhPropertiesForHistogram(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
+        {
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            var magnitudeList = new List<double>();
+            foreach (var nh in nhList)
+            {
+                // Typically, magnitude should be greater than 0 and less than 20.
+                // otherwise, it is assigned to a default value, 100
+                if (nh.POIMagnitudeSum != 0.0)
+                {
+                    magnitudeList.Add(nh.POIMagnitudeSum);
+                }
+            }
+            var minimagnitude = magnitudeList.Min();
+            var maxmagnitude = magnitudeList.Max();
+            foreach (var nh in nhList)
+            {
+                if (nh.POIMagnitudeSum != 0)
+                {
+                    nh.Orientation0POIMagnitude = (nh.Orientation0POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.Orientation1POIMagnitude = (nh.Orientation1POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.Orientation2POIMagnitude = (nh.Orientation2POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.Orientation3POIMagnitude = (nh.Orientation3POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude); 
+                    nh.Orientation4POIMagnitude = (nh.Orientation4POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.Orientation5POIMagnitude = (nh.Orientation5POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.Orientation6POIMagnitude = (nh.Orientation6POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
+                    nh.Orientation7POIMagnitude = (nh.Orientation7POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude); 
+                }
+                result.Add(nh);
+            }
+            return result;
+        }
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeNhProperties(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();

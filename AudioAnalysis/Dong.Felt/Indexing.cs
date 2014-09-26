@@ -430,6 +430,43 @@ namespace Dong.Felt
         }
 
         /// <summary>
+        /// Euclidean Distance calculation for feature5 based on magnitude of gradient histogram. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <returns></returns>
+        public static List<Candidates> Feature5EuclideanDistMagBased(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRerepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var notNullNhCount = 0;
+                var nhCountInRegion = tempRegionList.Count;
+                for (int index = 0; index < nhCountInRegion; index++)
+                {
+                    if (tempRegionList[index].POICount != 0)
+                    {
+                        notNullNhCount++;
+                    }
+                }
+                if (notNullNhCount >= 0.1 * nhCountInRegion)
+                {
+                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                    var distance = SimilarityMatching.DistanceFeature5RepresentationMagnitudeBased(query, tempRegionList, 2);
+                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                            tempRegionList[0].SourceAudioFile);
+                    result.Add(item);
+                }
+            }
+            return result;
+        }
+        /// <summary>
         /// This similarity tuple records the distance, timePosition, frequencyband. 
         /// </summary>
         /// <param name="query"></param>
