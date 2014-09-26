@@ -651,12 +651,12 @@
                 //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
                 var columnEnergyEntropyDiff = 0.0;
                 var rowEnergyEntropyDiff = 0.0;
-                var maxHPOIHistDiff = 1.0;
-                var maxPPOIHistDiff = 1.0;
-                var maxVPOIHistDiff = 1.0;
-                var maxNPOIHistDiff = 1.0;
-                var maxColEnergyEntroDiff = 1.0;
-                var maxRowEnergyEntroDiff = 1.0;
+                var maxHPOIHistDiff = 3.0;
+                var maxPPOIHistDiff = 3.0;
+                var maxVPOIHistDiff = 3.0;
+                var maxNPOIHistDiff = 3.0;
+                var maxColEnergyEntroDiff = 3.0;
+                var maxRowEnergyEntroDiff = 3.0;
                 var matchedNhCount = 0;
                 for (int index = 0; index < nhCount; index++)
                 {
