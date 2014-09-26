@@ -93,8 +93,8 @@
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
                   //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                   //ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
-                    //MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
-                    //    outputDirectory.FullName, tempDirectory);       
+                    MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
+                        outputDirectory.FullName, tempDirectory);       
                 }
                 else if (action == "processOne")
                 {
@@ -668,7 +668,7 @@
                     var rows = spectrogram.Data.GetLength(1) - 1;
                     var cols = spectrogram.Data.GetLength(0);
                     Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                    var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
+                    var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                     var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
                     var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
                     var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
@@ -720,25 +720,29 @@
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used                               
+                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    //Image image = ImageAnalysisTools.DrawNullSonogram(spectrogram);
+                    //var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
+                    var ridges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);
+                    //var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, ridges, spectrogram.Data.GetLength(0),
+                    //    spectrogram.Data.GetLength(1));
+                    //spectrogram.Data = spectrogramData;
                     Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                    var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in ridges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                        Point point = new Point(poi.Point.Y, poi.Point.X);
-                        double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
-                        var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
-                        double herzScale = spectrogram.FBinWidth; //43 hz
-                        TimeSpan time = TimeSpan.FromSeconds(poi.Point.Y * secondsScale);
-                        double herz = (256 - poi.Point.X - 1) * herzScale;
-                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
-                        var poi1 = new PointOfInterest(time, herz);
-                        poi.TimeScale = timeScale;
-                        poi.HerzScale = herzScale;
+                        //Point point = new Point(poi.Point.Y, poi.Point.X);
+                        //double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+                        //var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                        //double herzScale = spectrogram.FBinWidth; //43 hz
+                        //TimeSpan time = TimeSpan.FromSeconds(poi.Point.Y * secondsScale);
+                        //double herz = (256 - poi.Point.X - 1) * herzScale;
+                        //poi.TimeScale = timeScale;
+                        //poi.HerzScale = herzScale;
                     }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-ridge detection.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-ridge detection1.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -762,15 +766,19 @@
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used                               
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     poiList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, neighbourhoodSize, threshold);
+                    var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
+                        spectrogram.Data.GetLength(1));
+                    spectrogram.Data = spectrogramData;
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in poiList)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in poiList)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-sturcture tensor detection.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-sturcture tensor detection1.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -810,7 +818,7 @@
                         TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
                         NyquistFrequency = spectrogram.NyquistFrequency
                     };
-                var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
+                var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
                 throw new Exception("this would not compile. You need to check this.");
@@ -829,7 +837,7 @@
                 {
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    var candidateRidges = POISelection.PostRidgeDetection(candidateSpectrogram, ridgeConfig);
+                    var candidateRidges = POISelection.PostRidgeDetection4Dir(candidateSpectrogram, ridgeConfig);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
                     throw new Exception("this would not compile. You need to check this.");
@@ -893,7 +901,7 @@
                     TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency
                 };
-                var queryRidges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
+                var queryRidges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
                 var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
@@ -938,7 +946,7 @@
                     TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency
                 };
-                var queryRidges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
+                var queryRidges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
 
@@ -962,144 +970,144 @@
                 result.Add(candidateItem);
                 
                 /// To get all the candidates  
-            //    var candidatesList = new List<RegionRerepresentation>();
-            //    var seperateCandidatesList = new List<List<Candidates>>();               
-            //    if (!Directory.Exists(inputFileDirectory))
-            //    {
-            //        throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", inputFileDirectory));
-            //    }
-            //    Log.Info("# read all the training/test audio files");
-            //    var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
-            //    var audioFilesCount = candidatesAudioFiles.Count();
-            //    /// to get candidate region Representation                      
-            //    var finalOutputCandidates = new List<Candidates>();
-                
-            //    for (int j = 0; j < audioFilesCount; j++)
-            //    {
-            //        Log.Info("# read each training/test audio file");
-            //        /// 2. Read the candidates 
-            //        var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-            //        var candidateRidges = POISelection.PostRidgeDetection(candidateSpectrogram, ridgeConfig);
-            //        var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
-            //        var cols1 = candidateSpectrogram.Data.GetLength(0);
-            //        var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1,
-            //            neighbourhoodLength, featurePropSet, spectrogramConfig);
-            //        var candidatesRegionList = Indexing.ExtractCandidateRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-            //    candidateRidgeNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram);
-            //    //    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
-            //    //(candidateRidgeNhRepresentationList, featurePropSet);
-            //        // this region representation depends on the query. 
-            //        //var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, candidateRidgeNhRepresentationList,
-            //        //candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
-            //        // extract the candidates from the specific frequency
-            //        //var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
-            //        //var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
-            //        //foreach (var c in splitRegionRepresentationListToBlock)
-            //        //{
-            //        //    c[0].Features = new Feature(c);
-            //        //    var matchScore = new Feature(queryRepresentation, c);
-            //        //    c[0].Features.featureBlockMatch = matchScore.featureBlockMatch;
-            //        //    candidatesList.Add(c[0]);
-            //        //}
-            //        foreach (var c in candidatesRegionList)
-            //        {
-            //            candidatesList.Add(c);
-            //        }
-            //    }// end of the loop for candidates
-            //    ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
-            //    var weight1 = 1;
-            //    var weight2 = 1;
-            //    var weight3 = 1;
-            //    var weight4 = 1;
-            //    var weight5 = 1;
-            //    var weight6 = 1;
-            //    var candidateDistanceList = new List<Candidates>();
-            //    Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
-            //    Log.Info("# calculate the distance between a query and a candidate");
-            //    /// To calculate the distance                
-            //    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
-            //    {
-            //        candidateDistanceList = Indexing.WeightedEuclideanDistance(queryRepresentation, candidatesList,
-            //        weight1, weight2);
-            //    }
-            //    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
-            //    {
-            //        candidateDistanceList = Indexing.WeightedEuclideanDistCalculation2(queryRepresentation, candidatesList,
-            //        weight1, weight2, weight3, weight4);
-            //    }
-            //    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
-            //    {
-            //        candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesList,
-            //        weight1, weight2, weight3, weight4, weight5, weight6);
-            //    }
-            //    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
-            //    {
-            //        candidateDistanceList = Indexing.HoGEuclideanDist(queryRepresentation, candidatesList);
-            //    }
-            //    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
-            //    {
-            //        Log.Info("# distance caculation based on featurePropSet");
-            //        candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
-            //    }
-            //    //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
-            //    //    candidatesList, weight1, weight2);
-            //    Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
-            //    var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
-            //    Log.InfoFormat("All potential candidate distances: {0}", candidateDistanceList.Count);
-            //    /// To save all matched acoustic events                        
-            //    if (candidateDistanceList.Count != 0)
-            //    {
-            //        for (int l = 0; l < audioFilesCount; l++)
-            //        {
-            //            var temp = new List<Candidates>();
-            //            foreach (var s in candidateDistanceList)
-            //            {
-            //                if (s.SourceFilePath == candidatesAudioFiles[l])
-            //                {
-            //                    temp.Add(s);
-            //                }
-            //            }
-            //            seperateCandidatesList.Add(temp);
-            //        }
-            //    }
-            //    Log.InfoFormat("All seperated candidates: {0}", seperateCandidatesList.Count);
-            //    for (int index = 0; index < audioFilesCount; index++)
-            //    {
-            //        seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
-            //        if (seperateCandidatesList[index].Count != 0)
-            //        {
-            //            var top1 = seperateCandidatesList[index][0];
-            //            finalOutputCandidates.Add(top1);
-            //        }                   
-            //    }
-            //    finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
-            //    var candidateList = new List<Candidates>();
-            //    rank = finalOutputCandidates.Count;
-            //    if (finalOutputCandidates != null)
-            //    {
-            //        for (int k = 0; k < rank; k++)
-            //        {
-            //            candidateList.Add(finalOutputCandidates[k]);
-            //        }
-            //    }
-            //    var queryTempFile = new FileInfo(queryCsvFiles[i]);
-            //    var tempFileName = featurePropSet + queryTempFile.Name + "-matched candidates.csv";
-            //    var matchedCandidateCsvFileName = outputPath + tempFileName;
-            //    var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
-            //    CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
-            //    Log.Info("# draw combined spectrogram for returned hits");
-            //    /// Drawing the combined image
-            //    if (rank > 5)
-            //    {
-            //        rank = 5;
-            //    }
-            //    if (matchedCandidateFile != null)
-            //    {
-                //DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
-                //    outputPath,
-                //    rank, ridgeConfig, config,
-                //    featurePropSet, tempDirectory);
-            //    }
+                var candidatesList = new List<RegionRerepresentation>();
+                var seperateCandidatesList = new List<List<Candidates>>();
+                if (!Directory.Exists(inputFileDirectory))
+                {
+                    throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", inputFileDirectory));
+                }
+                Log.Info("# read all the training/test audio files");
+                var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
+                var audioFilesCount = candidatesAudioFiles.Count();
+                /// to get candidate region Representation                      
+                var finalOutputCandidates = new List<Candidates>();
+
+                for (int j = 0; j < audioFilesCount; j++)
+                {
+                    Log.Info("# read each training/test audio file");
+                    /// 2. Read the candidates 
+                    var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
+                    var candidateRidges = POISelection.PostRidgeDetection8Dir(candidateSpectrogram, ridgeConfig);
+                    var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
+                    var cols1 = candidateSpectrogram.Data.GetLength(0);
+                    var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1,
+                        neighbourhoodLength, featurePropSet, spectrogramConfig);
+                    var candidatesRegionList = Indexing.ExtractCandidateRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
+                candidateRidgeNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram);
+                    //    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
+                    //(candidateRidgeNhRepresentationList, featurePropSet);
+                    // this region representation depends on the query. 
+                    //var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, candidateRidgeNhRepresentationList,
+                    //candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
+                    // extract the candidates from the specific frequency
+                    //var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
+                    //var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
+                    //foreach (var c in splitRegionRepresentationListToBlock)
+                    //{
+                    //    c[0].Features = new Feature(c);
+                    //    var matchScore = new Feature(queryRepresentation, c);
+                    //    c[0].Features.featureBlockMatch = matchScore.featureBlockMatch;
+                    //    candidatesList.Add(c[0]);
+                    //}
+                    foreach (var c in candidatesRegionList)
+                    {
+                        candidatesList.Add(c);
+                    }
+                }// end of the loop for candidates
+                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.
+                var weight1 = 1;
+                var weight2 = 1;
+                var weight3 = 1;
+                var weight4 = 1;
+                var weight5 = 1;
+                var weight6 = 1;
+                var candidateDistanceList = new List<Candidates>();
+                Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
+                Log.Info("# calculate the distance between a query and a candidate");
+                /// To calculate the distance                
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+                {
+                    candidateDistanceList = Indexing.WeightedEuclideanDistance(queryRepresentation, candidatesList,
+                    weight1, weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+                {
+                    candidateDistanceList = Indexing.WeightedEuclideanDistCalculation2(queryRepresentation, candidatesList,
+                    weight1, weight2, weight3, weight4);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+                {
+                    candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesList,
+                    weight1, weight2, weight3, weight4, weight5, weight6);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
+                {
+                    candidateDistanceList = Indexing.HoGEuclideanDist(queryRepresentation, candidatesList);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
+                {
+                    Log.Info("# distance caculation based on featurePropSet");
+                    candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
+                }
+                //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
+                //    candidatesList, weight1, weight2);
+                Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
+                var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
+                Log.InfoFormat("All potential candidate distances: {0}", candidateDistanceList.Count);
+                /// To save all matched acoustic events                        
+                if (candidateDistanceList.Count != 0)
+                {
+                    for (int l = 0; l < audioFilesCount; l++)
+                    {
+                        var temp = new List<Candidates>();
+                        foreach (var s in candidateDistanceList)
+                        {
+                            if (s.SourceFilePath == candidatesAudioFiles[l])
+                            {
+                                temp.Add(s);
+                            }
+                        }
+                        seperateCandidatesList.Add(temp);
+                    }
+                }
+                Log.InfoFormat("All seperated candidates: {0}", seperateCandidatesList.Count);
+                for (int index = 0; index < audioFilesCount; index++)
+                {
+                    seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
+                    if (seperateCandidatesList[index].Count != 0)
+                    {
+                        var top1 = seperateCandidatesList[index][0];
+                        finalOutputCandidates.Add(top1);
+                    }
+                }
+                finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
+                var candidateList = new List<Candidates>();
+                rank = finalOutputCandidates.Count;
+                if (finalOutputCandidates != null)
+                {
+                    for (int k = 0; k < rank; k++)
+                    {
+                        candidateList.Add(finalOutputCandidates[k]);
+                    }
+                }
+                var queryTempFile = new FileInfo(queryCsvFiles[i]);
+                var tempFileName = featurePropSet + queryTempFile.Name + "-matched candidates.csv";
+                var matchedCandidateCsvFileName = outputPath + tempFileName;
+                var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
+                CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
+                Log.Info("# draw combined spectrogram for returned hits");
+                /// Drawing the combined image
+                if (rank > 5)
+                {
+                    rank = 5;
+                }
+                if (matchedCandidateFile != null)
+                {
+                    DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                        outputPath,
+                        rank, ridgeConfig, config,
+                        featurePropSet, tempDirectory);
+                }
                 Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
             } // end of for searching the query folder
             //string outputFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\POIStatisticalAnalysis.csv";
@@ -1132,7 +1140,7 @@
             var queryCsvFiles = Directory.GetFiles(constructed, "*.csv", SearchOption.AllDirectories);
             var queryAduioFiles = Directory.GetFiles(constructed, "*.wav", SearchOption.AllDirectories);
             var csvFilesCount = queryCsvFiles.Count();
-            var result = new List<Candidates>();
+            //var result = new List<Candidates>();
             /// this loop is used for searching query folder.
             for (int i = 0; i < csvFilesCount; i++)
             {
@@ -1155,116 +1163,116 @@
                 // read query poiList                
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile);
                 var queryRepresentation = Indexing.ExtractQRepreFromAudioStRepr(query, queryAudioPOIs,queryAduioFiles[i], spectrogram);
-                var poiCountInquery = queryRepresentation.POICount;               
-                //var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
-                //CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
-                var candidateItem = new Candidates(0.0, 0.0, 0.0, poiCountInquery,
-                    0.0, queryAduioFiles[i]);
-                result.Add(candidateItem);
-            //    /// To get all the candidates  
-            //    var candidatesList = new List<RegionRerepresentation>();
-            //    var seperateCandidatesList = new List<List<Candidates>>();
-            //    if (!Directory.Exists(inputFileDirectory))
-            //    {
-            //        throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", inputFileDirectory));
-            //    }
-            //    Log.Info("# read all the training/test audio files");
-            //    var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
-            //    var audioFilesCount = candidatesAudioFiles.Count();
-            //    /// to get candidate region Representation                      
-            //    var finalOutputCandidates = new List<Candidates>();
+                //var poiCountInquery = queryRepresentation.POICount;               
+                ////var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
+                ////CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
+                //var candidateItem = new Candidates(0.0, 0.0, 0.0, poiCountInquery,
+                //    0.0, queryAduioFiles[i]);
+                //result.Add(candidateItem);
+                /// To get all the candidates  
+                var candidatesList = new List<RegionRerepresentation>();
+                var seperateCandidatesList = new List<List<Candidates>>();
+                if (!Directory.Exists(inputFileDirectory))
+                {
+                    throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", inputFileDirectory));
+                }
+                Log.Info("# read all the training/test audio files");
+                var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
+                var audioFilesCount = candidatesAudioFiles.Count();
+                /// to get candidate region Representation                      
+                var finalOutputCandidates = new List<Candidates>();
 
-            //    for (int j = 0; j < audioFilesCount; j++)
-            //    {
-            //        Log.Info("# read each training/test audio file");
-            //        /// 2. Read the candidates 
-            //        var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-            //        var candidatePoiList = StructureTensorAnalysis.ExtractfftFeaturesFromPOI(candidateSpectrogram, stConfiguation);
-            //        var candidatesRegionList = Indexing.ExtractCandiRegionRepreFromAudioStList(candidateSpectrogram,
-            //            candidatesAudioFiles[j], candidatePoiList, queryRepresentation);
-            //        foreach (var c in candidatesRegionList) 
-            //        {
-            //            candidatesList.Add(c);
-            //        }
-            //    }// end of the loop for candidates
-            //    Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
-            //    Log.Info("# calculate the distance between a query and a candidate");
-            //    ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.                
-            //    var candidateDistanceList = new List<Candidates>();
-            //    double weight = 0.15;
-            //    /// To calculate the distance                
-            //    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet7)
-            //    {
-            //        Log.Info("# distance caculation based on featurePropSet");
-            //        candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList, 
-            //            stConfiguation.MatchedThreshold, weight);
-            //    }
-            //    //var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
-            //    Log.InfoFormat("All potential candidate distances: {0}", candidateDistanceList.Count);
-                                      
-            //    if (candidateDistanceList.Count != 0)
-            //    {
-            //        for (int l = 0; l < audioFilesCount; l++)
-            //        {
-            //            var temp = new List<Candidates>();
-            //            foreach (var s in candidateDistanceList)
-            //            {
-            //                if (s.SourceFilePath == candidatesAudioFiles[l])
-            //                {
-            //                    temp.Add(s);
-            //                }
-            //            }
-            //            seperateCandidatesList.Add(temp);
-            //        }
-            //    }
-            //    Log.InfoFormat("All seperated candidates: {0}", seperateCandidatesList.Count);
-            //    var sepCandiListCount = seperateCandidatesList.Count;
-            //    for (int index = 0; index < sepCandiListCount; index++)
-            //    {
-            //        seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
-            //        var top1 = seperateCandidatesList[index][0];
-            //        finalOutputCandidates.Add(top1);
-            //    }
-            //    finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
-            //    var candidateList = new List<Candidates>();
-            //    rank = finalOutputCandidates.Count;
-            //    /// To save all matched acoustic events  
-            //    if (finalOutputCandidates != null)
-            //    {
-            //        for (int k = 0; k < rank; k++)
-            //        {
-            //            candidateList.Add(finalOutputCandidates[k]);
-            //        }
-            //    }
-            //    var candidatesCount = candidateList.Count;
-            //    if (candidatesCount == 0)
-            //    {
-            //        Log.Info("the final candidate list is empty");
-            //    }
-            //    var queryTempFile = new FileInfo(queryCsvFiles[i]);
-            //    var tempFileName = featurePropSet + queryTempFile.Name + "-matched candidates.csv";
-            //    var matchedCandidateCsvFileName = outputPath + tempFileName;
-            //    var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
-            //    CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
-            //    Log.InfoFormat("Candidates: {0}, Path:{1} ", candidatesCount, matchedCandidateCsvFileName);
-            //    Log.Info("# draw combined spectrogram for returned hits");
-            //    /// Drawing the combined image
-            //    if (rank > 5)
-            //    {
-            //        rank = 5;
-            //    }
-            //    if (matchedCandidateFile != null)
-            //    {
-            //        DrawingCandiOutputStSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
-            //            outputPath,
-            //            rank, stConfiguation, config,
-            //            featurePropSet, tempDirectory);
-            //    }
+                for (int j = 0; j < audioFilesCount; j++)
+                {
+                    Log.Info("# read each training/test audio file");
+                    /// 2. Read the candidates 
+                    var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
+                    var candidatePoiList = StructureTensorAnalysis.ExtractfftFeaturesFromPOI(candidateSpectrogram, stConfiguation);
+                    var candidatesRegionList = Indexing.ExtractCandiRegionRepreFromAudioStList(candidateSpectrogram,
+                        candidatesAudioFiles[j], candidatePoiList, queryRepresentation);
+                    foreach (var c in candidatesRegionList)
+                    {
+                        candidatesList.Add(c);
+                    }
+                }// end of the loop for candidates
+                Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
+                Log.Info("# calculate the distance between a query and a candidate");
+                ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.                
+                var candidateDistanceList = new List<Candidates>();
+                double weight = 0.15;
+                /// To calculate the distance                
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet7)
+                {
+                    Log.Info("# distance caculation based on featurePropSet");
+                    candidateDistanceList = Indexing.EuclideanDistanceOnFFTMatrix(queryRepresentation, candidatesList,
+                        stConfiguation.MatchedThreshold, weight);
+                }
+                //var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
+                Log.InfoFormat("All potential candidate distances: {0}", candidateDistanceList.Count);
+
+                if (candidateDistanceList.Count != 0)
+                {
+                    for (int l = 0; l < audioFilesCount; l++)
+                    {
+                        var temp = new List<Candidates>();
+                        foreach (var s in candidateDistanceList)
+                        {
+                            if (s.SourceFilePath == candidatesAudioFiles[l])
+                            {
+                                temp.Add(s);
+                            }
+                        }
+                        seperateCandidatesList.Add(temp);
+                    }
+                }
+                Log.InfoFormat("All seperated candidates: {0}", seperateCandidatesList.Count);
+                var sepCandiListCount = seperateCandidatesList.Count;
+                for (int index = 0; index < sepCandiListCount; index++)
+                {
+                    seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
+                    var top1 = seperateCandidatesList[index][0];
+                    finalOutputCandidates.Add(top1);
+                }
+                finalOutputCandidates = finalOutputCandidates.OrderByDescending(x => x.Score).ToList();
+                var candidateList = new List<Candidates>();
+                rank = finalOutputCandidates.Count;
+                /// To save all matched acoustic events  
+                if (finalOutputCandidates != null)
+                {
+                    for (int k = 0; k < rank; k++)
+                    {
+                        candidateList.Add(finalOutputCandidates[k]);
+                    }
+                }
+                var candidatesCount = candidateList.Count;
+                if (candidatesCount == 0)
+                {
+                    Log.Info("the final candidate list is empty");
+                }
+                var queryTempFile = new FileInfo(queryCsvFiles[i]);
+                var tempFileName = featurePropSet + queryTempFile.Name + "-matched candidates.csv";
+                var matchedCandidateCsvFileName = outputPath + tempFileName;
+                var matchedCandidateFile = new FileInfo(matchedCandidateCsvFileName);
+                CSVResults.CandidateListToCSV(matchedCandidateFile, candidateList);
+                Log.InfoFormat("Candidates: {0}, Path:{1} ", candidatesCount, matchedCandidateCsvFileName);
+                Log.Info("# draw combined spectrogram for returned hits");
+                /// Drawing the combined image
+                if (rank > 5)
+                {
+                    rank = 5;
+                }
+                if (matchedCandidateFile != null)
+                {
+                    DrawingCandiOutputStSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                        outputPath,
+                        rank, stConfiguation, config,
+                        featurePropSet, tempDirectory);
+                }
                 Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
             } // end of for searching the query folder
-            string outputFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\STPOIStatisticalAnalysis.csv";
-            var outputFileInfo = new FileInfo(outputFile);
-            CSVResults.CandidateListToCSV(outputFileInfo, result);
+            //string outputFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\STPOIStatisticalAnalysis.csv";
+            //var outputFileInfo = new FileInfo(outputFile);
+            //CSVResults.CandidateListToCSV(outputFileInfo, result);
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
 
@@ -1497,7 +1505,7 @@
 
                 /// because the query always come from first place.                   
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
-                var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
+                var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                 /// To show the ridges on the spectrogram. 
                 var scores = new List<double>();
                 scores.Add(0.0);

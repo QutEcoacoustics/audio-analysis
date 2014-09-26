@@ -545,6 +545,88 @@
             return result;
         }
 
+        public static double DistanceFeature5RepresentationMagnitudeBased(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, int poiCountThreshold)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
+                var Orientation0POIHistDiff = 0.0;
+                var Orientation1POIHistDiff = 0.0;
+                var Orientation2POIHistDiff = 0.0;
+                var Orientation3POIHistDiff = 0.0;
+                var Orientation4POIHistDiff = 0.0;
+                var Orientation5POIHistDiff = 0.0;
+                var Orientation6POIHistDiff = 0.0;
+                var Orientation7POIHistDiff = 0.0; 
+                //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
+                var columnEnergyEntropyDiff = 0.0;
+                var rowEnergyEntropyDiff = 0.0;
+                var max0POIHistDiff = 1.0;
+                var max1POIHistDiff = 1.0;
+                var max2POIHistDiff = 1.0;
+                var max3POIHistDiff = 1.0;
+                var max4POIHistDiff = 1.0;
+                var max5POIHistDiff = 1.0;
+                var max6POIHistDiff = 1.0;
+                var max7POIHistDiff = 1.0;
+                var maxColEnergyEntroDiff = 1.0;
+                var maxRowEnergyEntroDiff = 1.0;
+                var matchedNhCount = 0;
+                for (int index = 0; index < nhCount; index++)
+                {
+                    // to check whether they match
+                    if (query[index].POICount <= poiCountThreshold && candidate[index].POICount <= poiCountThreshold)
+                    {
+                        result += 0.2;
+                        matchedNhCount++;
+                    }
+                    else if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
+                    {
+                        matchedNhCount++;
+                        var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
+                        var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
+                        var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
+                        var queryNDOrientationPOIHistogram = query[index].NDOrientationPOIHistogram;
+                        var queryPOICountPercentage = query[index].POICountPercentage;
+                        var queryColumnEnergyEntropy = query[index].ColumnEnergyEntropy;
+                        var queryRowEnergyEntropy = query[index].RowEnergyEntropy;
+
+                        var candidateHOrientationPOIHistogram = candidate[index].HOrientationPOIHistogram;
+                        var candidatePDOrientationPOIHistogram = candidate[index].PDOrientationPOIHistogram;
+                        var candidateVOrientationPOIHistogram = candidate[index].VOrientationPOIHistogram;
+                        var candidateNDOrientationPOIHistogram = candidate[index].NDOrientationPOIHistogram;
+                        //var candidatePOICountPercentage = candidate[index].POICountPercentage;
+                        var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
+                        var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
+                        Orientation0POIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
+                        Orientation1POIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
+                        Orientation2POIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
+                        Orientation3POIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
+                        Orientation4POIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
+                        Orientation5POIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
+                        Orientation6POIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
+                        Orientation7POIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
+                        //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
+                        columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
+                        rowEnergyEntropyDiff = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
+
+                        var euclideanDistance = Math.Sqrt(Math.Pow(Orientation0POIHistDiff, 2) + Math.Pow(Orientation1POIHistDiff, 2)
+                                          + Math.Pow(Orientation2POIHistDiff, 2) + Math.Pow(Orientation3POIHistDiff, 2)
+                                          + Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
+                        var maxDistance = Math.Sqrt(max0POIHistDiff + max1POIHistDiff + max2POIHistDiff +
+                            max3POIHistDiff + maxColEnergyEntroDiff + maxRowEnergyEntroDiff);
+                        result += 0.8 * (1 - euclideanDistance / maxDistance);
+                    }
+                }
+                var matchedPercentage = matchedNhCount / (double)nhCount;
+                var averageSimilarityScore = result / matchedNhCount;
+                result = matchedPercentage * averageSimilarityScore;
+                result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
+            }
+            return result;
+        }
+        
         public static double DistanceFeature5Representation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, int poiCountThreshold)
         {
             var result = 0.0;

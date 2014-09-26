@@ -121,14 +121,6 @@ namespace Dong.Felt
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
 
         #region Public Methods
-
-        public static double RGBtoIntensity(Color color)
-        {
-            var result = 0.0;
-            return result;
-        }
-
-
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, double eventThreshold, List<PointOfInterest> poiList)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -878,6 +870,96 @@ namespace Dong.Felt
             //direction = indexMax;
         }
 
+        public static void Sobel5X5RidgeDetection8Direction(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            {
+                isRidge = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+            
+            double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1, 0.4, 0.4, 0.4,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir2Mask = { {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1}
+                                      };
+            double[,] ridgeDir3Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1}
+                                       };
+            double[,] ridgeDir4Mask = { {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1}
+                                      };      
+            double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1}
+                                      };
+            double[,] ridgeDir6Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4}
+                                      };
+            double[,] ridgeDir7Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4, 0.4, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+
+
+
+            double[] ridgeMagnitudes = new double[8];
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+            ridgeMagnitudes[4] = MatrixTools.DotProduct(ridgeDir4Mask, m);
+            ridgeMagnitudes[5] = MatrixTools.DotProduct(ridgeDir5Mask, m);
+            ridgeMagnitudes[6] = MatrixTools.DotProduct(ridgeDir6Mask, m);
+            ridgeMagnitudes[7] = MatrixTools.DotProduct(ridgeDir7Mask, m);
+
+            //var centerPixelIntensity = m[rows / 2, cols / 2];
+            //averageIntensity = 1.0/25 * MatrixTools.DotProduct(averageMask, m);
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax / 2;
+            /// 8 directions
+            direction = indexMax * Math.PI / (double)8;
+            //direction = indexMax;
+        }
+
         /// <summary>
         /// This function is used for calculating ridge detection but for direciton at 2 and 6, it improved. 
         /// </summary>
@@ -1118,7 +1200,7 @@ namespace Dong.Felt
             return result;
         }
 
-        /// To cut off the overlapped lines in the same direction
+        /// To cut off the overlapped lines in the same direction for 4 directions
         public static List<PointOfInterest> PruneAdjacentTracksBasedOnDirection(List<PointOfInterest> poiList, int rows, int cols)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
@@ -1220,6 +1302,107 @@ namespace Dong.Felt
             return PointOfInterest.TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
 
+        /// To cut off the overlapped lines in the same direction for 4 directions
+        public static List<PointOfInterest> PruneAdjacentTracksBasedOn8Direction(List<PointOfInterest> poiList, int rows, int cols)
+        {
+            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            for (int r = 1; r < rows - 1; r++)
+            {
+                for (int c = 1; c < cols - 1; c++)
+                {
+                    if (M[r, c] == null) continue;
+                    if (M[r, c].OrientationCategory == 0 || M[r, c].OrientationCategory == 1 || M[r, c].OrientationCategory == 7)  // horizontal line
+                    {
+                        if ((M[r - 1, c] != null) && ((M[r - 1, c].OrientationCategory == 0) || (M[r - 1, c].OrientationCategory == 1) || (M[r - 1, c].OrientationCategory == 7)))
+                        {
+                            M[r - 1, c] = null;
+                        }
+                        if ((M[r + 1, c] != null) && ((M[r + 1, c].OrientationCategory == 0) || (M[r + 1, c].OrientationCategory == 1) || (M[r + 1, c].OrientationCategory == 7)))
+                        {
+                            M[r + 1, c] = null;
+                        }
+                    }
+                    else if ((M[r, c].OrientationCategory == 4) || (M[r, c].OrientationCategory == 3) || (M[r, c].OrientationCategory == 5)) // vertical line
+                    {
+                        if ((M[r, c - 1] != null) && ((M[r, c - 1].OrientationCategory == 4) || (M[r, c - 1].OrientationCategory == 3) || (M[r, c - 1].OrientationCategory == 5)))
+                        {
+                            M[r, c - 1] = null;
+                        }
+                        if ((M[r, c + 1] != null) && ((M[r, c + 1].OrientationCategory == 4) || (M[r, c + 1].OrientationCategory == 3) || (M[r, c + 1].OrientationCategory == 5)))
+                        {
+                            M[r, c + 1] = null;
+                        }
+                    } // if (OrientationCategory)
+                    else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
+                    {
+                        // Check whether it is connected to other poi with orientation 2. 
+                        if ((M[r - 1, c + 1] != null) && (M[r - 1, c + 1].OrientationCategory == 2))
+                        {
+                            /// above and below
+                            if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 2))
+                            {
+
+                                M[r - 1, c] = null;
+
+                            }
+                            if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 2))
+                            {
+                                if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                                {
+                                    M[r + 1, c] = null;
+                                }
+                            }
+                            /// left and right
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) // 
+                            {
+
+                                M[r, c - 1] = null;
+
+                            }
+                            if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 2)) //
+                            {
+
+                                M[r, c + 1] = null;
+
+                            }
+                        }
+                    }
+                    else if (M[r, c].OrientationCategory == 6)  // negative diagonal line
+                    {
+                        if ((M[r + 1, c + 1] != null) && (M[r + 1, c + 1].OrientationCategory == 6))
+                        {
+                            /// above and below
+                            if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 6))
+                            {
+
+                                M[r - 1, c] = null;
+
+                            }
+                            if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 6))
+                            {
+
+                                M[r + 1, c] = null;
+
+                            }
+                            /// left and right
+                            if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) // 
+                            {
+
+                                M[r, c - 1] = null;
+
+                            }
+                            if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 6)) //
+                            {
+
+                                M[r, c + 1] = null;
+
+                            }
+                        }
+                    } // end if (M[r, c].OrientationCategory == 0) 
+                } // c
+            } // for r loop
+            return PointOfInterest.TransferPOIMatrix2List(M);
+        } // PruneAdjacentTracks()
         /// To cut off the overlapped lines in the same direction
         public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
@@ -1486,8 +1669,10 @@ namespace Dong.Felt
         {
             foreach (var poi in poiList)
             {
-                var xCoordinate = poi.Point.Y;
-                var yCoordinate = poi.Point.X;
+                //var xCoordinate = poi.Point.Y;
+                //var yCoordinate = poi.Point.X;
+                var xCoordinate = poi.Point.X;
+                var yCoordinate = poi.Point.Y;
                 spectrogram.Data[yCoordinate, cols - xCoordinate] = 20.0;
             }
             for (int r = 0; r < rows; r++)

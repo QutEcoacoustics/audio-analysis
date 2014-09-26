@@ -18,7 +18,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six speci
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [batch]  
+Actions: [processOne]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -28,7 +28,7 @@ NoiseReductionType: STANDARD
 WindowOverlap: 0.5
 
 # RidgeDetection Config # amplitude 0.2
-RidgeDetectionMagnitudeThreshold: 6.0 
+RidgeDetectionMagnitudeThreshold: 6.0
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength: 7
 MinimumNumberInRidgeInMatrix: 3
@@ -36,7 +36,7 @@ AverageIntensityDifferenceInNh: 0.2
 
 
 # Structure Tensor Config
-StThreshold: 0.015
+StThreshold: 0.02
 StAvgNhLength: 11
 StFFTNeighbourhoodLength: 16
 StMatchedThreshold: 500
