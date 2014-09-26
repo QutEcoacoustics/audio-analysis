@@ -722,8 +722,8 @@
                     double eventThreshold = 0.5; // dummy variable - not used                               
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     //Image image = ImageAnalysisTools.DrawNullSonogram(spectrogram);
-                    //var ridges = POISelection.PostRidgeDetection(spectrogram, ridgeConfig);
-                    var ridges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);
+                    var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
+                    //var ridges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);
                     //var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, ridges, spectrogram.Data.GetLength(0),
                     //    spectrogram.Data.GetLength(1));
                     //spectrogram.Data = spectrogramData;
@@ -742,7 +742,7 @@
                         //poi.HerzScale = herzScale;
                     }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-ridge detection1.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-ridge detection-Overlap-0.0.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -1051,7 +1051,7 @@
                 {
                     Log.Info("# distance caculation based on featurePropSet");
                     candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
-                    //candidateDistanceList = Indexing.Feature5EuclideanDistMagBased(queryRepresentation, candidatesList);
+                   // candidateDistanceList = Indexing.Feature5EuclideanDistMagBased(queryRepresentation, candidatesList);
                 }
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
                 //    candidatesList, weight1, weight2);
