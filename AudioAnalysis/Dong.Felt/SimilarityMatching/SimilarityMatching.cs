@@ -562,16 +562,16 @@
                 //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
                 var columnEnergyEntropyDiff = 0.0;
                 var rowEnergyEntropyDiff = 0.0;
-                var max0POIHistDiff = 1.0;
-                var max1POIHistDiff = 1.0;
-                var max2POIHistDiff = 1.0;
-                var max3POIHistDiff = 1.0;
-                var max4POIHistDiff = 1.0;
-                var max5POIHistDiff = 1.0;
-                var max6POIHistDiff = 1.0;
-                var max7POIHistDiff = 1.0;
-                var maxColEnergyEntroDiff = 1.0;
-                var maxRowEnergyEntroDiff = 1.0;
+                var max0POIHistDiff = 3.0;
+                var max1POIHistDiff = 3.0;
+                var max2POIHistDiff = 3.0;
+                var max3POIHistDiff = 3.0;
+                var max4POIHistDiff = 3.0;
+                var max5POIHistDiff = 3.0;
+                var max6POIHistDiff = 3.0;
+                var max7POIHistDiff = 3.0;
+                var maxColEnergyEntroDiff = 3.0;
+                var maxRowEnergyEntroDiff = 3.0;
                 var matchedNhCount = 0;
                 var maxDistance = Math.Sqrt(max0POIHistDiff + max1POIHistDiff + max2POIHistDiff + max3POIHistDiff
                             + max4POIHistDiff + max5POIHistDiff +
@@ -630,9 +630,9 @@
                         result += 0.8 * (1 - euclideanDistance / maxDistance);
                     }
                 }
-                //var matchedPercentage = matchedNhCount / (double)nhCount;
+                var matchedPercentage = matchedNhCount / (double)nhCount;
                 var averageSimilarityScore = result / matchedNhCount;
-                result = averageSimilarityScore;
+                result = matchedPercentage * averageSimilarityScore;
                 result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
             }
             return result;
@@ -700,9 +700,9 @@
                         result += 0.8 * (1 - euclideanDistance / maxDistance);
                     }
                 }
-                //var matchedPercentage = matchedNhCount / (double)nhCount;
+                var matchedPercentage = matchedNhCount / (double)nhCount;
                 var averageSimilarityScore = result / matchedNhCount;
-                result = averageSimilarityScore;
+                result =  matchedPercentage * averageSimilarityScore;
                 result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
             }
             return result;

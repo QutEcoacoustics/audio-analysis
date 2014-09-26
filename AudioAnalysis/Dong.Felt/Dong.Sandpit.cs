@@ -954,20 +954,20 @@
                 var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
                 neighbourhoodLength, featurePropSet, spectrogramConfig);
                 //var normalizedNhRepresentationList = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(ridgeNhRepresentationList);
-
+                var histogramCoding = StatisticalAnalysis.Nh4HistogramCoding(ridgeNhRepresentationList);
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                ridgeNhRepresentationList, queryAduioFiles[i], spectrogram);
+                histogramCoding, queryAduioFiles[i], spectrogram);
                                          
                 //var poiCountInquery = StatisticalAnalysis.CountPOIInEvent(queryRepresentation);
                 //var nhCountInquery = StatisticalAnalysis.CountNhInEvent(queryRepresentation);
                 //var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 //CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
-                var candidateItem = new Candidates(0.0, query.startTime, query.duration, query.maxFrequency,
-                    query.minFrequency, queryAduioFiles[i]);
-                result.Add(candidateItem);
+                //var candidateItem = new Candidates(0.0, query.startTime, query.duration, query.maxFrequency,
+                //    query.minFrequency, queryAduioFiles[i]);
+                //result.Add(candidateItem);
                 
                 /// To get all the candidates  
                 var candidatesList = new List<RegionRerepresentation>();
@@ -994,8 +994,9 @@
                     var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges, rows1, cols1,
                         neighbourhoodLength, featurePropSet, spectrogramConfig);
                     //var normalisedCandidateRidgeNh = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(candidateRidgeNhRepresentationList);
+                    var candHistogramCoding = StatisticalAnalysis.Nh4HistogramCoding(candidateRidgeNhRepresentationList);
                     var candidatesRegionList = Indexing.ExtractCandidateRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                candidateRidgeNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram);
+                candHistogramCoding, candidatesAudioFiles[j], candidateSpectrogram);
                     //    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
                     //(candidateRidgeNhRepresentationList, featurePropSet);
                     // this region representation depends on the query. 
