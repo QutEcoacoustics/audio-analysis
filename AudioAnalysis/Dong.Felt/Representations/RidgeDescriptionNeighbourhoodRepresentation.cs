@@ -190,6 +190,11 @@ namespace Dong.Felt.Representations
         public double Orientation7POIMagnitude { get; set; }
 
         /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double POIMagnitudeSum { get; set; }
+
+        /// <summary>
         /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
         /// </summary>
         public int HOrientationPOICount { get; set; }
@@ -523,10 +528,14 @@ namespace Dong.Felt.Representations
         public void FeatureSet5Representation2(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
             //var histogramOfGradient = new List<double>();
-            var EastBin = 0.0;
-            var NorthEastBin = 0.0;
-            var NorthBin = 0.0;
-            var NorthWestBin = 0.0;
+            var Bin0 = 0.0;
+            var Bin1 = 0.0;
+            var Bin2 = 0.0;
+            var Bin3 = 0.0;
+            var Bin4 = 0.0;
+            var Bin5 = 0.0;
+            var Bin6 = 0.0;
+            var Bin7 = 0.0;
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -535,21 +544,37 @@ namespace Dong.Felt.Representations
                 {
                     if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 0)
                         {
-                            EastBin += 1.0;
+                            Bin0 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 1)
                         {
-                            NorthEastBin += 1.0;
+                            Bin1 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 2)
                         {
-                            NorthBin += 1.0;
+                            Bin2 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 3)
                         {
-                            NorthWestBin += 1.0;
+                            Bin3 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 4)
+                        {
+                            Bin4 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 5)
+                        {
+                            Bin5 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 6)
+                        {
+                            Bin6 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 7)
+                        {
+                            Bin7 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
                     }
                 }
@@ -561,10 +586,9 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
-            var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
-            var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
-
-            if (sumPOICount == 0)
+            this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
+            //var maxPOIMagnitude = 20.0 * pointsOfInterest.GetLength(0);
+            if (this.POIMagnitudeSum == 0)
             {
                 this.Orientation0POIMagnitude = 0.0;
                 this.Orientation0POIMagnitude = 0.0;
@@ -580,10 +604,14 @@ namespace Dong.Felt.Representations
             }
             else
             {
-                this.HOrientationPOIHistogram = EastBin / sumPOICount;
-                this.VOrientationPOIHistogram = NorthBin / sumPOICount;
-                this.PDOrientationPOIHistogram = NorthEastBin / sumPOICount;
-                this.NDOrientationPOIHistogram = NorthWestBin / sumPOICount;
+                this.Orientation0POIMagnitude = Bin0;
+                this.Orientation1POIMagnitude = Bin1;
+                this.Orientation2POIMagnitude = Bin2;
+                this.Orientation3POIMagnitude = Bin3;
+                this.Orientation4POIMagnitude = Bin4;
+                this.Orientation5POIMagnitude = Bin5;
+                this.Orientation6POIMagnitude = Bin6;
+                this.Orientation7POIMagnitude = Bin7;
 
                 var columnEnergy = new double[pointsOfInterest.GetLength(1)];
                 for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -592,13 +620,8 @@ namespace Dong.Felt.Representations
                     {
                         if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
                         {
-                            // added if will consider the orientation, comment it will not consider the orientation. 
-                            //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
-                            //{
-                            //columnEnergy[rowIndex] += 1.0;   // Count of POI
                             var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
                             columnEnergy[rowIndex] += magnitude;
-                            //}
                         }
                     }
                 }
@@ -609,12 +632,8 @@ namespace Dong.Felt.Representations
                     {
                         if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                         {
-                            //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                            //{
-                            //rowEnergy[rowIndex] += 1.0;
                             var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                             rowEnergy[rowIndex] += magnitude;
-                            //}
                         }
                     }
                 }
@@ -1040,7 +1059,8 @@ namespace Dong.Felt.Representations
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
                         {
-                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig);
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
+                            //ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
