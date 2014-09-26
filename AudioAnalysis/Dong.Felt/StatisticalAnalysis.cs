@@ -521,6 +521,128 @@
             return result;
         }
 
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> Nh4HistogramCoding(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
+        {
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            foreach (var nh in nhList)
+            {               
+                if (nh.magnitude != 0.0)
+                {
+                    var HOrientationPOIHist = nh.HOrientationPOIHistogram;
+
+                    if (HOrientationPOIHist >= 0.0 && HOrientationPOIHist < 0.25)
+                    {
+                        nh.HOrientationPOIHistogram = 0.0;
+                    }
+                    else if (HOrientationPOIHist >= 0.25 && HOrientationPOIHist < 0.5)
+                    {
+                        nh.HOrientationPOIHistogram = 1.0;
+                    }
+                    else if (HOrientationPOIHist >= 0.5 && HOrientationPOIHist < 0.75)
+                    {
+                        nh.HOrientationPOIHistogram = 2.0;
+                    }
+                    else if (HOrientationPOIHist >= 0.75 && HOrientationPOIHist <= 1.0)
+                    {
+                        nh.HOrientationPOIHistogram = 3.0;
+                    }
+                    var VOrientationPOIHist = nh.VOrientationPOIHistogram;
+                    if (VOrientationPOIHist >= 0.0 && VOrientationPOIHist < 0.25)
+                    {
+                        nh.VOrientationPOIHistogram = 0.0;
+                    }
+                    else if (VOrientationPOIHist >= 0.25 && VOrientationPOIHist < 0.5)
+                    {
+                        nh.VOrientationPOIHistogram = 1.0;
+                    }
+                    else if (VOrientationPOIHist >= 0.5 && VOrientationPOIHist < 0.75)
+                    {
+                        nh.VOrientationPOIHistogram = 2.0;
+                    }
+                    else if (VOrientationPOIHist >= 0.75 && VOrientationPOIHist <= 1.0)
+                    {
+                        nh.VOrientationPOIHistogram = 3.0;
+                    }
+
+                    var PDOrientationPOIHist = nh.PDOrientationPOIHistogram;
+                    if (PDOrientationPOIHist >= 0.0 && PDOrientationPOIHist < 0.25)
+                    {
+                        nh.PDOrientationPOIHistogram = 0.0;
+                    }
+                    else if (PDOrientationPOIHist >= 0.25 && PDOrientationPOIHist < 0.5)
+                    {
+                        nh.PDOrientationPOIHistogram = 1.0;
+                    }
+                    else if (PDOrientationPOIHist >= 0.5 && PDOrientationPOIHist < 0.75)
+                    {
+                        nh.PDOrientationPOIHistogram = 2.0;
+                    }
+                    else if (PDOrientationPOIHist >= 0.75 && PDOrientationPOIHist <= 1.0)
+                    {
+                        nh.PDOrientationPOIHistogram = 3.0;
+                    }
+
+                    var NDOrientationPOIHist = nh.NDOrientationPOIHistogram;
+                    if (NDOrientationPOIHist >= 0.0 && NDOrientationPOIHist < 0.25)
+                    {
+                        nh.NDOrientationPOIHistogram = 0.0;
+                    }
+                    else if (NDOrientationPOIHist >= 0.25 && NDOrientationPOIHist < 0.5)
+                    {
+                        nh.NDOrientationPOIHistogram = 1.0;
+                    }
+                    else if (NDOrientationPOIHist >= 0.5 && NDOrientationPOIHist < 0.75)
+                    {
+                        nh.NDOrientationPOIHistogram = 2.0;
+                    }
+                    else if (NDOrientationPOIHist >= 0.75 && NDOrientationPOIHist <= 1.0)
+                    {
+                        nh.NDOrientationPOIHistogram = 3.0;
+                    }
+
+                    var RowEntropy = nh.RowEnergyEntropy;
+                    if (RowEntropy >= 0.0 && RowEntropy < 0.25)
+                    {
+                        nh.RowEnergyEntropy = 0.0;
+                    }
+                    else if (RowEntropy >= 0.25 && RowEntropy < 0.5)
+                    {
+                        nh.RowEnergyEntropy = 1.0;
+                    }
+                    else if (RowEntropy >= 0.5 && RowEntropy < 0.75)
+                    {
+                        nh.RowEnergyEntropy = 2.0;
+                    }
+                    else if (RowEntropy >= 0.75 && RowEntropy <= 1.0)
+                    {
+                        nh.RowEnergyEntropy = 3.0;
+                    }
+
+                    var ColEntropy = nh.ColumnEnergyEntropy;
+                    if (ColEntropy >= 0.0 && ColEntropy < 0.25)
+                    {
+                        nh.ColumnEnergyEntropy = 0.0;
+                    }
+                    else if (ColEntropy >= 0.25 && ColEntropy < 0.5)
+                    {
+                        nh.ColumnEnergyEntropy = 1.0;
+                    }
+                    else if (ColEntropy >= 0.5 && ColEntropy < 0.75)
+                    {
+                        nh.ColumnEnergyEntropy = 2.0;
+                    }
+                    else if (ColEntropy >= 0.75 && ColEntropy <= 1.0)
+                    {
+                        nh.ColumnEnergyEntropy = 3.0;
+                    }
+                        
+                }
+                result.Add(nh);
+            }
+            
+            return result;
+        }
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> NormalizeNhPropertiesForHistogram(List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
@@ -534,20 +656,19 @@
                     magnitudeList.Add(nh.POIMagnitudeSum);
                 }
             }
-            var minimagnitude = magnitudeList.Min();
             var maxmagnitude = magnitudeList.Max();
             foreach (var nh in nhList)
             {
                 if (nh.POIMagnitudeSum != 0)
                 {
-                    nh.Orientation0POIMagnitude = (nh.Orientation0POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.Orientation1POIMagnitude = (nh.Orientation1POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.Orientation2POIMagnitude = (nh.Orientation2POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.Orientation3POIMagnitude = (nh.Orientation3POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude); 
-                    nh.Orientation4POIMagnitude = (nh.Orientation4POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.Orientation5POIMagnitude = (nh.Orientation5POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.Orientation6POIMagnitude = (nh.Orientation6POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude);
-                    nh.Orientation7POIMagnitude = (nh.Orientation7POIMagnitude - minimagnitude) / (maxmagnitude - minimagnitude); 
+                    nh.Orientation0POIMagnitude = (nh.Orientation0POIMagnitude) / maxmagnitude ;
+                    nh.Orientation1POIMagnitude = (nh.Orientation1POIMagnitude) / maxmagnitude ;
+                    nh.Orientation2POIMagnitude = (nh.Orientation2POIMagnitude) / maxmagnitude ;
+                    nh.Orientation3POIMagnitude = (nh.Orientation3POIMagnitude) / maxmagnitude ; 
+                    nh.Orientation4POIMagnitude = (nh.Orientation4POIMagnitude) / maxmagnitude ;
+                    nh.Orientation5POIMagnitude = (nh.Orientation5POIMagnitude) / maxmagnitude ;
+                    nh.Orientation6POIMagnitude = (nh.Orientation6POIMagnitude) / maxmagnitude ;
+                    nh.Orientation7POIMagnitude = (nh.Orientation7POIMagnitude) / maxmagnitude ; 
                 }
                 result.Add(nh);
             }
