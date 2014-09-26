@@ -152,6 +152,46 @@ namespace Dong.Felt.Representations
         /// <summary>
         /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
         /// </summary>
+        public double Orientation0POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with positive diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double Orientation1POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with vertical orientation in the neighbourhood.
+        /// </summary>
+        public double Orientation2POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double Orientation3POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double Orientation4POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double Orientation5POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double Orientation6POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with negative diagonal orientation in the neighbourhood.
+        /// </summary>
+        public double Orientation7POIMagnitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
+        /// </summary>
         public int HOrientationPOICount { get; set; }
 
         /// <summary>
@@ -480,6 +520,124 @@ namespace Dong.Felt.Representations
             }
         }
 
+        public void FeatureSet5Representation2(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        {
+            //var histogramOfGradient = new List<double>();
+            var EastBin = 0.0;
+            var NorthEastBin = 0.0;
+            var NorthBin = 0.0;
+            var NorthWestBin = 0.0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                        {
+                            EastBin += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
+                        {
+                            NorthEastBin += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                        {
+                            NorthBin += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
+                        {
+                            NorthWestBin += 1.0;
+                        }
+                    }
+                }
+            }
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+
+            var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
+            var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
+
+            if (sumPOICount == 0)
+            {
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation0POIMagnitude = 0.0;
+                // changed
+                this.ColumnEnergyEntropy = 0.0;
+                this.RowEnergyEntropy = 0.0;
+            }
+            else
+            {
+                this.HOrientationPOIHistogram = EastBin / sumPOICount;
+                this.VOrientationPOIHistogram = NorthBin / sumPOICount;
+                this.PDOrientationPOIHistogram = NorthEastBin / sumPOICount;
+                this.NDOrientationPOIHistogram = NorthWestBin / sumPOICount;
+
+                var columnEnergy = new double[pointsOfInterest.GetLength(1)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
+                        {
+                            // added if will consider the orientation, comment it will not consider the orientation. 
+                            //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
+                            //{
+                            //columnEnergy[rowIndex] += 1.0;   // Count of POI
+                            var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            columnEnergy[rowIndex] += magnitude;
+                            //}
+                        }
+                    }
+                }
+                var rowEnergy = new double[pointsOfInterest.GetLength(0)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                        {
+                            //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                            //{
+                            //rowEnergy[rowIndex] += 1.0;
+                            var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            rowEnergy[rowIndex] += magnitude;
+                            //}
+                        }
+                    }
+                }
+                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                if (double.IsNaN(columnEnergyEntropy))
+                {
+                    this.ColumnEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.ColumnEnergyEntropy = columnEnergyEntropy;
+                }
+                if (double.IsNaN(rowEnergyEntropy))
+                {
+                    this.RowEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.RowEnergyEntropy = rowEnergyEntropy;
+                }
+            }
+        }
         // 
         public void HistogramOfOrientatedGradient(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
