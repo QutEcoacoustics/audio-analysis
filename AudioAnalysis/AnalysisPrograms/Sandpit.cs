@@ -38,12 +38,20 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
+            if (true)  // call SURF image Feature extraction
+            {
+                SURFFeatures.SURF();
+                LoggedConsole.WriteLine("FINSIHED");
+                Console.ReadLine();
+                System.Environment.Exit(0);
+            }
 
-            if (true)  // do test of SNR calculation
+
+            if (false)  // do test of SNR calculation
             {
                 Audio2InputForConvCNN.Main(null);
                 //SNR.Calculate_SNR_ofXueyans_data();
-                Log.WriteLine("FINSIHED");
+                LoggedConsole.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
@@ -54,7 +62,7 @@ namespace AnalysisPrograms
             if (false)  // do test of new moving average method
             {
                 DataTools.TEST_FilterMovingAverage();
-                Log.WriteLine("FINSIHED");
+                LoggedConsole.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }

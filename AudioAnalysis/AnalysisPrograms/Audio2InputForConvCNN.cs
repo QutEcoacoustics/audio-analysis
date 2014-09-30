@@ -185,11 +185,16 @@ namespace AnalysisPrograms
                 writer.WriteLine(header);
             }
 
-            // keep counter on file availability
+            // following int's are counters to monitor file availability
             int lineNumber = 0;
             int fileExistsCount = 0;
             int fileLocationNotInCsv = 0;
             int fileInCsvDoesNotExist = 0;
+
+            // keep track of species names and distribution of classes.
+            // following dictionaries are to monitor species numbers
+            var speciesCounts = new SpeciesCounts();
+
 
             // read through the csv file containing info about recording locations and call bounds
             string strLine;
@@ -204,7 +209,7 @@ namespace AnalysisPrograms
                 while ((strLine = sr.ReadLine()) != null)
                 {
                     lineNumber++;
-                    if (lineNumber % 1000 == 0) Console.WriteLine(lineNumber);
+                    if (lineNumber % 5000 == 0) Console.WriteLine(lineNumber);
 
                     // cannot use next line because reads the entire file
                     //var data = Csv.ReadFromCsv<string[]>(csvFileInfo).ToList();
@@ -231,8 +236,8 @@ namespace AnalysisPrograms
                     //#######################################
                     // my debug code for home to test on subset of data - comment these lines when doing the real thing! 
                     //#######################################
-                    DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
-                    sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
+                    //DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
+                    //sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
                     //#######################################
                     //#######################################
 
@@ -263,24 +268,37 @@ namespace AnalysisPrograms
                     //TimeSpan paddingStart = record.event_start_seconds;
                     //continue;
 
+                    // keep track of species names and distribution of classes.
+                    speciesCounts.AddSpeciesCount(record.common_tags);
+                    speciesCounts.AddSpeciesID(record.common_tags, record.species_tags);
+                    speciesCounts.AddSiteName(record.site_name);
+
+
                     // ####################################################################
-
-                    var result = AnalyseOneRecording(sourceRecording, configDict, localStart, extractDuration, minHz, maxHz, imageOpDir);
-
-                    // CONSTRUCT the outputline for csv file
-                    // "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
-                    //  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
-                    string line = String.Format("{0},{1},{2},{3:f2},{4:f3},{5:f3},{6:f3},{7}",
-                                                record.audio_event_id, record.site_name, record.common_tags, result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
-                                                result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingThirdSNR,
-                                                result.SpectrogramFile.FullName);
-
-                    // It is helpful to opena nd close the output file as we go, so as to keep a record of where we are up to.
-                    using (StreamWriter writer = new StreamWriter(opPath, true))
+                    bool doPreprocessing = false;
+                    if (doPreprocessing)
                     {
-                        writer.WriteLine(line);
+                        var result = AnalyseOneRecording(sourceRecording, configDict, localStart, extractDuration, minHz, maxHz, imageOpDir);
+
+                        // CONSTRUCT the outputline for csv file
+                        // "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
+                        //  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
+                        string line = String.Format("{0},{1},{2},{3:f2},{4:f3},{5:f3},{6:f3},{7}",
+                                                    record.audio_event_id, record.site_name, record.common_tags, result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
+                                                    result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingThirdSNR,
+                                                    result.SpectrogramFile.FullName);
+
+                        // It is helpful to write to the output file as we go, so as to keep a record of where we are up to.
+                        // This requires to open and close the output file at each iteration
+                        using (StreamWriter writer = new StreamWriter(opPath, true))
+                        {
+                            writer.WriteLine(line);
+                        }
                     }
                 } // end while()
+
+                string classDistributionOpPath = Path.Combine(opDir.FullName, "ClassDistributionsForConvDNN_DataSet_30thSept2014.csv");
+                speciesCounts.Save(classDistributionOpPath);
             }
             catch (IOException e)
             {
@@ -331,6 +349,8 @@ namespace AnalysisPrograms
         }
 
 
+
+
         /// <summary>
         /// In line class used to store a single record read from a line of the csv file;
         /// </summary>
@@ -352,7 +372,7 @@ namespace AnalysisPrograms
             public TimeSpan padding_start_time_seconds { get; set; }
             public TimeSpan padding_end_time_seconds { get; set; }
             public string common_tags { get; set; }
-            //species_tags { get; set; }
+            public string species_tags { get; set; }
             //other_tags { get; set; }
             //listen_url { get; set; }
             //library_url { get; set; }
@@ -394,11 +414,84 @@ namespace AnalysisPrograms
                 csvDataRecord.low_frequency_hertz = (int)Math.Round(Double.Parse(fields[11]));
                 csvDataRecord.high_frequency_hertz = (int)Math.Round(Double.Parse(fields[12]));
                 csvDataRecord.common_tags = fields[15];
+                csvDataRecord.species_tags = fields[16];
                 csvDataRecord.path = fields[20].ToFileInfo(); 
                 return csvDataRecord;
             }
         }
         // class CsvDataRecord
+
+
+
+
+
+
+        public class SpeciesCounts
+        {
+            public Dictionary<string, int> speciesCounts = new Dictionary<string, int>();
+            public Dictionary<string, int> speciesIDs = new Dictionary<string, int>();
+            public Dictionary<string, int> siteNames = new Dictionary<string, int>();
+
+
+            public void AddSpeciesID(string speciesID, string latinInfo)
+            {
+                string[] parts1 = speciesID.Split(':');
+                int value = Int32.Parse(parts1[0]);
+                string commonName = parts1[1];
+
+                string[] parts2 = latinInfo.Split(':');
+                string latinName = "NOT AVAILABLE";
+                if (parts2.Length > 1) latinName = parts2[1];
+
+                string BothNames = commonName + "," + latinName;
+
+                if (!speciesIDs.ContainsKey(BothNames))
+                {
+                    speciesIDs.Add(BothNames, value);
+                }
+                else
+                if (!speciesIDs.ContainsValue(value))
+                {
+                    speciesIDs.Add(BothNames + "####", value);
+                }
+            }
+
+
+            public void AddSpeciesCount(string speciesID)
+            {
+                string[] parts = speciesID.Split(':');
+                if (speciesCounts.ContainsKey(parts[1]))
+                {
+                    speciesCounts[parts[1]]++;
+                }
+                else
+                {
+                    speciesCounts.Add(parts[1], 1);
+                }
+
+            }
+
+            public void AddSiteName(string name)
+            {
+                if (siteNames.ContainsKey(name))
+                {
+                    siteNames[name]++;
+                }
+                else
+                {
+                    siteNames.Add(name, 1);
+                }
+
+            }
+
+            public void Save(string path)
+            {
+                Csv.WriteToCsv(new FileInfo(path + "Counts.csv"), this.speciesCounts);
+                Csv.WriteToCsv(new FileInfo(path + "IDs.csv"), this.speciesIDs);
+                Csv.WriteToCsv(new FileInfo(path + "Sites.csv"), this.siteNames);
+            }
+        }
+
 
 
 
