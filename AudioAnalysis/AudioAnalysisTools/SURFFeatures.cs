@@ -21,7 +21,8 @@ namespace AudioAnalysisTools
         public static void SURF()
         {
             //string inputPath1 = @"C:\SensorNetworks\Output\Test\TESTMATRIXquery.png";
-            string inputPath1 = @"C:\SensorNetworks\Output\Test\TESTLewinsRailQuery.png";
+            //string inputPath1 = @"C:\SensorNetworks\Output\Test\TESTLewinsRailQuery.png";
+            string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\sunhat.jpg";
             Bitmap bmp = new Bitmap(inputPath1);
             //Image<Bgr, Byte> img1 = new Image<Bgr, Byte>("MyImage.jpg");
 
@@ -29,12 +30,13 @@ namespace AudioAnalysisTools
 
             //Image<Gray, Byte> modelImage = new Image<Gray, Byte>(inputPath1);
 
-            string inputPath2 = @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png";
+            //string inputPath2 = @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png";
+            string inputPath2 = @"C:\SensorNetworks\Output\XueyanDataset\people.jpg";
             Image<Gray, byte> observedImage = new Image<Gray, Byte>(inputPath2);
             long matchTime;
             Image<Bgr, Byte> image = Draw(modelImage, observedImage, out matchTime);
             if(image != null)
-                image.Save(@"C:\SensorNetworks\Output\Test\SURF_TESTMATRIX2.png");
+                image.Save(@"C:\SensorNetworks\Output\XueyanDataset\Test\SURF_TESTMATRIX2.png");
         }
 
 
@@ -61,8 +63,8 @@ namespace AudioAnalysisTools
             Matrix<byte> mask;
             int k = 2;
             double uniquenessThreshold = 0.8;
-            //if (GpuInvoke.HasCuda)
-            if (false)
+            if (GpuInvoke.HasCuda)
+            //if (false)
             {
                 GpuSURFDetector surfGPU = new GpuSURFDetector(surfCPU.SURFParams, 0.01f);
                 using (GpuImage<Gray, Byte> gpuModelImage = new GpuImage<Gray, byte>(modelImage))
