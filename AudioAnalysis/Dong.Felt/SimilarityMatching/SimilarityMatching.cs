@@ -692,12 +692,16 @@
                         columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
                         rowEnergyEntropyDiff = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
 
-                        var euclideanDistance = Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
-                                          + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
-                                          + Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
-                        var maxDistance = Math.Sqrt(maxHPOIHistDiff + maxPPOIHistDiff + maxVPOIHistDiff+
-                            maxNPOIHistDiff + maxColEnergyEntroDiff + maxRowEnergyEntroDiff);
-                        result += 0.8 * (1 - euclideanDistance / maxDistance);
+                       // var euclideanDistance = Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
+                                          //+ Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
+                                          //+ Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
+                        var mahattenDistance = hOrientationPOIHistDiff + pDOrientationPOIHistDiff + vOrientationPOIHistDiff
+                            + nDOrientationPOIHistDiff + columnEnergyEntropyDiff + rowEnergyEntropyDiff;
+                        //var maxDistance = Math.Sqrt(maxHPOIHistDiff + maxPPOIHistDiff + maxVPOIHistDiff+
+                            //maxNPOIHistDiff + maxColEnergyEntroDiff + maxRowEnergyEntroDiff);
+                        var maxDistance = maxHPOIHistDiff + maxPPOIHistDiff + maxVPOIHistDiff +
+                            maxNPOIHistDiff + maxColEnergyEntroDiff + maxRowEnergyEntroDiff;
+                        result += 0.8 * (1 - mahattenDistance / maxDistance);
                     }
                 }
                 var matchedPercentage = matchedNhCount / (double)nhCount;

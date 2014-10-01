@@ -25,7 +25,7 @@ QueryInputDirectory: "..\\..\\Query"
 
 # SonogramConfig
 NoiseReductionType: STANDARD
-WindowOverlap: 0.0
+WindowOverlap: 0.5
 
 # RidgeDetection Config # amplitude 0.2
 RidgeDetectionMagnitudeThreshold: 6.0
