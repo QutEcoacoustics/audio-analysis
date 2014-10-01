@@ -369,6 +369,18 @@ namespace AudioAnalysisTools
             {
                 color = Color.Red;
             }
+            //if (orientationCategory == 4)
+            //{
+            //    color = Color.Blue;
+            //}
+            //if (orientationCategory == 2)
+            //{
+            //    color = Color.Green;
+            //}
+            //if (orientationCategory == 6)
+            //{
+            //    color = Color.Purple;
+            //}
             else
             {
                 if (orientationCategory == 1)
@@ -387,11 +399,10 @@ namespace AudioAnalysisTools
                         {
                             color = Color.Cyan;
                         }
-                        else
-                            if (orientationCategory == 4)
-                            {
-                                color = Color.Blue;
-                            }
+                        else if (orientationCategory == 4)
+                        {
+                            color = Color.Blue;
+                        }
                             else if (orientationCategory == 5)
                             {
                                 color = Color.LightBlue;
@@ -414,7 +425,7 @@ namespace AudioAnalysisTools
                             }
                     }
                 }
-            } // if (orientationCategory == 0) else
+            } // if (orientationCategory == 0) else                           
             bmp.SetPixel(x, y, color);
         } // DrawOrientationPoint
 

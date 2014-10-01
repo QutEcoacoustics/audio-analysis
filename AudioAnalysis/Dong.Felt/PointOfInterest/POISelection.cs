@@ -180,7 +180,7 @@ namespace Dong.Felt
             }  /// filter out some redundant ridges   
         }
 
-        public void ConvertRidgeIndicatorToPOIList(byte[,] ridgeIndiMatrix, double[,] matrix, SpectrogramStandard spectrogram)
+        public void ConvertRidgeIndicatorToPOIList(byte[,] ridgeIndiMatrix, double[,] RidgeMagnitudematrix, SpectrogramStandard spectrogram)
         {
             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
             var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
@@ -188,6 +188,7 @@ namespace Dong.Felt
             double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
             int rows = ridgeIndiMatrix.GetLength(0);
             int cols = ridgeIndiMatrix.GetLength(1);
+            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data); 
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -202,7 +203,8 @@ namespace Dong.Felt
                         poi.Point = point;  
                         // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7. 
                         poi.OrientationCategory = ridgeIndiMatrix[r, c] - 1;
-                        poi.RidgeMagnitude = matrix[r, c];
+                        poi.RidgeMagnitude = RidgeMagnitudematrix[r, c];
+                        poi.Intensity = spectrogramMatrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
                         poiList.Add(poi);
@@ -216,10 +218,14 @@ namespace Dong.Felt
             poiList = prunedPoiList;
         }
 
-        public static byte[,] FourDirectionsRidgeDetection(double[,] matrix, out double[,] newMatrix, RidgeDetectionConfiguration ridgeConfiguration)
+        public static byte[,] FourDirectionsRidgeDetection(double[,] matrix, out double[,] newMatrix, 
+        RidgeDetectionConfiguration ridgeConfiguration)
         {         
             int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;           
+            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+            var p = 0.002;
+            var intensityList = intensityThresholdForSpectrogram(matrix);
+            var intensityThreshold = calculateIntensityThreshold(intensityList, p);
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = ridgeLength / 2;
@@ -236,14 +242,14 @@ namespace Dong.Felt
                     double direction;
                     bool isRidge = false;
                     // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
-                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
-                    if (magnitude > magnitudeThreshold && isRidge == true)
+                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);                   
+                    if (magnitude > magnitudeThreshold && isRidge == true && (subM[halfLength, halfLength] > intensityThreshold))
                     {
                         var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1);                      
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
                         double localThreshold = sd * 1.3;
-                        if ((subM[halfLength, halfLength] - av) < localThreshold) continue;                       
+                        if ((subM2[halfLength+1, halfLength+1] - av) < localThreshold) continue;                       
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation+1);
                         newMatrix[r, c] = magnitude;
@@ -374,6 +380,34 @@ namespace Dong.Felt
             return hits;
         }
 
+        public static List<double> intensityThresholdForSpectrogram(double[,] matrix)
+        {            
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);          
+            var intensityList = new List<double>();
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    if (matrix[r, c] > 0)
+                    {
+                        intensityList.Add(matrix[r, c]);
+                    }
+                }
+            }
+
+            return intensityList;
+        }
+
+        public static double calculateIntensityThreshold(List<double> intensityList, double intensityThreshold)
+        {
+            var result = 0.0;
+            var maxIntensity = intensityList.Max();
+            var binCount = 1000;
+            var l = StructureTensorAnalysis.GetMaximumLength(intensityList, maxIntensity, intensityThreshold, binCount);
+            result = l * maxIntensity / binCount;
+            return result;
+        }
         public void ImprovedRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             // This step tries to convert spectrogram data into image matrix. The spectrogram data has the dimension of totalFrameCount * totalFreCount and the matrix is totalFreCount * totalFrameCount. 
