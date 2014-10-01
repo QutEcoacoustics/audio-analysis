@@ -122,15 +122,15 @@ namespace QutBioacosutics.Xie
 
                 int indexNumber = Convert.ToInt32(indexOfRecording.Split('_', 'm')[1]);
 
-                var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_03", path);
+                //var fullPath = Path.Combine("C:\\Jie\\data\\Segment_JCU_03", path);
 
-                //string fullPath = @"C:\Jie\data\Segment_JCU_03\160113_1min.wav";
+                string fullPath = @"C:\Jie\data\160113_min140.wav";
                 var recording = new AudioRecording(fullPath);
 
                 // Step.1 Generate spectrogarm
                 // A. Generate spectrogram for extracting tracks, entropy and harmonic
 
-                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.9, WindowSize = windowSize };
+                var spectrogramLongConfig = new SonogramConfig() { NoiseReductionType = NoiseReductionType.NONE, WindowOverlap = 0.9, WindowSize = windowSize };
                 var spectrogramLong = new SpectrogramStandard(spectrogramLongConfig, recording.WavReader);
 
                 // B. Generate spectrogram for extracting oscillation rate
@@ -170,21 +170,31 @@ namespace QutBioacosutics.Xie
 
 
                 // Step.3 Draw spectrogram
-                //Image image = XieFunction.DrawSonogram(spectrogramLong);
-                //Bitmap bmp = (Bitmap)image;
-                //double[,] spectrogramMatrix = DataTools.normalise(spectrogramLong.Data);
-                //int rows = spectrogramMatrix.GetLength(0);
-                //int cols = spectrogramMatrix.GetLength(1);
-                //Color[] grayScale = ImageTools.GrayScale();
+
+
+                Image image = XieFunction.DrawSonogram(spectrogramShort);
+                Bitmap bmp = (Bitmap)image;
+                double[,] spectrogramMatrix = DataTools.normalise(spectrogramShort.Data);
+                int rows = spectrogramMatrix.GetLength(0);
+                int cols = spectrogramMatrix.GetLength(1);
+                Color[] grayScale = ImageTools.GrayScale();
+                for (int r = 0; r < rows; r++)
+                {
+                    for (int c = 0; c < cols; c++)
+                    {
+                        spectrogramMatrix[r, c] = 0;
+                            
+                    }
+                }
                 //for (int r = 0; r < rows; r++)
                 //{
                 //    for (int c = 0; c < cols; c++)
                 //    {
-                //        if (trackNasuta.TrackHitsNasuta.Item4[c, r] != 0)
-                //            bmp.SetPixel(r, c, Color.Blue);
+                //        if (spectrogramMatrix[r, c] != 0)
+                //            bmp.SetPixel(r, c, Color.White);
                 //    }
                 //}
-                //bmp.Save(saveImagePath);
+                bmp.Save(saveImagePath);
 
 
                 //***********************Caerulea*************************//
