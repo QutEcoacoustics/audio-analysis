@@ -1201,7 +1201,7 @@ namespace Dong.Felt
         }
 
         /// To cut off the overlapped lines in the same direction for 4 directions
-        public static List<PointOfInterest> PruneAdjacentTracksBasedOnDirection(List<PointOfInterest> poiList, int rows, int cols)
+        public static List<PointOfInterest> PruneAdjacentTracksBasedOn4Direction(List<PointOfInterest> poiList, int rows, int cols)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
             for (int r = 1; r < rows - 1; r++)
