@@ -124,6 +124,7 @@ namespace Dong.Felt
             return result;
         }
 
+
         public static List<RegionRerepresentation> ExtractCandidateRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName, SpectrogramStandard spectrogram)
         {
@@ -170,6 +171,78 @@ namespace Dong.Felt
                             nhColsCount, rowIndexInRegion, colIndexInRegion, audioFileName);
                         results.Add(regionItem);
                     }
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// This version aims to extract candidates in an efficient way by comparing the not null nhs in query and the ones in a potential candidates. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="nhRepresentationList"></param>
+        /// <param name="audioFileName"></param>
+        /// <param name="spectrogram"></param>
+        /// <returns></returns>
+        public static List<RegionRerepresentation> ExtractCandidateRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
+            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, List<RegionRerepresentation> queryRepresentation,
+            string audioFileName, SpectrogramStandard spectrogram)
+        {
+            var results = new List<RegionRerepresentation>();
+            var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
+            var maxNhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
+            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
+            {
+                maxNhCountInRow--;
+            }
+            var minNhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
+            if (spectrogram.FrameCount % neighbourhoodLength == 0)
+            {
+                minNhCountInColumn--;
+            }
+            var ridgeNeighbourhoodArray = StatisticalAnalysis.NhListToArray(nhRepresentationList, maxNhCountInRow, minNhCountInColumn);
+            var rowsCount = ridgeNeighbourhoodArray.GetLength(0);
+            var colsCount = ridgeNeighbourhoodArray.GetLength(1);
+
+            var nhRowsCount = query.nhCountInRow;
+            var nhColsCount = query.nhCountInColumn;
+            var nhStartRowIndex = query.nhStartRowIndex;
+
+            for (int colIndex = 0; colIndex < colsCount; colIndex++)
+            {
+                if (StatisticalAnalysis.checkBoundary(nhStartRowIndex + nhRowsCount - 1, colIndex + nhColsCount - 1, rowsCount, colsCount))
+                {
+                    var subRegionMatrix = StatisticalAnalysis.SubRegionMatrix(ridgeNeighbourhoodArray, nhStartRowIndex, colIndex, nhStartRowIndex + nhRowsCount, colIndex + nhColsCount);
+                    var nhList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+                    for (int i = 0; i < nhRowsCount; i++)
+                    {
+                        for (int j = 0; j < nhColsCount; j++)
+                        {
+                            nhList.Add(subRegionMatrix[i, j]);
+                        }
+                    }
+                    var result = new List<RegionRerepresentation>();
+                    for (int i = 0; i < nhList.Count; i++)
+                    {
+                        var frequencyIndex = nhList[0].FrequencyIndex;
+                        var frameIndex = nhList[0].FrameIndex;
+                        var rowIndexInRegion = (int)(i / nhColsCount);
+                        var colIndexInRegion = i % nhColsCount;
+                        var regionItem = new RegionRerepresentation(nhList[i], frequencyIndex, frameIndex, nhRowsCount,
+                            nhColsCount, rowIndexInRegion, colIndexInRegion, audioFileName);                       
+                        result.Add(regionItem);                       
+                    }
+                    // Todo : add another check based on query and candidate nh match
+                    for (int i = 0; i < nhList.Count; i++)
+                    {
+                        if (result[i].dominantOrientationType > 0 && queryRepresentation[i].dominantOrientationType > 0)
+                        {
+                            results.Add(result[i]);
+                        }
+                    }
+
                 }
             }
 
@@ -413,8 +486,8 @@ namespace Dong.Felt
                 {
                     if (tempRegionList[index].POICount != 0)
                     {
-                        notNullNhCount++;
-                    }                                 
+                       notNullNhCount++;
+                    }                        
                 }
                 if (notNullNhCount >= 0.1 * nhCountInRegion)
                 {
@@ -429,6 +502,51 @@ namespace Dong.Felt
             return result;
         }
 
+        /// <summary>
+        /// Euclidean Distance calculation for feature5. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <returns></returns>
+        public static List<Candidates> Feature5EuclideanDist2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRerepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var matchedNotNullNhCount = 0;
+                var notNullNhCountInQ = 0;
+                var nhCountInRegion = tempRegionList.Count;
+                for (int index = 0; index < nhCountInRegion; index++)
+                {
+                    if (tempRegionList.Count == query.Count)
+                    {
+                        if (query[index].POICount != 0)
+                        {
+                            notNullNhCountInQ++;
+                            if (tempRegionList[index].POICount != 0)
+                            {
+                                matchedNotNullNhCount++;
+                            }
+                        }                       
+                    }
+                }
+                if (matchedNotNullNhCount == notNullNhCountInQ)
+                {
+                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                    var distance = SimilarityMatching.DistanceFeature5Representation(query, tempRegionList, 2);
+                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                            tempRegionList[0].SourceAudioFile);
+                    result.Add(item);
+                }
+            }
+            return result;
+        }
         /// <summary>
         /// Euclidean Distance calculation for feature5 based on magnitude of gradient histogram. 
         /// </summary>

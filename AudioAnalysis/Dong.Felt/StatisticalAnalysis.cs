@@ -1519,7 +1519,7 @@
                 distanceList.Add(c.Score);
             }
             var max = 0.0;
-            if (candidates != null)
+            if (distanceList.Count != 0)
             {
                 max = distanceList.Max();
             }
