@@ -22,21 +22,28 @@ namespace AudioAnalysisTools
         {
             //string inputPath1 = @"C:\SensorNetworks\Output\Test\TESTMATRIXquery.png";
             //string inputPath1 = @"C:\SensorNetworks\Output\Test\TESTLewinsRailQuery.png";
-            string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\sunhat.jpg";
+            //string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\Test\sunhat.jpg";
+            string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\Test\BASIC256_greysacle_Grey_Mona_lisa.jpg";
             Bitmap bmp = new Bitmap(inputPath1);
-            //Image<Bgr, Byte> img1 = new Image<Bgr, Byte>("MyImage.jpg");
+            //Image<Bgr, Byte> colorImage = new Image<Bgr, Byte>(bmp);
+            // convert colour image to grayscale
+            //Image<Gray, Byte> modelImage = new Image<Gray, byte>(colorImage.Bitmap);
+
+            //Capture cap = new Capture(inputPath1);
+            //Image<Bgr, Byte> colorImage = cap.QueryFrame();
+            //Image<Gray, Byte> modelImage = colorImage.Convert<Gray, Byte>();
+
 
             Image<Gray, Byte> modelImage = new Image<Gray, Byte>(bmp);
-
             //Image<Gray, Byte> modelImage = new Image<Gray, Byte>(inputPath1);
 
             //string inputPath2 = @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png";
-            string inputPath2 = @"C:\SensorNetworks\Output\XueyanDataset\people.jpg";
+            string inputPath2 = @"C:\SensorNetworks\Output\XueyanDataset\Test\people.jpg";
             Image<Gray, byte> observedImage = new Image<Gray, Byte>(inputPath2);
             long matchTime;
             Image<Bgr, Byte> image = Draw(modelImage, observedImage, out matchTime);
             if(image != null)
-                image.Save(@"C:\SensorNetworks\Output\XueyanDataset\Test\SURF_TESTMATRIX2.png");
+                image.Save(@"C:\SensorNetworks\Output\XueyanDataset\Test\SURF_TEST.png");
         }
 
 

@@ -159,7 +159,7 @@ namespace AudioAnalysisTools.Indices
             // i: FRAME ENERGIES -
             // convert signal to decibels and subtract background noise.
             // number of noise SDs to calculate noise threshold - determines severity of noise reduction
-            const double StandardDeviationCount = 0.1; 
+            const double StandardDeviationCount = SNR.DEFAULT_STDDEV_COUNT; 
             var backgroundNoise = SNR.SubtractBackgroundNoiseFromWaveform_dB(SNR.Signal2Decibels(signalEnvelope), StandardDeviationCount);
             var dBArray = SNR.TruncateNegativeValues2Zero(backgroundNoise.NoiseReducedSignal);
 
