@@ -28,8 +28,8 @@ NoiseReductionType: STANDARD
 WindowOverlap: 0.5
 
 # RidgeDetection Config # amplitude 0.2
-RidgeDetectionMagnitudeThreshold: 6.0
-RidgeMatrixLength: 5
+RidgeDetectionMagnitudeThreshold: 6.0 
+RidgeMatrixLength: 3
 FilterRidgeMatrixLength: 7
 MinimumNumberInRidgeInMatrix: 3
 AverageIntensityDifferenceInNh: 0.2
@@ -39,10 +39,14 @@ AverageIntensityDifferenceInNh: 0.2
 StThreshold: 0.02
 StAvgNhLength: 11
 StFFTNeighbourhoodLength: 16
-StMatchedThreshold: 500
+StMatchedThreshold: 600
 
 # For ridge neighbourhood representation
 NeighbourhoodLength: 11
+
+# Euclidean distance weights
+Weight1: 0.2
+Weight2: 0.8
 
 # spectrogramConfiguration setting
 SecondToMillionSecondUnit: 1000
