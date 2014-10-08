@@ -788,7 +788,7 @@ namespace Dong.Felt
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            double av, sd; 
+            double av, sd;
             NormalDist.AverageAndSD(m, out av, out sd);
             double localThreshold = 0.8 * sd;
             isRidge = false;
@@ -797,6 +797,69 @@ namespace Dong.Felt
             {
                 isRidge = true;
             }
+        }
+
+        /// <summary>
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
+        /// which includes C code.
+        /// HOWEVER MODIFED TO PROCESS 5x5 matrix
+        /// MATRIX must be square with odd number dimensions
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static void Sobel3X3RidgeDetection4Direction(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 3)) // must be square 3X3 matrix 
+            {
+                isRidge = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+
+            double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1,-0.1},                                        
+                                      };
+
+            double[,] ridgeDir1Mask = { {-0.1,-0.1, 0.4},
+                                        {-0.1, 0.4,-0.1},
+                                        { 0.4,-0.1,-0.1},                                       
+                                      };
+
+            double[,] ridgeDir2Mask = { {-0.1, 0.4,-0.1},
+                                        {-0.1, 0.4,-0.1},
+                                        {-0.1, 0.4,-0.1},                                      
+                                      };
+
+            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1, 0.4},                                      
+                                      };
+
+
+            double[] ridgeMagnitudes = new double[4];
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+            var centerPixelIntensity = m[rows / 2, cols / 2];
+            //averageIntensity = 1.0/25 * MatrixTools.DotProduct(averageMask, m);
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax / 2;
+            /// four directions
+            direction = indexMax * Math.PI / (double)4;
+            //direction = indexMax;
         }
 
         /// <summary>
@@ -856,8 +919,84 @@ namespace Dong.Felt
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
-            var centerPixelIntensity = m[rows / 2, cols / 2];
-            //averageIntensity = 1.0/25 * MatrixTools.DotProduct(averageMask, m);
+            //var centerPixelIntensity = m[rows / 2, cols / 2];
+            ////averageIntensity = 1.0/25 * MatrixTools.DotProduct(averageMask, m);
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax / 2;
+            /// four directions
+            direction = indexMax * Math.PI / (double)4;
+            //direction = indexMax;
+        }
+
+        /// <summary>
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
+        /// which includes C code.
+        /// HOWEVER MODIFED TO PROCESS 5x5 matrix
+        /// MATRIX must be square with odd number dimensions
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static void Sobel7X7RidgeDetection4Direction(double[,] m, out bool isRidge, out double magnitude, out double direction)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 7)) // must be square 5X5 matrix 
+            {
+                isRidge = false;
+                magnitude = 0.0;
+                direction = 0.0;
+                return;
+            }
+
+            double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+
+            double[,] ridgeDir1Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1, 0.4},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        { 0.4,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1}
+                                      };
+
+            double[,] ridgeDir2Mask = { {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1}
+                                      };
+
+            double[,] ridgeDir3Mask = { { 0.4,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1, 0.4,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1, 0.4,-0.1,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1, 0.4,-0.1,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1, 0.4,-0.1,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1, 0.4,-0.1},
+                                        {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1, 0.4}
+                                      };
+
+            double[] ridgeMagnitudes = new double[4];
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
             int indexMin, indexMax;
             double diffMin, diffMax;
             DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
@@ -884,7 +1023,7 @@ namespace Dong.Felt
                 direction = 0.0;
                 return;
             }
-            
+
             double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1,-0.1,-0.1,-0.1},
                                         { 0.4, 0.4, 0.4, 0.4, 0.4},
@@ -914,7 +1053,7 @@ namespace Dong.Felt
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1}
-                                      };      
+                                      };
             double[,] ridgeDir5Mask = { {-0.1, 0.4,-0.1,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
                                         {-0.1,-0.1, 0.4,-0.1,-0.1},
@@ -1070,6 +1209,31 @@ namespace Dong.Felt
             }
         }
 
+        public static void GradientCalculation(double[,] m, out bool isEdge, out double magnitude, out double direction)
+        {         
+            double[,] edgeXMask = { {-1, 1},
+                                    { 0, 0}                                      
+                                  };
+            double[,] edgeYMask = { {-1, 0},
+                                    { 1, 0}                                     
+                                  };
+            var partialDifferenceX = MatrixTools.DotProduct(edgeXMask, m);
+            var partialDifferenceY = MatrixTools.DotProduct(edgeYMask, m);
+            magnitude = Math.Sqrt(Math.Pow(partialDifferenceX, 2) + Math.Pow(partialDifferenceY, 2));
+            direction = 0.0;
+            if (partialDifferenceX == 0)
+            {
+                direction = 0.0;
+            }
+            else
+            {
+                direction = Math.Atan2(partialDifferenceY, partialDifferenceX);
+            }
+            double threshold = 0; 
+            isEdge = (magnitude > threshold);
+        }
+
+        
         /// <summary>
         /// This function implements the sobel edge detection in a different way. And the size of the mask neighbourhood is 3*3.  
         /// </summary>
@@ -1213,7 +1377,7 @@ namespace Dong.Felt
                     {
                         if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 0))
                         {
-                             M[r - 1, c] = null;
+                            M[r - 1, c] = null;
                         }
                         if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 0))
                         {
@@ -1228,7 +1392,7 @@ namespace Dong.Felt
                         }
                         if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 4))
                         {
-                             M[r, c + 1] = null;
+                            M[r, c + 1] = null;
                         }
                     } // if (OrientationCategory)
                     else if (M[r, c].OrientationCategory == 2)  // positive diagonal line
@@ -1239,9 +1403,9 @@ namespace Dong.Felt
                             /// above and below
                             if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 2))
                             {
-                                
-                                    M[r - 1, c] = null;
-                                
+
+                                M[r - 1, c] = null;
+
                             }
                             if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 2))
                             {
@@ -1253,15 +1417,15 @@ namespace Dong.Felt
                             /// left and right
                             if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 2)) // 
                             {
-                                
-                                    M[r, c - 1] = null;
-                                
+
+                                M[r, c - 1] = null;
+
                             }
                             if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 2)) //
                             {
-                               
-                                    M[r, c + 1] = null;
-                                
+
+                                M[r, c + 1] = null;
+
                             }
                         }
                     }
@@ -1272,28 +1436,28 @@ namespace Dong.Felt
                             /// above and below
                             if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 6))
                             {
-                                
-                                    M[r - 1, c] = null;
-                                
+
+                                M[r - 1, c] = null;
+
                             }
                             if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 6))
                             {
-                                
-                                    M[r + 1, c] = null;
-                                
+
+                                M[r + 1, c] = null;
+
                             }
                             /// left and right
                             if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 6)) // 
                             {
-                                
-                                    M[r, c - 1] = null;
-                                
+
+                                M[r, c - 1] = null;
+
                             }
                             if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 6)) //
                             {
-                               
-                                    M[r, c + 1] = null;
-                                
+
+                                M[r, c + 1] = null;
+
                             }
                         }
                     } // end if (M[r, c].OrientationCategory == 0) 
