@@ -84,7 +84,8 @@ namespace Dong.Felt
         public static List<PointOfInterest> PoiSelection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
         {
              var result = new List<PointOfInterest>();
-             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)                
+             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)                
              {
                  result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
              }

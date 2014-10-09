@@ -45,6 +45,7 @@
 
             NoiseReductionType noiseReductionType = configuration.NoiseReductionType;
             double windowOverlap = configuration.WindowOverlap;
+            double noiseReductionParameter = configuration.NoiseReductionParameter;
 
             double ridgeDetectionmMagnitudeThreshold = configuration.RidgeDetectionMagnitudeThreshold;
             int ridgeMatrixLength = configuration.RidgeMatrixLength;
@@ -68,8 +69,8 @@
             foreach (var action in actions)
             {
                 Log.Info("Starting action: " + action);
-                var config = new SonogramConfig { NoiseReductionType = noiseReductionType, WindowOverlap = windowOverlap};
-                //,NoiseReductionParameter = 7.0};
+                var config = new SonogramConfig { NoiseReductionType = noiseReductionType, WindowOverlap = windowOverlap,
+                                                  NoiseReductionParameter = noiseReductionParameter};
                 var ridgeConfig = new RidgeDetectionConfiguration
                 {
                     RidgeDetectionmMagnitudeThreshold = ridgeDetectionmMagnitudeThreshold,
@@ -483,6 +484,7 @@
                     QueryInputDirectory = configuration.QueryInputDirectory,
                     NoiseReductionType = configuration.NoiseReductionType,
                     WindowOverlap = configuration.WindowOverlap,
+                    NoiseReductionParameter = configuration.NoiseReductionParameter,
 
                     RidgeDetectionMagnitudeThreshold = configuration.RidgeDetectionMagnitudeThreshold,
                     RidgeMatrixLength = configuration.RidgeMatrixLength,
@@ -635,6 +637,7 @@
                 }
             }
         }
+
         /// <summary>
         /// 
         /// </summary>

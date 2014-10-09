@@ -417,7 +417,6 @@ namespace Dong.Felt.Representations
 
         public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
-            //var histogramOfGradient = new List<double>();
             var EastBin = 0.0;
             var NorthEastBin = 0.0;
             var NorthBin = 0.0;
@@ -774,8 +773,11 @@ namespace Dong.Felt.Representations
         /// <param name="col"></param>
         /// <param name="spectrogramConfig"></param>
         public void FeatureSet9Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
-        {
+        {         
+                        
             double sumPOICount = 0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
             {
                 for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
@@ -785,23 +787,31 @@ namespace Dong.Felt.Representations
                         sumPOICount++;
                     }
                 }
-            }            
+            }
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+
             if (sumPOICount == 0)
             {                
                 this.ColumnEnergyEntropy = 0.0;
                 this.RowEnergyEntropy = 0.0;
             }
             else
-            {              
+            {
                 var columnEnergy = new double[pointsOfInterest.GetLength(1)];
                 for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
                 {
                     for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
                     {
                         if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
-                        {                           
+                        {                            
                             var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
                             columnEnergy[rowIndex] += magnitude;
+                            
                         }
                     }
                 }
@@ -811,9 +821,9 @@ namespace Dong.Felt.Representations
                     for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
                     {
                         if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
-                        {                          
+                        {                           
                             var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                            rowEnergy[rowIndex] += magnitude;
+                            rowEnergy[rowIndex] += magnitude;                           
                         }
                     }
                 }
@@ -835,7 +845,7 @@ namespace Dong.Felt.Representations
                 {
                     this.RowEnergyEntropy = rowEnergyEntropy;
                 }
-            }
+            }          
         }
         /// <summary>
         /// This version of feature set 6 representation use poi count to calculate featureset.
@@ -1346,7 +1356,7 @@ namespace Dong.Felt.Representations
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
                         {
-                            ridgeNeighbourhoodRepresentation.FeatureSet8Representation(subMatrix, row, col, spectrogramConfig);
+                            ridgeNeighbourhoodRepresentation.FeatureSet9Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
