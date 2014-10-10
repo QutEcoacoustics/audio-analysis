@@ -38,7 +38,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            if (false)  // call SURF image Feature extraction
+            if (true)  // call SURF image Feature extraction
             {
                 SURFFeatures.SURF();
                 LoggedConsole.WriteLine("FINSIHED");
@@ -47,7 +47,7 @@ namespace AnalysisPrograms
             }
 
 
-            if (true)  // do test of SNR calculation
+            if (false)  // do test of SNR calculation
             {
                 Audio2InputForConvCNN.Main(null);
                 //SNR.Calculate_SNR_ofXueyans_data();

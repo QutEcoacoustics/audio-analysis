@@ -23,6 +23,7 @@
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EcoSounds\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -37,7 +38,6 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -134,6 +134,30 @@
     </Reference>
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.GPU">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.GPU.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.ML">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.ML.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.OCR">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.OCR.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.Stitching">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.Stitching.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.UI">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.VideoStab">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.CV.VideoStab.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.Util">
+      <HintPath>..\packages\VVVV.EmguCV.2.4.2.1\build\net40\lib\Emgu.Util.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -339,14 +363,17 @@
     <PreBuildEvent>IF EXIST "$(SolutionDir)WebFrontend\Processor\" (copy "$(SolutionDir)AudioAnalysis\RecogniserParamFiles\*.*"  "$(SolutionDir)WebFrontend\Processor\ParameterFiles\")</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)..\..\Extra Assemblies\ffmpeg" "$(TargetDir)audio-utils\ffmpeg\" /S /Y
-xcopy "$(ProjectDir)..\..\Extra Assemblies\mp3splt" "$(TargetDir)audio-utils\mp3splt\" /S /Y
-xcopy "$(ProjectDir)..\..\Extra Assemblies\sox" "$(TargetDir)audio-utils\sox\" /S /Y
-xcopy "$(ProjectDir)..\..\Extra Assemblies\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y
-xcopy "$(ProjectDir)..\..\Extra Assemblies\shntool" "$(TargetDir)audio-utils\shntool\" /S /Y
+    <PostBuildEvent>
+      xcopy "$(ProjectDir)..\..\Extra Assemblies\ffmpeg" "$(TargetDir)audio-utils\ffmpeg\" /S /Y
+      xcopy "$(ProjectDir)..\..\Extra Assemblies\mp3splt" "$(TargetDir)audio-utils\mp3splt\" /S /Y
+      xcopy "$(ProjectDir)..\..\Extra Assemblies\sox" "$(TargetDir)audio-utils\sox\" /S /Y
+      xcopy "$(ProjectDir)..\..\Extra Assemblies\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y
+      xcopy "$(ProjectDir)..\..\Extra Assemblies\shntool" "$(TargetDir)audio-utils\shntool\" /S /Y
+      xcopy "$(ProjectDir)..\packages\VVVV.EmguCV.2.4.2.1\build\net40\opencv\x64" "$(TargetDir)" /S /Y
 
-rem copy configs
-xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y</PostBuildEvent>
+      rem copy configs
+      xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y
+</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>

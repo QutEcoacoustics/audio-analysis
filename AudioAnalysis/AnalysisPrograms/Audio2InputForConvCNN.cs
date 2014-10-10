@@ -67,25 +67,26 @@ namespace AnalysisPrograms
 
         private static Arguments Dev()
         {
-
+            DateTime time = DateTime.Now;
+            string datestamp = String.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
             return new Arguments
             {
 
-            // prior to processing
+                // prior to processing
                 //Y:\Results\2014Aug29-000000 - ConvDNN Data Export\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.csv
-            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
+                //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url
 
-                // Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
-            //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
+                //Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
+                //audio_event_id	audio_recording_id	audio_recording_uuid	event_created_at_utc	projects	site_id	site_name	event_start_date_utc	event_start_seconds	event_end_seconds	event_duration_seconds	low_frequency_hertz	high_frequency_hertz	padding_start_time_seconds	padding_end_time_seconds	common_tags	species_tags	other_tags	listen_url	library_url	path	download_success	skipped
 
                 // csv file containing recording info, call bounds etc
-                //Source = @"Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\mangalam_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
+                Source = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\Output\ConvDNN\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
-                Output = @"C:\SensorNetworks\Output\ConvDNN".ToDirectoryInfo(),
+                Output = (@"C:\SensorNetworks\Output\ConvDNN\" + datestamp).ToDirectoryInfo(),
                 Verbose = true
             };
 
@@ -165,6 +166,9 @@ namespace AnalysisPrograms
             //IMPORTANT PARAMETER - SET EQUAL TO WHAT ANTHONY HAS EXTRACTED.
             double extractFixedTimeDuration = 4.0; // fixed length duration of all extracts from the original data - centred on the bounding box.
 
+            bool doPreprocessing = true;
+
+
             // print out the parameters
             if (verbose)
             {
@@ -178,8 +182,8 @@ namespace AnalysisPrograms
 
             //set up the output file
             //string header = "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
-            string header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,Duration(sec),path2Spectrograsms";
-            string opPath = Path.Combine(opDir.FullName, "SNRDataForConvDNN_DataSet_23thSept2014.csv");
+            string header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,Duration(sec),path2Spectrograms";
+            string opPath = Path.Combine(opDir.FullName, "SNRInfoForConvDnnDataset.csv");
             using (StreamWriter writer = new StreamWriter(opPath))
             {
                 writer.WriteLine(header);
@@ -234,10 +238,15 @@ namespace AnalysisPrograms
 
                     //#######################################
                     //#######################################
-                    // my debug code for home to test on subset of data - comment these lines when doing the real thing! 
+                    // my debug code for home to test on subset of data - comment these lines when at QUT! 
+                    // Anthony will tell me I should use a conditional compilation flag.
                     //#######################################
-                    DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
-                    sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
+                    //DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
+                    //sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
+                    //#######################################
+                    // TO TEST PORTION OF DATA 
+                    doPreprocessing = false;
+                    if (parentDirectoryName.Equals("0")) doPreprocessing = true;
                     //#######################################
                     //#######################################
 
@@ -283,7 +292,6 @@ namespace AnalysisPrograms
 
 
                     // ####################################################################
-                    bool doPreprocessing = true;
                     if (doPreprocessing)
                     {
                         var result = AnalyseOneRecording(sourceRecording, configDict, localEventStart, localEventEnd, minHz, maxHz, imageOpDir);
@@ -305,7 +313,7 @@ namespace AnalysisPrograms
                     }
                 } // end while()
 
-                string classDistributionOpPath = Path.Combine(opDir.FullName, "ClassDistributionsForConvDNN_DataSet_30thSept2014.csv");
+                string classDistributionOpPath = Path.Combine(opDir.FullName, "ClassDistributionsForConvDnnDataset.csv");
                 speciesCounts.Save(classDistributionOpPath);
             }
             catch (IOException e)
@@ -543,13 +551,13 @@ namespace AnalysisPrograms
             int lowPercentile = 20;
             double neighbourhoodSeconds = 0.25;
             int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
-            double LcnContrastLevel = 0.3;
+            double LcnContrastLevel = 0.25;
             //LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
             //LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
             sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_ShortRecordings_SubtractAndLCN(sonogram.Data, lowPercentile, neighbourhoodFrames, LcnContrastLevel);
 
             // draw amplitude spectrogram unannotated
-            FileInfo outputImage1 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".amplt.png"));
+            FileInfo outputImage1 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".amplitd.png"));
             ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(sonogram.Data), outputImage1.FullName);
 
             // draw amplitude spectrogram annotated
@@ -558,7 +566,8 @@ namespace AnalysisPrograms
             //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
             //Histogram.DrawDistributionsAndSaveImage(sonogram.Data, path2);
 
-            double ridgeThreshold = 0.25;
+            // 2) A FALSE-COLOUR VERSION OF AMPLITUDE SPECTROGRAM
+            double ridgeThreshold = 0.20;
             double[,] matrix = ImageTools.WienerFilter(sonogram.Data, 3);
             byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
             hits = RidgeDetection.JoinDisconnectedRidgesInMatrix(hits, matrix, ridgeThreshold);
@@ -570,7 +579,7 @@ namespace AnalysisPrograms
             list.Add(envelopeImage);
 
 
-            // 2) now draw the standard decibel spectrogram
+            // 3) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             // draw decibel spectrogram unannotated
             FileInfo outputImage2 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".deciBel.png"));
@@ -589,7 +598,7 @@ namespace AnalysisPrograms
             // keep the sonogram data (NOT noise reduced) for later use
             double[,] dbSpectrogramData = (double[,])sonogram.Data.Clone();
 
-            // 3) now draw the noise reduced decibel spectrogram
+            // 4) now draw the noise reduced decibel spectrogram
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             sonoConfig.NoiseReductionParameter = 3;
             //sonoConfig.NoiseReductionType = NoiseReductionType.SHORT_RECORDING;
@@ -606,8 +615,8 @@ namespace AnalysisPrograms
             // keep the sonogram data for later use
             double[,] nrSpectrogramData = sonogram.Data;
 
-            // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
-            ridgeThreshold = 3.5;
+            // 5) A FALSE-COLOUR VERSION OF DECIBEL SPECTROGRAM
+            ridgeThreshold = 2.5;
             matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
             hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
 
@@ -616,7 +625,7 @@ namespace AnalysisPrograms
 
             // 6) COMBINE THE SPECTROGRAM IMAGES
             Image compositeImage = ImageTools.CombineImagesVertically(list);
-            FileInfo outputImage = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".png"));
+            FileInfo outputImage = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".5spectro.png"));
             compositeImage.Save(outputImage.FullName, ImageFormat.Png);
             result.SpectrogramFile = outputImage;
 
