@@ -152,9 +152,25 @@ namespace AudioAnalysisTools.DSP
             return outM;
         }
 
+        /// <summary>
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
+        /// First obtains background noise profile calculated from lowest 20% of cells for each freq bin independently.
+        /// Loop over freq bins (columns) - subtract noise and divide by LCN (Local Contrast Normalisation. 
+        /// 
+        /// The LCN denominator = (contrastLevelConstant + Sqrt(localVariance[y])
+        /// Note that sqrt of variance = std dev.
+        /// A low contrastLevel = 0.1 give more grey image.
+        /// A high contrastLevel = 1.0 give mostly white high contrast image.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="lowPercent"></param>
+        /// <param name="neighbourhood"></param>
+        /// <param name="contrastLevel"></param>
+        /// <returns></returns>
         public static double[,] NoiseReduction_ShortRecordings_SubtractAndLCN(double[,] matrix, int lowPercent, int neighbourhood, double contrastLevel)
         {
             double[] noiseProfile = NoiseProfile.GetNoiseProfile_BinWiseFromLowestPercentileCells(matrix, lowPercent);
+            noiseProfile = DataTools.filterMovingAverage(noiseProfile, 5);
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
             //to contain noise reduced matrix

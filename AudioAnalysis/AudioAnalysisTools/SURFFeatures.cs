@@ -17,35 +17,124 @@ namespace AudioAnalysisTools
 {
     public static class SURFFeatures
     {
+        /// <summary>
+        /// this class used for SURF intermediate data.
+        /// </summary>
+        public class SURFData
+        {
+            public Image<Gray, Byte> Image   { get; set; }
+            public VectorOfKeyPoint POIs     { get; set; }
+            public Matrix<float> Descriptors { get; set; }
+        }
+
 
         public static void SURF()
         {
-            //string inputPath1 = @"C:\SensorNetworks\Output\Test\TESTMATRIXquery.png";
-            //string inputPath1 = @"C:\SensorNetworks\Output\Test\TESTLewinsRailQuery.png";
+            //string inputPath1 = @"C:\SensorNetworks\Output\SURFImages\TESTMATRIXquery.png";
+            //string inputPath1 = @"C:\SensorNetworks\Output\SURFImages\TESTLewinsRailQuery.png";
             //string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\Test\sunhat.jpg";
-            string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\Test\BASIC256_greysacle_Grey_Mona_lisa.jpg";
-            Bitmap bmp = new Bitmap(inputPath1);
+            //string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\Test\BASIC256_greysacle_Grey_Mona_lisa.jpg";
+            string inputPath1 = @"C:\SensorNetworks\Output\SURFImages\manface1.jpg";
+            SURFData model = SURFFeatures.GetKeyPoints(inputPath1);
+
+            //string inputPath2 = @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png";
+            string inputPath2 = @"C:\SensorNetworks\Output\SURFImages\MonaLisaColour.jpg";
+            SURFData obsvd = SURFFeatures.GetKeyPoints(inputPath2);
+
+
+            Image<Bgr, Byte> image = MatchKeyPoints(model, obsvd);
+            if(image != null)
+                image.Save(@"C:\SensorNetworks\Output\SURFImages\SURF_TEST12.png");
+        }
+
+
+
+        public static SURFData GetKeyPoints(string path)
+        {
+            Bitmap bmp = new Bitmap(path);
+            Image<Gray, Byte> image = new Image<Gray, Byte>(bmp);
+            //Image<Gray, Byte> modelImage = new Image<Gray, Byte>(path);
+
+            //code for colour images
             //Image<Bgr, Byte> colorImage = new Image<Bgr, Byte>(bmp);
             // convert colour image to grayscale
             //Image<Gray, Byte> modelImage = new Image<Gray, byte>(colorImage.Bitmap);
-
-            //Capture cap = new Capture(inputPath1);
+            // OR
+            //Capture cap = new Capture(path);
             //Image<Bgr, Byte> colorImage = cap.QueryFrame();
             //Image<Gray, Byte> modelImage = colorImage.Convert<Gray, Byte>();
 
+            //extract features from the object image
+            SURFDetector surfCPU = new SURFDetector(500, false);
+            VectorOfKeyPoint keyPoints = surfCPU.DetectKeyPointsRaw(image, null);
 
-            Image<Gray, Byte> modelImage = new Image<Gray, Byte>(bmp);
-            //Image<Gray, Byte> modelImage = new Image<Gray, Byte>(inputPath1);
+            if (keyPoints.Size == 0)
+            {
+                LoggedConsole.WriteLine("WARNING: There are no Points Of Interest in image <{0}>", System.IO.Path.GetFileName(path));
+                return null;
+            }
+            Matrix<float> descriptors = surfCPU.ComputeDescriptorsRaw(image, null, keyPoints);
 
-            //string inputPath2 = @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png";
-            string inputPath2 = @"C:\SensorNetworks\Output\XueyanDataset\Test\people.jpg";
-            Image<Gray, byte> observedImage = new Image<Gray, Byte>(inputPath2);
-            long matchTime;
-            Image<Bgr, Byte> image = Draw(modelImage, observedImage, out matchTime);
-            if(image != null)
-                image.Save(@"C:\SensorNetworks\Output\XueyanDataset\Test\SURF_TEST.png");
+            var data = new SURFData();
+            data.Image = image;
+            data.Descriptors = descriptors;
+            data.POIs = keyPoints;
+            return data;
         }
 
+
+        public static Image<Bgr, Byte> MatchKeyPoints(SURFData model, SURFData obsvd)
+        {
+            HomographyMatrix homography = null;
+            Matrix<int> indices;
+            Matrix<byte> mask;
+            int k = 2;
+            double uniquenessThreshold = 0.8;
+
+            BruteForceMatcher<float> matcher = new BruteForceMatcher<float>(DistanceType.L2);
+                matcher.Add(model.Descriptors);
+
+                indices = new Matrix<int>(obsvd.Descriptors.Rows, k);
+                using (Matrix<float> dist = new Matrix<float>(obsvd.Descriptors.Rows, k))
+                {
+                    matcher.KnnMatch(obsvd.Descriptors, indices, dist, k, null);
+                    mask = new Matrix<byte>(dist.Rows, 1);
+                    mask.SetValue(255);
+                    Features2DToolbox.VoteForUniqueness(dist, uniquenessThreshold, mask);
+                }
+
+                int nonZeroCount = CvInvoke.cvCountNonZero(mask);
+                if (nonZeroCount >= 4)
+                {
+                    nonZeroCount = Features2DToolbox.VoteForSizeAndOrientation(model.POIs, obsvd.POIs, indices, mask, 1.5, 20);
+                    if (nonZeroCount >= 4)
+                        homography = Features2DToolbox.GetHomographyMatrixFromMatchedFeatures(model.POIs, obsvd.POIs, indices, mask, 2);
+                }
+
+
+            //Draw the matched keypoints
+            var drawtype = Features2DToolbox.KeypointDrawType.DEFAULT;
+            //var drawtype = Features2DToolbox.KeypointDrawType.NOT_DRAW_SINGLE_POINTS;
+            Image<Bgr, Byte> result = Features2DToolbox.DrawMatches(model.Image, model.POIs, obsvd.Image, obsvd.POIs,
+               indices, new Bgr(Color.Red), new Bgr(Color.Magenta), mask, drawtype);
+
+            #region draw the projected region on the image
+            if (homography != null)
+            {  //draw a rectangle along the projected model
+                Rectangle rect = model.Image.ROI;
+                PointF[] pts = new PointF[] { 
+               new PointF(rect.Left, rect.Bottom),
+               new PointF(rect.Right, rect.Bottom),
+               new PointF(rect.Right, rect.Top),
+               new PointF(rect.Left, rect.Top)};
+                homography.ProjectPoints(pts);
+
+                result.DrawPolyline(Array.ConvertAll<PointF, Point>(pts, Point.Round), true, new Bgr(Color.Blue), 1);
+            }
+            #endregion
+
+            return result;        
+        }
 
 
 
@@ -70,8 +159,8 @@ namespace AudioAnalysisTools
             Matrix<byte> mask;
             int k = 2;
             double uniquenessThreshold = 0.8;
-            if (GpuInvoke.HasCuda)
-            //if (false)
+            //if (GpuInvoke.HasCuda)
+            if (false)
             {
                 GpuSURFDetector surfGPU = new GpuSURFDetector(surfCPU.SURFParams, 0.01f);
                 using (GpuImage<Gray, Byte> gpuModelImage = new GpuImage<Gray, byte>(modelImage))
