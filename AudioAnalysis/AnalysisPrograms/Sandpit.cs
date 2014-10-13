@@ -40,7 +40,8 @@ namespace AnalysisPrograms
 
             if (true)  // call SURF image Feature extraction
             {
-                SURFFeatures.SURF();
+                //SURFFeatures.SURF_TEST();
+                SURFAnalysis.Main(null);
                 LoggedConsole.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
