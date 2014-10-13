@@ -227,6 +227,7 @@
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="Canetoad.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
+    <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
     <Compile Include="Dong.Felt.Main.cs" />

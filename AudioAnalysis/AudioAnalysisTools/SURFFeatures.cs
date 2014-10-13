@@ -12,6 +12,7 @@ using Emgu.CV.Features2D;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Emgu.CV.GPU;
+using System.IO;
 
 namespace AudioAnalysisTools
 {
@@ -28,28 +29,66 @@ namespace AudioAnalysisTools
         }
 
 
-        public static void SURF()
+        public static void SURF_TEST()
         {
             //string inputPath1 = @"C:\SensorNetworks\Output\SURFImages\TESTMATRIXquery.png";
             //string inputPath1 = @"C:\SensorNetworks\Output\SURFImages\TESTLewinsRailQuery.png";
             //string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\Test\sunhat.jpg";
             //string inputPath1 = @"C:\SensorNetworks\Output\XueyanDataset\Test\BASIC256_greysacle_Grey_Mona_lisa.jpg";
-            string inputPath1 = @"C:\SensorNetworks\Output\SURFImages\manface1.jpg";
-            SURFData model = SURFFeatures.GetKeyPoints(inputPath1);
+            string inputPath1 = @"C:\SensorNetworks\Output\SURFImages\womanface2.jpg";
+            //string inputPath1 = @"Y:\XueyanDataset\Query\4. Eastern whipbird\Query1\NEJB_NE465_20101014-052000-0521000-estern whipbird.wav";
 
             //string inputPath2 = @"C:\SensorNetworks\Output\Test\TESTMATRIX2.png";
             string inputPath2 = @"C:\SensorNetworks\Output\SURFImages\MonaLisaColour.jpg";
-            SURFData obsvd = SURFFeatures.GetKeyPoints(inputPath2);
-
-
-            Image<Bgr, Byte> image = MatchKeyPoints(model, obsvd);
-            if(image != null)
-                image.Save(@"C:\SensorNetworks\Output\SURFImages\SURF_TEST12.png");
+            string opDir = @"C:\SensorNetworks\Output\XueyanDataset";
+            // string opDir = @"Y:\XueyanDataset\SURFOutput";
+            SURFFeatures.SURF(new FileInfo(inputPath1), new FileInfo(inputPath2), new DirectoryInfo(opDir));
         }
 
 
+        public static void SURF(FileInfo Q_inputFile, FileInfo T_inputFile, DirectoryInfo opDir)
+        {
+            Image<Gray, Byte> image1 = SURFFeatures.GetGreyScaleImage(Q_inputFile.FullName);
+            SURFData model = SURFFeatures.GetKeyPoints(image1);
+            if (model.POIs.Size == 0)
+            {
+                LoggedConsole.WriteLine("WARNING: There are no Points Of Interest in image <{0}>", Q_inputFile.Name);
+                return;
+            }
+            else
+            {
+                LoggedConsole.WriteLine("Image POI count = {0}", model.POIs.Size);
+                int min = Math.Min(model.POIs.Size, 10);
+                for(int i = 0; i < model.POIs.Size; i++)
+                {
+                    MKeyPoint poi = model.POIs[i];
+                    LoggedConsole.WriteLine("POI<X,Y> = <{0:f0},{1:f0}> \tAngle={2:f0}, \tClassId={3}, \tOctave={4}, \tResponse={5:f0} \tSize={6}",
+                                             poi.Point.X, poi.Point.Y, poi.Angle, poi.ClassId, poi.Octave, poi.Response, poi.Size);
+                }
+            }
 
-        public static SURFData GetKeyPoints(string path)
+            Image<Gray, Byte> image2 = SURFFeatures.GetGreyScaleImage(T_inputFile.FullName);
+            SURFData obsvd = SURFFeatures.GetKeyPoints(image2);
+            if (obsvd.POIs.Size == 0)
+            {
+                LoggedConsole.WriteLine("WARNING: There are no Points Of Interest in image <{0}>", T_inputFile.Name);
+                return;
+            }
+            else
+            {
+                LoggedConsole.WriteLine("Image POI count = {0}", obsvd.POIs.Size);
+            }
+
+            Image<Bgr, Byte> image = MatchKeyPoints(model, obsvd);
+            if (image != null)
+            {
+                string fileName = Q_inputFile.Name + "_" + T_inputFile.Name + ".png";
+                image.Save(Path.Combine(opDir.FullName, fileName));
+            }
+        }
+
+
+        public static Image<Gray, Byte> GetGreyScaleImage(string path)
         {
             Bitmap bmp = new Bitmap(path);
             Image<Gray, Byte> image = new Image<Gray, Byte>(bmp);
@@ -63,14 +102,17 @@ namespace AudioAnalysisTools
             //Capture cap = new Capture(path);
             //Image<Bgr, Byte> colorImage = cap.QueryFrame();
             //Image<Gray, Byte> modelImage = colorImage.Convert<Gray, Byte>();
+            return image;
+        }
 
+        public static SURFData GetKeyPoints(Image<Gray, Byte> image)
+        {
             //extract features from the object image
             SURFDetector surfCPU = new SURFDetector(500, false);
             VectorOfKeyPoint keyPoints = surfCPU.DetectKeyPointsRaw(image, null);
 
             if (keyPoints.Size == 0)
             {
-                LoggedConsole.WriteLine("WARNING: There are no Points Of Interest in image <{0}>", System.IO.Path.GetFileName(path));
                 return null;
             }
             Matrix<float> descriptors = surfCPU.ComputeDescriptorsRaw(image, null, keyPoints);
@@ -115,6 +157,7 @@ namespace AudioAnalysisTools
             //Draw the matched keypoints
             var drawtype = Features2DToolbox.KeypointDrawType.DEFAULT;
             //var drawtype = Features2DToolbox.KeypointDrawType.NOT_DRAW_SINGLE_POINTS;
+            //var drawtype = Features2DToolbox.KeypointDrawType.DRAW_RICH_KEYPOINTS;
             Image<Bgr, Byte> result = Features2DToolbox.DrawMatches(model.Image, model.POIs, obsvd.Image, obsvd.POIs,
                indices, new Bgr(Color.Red), new Bgr(Color.Magenta), mask, drawtype);
 
@@ -140,6 +183,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
+        /// THIS iS THE ORIGINAL SOURCE CODE USED TO UNDERSTAND THE ALGORITHM
         /// Draw the model image and observed image, the matched features and homography projection.
         /// </summary>
         /// <param name="modelImage">The model image</param>
@@ -180,7 +224,7 @@ namespace AudioAnalysisTools
                     using (GpuMat<int> gpuMatchIndices = new GpuMat<int>(gpuObservedDescriptors.Size.Height, k, 1, true))
                     using (GpuMat<float> gpuMatchDist = new GpuMat<float>(gpuObservedDescriptors.Size.Height, k, 1, true))
                     using (GpuMat<Byte> gpuMask = new GpuMat<byte>(gpuMatchIndices.Size.Height, 1, 1))
-                    using (Stream stream = new Stream())
+                    using (Emgu.CV.GPU.Stream stream = new Emgu.CV.GPU.Stream())
                     {
                         matcher.KnnMatchSingle(gpuObservedDescriptors, gpuModelDescriptors, gpuMatchIndices, gpuMatchDist, k, null, stream);
                         indices = new Matrix<int>(gpuMatchIndices.Size);
@@ -258,16 +302,11 @@ namespace AudioAnalysisTools
                 watch.Stop();
             }
 
-
-
-
-
-
             //Draw the matched keypoints
             var drawtype = Features2DToolbox.KeypointDrawType.DEFAULT;
             //var drawtype = Features2DToolbox.KeypointDrawType.NOT_DRAW_SINGLE_POINTS;
             Image<Bgr, Byte> result = Features2DToolbox.DrawMatches(modelImage, modelKeyPoints, observedImage, observedKeyPoints,
-               indices, new Bgr(Color.Red), new Bgr(Color.Magenta), mask, drawtype);
+                                                                    indices, new Bgr(Color.Red), new Bgr(Color.Magenta), mask, drawtype);
 
             #region draw the projected region on the image
             if (homography != null)
@@ -288,5 +327,6 @@ namespace AudioAnalysisTools
 
             return result;
         }
+
     }
 }
