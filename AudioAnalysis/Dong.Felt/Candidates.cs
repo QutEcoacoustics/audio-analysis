@@ -36,7 +36,8 @@ namespace Dong.Felt
         /// It indidates the audio file where the candidate come from. 
         /// </summary>
         public string SourceFilePath { get; set; }
-        
+
+        //public string SpeciesName { get; set; }
         /// <summary>
         /// A constructor
         /// </summary>

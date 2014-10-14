@@ -15,12 +15,130 @@ namespace Dong.Felt.ResultsOutput
     public class OutputResults
     {
         
-        // Matching step: 1. species name check 2. file date, time match 3. location match
-        public static void AutomatedMatchingAnalysis(FileInfo matchResultsFile, FileInfo AnnotationFile)
+        /// <summary>
+        /// Matching step: 1. change candidate file path into file name for doing matching, output the changed files. 
+        /// </summary>
+        /// <param name="inputDirectory"></param>
+        /// <param name="groundTruthFile"></param>
+        /// <param name="outputFileName"></param>
+        public static void ChangeCandidateFileName(DirectoryInfo inputDirectory)
         {
-
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var csvFileCount = csvFiles.Count();
+            //var grountruthList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
+                foreach (var c in subCandicatesList)
+                {
+                    var audioFileName = Path.GetFileName(c.SourceFilePath);
+                    c.SourceFilePath = audioFileName;                    
+                }
+                CSVResults.CandidateListToCSV(new FileInfo(csvFiles[i]),subCandicatesList);
+            }
         }
 
+        /// <summary>
+        /// Matching step 2
+        /// Match the improved csv files with groundtruth data, and output the results into original csv files. 
+        /// The output csv files changed the score, if they found the match. 
+        /// </summary>
+        public static void AutomatedMatchingAnalysis(DirectoryInfo inputDirectory, string groundTruthFile)          
+        {
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);            
+            var csvFileCount = csvFiles.Count();
+            var grounTruthList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
+            var frequencyDifference = 1000; // 1000 hz
+            var timeDifference = 1000; // 1000 ms
+            var secondToMilliSecondUnit = 1000;
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
+                var candidatesCount = subCandicatesList.Count();
+                for (var index =0; index<candidatesCount; index++)
+                {
+                    var currentCandidate = subCandicatesList[index];
+                    foreach (var g in grounTruthList)
+                    {
+                        if (currentCandidate.SourceFilePath == g.SourceFilePath)
+                        {
+                            if ((Math.Abs(currentCandidate.MaxFrequency - g.MaxFrequency) < frequencyDifference) &&
+                                (Math.Abs(currentCandidate.MinFrequency - g.MinFrequency) < frequencyDifference))
+                            {
+                                var cDuration = currentCandidate.EndTime - currentCandidate.StartTime;
+                                var gDuration = (g.EndTime - g.StartTime) * secondToMilliSecondUnit;
+                                if (Math.Abs(cDuration - gDuration) < 2 * timeDifference)
+                                {
+                                    if ((Math.Abs(currentCandidate.StartTime - g.StartTime * secondToMilliSecondUnit) < timeDifference)
+                                        &&
+                                       (Math.Abs(currentCandidate.EndTime - g.EndTime * secondToMilliSecondUnit) < timeDifference))
+                                    {
+                                        currentCandidate.Score = index + 1;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        currentCandidate.Score = 100;
+                                    }
+                                }
+                                else
+                                {
+                                    if ((g.StartTime * secondToMilliSecondUnit - currentCandidate.StartTime < timeDifference) &&
+                                        (g.EndTime * secondToMilliSecondUnit - currentCandidate.EndTime < timeDifference))
+                                    {
+                                        currentCandidate.Score = index+1;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        if ((Math.Abs(g.StartTime * secondToMilliSecondUnit - currentCandidate.StartTime) < timeDifference)
+                                            ||
+                                        (Math.Abs(g.EndTime * secondToMilliSecondUnit - currentCandidate.EndTime) < timeDifference))
+                                        {
+                                            currentCandidate.Score = index + 1;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            currentCandidate.Score = 100;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                currentCandidate.Score = 100;
+                            }
+                        }
+                    }
+                }
+                CSVResults.CandidateListToCSV(new FileInfo(csvFiles[i]), subCandicatesList);
+            }
+        }
+
+        /// <summary>
+        /// Matching step 3
+        /// Summarize all the matching csv files into one file(outputFile)
+        /// </summary>
+        /// <param name="inputDirectory"></param>
+        /// <param name="outputFile"></param>
+        public static void MatchingSummary(DirectoryInfo inputDirectory, string outputFile)
+        {
+            var finalOutputResult = new List<Candidates>();
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);            
+            var csvFileCount = csvFiles.Count();
+            
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
+                subCandicatesList = subCandicatesList.OrderBy(x => x.Score).ToList();
+                if (subCandicatesList.Count != 0)
+                {
+                    finalOutputResult.Add(subCandicatesList[0]);
+                }
+                CSVResults.CandidateListToCSV(new FileInfo(outputFile), finalOutputResult);
+            }
+        }
         /// <summary>
         /// To summarize the matching results by taking into inputDirectory, output the results to the output file.
         /// Especially, the input directory include all seperated matching results for all queries. 
