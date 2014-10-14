@@ -115,7 +115,12 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, featurePropertySet);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, featurePropertySet);
+                    OutputResults.ChangeCandidateFileName(inputDirectory);
+                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    var outputFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\MatchingResult.csv";
+                    OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     //var path = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\2.png";
                     //var image = AudioPreprosessing.AudioToAmplitudeSpectrogram(config, inputDirectory.FullName);                                    
@@ -1051,10 +1056,11 @@
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6)
                 {                    
                     candidateDistanceList = Indexing.Feature6EuclideanDistPOICountBased(queryRepresentation, candidatesList, weight1, weight2);
-                }
+                }               
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
                 {
-                    candidateDistanceList = Indexing.Feature8EuclideanDistMagBased(queryRepresentation, candidatesList,weight1, weight2);                    
+                    candidateDistanceList = Indexing.Feature8EuclideanDistMagBased(queryRepresentation, candidatesList,
+                        weight1, weight2);                    
                 }
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
                 {
