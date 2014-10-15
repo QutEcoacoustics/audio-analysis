@@ -163,8 +163,6 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
-            //IMPORTANT PARAMETER - SET EQUAL TO WHAT ANTHONY HAS EXTRACTED.
-            double extractFixedTimeDuration = 4.0; // fixed length duration of all extracts from the original data - centred on the bounding box.
 
             bool doPreprocessing = true;
 
@@ -180,12 +178,11 @@ namespace AnalysisPrograms
             }
 
 
-            //set up the output file
-            //string header = "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
-            string header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,Duration(sec),path2Spectrograms";
+            //set up header of the output file
             string opPath = Path.Combine(opDir.FullName, "SNRInfoForConvDnnDataset.csv");
             using (StreamWriter writer = new StreamWriter(opPath))
             {
+                string header = AudioToSonogramResult.GetCSVHeader();
                 writer.WriteLine(header);
             }
 
@@ -229,7 +226,7 @@ namespace AnalysisPrograms
                     }
 
                     FileInfo sourceRecording = record.path;
-                    string fileName = sourceRecording.Name;
+                    //string fileName = sourceRecording.Name;
                     DirectoryInfo sourceDirectory = sourceRecording.Directory;
                     string directoryName = sourceDirectory.Name;
                     string parentDirectoryName = sourceDirectory.Parent.Name;
@@ -243,6 +240,7 @@ namespace AnalysisPrograms
                     //#######################################
                     //DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
                     //sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
+                    //record.path = sourceRecording;
                     //#######################################
                     // TO TEST PORTION OF DATA 
                     doPreprocessing = false;
@@ -263,47 +261,11 @@ namespace AnalysisPrograms
                         continue;
                     }
 
-                    // everything should be OK - have jumped through all the hoops.
-                    fileExistsCount ++;
-                    // string message = String.Format("#########: line {0}  FILE EXISTS >>>" + sourceRecording.Name + "<<<", fileExistsCount);
-                    // LoggedConsole.WriteWarnLine(message);
-                    DirectoryInfo sourceDir = sourceRecording.Directory;
-                    int minHz = record.low_frequency_hertz;
-                    int maxHz = record.high_frequency_hertz;
-                    TimeSpan start = record.event_start_seconds;
-                    TimeSpan eventDuration   = record.event_duration_seconds;
-                    TimeSpan eventCentre     = TimeSpan.FromTicks(eventDuration.Ticks / 2);
-                    TimeSpan extractDuration = TimeSpan.FromSeconds(extractFixedTimeDuration);
-                    TimeSpan extractHalfDuration = TimeSpan.FromSeconds(extractFixedTimeDuration / 2);
-
-                    TimeSpan localEventStart = TimeSpan.Zero;
-                    TimeSpan localEventEnd = extractDuration;
-                    if ((eventDuration != TimeSpan.Zero) && (eventDuration < extractDuration))
-                    {
-                        localEventStart = extractHalfDuration - eventCentre;
-                        localEventEnd   = extractHalfDuration + eventCentre;
-                    }
-                    //continue;
-
-                    // keep track of species names and distribution of classes.
-                    speciesCounts.AddSpeciesCount(record.common_tags);
-                    speciesCounts.AddSpeciesID(record.common_tags, record.species_tags);
-                    speciesCounts.AddSiteName(record.site_name);
-
-
                     // ####################################################################
                     if (doPreprocessing)
                     {
-                        var result = AnalyseOneRecording(sourceRecording, configDict, localEventStart, localEventEnd, minHz, maxHz, imageOpDir);
-
-                        // CONSTRUCT the outputline for csv file
-                        // "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
-                        //  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
-                        string line = String.Format("{0},{1},{2},{3:f2},{4:f3},{5:f3},{6:f3},{7:f2},{8}",
-                                                    record.audio_event_id, record.site_name, record.common_tags, result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
-                                                    result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingOneThirdSNR,
-                                                    result.SnrStatistics.ExtractDuration.TotalSeconds, result.SpectrogramFile.FullName);
-
+                        AudioToSonogramResult result = AnalyseOneRecording(record, configDict, opDir);
+                        string line = result.WriteResultAsLineOfCSV();
                         // It is helpful to write to the output file as we go, so as to keep a record of where we are up to.
                         // This requires to open and close the output file at each iteration
                         using (StreamWriter writer = new StreamWriter(opPath, true))
@@ -311,6 +273,14 @@ namespace AnalysisPrograms
                             writer.WriteLine(line);
                         }
                     }
+
+                    // everything should be OK - have jumped through all the hoops.
+                    fileExistsCount++;
+                    // keep track of species names and distribution of classes.
+                    speciesCounts.AddSpeciesCount(record.common_tags);
+                    speciesCounts.AddSpeciesID(record.common_tags, record.species_tags);
+                    speciesCounts.AddSiteName(record.site_name);
+
                 } // end while()
 
                 string classDistributionOpPath = Path.Combine(opDir.FullName, "ClassDistributionsForConvDnnDataset.csv");
@@ -332,7 +302,49 @@ namespace AnalysisPrograms
 
 
 
-        public static AudioToSonogramResult AnalyseOneRecording(FileInfo sourceRecording, Dictionary<string, string> configDict, TimeSpan localEventStart, TimeSpan localEventEnd,
+
+        public static AudioToSonogramResult AnalyseOneRecording(CsvDataRecord dataRecord, Dictionary<string, string> configDict, DirectoryInfo opDir)
+        {
+            // ############## IMPORTANT PARAMETER - SET EQUAL TO WHAT ANTHONY HAS EXTRACTED.
+            double extractFixedTimeDuration = 4.0; // fixed length duration of all extracts from the original data - centred on the bounding box.
+
+            //
+            FileInfo sourceRecording = dataRecord.path;
+            string fileName = sourceRecording.Name;
+            // string message = String.Format("#########: line {0}  FILE EXISTS >>>" + sourceRecording.Name + "<<<", fileExistsCount);
+            // LoggedConsole.WriteWarnLine(message);
+            DirectoryInfo sourceDir = sourceRecording.Directory;
+            int minHz = dataRecord.low_frequency_hertz;
+            int maxHz = dataRecord.high_frequency_hertz;
+            TimeSpan start = dataRecord.event_start_seconds;
+            TimeSpan eventDuration = dataRecord.event_duration_seconds;
+            TimeSpan eventCentre = TimeSpan.FromTicks(eventDuration.Ticks / 2);
+            TimeSpan extractDuration = TimeSpan.FromSeconds(extractFixedTimeDuration);
+            TimeSpan extractHalfDuration = TimeSpan.FromSeconds(extractFixedTimeDuration / 2);
+
+            TimeSpan localEventStart = TimeSpan.Zero;
+            TimeSpan localEventEnd = extractDuration;
+            if ((eventDuration != TimeSpan.Zero) && (eventDuration < extractDuration))
+            {
+                localEventStart = extractHalfDuration - eventCentre;
+                localEventEnd = extractHalfDuration + eventCentre;
+            }
+
+            var result = AnalyseOneRecording(sourceRecording, configDict, localEventStart, localEventEnd, minHz, maxHz, opDir);
+
+            // add additional info to identify this recording
+            result.AudioEventId = dataRecord.audio_event_id;
+            result.SiteName = dataRecord.site_name;
+            result.CommonTags = dataRecord.common_tags;
+            return result;
+        }
+
+
+
+
+
+        public static AudioToSonogramResult AnalyseOneRecording(FileInfo sourceRecording, Dictionary<string, string> configDict, 
+                                                                TimeSpan localEventStart, TimeSpan localEventEnd,
                                                                 int minHz, int maxHz, DirectoryInfo opDir)
         {
             // set a threshold for determining energy distribution in call
@@ -521,9 +533,56 @@ namespace AnalysisPrograms
         /// </summary>
         public class AudioToSonogramResult
         {
-            //  path to spectrogram image
+            /// <summary>
+            /// ID of the event included in the recording segment
+            /// </summary>
+            public int AudioEventId { get; set; }
+            /// <summary>
+            /// name of site where recording was made
+            /// </summary>
+            public string SiteName { get; set; }
+            /// <summary>
+            /// class label for this recording
+            /// </summary>
+            public string CommonTags { get; set; }
+            /// <summary>
+            /// path to spectrogram images of this recording
+            /// </summary>
             public FileInfo SpectrogramFile { get; set; }
+            /// <summary>
+            /// snr information for this recording
+            /// </summary>
             public SNR.SNRStatistics SnrStatistics { get; set; }
+
+            /// <summary>
+            /// CONSTRUCT the header for csv file
+            ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
+            /// </summary>
+            /// <returns></returns>
+            public string WriteResultAsLineOfCSV()
+            {
+                string line = String.Format("{0},{1},{2},{3:f2},{4:f3},{5:f3},{6:f3},{7:f2},{8}",
+                                            this.AudioEventId, this.SiteName, this.CommonTags,
+                                            this.SnrStatistics.Threshold, this.SnrStatistics.Snr,
+                                            this.SnrStatistics.FractionOfFramesExceedingThreshold, this.SnrStatistics.FractionOfFramesExceedingOneThirdSNR,
+                                            this.SnrStatistics.ExtractDuration.TotalSeconds, this.SpectrogramFile.FullName);
+                return line;
+            }
+
+            /// <summary>
+            /// CONSTRUCT the header for the above csv file
+            /// Following line is headers from Anthony's returned csv file
+            /// "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
+            /// 
+            /// Following line is header for these results.
+            ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
+            /// </summary>
+            /// <returns></returns>
+            public static string GetCSVHeader()
+            {
+                string header = "audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,Duration(sec),path2Spectrograms";
+                return header;
+            }
         }
 
         public static AudioToSonogramResult GenerateSpectrogramImages(FileInfo sourceRecording, Dictionary<string, string> configDict, DirectoryInfo opDir)
@@ -557,7 +616,7 @@ namespace AnalysisPrograms
             sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_ShortRecordings_SubtractAndLCN(sonogram.Data, lowPercentile, neighbourhoodFrames, LcnContrastLevel);
 
             // draw amplitude spectrogram unannotated
-            FileInfo outputImage1 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".amplitd.png"));
+            FileInfo outputImage1 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".amplitd.bmp"));
             ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(sonogram.Data), outputImage1.FullName);
 
             // draw amplitude spectrogram annotated
@@ -582,7 +641,7 @@ namespace AnalysisPrograms
             // 3) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             // draw decibel spectrogram unannotated
-            FileInfo outputImage2 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".deciBel.png"));
+            FileInfo outputImage2 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".deciBel.bmp"));
             ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(sonogram.Data), outputImage2.FullName);
 
             image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
@@ -607,7 +666,7 @@ namespace AnalysisPrograms
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
 
             // draw decibel spectrogram unannotated
-            FileInfo outputImage3 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".noNoise_dB.png"));
+            FileInfo outputImage3 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".noNoise_dB.bmp"));
             ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(sonogram.Data), outputImage3.FullName);
             image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM + Lamel noise subtraction");
             list.Add(image);
