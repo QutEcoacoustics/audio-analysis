@@ -1066,6 +1066,10 @@
                 {
                     candidateDistanceList = Indexing.Feature9EuclideanDist(queryRepresentation, candidatesList, weight1, weight2);
                 }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                {
+                    candidateDistanceList = Indexing.Feature10HausdorffDist(queryRepresentation, candidatesList);
+                }
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
                 //    candidatesList, weight1, weight2);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);

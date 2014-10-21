@@ -85,7 +85,44 @@
 
             return Math.Sqrt(deltaX + deltaY);
         }
-        
+
+        public static double HausdorffDistanceForPoints(List<Point> pointA, List<Point> pointB)
+        {
+            var result = 0.0;
+            var hDistance = new List<double>();
+            var hAtoB = 0.0;
+            var hBtoA = 0.0;
+            var maxAtoBDistance = new List<double>();
+            var maxBtoADistance = new List<double>();
+            foreach (var a in pointA)
+            {
+                var minDistance = new List<double>();                
+                foreach (var b in pointB)
+                {
+                    var minDistanceItem = EuclideanDistanceForPoint(a,b);
+                    minDistance.Add(minDistanceItem);
+                }
+                var MinDistance = minDistance.Min();
+                maxAtoBDistance.Add(MinDistance);
+            }
+            hAtoB = maxAtoBDistance.Max();
+            hDistance.Add(hAtoB);
+            foreach (var b in pointB)
+            {
+                var minDistance = new List<double>();
+                foreach (var a in pointA)
+                {
+                    var minDistanceItem = EuclideanDistanceForPoint(b, a);
+                    minDistance.Add(minDistanceItem);
+                }
+                var MinDistance = minDistance.Min();
+                maxBtoADistance.Add(MinDistance);
+            }
+            hBtoA = maxBtoADistance.Max();
+            hDistance.Add(hBtoA);
+            result = hDistance.Max();
+            return result;
+        }
         /// <summary>
         /// The manhanton distance.
         /// </summary>

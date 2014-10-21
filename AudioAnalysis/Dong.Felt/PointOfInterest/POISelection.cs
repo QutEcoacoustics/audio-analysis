@@ -34,6 +34,12 @@ namespace Dong.Felt
 
         #region Public Methods
 
+
+        public POISelection(List<PointOfInterest> list)
+        {
+            poiList = list;
+        }
+
         public static List<PointOfInterest> RidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             // list size based on avg result size
@@ -85,7 +91,8 @@ namespace Dong.Felt
         {
              var result = new List<PointOfInterest>();
              if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)                
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)                
              {
                  result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
              }
@@ -107,11 +114,6 @@ namespace Dong.Felt
             var byteMatrix = Gradient8DirCalculation(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
             instance.ConvertRidgeIndiToPOIList2(byteMatrix, ridgeMagnitudeMatrix, spectrogram);
             return instance.poiList;
-        }
-
-        public POISelection(List<PointOfInterest> list)
-        {
-            poiList = list;
         }
 
         internal void RidgeDetectionInternal(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
