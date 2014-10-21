@@ -786,6 +786,50 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
+        public static double DistanceFeature10Calculation(List<RegionRerepresentation> query,
+            List<RegionRerepresentation> candidate, int poiCountThreshold)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
+                var matchedNhCount = 0;
+                for (int index = 0; index < nhCount; index++)
+                {
+                    // to check whether they match
+                    var queryPoints = query[index].PointList;
+                    var candidatePoints = candidate[index].PointList;
+                    if (query[index].POICount <= poiCountThreshold && candidate[index].POICount <= poiCountThreshold)
+                    {                     
+                        matchedNhCount++;
+                    }
+                    else if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
+                    {
+                        matchedNhCount++;
+                        if (queryPoints != null && candidatePoints != null)
+                        {
+                            result += Distance.HausdorffDistanceForPoints(query[index].PointList, candidate[index].PointList);
+                        }
+                        else
+                        {
+                            result += 100;
+                        }
+                    }
+                }
+                var matchedPercentage = matchedNhCount / (double)nhCount;
+                var averageSimilarityScore = result / matchedNhCount;
+                result = matchedPercentage * averageSimilarityScore;
+                result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
+            }
+            return result;
+        }
+        /// <summary>
+        /// This version is used for calculating distance based on feature set 6.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <param name="poiCountThreshold"></param>
+        /// <returns></returns>
         public static double DistanceFeature6RepresentationPOICountBased(List<RegionRerepresentation> query, 
             List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {

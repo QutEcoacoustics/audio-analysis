@@ -25,12 +25,19 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet8 = "FeaturePropSet8";
         // only entropy of poi in rows and cols
         public const string FeaturePropSet9 = "FeaturePropSet9";
+        // FeatureSet10 only involves the position index of POI
+        public const string FeaturePropSet10 = "FeaturePropSet10";
 
         #region Properties
 
         // all neighbourhoods for one representation must be the same dimensions
         // the row starts from start of file (left, 0ms)
         // the column starts from bottom of spectrogram (0 hz)
+
+        /// <summary>
+        /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
+        /// </summary>
+        public List<Point> PointList { get; set; }
 
         /// <summary>
         /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
@@ -276,6 +283,10 @@ namespace Dong.Felt.Representations
 
         }
 
+        public RidgeDescriptionNeighbourhoodRepresentation(List<Point> pointList)
+        {
+            PointList = pointList;
+        }
         /// <summary>
         /// Constructor
         /// </summary>
@@ -413,7 +424,6 @@ namespace Dong.Felt.Representations
             Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
-
 
         public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
@@ -846,6 +856,39 @@ namespace Dong.Felt.Representations
                     this.RowEnergyEntropy = rowEnergyEntropy;
                 }
             }          
+        }
+
+        /// <summary>
+        /// This version of feature set 10 representation.
+        /// This feature vector contains information about position of poi. 
+        /// </summary>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="spectrogramConfig"></param>
+        public void FeatureSet10Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        {
+            var list = new List<Point>();
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        var newPoint = new Point(rowIndex, colIndex);
+                        list.Add(newPoint);
+                    }
+                }
+            }           
+            this.PointList = list;         
         }
         /// <summary>
         /// This version of feature set 6 representation use poi count to calculate featureset.
@@ -1358,16 +1401,17 @@ namespace Dong.Felt.Representations
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet9Representation(subMatrix, row, col, spectrogramConfig);
                         }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                        {                           
+                            var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
+                            instance.FeatureSet10Representation(subMatrix, row, col, spectrogramConfig);
+                            ridgeNeighbourhoodRepresentation = instance;
+                        }
                         result.Add(ridgeNeighbourhoodRepresentation);
                     }
                 }
             }
             return result;
-        }
-
-        public static RidgeNeighbourhoodFeatureVector ToFeatureVector(IEnumerable<string[]> lines)
-        {
-            return null;
         }
 
         public static RidgeDescriptionNeighbourhoodRepresentation FromNeighbourhoodCsv(IEnumerable<string> lines)

@@ -682,6 +682,53 @@ namespace Dong.Felt
             }
             return result;
         }
+
+        /// <summary>
+        /// Euclidean Distance calculation Hausdorff distance for feature set 10.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <returns></returns>
+        public static List<Candidates> Feature10HausdorffDist(List<RegionRerepresentation> query, 
+            List<RegionRerepresentation> candidates)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRerepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var matchedNotNullNhCount = 0;
+                var notNullNhCountInQ = 0;
+                var nhCountInRegion = tempRegionList.Count;
+                for (int index = 0; index < nhCountInRegion; index++)
+                {
+                    if (tempRegionList.Count == query.Count)
+                    {
+                        if (query[index].POICount != 0)
+                        {
+                            notNullNhCountInQ++;
+                            if (tempRegionList[index].POICount != 0)
+                            {
+                                matchedNotNullNhCount++;
+                            }
+                        }
+                    }
+                }
+                if (matchedNotNullNhCount > (int)(0.5 * notNullNhCountInQ))
+                {
+                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                    var distance = SimilarityMatching.DistanceFeature10Calculation(query, tempRegionList, 2);
+                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                            tempRegionList[0].SourceAudioFile);
+                    result.Add(item);
+                }
+            }
+            return result;
+        }
         /// <summary>
         /// Euclidean Distance calculation version 2 for feature  set 6.
         /// </summary>
