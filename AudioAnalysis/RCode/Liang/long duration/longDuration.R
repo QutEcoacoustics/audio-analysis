@@ -1,8 +1,7 @@
-
 readLongDuration2011 <- function(startDate, endDate, filepath, rCol, gCol, bCol){
-  startDate <- "2011/10/20"
-  endDate <- "2012/7/2"
-  filepath <- ("C:/Work/myfile/AVAILAE_Results-2013Feb05-184941 - Indicies Analysis of all of availae-SERF-VEG/")
+#   startDate <- "2011/10/20"
+#   endDate <- "2012/7/2"
+#   filepath <- ("C:/Work/myfile/AVAILAE_Results-2013Feb05-184941 - Indicies Analysis of all of availae-SERF-VEG/")
 
   filefolder <- dir(path = filepath, pattern = "MP3")
   #create all the dates
