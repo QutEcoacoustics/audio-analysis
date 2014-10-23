@@ -4,7 +4,7 @@ decisionTree <- function(filepath, cp=0.001, approach='anova'){
   training<-read.csv(filepath)
   
   #fit a model
-  temp <- rpart.control(cp)
+#   temp <- rpart.control(cp)
   fit <- rpart(callCount~., data=training, method=approach, control=temp)
 #   pfit <- prune(fit, cp=fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
   
@@ -12,6 +12,6 @@ decisionTree <- function(filepath, cp=0.001, approach='anova'){
     fit$cptable[which.min(fit$cptable[,"xerror"]),"xstd"]
   pfit <- prune(fit, cp=fit$cptable[which(fit$cptable[ , "xerror"] < oneSE)[1] - 1,'CP'])
   
-  result <- pfit
+  result <- list(fit=fit, pfit=pfit)
   return(result)
 }
