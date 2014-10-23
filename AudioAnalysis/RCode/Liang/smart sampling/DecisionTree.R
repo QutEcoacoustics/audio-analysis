@@ -1,22 +1,17 @@
-decisionTree <- function(n, m){
+decisionTree <- function(filepath, cp=0.001, approach='anova'){
   require(rpart)
   
-  indices.species<-read.csv('c:/work/myfile/linearRegression.csv')
-  training <- indices.species[(1+1440*(n-1)):(1440*n), ]
-  test <- indices.species[(1+1440*(m-1)):(1440*m), ]
+  training<-read.csv(filepath)
   
   #fit a model
-  temp <- rpart.control(cp=0.001)
-  fit <- rpart(speciesNum~.-IndicesCount, data=training, method='anova', control=temp)
+  temp <- rpart.control(cp)
+  fit <- rpart(callCount~., data=training, method=approach, control=temp)
 #   pfit <- prune(fit, cp=fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
   
   oneSE <- fit$cptable[which.min(fit$cptable[,"xerror"]),"xerror"] + 
     fit$cptable[which.min(fit$cptable[,"xerror"]),"xstd"]
   pfit <- prune(fit, cp=fit$cptable[which(fit$cptable[ , "xerror"] < oneSE)[1] - 1,'CP'])
   
-  #prediction
-  predicted <- predict(pfit, test)
-  
-  result <- list(predicted = predicted, pfit = pfit)
+  result <- pfit
   return(result)
 }
