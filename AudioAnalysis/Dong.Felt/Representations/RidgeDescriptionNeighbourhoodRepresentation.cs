@@ -7,6 +7,8 @@ using System.Text;
 using AudioAnalysisTools.StandardSpectrograms;
 using Dong.Felt.Configuration;
 using TowseyLibrary;
+using System.IO;
+using Dong.Felt.Preprocessing;
 
 namespace Dong.Felt.Representations
 {
@@ -27,6 +29,20 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet9 = "FeaturePropSet9";
         // FeatureSet10 only involves the position index of POI
         public const string FeaturePropSet10 = "FeaturePropSet10";
+        // FeatureSet11 improved featurePropSet5 by calculating the histogram bin based on ridge magnitude.
+        public const string FeaturePropSet11 = "FeaturePropSet11";
+        // FeatureSet 12 combines feature 6 and 9.
+        public const string FeaturePropSet12 = "FeaturePropSet12";
+        // FeatureSet 13 combines feature 8 and 9.
+        public const string FeaturePropSet13 = "FeaturePropSet13";
+        // FeatureSet 14 is calculated based on HoG count based at 4 directions only.
+        public const string FeaturePropSet14 = "FeaturePropSet14";
+        // FeatureSet 15 is calculated based on HoG magnitude based at 4 directions only.
+        public const string FeaturePropSet15 = "FeaturePropSet15";
+        public const string FeaturePropSet16 = "FeaturePropSet16";
+        public const string FeaturePropSet17 = "FeaturePropSet17";
+        // FeatureSet 18 is calculated based on Histogram of ridges at 8 directions only.
+        public const string FeaturePropSet18 = "FeaturePropSet18";
 
         #region Properties
 
@@ -425,6 +441,45 @@ namespace Dong.Felt.Representations
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
         }
 
+        public static void AudioNeighbourhoodRepresentation(DirectoryInfo audioFileDirectory, SonogramConfig config, RidgeDetectionConfiguration ridgeConfig,
+            int neighbourhoodLength, string featurePropSet)
+        {
+            if (!Directory.Exists(audioFileDirectory.FullName))
+            {
+                throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", audioFileDirectory.FullName));
+            }
+            var audioFiles = Directory.GetFiles(audioFileDirectory.FullName, "*.wav", SearchOption.AllDirectories);
+            for (int i = 0; i < audioFiles.Count(); i++)
+            {
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                var secondToMillionSecondUnit = 1000;
+                var spectrogramConfig = new SpectrogramConfiguration
+                {
+                    FrequencyScale = spectrogram.FBinWidth,
+                    TimeScale = (spectrogram.FrameDuration - spectrogram.FrameStep) * secondToMillionSecondUnit,
+                    NyquistFrequency = spectrogram.NyquistFrequency
+                };
+                var queryRidges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
+                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
+                var cols = spectrogram.Data.GetLength(0);
+                var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
+                neighbourhoodLength, featurePropSet, spectrogramConfig);
+                //var normalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
+                //(ridgeNhRepresentationList, featurePropSet);
+                var ridgeNhListFileBeforeNormal = new FileInfo(audioFiles[i] + "NhRepresentationListBeforeNormal.csv");
+                var ridgeNhListFileAfterNormal = new FileInfo(audioFiles[i] + "NhRepresentationListAfterNormal.csv");
+                CSVResults.NhRepresentationListToCSV(ridgeNhListFileBeforeNormal, ridgeNhRepresentationList);
+                //CSVResults.NhRepresentationListToCSV(ridgeNhListFileAfterNormal, normalizedNhRepresentationList);
+            }
+        }
+
+        /// <summary>
+        /// This method is based on ridge count.
+        /// </summary>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="spectrogramConfig"></param>
         public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
             var EastBin = 0.0;
@@ -538,26 +593,19 @@ namespace Dong.Felt.Representations
                 }
             }
         }
-
         /// <summary>
-        /// This version is trying to calculate the featureSet5 representation based on poi magnitudes.
-        /// It contains 8 histogram bins and 2 entropy values which are rowEntropy and colEntropy. 
+        /// This method is based on ridge magnitude.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="spectrogramConfig"></param>
-        public void FeatureSet5Representation2(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        public void FeatureSet11Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
         {
-            //var histogramOfGradient = new List<double>();
-            var Bin0 = 0.0;
-            var Bin1 = 0.0;
-            var Bin2 = 0.0;
-            var Bin3 = 0.0;
-            var Bin4 = 0.0;
-            var Bin5 = 0.0;
-            var Bin6 = 0.0;
-            var Bin7 = 0.0;
+            var EastBin = 0.0;
+            var NorthEastBin = 0.0;
+            var NorthBin = 0.0;
+            var NorthWestBin = 0.0;
             var frequencyScale = spectrogramConfig.FrequencyScale;
             var timeScale = spectrogramConfig.TimeScale; // millisecond
             for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -566,37 +614,21 @@ namespace Dong.Felt.Representations
                 {
                     if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
                     {
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 0)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                         {
-                            Bin0 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            EastBin += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 1)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
                         {
-                            Bin1 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            NorthEastBin += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 2)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
                         {
-                            Bin2 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            NorthBin += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 3)
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
                         {
-                            Bin3 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                        }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 4)
-                        {
-                            Bin4 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                        }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 5)
-                        {
-                            Bin5 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                        }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 6)
-                        {
-                            Bin6 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                        }
-                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 7)
-                        {
-                            Bin7 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            NorthWestBin += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
                         }
                     }
                 }
@@ -608,32 +640,24 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
-            this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
-            //var maxPOIMagnitude = 20.0 * pointsOfInterest.GetLength(0);
-            if (this.POIMagnitudeSum == 0)
+            var sumPOIMagnitude = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);            
+
+            if (sumPOIMagnitude == 0)
             {
-                this.Orientation0POIMagnitude = 0.0;
-                this.Orientation0POIMagnitude = 0.0;
-                this.Orientation0POIMagnitude = 0.0;
-                this.Orientation0POIMagnitude = 0.0;
-                this.Orientation0POIMagnitude = 0.0;
-                this.Orientation0POIMagnitude = 0.0;
-                this.Orientation0POIMagnitude = 0.0;
-                this.Orientation0POIMagnitude = 0.0;
+                this.HOrientationPOIHistogram = 0.0;
+                this.VOrientationPOIHistogram = 0.0;
+                this.PDOrientationPOIHistogram = 0.0;
+                this.NDOrientationPOIHistogram = 0.0;
                 // changed
                 this.ColumnEnergyEntropy = 0.0;
                 this.RowEnergyEntropy = 0.0;
             }
             else
             {
-                this.Orientation0POIMagnitude = Bin0;
-                this.Orientation1POIMagnitude = Bin1;
-                this.Orientation2POIMagnitude = Bin2;
-                this.Orientation3POIMagnitude = Bin3;
-                this.Orientation4POIMagnitude = Bin4;
-                this.Orientation5POIMagnitude = Bin5;
-                this.Orientation6POIMagnitude = Bin6;
-                this.Orientation7POIMagnitude = Bin7;
+                this.HOrientationPOIHistogram = EastBin / sumPOIMagnitude;
+                this.VOrientationPOIHistogram = NorthBin / sumPOIMagnitude;
+                this.PDOrientationPOIHistogram = NorthEastBin / sumPOIMagnitude;
+                this.NDOrientationPOIHistogram = NorthWestBin / sumPOIMagnitude;
 
                 var columnEnergy = new double[pointsOfInterest.GetLength(1)];
                 for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
@@ -677,6 +701,101 @@ namespace Dong.Felt.Representations
                 {
                     this.RowEnergyEntropy = rowEnergyEntropy;
                 }
+            }
+        }
+
+        /// <summary>
+        /// This version is trying to calculate the featureSet5 representation based on poi magnitudes.
+        /// It contains 8 histogram bins. 
+        /// </summary>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="spectrogramConfig"></param>
+        public void FeatureSet5Representation2(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        {
+            //var histogramOfGradient = new List<double>();
+            var Bin0 = 0.0;
+            var Bin1 = 0.0;
+            var Bin2 = 0.0;
+            var Bin3 = 0.0;
+            var Bin4 = 0.0;
+            var Bin5 = 0.0;
+            var Bin6 = 0.0;
+            var Bin7 = 0.0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 0)
+                        {
+                            Bin0 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 1)
+                        {
+                            Bin1 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 2)
+                        {
+                            Bin2 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 3)
+                        {
+                            Bin3 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 4)
+                        {
+                            Bin4 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 5)
+                        {
+                            Bin5 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 6)
+                        {
+                            Bin6 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 7)
+                        {
+                            Bin7 += 1.0;
+                        }
+                    }
+                }
+            }
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+
+            var sumPOICount = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
+            var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
+            if (this.POIMagnitudeSum == 0)
+            {
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation1POIMagnitude = 0.0;
+                this.Orientation2POIMagnitude = 0.0;
+                this.Orientation3POIMagnitude = 0.0;
+                this.Orientation4POIMagnitude = 0.0;
+                this.Orientation5POIMagnitude = 0.0;
+                this.Orientation6POIMagnitude = 0.0;
+                this.Orientation7POIMagnitude = 0.0;
+            }
+            else
+            {
+                this.Orientation0POIMagnitude = Bin0 / maxPOICount;
+                this.Orientation1POIMagnitude = Bin1 / maxPOICount;
+                this.Orientation2POIMagnitude = Bin2 / maxPOICount;
+                this.Orientation3POIMagnitude = Bin3 / maxPOICount;
+                this.Orientation4POIMagnitude = Bin4 / maxPOICount;
+                this.Orientation5POIMagnitude = Bin5 / maxPOICount;
+                this.Orientation6POIMagnitude = Bin6 / maxPOICount;
+                this.Orientation7POIMagnitude = Bin7 / maxPOICount;
             }
         }
 
@@ -1388,6 +1507,16 @@ namespace Dong.Felt.Representations
                         {
                             //ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
+                        {
+                            // This one is similar to featureSet5, but based on POI Magnitude. 
+                            ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                        {
+                            // This one is similar to featureSet5, but give more directions. 
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6)
                         {                                                    
