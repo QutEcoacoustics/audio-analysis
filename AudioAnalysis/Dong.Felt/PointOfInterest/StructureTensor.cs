@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
     using Accord.Math.Decompositions;
     using AForge.Imaging.Filters;
     using AudioAnalysisTools;
@@ -12,6 +13,7 @@
     using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
     using Dong.Felt.Configuration;
+    using Dong.Felt.Preprocessing;
 
     class StructureTensorAnalysis
     {
@@ -128,6 +130,43 @@
             result[11] = scalorPropertyBe2Vec12;
             return result;
         }
+
+        public static void POIStrctureTensorDetectionBatchProcess(string audioFileDirectory, SonogramConfig config,
+                    int neighbourhoodSize, double threshold)
+        {
+            if (Directory.Exists(audioFileDirectory))
+            {
+                var audioFiles = Directory.GetFiles(audioFileDirectory, @"*.wav", SearchOption.TopDirectoryOnly);
+                var audioFilesCount = audioFiles.Count();
+                for (int i = 0; i < audioFilesCount; i++)
+                {
+                    var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                    /// spectrogram drawing setting
+                    var scores = new List<double>();
+                    scores.Add(1.0);
+                    var acousticEventlist = new List<AcousticEvent>();
+                    var poiList = new List<PointOfInterest>();
+                    double eventThreshold = 0.5; // dummy variable - not used                               
+                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    poiList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, neighbourhoodSize, threshold);
+                    var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
+                        spectrogram.Data.GetLength(1));
+                    spectrogram.Data = spectrogramData;
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    Bitmap bmp = (Bitmap)image;
+                    //foreach (PointOfInterest poi in poiList)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
+                    var FileName = new FileInfo(audioFiles[i]);
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-sturcture tensor detection1.png");
+                    string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
+                    image = (Image)bmp;
+                    image.Save(annotatedImagePath);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Calculate the feature vector for poiList, 14 * 14 values, here it refers to structure tensor list. 

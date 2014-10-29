@@ -178,6 +178,46 @@ namespace Dong.Felt
             return bmp;
         }
 
+        public static void DrawDFTImage(string outputImagePath, double[,] imageData, Bitmap bitmap)
+        {
+            //imageData = MatrixTools.normalise(imageData);
+
+            for (var i = 0; i < imageData.GetLength(0); i++)
+            {
+                for (var j = 0; j < imageData.GetLength(1); j++)
+                {
+                    var color = Color.White;
+                    if (imageData[i, j] > 0.0)
+                    {
+                        double v = imageData[i, j];
+                        // int R = (int)(255 * v);  
+                        int R = (int)v;
+                        if (R > 255) R = 255;
+                        color = Color.FromArgb(R, R, R);
+                    }
+                    bitmap.SetPixel(j, i, color);
+                }
+            }
+            var image = (Image)bitmap;
+            image.Save(outputImagePath);
+        }
+
+        public static double[,] GetImageData(string imageFilePath)
+        {
+            Bitmap image = (Bitmap)Image.FromFile(imageFilePath, true);
+            var rowLength = image.Width;
+            var colLength = image.Height;
+            var result = new double[rowLength, colLength];
+            for (int i = 0; i < rowLength; i++)
+            {
+                for (int j = 0; j < colLength; j++)
+                {
+                    result[i, j] = 0.299 * image.GetPixel(i, j).R + 0.587 * image.GetPixel(i, j).G + 0.114 * image.GetPixel(i, j).B;
+                }
+            }
+            return result;
+        }
+
         public static Image DrawFileName(Image image, Candidates candidate)
         {
             double similarityScore = candidate.Score;

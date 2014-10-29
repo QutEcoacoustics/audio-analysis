@@ -505,6 +505,7 @@ namespace Dong.Felt
             return result;
         }
 
+
         /// <summary>
         /// Euclidean Distance calculation for feature5. 
         /// This version aims to reduce the amount of potential candidates to be compared. on average, 100 candidates will be chosen for each 1 minute recording.
@@ -553,6 +554,56 @@ namespace Dong.Felt
             }
             return result;
         }
+
+        /// <summary>
+        /// Euclidean Distance calculation for feature5. 
+        /// This version aims to reduce the amount of potential candidates to be compared. on average, 100 candidates will be chosen for each 1 minute recording.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <returns></returns>
+        public static List<Candidates> Feature18EuclideanDist(List<RegionRerepresentation> query,
+            List<RegionRerepresentation> candidates, double weight1, double weight2)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRerepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var matchedNotNullNhCount = 0;
+                var notNullNhCountInQ = 0;
+                var nhCountInRegion = tempRegionList.Count;
+                for (int index = 0; index < nhCountInRegion; index++)
+                {
+                    if (tempRegionList.Count == query.Count)
+                    {
+                        if (query[index].POICount != 0)
+                        {
+                            notNullNhCountInQ++;
+                            if (tempRegionList[index].POICount != 0)
+                            {
+                                matchedNotNullNhCount++;
+                            }
+                        }
+                    }
+                }
+                if (matchedNotNullNhCount > 0.5 * notNullNhCountInQ)
+                {
+                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                    var distance = SimilarityMatching.DistanceFeature18Representation(query, tempRegionList, 2, weight1,
+                        weight2);
+                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                            tempRegionList[0].SourceAudioFile);
+                    result.Add(item);
+                }
+            }
+            return result;
+        }
+
         /// <summary>
         /// Euclidean Distance calculation for feature5 based on magnitude of gradient histogram. 
         /// </summary>

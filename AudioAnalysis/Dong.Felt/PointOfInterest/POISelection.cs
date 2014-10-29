@@ -92,16 +92,60 @@ namespace Dong.Felt
              var result = new List<PointOfInterest>();
              if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)                
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12
+                 )                
              {
                  result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
              }
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+            {
+                result = PostRidgeDetection8Dir(spectrogram, ridgeConfig);
+            }
              if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15
+                 )
              {
                  result = Post8DirGradient(spectrogram, ridgeConfig);
              }
              return result;
+        }
+
+        // This function still needs to be considered. 
+        public static List<PointOfInterest> ShowupPoiInsideBox(List<PointOfInterest> filterPoiList, List<PointOfInterest> finalPoiList, int rowsCount, int colsCount)
+        {
+            var Matrix = PointOfInterest.TransferPOIsToMatrix(filterPoiList, rowsCount, colsCount);
+            var result = new PointOfInterest[rowsCount, colsCount];
+            for (int row = 0; row < rowsCount; row++)
+            {
+                for (int col = 0; col < colsCount; col++)
+                {
+                    if (Matrix[row, col] == null) continue;
+                    else
+                    {
+                        foreach (var fpoi in finalPoiList)
+                        {
+                            if (row == fpoi.Point.Y && col == fpoi.Point.X)
+                            {
+                                for (int i = 0; i < 11; i++)
+                                {
+                                    for (int j = 0; j < 11; j++)
+                                    {
+                                        if (StatisticalAnalysis.checkBoundary(row + i, col + j, rowsCount, colsCount))
+                                        {
+                                            result[row + i, col + j] = Matrix[row + i, col + j];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return PointOfInterest.TransferPOIMatrix2List(result);
         }
 
         public static List<PointOfInterest> Post8DirGradient(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig)
@@ -593,8 +637,6 @@ namespace Dong.Felt
                             newMatrix[r - 1, c + 1] = magnitude;
                             hits[r + 1, c - 1] = (byte)(orientation + 1);
                             newMatrix[r + 1, c - 1] = magnitude;
-                            //hits[r - 2, c + 2] = (byte)(direction + 1);
-                            //hits[r + 2, c - 2] = (byte)(direction + 1);
                         }
                         else if (orientation == 6)
                         {
@@ -628,7 +670,6 @@ namespace Dong.Felt
                             hits[r, c + 2] = (byte)(orientation + 1);
                             newMatrix[r, c + 2] = magnitude;
                         }
-
                     }
                 }
             }  /// filter out some redundant ridges          
