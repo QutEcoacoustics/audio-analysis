@@ -651,7 +651,7 @@
                     double eventThreshold = 0.5; // dummy variable - not used                               
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     //Image image = ImageAnalysisTools.DrawNullSonogram(spectrogram);
-                    var ridges = POISelection.PoiSelection(spectrogram, ridgeConfig,featurePropSet);        
+                    var ridges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig,featurePropSet);        
                     //var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, ridges, spectrogram.Data.GetLength(0),
                     //    spectrogram.Data.GetLength(1));
                     //spectrogram.Data = spectrogramData;
@@ -677,8 +677,7 @@
                 }
             }
         }
-
-        
+       
         /// <summary>
         /// This one assume the query folder only contains one query. 
         /// </summary>
@@ -807,22 +806,21 @@
                     FrequencyScale = spectrogram.FBinWidth,                   
                     TimeScale = (1 - config.WindowOverlap ) * spectrogram.FrameDuration * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency
-                };
-                var queryRidges = new List<PointOfInterest>();
-                var queryGradients = new List<PointOfInterest>();
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12)
-                {
-                    // feature 12 combines feature 6 and feature 9.
-                    queryRidges = POISelection.PoiSelection(spectrogram, ridgeConfig, RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9);
-                    queryGradients = POISelection.PoiSelection(spectrogram, ridgeConfig, RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6);
-                } 
+                };                
+                var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                var queryGradients = POISelection.GradientPoiSelection(spectrogram, ridgeConfig, featurePropSet);           
 
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
+                var queryNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
+                    rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients, 
+                    rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
 
-                var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
-                neighbourhoodLength, featurePropSet, spectrogramConfig);
-
+                 queryNhRepresentationList  = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
+                     ridgeQNhRepresentationList,
+                     gradientQNhRepresentationList, featurePropSet);    
                 //var normalizedNhRepresentationList = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(ridgeNhRepresentationList);
                 //var histogramCoding = StatisticalAnalysis.Nh4HistogramCoding(ridgeNhRepresentationList);
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
@@ -830,7 +828,7 @@
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, 
                     spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                ridgeNhRepresentationList, queryAduioFiles[i], spectrogram);
+                queryNhRepresentationList, queryAduioFiles[i], spectrogram);
 
                 //var poiCountInquery = StatisticalAnalysis.CountPOIInEvent(queryRepresentation);
                 //var nhCountInquery = StatisticalAnalysis.CountNhInEvent(queryRepresentation);
@@ -858,15 +856,23 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    var candidateRidges = POISelection.PoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);                    
+                    var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
+                    var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
+                    
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    var candidateRidgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(candidateRidges,
-                        rows1, cols1,neighbourhoodLength, featurePropSet, spectrogramConfig);
+                    var candNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+                    var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(candidateRidges,
+                        rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                    var gradientCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(candidateGradients,
+                        rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                    candNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
+                        ridgeCNhRepresentationList,
+                        gradientCNhRepresentationList, featurePropSet); 
                     //var normalisedCandidateRidgeNh = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(candidateRidgeNhRepresentationList);
                     //var candHistogramCoding = StatisticalAnalysis.Nh4HistogramCoding(candidateRidgeNhRepresentationList);
                     var candidatesRegionList = Indexing.ExtractCandidateRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                candidateRidgeNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram);
+                candNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram);
                     //    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
                     //(candidateRidgeNhRepresentationList, featurePropSet);
                     // this region representation depends on the query. 
@@ -895,65 +901,13 @@
                 var candidateDistanceList = new List<Candidates>();
                 Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
                 Log.Info("# calculate the distance between a query and a candidate");
-                /// To calculate the distance                
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
-                {
-                    candidateDistanceList = Indexing.WeightedEuclideanDistance(queryRepresentation, candidatesList,
-                    weight1, weight2);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
-                {
-                    candidateDistanceList = Indexing.WeightedEuclideanDistCalculation2(queryRepresentation, candidatesList,
-                    weight1, weight2, weight3, weight4);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
-                {
-                    candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesList,
-                    weight1, weight2, weight3, weight4, weight5, weight6);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
-                {
-                    candidateDistanceList = Indexing.HoGEuclideanDist(queryRepresentation, candidatesList);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
-                {
-                    Log.Info("# distance caculation based on featurePropSet");
-                    //candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
-                    candidateDistanceList = Indexing.Feature5EuclideanDist2(queryRepresentation, candidatesList,
-                        weight1, weight2);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6)
-                {                    
-                    candidateDistanceList = Indexing.Feature6EuclideanDistPOICountBased(queryRepresentation, candidatesList, weight1, weight2);
-                }               
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
-                {
-                    candidateDistanceList = Indexing.Feature8EuclideanDistMagBased(queryRepresentation, candidatesList,
-                        weight1, weight2);                    
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
-                {
-                    candidateDistanceList = Indexing.Feature9EuclideanDist(queryRepresentation, candidatesList, weight1, weight2);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
-                {
-                    candidateDistanceList = Indexing.Feature10HausdorffDist(queryRepresentation, candidatesList);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
-                {
-                    candidateDistanceList = Indexing.Feature5EuclideanDist2(queryRepresentation, candidatesList,
-                        weight1, weight2);
-                }
-                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
-                {
-                    candidateDistanceList = Indexing.Feature18EuclideanDist(queryRepresentation, candidatesList,
-                        weight1, weight2);
-                }
+                /// To calculate the distance 
+                candidateDistanceList = Indexing.DistanceCalculation(queryRepresentation, candidatesList,
+                        weight1, weight2, weight3, weight4, weight5, weight6, featurePropSet);               
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
                 //    candidatesList, weight1, weight2);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
-                Log.InfoFormat("All potential candidate distances: {0}", candidateDistanceList.Count);
                 /// To save all matched acoustic events                        
                 if (candidateDistanceList.Count != 0)
                 {

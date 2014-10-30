@@ -29,7 +29,7 @@ WindowOverlap: 0.5
 NoiseReductionParameter: 0.0
 
 # RidgeDetection Config 
-RidgeDetectionMagnitudeThreshold: 5.5
+RidgeDetectionMagnitudeThreshold: 6.0
 RidgeMatrixLength: 5
 FilterRidgeMatrixLength: 7
 MinimumNumberInRidgeInMatrix: 3

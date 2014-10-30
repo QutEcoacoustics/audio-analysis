@@ -314,6 +314,50 @@ namespace Dong.Felt
             return result;
         }
 
+        public static List<Candidates> DistanceCalculation(List<RegionRerepresentation> query,
+            List<RegionRerepresentation> candidates, double weight1, double weight2, double weight3, double weight4,
+            double weight5, double weight6, string featurePropSet)
+        {
+            var result = new List<Candidates>();
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
+            {
+                result = WeightedEuclideanDistance(query, candidates,
+                    weight1, weight2);
+            }
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+            {
+                result = Indexing.WeightedEuclideanDistCalculation2(query, candidates,
+                weight1, weight2, weight3, weight4);
+            }
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+            {
+                result = Indexing.WeightedEuclideanDistCalculation3(query, candidates,
+                weight1, weight2, weight3, weight4, weight5, weight6);
+            }
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
+            {
+                result = Indexing.HoGEuclideanDist(query, candidates);
+            }
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+            {               
+                //candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
+                result = Indexing.Feature5EuclideanDist2(query, candidates,
+                    weight1, weight2, featurePropSet);
+            }
+            return result;
+        }
+
+
         public static List<Candidates> WeightedEuclideanDistance(List<RegionRerepresentation> query,
             List<RegionRerepresentation> candidates, double weight1, double weight2)
         {
@@ -494,7 +538,7 @@ namespace Dong.Felt
                 if (notNullNhCount >= 0.1 * nhCountInRegion)
                 {
                     var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature5Representation(query, tempRegionList, 2, weight1, 
+                    var distance = SimilarityMatching.DistanceFeature4RidgeBased(query, tempRegionList, 2, weight1, 
                         weight2);
                     var item = new Candidates(distance, tempRegionList[0].FrameIndex,
                             duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
@@ -514,7 +558,7 @@ namespace Dong.Felt
         /// <param name="candidates"></param>
         /// <returns></returns>
         public static List<Candidates> Feature5EuclideanDist2(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidates, double weight1, double weight2)
+            List<RegionRerepresentation> candidates, double weight1, double weight2, string featurePropSet)
         {
             var result = new List<Candidates>();
             var tempRegionList = new List<RegionRerepresentation>();
@@ -544,187 +588,48 @@ namespace Dong.Felt
                 if (matchedNotNullNhCount > 0.5*notNullNhCountInQ)
                 {
                     var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature5Representation(query, tempRegionList, 2, weight1, 
-                        weight2);
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                            tempRegionList[0].SourceAudioFile);
-                    result.Add(item);
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Euclidean Distance calculation for feature5. 
-        /// This version aims to reduce the amount of potential candidates to be compared. on average, 100 candidates will be chosen for each 1 minute recording.
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidates"></param>
-        /// <returns></returns>
-        public static List<Candidates> Feature18EuclideanDist(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidates, double weight1, double weight2)
-        {
-            var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
-            {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var matchedNotNullNhCount = 0;
-                var notNullNhCountInQ = 0;
-                var nhCountInRegion = tempRegionList.Count;
-                for (int index = 0; index < nhCountInRegion; index++)
-                {
-                    if (tempRegionList.Count == query.Count)
+                    var distance = 100.0;
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
                     {
-                        if (query[index].POICount != 0)
-                        {
-                            notNullNhCountInQ++;
-                            if (tempRegionList[index].POICount != 0)
-                            {
-                                matchedNotNullNhCount++;
-                            }
-                        }
+                        distance = SimilarityMatching.DistanceFeature4RidgeBased(query, tempRegionList, 2, weight1,
+                            weight2);
                     }
-                }
-                if (matchedNotNullNhCount > 0.5 * notNullNhCountInQ)
-                {
-                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature18Representation(query, tempRegionList, 2, weight1,
-                        weight2);
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                            tempRegionList[0].SourceAudioFile);
-                    result.Add(item);
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Euclidean Distance calculation for feature5 based on magnitude of gradient histogram. 
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidates"></param>
-        /// <returns></returns>
-        public static List<Candidates> Feature6EuclideanDistMagBased(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates)
-        {
-            var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
-            {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var notNullNhCount = 0;
-                var nhCountInRegion = tempRegionList.Count;
-                for (int index = 0; index < nhCountInRegion; index++)
-                {
-                    if (tempRegionList[index].POICount != 0)
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
                     {
-                        notNullNhCount++;
+                        distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
+                            weight2);
                     }
-                }
-                if (notNullNhCount >= 0.1 * nhCountInRegion)
-                {
-                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature5RepresentationMagnitudeBased(query, tempRegionList, 2);
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                            tempRegionList[0].SourceAudioFile);
-                    result.Add(item);
-                }
-            }
-            return result;
-        }
-        /// <summary>
-        /// Euclidean Distance calculation version 2 for feature  set 6.
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidates"></param>
-        /// <returns></returns>
-        public static List<Candidates> Feature8EuclideanDistMagBased(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates, 
-            double weight1, double weight2)
-        {
-            var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
-            {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var matchedNotNullNhCount = 0;
-                var notNullNhCountInQ = 0;
-                var nhCountInRegion = tempRegionList.Count;
-                for (int index = 0; index < nhCountInRegion; index++)
-                {
-                    if (tempRegionList.Count == query.Count)
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
                     {
-                        if (query[index].POICount != 0)
-                        {
-                            notNullNhCountInQ++;
-                            if (tempRegionList[index].POICount != 0)
-                            {
-                                matchedNotNullNhCount++;
-                            }
-                        }
+                        distance = SimilarityMatching.DistanceFeature9Representation(query, tempRegionList, 2, weight1,
+                            weight2);
                     }
-                }
-                if (matchedNotNullNhCount > (int)(0.5 * notNullNhCountInQ))
-                {
-                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature8RepresentationMagnitudeBased(query, tempRegionList, 2, weight1, weight2);
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                            tempRegionList[0].SourceAudioFile);
-                    result.Add(item);
-                }
-            }
-            return result;
-        }
-        /// <summary>
-        /// Euclidean Distance calculation version 2 for feature set 6.
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidates"></param>
-        /// <returns></returns>
-        public static List<Candidates> Feature9EuclideanDist(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates,
-            double weight1, double weight2)
-        {
-            var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
-            {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var matchedNotNullNhCount = 0;
-                var notNullNhCountInQ = 0;
-                var nhCountInRegion = tempRegionList.Count;
-                for (int index = 0; index < nhCountInRegion; index++)
-                {
-                    if (tempRegionList.Count == query.Count)
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
                     {
-                        if (query[index].POICount != 0)
-                        {
-                            notNullNhCountInQ++;
-                            if (tempRegionList[index].POICount != 0)
-                            {
-                                matchedNotNullNhCount++;
-                            }
-                        }
+                        distance = SimilarityMatching.DistanceFeature10Calculation(query, tempRegionList, 2);
                     }
-                }
-                if (matchedNotNullNhCount > (int)(0.5 * notNullNhCountInQ))
-                {
-                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature9Representation(query, tempRegionList, 2, weight1, weight2);
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13)
+                    {
+                        distance = SimilarityMatching.DistanceFeature12Based(query, tempRegionList, 2, weight1, weight2);
+                    }
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15)
+                    {
+                        distance = SimilarityMatching.DistanceFeature14Based(query, tempRegionList, 2, weight1, weight2);
+                    }
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                    {
+                        distance = SimilarityMatching.DistanceFeature16Based(query, tempRegionList, 2, weight1, weight2);
+                    }
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                    {
+                        distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
+                            weight2);
+                    }
                     var item = new Candidates(distance, tempRegionList[0].FrameIndex,
                             duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
                             tempRegionList[0].SourceAudioFile);
@@ -780,89 +685,8 @@ namespace Dong.Felt
             }
             return result;
         }
-        /// <summary>
-        /// Euclidean Distance calculation version 2 for feature  set 6.
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidates"></param>
-        /// <returns></returns>
-        public static List<Candidates> Feature6EuclideanDistPOICountBased(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates,
-            double weight1, double weight2)
-        {
-            var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
-            {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var matchedNotNullNhCount = 0;
-                var notNullNhCountInQ = 0;
-                var nhCountInRegion = tempRegionList.Count;
-                for (int index = 0; index < nhCountInRegion; index++)
-                {
-                    if (tempRegionList.Count == query.Count)
-                    {
-                        if (query[index].POICount != 0)
-                        {
-                            notNullNhCountInQ++;
-                            if (tempRegionList[index].POICount != 0)
-                            {
-                                matchedNotNullNhCount++;
-                            }
-                        }
-                    }
-                }
-                if (matchedNotNullNhCount > (int)(0.6 * notNullNhCountInQ))
-                {
-                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature6RepresentationPOICountBased(query, tempRegionList, 2,weight1, weight2);
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                            tempRegionList[0].SourceAudioFile);
-                    result.Add(item);
-                }
-            }
-            return result;
-        }
-        /// <summary>
-        /// This similarity tuple records the distance, timePosition, frequencyband. 
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidates"></param>
-        /// <returns></returns>
-        //public static List<Tuple<double, double, double>> SimilairtyScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
-        //{
-        //    // to get the distance and frequency band index
-        //    var result = new List<Tuple<double, double, double>>();
-        //    var vectorCount = candidates.Count;
-        //    // each sublist has the same count, so here we want to get its length from the first value. 
-        //    var regionCountINVector = candidates[0].Count;
-        //    var regionIndicator = 0;
-        //    var j = 0;
-        //    foreach (var c in candidates)
-        //    {
-        //        var miniDistance = 60000000.0;
-        //        var distanceListForOneVector = new List<double>();
-        //        for (int i = 0; i < regionCountINVector; i++)
-        //        {
-        //            var distance = SimilarityMatching.DistanceScoreRegionRepresentation(query, c[i]);
-        //            distanceListForOneVector.Add(distance);
-        //            var minDistance = distanceListForOneVector.Min();
-        //            if (minDistance < miniDistance)
-        //            {
-        //                regionIndicator = i;
-        //                miniDistance = minDistance;
-        //            }
-        //        }
-        //        var neighbourhoodDuration = 5 * 11.6;
-        //        result.Add(Tuple.Create(miniDistance, j * neighbourhoodDuration, c[regionIndicator].FrequencyIndex));
-        //        j++;
-        //    }
-        //    return result;
-        //}
-
+        
+       
         public static List<double> DistanceScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
         {
             // to get the distance and frequency band index

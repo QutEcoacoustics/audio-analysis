@@ -87,14 +87,18 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
-        public static List<PointOfInterest> PoiSelection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
+        public static List<PointOfInterest> RidgePoiSelection(SpectrogramStandard spectrogram, 
+            RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
         {
              var result = new List<PointOfInterest>();
              if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 
                  )                
              {
                  result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
@@ -102,17 +106,32 @@ namespace Dong.Felt
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
             {
                 result = PostRidgeDetection8Dir(spectrogram, ridgeConfig);
-            }
-             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15
-                 )
-             {
-                 result = Post8DirGradient(spectrogram, ridgeConfig);
-             }
-             return result;
+            }           
+            return result;
         }
+
+        public static List<PointOfInterest> GradientPoiSelection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
+        {
+            var result = new List<PointOfInterest>();
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13
+                 )
+            {
+                result = Post8DirGradient(spectrogram, ridgeConfig);
+            }
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17
+                )
+            {
+                result = Post4DirGradient(spectrogram, ridgeConfig);
+            }
+            return result;
+        }
+
 
         // This function still needs to be considered. 
         public static List<PointOfInterest> ShowupPoiInsideBox(List<PointOfInterest> filterPoiList, List<PointOfInterest> finalPoiList, int rowsCount, int colsCount)
@@ -156,6 +175,18 @@ namespace Dong.Felt
             var cols = matrix.GetLength(1);
             var ridgeMagnitudeMatrix = new double[rows, cols];
             var byteMatrix = Gradient8DirCalculation(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
+            instance.ConvertRidgeIndiToPOIList2(byteMatrix, ridgeMagnitudeMatrix, spectrogram);
+            return instance.poiList;
+        }
+
+        public static List<PointOfInterest> Post4DirGradient(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig)
+        {
+            var instance = new POISelection(new List<PointOfInterest>());
+            double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            var rows = matrix.GetLength(0);
+            var cols = matrix.GetLength(1);
+            var ridgeMagnitudeMatrix = new double[rows, cols];
+            var byteMatrix = Gradient4DirCalculation(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
             instance.ConvertRidgeIndiToPOIList2(byteMatrix, ridgeMagnitudeMatrix, spectrogram);
             return instance.poiList;
         }
@@ -737,6 +768,50 @@ namespace Dong.Felt
             return hits;
         }
 
+        public static byte[,] Gradient4DirCalculation(double[,] matrix, out double[,] newMatrix, RidgeDetectionConfiguration ridgeConfiguration)
+        {
+            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
+            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int halfLength = ridgeLength / 2;
+            var hits = new byte[rows, cols];
+            newMatrix = new double[rows, cols];
+            for (int r = 0; r < rows - halfLength; r++)
+            {
+                for (int c = 0; c < cols - halfLength; c++)
+                {
+                    if (hits[r, c] > 0) continue;
+                    var subM = MatrixTools.Submatrix(matrix, r, c, r + halfLength, c + halfLength); // extract NxN submatrix
+                    double magnitude;
+                    double direction;
+                    bool isRidge = false;
+                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
+                    ImageAnalysisTools.GradientCalculation(subM, out isRidge, out magnitude, out direction);
+                    if (magnitude > magnitudeThreshold && isRidge == true)
+                    {
+                        newMatrix[r, c] = magnitude;
+                        if (direction >= 0.0 && direction < Math.PI / 4)
+                        {
+                            hits[r, c] = (byte)(1);
+                        }                        
+                        if (direction >= Math.PI / 4 && direction < Math.PI / 2)
+                        {
+                            hits[r, c] = (byte)(3);
+                        }                        
+                        if (direction >= Math.PI / 2 && direction < Math.PI * 3 / 4)
+                        {
+                            hits[r, c] = (byte)(5);
+                        }                        
+                        if (direction >= Math.PI * 3 / 4 && direction < Math.PI)
+                        {
+                            hits[r, c] = (byte)(7);
+                        }                       
+                    }
+                }
+            }
+            return hits;
+        }
         public static List<double> intensityThresholdForSpectrogram(double[,] matrix)
         {            
             int rows = matrix.GetLength(0);
