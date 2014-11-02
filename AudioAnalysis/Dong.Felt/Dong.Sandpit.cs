@@ -52,6 +52,9 @@
             int filterRidgeMatrixLength = configuration.FilterRidgeMatrixLength;
             int minimumNumberInRidgeInMatrix = configuration.MinimumNumberInRidgeInMatrix;
 
+            double gradientThreshold = configuration.GradientThreshold;
+            int gradientMatrixLength = configuration.GradientMatrixLength;
+
             double stThreshold = configuration.StThreshold;
             int stAvgNhLength = configuration.StAvgNhLength;
             int stFFTNhLength = configuration.StFFTNeighbourhoodLength;
@@ -78,6 +81,11 @@
                     FilterRidgeMatrixLength = filterRidgeMatrixLength,
                     MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
                 };
+                var gradientConfig = new GradientConfiguration
+                {
+                    GradientThreshold = gradientThreshold,
+                    GradientMatrixLength = gradientMatrixLength
+                };
                 var stConfiguation = new StructureTensorConfiguration
                 {
                     Threshold = stThreshold,
@@ -96,7 +104,7 @@
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
                     MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  ridgeConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
+                  ridgeConfig, gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                     //MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
                     //    outputDirectory.FullName, tempDirectory);       
                 }
@@ -452,6 +460,9 @@
                     WindowOverlap = configuration.WindowOverlap,
                     NoiseReductionParameter = configuration.NoiseReductionParameter,
 
+                    GradientMatrixLength = configuration.GradientMatrixLength,
+                    GradientThreshold = configuration.GradientThreshold,
+
                     RidgeDetectionMagnitudeThreshold = configuration.RidgeDetectionMagnitudeThreshold,
                     RidgeMatrixLength = configuration.RidgeMatrixLength,
                     FilterRidgeMatrixLength = configuration.FilterRidgeMatrixLength,
@@ -777,7 +788,8 @@
         }
 
         public static void MatchingBatchProcess2(string queryFilePath, string inputFileDirectory, int neighbourhoodLength,
-            RidgeDetectionConfiguration ridgeConfig, SonogramConfig config, int rank, string featurePropSet,
+            RidgeDetectionConfiguration ridgeConfig, GradientConfiguration gradientConfig,
+            SonogramConfig config, int rank, string featurePropSet,
             string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
         {
             /// To read the query file
@@ -808,19 +820,20 @@
                     NyquistFrequency = spectrogram.NyquistFrequency
                 };                
                 var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                var queryGradients = POISelection.GradientPoiSelection(spectrogram, ridgeConfig, featurePropSet);           
+                var queryGradients = POISelection.GradientPoiSelection(spectrogram, gradientConfig, featurePropSet);           
 
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
                 var queryNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+
                 var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
-                var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients, 
+                var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
 
-                 queryNhRepresentationList  = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
-                     ridgeQNhRepresentationList,
-                     gradientQNhRepresentationList, featurePropSet);    
+                queryNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
+                    ridgeQNhRepresentationList,
+                    gradientQNhRepresentationList, featurePropSet);    
                 //var normalizedNhRepresentationList = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(ridgeNhRepresentationList);
                 //var histogramCoding = StatisticalAnalysis.Nh4HistogramCoding(ridgeNhRepresentationList);
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
@@ -857,15 +870,15 @@
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
-                    var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
+                    var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
                     
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
                     var candNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
                     var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(candidateRidges,
-                        rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
                     var gradientCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(candidateGradients,
-                        rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
                     candNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
                         ridgeCNhRepresentationList,
                         gradientCNhRepresentationList, featurePropSet); 

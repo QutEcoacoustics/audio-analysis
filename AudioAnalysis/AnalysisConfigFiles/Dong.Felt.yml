@@ -35,6 +35,8 @@ FilterRidgeMatrixLength: 7
 MinimumNumberInRidgeInMatrix: 3
 AverageIntensityDifferenceInNh: 5.0
 
+GradientThreshold: 9.0
+GradientMatrixLength: 2
 
 # Structure Tensor Config
 StThreshold: 0.025

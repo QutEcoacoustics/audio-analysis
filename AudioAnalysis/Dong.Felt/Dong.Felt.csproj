@@ -128,6 +128,7 @@
     <Compile Include="Clustering.cs" />
     <Compile Include="Configuration\DistanceFuncConfiguration.cs" />
     <Compile Include="Configuration\DrawSpectrogramConfiguration.cs" />
+    <Compile Include="Configuration\GradientConfiguration.cs" />
     <Compile Include="Configuration\LocalMaximaConfiguration.cs" />
     <Compile Include="Configuration\RidgeDetectionConfiguration.cs" />
     <Compile Include="Configuration\SpectrogramConfiguation.cs" />
