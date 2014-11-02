@@ -13,6 +13,7 @@ namespace Dong.Felt
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.WavTools;
     using Dong.Felt.Representations;
+    using Dong.Felt.Configuration;
 
     public class POISelection
     {
@@ -110,7 +111,8 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<PointOfInterest> GradientPoiSelection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
+        public static List<PointOfInterest> GradientPoiSelection(SpectrogramStandard spectrogram, 
+            GradientConfiguration gradientConfig, string featurePropSet)
         {
             var result = new List<PointOfInterest>();
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
@@ -119,7 +121,7 @@ namespace Dong.Felt
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13
                  )
             {
-                result = Post8DirGradient(spectrogram, ridgeConfig);
+                result = Post8DirGradient(spectrogram, gradientConfig);
             }
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15 ||
@@ -127,7 +129,7 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17
                 )
             {
-                result = Post4DirGradient(spectrogram, ridgeConfig);
+                result = Post4DirGradient(spectrogram, gradientConfig);
             }
             return result;
         }
@@ -167,26 +169,28 @@ namespace Dong.Felt
             return PointOfInterest.TransferPOIMatrix2List(result);
         }
 
-        public static List<PointOfInterest> Post8DirGradient(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig)
+        public static List<PointOfInterest> Post8DirGradient(SpectrogramStandard spectrogram, 
+            GradientConfiguration gradientConfig)
         {
             var instance = new POISelection(new List<PointOfInterest>());
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             var rows = matrix.GetLength(0);
             var cols = matrix.GetLength(1);
             var ridgeMagnitudeMatrix = new double[rows, cols];
-            var byteMatrix = Gradient8DirCalculation(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
+            var byteMatrix = Gradient8DirCalculation(matrix, out ridgeMagnitudeMatrix, gradientConfig);
             instance.ConvertRidgeIndiToPOIList2(byteMatrix, ridgeMagnitudeMatrix, spectrogram);
             return instance.poiList;
         }
 
-        public static List<PointOfInterest> Post4DirGradient(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfig)
+        public static List<PointOfInterest> Post4DirGradient(SpectrogramStandard spectrogram, 
+            GradientConfiguration gradientConfig)
         {
             var instance = new POISelection(new List<PointOfInterest>());
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             var rows = matrix.GetLength(0);
             var cols = matrix.GetLength(1);
             var ridgeMagnitudeMatrix = new double[rows, cols];
-            var byteMatrix = Gradient4DirCalculation(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
+            var byteMatrix = Gradient4DirCalculation(matrix, out ridgeMagnitudeMatrix, gradientConfig);
             instance.ConvertRidgeIndiToPOIList2(byteMatrix, ridgeMagnitudeMatrix, spectrogram);
             return instance.poiList;
         }
@@ -707,10 +711,11 @@ namespace Dong.Felt
             return hits;
         }
         
-        public static byte[,] Gradient8DirCalculation(double[,] matrix, out double[,] newMatrix, RidgeDetectionConfiguration ridgeConfiguration)
+        public static byte[,] Gradient8DirCalculation(double[,] matrix, out double[,] newMatrix, 
+            GradientConfiguration gradientConfiguration)
         {
-            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+            int ridgeLength = gradientConfiguration.GradientMatrixLength;
+            double magnitudeThreshold = gradientConfiguration.GradientThreshold;
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = ridgeLength / 2;
@@ -768,10 +773,11 @@ namespace Dong.Felt
             return hits;
         }
 
-        public static byte[,] Gradient4DirCalculation(double[,] matrix, out double[,] newMatrix, RidgeDetectionConfiguration ridgeConfiguration)
+        public static byte[,] Gradient4DirCalculation(double[,] matrix, out double[,] newMatrix, 
+            GradientConfiguration gradientConfiguration)
         {
-            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+            int ridgeLength = gradientConfiguration.GradientMatrixLength;
+            double magnitudeThreshold = gradientConfiguration.GradientThreshold;
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = ridgeLength / 2;

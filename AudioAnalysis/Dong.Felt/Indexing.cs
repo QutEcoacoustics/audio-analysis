@@ -346,6 +346,8 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
