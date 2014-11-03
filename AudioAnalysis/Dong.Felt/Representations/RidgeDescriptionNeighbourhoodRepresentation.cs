@@ -43,6 +43,10 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet17 = "FeaturePropSet17";
         // FeatureSet 18 is calculated based on Histogram of ridges at 8 directions only.
         public const string FeaturePropSet18 = "FeaturePropSet18";
+        // FeatureSet 19 is calculated based on Histogram of ridges at 8 directions poi based plus entropy.
+        public const string FeaturePropSet19 = "FeaturePropSet19";
+        // FeatureSet 20 is calculated based on Histogram of ridges at 8 directions magnitude based plus entropy.
+        public const string FeaturePropSet20 = "FeaturePropSet20";
 
         #region Properties
 
@@ -705,7 +709,7 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// This version is trying to calculate the featureSet5 representation based on poi magnitudes.
+        /// This version is trying to calculate the featureSet5 based on POI count.
         /// It contains 8 histogram bins. 
         /// </summary>
         /// <param name="pointsOfInterest"></param>
@@ -775,7 +779,7 @@ namespace Dong.Felt.Representations
 
             var sumPOICount = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
             var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
-            if (this.POIMagnitudeSum == 0)
+            if (sumPOICount == 0)
             {
                 this.Orientation0POIMagnitude = 0.0;
                 this.Orientation1POIMagnitude = 0.0;
@@ -784,7 +788,7 @@ namespace Dong.Felt.Representations
                 this.Orientation4POIMagnitude = 0.0;
                 this.Orientation5POIMagnitude = 0.0;
                 this.Orientation6POIMagnitude = 0.0;
-                this.Orientation7POIMagnitude = 0.0;
+                this.Orientation7POIMagnitude = 0.0;              
             }
             else
             {
@@ -796,6 +800,289 @@ namespace Dong.Felt.Representations
                 this.Orientation5POIMagnitude = Bin5 / maxPOICount;
                 this.Orientation6POIMagnitude = Bin6 / maxPOICount;
                 this.Orientation7POIMagnitude = Bin7 / maxPOICount;
+
+
+            }
+        }
+
+        /// <summary>
+        /// This version is trying to calculate the featureSet5 presentation combining ridges historgram poi count based and entropy.
+        /// It contains 8 histogram bins + 2 entropy. 
+        /// </summary>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="spectrogramConfig"></param>
+        public void FeatureSet5Representation3(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        {
+            //var histogramOfGradient = new List<double>();
+            var Bin0 = 0.0;
+            var Bin1 = 0.0;
+            var Bin2 = 0.0;
+            var Bin3 = 0.0;
+            var Bin4 = 0.0;
+            var Bin5 = 0.0;
+            var Bin6 = 0.0;
+            var Bin7 = 0.0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 0)
+                        {
+                            Bin0 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 1)
+                        {
+                            Bin1 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 2)
+                        {
+                            Bin2 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 3)
+                        {
+                            Bin3 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 4)
+                        {
+                            Bin4 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 5)
+                        {
+                            Bin5 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 6)
+                        {
+                            Bin6 += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 7)
+                        {
+                            Bin7 += 1.0;
+                        }
+                    }
+                }
+            }
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+
+            var sumPOICount = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
+            var maxPOICount = 3.0 * pointsOfInterest.GetLength(0);
+            if (sumPOICount == 0)
+            {
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation1POIMagnitude = 0.0;
+                this.Orientation2POIMagnitude = 0.0;
+                this.Orientation3POIMagnitude = 0.0;
+                this.Orientation4POIMagnitude = 0.0;
+                this.Orientation5POIMagnitude = 0.0;
+                this.Orientation6POIMagnitude = 0.0;
+                this.Orientation7POIMagnitude = 0.0;
+                this.ColumnEnergyEntropy = 0.0;
+                this.RowEnergyEntropy = 0.0;
+            }
+            else
+            {
+                this.Orientation0POIMagnitude = Bin0 / maxPOICount;
+                this.Orientation1POIMagnitude = Bin1 / maxPOICount;
+                this.Orientation2POIMagnitude = Bin2 / maxPOICount;
+                this.Orientation3POIMagnitude = Bin3 / maxPOICount;
+                this.Orientation4POIMagnitude = Bin4 / maxPOICount;
+                this.Orientation5POIMagnitude = Bin5 / maxPOICount;
+                this.Orientation6POIMagnitude = Bin6 / maxPOICount;
+                this.Orientation7POIMagnitude = Bin7 / maxPOICount;
+
+                var columnEnergy = new double[pointsOfInterest.GetLength(1)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
+                        {
+                            var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            columnEnergy[rowIndex] += magnitude;                            
+                        }
+                    }
+                }
+                var rowEnergy = new double[pointsOfInterest.GetLength(0)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                        {                            
+                            var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            rowEnergy[rowIndex] += magnitude;
+                        }
+                    }
+                }
+                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                if (double.IsNaN(columnEnergyEntropy))
+                {
+                    this.ColumnEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.ColumnEnergyEntropy = columnEnergyEntropy;
+                }
+                if (double.IsNaN(rowEnergyEntropy))
+                {
+                    this.RowEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.RowEnergyEntropy = rowEnergyEntropy;
+                }
+            }
+        }
+
+        /// <summary>
+        /// This version is trying to calculate the featureSet5 presentation combining ridges historgram magnitude based and entropy.
+        /// It contains 8 histogram bins + 2 entropy. 
+        /// </summary>
+        /// <param name="pointsOfInterest"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="spectrogramConfig"></param>
+        public void FeatureSet5Representation4(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        {
+            //var histogramOfGradient = new List<double>();
+            var Bin0 = 0.0;
+            var Bin1 = 0.0;
+            var Bin2 = 0.0;
+            var Bin3 = 0.0;
+            var Bin4 = 0.0;
+            var Bin5 = 0.0;
+            var Bin6 = 0.0;
+            var Bin7 = 0.0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 0)
+                        {
+                            Bin0 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 1)
+                        {
+                            Bin1 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 2)
+                        {
+                            Bin2 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 3)
+                        {
+                            Bin3 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 4)
+                        {
+                            Bin4 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 5)
+                        {
+                            Bin5 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 6)
+                        {
+                            Bin6 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == 7)
+                        {
+                            Bin7 += pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                        }
+                    }
+                }
+            }
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+
+            this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
+            var maxPOICount = 3.0 * pointsOfInterest.GetLength(0);
+            var maxPOIMagnitude = maxPOICount * 10.0;            
+            if (this.POIMagnitudeSum == 0)
+            {
+                this.Orientation0POIMagnitude = 0.0;
+                this.Orientation1POIMagnitude = 0.0;
+                this.Orientation2POIMagnitude = 0.0;
+                this.Orientation3POIMagnitude = 0.0;
+                this.Orientation4POIMagnitude = 0.0;
+                this.Orientation5POIMagnitude = 0.0;
+                this.Orientation6POIMagnitude = 0.0;
+                this.Orientation7POIMagnitude = 0.0;
+                this.ColumnEnergyEntropy = 0.0;
+                this.RowEnergyEntropy = 0.0;
+            }
+            else
+            {
+                this.Orientation0POIMagnitude = Bin0 / maxPOIMagnitude;
+                this.Orientation1POIMagnitude = Bin1 / maxPOIMagnitude;
+                this.Orientation2POIMagnitude = Bin2 / maxPOIMagnitude;
+                this.Orientation3POIMagnitude = Bin3 / maxPOIMagnitude;
+                this.Orientation4POIMagnitude = Bin4 / maxPOIMagnitude;
+                this.Orientation5POIMagnitude = Bin5 / maxPOIMagnitude;
+                this.Orientation6POIMagnitude = Bin6 / maxPOIMagnitude;
+                this.Orientation7POIMagnitude = Bin7 / maxPOIMagnitude;
+
+                var columnEnergy = new double[pointsOfInterest.GetLength(1)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
+                        {
+                            var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            columnEnergy[rowIndex] += magnitude;
+                        }
+                    }
+                }
+                var rowEnergy = new double[pointsOfInterest.GetLength(0)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                        {
+                            var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            rowEnergy[rowIndex] += magnitude;
+                        }
+                    }
+                }
+                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                if (double.IsNaN(columnEnergyEntropy))
+                {
+                    this.ColumnEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.ColumnEnergyEntropy = columnEnergyEntropy;
+                }
+                if (double.IsNaN(rowEnergyEntropy))
+                {
+                    this.RowEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.RowEnergyEntropy = rowEnergyEntropy;
+                }
             }
         }
 
@@ -1627,7 +1914,10 @@ namespace Dong.Felt.Representations
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20
+                    )
                 {
                     item = ridgeNhRrepresentation[c];
                 }
@@ -1765,10 +2055,19 @@ namespace Dong.Felt.Representations
                             ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                            
                         {
                             // This one is similar to featureSet5, but give more directions. 
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
-                        }                        
+                        } 
+                       if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19)
+                       {
+                           ridgeNeighbourhoodRepresentation.FeatureSet5Representation3(subMatrix, row, col, spectrogramConfig);
+                       }
+                       if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
+                       {
+                           ridgeNeighbourhoodRepresentation.FeatureSet5Representation4(subMatrix, row, col, spectrogramConfig);
+                       }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
                         {                           
                             var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
