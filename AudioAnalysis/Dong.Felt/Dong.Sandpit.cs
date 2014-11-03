@@ -127,7 +127,7 @@
                     OutputResults.ChangeCandidateFileName(inputDirectory);
                     var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
                     OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    var outputFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\MatchingResult.csv";
+                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
                     OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     //var path = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\2.png";

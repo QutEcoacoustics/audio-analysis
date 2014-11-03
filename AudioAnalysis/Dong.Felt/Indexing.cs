@@ -350,7 +350,9 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 ||
-                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
             {               
                 //candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
                 result = Indexing.Feature5EuclideanDist2(query, candidates,
@@ -613,7 +615,9 @@ namespace Dong.Felt
                         distance = SimilarityMatching.DistanceFeature10Calculation(query, tempRegionList, 2);
                     }
                     if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13)
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
                     {
                         distance = SimilarityMatching.DistanceFeature12Based(query, tempRegionList, 2, weight1, weight2);
                     }

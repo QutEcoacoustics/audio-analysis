@@ -104,7 +104,10 @@ namespace Dong.Felt
              {
                  result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
              }
-            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20 
+                )
             {
                 result = PostRidgeDetection8Dir(spectrogram, ridgeConfig);
             }           
