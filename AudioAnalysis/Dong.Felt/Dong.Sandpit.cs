@@ -123,7 +123,7 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, featurePropertySet);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, featurePropertySet);
                     OutputResults.ChangeCandidateFileName(inputDirectory);
                     var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
                     OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
@@ -645,7 +645,7 @@
         }
 
         public static void RidgeDetectionBatchProcess(string audioFileDirectory, SonogramConfig config,
-            RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
+            RidgeDetectionConfiguration ridgeConfig, GradientConfiguration gradientConfig, string featurePropSet)
         {
             if (Directory.Exists(audioFileDirectory))
             {
@@ -660,13 +660,13 @@
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used                               
-                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     //Image image = ImageAnalysisTools.DrawNullSonogram(spectrogram);
-                    var ridges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig,featurePropSet);        
+                    //var ridges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig,featurePropSet); 
+                    var ridges = POISelection.GradientPoiSelection(spectrogram, gradientConfig, featurePropSet);
                     //var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, ridges, spectrogram.Data.GetLength(0),
                     //    spectrogram.Data.GetLength(1));
                     //spectrogram.Data = spectrogramData;
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in ridges)
                     {

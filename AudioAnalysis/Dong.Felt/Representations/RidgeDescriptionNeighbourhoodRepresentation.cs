@@ -1154,7 +1154,7 @@ namespace Dong.Felt.Representations
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
 
-            this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);            
+            this.POIMagnitudeSum = (double)(Bin0 + Bin1 + Bin2 + Bin3 + Bin4 + Bin5 + Bin6 + Bin7);
             var maxPOICount = 4.0 * pointsOfInterest.GetLength(0);
             var maxPOIMagnitude = maxPOICount * 10.0;
             if (this.POIMagnitudeSum == 0)
