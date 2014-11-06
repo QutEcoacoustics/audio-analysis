@@ -12,8 +12,10 @@ namespace AnalysisPrograms
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Linq;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
     using Acoustics.Tools;
 
     using AnalysisBase;
@@ -58,7 +60,7 @@ namespace AnalysisPrograms
 
         #region Public Properties
 
-        public AnalysisSettings DefaultSettings
+        public override AnalysisSettings DefaultSettings
         {
             get
             {
@@ -255,12 +257,9 @@ namespace AnalysisPrograms
             // #############################################################################################################################################
 
             // ADD IN ADDITIONAL INFO TO RESULTS TABLE
-            if (dt != null)
+            if (result.Events.Length > 0)
             {
-                AddContext2Table(dt, start, result.AudioDuration);
-                CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
-
-                // DataTableTools.WriteTable(augmentedTable);
+                LoggedConsole.WriteLine("{0} events found", result.Events.Length);
             }
             else
             {
@@ -268,7 +267,7 @@ namespace AnalysisPrograms
             }
         }
 
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
             FileInfo audioFile = analysisSettings.AudioFile;
 
@@ -284,46 +283,23 @@ namespace AnalysisPrograms
             TimeSpan recordingTimeSpan = results.RecordingDuration;
 
 
-            if ((predictedEvents != null) && (predictedEvents.Count != 0))
-            {
-                string analysisName = analysisSettings.ConfigDict[AnalysisKeys.AnalysisName];
-                string fName = Path.GetFileNameWithoutExtension(audioFile.Name);
-                foreach (AcousticEvent ev in predictedEvents)
-                {
-                    ev.FileName = fName;
-                    ev.Name = analysisName;
-                    ev.SegmentDuration = recordingTimeSpan;
-                }
+            analysisResults.Events = predictedEvents.ToArray();
 
-                // write events to a data table to return.
-                dataTable = WriteEvents2DataTable(predictedEvents);
-                string sortString = AnalysisKeys.EventStartAbs + " ASC";
-                dataTable = DataTableTools.SortTable(dataTable, sortString); // sort by start time before returning
+            if (analysisSettings.EventsFile != null)
+            {
+                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.EventsFile;
             }
 
-            if ((analysisSettings.EventsFile != null) && (dataTable != null))
+            if (analysisSettings.SummaryIndicesFile != null)
             {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
-            }
-            else
-            {
-                analysisResults.EventsFile = null;
+                var unitTime = TimeSpan.FromMinutes(1.0);
+                analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
+
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
-            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
-            {
-                double scoreThreshold = 0.1;
-                TimeSpan unitTime = TimeSpan.FromSeconds(60); // index for each time span of i minute
-                var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
-            }
-            else
-            {
-                analysisResults.IndicesFile = null;
-            }
-
-            // save image of sonograms
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
+            if (analysisSettings.ImageFile != null)
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 const double EventThreshold = 0.1;
@@ -331,27 +307,11 @@ namespace AnalysisPrograms
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
             }
-            else
-            {
-                analysisResults.ImageFile = null;
-            }
-
-            analysisResults.Data = dataTable;
-            analysisResults.AudioDuration = recordingTimeSpan;
 
             return analysisResults;
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(
-            IEnumerable<EventBase> events, 
-            TimeSpan unitTime, 
-            TimeSpan duration, 
-            double scoreThreshold)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SummariseResults(
+        public override void SummariseResults(
             AnalysisSettings settings, 
             FileSegment inputFileSegment, 
             EventBase[] events, 
@@ -362,12 +322,12 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            throw new NotImplementedException();
+            Csv.WriteToCsv(destination, results);
         }
 
-        public void WriteSpectrumIndicesFiles(
+        public override void WriteSpectrumIndicesFiles(
             DirectoryInfo destination, 
             string fileNameBase, 
             IEnumerable<SpectralIndexBase> results)
@@ -375,9 +335,9 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
-            throw new NotImplementedException();
+            Csv.WriteToCsv(destination, results);
         }
 
         #endregion
@@ -396,7 +356,7 @@ namespace AnalysisPrograms
         /// <returns>
         /// The <see cref="CanetoadResults"/>.
         /// </returns>
-        private static CanetoadResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict)
+        internal static CanetoadResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict)
         {
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);

@@ -302,6 +302,14 @@ namespace AnalysisPrograms
                 analysisResults.EventsFile = analysisSettings.EventsFile;
             }
 
+            if (analysisSettings.SummaryIndicesFile != null)
+            {
+                var unitTime = TimeSpan.FromMinutes(1.0);
+                analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
+
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+            }
+
 
             // save image of sonograms
             if (analysisSettings.ImageFile != null)

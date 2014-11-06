@@ -364,21 +364,21 @@ namespace AnalysisPrograms
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var results4 = Canetoad.Analysis(fiAudioF, newDict);
-            if (results4 != null)
+            var canetoadResults = Canetoad.Analysis(fiAudioF, newDict);
+            if (canetoadResults != null)
             {
-                if (sonogram == null) sonogram = results4.Item1;
+                if (sonogram == null) sonogram = canetoadResults.Sonogram;
                 //hits = MatrixTools.AddMatrices(hits, results4.Item2);
-                scores.Add(results4.Item3);
-                if (results4.Item4 != null)
+                scores.Add(canetoadResults.Plot);
+                if (canetoadResults.Events != null)
                 {
-                    foreach (AcousticEvent ae in results4.Item4)
+                    foreach (AcousticEvent ae in canetoadResults.Events)
                     {
                         ae.Name = Canetoad.AnalysisName;
                         events.Add(ae);
                     }
                 }
-                recordingTimeSpan = results4.Item5;
+                recordingTimeSpan = canetoadResults.RecordingDuration;
             }
             //######################################################################
             //KOALA-MALE
