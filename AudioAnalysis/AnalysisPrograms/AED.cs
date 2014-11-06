@@ -147,7 +147,8 @@ namespace AnalysisPrograms
 
         public static Tuple<AcousticEvent[], AudioRecording, BaseSonogram> Detect(
             FileInfo audioFile,
-           AedConfiguration aedConfiguration, TimeSpan segmentStartOffset)
+            AedConfiguration aedConfiguration,
+            TimeSpan segmentStartOffset)
         {
             if (aedConfiguration.NoiseReductionType != NoiseReductionType.NONE && aedConfiguration.NoiseReductionParameter == null)
             {
