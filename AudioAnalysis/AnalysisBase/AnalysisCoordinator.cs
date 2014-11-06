@@ -382,9 +382,9 @@
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            //##### RUN the ANALYSIS ################################################################
+            // ##### RUN the ANALYSIS ################################################################
             AnalysisResult2 result = analyser.Analyse(localCopyOfSettings);
-            //#######################################################################################
+            // #######################################################################################
 
             stopwatch.Stop();
             Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.Name, stopwatch.Elapsed);
