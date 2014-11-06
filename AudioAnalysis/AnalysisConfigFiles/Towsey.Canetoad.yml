@@ -24,4 +24,6 @@ SaveIntermediateCsvFiles: false
 SaveSonogramFiles: false
 DisplayCsvImage: false
 ParallelProcessing: true
+
+IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
 ...
