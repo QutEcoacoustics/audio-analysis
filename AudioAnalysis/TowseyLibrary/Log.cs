@@ -26,7 +26,7 @@ namespace TowseyLibrary
         static Log()
         {
             Verbosity = 0;
-            //XmlConfigurator.ConfigureAndWatch(new FileInfo(Path.Combine(Path.GetDirectoryName(typeof(Log).Assembly.Location), "log4net.config")));
+            ////XmlConfigurator.ConfigureAndWatch(new FileInfo(Path.Combine(Path.GetDirectoryName(typeof(Log).Assembly.Location), "log4net.config")));
         }
 
         public static int Verbosity { get; set; }
@@ -35,21 +35,16 @@ namespace TowseyLibrary
         public static void WriteLine(string format, params object[] args)
         {
             Log4Net.InfoFormat(format, args);
-
-            //#if LOGTOCONSOLE
-            //LoggedConsole.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
-            //#endif
+            ////LoggedConsole.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
         }
 
         public static void WriteIfVerbose(string format, params object[] args)
         {
-            //#if LOGTOCONSOLE
             if (Verbosity > 0)
             {
                 Log4Net.InfoFormat(format, args);
-                //LoggedConsole.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
+                ////LoggedConsole.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
             }
-            //#endif
         }
     }
 
