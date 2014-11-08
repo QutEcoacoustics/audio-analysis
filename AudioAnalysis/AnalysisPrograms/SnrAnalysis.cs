@@ -121,7 +121,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap = (double?)configuration.FrameOverlap ?? 0.5;
             sonoConfig.WindowFunction = configuration.WindowFunction;
             sonoConfig.NPointSmoothFFT = (int?)configuration.NpointSmoothFFT ?? 256;
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType((string)configuration.NoiseReductionType);
+            sonoConfig.NoiseReductionType = SNR.KeyToNoiseReductionType((string)configuration.NoiseReductionType);
 
             int minHz = (int?)configuration.MIN_HZ ?? 0;
             int maxHz = (int?)configuration.MAX_HZ ?? 11050;

@@ -328,7 +328,8 @@ namespace AudioAnalysisTools
                     events,
                     IndexUnitTime,
                     durationOfTheOriginalAudioFile,
-                    scoreThreshold);
+                    scoreThreshold,
+                    absolute: true);
             }
             else if (events != null && indices != null)
             {

@@ -41,11 +41,7 @@ namespace AnalysisBase
 
         public abstract void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
 
-        public virtual SummaryIndexBase[] ConvertEventsToSummaryIndices(
-            IEnumerable<EventBase> events,
-            TimeSpan unitTime,
-            TimeSpan duration,
-            double scoreThreshold)
+        public virtual SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
         {
 
             if (duration == TimeSpan.Zero)
@@ -56,7 +52,7 @@ namespace AnalysisBase
             double units = duration.TotalSeconds / unitTime.TotalSeconds;
 
             // get whole minutes
-            int unitCount = (int) (units / 1);
+            int unitCount = (int)(units / 1);
 
             // add fractional minute
             if ((units % 1) > 0.0)
@@ -72,8 +68,11 @@ namespace AnalysisBase
 
             foreach (var anEvent in events)
             {
-                double eventStart = anEvent.EventStartSeconds;
-                double eventScore = anEvent.Score; // (double)ev[AudioAnalysisTools.Keys.EVENT_NORMSCORE];
+                // note: absolute determines what value is used
+                // EventStartSeconds (relative to segment)
+                // StartOffset (relative to recording)
+                double eventStart = absolute ? anEvent.StartOffset.TotalSeconds : anEvent.EventStartSeconds; 
+                double eventScore = anEvent.Score;
                 var timeUnit = (int)(eventStart / unitTime.TotalSeconds);
 
                 // NOTE: eventScore filter replaced with greater then as opposed to not equal to
@@ -92,11 +91,13 @@ namespace AnalysisBase
 
             for (int i = 0; i < eventsPerUnitTime.Length; i++)
             {
-                var newIndex = new EventIndex();
-
-                newIndex.StartOffset = unitTime.Multiply(i);
-                newIndex.EventsTotal = eventsPerUnitTime[i];
-                newIndex.EventsTotalThresholded = bigEvsPerUnitTime[i];
+                var newIndex = new EventIndex
+                                   {
+                                       StartOffset = unitTime.Multiply(i),
+                                       EventsTotal = eventsPerUnitTime[i],
+                                       EventsTotalThresholded = bigEvsPerUnitTime[i],
+                                       SegmentDuration = absolute ? unitTime : duration
+                                   };
 
                 indices[i] = newIndex;
             }

@@ -147,7 +147,8 @@ namespace AnalysisPrograms
 
         public static Tuple<AcousticEvent[], AudioRecording, BaseSonogram> Detect(
             FileInfo audioFile,
-           AedConfiguration aedConfiguration, TimeSpan segmentStartOffset)
+            AedConfiguration aedConfiguration,
+            TimeSpan segmentStartOffset)
         {
             if (aedConfiguration.NoiseReductionType != NoiseReductionType.NONE && aedConfiguration.NoiseReductionParameter == null)
             {
@@ -299,6 +300,14 @@ namespace AnalysisPrograms
             {
                 this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
                 analysisResults.EventsFile = analysisSettings.EventsFile;
+            }
+
+            if (analysisSettings.SummaryIndicesFile != null)
+            {
+                var unitTime = TimeSpan.FromMinutes(1.0);
+                analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
+
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
 
