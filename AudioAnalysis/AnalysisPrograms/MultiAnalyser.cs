@@ -364,7 +364,7 @@ namespace AnalysisPrograms
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var canetoadResults = Canetoad.Analysis(audioFile, newDict);
+            var canetoadResults = Canetoad.Analysis(audioFile, newDict, analysisSettings.SegmentStartOffset.Value);
             if (canetoadResults != null)
             {
                 if (sonogram == null) sonogram = canetoadResults.Sonogram;
@@ -400,7 +400,7 @@ namespace AnalysisPrograms
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
             }
 
-            var koalaMaleResults = KoalaMale.Analysis(audioFile, newDict);
+            var koalaMaleResults = KoalaMale.Analysis(audioFile, newDict, analysisSettings.SegmentStartOffset.Value);
             if (koalaMaleResults != null)
             {
                 if (sonogram == null)

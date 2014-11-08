@@ -21,6 +21,10 @@ EventThreshold: 0.2
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 SaveSonogramFiles: false
+DisplayCsvImage: false
+ParallelProcessing: false
 #DoNoiseReduction: true
 #BgNoiseThreshold: 3.0
+
+IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
 ...

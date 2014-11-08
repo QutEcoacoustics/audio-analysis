@@ -270,7 +270,8 @@ namespace AnalysisPrograms
             FileInfo audioFile = analysisSettings.AudioFile;
 
             // execute actual analysis
-            CanetoadResults results = Analysis(audioFile, analysisSettings.ConfigDict);
+            Dictionary<string, string> configuration = analysisSettings.Configuration;
+            CanetoadResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value);
             
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
 
@@ -315,7 +316,7 @@ namespace AnalysisPrograms
             SpectralIndexBase[] spectralIndices, 
             AnalysisResult2[] results)
         {
-            throw new NotImplementedException();
+            // noop
         }
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
@@ -344,15 +345,19 @@ namespace AnalysisPrograms
         /// THE KEY ANALYSIS METHOD
         /// </summary>
         /// <param name="segmentOfSourceFile">
-        /// The segment Of Source File.
+        ///     The segment Of Source File.
         /// </param>
         /// <param name="configDict">
-        /// The config Dict.
+        ///     The config Dict.
         /// </param>
+        /// <param name="value"></param>
         /// <returns>
         /// The <see cref="CanetoadResults"/>.
         /// </returns>
-        internal static CanetoadResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict)
+        internal static CanetoadResults Analysis(
+            FileInfo segmentOfSourceFile,
+            Dictionary<string, string> configDict,
+            TimeSpan segmentStartOffset)
         {
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
@@ -386,16 +391,16 @@ namespace AnalysisPrograms
             // seems to work
             const int FrameSize = 1024;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate, 
-                FrameSize, 
+                recording.SampleRate,
+                FrameSize,
                 maxOscilFreq);
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
                                  {
-                                     SourceFName = recording.FileName, 
-                                     WindowSize = FrameSize, 
-                                     WindowOverlap = windowOverlap, 
+                                     SourceFName = recording.FileName,
+                                     WindowSize = FrameSize,
+                                     WindowOverlap = windowOverlap,
                                      NoiseReductionType = NoiseReductionType.NONE
                                  };
 
@@ -426,19 +431,25 @@ namespace AnalysisPrograms
             List<AcousticEvent> events;
             double[,] hits;
             Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram, 
-                minHz, 
-                maxHz, 
-                dctDuration, 
-                minOscilFreq, 
-                maxOscilFreq, 
-                dctThreshold, 
-                eventThreshold, 
-                minDuration, 
-                maxDuration, 
-                out scores, 
-                out events, 
+                (SpectrogramStandard)sonogram,
+                minHz,
+                maxHz,
+                dctDuration,
+                minOscilFreq,
+                maxOscilFreq,
+                dctThreshold,
+                eventThreshold,
+                minDuration,
+                maxDuration,
+                out scores,
+                out events,
                 out hits);
+
+            events.ForEach(ae =>
+                    {
+                        ae.SegmentStartOffset = segmentStartOffset;
+                        ae.SegmentDuration = recordingDuration;
+                    });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
             return new CanetoadResults
