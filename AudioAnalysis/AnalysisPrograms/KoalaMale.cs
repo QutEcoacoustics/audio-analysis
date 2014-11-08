@@ -107,15 +107,17 @@ namespace AnalysisPrograms
         /// THE KEY ANALYSIS METHOD
         /// </summary>
         /// <param name="segmentOfSourceFile">
-        /// The file to process.
+        ///     The file to process.
         /// </param>
         /// <param name="configDict">
-        /// The configuration for the analysis.
+        ///     The configuration for the analysis.
         /// </param>
+        /// <param name="value"></param>
+        /// <param name="segmentStartOffset"></param>
         /// <returns>
         /// The results of the analysis.
         /// </returns>
-        public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict)
+        public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
@@ -204,6 +206,16 @@ namespace AnalysisPrograms
 
             // remove isolated koala events
             events = FilterMaleKoalaEvents(events);
+
+            if (events != null)
+            {
+                events.ForEach(
+                    ae =>
+                        {
+                            ae.SegmentStartOffset = segmentStartOffset;
+                            ae.SegmentDuration = recordingDuration;
+                        });
+            }
 
             // ######################################################################
             var plot = new Plot(AnalysisName, scores, eventThreshold);
@@ -462,7 +474,8 @@ namespace AnalysisPrograms
             FileInfo audioFile = analysisSettings.AudioFile;
 
             /* ###################################################################### */
-            KoalaMaleResults results = Analysis(audioFile, analysisSettings.ConfigDict);
+            Dictionary<string, string> configuration = analysisSettings.Configuration;
+            KoalaMaleResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value);
 
             /* ###################################################################### */
             BaseSonogram sonogram = results.Sonogram;
@@ -472,10 +485,7 @@ namespace AnalysisPrograms
 
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingtDuration)
                                       {
-                                          AnalysisIdentifier
-                                              =
-                                              this
-                                              .Identifier
+                                          AnalysisIdentifier = this.Identifier
                                       };
 
             if (analysisSettings.EventsFile != null)
