@@ -95,9 +95,18 @@ Output  to  directory: {1}
                 Log.Warn("IndexProperties config can not be found! This will result in an excpetion if it is needed later on.");
             }
 
-            double scoreThreshold = 0.2; // min score for an acceptable event
-            scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
-            Log.Warn("Minimum event threshold has been set to " + scoreThreshold);
+            // min score for an acceptable event
+            double scoreThreshold = 0.2;
+            if (configuration[AnalysisKeys.EventThreshold] != null)
+            {
+                scoreThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+                Log.Info("Minimum event threshold has been set to " + scoreThreshold);
+
+            }
+            else
+            {
+                Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
+            }
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, saveIntermediateCsvFiles)
@@ -153,8 +162,8 @@ Output  to  directory: {1}
             }
             catch (Exception ex)
             {
-                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value used)");
                 analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
+                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value  of " + analysisSettings.SegmentOverlapDuration + " used)");
             }
 
             // set target sample rate
@@ -165,7 +174,7 @@ Output  to  directory: {1}
             }
             catch (Exception ex)
             {
-                Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value used)");
+                Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.SegmentTargetSampleRate + " used)");
             }
 
             // 7. ####################################### DO THE ANALYSIS ###################################

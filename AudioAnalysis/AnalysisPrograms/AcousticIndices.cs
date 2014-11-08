@@ -407,11 +407,7 @@ namespace AnalysisPrograms
             }
         }
 
-        public SummaryIndexBase[] ConvertEventsToSummaryIndices(
-            IEnumerable<EventBase> events,
-            TimeSpan unitTime,
-            TimeSpan duration,
-            double scoreThreshold)
+        public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
         {
             throw new NotImplementedException();
         }

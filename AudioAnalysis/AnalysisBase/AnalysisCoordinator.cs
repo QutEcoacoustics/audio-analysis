@@ -382,9 +382,9 @@
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            //##### RUN the ANALYSIS ################################################################
+            /* ##### RUN the ANALYSIS ################################################################ */
             AnalysisResult2 result = analyser.Analyse(localCopyOfSettings);
-            //#######################################################################################
+            /* ####################################################################################### */
 
             stopwatch.Stop();
             Log.DebugFormat("Item {0} finished analysing {1}, took {2}.", localCopyOfSettings.InstanceId, localCopyOfSettings.AudioFile.Name, stopwatch.Elapsed);
@@ -393,10 +393,7 @@
             result.AnalysisIdentifier = analyser.Identifier;
 
             // validate results (debug only & not parallel only)
-            if (!parallelised)
-            {
-                ValidateResult(localCopyOfSettings, result, start, preparedFileDuration);
-            }
+            ValidateResult(localCopyOfSettings, result, start, preparedFileDuration, parallelised);
 
             // clean up
             if (this.DeleteFinished && this.SubFoldersUnique)
@@ -439,9 +436,14 @@
         /// It only runs when the program is built as DEBUG.
         /// </summary>
        [Conditional("DEBUG")]
-       private static void ValidateResult(AnalysisSettings preAnalysisSettings, AnalysisResult2 result, TimeSpan start,
-           TimeSpan preparedFileDuration)
+       private static void ValidateResult(AnalysisSettings preAnalysisSettings, AnalysisResult2 result, TimeSpan start, TimeSpan preparedFileDuration, bool parallelised)
        {
+            if (parallelised)
+            {
+                Log.Warn("VALIDATION OF ANALYSIS RESULTS BYPASSED BECAUSE THE ANALYSIS IS IN PARALLEL!");
+                return;
+            }
+
            Debug.Assert(result.SettingsUsed != null, "The settings used in the analysis must be populated in the analysis result.");
            Debug.Assert(result.SegmentStartOffset == start, "The segmen start offset of the result should match the start offset that it was instructed to analyse");
            Debug.Assert(Math.Abs((result.SegmentAudioDuration - preparedFileDuration).TotalMilliseconds) < 1.0, "The duration analysed (reported by the analysis result) should be withing a millisecond of the provided audio file");

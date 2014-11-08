@@ -894,44 +894,12 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="key">The string to convert.</param>
         /// <returns>A NoiseReductionType enumeration.</returns>
-        public static NoiseReductionType Key2NoiseReductionType(string key)
+        public static NoiseReductionType KeyToNoiseReductionType(string key)
         {
-            NoiseReductionType result;
-            switch (key)
-            {
-                case "NONE":
-                    result = NoiseReductionType.NONE;
-                    break;
-                case "STANDARD":
-                    result = NoiseReductionType.STANDARD;
-                    break;
-                case "Modal":
-                    result = NoiseReductionType.MODAL;
-                    break;
-                case "FIXED_DYNAMIC_RANGE":
-                    result = NoiseReductionType.FIXED_DYNAMIC_RANGE;
-                    break;
-                case "Mean":
-                    result = NoiseReductionType.MEAN;
-                    break;
-                case "Median":
-                    result = NoiseReductionType.MEDIAN;
-                    break;
-                case "LowestPercentile":
-                    result = NoiseReductionType.LOWEST_PERCENTILE;
-                    break;
-                case "ShortRecording":
-                    result = NoiseReductionType.SHORT_RECORDING;
-                    break;
-                case "BriggsPercentile":
-                    result = NoiseReductionType.BRIGGS_PERCENTILE;
-                    break;
-                default:
-                    result = NoiseReductionType.NONE;
-                    break;
-            }
+            NoiseReductionType nrt;
+            Enum.TryParse(key, true, out nrt);
 
-            return result;
+            return nrt;
         }
 
         /// <summary>
@@ -1006,11 +974,11 @@ namespace AudioAnalysisTools.DSP
                     break;
                 case NoiseReductionType.NONE:
                 default:
-                    //Log.WriteIfVerbose("No noise reduction applied");
+                    Log.WriteIfVerbose("No noise reduction applied");
                     break;
             }
-            var tuple = System.Tuple.Create(m, bgNoiseProfile);
-            return tuple;
+
+            return Tuple.Create(m, bgNoiseProfile);
         }
 
 

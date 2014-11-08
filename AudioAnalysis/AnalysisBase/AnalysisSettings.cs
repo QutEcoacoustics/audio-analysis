@@ -241,6 +241,7 @@ namespace AnalysisBase
         /// <summary>
         /// Gets or sets the config dictionary.
         /// </summary>
+        [Obsolete]
         public Dictionary<string, string> ConfigDict { get; set; }
 
         /// <summary>

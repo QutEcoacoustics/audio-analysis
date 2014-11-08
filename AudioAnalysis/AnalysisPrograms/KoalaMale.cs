@@ -1,81 +1,246 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Acoustics.Shared;
-using Acoustics.Tools;
-using Acoustics.Tools.Audio;
-using AnalysisBase;
-
-using TowseyLibrary;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="KoalaMale.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
     using System.Diagnostics.Contracts;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
 
-    using Acoustics.Shared.Extensions;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
+    using Acoustics.Tools;
+
+    using AnalysisBase;
+    using AnalysisBase.ResultBases;
 
     using AnalysisPrograms.Production;
 
-    /// <summary>
-    /// NOTE: This method detects male koala calls by detecting ther oscillations of their roars.
-    /// In order to detect these oscillations which can reach 50 per second one requires a frame rate of at least 100 frames per second and preferably 
-    /// a frame rate = 150 so that this period sits near the middle of the array of DCT coefficients.
-    /// The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. User may wish to set SR and FRAME LENGTH should = 512 or 1024.
-    /// Therefore best way to adjust frame rate is to adjust frame overlap. 
-    /// Have decided on the option of auomatically calculating the frame ovelap to suit the maximum oscillation to be detected.
-    /// This is written in the method OscillationDetector.CalculateRequiredFrameOverlap();
-    /// Do not want the DCT length to be too long because DCT is expensive to calculate. 0.5s - 1.0s is adequate for canetoad -depends on the expected osc rate.
-    /// 
-    /// Analysis() method.
-    /// </summary>
-    public class KoalaMale : IAnalyser
-    {
-        public class Arguments : AnalyserArguments
-        {
-        }
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
 
-        //OTHER CONSTANTS
+    using TowseyLibrary;
+
+    using ProcessRunner = TowseyLibrary.ProcessRunner;
+
+    /// <summary>
+    ///     NOTE: This method detects male koala calls by detecting their oscillations of their roars.
+    ///     In order to detect these oscillations which can reach 50 per second one requires a frame rate of at least 100
+    ///     frames per second and preferably
+    ///     a frame rate = 150 so that this period sits near the middle of the array of DCT coefficients.
+    ///     The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. User may wish
+    ///     to set SR and FRAME LENGTH should = 512 or 1024.
+    ///     Therefore best way to adjust frame rate is to adjust frame overlap.
+    ///     Have decided on the option of automatically calculating the frame overlap to suit the maximum oscillation to be
+    ///     detected.
+    ///     This is written in the method OscillationDetector.CalculateRequiredFrameOverlap();
+    ///     Do not want the DCT length to be too long because DCT is expensive to calculate. 0.5s - 1.0s is adequate for
+    ///     canetoad -depends on the expected osc rate.
+    ///     Analysis() method.
+    /// </summary>
+    public class KoalaMale : AbstractStrongAnalyser
+    {
+        #region Constants
+
         public const string AnalysisName = "KoalaMale";
-        public const int ResampleRate = 17640;
-        //public const int RESAMPLE_RATE = 22050;
-        //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
+
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
+        public const int ResampleRate = 17640;
 
-        public string DisplayName
+        #endregion
+
+        #region Public Properties
+
+        public string DefaultConfiguration
         {
-            get { return "Koala Male"; }
+            get
+            {
+                return string.Empty;
+            }
         }
 
-        public string Identifier
+        public override AnalysisSettings DefaultSettings
         {
-            get { return "Towsey." + AnalysisName; }
+            get
+            {
+                return new AnalysisSettings
+                           {
+                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
+                               SegmentMinDuration = TimeSpan.FromSeconds(30), 
+                               SegmentMediaType = MediaTypes.MediaTypeWav, 
+                               SegmentOverlapDuration = TimeSpan.Zero, 
+                               SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                           };
+            }
         }
 
+        public override string DisplayName
+        {
+            get
+            {
+                return "Koala Male";
+            }
+        }
+
+        public override string Identifier
+        {
+            get
+            {
+                return "Towsey." + AnalysisName;
+            }
+        }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// THE KEY ANALYSIS METHOD
+        /// </summary>
+        /// <param name="segmentOfSourceFile">
+        ///     The file to process.
+        /// </param>
+        /// <param name="configDict">
+        ///     The configuration for the analysis.
+        /// </param>
+        /// <param name="value"></param>
+        /// <param name="segmentStartOffset"></param>
+        /// <returns>
+        /// The results of the analysis.
+        /// </returns>
+        public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
+        {
+            int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
+            int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
+
+            // BETTER TO CALUCLATE THIS. IGNORE USER!
+            // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
+
+            // duration of DCT in seconds 
+            double dctDuration = double.Parse(configDict[AnalysisKeys.DctDuration]);
+
+            // minimum acceptable value of a DCT coefficient
+            double dctThreshold = double.Parse(configDict[AnalysisKeys.DctThreshold]);
+
+            // ignore oscillations below this threshold freq
+            int minOscilFreq = int.Parse(configDict[AnalysisKeys.MinOscilFreq]);
+
+            // ignore oscillations above this threshold freq
+            int maxOscilFreq = int.Parse(configDict[AnalysisKeys.MaxOscilFreq]);
+
+            // min duration of event in seconds 
+            double minDuration = double.Parse(configDict[AnalysisKeys.MinDuration]);
+
+            // max duration of event in seconds                 
+            double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);
+
+            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
+
+            // min score for an acceptable event
+            var recording = new AudioRecording(segmentOfSourceFile.FullName);
+
+            // seems to work  -- frameSize = 1024 takes too long to compute; 
+            const int FrameSize = 512;
+
+            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
+                recording.SampleRate, 
+                FrameSize, 
+                maxOscilFreq);
+
+            // i: MAKE SONOGRAM
+            var sonoConfig = new SonogramConfig
+                                 {
+                                     SourceFName = recording.FileName, 
+                                     WindowSize = FrameSize, 
+                                     WindowOverlap = windowOverlap, 
+                                     NoiseReductionType = NoiseReductionType.NONE
+                                 };
+
+            ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            TimeSpan recordingDuration = recording.Duration();
+            int sr = recording.SampleRate;
+            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+
+            /* #############################################################################################################################################
+             * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
+             * 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
+             * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
+             * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
+             */
+            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            int rowCount = sonogram.Data.GetLength(0);
+            int colCount = sonogram.Data.GetLength(1);
+            recording.Dispose();
+
+            ////double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
+
+            // ######################################################################
+            // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
+            // predefinition of score array
+            double[] scores;
+            List<AcousticEvent> events;
+            double[,] hits;
+            Oscillations2012.Execute(
+                (SpectrogramStandard)sonogram, 
+                minHz, 
+                maxHz, 
+                dctDuration, 
+                minOscilFreq, 
+                maxOscilFreq, 
+                dctThreshold, 
+                eventThreshold, 
+                minDuration, 
+                maxDuration, 
+                out scores, 
+                out events, 
+                out hits);
+
+            // remove isolated koala events
+            events = FilterMaleKoalaEvents(events);
+
+            if (events != null)
+            {
+                events.ForEach(
+                    ae =>
+                        {
+                            ae.SegmentStartOffset = segmentStartOffset;
+                            ae.SegmentDuration = recordingDuration;
+                        });
+            }
+
+            // ######################################################################
+            var plot = new Plot(AnalysisName, scores, eventThreshold);
+
+            return new KoalaMaleResults
+                       {
+                           Events = events, 
+                           Hits = hits, 
+                           Plot = plot, 
+                           RecordingtDuration = recordingDuration, 
+                           Sonogram = sonogram
+                       };
+        }
 
         public static void Dev(Arguments arguments)
         {
-            var executeDev = arguments == null;
+            bool executeDev = arguments == null;
             if (executeDev)
             {
                 string recordingPath =
                     @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
 
+                ////string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
+                ////string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
+                ////string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
                 string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
                 string outputDir = @"C:\SensorNetworks\Output\KoalaMale\";
 
@@ -85,45 +250,58 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(date);
                 LoggedConsole.WriteLine("# Output folder:  " + outputDir);
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-                var diOutputDir = new DirectoryInfo(outputDir);
 
                 Log.Verbosity = 1;
                 int startMinute = 0;
-                int durationSeconds = 0; //set zero to get entire recording
-                var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-                var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
-                var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
-                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
 
-                var cmdLineArgs = new List<string>();
+                // set zero to get entire recording
+                int durationSeconds = 0;
+
+                // hours, minutes, seconds
+                TimeSpan start = TimeSpan.FromMinutes(startMinute);
+
+                // hours, minutes, seconds
+                TimeSpan duration = TimeSpan.FromSeconds(durationSeconds);
+                string segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
+                string segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+                string sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+                string eventsFname = string.Format(
+                    "{0}_{1}min.{2}.Events.csv", 
+                    segmentFileStem, 
+                    startMinute, 
+                    "Towsey." + AnalysisName);
+                string indicesFname = string.Format(
+                    "{0}_{1}min.{2}.Indices.csv", 
+                    segmentFileStem, 
+                    startMinute, 
+                    "Towsey." + AnalysisName);
+
                 if (true)
                 {
                     arguments = new Arguments
-                    {
-                        Source = recordingPath.ToFileInfo(),
-                        Config = configPath.ToFileInfo(),
-                        Output = outputDir.ToDirectoryInfo(),
-                        TmpWav = segmentFName,
-                        Events = eventsFname,
-                        Indices = indicesFname,
-                        Sgram = sonogramFname,
-                        Start = tsStart.TotalSeconds,
-                        Duration = tsDuration.TotalSeconds
-                    };
+                                    {
+                                        Source = recordingPath.ToFileInfo(), 
+                                        Config = configPath.ToFileInfo(), 
+                                        Output = outputDir.ToDirectoryInfo(), 
+                                        TmpWav = segmentFName, 
+                                        Events = eventsFname, 
+                                        Indices = indicesFname, 
+                                        Sgram = sonogramFname, 
+                                        Start = start.TotalSeconds, 
+                                        Duration = duration.TotalSeconds
+                                    };
                 }
+
                 if (false)
                 {
                     // loads a csv file for visualisation
-                    //string indicesImagePath = "some path or another";
-                    //var fiCsvFile    = new FileInfo(restOfArgs[0]);
-                    //var fiConfigFile = new FileInfo(restOfArgs[1]);
-                    //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-                    //IAnalysis analyser = new AnalysisTemplate();
-                    //var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
-                    //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
+                    ////string indicesImagePath = "some path or another";
+                    ////var fiCsvFile    = new FileInfo(restOfArgs[0]);
+                    ////var fiConfigFile = new FileInfo(restOfArgs[1]);
+                    ////var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
+                    ////IAnalysis analyser = new AnalysisTemplate();
+                    ////var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
+                    // returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
                 }
             }
 
@@ -131,12 +309,12 @@ namespace AnalysisPrograms
 
             if (executeDev)
             {
-                var csvEvents = arguments.Output.CombineFile(arguments.Events);
+                FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
                 if (!csvEvents.Exists)
                 {
                     Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
+                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", 
+                        arguments.Start.Value, 
                         arguments.Source.FullName);
                 }
                 else
@@ -145,12 +323,13 @@ namespace AnalysisPrograms
                     DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
                     DataTableTools.WriteTable2Console(dt);
                 }
-                var csvIndicies = arguments.Output.CombineFile(arguments.Indices);
+
+                FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
                 if (!csvIndicies.Exists)
                 {
                     Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
-                        arguments.Start.Value,
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", 
+                        arguments.Start.Value, 
                         arguments.Source.FullName);
                 }
                 else
@@ -159,10 +338,11 @@ namespace AnalysisPrograms
                     DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
                     DataTableTools.WriteTable2Console(dt);
                 }
-                var image = arguments.Output.CombineFile(arguments.Sgram);
+
+                FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
                 if (image.Exists)
                 {
-                    TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(ImageViewer);
+                    var process = new ProcessRunner(ImageViewer);
                     process.Run(image.FullName, arguments.Output.FullName);
                 }
 
@@ -170,231 +350,99 @@ namespace AnalysisPrograms
             }
         }
 
-
-
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
-        /// To be called as an executable with command line arguments.
+        ///     To be called as an executable with command line arguments.
         /// </summary>
+        /// <param name="arguments">
+        /// The arguments for excuting the analysis.
+        /// </param>
         public static void Execute(Arguments arguments)
         {
             Contract.Requires(arguments != null);
 
             AnalysisSettings analysisSettings = arguments.ToAnalysisSettings();
-            TimeSpan tsStart = TimeSpan.FromSeconds(arguments.Start ?? 0);
-            TimeSpan tsDuration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
+            TimeSpan start = TimeSpan.FromSeconds(arguments.Start ?? 0);
+            TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
-            //EXTRACT THE REQUIRED RECORDING SEGMENT
+            // EXTRACT THE REQUIRED RECORDING SEGMENT
             FileInfo tempF = analysisSettings.AudioFile;
-            if (tsDuration == TimeSpan.Zero)   //Process entire file
+            if (duration == TimeSpan.Zero)
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-                //var fiSegment = AudioFilePreparer.PrepareFile(diOutputDir, fiSourceFile, , Human2.RESAMPLE_RATE);
+                // Process entire file
+                AudioFilePreparer.PrepareFile(
+                    arguments.Source, 
+                    tempF, 
+                    new AudioUtilityRequest { TargetSampleRate = ResampleRate }, 
+                    analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
             {
-                AudioFilePreparer.PrepareFile(arguments.Source, tempF, new AudioUtilityRequest { TargetSampleRate = ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-                //var fiSegmentOfSourceFile = AudioFilePreparer.PrepareFile(diOutputDir, new FileInfo(recordingPath), MediaTypes.MediaTypeWav, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3), RESAMPLE_RATE);
+                AudioFilePreparer.PrepareFile(
+                    arguments.Source, 
+                    tempF, 
+                    new AudioUtilityRequest
+                        {
+                            TargetSampleRate = ResampleRate, 
+                            OffsetStart = start, 
+                            OffsetEnd = start.Add(duration)
+                        }, 
+                    analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
 
-            //DO THE ANALYSIS
-            //#############################################################################################################################################
-            IAnalyser analyser = new KoalaMale();
-            AnalysisResult result = analyser.Analyse(analysisSettings);
-            DataTable dt = result.Data;
-            //#############################################################################################################################################
+            // DO THE ANALYSIS
+            /* ############################################################################################################################################# */
+            IAnalyser2 analyser = new KoalaMale();
+            AnalysisResult2 result = analyser.Analyse(analysisSettings);
 
-            //ADD IN ADDITIONAL INFO TO RESULTS TABLE
-            if (dt != null)
+            /* ############################################################################################################################################# */
+            if (result.Events.Length > 0)
             {
-                AddContext2Table(dt, tsStart, result.AudioDuration);
-                CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
-                //DataTableTools.WriteTable(augmentedTable);
+                LoggedConsole.WriteLine("{0} events found", result.Events.Length);
             }
             else
             {
-                throw new InvalidOperationException("Data table is null");
+                LoggedConsole.WriteLine("No events found");
             }
         }
 
-
-
-        public AnalysisResult Analyse(AnalysisSettings analysisSettings)
-        {
-            var fiAudioF = analysisSettings.AudioFile;
-            var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
-
-            var analysisResults = new AnalysisResult();
-            analysisResults.AnalysisIdentifier = this.Identifier;
-            analysisResults.SettingsUsed = analysisSettings;
-            analysisResults.Data = null;
-
-            //######################################################################
-            var results = Analysis(fiAudioF, analysisSettings.ConfigDict);
-            //######################################################################
-
-            if (results == null) return analysisResults; //nothing to process 
-            var sonogram = results.Item1;
-            var hits = results.Item2;
-            var scores = results.Item3;
-            var predictedEvents = results.Item4;
-            var recordingTimeSpan = results.Item5;
-            analysisResults.AudioDuration = recordingTimeSpan;
-
-            DataTable dataTable = null;
-
-            if ((predictedEvents != null) && (predictedEvents.Count != 0))
-            {
-                string analysisName = analysisSettings.ConfigDict[AudioAnalysisTools.AnalysisKeys.AnalysisName];
-                string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
-                foreach (AcousticEvent ev in predictedEvents)
-                {
-                    ev.FileName = fName;
-                    ev.Name = analysisName;
-                    ev.SegmentDuration = recordingTimeSpan;
-                }
-                //write events to a data table to return.
-                dataTable = WriteEvents2DataTable(predictedEvents);
-                string sortString = AnalysisKeys.EventStartAbs + " ASC";
-                dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
-            }
-
-            if ((analysisSettings.EventsFile != null) && (dataTable != null))
-            {
-                CsvTools.DataTable2CSV(dataTable, analysisSettings.EventsFile.FullName);
-            }
-            else
-                analysisResults.EventsFile = null;
-
-
-            double scoreThreshold = double.Parse(analysisSettings.ConfigDict[AnalysisKeys.EventThreshold]);  //min score for an acceptable event
-            scoreThreshold *= 3; // double the threshold - used to filter high scoring events
-            //if (scoreThreshold > 1.0) scoreThreshold = 1.0;
-
-            if ((analysisSettings.SummaryIndicesFile != null) && (dataTable != null))
-            {
-                TimeSpan unitTime = TimeSpan.FromSeconds(60); //one index for each time span of one minute
-                var indicesDT = ConvertEvents2Indices(dataTable, unitTime, recordingTimeSpan, scoreThreshold);
-                CsvTools.DataTable2CSV(indicesDT, analysisSettings.SummaryIndicesFile.FullName);
-            }
-            else
-                analysisResults.IndicesFile = null;
-
-
-            //save image of sonograms
-            if ((sonogram != null) && (analysisSettings.ImageFile != null))
-            {
-                string imagePath = analysisSettings.ImageFile.FullName;
-                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, scoreThreshold);
-                image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = analysisSettings.ImageFile;
-            }
-            else
-                analysisResults.ImageFile = null;
-
-            analysisResults.Data = dataTable;
-            analysisResults.AudioDuration = recordingTimeSpan;
-            //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
-            //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
-            return analysisResults;
-        } //Analyse()
-
-
-
-
         /// <summary>
-        /// ################ THE KEY ANALYSIS METHOD
-        /// Returns a DataTable
+        /// This method removes isolated koala events.
+        ///     Expect at least consecutive inhales with centres spaced between 1.5 and 2.5 seconds
         /// </summary>
-        /// <param name="fiSegmentOfSourceFile"></param>
-        /// <param name="configDict"></param>
-        /// <param name="diOutputDir"></param>
-        public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict)
-        {
-            int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
-            int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
-            //double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);    //BETTER TO CALUCLATE THIS. IGNORE USER!
-            double dctDuration = double.Parse(configDict[AnalysisKeys.DctDuration]);       //duration of DCT in seconds 
-            double dctThreshold = double.Parse(configDict[AnalysisKeys.DctThreshold]);      //minimum acceptable value of a DCT coefficient
-            int minOscilFreq = int.Parse(configDict[AnalysisKeys.MinOscilFreq]);      //ignore oscillations below this threshold freq
-            int maxOscilFreq = int.Parse(configDict[AnalysisKeys.MaxOscilFreq]);      //ignore oscillations above this threshold freq
-            double minDuration = double.Parse(configDict[AnalysisKeys.MinDuration]);       //min duration of event in seconds 
-            double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);       //max duration of event in seconds 
-            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);  //min score for an acceptable event
-
-            AudioRecording recording = new AudioRecording(fiSegmentOfSourceFile.FullName);
-            if (recording == null)
-            {
-                LoggedConsole.WriteLine("AudioRecording == null. Analysis not possible.");
-                return null;
-            }
-
-            int frameSize = 512; //seems to work  -- frameSize = 1024 takes too long to compute; 
-            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(recording.SampleRate, frameSize, maxOscilFreq);
-
-
-            //i: MAKE SONOGRAM
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.WindowSize = frameSize;
-            sonoConfig.WindowOverlap = windowOverlap;
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
-            //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan tsRecordingtDuration = recording.Duration();
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-
-            //#############################################################################################################################################
-            //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-            // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-            // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-            // 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
-            //double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
-
-            //######################################################################
-            //ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double[] scores;                      //predefinition of score array
-            List<AcousticEvent> events;
-            double[,] hits;
-            Oscillations2012.Execute((SpectrogramStandard)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, eventThreshold,
-                                        minDuration, maxDuration, out scores, out events, out hits);
-            events = KoalaMale.FilterMaleKoalaEvents(events); //remove isolated koala events - 
-
-            //######################################################################
-
-            Plot plot = new Plot(KoalaMale.AnalysisName, scores, eventThreshold);
-            return System.Tuple.Create(sonogram, hits, plot, events, tsRecordingtDuration);
-        } //Analysis()
-
-        ///
-        /// THis method removes isolated koala events. Expect at least consecutive inhales with centres spaced between 1.5 and 2.5 seconds 
+        /// <param name="events">
+        /// The events.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
         public static List<AcousticEvent> FilterMaleKoalaEvents(List<AcousticEvent> events)
         {
             int count = events.Count;
-            if (count < 3) //require three consecutive inhale events to be a koala bellow.
+            const int ConsecutiveInhales = 3;
+
+            // require three consecutive inhale events to be a koala bellow.
+            if (count < ConsecutiveInhales)
             {
-                //events = new List<AcousticEvent>();
-                events = null;
-                return events;
+                return null;
             }
 
-            double[] eventCentres = new double[count]; //to store the centres of the events
+            // to store the centres of the events
+            var eventCentres = new double[count];
             for (int i = 0; i < count; i++)
             {
-                eventCentres[i] = events[i].TimeStart + (events[i].TimeEnd - events[i].TimeStart) / 2.0; //centres in seconds
+                // centres in seconds
+                eventCentres[i] = events[i].TimeStart + ((events[i].TimeEnd - events[i].TimeStart) / 2.0);
             }
 
-            bool[] partOfTriple = new bool[count];
+            var partOfTriple = new bool[count];
             for (int i = 1; i < count - 1; i++)
             {
                 double leftGap = eventCentres[i] - eventCentres[i - 1];
                 double rghtGap = eventCentres[i + 1] - eventCentres[i];
-                bool leftGapCorrect = (leftGap > 1.4) && (leftGap < 2.6); //centres between 1.5 and 2.5 s separated.
+
+                // centres between 1.5 and 2.5 s separated.
+                bool leftGapCorrect = (leftGap > 1.4) && (leftGap < 2.6);
                 bool rghtGapCorrect = (rghtGap > 1.4) && (rghtGap < 2.6);
 
                 if (leftGapCorrect && rghtGapCorrect)
@@ -407,261 +455,160 @@ namespace AnalysisPrograms
 
             for (int i = count - 1; i >= 0; i--)
             {
-                if (!partOfTriple[i]) events.Remove(events[i]);
+                if (!partOfTriple[i])
+                {
+                    events.Remove(events[i]);
+                }
             }
-            if (events.Count == 0) events = null;
+
+            if (events.Count == 0)
+            {
+                events = null;
+            }
+
             return events;
         }
 
-
-        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, Plot scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
+            FileInfo audioFile = analysisSettings.AudioFile;
 
-            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
+            /* ###################################################################### */
+            Dictionary<string, string> configuration = analysisSettings.Configuration;
+            KoalaMaleResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value);
 
-            //Image_MultiTrack image = new Image_MultiTrack(img);
+            /* ###################################################################### */
+            BaseSonogram sonogram = results.Sonogram;
+            double[,] hits = results.Hits;
+            Plot scores = results.Plot;
+            List<AcousticEvent> predictedEvents = results.Events;
+
+            var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingtDuration)
+                                      {
+                                          AnalysisIdentifier = this.Identifier
+                                      };
+
+            if (analysisSettings.EventsFile != null)
+            {
+                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.EventsFile;
+            }
+
+            if (analysisSettings.SummaryIndicesFile != null)
+            {
+                TimeSpan unitTime = TimeSpan.FromMinutes(1.0);
+                analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(
+                    analysisResults.Events, 
+                    unitTime, 
+                    analysisResults.SegmentAudioDuration, 
+                    0);
+
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+            }
+
+            if (analysisSettings.ImageFile != null)
+            {
+                string imagePath = analysisSettings.ImageFile.FullName;
+                const double EventThreshold = 0.1;
+                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
+                image.Save(imagePath, ImageFormat.Png);
+                analysisResults.ImageFile = analysisSettings.ImageFile;
+            }
+
+            return analysisResults;
+        }
+
+        public override void SummariseResults(
+            AnalysisSettings settings, 
+            FileSegment inputFileSegment, 
+            EventBase[] events, 
+            SummaryIndexBase[] indices, 
+            SpectralIndexBase[] spectralIndices, 
+            AnalysisResult2[] results)
+        {
+            // noop
+        }
+
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            Csv.WriteToCsv(destination, results);
+        }
+
+        public override void WriteSpectrumIndicesFiles(
+            DirectoryInfo destination, 
+            string fileNameBase, 
+            IEnumerable<SpectralIndexBase> results)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
+        {
+            Csv.WriteToCsv(destination, results);
+        }
+
+        #endregion
+
+        #region Methods
+
+        private static Image DrawSonogram(
+            BaseSonogram sonogram, 
+            double[,] hits, 
+            Plot scores, 
+            List<AcousticEvent> predictedEvents, 
+            double eventThreshold)
+        {
+            var image = new Image_MultiTrack(sonogram.GetImage());
+
+            ////System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+
+            ////Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
-            //if (hits != null) image.OverlayRedTransparency(hits);
-            if (hits != null) image.OverlayRainbowTransparency(hits);
+            if (scores != null)
+            {
+                image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
+            }
+
+            ////if (hits != null) image.OverlayRedTransparency(hits);
+            if (hits != null)
+            {
+                image.OverlayRainbowTransparency(hits);
+            }
+
             if ((predictedEvents != null) && (predictedEvents.Count > 0))
-                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            {
+                image.AddEvents(
+                    predictedEvents, 
+                    sonogram.NyquistFrequency, 
+                    sonogram.Configuration.FreqBinCount, 
+                    sonogram.FramesPerSecond);
+            }
+
             return image.GetImage();
-        } //DrawSonogram()
-
-
-        public static DataTable WriteEvents2DataTable(List<AcousticEvent> predictedEvents)
-        {
-            if (predictedEvents == null) return null;
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.EventCount,     //1
-                                 AudioAnalysisTools.AnalysisKeys.EventStartMin, //2
-                                 AudioAnalysisTools.AnalysisKeys.EventStartSec, //3
-                                 AudioAnalysisTools.AnalysisKeys.EventStartAbs, //4
-                                 AudioAnalysisTools.AnalysisKeys.KeySegmentDuration,//5
-                                 AudioAnalysisTools.AnalysisKeys.EventDuration,  //6
-                                 AudioAnalysisTools.AnalysisKeys.OscillationRate,//7
-                                 AudioAnalysisTools.AnalysisKeys.EventName,//8
-                                 AudioAnalysisTools.AnalysisKeys.EventScore,//9
-                                 AudioAnalysisTools.AnalysisKeys.EventNormscore//10 
-
-                               };
-            //                   1                2               3              4                5              6               7              8
-            Type[] types = { typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), 
-                             typeof(double), typeof(double) };
-
-            var dataTable = DataTableTools.CreateTable(headers, types);
-            if (predictedEvents.Count == 0) return dataTable;
-
-            foreach (var ev in predictedEvents)
-            {
-                DataRow row = dataTable.NewRow();
-                row[AudioAnalysisTools.AnalysisKeys.EventStartAbs] = (double)ev.TimeStart;  //Set now - will overwrite later
-                row[AudioAnalysisTools.AnalysisKeys.EventStartSec] = (double)ev.TimeStart;  //EvStartSec
-                row[AudioAnalysisTools.AnalysisKeys.EventDuration]  = (double)ev.Duration;   //duratio in seconds
-                row[AudioAnalysisTools.AnalysisKeys.OscillationRate]= (double)ev.Intensity;  //Actually the oscillation rate
-                row[AudioAnalysisTools.AnalysisKeys.EventName]      = (string)ev.Name;       //
-                row[AudioAnalysisTools.AnalysisKeys.EventScore]     = (double)ev.Score;      //Score
-                row[AudioAnalysisTools.AnalysisKeys.EventNormscore] = (double)ev.Score;      // norm score = OscRate score
-                dataTable.Rows.Add(row);
-            }
-            return dataTable;
         }
 
+        #endregion
 
-
-
-        /// <summary>
-        /// Converts a DataTable of events to a datatable where one row = one minute of indices
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
-        public DataTable ConvertEvents2Indices(DataTable dt, TimeSpan unitTime, TimeSpan sourceDuration, double scoreThreshold)
+        public class Arguments : AnalyserArguments
         {
-            if (dt == null) return null;
-
-            if ((sourceDuration == null) || (sourceDuration == TimeSpan.Zero)) return null;
-            double units = sourceDuration.TotalSeconds / unitTime.TotalSeconds;
-            int unitCount = (int)(units / 1);   //get whole minutes
-            if (units % 1 > 0.0) unitCount += 1; //add fractional minute
-            int[] eventsPerUnitTime = new int[unitCount]; //to store event counts
-            int[] bigEvsPerUnitTime = new int[unitCount]; //to store counts of high scoring events
-
-            foreach (DataRow ev in dt.Rows)
-            {
-                double eventStart = (double)ev[AudioAnalysisTools.AnalysisKeys.EventStartAbs];
-                double eventScore = (double)ev[AudioAnalysisTools.AnalysisKeys.EventNormscore];
-                int timeUnit = (int)(eventStart / unitTime.TotalSeconds);
-                if (eventScore != 0.0) eventsPerUnitTime[timeUnit]++;
-                if (eventScore > scoreThreshold) bigEvsPerUnitTime[timeUnit]++;
-            }
-
-            string[] headers = { AudioAnalysisTools.AnalysisKeys.KeyStartMinute, AudioAnalysisTools.AnalysisKeys.EventTotal, ("#Ev>" + scoreThreshold) };
-            Type[] types = { typeof(int), typeof(int), typeof(int) };
-            var newtable = DataTableTools.CreateTable(headers, types);
-
-            for (int i = 0; i < eventsPerUnitTime.Length; i++)
-            {
-                int unitID = (int)(i * unitTime.TotalMinutes);
-                newtable.Rows.Add(unitID, eventsPerUnitTime[i], bigEvsPerUnitTime[i]);
-            }
-            return newtable;
         }
 
-
-        public static void AddContext2Table(DataTable dt, TimeSpan segmentStartMinute, TimeSpan recordingTimeSpan)
+        public class KoalaMaleResults
         {
-            if (dt == null) return;
+            #region Public Properties
 
-            if (!dt.Columns.Contains(AnalysisKeys.KeySegmentDuration)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.KeySegmentDuration, typeof(double));
-            if (!dt.Columns.Contains(AnalysisKeys.EventStartAbs)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EventStartAbs, typeof(double));
-            if (!dt.Columns.Contains(AnalysisKeys.EventStartMin)) dt.Columns.Add(AudioAnalysisTools.AnalysisKeys.EventStartMin, typeof(double));
-            double start = segmentStartMinute.TotalSeconds;
-            foreach (DataRow row in dt.Rows)
-            {
-                row[AudioAnalysisTools.AnalysisKeys.KeySegmentDuration] = recordingTimeSpan.TotalSeconds;
-                row[AudioAnalysisTools.AnalysisKeys.EventStartAbs] = start + (double)row[AudioAnalysisTools.AnalysisKeys.EventStartSec];
-                row[AudioAnalysisTools.AnalysisKeys.EventStartMin] = start;
-            }
-        } //AddContext2Table()
+            public List<AcousticEvent> Events { get; set; }
 
+            public double[,] Hits { get; set; }
 
-        public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
-        {
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
-            if ((dt == null) || (dt.Rows.Count == 0)) return null;
-            //get its column headers
-            var dtHeaders = new List<string>();
-            var dtTypes = new List<Type>();
-            foreach (DataColumn col in dt.Columns)
-            {
-                dtHeaders.Add(col.ColumnName);
-                dtTypes.Add(col.DataType);
-            }
+            public Plot Plot { get; set; }
 
-            List<string> displayHeaders = null;
-            //check if config file contains list of display headers
-            if (fiConfigFile != null)
-            {
-                var configuration = new ConfigDictionary(fiConfigFile.FullName);
-                Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(AnalysisKeys.DisplayColumns))
-                    displayHeaders = configDict[AnalysisKeys.DisplayColumns].Split(',').ToList();
-            }
-            //if config file does not exist or does not contain display headers then use the original headers
-            if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
+            public TimeSpan RecordingtDuration { get; set; }
 
-            //now determine how to display tracks in display datatable
-            Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay = new bool[displayHeaders.Count];
-            for (int i = 0; i < displayTypes.Length; i++)
-            {
-                displayTypes[i] = typeof(double);
-                canDisplay[i] = false;
-                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
-            }
+            public BaseSonogram Sonogram { get; set; }
 
-            DataTable table2Display = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes);
-            foreach (DataRow row in dt.Rows)
-            {
-                DataRow newRow = table2Display.NewRow();
-                for (int i = 0; i < canDisplay.Length; i++)
-                {
-                    if (canDisplay[i]) newRow[displayHeaders[i]] = row[displayHeaders[i]];
-                    else newRow[displayHeaders[i]] = 0.0;
-                }
-                table2Display.Rows.Add(newRow);
-            }
-
-            //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventStartAbs))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventStartAbs + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EventCount))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EventCount + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyRankOrder))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyRankOrder + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KeyStartMinute))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KeyStartMinute + " ASC");
-            }
-
-            table2Display = NormaliseColumnsOfDataTable(table2Display);
-            return System.Tuple.Create(dt, table2Display);
-        } // ProcessCsvFile()
-
-
-
-        /// <summary>
-        /// takes a data table of indices and normalises column values to values in [0,1].
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
-        public static DataTable NormaliseColumnsOfDataTable(DataTable dt)
-        {
-            string[] headers = DataTableTools.GetColumnNames(dt);
-            string[] newHeaders = new string[headers.Length];
-
-            List<double[]> newColumns = new List<double[]>();
-
-            for (int i = 0; i < headers.Length; i++)
-            {
-                double[] values = DataTableTools.Column2ArrayOfDouble(dt, headers[i]); //get list of values
-                if ((values == null) || (values.Length == 0)) continue;
-
-                double min = 0;
-                double max = 1;
-                if (headers[i].Equals(AnalysisKeys.KeyAvSignalAmplitude))
-                {
-                    min = -50;
-                    max = -5;
-                    newColumns.Add(DataTools.NormaliseInZeroOne(values, min, max));
-                    newHeaders[i] = headers[i] + "  (-50..-5dB)";
-                }
-                else //default is to normalise in [0,1]
-                {
-                    newColumns.Add(DataTools.normalise(values)); //normalise all values in [0,1]
-                    newHeaders[i] = headers[i];
-                }
-            } //for loop
-
-            //convert type int to type double due to normalisation
-            Type[] types = new Type[newHeaders.Length];
-            for (int i = 0; i < newHeaders.Length; i++) types[i] = typeof(double);
-            var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
-            return processedtable;
+            #endregion
         }
-
-
-        public string DefaultConfiguration
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
-
-
-        public AnalysisSettings DefaultSettings
-        {
-            get
-            {
-                return new AnalysisSettings
-                {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(30),
-                    SegmentMediaType = MediaTypes.MediaTypeWav,
-                    SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
-                };
-            }
-        }
-    } 
+    }
 }
