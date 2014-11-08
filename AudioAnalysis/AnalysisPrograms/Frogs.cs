@@ -345,7 +345,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");   //must do noise removal
+            sonoConfig.NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD");   //must do noise removal
             TimeSpan tsRecordingtDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;

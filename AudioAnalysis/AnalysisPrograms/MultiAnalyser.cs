@@ -236,7 +236,7 @@ namespace AnalysisPrograms
             if (configDict.ContainsKey(AnalysisKeys.FrameLength))
                 frameLength = (int.Parse(configDict[AnalysisKeys.FrameLength]).ToString());
 
-            var fiAudioF = analysisSettings.AudioFile;
+            var audioFile = analysisSettings.AudioFile;
             var diOutputDir = analysisSettings.AnalysisInstanceOutputDirectory;
 
             var analysisResults = new AnalysisResult();
@@ -268,7 +268,7 @@ namespace AnalysisPrograms
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var results1 = Human1.Analysis(fiAudioF, newDict);
+            var results1 = Human1.Analysis(audioFile, newDict);
             if (results1 != null)
             {
                 sonogram = results1.Item1;
@@ -300,7 +300,7 @@ namespace AnalysisPrograms
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var results2 = Crow.Analysis(fiAudioF, newDict);
+            var results2 = Crow.Analysis(audioFile, newDict);
             if (results2 != null)
             {
                 if (sonogram == null) sonogram = results2.Item1;
@@ -332,7 +332,7 @@ namespace AnalysisPrograms
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var results3 = PlanesTrainsAndAutomobiles.Analysis(fiAudioF, newDict);
+            var results3 = PlanesTrainsAndAutomobiles.Analysis(audioFile, newDict);
             if (results3 != null)
             {
                 if (sonogram == null) sonogram = results3.Item1;
@@ -364,7 +364,7 @@ namespace AnalysisPrograms
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var canetoadResults = Canetoad.Analysis(fiAudioF, newDict);
+            var canetoadResults = Canetoad.Analysis(audioFile, newDict);
             if (canetoadResults != null)
             {
                 if (sonogram == null) sonogram = canetoadResults.Sonogram;
@@ -380,45 +380,54 @@ namespace AnalysisPrograms
                 }
                 recordingTimeSpan = canetoadResults.RecordingDuration;
             }
-            //######################################################################
-            //KOALA-MALE
-            //######################################################################
+
+            /* ######################################################################
+             * KOALA-MALE
+             * ###################################################################### */
             newDict = new Dictionary<string, string>();
             keysFiltered = DictionaryTools.FilterKeysInDictionary(configDict, "KOALAMALE");
 
-            foreach (string key in keysFiltered)  //derive new dictionary for crow
+            // derive new dictionary for crow
+            foreach (string key in keysFiltered) 
             {
                 string newKey = key.Substring(10);
                 newDict.Add(newKey, configDict[key]);
             }
+
             newDict.Add(AnalysisKeys.AnalysisName, KoalaMale.AnalysisName);
             if (frameLength != null)
-                newDict.Add(AnalysisKeys.FrameLength, frameLength);
-
-            var results5 = KoalaMale.Analysis(fiAudioF, newDict);
-            if (results5 != null)
             {
-                if (sonogram == null) sonogram = results5.Item1;
-                //hits = MatrixTools.AddMatrices(hits, results5.Item2);
-                scores.Add(results5.Item3);
-                if (results5.Item4 != null)
+                newDict.Add(AnalysisKeys.FrameLength, frameLength);
+            }
+
+            var koalaMaleResults = KoalaMale.Analysis(audioFile, newDict);
+            if (koalaMaleResults != null)
+            {
+                if (sonogram == null)
                 {
-                    foreach (AcousticEvent ae in results5.Item4)
+                    sonogram = koalaMaleResults.Sonogram;
+                }
+                ////hits = MatrixTools.AddMatrices(hits, results5.Hits);
+                scores.Add(koalaMaleResults.Plot);
+                if (koalaMaleResults.Events != null)
+                {
+                    foreach (AcousticEvent ae in koalaMaleResults.Events)
                     {
                         ae.Name = KoalaMale.AnalysisName;
                         ae.ScoreNormalised = ae.Score;
                         events.Add(ae);
                     }
                 }
-                recordingTimeSpan = results5.Item5;
+                recordingTimeSpan = koalaMaleResults.RecordingtDuration;
             }
-            //######################################################################
+
+            /* ###################################################################### */
 
 
             // returning a null datattable for no detected events, is not appropriate.
             // always return a datatable, even if has zero events
             string analysisName = configDict[AnalysisKeys.AnalysisName];
-            string fName = Path.GetFileNameWithoutExtension(fiAudioF.Name);
+            string fName = Path.GetFileNameWithoutExtension(audioFile.Name);
             foreach (AcousticEvent ev in events)
             {
                 ev.FileName = fName;
