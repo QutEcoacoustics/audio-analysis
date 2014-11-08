@@ -322,7 +322,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = windowOverlap;
             //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
+            sonoConfig.NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD");
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double framesPerSecond = freqBinWidth;

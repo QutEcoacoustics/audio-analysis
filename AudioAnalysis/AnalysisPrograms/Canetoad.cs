@@ -250,13 +250,11 @@ namespace AnalysisPrograms
             }
 
             // DO THE ANALYSIS
-            // #############################################################################################################################################
+            /* ############################################################################################################################################# */
             IAnalyser2 analyser = new Canetoad();
             AnalysisResult2 result = analyser.Analyse(analysisSettings);
+            /* ############################################################################################################################################# */
 
-            // #############################################################################################################################################
-
-            // ADD IN ADDITIONAL INFO TO RESULTS TABLE
             if (result.Events.Length > 0)
             {
                 LoggedConsole.WriteLine("{0} events found", result.Events.Length);
@@ -280,8 +278,6 @@ namespace AnalysisPrograms
             double[,] hits = results.Hits;
             Plot scores = results.Plot;
             List<AcousticEvent> predictedEvents = results.Events;
-            TimeSpan recordingTimeSpan = results.RecordingDuration;
-
 
             analysisResults.Events = predictedEvents.ToArray();
 

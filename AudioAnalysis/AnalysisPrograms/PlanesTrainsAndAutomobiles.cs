@@ -393,7 +393,7 @@ namespace AnalysisPrograms
             int bitsPerSample = recording.WavReader.BitsPerSample;
             TimeSpan duration = recording.Duration();
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
-            NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");
+            NoiseReductionType nrt = SNR.KeyToNoiseReductionType("STANDARD");
 
             var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(recording.FileName, windowSize, windowOverlap, bitsPerSample, windowPower, sr, duration, nrt, matrix);
 
