@@ -26,7 +26,10 @@ QueryInputDirectory: "..\\..\\Query"
 # SonogramConfig
 NoiseReductionType: STANDARD
 WindowOverlap: 0.5
-NoiseReductionParameter: 6.0
+NoiseReductionParameter: 0.0
+
+# CompressSpectrogram
+CompressStep: 0
 
 # RidgeDetection Config 
 RidgeDetectionMagnitudeThreshold: 6.0
@@ -37,7 +40,6 @@ AverageIntensityDifferenceInNh: 5.0
 
 GradientThreshold: 0.0
 GradientMatrixLength: 2
-GradientMaxPOICount: 10
 
 # Structure Tensor Config
 StThreshold: 0.025

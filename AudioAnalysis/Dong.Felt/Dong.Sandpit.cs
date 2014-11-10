@@ -46,6 +46,7 @@
             NoiseReductionType noiseReductionType = configuration.NoiseReductionType;
             double windowOverlap = configuration.WindowOverlap;
             double noiseReductionParameter = configuration.NoiseReductionParameter;
+            int compressStep = configuration.CompressStep;
 
             double ridgeDetectionmMagnitudeThreshold = configuration.RidgeDetectionMagnitudeThreshold;
             int ridgeMatrixLength = configuration.RidgeMatrixLength;
@@ -81,6 +82,10 @@
                     FilterRidgeMatrixLength = filterRidgeMatrixLength,
                     MinimumNumberInRidgeInMatrix = minimumNumberInRidgeInMatrix
                 };
+                var compressConfig = new CompressSpectrogramConfig
+                {
+                    CompressStep = compressStep,
+                };
                 var gradientConfig = new GradientConfiguration
                 {
                     GradientThreshold = gradientThreshold,
@@ -104,7 +109,8 @@
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
                     MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  ridgeConfig, gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
+                  ridgeConfig, compressConfig,
+                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                     //MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
                     //    outputDirectory.FullName, tempDirectory);       
                 }
@@ -123,12 +129,32 @@
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
                     /// RidgeDetectionBatchProcess   
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, featurePropertySet);
-                    OutputResults.ChangeCandidateFileName(inputDirectory);
-                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
-                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
-                    OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
+                    var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
+                    var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig.CompressStep);
+                    spectrogram.Data = compressedSpectrogram;
+                    /// spectrogram drawing setting
+                    var scores = new List<double>();
+                    scores.Add(1.0);
+                    var acousticEventlist = new List<AcousticEvent>();
+                    var poiList = new List<PointOfInterest>();
+                    double eventThreshold = 0.5; // dummy variable - not used                               
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    var FileName = new FileInfo(inputFilePath);
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-compressed spectrogram-0.png");
+                    var inputDirect = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2";
+                    string annotatedImagePath = Path.Combine(inputDirect, annotatedImageFileName);
+                    Bitmap bmp = (Bitmap)image;
+                    image = (Image)bmp;
+                    image.Save(annotatedImagePath);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig@"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\, featurePropertySet);
+                    
+                    ///Automatic check
+                    //OutputResults.ChangeCandidateFileName(inputDirectory);
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
+                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     //var path = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\2.png";
                     //var image = AudioPreprosessing.AudioToAmplitudeSpectrogram(config, inputDirectory.FullName);                                    
@@ -429,7 +455,8 @@
             {
                 new { 
                     RidgeDetectionMagnitudeThreshold = (double)configuration.RidgeDetectionMagnitudeThreshold,
-                    NeighbourhoodLength = (int)configuration.NeighbourhoodLength
+                    NeighbourhoodLength = (int)configuration.NeighbourhoodLength,
+                    CompressStep = (int)configuration.CompressStep,
                     //StThreshold = (double)configuration.StThreshold,
                     //StAvgNhLength = (int)configuration.StAvgNhLength,
                     //StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
@@ -441,7 +468,8 @@
             {
                 var folderName = string.Format("Run_{0}_{1}",
                     entry.RidgeDetectionMagnitudeThreshold,
-                    entry.NeighbourhoodLength);
+                    //entry.NeighbourhoodLength);
+                    entry.CompressStep);
                 //var folderName = string.Format("Run_{0}_{1}",
                 //    entry.StThreshold,                   
                 //    entry.StMatchedThreshold);
@@ -459,7 +487,7 @@
                     NoiseReductionType = configuration.NoiseReductionType,
                     WindowOverlap = configuration.WindowOverlap,
                     NoiseReductionParameter = configuration.NoiseReductionParameter,
-
+                    CompressStep = configuration.CompressStep,
                     GradientMatrixLength = configuration.GradientMatrixLength,
                     GradientThreshold = configuration.GradientThreshold,
 
@@ -788,7 +816,8 @@
         }
 
         public static void MatchingBatchProcess2(string queryFilePath, string inputFileDirectory, int neighbourhoodLength,
-            RidgeDetectionConfiguration ridgeConfig, GradientConfiguration gradientConfig,
+            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,
+            GradientConfiguration gradientConfig,
             SonogramConfig config, int rank, string featurePropSet,
             string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
         {
@@ -809,9 +838,10 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                var data = spectrogram.Data;
-                var maxMagnitude = data.Cast<double>().Max();
-                var minMagnitude = data.Cast<double>().Min();
+                spectrogram.Data = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig.CompressStep);
+                //var data = spectrogram.Data;
+                //var maxMagnitude = data.Cast<double>().Max();
+                //var minMagnitude = data.Cast<double>().Min();
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
@@ -869,6 +899,7 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
+                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogram(candidateSpectrogram.Data, compressConfig.CompressStep);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
                     

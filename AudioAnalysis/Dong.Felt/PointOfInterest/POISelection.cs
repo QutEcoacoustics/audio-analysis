@@ -92,7 +92,9 @@ namespace Dong.Felt
             RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
         {
              var result = new List<PointOfInterest>();
-             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
+                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10 ||
                  featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||

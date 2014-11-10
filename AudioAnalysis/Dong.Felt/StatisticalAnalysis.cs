@@ -15,6 +15,21 @@
 
     class StatisticalAnalysis
     {
+        public static void MaxIndex(double[] data, out int maxIndex)
+        {
+            var count = data.Count();
+            var max = 0.0;
+            maxIndex = 0;
+            for (var i = 0; i < count; i++)
+            {
+                if (data[i] > max)
+                {
+                    max = data[i];
+                    maxIndex = i;
+                }
+            }
+        }
+        
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
