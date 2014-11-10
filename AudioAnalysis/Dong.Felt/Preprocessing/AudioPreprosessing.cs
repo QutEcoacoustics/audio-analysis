@@ -10,6 +10,7 @@ using TowseyLibrary;
 using System.Drawing;
 using System.IO;
 using System.Drawing.Imaging;
+using Dong.Felt.Configuration;
 
 namespace Dong.Felt.Preprocessing
 {
@@ -95,6 +96,7 @@ namespace Dong.Felt.Preprocessing
             } //end for all cols
             return outM;
         }
+       
         /// <summary>
         /// Reduce the pink noise. 
         /// the result could be a binary spectrogram or original spectrogram.
@@ -171,6 +173,72 @@ namespace Dong.Felt.Preprocessing
 
             var imageResult = new Image_MultiTrack(amplitudeSpectrogram.GetImage(false, true));
             imageResult.Save("C:\\Test recordings\\Test4.png");
+        }
+
+        //Todo: create a test class to include this method.
+        public static void AudioToCompressedSpectrogram(SonogramConfig config, CompressSpectrogramConfig compressConfig)
+        {
+            var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
+            var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
+            var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig.CompressStep);
+            spectrogram.Data = compressedSpectrogram;
+            /// spectrogram drawing setting
+            var scores = new List<double>();
+            scores.Add(1.0);
+            var acousticEventlist = new List<AcousticEvent>();
+            var poiList = new List<PointOfInterest>();
+            double eventThreshold = 0.5; // dummy variable - not used                               
+            Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+            var FileName = new FileInfo(inputFilePath);
+            string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-compressed spectrogram.png");
+            var inputDirect = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2";
+            string annotatedImagePath = Path.Combine(inputDirect, annotatedImageFileName);
+            Bitmap bmp = (Bitmap)image;
+            image = (Image)bmp;
+            image.Save(annotatedImagePath);
+        }
+
+
+        /// <summary>
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
+        /// </summary>
+        /// <param name="spectrogramData"></param>
+        /// <param name="compressStep">compress step, could be 3, 4, 5, ...10,
+        /// </param>
+        /// <returns></returns>
+        public static double[,] CompressSpectrogram(double[,] spectrogramData, int compressStep)
+        {
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+            var rowsCount = matrix.GetLength(0);
+            var colsCount = matrix.GetLength(1);
+            var result = new double[colsCount, rowsCount];
+            for (var r = 0; r < rowsCount; r++)
+            {
+                for (var c = 0; c < colsCount; c+=compressStep)
+                {
+                    var maxValue = 0.0;                   
+                    var maxIndex = 0;
+                    var localMaxIndex = 0;
+                    if (c + compressStep < colsCount)
+                    {
+                        maxIndex = compressStep;
+                    }
+                    else
+                    {
+                        maxIndex = colsCount - c;
+                    }
+                    var tempData = new double[maxIndex];
+                    for (var step = 0; step < maxIndex; step++)
+                    {
+                        tempData[step] = matrix[r, c + step];
+                        maxValue = tempData.Max();                        
+                        StatisticalAnalysis.MaxIndex(tempData, out localMaxIndex);                       
+                    }
+                    var colIndex = c + localMaxIndex;
+                    result[colIndex, rowsCount - 1 - r] = maxValue;
+                }
+            }
+            return result;
         }
     }
 }

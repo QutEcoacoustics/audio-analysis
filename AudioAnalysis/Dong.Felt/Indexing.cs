@@ -329,16 +329,18 @@ namespace Dong.Felt
                 result = Indexing.WeightedEuclideanDistCalculation2(query, candidates,
                 weight1, weight2, weight3, weight4);
             }
-            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
-            {
-                result = Indexing.WeightedEuclideanDistCalculation3(query, candidates,
-                weight1, weight2, weight3, weight4, weight5, weight6);
-            }
-            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
-            {
-                result = Indexing.HoGEuclideanDist(query, candidates);
-            }
-            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+            //if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+            //{
+            //    result = Indexing.WeightedEuclideanDistCalculation3(query, candidates,
+            //    weight1, weight2, weight3, weight4, weight5, weight6);
+            //}
+            //if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
+            //{
+            //    result = Indexing.HoGEuclideanDist(query, candidates);
+            //}
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
@@ -621,7 +623,9 @@ namespace Dong.Felt
                     {
                         distance = SimilarityMatching.DistanceFeature12Based(query, tempRegionList, 2, weight1, weight2);
                     }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
+                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
+                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
                         featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15)
                     {
                         distance = SimilarityMatching.DistanceFeature14Based(query, tempRegionList, 2, weight1, weight2);
