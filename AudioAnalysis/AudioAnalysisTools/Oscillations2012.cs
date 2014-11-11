@@ -38,6 +38,10 @@ namespace AudioAnalysisTools
 
             //DETECT OSCILLATIONS
             hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude);
+
+            // debug
+            ////var sum = hits.Fold((x, y) => x + y, 0.0);
+
             if (hits == null)
             {
                 LoggedConsole.WriteLine("###### WARNING: DCT length too short to detect the maxOscilFreq");
