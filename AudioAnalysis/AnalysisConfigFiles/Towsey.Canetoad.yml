@@ -6,11 +6,11 @@ MaxHz: 900
 # duration of DCT in seconds 
 DctDuration: 0.5
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.5
+DctThreshold: 0.6
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
 MinOcilFreq: 10        
-MaxOcilFreq: 15
+MaxOcilFreq: 18
 # Minimum and maximum duration for the length of a true event.
 MinDuration: 2.0
 MaxDuration: 60.0
