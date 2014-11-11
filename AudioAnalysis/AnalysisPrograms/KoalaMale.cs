@@ -207,7 +207,11 @@ namespace AnalysisPrograms
             // remove isolated koala events
             events = FilterMaleKoalaEvents(events);
 
-            if (events != null)
+            if (events == null)
+            {
+                events = new List<AcousticEvent>();
+            }
+            else
             {
                 events.ForEach(
                     ae =>
@@ -481,12 +485,13 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
             Plot scores = results.Plot;
-            List<AcousticEvent> predictedEvents = results.Events;
 
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingtDuration)
                                       {
                                           AnalysisIdentifier = this.Identifier
                                       };
+
+            analysisResults.Events = results.Events.ToArray();
 
             if (analysisSettings.EventsFile != null)
             {
@@ -510,7 +515,7 @@ namespace AnalysisPrograms
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 const double EventThreshold = 0.1;
-                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
+                Image image = DrawSonogram(sonogram, hits, scores, results.Events, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
             }

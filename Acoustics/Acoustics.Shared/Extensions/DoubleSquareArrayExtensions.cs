@@ -108,6 +108,40 @@ namespace System
             return array;
         }
 
+        public static U[,] Map<T, U>(this T[,] array, Func<T, U> f)
+        {
+            var jUpper = array.GetUpperBound(1);
+            var iUpper = array.GetUpperBound(0);
+
+            var result = new U[iUpper, jUpper];
+            for (int i = 0; i < iUpper; i++)
+            {
+                for (int j = 0; j < jUpper; j++)
+                {
+                    result[i, j] = f(array[i,j]);
+                }
+            }
+
+            return result;
+        }
+
+        public static U Fold<T, U>(this T[,] array, Func<U, T, U> f, U seed)
+        {
+            var jUpper = array.GetUpperBound(1);
+            var iUpper = array.GetUpperBound(0);
+
+            var result = new U[iUpper, jUpper];
+            for (int i = 0; i < iUpper; i++)
+            {
+                for (int j = 0; j < jUpper; j++)
+                {
+                    seed = f(seed, array[i, j]);
+                }
+            }
+
+            return seed;
+        }
+
         #endregion
     }
 }
