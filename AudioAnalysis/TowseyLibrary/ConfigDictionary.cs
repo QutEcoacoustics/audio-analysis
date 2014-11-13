@@ -67,7 +67,9 @@ namespace TowseyLibrary
             dictionary = new Dictionary<string, string>();
             foreach (var file in files)
             {
-                foreach (var item in ConfigDictionary.ReadPropertiesFile(file))
+                Dictionary<string, string> dict = ConfigDictionary.ReadPropertiesFile(file);
+
+                foreach (var item in dict)
                 {
                     dictionary[item.Key] = item.Value;
                     ////if (item.Key.StartsWith("VERBOSITY")) LoggedConsole.WriteLine("VERBOSITY = " + item.Value);

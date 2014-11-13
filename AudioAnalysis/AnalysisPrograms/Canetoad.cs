@@ -102,14 +102,15 @@ namespace AnalysisPrograms
             {
                 arguments = new Arguments();
                 const string RecordingPath =
-                    @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
+                    //@"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
+                    @"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
 
-                ////string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
-                ////string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
-                ////string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\RuralCanetoads_9Jan\toads_rural_9jan2010\toads_rural1_16.mp3";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\RuralCanetoads_9Jan\toads_rural_9jan2010\toads_rural1_16.mp3";
                 const string ConfigPath =
-                    @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.cfg";
-                const string OutputDir = @"C:\SensorNetworks\Output\Canetoad\";
+                    @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
+                const string OutputDir = @"C:\SensorNetworks\Output\Frogs\Canetoad\";
 
                 ////string csvPath       = @"C:\SensorNetworks\Output\Test\TEST_Indices.csv";
                 string title = "# FOR DETECTION OF CANETOAD using DCT OSCILLATION DETECTION";
