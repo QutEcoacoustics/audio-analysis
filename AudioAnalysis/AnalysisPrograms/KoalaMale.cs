@@ -479,7 +479,7 @@ namespace AnalysisPrograms
 
             /* ###################################################################### */
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            KoalaMaleResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value);
+            KoalaMaleResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
 
             /* ###################################################################### */
             BaseSonogram sonogram = results.Sonogram;

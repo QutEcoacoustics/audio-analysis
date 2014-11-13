@@ -10,6 +10,7 @@ namespace AnalysisPrograms.Production
     using System.Reflection;
     using System.Security.Cryptography.X509Certificates;
 
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
 
     using AnalysisBase;
@@ -149,8 +150,7 @@ namespace AnalysisPrograms.Production
             analysisSettings.SummaryIndicesFile = null;
             analysisSettings.ImageFile = null;
 
-            var configuration = new ConfigDictionary(this.Config);
-            analysisSettings.ConfigDict = configuration.GetTable();
+            analysisSettings.Configuration = Yaml.Deserialise(this.Config);
 
             if (this.TmpWav.IsNotEmpty())
             {
