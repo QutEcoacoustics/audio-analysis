@@ -272,7 +272,7 @@ namespace AnalysisPrograms
 
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            CanetoadResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value);
+            CanetoadResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
             
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
 
