@@ -389,7 +389,7 @@ namespace AnalysisPrograms
             // min score for an acceptable event
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
 
-            // seems to work
+            // this default framesize seems to work for Canetoad
             const int FrameSize = 1024;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
