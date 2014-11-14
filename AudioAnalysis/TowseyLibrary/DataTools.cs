@@ -2566,7 +2566,7 @@ namespace TowseyLibrary
           ret[i] = v[i] / norm;
       }
 
-      return (ret);
+      return ret;
   }
 
 

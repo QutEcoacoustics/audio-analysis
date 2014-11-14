@@ -14,10 +14,10 @@ namespace AudioAnalysisTools
     /// <summary>
     /// NOTE: 21st June 2012.
     /// 
-    /// This class contains methods to detect oscillations in a the sonogram of a signal. 
+    /// This class contains methods to detect oscillations in a the sonogram of an audio signal. 
     /// The method Execute() returns all info about oscillaitons in the passed sonogram.
     /// This method should be called in preference to those in the class OscillationAnalysis.
-    /// (The latter hsould be depracated.)
+    /// (The latter should be depracated.)
     /// </summary>
     public static class Oscillations2012
     {
@@ -29,15 +29,17 @@ namespace AudioAnalysisTools
         /// <param name="maxHz">max bound freq band to search</param>
         /// <param name="dctDuration">duration of DCT in seconds</param>
         /// <param name="minOscilFreq">ignore oscillation frequencies below this threshold</param>
-        /// <param name="minAmplitude">ignore DCT amplitude values less than this minimum </param>
+        /// <param name="dctThreshold">ignore DCT coefficient values less than this minimum </param>
         /// <param name="opPath">set=null if do not want to save an image, which takes time</param>
         public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
-                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude, double scoreThreshold,
+                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
                                    double minDuration, double maxDuration, out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
+            // smooth the frames to make oscillations more regular.
+            sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
 
             //DETECT OSCILLATIONS
-            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude);
+            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold);
 
             // debug
             ////var sum = hits.Fold((x, y) => x + y, 0.0);
@@ -49,14 +51,14 @@ namespace AudioAnalysisTools
                 events = null;
                 return;
             }
-            hits = RemoveIsolatedOscillations(hits);
+            //hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
-            scores = GetODScores(hits, minHz, maxHz, sonogram.FBinWidth);
-            scores = DataTools.filterMovingAverage(scores, 3);
-            double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
+            scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            scores = DataTools.filterMovingAverage(scores, 15);
+            double[] oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertOscillationScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
-                                          minDuration, sonogram.Configuration.SourceFName);
+                                                     minDuration, sonogram.Configuration.SourceFName);
         }//end method
 
 
@@ -75,10 +77,10 @@ namespace AudioAnalysisTools
         /// <param name="maxBin">max freq bin of search band</param>
         /// <param name="dctLength">number of values</param>
         /// <param name="DCTindex">Sets lower bound for oscillations of interest.</param>
-        /// <param name="minAmplitude">threshold - do not accept a DCT value if its amplitude is less than this threshold</param>
+        /// <param name="dctThreshold">threshold - do not accept a DCT coefficient if its value is less than this threshold</param>
         /// <returns></returns>
         public static Double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz,
-                                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude)
+                                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
@@ -86,6 +88,8 @@ namespace AudioAnalysisTools
             int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
             int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
             int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+
+            int midOscilFreq = minOscilFreq + ((maxOscilFreq - minOscilFreq) / 2);
 
             if (maxIndex > dctLength) return null;       //safety check
 
@@ -107,31 +111,52 @@ namespace AudioAnalysisTools
 
             for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
             {
+                var dctArray = new double[dctLength];
+
                 for (int r = 0; r < rows - dctLength; r++)
                 {
-                    var array = new double[dctLength];
-                    //accumulate J columns of values
+                    // extract array and ready for DCT
                     for (int i = 0; i < dctLength; i++)
-                        for (int j = 0; j < 5; j++) array[i] += matrix[r + i, c + j];
+                        dctArray[i] = matrix[r + i, c];
+                    dctArray = DataTools.SubtractMean(dctArray);
+                    //dctArray = DataTools.Vector2Zscores(dctArray);
 
-                    array = DataTools.SubtractMean(array);
-                    //     DataTools.writeBarGraph(array);
+                    double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
+                    // convert to absolute values because not interested in negative values due to phase.
+                    for (int i = 0; i < dctLength; i++) 
+                        dctCoeff[i] = Math.Abs(dctCoeff[i]);
+                    // remove low freq oscillations from consideration
+                    int thresholdIndex = minIndex / 4;
+                    for (int i = 0; i < thresholdIndex; i++) 
+                        dctCoeff[i] = 0.0;
 
-                    double[] dct = MFCCStuff.DCT(array, cosines);
-                    for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
-                    dct[0] = 0.0; dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0; dct[4] = 0.0;//remove low freq oscillations from consideration
-                    dct = DataTools.normalise2UnitLength(dct);
+                    dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
                     //dct = DataTools.normalise(dct); //another option to normalise
-                    int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+                    int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
                     double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
-                    //DataTools.MinMax(dct, out min, out max);
-                    //      DataTools.writeBarGraph(dct);
+                    // #### Tried this option for scoring oscillation hits but did not work well.
+                    // #### Requires very fine tuning of thresholds
+                    //dctCoeff = DataTools.Normalise2Probabilites(dctCoeff); 
+                    //// sum area under curve where looking for oscillations
+                    //double sum = 0.0;
+                    //for (int i = minIndex; i <= maxIndex; i++) 
+                    //    sum += dctCoeff[i];
+                    //if (sum > dctThreshold)
+                    //{
+                    //    for (int i = 0; i < dctLength; i++) hits[r + i, c] = midOscilFreq;
+                    //}
+
+
+                    // DEBUGGING
+                    // DataTools.MinMax(dctCoeff, out min, out max);
+                     //DataTools.writeBarGraph(dctArray);
+                     //DataTools.writeBarGraph(dctCoeff);
 
                     //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
-                    if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > minAmplitude))
+                    if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dctCoeff[indexOfMaxValue] > dctThreshold))
                     {
-                        for (int i = 0; i < dctLength; i++) hits[r + i, c] = oscilFreq;
+                        for (int i = 0; i < dctLength; i++) hits[r + i, c] = midOscilFreq;
                     }
                     r += 5; //skip rows
                 }
@@ -175,7 +200,7 @@ namespace AudioAnalysisTools
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
         /// <returns></returns>
-        public static double[] GetODScores(double[,] hits, int minHz, int maxHz, double freqBinWidth)
+        public static double[] GetOscillationScores(double[,] hits, int minHz, int maxHz, double freqBinWidth)
         {
             int rows = hits.GetLength(0);
             int cols = hits.GetLength(1);
@@ -198,7 +223,7 @@ namespace AudioAnalysisTools
         }//end method GetODScores()
 
 
-        public static double[] GetODFrequency(double[,] hits, int minHz, int maxHz, double freqBinWidth)
+        public static double[] GetOscillationFrequency(double[,] hits, int minHz, int maxHz, double freqBinWidth)
         {
             int rows = hits.GetLength(0);
             int cols = hits.GetLength(1);
