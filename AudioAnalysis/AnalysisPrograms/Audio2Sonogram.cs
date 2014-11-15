@@ -68,7 +68,7 @@ namespace AnalysisPrograms
 
             public static string AdditionalNotes()
             {
-                return "";
+                return string.Empty;
             }
         }
 
@@ -107,7 +107,10 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
-            if (!arguments.Output.Exists) arguments.Output.Create();
+            if (!arguments.Output.Exists)
+            {
+                arguments.Output.Create();
+            }
 
             if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
             {
@@ -138,7 +141,7 @@ namespace AnalysisPrograms
             // 1. set up the necessary files
             FileInfo sourceRecording = arguments.Source;
             FileInfo configFile  = arguments.Config;
-            DirectoryInfo opDir  = arguments.Output;
+            DirectoryInfo output  = arguments.Output;
 
             // 2. get the config dictionary
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -177,28 +180,29 @@ namespace AnalysisPrograms
 
             // ####################################################################
             // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
-            int oscilDetection2014FrameSize = 256; //often need different frame size doing Oscil Detection
-            configDict[AnalysisKeys.OscilDetection2014FrameSize] = oscilDetection2014FrameSize.ToString();
+            // often need different frame size doing Oscil Detection
+            const int OscilDetection2014FrameSize = 256; 
+            configDict[AnalysisKeys.OscilDetection2014FrameSize] = OscilDetection2014FrameSize.ToString();
 
             // window width when sampling along freq bins
             // 64 is better where many birds and fast chaning activity
-            //int sampleLength = 64;
+            ////int sampleLength = 64;
+            
             // 128 is better where slow moving changes to acoustic activity
-            int sampleLength = 128;
-            configDict[AnalysisKeys.OscilDetection2014SampleLength] = sampleLength.ToString();
+            const int SampleLength = 128;
+            configDict[AnalysisKeys.OscilDetection2014SampleLength] = SampleLength.ToString();
 
             // use this if want only dominant oscillations
-            //string algorithmName = "Autocorr-SVD-FFT";
+            ////string algorithmName = "Autocorr-SVD-FFT";
             // use this if want more detailed output - but not necessrily accurate!
             string algorithmName = "Autocorr-FFT";
+            
             // tried but not working
-            //string algorithmName = "CwtWavelets";
+            ////string algorithmName = "CwtWavelets";
 
-            double sensitivityThreshold = 0.4;
-            configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString();
-            // ####################################################################
-
-
+            const double SensitivityThreshold = 0.4;
+            configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = SensitivityThreshold.ToString();
+            /* #################################################################### */
 
             // print out the sonogram parameters
             if (verbose)
@@ -212,17 +216,19 @@ namespace AnalysisPrograms
 
             // 3: GET RECORDING
             // put temp FileSegment in same directory as the required output image.
-            FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
+            FileInfo tempAudioSegment = new FileInfo(Path.Combine(output.FullName, "tempWavFile.wav"));
+            
             // delete the temp audio file if it already exists.
             if (File.Exists(tempAudioSegment.FullName))
             {
                 File.Delete(tempAudioSegment.FullName);
             }
+            
             // This line creates a temporary version of the source file downsampled as per entry in the config file
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
             // ###### get sonogram image ##############################################################################################
-            GenerateSpectrogramImages(tempAudioSegment, configDict, opDir, dataOnly: false, makeSoxSonogram: makeSoxSonogram);           
+            GenerateSpectrogramImages(tempAudioSegment, configDict, output, dataOnly: false, makeSoxSonogram: makeSoxSonogram);           
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }
@@ -235,17 +241,24 @@ namespace AnalysisPrograms
         {
             public SpectrogramStandard DecibelSpectrogram { get; set; }
 
-            //  path to spectrogram image
+            // path to spectrogram image
             public FileInfo SpectrogramImage { get; set; }
+            
             public FileInfo FreqOscillationImage { get; set; }
+            
             public FileInfo FreqOscillationData { get; set; }
         }
 
-        public static AudioToSonogramResult GenerateSpectrogramImages(FileInfo sourceRecording, Dictionary<string, string> configDict, DirectoryInfo opDir, bool dataOnly = false, bool makeSoxSonogram = false)
+        public static AudioToSonogramResult GenerateSpectrogramImages(
+            FileInfo sourceRecording, 
+            Dictionary<string, string> configDict, 
+            DirectoryInfo outputDirectory, 
+            bool dataOnly = false, 
+            bool makeSoxSonogram = false)
         {
             string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
             sourceName = Path.GetFileNameWithoutExtension(sourceName);
-            FileInfo outputImage = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".png"));
+            FileInfo outputImage = new FileInfo(Path.Combine(outputDirectory.FullName, sourceName + ".png"));
 
             var result = new AudioToSonogramResult();
 

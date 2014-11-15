@@ -27,6 +27,11 @@ namespace Acoustics.Shared
             }   
         }
 
+        public static string SerialiseToString<T>(T obj, bool prettyPrint = true)
+        {
+            return JsonConvert.SerializeObject(obj, prettyPrint ? Formatting.Indented : Formatting.None);
+        }
+
 
         public static T Deserialise<T>(FileInfo file)
         {
