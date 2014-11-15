@@ -432,7 +432,12 @@ namespace AnalysisPrograms.Production
 
 
 
+        public Audio2InputForConvCNN.Arguments CreateConvCnnSongogramsArgs { get; set; }
 
+        public static Action<Audio2InputForConvCNN.Arguments> CreateConvCnnSongograms()
+        {
+            return Audio2InputForConvCNN.Execute;
+        }
 
 
         #endregion
