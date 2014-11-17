@@ -103,7 +103,12 @@ namespace AnalysisPrograms
                 arguments = new Arguments();
                 const string RecordingPath =
                     //@"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
-                    @"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
+                    @"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
+                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
+                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_619min.wav";
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
@@ -390,11 +395,12 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
 
             // this default framesize seems to work for Canetoad
-            const int FrameSize = 1024;
+            const int FrameSize = 512;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
                 FrameSize,
                 maxOscilFreq);
+            //windowOverlap = 0.75; // previous default
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
@@ -485,10 +491,9 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             }
 
-            ////if (hits != null) image.OverlayRedTransparency(hits);
             if (hits != null)
             {
-                image.OverlayRainbowTransparency(hits);
+                image.OverlayRedTransparency(hits);
             }
 
             if ((predictedEvents != null) && (predictedEvents.Count > 0))
