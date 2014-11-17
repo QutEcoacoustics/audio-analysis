@@ -2,20 +2,20 @@
 AnalysisName: Towsey.Canetoad
 # min and max of the freq band to search
 MinHz: 400          
-MaxHz: 1000
+MaxHz: 900
 # duration of DCT in seconds 
-DctDuration: 0.90
+DctDuration: 0.75
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.4
+DctThreshold: 0.45
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
 MinOcilFreq: 7        
-MaxOcilFreq: 18
+MaxOcilFreq: 20
 # Minimum and maximum duration for the length of a true event.
 MinDuration: 4.0
-MaxDuration: 60.0
+MaxDuration: 30.0
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.50
+EventThreshold: 0.40
 ################################################################################
 DoNoiseReduction: false
 #BgNoiseThreshold: 3.0

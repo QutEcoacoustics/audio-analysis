@@ -51,11 +51,11 @@ namespace AudioAnalysisTools
                 events = null;
                 return;
             }
-            //hits = RemoveIsolatedOscillations(hits);
+            hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
             scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
-            scores = DataTools.filterMovingAverage(scores, 15);
+            scores = DataTools.filterMovingAverage(scores, 11);
             double[] oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertOscillationScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                                      minDuration, sonogram.Configuration.SourceFName);
