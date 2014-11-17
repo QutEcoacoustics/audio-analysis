@@ -180,7 +180,7 @@ namespace Dong.Felt.Preprocessing
         {
             var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
             var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
-            var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig.CompressStep);
+            var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig.CompressRate);
             spectrogram.Data = compressedSpectrogram;
             /// spectrogram drawing setting
             var scores = new List<double>();
@@ -203,14 +203,15 @@ namespace Dong.Felt.Preprocessing
         /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
         /// </summary>
         /// <param name="spectrogramData"></param>
-        /// <param name="compressStep">compress step, could be 3, 4, 5, ...10,
+        /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
         /// </param>
         /// <returns></returns>
-        public static double[,] CompressSpectrogram(double[,] spectrogramData, int compressStep)
+        public static double[,] CompressSpectrogram(double[,] spectrogramData, double compressRate)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
             var rowsCount = matrix.GetLength(0);
             var colsCount = matrix.GetLength(1);
+            var compressStep = (int)(1 / compressRate);
             var result = new double[colsCount, rowsCount];
             for (var r = 0; r < rowsCount; r++)
             {
@@ -233,6 +234,49 @@ namespace Dong.Felt.Preprocessing
                         tempData[step] = matrix[r, c + step];
                         maxValue = tempData.Max();                        
                         StatisticalAnalysis.MaxIndex(tempData, out localMaxIndex);                       
+                    }
+                    var colIndex = c + localMaxIndex;
+                    result[colIndex, rowsCount - 1 - r] = maxValue;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
+        /// </summary>
+        /// <param name="spectrogramData"></param>
+        /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
+        /// </param>
+        /// <returns></returns>
+        public static double[,] CompressSpectrogram2(double[,] spectrogramData, double compressRate)
+        {
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+            var rowsCount = matrix.GetLength(0);
+            var colsCount = matrix.GetLength(1);
+            var compressStep = (int)(1 / compressRate);
+            var compressedColsCount = (int)(colsCount * compressRate);
+            var result = new double[compressedColsCount, rowsCount];
+            for (var r = 0; r < rowsCount; r++)
+            {
+                for (var c = 0; c < colsCount; c += compressStep)
+                {
+                    var maxValue = 0.0;
+                    var maxIndex = 0;
+                    var localMaxIndex = 0;
+                    if (c + compressStep < colsCount)
+                    {
+                        maxIndex = compressStep;
+                    }
+                    else
+                    {
+                        maxIndex = colsCount - c;
+                    }
+                    var tempData = new double[maxIndex];
+                    for (var step = 0; step < maxIndex; step++)
+                    {
+                        tempData[step] = matrix[r, c + step];
+                        maxValue = tempData.Max();
                     }
                     var colIndex = c + localMaxIndex;
                     result[colIndex, rowsCount - 1 - r] = maxValue;

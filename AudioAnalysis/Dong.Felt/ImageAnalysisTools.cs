@@ -135,6 +135,22 @@ namespace Dong.Felt
             return image.GetImage();
         } //DrawSonogram()
 
+        public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent, 
+            double eventThreshold, List<PointOfInterest> poiList, double compressRate)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            var tempDuration = TimeSpan.FromSeconds(sonogram.Duration.Seconds * compressRate);
+            image.AddTrack(Image_Track.GetTimeTrack(tempDuration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0, 0.0, 0));
+            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            if ((acousticEvent != null) && (acousticEvent.Count > 0))
+            {
+                image.AddEvents(acousticEvent, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
+            return image.GetImage();
+        } //DrawSonogram()
+
         public static Image DrawRankingSonogram(BaseSonogram sonogram, List<double> scores, string s, string outputFilePath)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;

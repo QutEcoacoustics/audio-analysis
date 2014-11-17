@@ -111,6 +111,32 @@
             GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
+        /// <summary>
+        /// set the properties through parsing the parameters. 
+        /// </summary>
+        /// <param name="maximumFrequency"></param>
+        /// <param name="minimumFrequency"></param>
+        /// <param name="starttime"></param>
+        /// <param name="endtime"></param>
+        public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime, int neighbourhoodLength,
+            int maxFrequencyIndex, int maxFrameIndex,
+            SpectrogramConfiguration spectrogramConfig,
+            CompressSpectrogramConfig compressConfig)
+        {
+            // the unit is confusing
+            var secondToMillisecond = 1000;
+            this.maxFrequency = maximumFrequency;
+            this.minFrequency = minimumFrequency;
+            this.startTime = startTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
+            this.endTime = endTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
+            this.duration = this.endTime - this.startTime;
+            this.frequencyRange = this.maxFrequency - this.minFrequency;
+            this.maxNhColIndex = maxFrameIndex;
+            this.maxNhRowIndex = maxFrequencyIndex;
+            GetNhProperties(neighbourhoodLength, spectrogramConfig);
+        }
+
+
         public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime)
         {
             // the unit is confusing
@@ -154,7 +180,29 @@
             this.nhCountInColumn = nhCountInCol;
             
         }
-        
+
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength,
+            SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
+        {
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
+            var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
+            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
+            {
+                nhCountInRow--;
+            }
+            var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
+            if (spectrogram.FrameCount % neighbourhoodLength == 0)
+            {
+                nhCountInColumn--;
+            }
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
+                queryInfo.TimeEnd, neighbourhoodLength,
+                nhCountInRow, nhCountInColumn, spectrogramConfig, compressConfig);
+            return result;
+        }
+
+
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, 
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
         {
