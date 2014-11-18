@@ -432,9 +432,9 @@ namespace AnalysisPrograms.Production
 
 
 
-        public Audio2InputForConvCNN.Arguments CreateConvCnnSongogramsArgs { get; set; }
+        public Audio2InputForConvCNN.Arguments CreateConvCnnSonogramsArgs { get; set; }
 
-        public static Action<Audio2InputForConvCNN.Arguments> CreateConvCnnSongograms()
+        public static Action<Audio2InputForConvCNN.Arguments> CreateConvCnnSonograms()
         {
             return Audio2InputForConvCNN.Execute;
         }
