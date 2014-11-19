@@ -255,15 +255,18 @@ namespace Dong.Felt.Preprocessing
             var rowsCount = matrix.GetLength(0);
             var colsCount = matrix.GetLength(1);
             var compressStep = (int)(1 / compressRate);
-            var compressedColsCount = (int)(colsCount * compressRate);
+            var compressedColsCount = colsCount / compressStep;
+            if (colsCount % compressStep != 0)
+            {
+                compressedColsCount++;
+            }
             var result = new double[compressedColsCount, rowsCount];
             for (var r = 0; r < rowsCount; r++)
             {
                 for (var c = 0; c < colsCount; c += compressStep)
-                {
-                    var maxValue = 0.0;
+                {                   
+                    var tempData = new List<double>();
                     var maxIndex = 0;
-                    var localMaxIndex = 0;
                     if (c + compressStep < colsCount)
                     {
                         maxIndex = compressStep;
@@ -272,13 +275,12 @@ namespace Dong.Felt.Preprocessing
                     {
                         maxIndex = colsCount - c;
                     }
-                    var tempData = new double[maxIndex];
-                    for (var step = 0; step < maxIndex; step++)
+                    for (var index = 0; index < maxIndex; index++)
                     {
-                        tempData[step] = matrix[r, c + step];
-                        maxValue = tempData.Max();
+                        tempData.Add(matrix[r, c+index]);
                     }
-                    var colIndex = c + localMaxIndex;
+                    var maxValue = tempData.Max();
+                    var colIndex = c / compressStep;
                     result[colIndex, rowsCount - 1 - r] = maxValue;
                 }
             }
