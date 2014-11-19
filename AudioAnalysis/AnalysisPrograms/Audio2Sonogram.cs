@@ -79,7 +79,8 @@ namespace AnalysisPrograms
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
                 // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                Source = @"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\JCU\Litoria fellax1.mp3".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
@@ -92,7 +93,7 @@ namespace AnalysisPrograms
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
                 //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
-                Output = @"C:\SensorNetworks\Output\Sonograms".ToDirectoryInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\SonogramTest_2014November".ToDirectoryInfo(),
                 Verbose = true
             };
 
@@ -318,6 +319,7 @@ namespace AnalysisPrograms
                 //Histogram.DrawDistributionsAndSaveImage(sonogram.Data, path2);
 
                 double ridgeThreshold = 0.25;
+                // double[,] matrix = sonogram.Data;
                 double[,] matrix = ImageTools.WienerFilter(sonogram.Data, 3);
                 byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
                 hits = RidgeDetection.JoinDisconnectedRidgesInMatrix(hits, matrix, ridgeThreshold);

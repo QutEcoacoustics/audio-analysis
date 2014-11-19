@@ -111,7 +111,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // (i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
             if (Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
             {
-                m = MFCCStuff.MelFilterBank(m, Configuration.FreqBinCount, this.NyquistFrequency, 0, this.NyquistFrequency); // using the Greg integral
+                m = MFCCStuff.MelFilterBank(m, this.Configuration.FreqBinCount, this.NyquistFrequency, 0, this.NyquistFrequency); // using the Greg integral
             }
 
             // (ii) CONVERT AMPLITUDES TO DECIBELS

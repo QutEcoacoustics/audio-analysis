@@ -187,8 +187,8 @@
 
 
         /// <summary>
-        /// this constructor is the one most used - it automatically makes the Amplitude spectrum and then, using a call to Make(),
-        /// converts that matrix to a Spectrogram whose values are decibels. 
+        /// this constructor is the one most used - it automatically makes the Amplitude spectrum and 
+        /// then, using a call to Make(), it converts the Amplitude matrix to a Spectrogram whose values are decibels. 
         /// </summary>
         /// <param name="config">All parameters required to make spectrogram</param>
         /// <param name="wav">the recording whose spectrogram is to be made</param>
@@ -550,16 +550,22 @@
             for (int i = 0; i < frameCount; i++) //foreach frame or time step
             {
                 //set up the window
-                for (int j = 0; j < N; j++) window[j] = signal[frames[i, 0] + j];
+                for (int j = 0; j < N; j++) 
+                    window[j] = signal[frames[i, 0] + j];
 
                 f1 = fft.InvokeDotNetFFT(window); //returns fft amplitude spectrum
-                //double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-                //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+                //f1 = fft.Invoke(window); //returns fft amplitude spectrum
+                //f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+                //f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
 
-                //if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
+                //In the early days, we used to smooth the spectrum to reduce variance. But do not do this anymore here. Can do later as required.
+                //if (smoothingWindow > 2) 
+                //  f1 = DataTools.filterMovingAverage(f1, smoothingWindow);
+
+                // transfer amplitude spectrum to a matrix
                 for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
                 {
-                    amplitudeSonogram[i, j] = f1[j]; //transfer amplitude
+                    amplitudeSonogram[i, j] = f1[j];
                 }
             } //end of all frames
             return amplitudeSonogram;

@@ -103,12 +103,12 @@ namespace AnalysisPrograms
                 arguments = new Arguments();
                 const string RecordingPath =
                     //@"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
-                    @"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
+                    //@"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
                     //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
                     //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
+                    @"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
