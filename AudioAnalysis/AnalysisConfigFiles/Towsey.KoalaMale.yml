@@ -1,16 +1,17 @@
 ---
 AnalysisName: Towsey.KoalaMale
 # min and max of the freq band to search
-MinHz: 200          
-MaxHz: 1000
+MinHz: 250          
+MaxHz: 800
 # duration of DCT in seconds 
+# this cannot be too long because the oscillations are not constant.
 DctDuration: 0.30
 # minimum acceptable amplitude of a DCT coefficient
-DctThreshold: 0.6
+DctThreshold: 0.5
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
 MinOcilFreq: 20        
-MaxOcilFreq: 50
+MaxOcilFreq: 55
 # Minimum duration for the length of a true event (seconds).
 MinDuration: 0.5
 # Maximum duration for the length of a true event.

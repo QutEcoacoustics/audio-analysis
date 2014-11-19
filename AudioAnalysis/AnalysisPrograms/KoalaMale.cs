@@ -32,19 +32,33 @@ namespace AnalysisPrograms
     using ProcessRunner = TowseyLibrary.ProcessRunner;
 
     /// <summary>
-    ///     NOTE: This method detects male koala calls by detecting their oscillations of their roars.
-    ///     In order to detect these oscillations which can reach 50 per second one requires a frame rate of at least 100
-    ///     frames per second and preferably
-    ///     a frame rate = 150 so that this period sits near the middle of the array of DCT coefficients.
-    ///     The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. User may wish
-    ///     to set SR and FRAME LENGTH should = 512 or 1024.
-    ///     Therefore best way to adjust frame rate is to adjust frame overlap.
-    ///     Have decided on the option of automatically calculating the frame overlap to suit the maximum oscillation to be
-    ///     detected.
-    ///     This is written in the method OscillationDetector.CalculateRequiredFrameOverlap();
-    ///     Do not want the DCT length to be too long because DCT is expensive to calculate. 0.5s - 1.0s is adequate for
-    ///     canetoad -depends on the expected osc rate.
-    ///     Analysis() method.
+    ///  NOTES: 
+    /// (1) The main part of a male koala call consists of a series of inhlations and exhalations;
+    ///     The inhalations are longer and sound like snoring. The exhalations are shorter and the sound is similar to belching.
+    ///     For more on the koala bellow see http://theconversation.com/grunt-work-unique-vocal-folds-give-koalas-their-low-pitched-voice-20800
+    ///     The article interviews Dr. Ben Charlton who came to work with us in 2012.
+    /// 
+    /// (2) This class detects male koala calls by detecting the characteristic oscillations of their snoring or inhalations. 
+    ///     These snoring oscillations = approx 20-50 per second.
+    ///     They are not constant but tend to increase in rate through the inhalation.
+    /// 
+    /// (3) In order to detect 50 oscillations/sec, we need at the very least 100 frames/sec and preferably a frame rate = 150/sec 
+    ///        so that a period = 50/s sits near the middle of the array of DCT coefficients.
+    ///        
+    /// (4) Frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. 
+    ///     If the SR ~= 170640, the FRAME LENGTH should = 256 or 512.
+    ///     The best way to adjust frame rate is to adjust frame overlap. I finally decided on the option of automatically calculating the frame overlap
+    ///     to suit the maximum oscillation to be detected.
+    ///     This calculation is done by the method OscillationDetector.CalculateRequiredFrameOverlap();
+    ///     
+    /// (5) One should not set the DCT length to be too long because (1) the DCT is expensive to calculate.
+    ///      and (2) the koala oscillation is not constant but the DCT assumes stationarity. 0.3s is good for koala. 0.5s - 1.0s is OK for canetoad.
+    ///     
+    /// (6) To reduce the probability of false-positives, the Koala Recognizer filters out oscillation events 
+    ///     that are not accompanied by neighbouring oscillation events within 4 seconds. 
+    ///     This filtering is done in the method KoalaMale.FilterMaleKoalaEvents().
+    ///     
+    /// The action code for this analysis (to enter on the command line) is "KoalaMale".
     /// </summary>
     public class KoalaMale : AbstractStrongAnalyser
     {
@@ -101,7 +115,128 @@ namespace AnalysisPrograms
 
         #endregion
 
+
         #region Public Methods and Operators
+
+        public static void Dev(Arguments arguments)
+        {
+            bool executeDev = arguments == null;
+            if (executeDev)
+            {
+                string recordingPath =
+                    //@"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
+                    //@"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
+                    //@"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
+                    @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
+                string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.yml";
+                string outputDir = @"C:\SensorNetworks\Output\KoalaMale\";
+
+                string title = "# FOR DETECTION OF MALE KOALA using DCT OSCILLATION DETECTION";
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine(title);
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
+                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+
+                Log.Verbosity = 1;
+                int startMinute = 0;
+
+                // set zero to get entire recording
+                int durationSeconds = 0;
+
+                // hours, minutes, seconds
+                TimeSpan start = TimeSpan.FromMinutes(startMinute);
+
+                // hours, minutes, seconds
+                TimeSpan duration = TimeSpan.FromSeconds(durationSeconds);
+                string segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
+                string segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
+                string sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
+                string eventsFname = string.Format(
+                    "{0}_{1}min.{2}.Events.csv",
+                    segmentFileStem,
+                    startMinute,
+                    "Towsey." + AnalysisName);
+                string indicesFname = string.Format(
+                    "{0}_{1}min.{2}.Indices.csv",
+                    segmentFileStem,
+                    startMinute,
+                    "Towsey." + AnalysisName);
+
+                if (true)
+                {
+                    arguments = new Arguments
+                    {
+                        Source = recordingPath.ToFileInfo(),
+                        Config = configPath.ToFileInfo(),
+                        Output = outputDir.ToDirectoryInfo(),
+                        TmpWav = segmentFName,
+                        Events = eventsFname,
+                        Indices = indicesFname,
+                        Sgram = sonogramFname,
+                        Start = start.TotalSeconds,
+                        Duration = duration.TotalSeconds
+                    };
+                }
+
+                if (false)
+                {
+                    // loads a csv file for visualisation
+                    ////string indicesImagePath = "some path or another";
+                    ////var fiCsvFile    = new FileInfo(restOfArgs[0]);
+                    ////var fiConfigFile = new FileInfo(restOfArgs[1]);
+                    ////var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
+                    ////IAnalysis analyser = new AnalysisTemplate();
+                    ////var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
+                    // returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
+                }
+            }
+
+            Execute(arguments);
+
+            if (executeDev)
+            {
+                FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
+                if (!csvEvents.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+
+                FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
+                if (!csvIndicies.Exists)
+                {
+                    Log.WriteLine(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                        arguments.Start.Value,
+                        arguments.Source.FullName);
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("\n");
+                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
+                    DataTableTools.WriteTable2Console(dt);
+                }
+
+                FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
+                if (image.Exists)
+                {
+                    var process = new ProcessRunner(ImageViewer);
+                    process.Run(image.FullName, arguments.Output.FullName);
+                }
+
+                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
+            }
+        }
+
 
         /// <summary>
         /// THE KEY ANALYSIS METHOD
@@ -148,8 +283,8 @@ namespace AnalysisPrograms
             // min score for an acceptable event
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
 
-            // seems to work  -- frameSize = 1024 takes too long to compute; 
-            const int FrameSize = 512;
+            // seems to work  -- frameSize = 512 and 1024 does not catch all oscillations; 
+            const int FrameSize = 256;
 
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate, 
@@ -167,8 +302,7 @@ namespace AnalysisPrograms
 
             ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             TimeSpan recordingDuration = recording.Duration();
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            double freqBinWidth = recording.SampleRate / (double)sonoConfig.WindowSize;
 
             /* #############################################################################################################################################
              * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
@@ -181,7 +315,7 @@ namespace AnalysisPrograms
             int colCount = sonogram.Data.GetLength(1);
             recording.Dispose();
 
-            ////double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
+            //double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
@@ -204,7 +338,7 @@ namespace AnalysisPrograms
                 out events, 
                 out hits);
 
-            // remove isolated koala events
+            // remove isolated koala events - this is to remove false positive identifications
             events = FilterMaleKoalaEvents(events);
 
             if (events == null)
@@ -234,125 +368,6 @@ namespace AnalysisPrograms
                        };
         }
 
-        public static void Dev(Arguments arguments)
-        {
-            bool executeDev = arguments == null;
-            if (executeDev)
-            {
-                string recordingPath =
-                    @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
-
-                ////string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080909-013000.wav";
-                ////string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_20080909-003000.wav";
-                ////string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\TopKnoll_StBees_VeryFaint_20081221-003000.wav";
-                string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
-                string outputDir = @"C:\SensorNetworks\Output\KoalaMale\";
-
-                string title = "# FOR DETECTION OF MALE KOALA using DCT OSCILLATION DETECTION";
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine(title);
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-
-                Log.Verbosity = 1;
-                int startMinute = 0;
-
-                // set zero to get entire recording
-                int durationSeconds = 0;
-
-                // hours, minutes, seconds
-                TimeSpan start = TimeSpan.FromMinutes(startMinute);
-
-                // hours, minutes, seconds
-                TimeSpan duration = TimeSpan.FromSeconds(durationSeconds);
-                string segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-                string segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-                string sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-                string eventsFname = string.Format(
-                    "{0}_{1}min.{2}.Events.csv", 
-                    segmentFileStem, 
-                    startMinute, 
-                    "Towsey." + AnalysisName);
-                string indicesFname = string.Format(
-                    "{0}_{1}min.{2}.Indices.csv", 
-                    segmentFileStem, 
-                    startMinute, 
-                    "Towsey." + AnalysisName);
-
-                if (true)
-                {
-                    arguments = new Arguments
-                                    {
-                                        Source = recordingPath.ToFileInfo(), 
-                                        Config = configPath.ToFileInfo(), 
-                                        Output = outputDir.ToDirectoryInfo(), 
-                                        TmpWav = segmentFName, 
-                                        Events = eventsFname, 
-                                        Indices = indicesFname, 
-                                        Sgram = sonogramFname, 
-                                        Start = start.TotalSeconds, 
-                                        Duration = duration.TotalSeconds
-                                    };
-                }
-
-                if (false)
-                {
-                    // loads a csv file for visualisation
-                    ////string indicesImagePath = "some path or another";
-                    ////var fiCsvFile    = new FileInfo(restOfArgs[0]);
-                    ////var fiConfigFile = new FileInfo(restOfArgs[1]);
-                    ////var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-                    ////IAnalysis analyser = new AnalysisTemplate();
-                    ////var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
-                    // returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
-                }
-            }
-
-            Execute(arguments);
-
-            if (executeDev)
-            {
-                FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
-                if (!csvEvents.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", 
-                        arguments.Start.Value, 
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvEvents.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
-                if (!csvIndicies.Exists)
-                {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", 
-                        arguments.Start.Value, 
-                        arguments.Source.FullName);
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("\n");
-                    DataTable dt = CsvTools.ReadCSVToTable(csvIndicies.FullName, true);
-                    DataTableTools.WriteTable2Console(dt);
-                }
-
-                FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
-                if (image.Exists)
-                {
-                    var process = new ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
-                }
-
-                LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
-            }
-        }
 
         /// <summary>
         /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
@@ -412,7 +427,8 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// This method removes isolated koala events.
-        ///     Expect at least consecutive inhales with centres spaced between 1.5 and 2.5 seconds
+        ///     Expect at least N consecutive inhales with centres spaced between 1.5 and 2.5 seconds
+        ///     N=3 seems best value.
         /// </summary>
         /// <param name="events">
         /// The events.
@@ -445,14 +461,15 @@ namespace AnalysisPrograms
                 double leftGap = eventCentres[i] - eventCentres[i - 1];
                 double rghtGap = eventCentres[i + 1] - eventCentres[i];
 
-                // centres between 1.5 and 2.5 s separated.
-                bool leftGapCorrect = (leftGap > 1.4) && (leftGap < 2.6);
-                bool rghtGapCorrect = (rghtGap > 1.4) && (rghtGap < 2.6);
+                // oscillation centres should lie between between 1.0 and 2.6 s separated.
+                // HOwever want to allow for a missed oscillation - therefore allow up to 4.0 seconds apart
+                bool leftGapCorrect = (leftGap > 1.0) && (leftGap < 4.0);
+                bool rghtGapCorrect = (rghtGap > 1.0) && (rghtGap < 4.0);
 
                 if (leftGapCorrect && rghtGapCorrect)
                 {
                     partOfTriple[i - 1] = true;
-                    partOfTriple[i] = true;
+                    partOfTriple[i]     = true;
                     partOfTriple[i + 1] = true;
                 }
             }
