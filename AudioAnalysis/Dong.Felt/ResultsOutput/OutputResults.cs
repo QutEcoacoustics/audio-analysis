@@ -9,6 +9,7 @@ using AudioBase;
 using AnalysisRunner;
 using Acoustics.Tools;
 using Acoustics.Shared;
+using Dong.Felt.Configuration;
 
 namespace Dong.Felt.ResultsOutput
 {

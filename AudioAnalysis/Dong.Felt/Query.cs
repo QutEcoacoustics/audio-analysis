@@ -191,8 +191,9 @@
             {
                 nhCountInRow--;
             }
-            var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
-            if (spectrogram.FrameCount % neighbourhoodLength == 0)
+            var tempFrameCount = (int)(spectrogram.FrameCount * compressConfig.CompressRate);
+            var nhCountInColumn = (int)(tempFrameCount / neighbourhoodLength);
+            if (tempFrameCount % neighbourhoodLength == 0)
             {
                 nhCountInColumn--;
             }
