@@ -97,7 +97,7 @@ Output  to  directory: {1}
 
             // min score for an acceptable event
             double scoreThreshold = 0.2;
-            if (configuration[AnalysisKeys.EventThreshold] != null)
+            if (((double?)configuration[AnalysisKeys.EventThreshold]) != null)
             {
                 scoreThreshold = (double)configuration[AnalysisKeys.EventThreshold];
                 Log.Info("Minimum event threshold has been set to " + scoreThreshold);
