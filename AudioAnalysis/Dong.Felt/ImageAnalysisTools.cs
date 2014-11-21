@@ -14,6 +14,10 @@ namespace Dong.Felt
     using System.Drawing.Imaging;
     using AForge.Math;
     using AudioAnalysisTools.DSP;
+    using Dong.Felt.Configuration;
+    using Dong.Felt.ResultsOutput;
+    using Dong.Felt.Preprocessing;
+    using Dong.Felt.Representations;
 
 
 
@@ -1913,6 +1917,368 @@ namespace Dong.Felt
             return spectrogram.Data;
         }
 
+        public static void DrawingCandiOutputStSpectrogram(string candidateCsvFilePath, string queryCsvFilePath, string queryAudioFilePath,
+            string outputPath, int rank, StructureTensorConfiguration stConfig, SonogramConfig config, string featurePropSet, DirectoryInfo tempDirectory)
+        {
+            var candidateFilePathInfo = new FileInfo(candidateCsvFilePath);
+            var candidateDirectory = candidateFilePathInfo.DirectoryName;
+
+            var file = new FileInfo(candidateCsvFilePath);
+            var candidates = CSVResults.CsvToCandidatesList(file);
+            var queryCsvFile = new FileInfo(queryCsvFilePath);
+            var query = new Candidates();
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            query.StartTime = queryInfo.TimeStart * 1000;
+            query.EndTime = query.StartTime + queryInfo.Duration * 1000;
+            query.MaxFrequency = queryInfo.MaxFreq;
+            query.MinFrequency = queryInfo.MinFreq;
+            query.SourceFilePath = queryAudioFilePath;
+            candidates.Insert(0, query);
+            var querycsvFilePath = new FileInfo(queryCsvFilePath);
+            var queryFileDirectory = querycsvFilePath.DirectoryName;
+            var pathString = Path.Combine(tempDirectory.FullName, Path.GetFileName(queryAudioFilePath), featurePropSet);
+            var outPutFileDirectory = Directory.CreateDirectory(pathString);
+            if (candidates != null)
+            {
+                for (int i = 0; i < candidates.Count(); i++)
+                {
+                    var outPutFileName = i + ".wav";
+                    var outPutFilePath = Path.Combine(outPutFileDirectory.FullName, outPutFileName);
+                    OutputResults.AudioSegmentBasedCandidates(candidates[i], outPutFilePath.ToFileInfo());
+                }
+                var listString = new List<string>();
+                listString.Add("Q");
+                for (int i = 0; i < rank; i++)
+                {
+                    int tempValue = i + 1;
+                    listString.Add(tempValue.ToString());
+                }
+                var imageArray = DrawingStSpectFromAudios(outPutFileDirectory, config, listString, rank, candidates, stConfig).ToArray();
+                var imageResult = ImageAnalysisTools.CombineImagesHorizontally(imageArray);
+                var temp = new FileInfo(candidates[0].SourceFilePath);
+                var imageOutputName = featurePropSet + temp.Name + "Combined image.png";
+                var imagePath = outputPath + imageOutputName;
+                imageResult.Save(imagePath, ImageFormat.Png);
+            }
+        }
+
+        public static List<Image> DrawingStSpectFromAudios(DirectoryInfo audioFileDirectory, SonogramConfig config, List<string> s, int rank,
+       List<Candidates> candidates, StructureTensorConfiguration stConfig)
+        {
+            var result = new List<Image>();
+            if (!Directory.Exists(audioFileDirectory.FullName))
+            {
+                throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", audioFileDirectory));
+            }
+
+            // because the result is obtained like this order, 0, 1, 2, 10, 3, 4, 5, 6, ...9
+            var audioFiles = Directory.GetFiles(audioFileDirectory.FullName, @"*.wav", SearchOption.TopDirectoryOnly);
+            var audioFilesCount = audioFiles.Count();
+            var improvedAudioFiles = new string[audioFilesCount];
+            for (int j = 0; j < audioFilesCount; j++)
+            {
+                var audioFileNames = Convert.ToInt32(Path.GetFileNameWithoutExtension(audioFiles[j]));
+                if (audioFileNames != j)
+                {
+                    improvedAudioFiles[audioFileNames] = audioFiles[j];
+                }
+                else
+                {
+                    improvedAudioFiles[j] = audioFiles[j];
+                }
+            }
+
+            for (int i = 0; i < rank + 1; i++)
+            {
+                /// because the query always come from first place.                   
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
+                var structuretensors = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, stConfig.AvgStNhLength, stConfig.Threshold);
+                /// To show the ridges on the spectrogram. 
+                var scores = new List<double>();
+                scores.Add(0.0);
+                double eventThreshold = 0.5; // dummy variable - not used  
+                var startTime = 1.0;
+                var secondToMilliSecond = 1000.0;
+                var duration = (candidates[i].EndTime - candidates[i].StartTime) / secondToMilliSecond;
+                var endTime = candidates[i].EndTime / secondToMilliSecond;
+                if (candidates[i].StartTime / secondToMilliSecond < 1)
+                {
+                    startTime = candidates[i].StartTime / secondToMilliSecond;
+                }
+                if (endTime > 59)
+                {
+                    //startTime = startTime + 60 - endTime;
+                    startTime = (candidates[i].StartTime - candidates[i].EndTime) / secondToMilliSecond + 2;
+                }
+                endTime = startTime + duration;
+                if (i == 0)
+                {
+                    var acousticEventlistForQuery = new List<AcousticEvent>();
+
+                    var queryAcousticEvent = new AcousticEvent(startTime, duration,
+                        candidates[i].MinFrequency, candidates[i].MaxFrequency);
+                    queryAcousticEvent.BorderColour = Color.Crimson;
+                    acousticEventlistForQuery.Add(queryAcousticEvent);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForQuery, eventThreshold, null);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in structuretensors)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
+                    image = (Image)bmp;
+                    var seperatedImage = ImageAnalysisTools.DrawVerticalLine(image);
+                    var improvedImage = ImageAnalysisTools.DrawImageLeftIndicator(seperatedImage, s[i]);
+                    var finalImage = ImageAnalysisTools.DrawFileName(improvedImage, candidates[i]);
+                    result.Add(finalImage);
+                }
+                else
+                {
+                    var acousticEventlistForCandidate = new List<AcousticEvent>();
+                    var candAcousticEvent = new AcousticEvent(startTime, duration,
+                        candidates[i].MinFrequency, candidates[i].MaxFrequency);
+                    candAcousticEvent.BorderColour = Color.Green;
+                    acousticEventlistForCandidate.Add(candAcousticEvent);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in structuretensors)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
+                    image = (Image)bmp;
+                    var seperatedImage = ImageAnalysisTools.DrawVerticalLine(image);
+                    var improvedImage = ImageAnalysisTools.DrawImageLeftIndicator(seperatedImage, s[i]);
+                    var finalImage = ImageAnalysisTools.DrawFileName(improvedImage, candidates[i]);
+                    result.Add(finalImage);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Drawing Candidate spectrogram.
+        /// </summary>
+        /// <param name="candidateCsvFilePath"></param>
+        /// <param name="queryCsvFilePath"></param>
+        /// <param name="queryAudioFilePath"></param>
+        /// <param name="outputPath"></param>
+        /// <param name="rank"></param>
+        /// <param name="ridgeConfig"></param>
+        /// <param name="config"></param>
+        /// <param name="featurePropSet"></param>
+        /// <param name="tempDirectory"></param>
+        public static void DrawingCandiOutputSpectrogram(string candidateCsvFilePath, string queryCsvFilePath, string queryAudioFilePath,
+            string outputPath, int rank, RidgeDetectionConfiguration ridgeConfig, SonogramConfig config,
+            CompressSpectrogramConfig compressConfig,
+            string featurePropSet, DirectoryInfo tempDirectory)
+        {
+            var candidateFilePathInfo = new FileInfo(candidateCsvFilePath);
+            var candidateDirectory = candidateFilePathInfo.DirectoryName;
+
+            var file = new FileInfo(candidateCsvFilePath);
+            var candidates = CSVResults.CsvToCandidatesList(file);
+            var queryCsvFile = new FileInfo(queryCsvFilePath);
+            var query = new Candidates();
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            query.StartTime = queryInfo.TimeStart * 1000;
+            query.EndTime = query.StartTime + queryInfo.Duration * 1000;
+            query.MaxFrequency = queryInfo.MaxFreq;
+            query.MinFrequency = queryInfo.MinFreq;
+            //query.StartTime = queryRepresentation[0].FrameIndex;
+            //query.EndTime = queryRepresentation[0].FrameIndex + queryRepresentation[0].Duration.TotalMilliseconds;
+            //query.MaxFrequency = candidates[0].MaxFrequency;
+            //query.MinFrequency = candidates[0].MinFrequency;
+            query.SourceFilePath = queryAudioFilePath;
+            candidates.Insert(0, query);
+            var querycsvFilePath = new FileInfo(queryCsvFilePath);
+            var queryFileDirectory = querycsvFilePath.DirectoryName;
+            var pathString = Path.Combine(tempDirectory.FullName, Path.GetFileName(queryAudioFilePath), featurePropSet);
+            var outPutFileDirectory = Directory.CreateDirectory(pathString);
+            if (candidates != null)
+            {
+                for (int i = 0; i < candidates.Count(); i++)
+                {
+                    var outPutFileName = i + ".wav";
+                    var outPutFilePath = Path.Combine(outPutFileDirectory.FullName, outPutFileName);
+                    OutputResults.AudioSegmentBasedCandidates(candidates[i], outPutFilePath.ToFileInfo());
+                }
+                var listString = new List<string>();
+                listString.Add("Q");
+                for (int i = 0; i < rank; i++)
+                {
+                    int tempValue = i + 1;
+                    listString.Add(tempValue.ToString());
+                }
+                var imageArray = DrawingSpectrogramsFromAudios(outPutFileDirectory, config, listString, rank,
+                    candidates, ridgeConfig, compressConfig).ToArray();
+                var imageResult = ImageAnalysisTools.CombineImagesHorizontally(imageArray);
+                var temp = new FileInfo(candidates[0].SourceFilePath);
+                var imageOutputName = featurePropSet + temp.Name + "Combined image.png";
+                var imagePath = outputPath + imageOutputName;
+                imageResult.Save(imagePath, ImageFormat.Png);
+            }
+        }
+
+        /// <summary>
+        /// Drawing combined spectrogram from a buntch of audio. Especially designed for xueyan's similarity search algorithm. 
+        /// </summary>
+        /// <param name="audioFileDirectory"></param>
+        /// <param name="config"></param>
+        /// <param name="s"></param>
+        /// <param name="rank"></param>
+        /// <param name="candidates"></param>
+        /// <param name="ridgeConfig"></param>
+        /// <param name="compressConfig"></param>
+        /// <returns></returns>
+        public static List<Image> DrawingSpectrogramsFromAudios(DirectoryInfo audioFileDirectory, SonogramConfig config, List<string> s, int rank,
+            List<Candidates> candidates, RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig)
+        {
+            var result = new List<Image>();
+            if (!Directory.Exists(audioFileDirectory.FullName))
+            {
+                throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", audioFileDirectory));
+            }
+
+            // because the result is obtained like this order, 0, 1, 2, 10, 3, 4, 5, 6, ...9
+            var audioFiles = Directory.GetFiles(audioFileDirectory.FullName, @"*.wav", SearchOption.TopDirectoryOnly);
+            var audioFilesCount = audioFiles.Count();
+            var improvedAudioFiles = new string[audioFilesCount];
+            for (int j = 0; j < audioFilesCount; j++)
+            {
+                var audioFileNames = Convert.ToInt32(Path.GetFileNameWithoutExtension(audioFiles[j]));
+                if (audioFileNames != j)
+                {
+                    improvedAudioFiles[audioFileNames] = audioFiles[j];
+                }
+                else
+                {
+                    improvedAudioFiles[j] = audioFiles[j];
+                }
+            }
+
+            for (int i = 0; i < rank + 1; i++)
+            {
+                /// because the query always come from first place.                   
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
+                var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
+                spectrogram.Data = compressedSpectrogram;
+                var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
+                //var ridges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);
+                /// To show the ridges on the spectrogram. 
+                var scores = new List<double>();
+                scores.Add(0.0);
+                double eventThreshold = 0.5; // dummy variable - not used  
+                var startTime = 1.0 * compressConfig.CompressRate;
+                var secondToMilliSecond = 1000.0;
+                var duration = (candidates[i].EndTime - candidates[i].StartTime) / secondToMilliSecond;
+                var endTime = candidates[i].EndTime / secondToMilliSecond;
+                if (candidates[i].StartTime / secondToMilliSecond < 1)
+                {
+                    startTime = candidates[i].StartTime / secondToMilliSecond;
+                }
+                if (endTime > 59)
+                {
+                    //startTime = startTime + 60 - endTime;
+                    startTime = (candidates[i].StartTime - candidates[i].EndTime) / secondToMilliSecond + 2;
+                }
+                endTime = startTime + duration;
+                if (i == 0)
+                {
+                    var acousticEventlistForQuery = new List<AcousticEvent>();
+
+                    var queryAcousticEvent = new AcousticEvent(startTime, duration,
+                        candidates[i].MinFrequency, candidates[i].MaxFrequency);
+                    queryAcousticEvent.Duration = queryAcousticEvent.Duration * compressConfig.CompressRate;
+                    queryAcousticEvent.TimeEnd = startTime + queryAcousticEvent.Duration;
+                    queryAcousticEvent.BorderColour = Color.Crimson;
+                    acousticEventlistForQuery.Add(queryAcousticEvent);
+                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForQuery, eventThreshold, null);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForQuery,
+                        eventThreshold, null, compressConfig.CompressRate);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in ridges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
+                    image = (Image)bmp;
+                    var seperatedImage = ImageAnalysisTools.DrawVerticalLine(image);
+                    var improvedImage = ImageAnalysisTools.DrawImageLeftIndicator(seperatedImage, s[i]);
+                    var finalImage = ImageAnalysisTools.DrawFileName(improvedImage, candidates[i]);
+                    result.Add(finalImage);
+                }
+                else
+                {
+                    var acousticEventlistForCandidate = new List<AcousticEvent>();
+                    var candAcousticEvent = new AcousticEvent(startTime, duration,
+                        candidates[i].MinFrequency, candidates[i].MaxFrequency);
+                    candAcousticEvent.BorderColour = Color.Green;
+                    acousticEventlistForCandidate.Add(candAcousticEvent);
+                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate,
+                        eventThreshold, null, compressConfig.CompressRate);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in ridges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
+                    image = (Image)bmp;
+                    var seperatedImage = ImageAnalysisTools.DrawVerticalLine(image);
+                    var improvedImage = ImageAnalysisTools.DrawImageLeftIndicator(seperatedImage, s[i]);
+                    var finalImage = ImageAnalysisTools.DrawFileName(improvedImage, candidates[i]);
+                    result.Add(finalImage);
+                }
+            }
+            return result;
+        }
+
+
+        /// <summary>
+        /// Gaussian blur on amplitude spectrogram. 
+        /// </summary>
+        /// <param name="audioFileDirectory"></param>
+        /// <param name="config"></param>
+        /// <param name="ridgeConfig"></param>
+        /// <param name="sigma"></param>
+        /// <param name="size"></param>
+        public static void GaussianBlurAmplitudeSpectro(string audioFileDirectory, SonogramConfig config,
+           RidgeDetectionConfiguration ridgeConfig, double sigma, int size)
+        {
+            if (Directory.Exists(audioFileDirectory))
+            {
+                var audioFiles = Directory.GetFiles(audioFileDirectory, @"*.wav", SearchOption.TopDirectoryOnly);
+                var audioFilesCount = audioFiles.Count();
+                for (int i = 0; i < audioFilesCount; i++)
+                {
+                    var sonogram = AudioPreprosessing.AudioToAmplitudeSpectrogram(config, audioFiles[i]);
+                    Image image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
+                    var ridges = POISelection.PostRidgeDetectionAmpSpec(sonogram, ridgeConfig);
+                    var rows = sonogram.Data.GetLength(1) - 1;
+                    var cols = sonogram.Data.GetLength(0);
+                    var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
+                    var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
+                    var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
+                    var dividedPOIList = POISelection.POIListDivision(ridges);
+                    var verSegmentList = new List<List<PointOfInterest>>();
+                    var horSegmentList = new List<List<PointOfInterest>>();
+                    var posDiSegmentList = new List<List<PointOfInterest>>();
+                    var negDiSegmentList = new List<List<PointOfInterest>>();
+
+                    //ClusterAnalysis.ClusterRidgesToEvents(dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
+                    //    rows, cols, ref verSegmentList, ref horSegmentList, ref posDiSegmentList, ref negDiSegmentList);
+                    //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in ridges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)sonogram.Configuration.FreqBinCount);
+
+                    }
+                    var FileName = new FileInfo(audioFiles[i]);
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Filtered Gaussian blur-improved.png");
+                    string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
+                    image = (Image)bmp;
+                    image.Save(annotatedImagePath);
+                }
+            }
+        }
 
         #endregion
     }
