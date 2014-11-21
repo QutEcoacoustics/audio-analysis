@@ -38,7 +38,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetString("AudioUtilityFfmpegExe");
+                return GetExeFile("AudioUtilityFfmpegExe");
             }
         }
 
@@ -49,7 +49,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetString("AudioUtilityFfprobeExe");
+                return GetExeFile("AudioUtilityFfprobeExe");
             }
         }
 
@@ -60,7 +60,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetString("AudioUtilityWvunpackExe");
+                return GetExeFile("AudioUtilityWvunpackExe");
             }
         }
 
@@ -71,7 +71,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetString("AudioUtilityMp3SpltExe");
+                return GetExeFile("AudioUtilityMp3SpltExe");
             }
         }
 
@@ -82,7 +82,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetString("AudioUtilityShntoolExe");
+                return GetExeFile("AudioUtilityShntoolExe");
             }
         }
 
@@ -93,7 +93,18 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetString("AudioUtilitySoxExe");
+                return GetExeFile("AudioUtilitySoxExe");
+            }
+        }
+
+        /// <summary>
+        /// Gets Wav2PngExe.
+        /// </summary>
+        public static string Wav2PngExe
+        {
+            get
+            {
+                return GetExeFile("AudioUtilityWav2PngExe");
             }
         }
 
@@ -269,6 +280,22 @@ namespace Acoustics.Shared
                 }
 
                 return false;
+            }
+        }
+
+        public static bool IsMono
+        {
+            get
+            {
+                return Type.GetType("Mono.Runtime") != null;
+            }
+        }
+
+        public static bool IsLinux
+        {
+            get
+            {
+                return Environment.OSVersion.Platform == PlatformID.Unix;
             }
         }
 
@@ -489,7 +516,7 @@ namespace Acoustics.Shared
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             var dirs =
-                values.Where(v => !String.IsNullOrEmpty(v)).Select( v => new DirectoryInfo(v)).ToList();
+                values.Where(v => !String.IsNullOrEmpty(v)).Select(v => new DirectoryInfo(v)).ToList();
 
             if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
             {
@@ -497,6 +524,21 @@ namespace Acoustics.Shared
             }
 
             return dirs;
+        }
+
+        private static string GetExeFile(string appConfigKey)
+        {
+            if (IsLinux)
+            {
+                return GetString(appConfigKey + "Linux");
+            }
+            else
+            {
+                // assume windows
+                DirectoryInfo assemblyDir = IsAspNet ? new DirectoryInfo(WebsiteBasePath) : AssemblyDir;
+
+                return Path.Combine(assemblyDir.FullName, GetString(appConfigKey)); ;
+            }
         }
     }
 }

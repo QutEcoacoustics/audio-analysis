@@ -35,14 +35,10 @@ namespace Acoustics.Tools.Audio
         /// </summary>
         public MasterAudioUtility()
         {
-            DirectoryInfo assemblyDir = AppConfigHelper.IsAspNet
-                                            ? new DirectoryInfo(AppConfigHelper.WebsiteBasePath)
-                                            : AppConfigHelper.AssemblyDir;
-
-            this.wvunpackUtility = InitWavUnpack(assemblyDir);
-            this.mp3SpltUtility = InitMp3Splt(assemblyDir);
-            this.ffmpegUtility = InitFfmpeg(assemblyDir);
-            this.soxUtility = InitSox(assemblyDir);
+            this.wvunpackUtility = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
+            this.mp3SpltUtility = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
+            this.ffmpegUtility = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
+            this.soxUtility = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
             this.TemporaryFilesDirectory = TempFileHelper.TempDir();
         }
@@ -401,38 +397,6 @@ namespace Acoustics.Tools.Audio
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
             // no restrictions
-        }
-
-        private static WavPackAudioUtility InitWavUnpack(DirectoryInfo baseDir)
-        {
-            var wvunpackPath = Path.Combine(baseDir.FullName, AppConfigHelper.WvunpackExe);
-            var wvunpackUtility = new WavPackAudioUtility(new FileInfo(wvunpackPath));
-
-            return wvunpackUtility;
-        }
-
-        private static Mp3SpltAudioUtility InitMp3Splt(DirectoryInfo baseDir)
-        {
-            var mp3SpltExe = Path.Combine(baseDir.FullName, AppConfigHelper.Mp3SpltExe);
-            var mp3SpltUtility = new Mp3SpltAudioUtility(new FileInfo(mp3SpltExe));
-
-            return mp3SpltUtility;
-        }
-
-        private static FfmpegAudioUtility InitFfmpeg(DirectoryInfo baseDir)
-        {
-            var ffmpegExe = Path.Combine(baseDir.FullName, AppConfigHelper.FfmpegExe);
-            var ffprobeExe = Path.Combine(baseDir.FullName, AppConfigHelper.FfprobeExe);
-
-            var ffmpegUtility = new FfmpegAudioUtility(new FileInfo(ffmpegExe), new FileInfo(ffprobeExe));
-
-            return ffmpegUtility;
-        }
-
-        private static SoxAudioUtility InitSox(DirectoryInfo baseDir)
-        {
-            var soxExe = Path.Combine(baseDir.FullName, AppConfigHelper.SoxExe);
-            return new SoxAudioUtility(new FileInfo(soxExe));
         }
 
         private FileInfo SegmentWavpackToWav(FileInfo source, AudioUtilityRequest request)
