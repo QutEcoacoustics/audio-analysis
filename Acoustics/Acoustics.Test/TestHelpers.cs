@@ -458,18 +458,10 @@
 
         public static IAudioUtility GetAudioUtility()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var ffmpegExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfmpegExe));
-            var ffprobeExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfprobeExe));
-            var mp3SpltExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.Mp3SpltExe));
-            var wvunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
-            var soxExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.SoxExe));
-
-            var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
-            var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
-            var wvunpack = new WavPackAudioUtility(wvunpackExe);
-            var sox = new SoxAudioUtility(soxExe);
+            var ffmpeg = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe),new FileInfo( AppConfigHelper.FfprobeExe));
+            var mp3Splt = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
+            var wvunpack = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
+            var sox = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
             return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox);
         }
