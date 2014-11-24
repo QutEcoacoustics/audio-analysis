@@ -313,9 +313,9 @@ namespace Dong.Felt
                         rows, cols, frameDuration, spectrogram.FBinWidth, ref verSegmentList, ref horSegmentList,
                         ref posDiSegmentList, ref negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, verSegmentList, eventThreshold, null);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, horSegmentList, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in dividedPOIList[0])
+                    foreach (PointOfInterest poi in dividedPOIList[1])
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         Point point = new Point(poi.Point.Y, poi.Point.X);

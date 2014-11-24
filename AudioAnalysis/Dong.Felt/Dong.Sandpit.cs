@@ -101,16 +101,16 @@
                 if (action == "batch")
                 {
                     /// Batch process for FELT
-                    //var scores = new List<double>();
-                    //scores.Add(1.0);
-                    //var acousticEventlist = new List<AcousticEvent>();
-                    //double eventThreshold = 0.5; // dummy variable - not used   
-                    //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
-                    //    scores, acousticEventlist, eventThreshold);
+                    var scores = new List<double>();
+                    scores.Add(1.0);
+                    var acousticEventlist = new List<AcousticEvent>();
+                    double eventThreshold = 0.5; // dummy variable - not used   
+                    AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
+                        scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  ridgeConfig, compressConfig,
-                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
+                  //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                  //ridgeConfig, compressConfig,
+                  //gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                     //MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
                     //    outputDirectory.FullName, tempDirectory);       
                 }
@@ -132,10 +132,8 @@
                     //var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
                     //var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
                     //var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
-                    //spectrogram.Data = compressedSpectrogram;
-                    
-                    //spectrogram.Duration = tempDuration;
-                   
+                    //spectrogram.Data = compressedSpectrogram;                 
+                    //spectrogram.Duration = tempDuration;                   
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig@"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\, featurePropertySet);
                     
                     ///Automatic check
@@ -145,6 +143,8 @@
                     //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
                     //OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
+                    
+                    ///GaussianBlur
                     var inputDirect = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2";
                     PointOfInterestAnalysis.GaussianBlur2(inputDirect, config, ridgeConfig, 1.0, 3);
                 }

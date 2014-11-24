@@ -270,11 +270,12 @@ namespace Dong.Felt.Representations
                             frequencyIndex.Add(256 - h.Point.Y);
                             frameIndex.Add(h.Point.X);
                         }
-                        var minFrame = frameIndex.Min();
-                        var maxFrame = frameIndex.Max();
+                        var minFrame = frameIndex.Min() - 1;
+                        var maxFrame = frameIndex.Max() + 1;
                         var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max();
+                        var maxFreq = frequencyIndex.Max() + 1;
                         var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+                        acousticEvent.BorderColour = Color.Blue;
                         horAcousticEvents.Add(acousticEvent);
                     }
                     // cluster positiveDiagonal ridges
@@ -289,10 +290,10 @@ namespace Dong.Felt.Representations
                             frequencyIndex.Add(256 - p.Point.Y);
                             frameIndex.Add(p.Point.X);
                         }
-                        var minFrame = frameIndex.Min();
-                        var maxFrame = frameIndex.Max();
+                        var minFrame = frameIndex.Min() - 1;
+                        var maxFrame = frameIndex.Max() + 1;
                         var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max();
+                        var maxFreq = frequencyIndex.Max() + 1;
                         var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
                         posAcousticEvents.Add(acousticEvent);
                     }
@@ -308,10 +309,10 @@ namespace Dong.Felt.Representations
                             frequencyIndex.Add(256 - n.Point.Y);
                             frameIndex.Add(n.Point.X);
                         }
-                        var minFrame = frameIndex.Min();
-                        var maxFrame = frameIndex.Max();
+                        var minFrame = frameIndex.Min() - 1;
+                        var maxFrame = frameIndex.Max() + 1;
                         var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max();
+                        var maxFreq = frequencyIndex.Max() + 1;
                         var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
                         negAcousticEvents.Add(acousticEvent);
                     }
