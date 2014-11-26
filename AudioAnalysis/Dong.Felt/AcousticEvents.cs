@@ -972,6 +972,35 @@
         }//end method ConvertScores2Events()
 
         //##############################################################################################################################################
+        
+        //Xueyan's method
+        /// <summary>
+        /// Filter out detected events that are two close, when the difference in time is less than the duration of the event, the event after one will be eliminated. 
+        /// </summary>
+        /// <param name="listOfEvents"></param>
+        /// <returns></returns>
+        public static List<AcousticEvent> FilterOutOverlappedEvents(List<AcousticEvent> listOfEvents)
+        {
+            var result = new List<AcousticEvent>();
+            for (int i = 0; i < listOfEvents.Count; i++)
+            {
+                for (int j = i + 1; j < listOfEvents.Count; j++)
+                {
+                    var timePosition1 = listOfEvents[i].TimeStart;
+                    var timePosition2 = listOfEvents[j].TimeStart;
+
+                    var positionDifference = Math.Abs(timePosition1 - timePosition2);
+                    if (positionDifference <= listOfEvents[i].Duration)
+                    {
+                        listOfEvents.Remove(listOfEvents[i]);
+                        j--;
+                    }
+                }
+            }
+            result = listOfEvents;
+            return result;
+        }
+
 
 
 
