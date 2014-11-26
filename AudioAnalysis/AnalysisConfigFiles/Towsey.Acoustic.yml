@@ -27,6 +27,7 @@ BgNoiseThreshold: 3.0
 SonogramBackgroundThreshold: 4.0
 ParallelProcessing: false
 
-IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
+IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+EventThreshold: 0.2
 ...
 
