@@ -92,7 +92,7 @@ Output  to  directory: {1}
 
             if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
             {
-                Log.Warn("IndexProperties config can not be found! This will result in an excpetion if it is needed later on.");
+                Log.Warn("IndexProperties config can not be found! This will result in an exception if it is needed later on.");
             }
 
             // min score for an acceptable event

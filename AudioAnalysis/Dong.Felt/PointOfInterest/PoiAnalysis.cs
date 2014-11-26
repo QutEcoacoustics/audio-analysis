@@ -22,6 +22,8 @@ namespace Dong.Felt
     using TowseyLibrary;
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;
+    using Dong.Felt.Preprocessing;
+    using Dong.Felt.Representations;
 
     // several types of points of interest (for later use)
     public enum FeatureType { NONE, LOCALMAXIMA, RIDGE, STRUCTURE_TENSOR }
@@ -262,5 +264,79 @@ namespace Dong.Felt
             }
             return result;
         }
+
+
+        /// <summary>
+        /// Gaussian blur on ridge point of interest. 
+        /// </summary>
+        /// <param name="audioFileDirectory"></param>
+        /// <param name="config"></param>
+        /// <param name="ridgeConfig"></param>
+        /// <param name="sigma">by default 1.0</param>
+        /// <param name="size">by default 3</param>
+        public static void GaussianBlur2(string audioFileDirectory, SonogramConfig config,
+            RidgeDetectionConfiguration ridgeConfig, double sigma, int size)
+        {
+            if (Directory.Exists(audioFileDirectory))
+            {
+                var audioFiles = Directory.GetFiles(audioFileDirectory, @"*.wav", SearchOption.TopDirectoryOnly);
+                var audioFilesCount = audioFiles.Count();
+                for (int i = 0; i < audioFilesCount; i++)
+                {
+                    var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                    /// spectrogram drawing setting
+                    var scores = new List<double>();
+                    scores.Add(1.0);
+                    var acousticEventlist = new List<AcousticEvent>();
+                    var poiList = new List<PointOfInterest>();
+                    double eventThreshold = 0.5; // dummy variable - not used   
+                    var rows = spectrogram.Data.GetLength(1) - 1;
+                    var cols = spectrogram.Data.GetLength(0);
+                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
+                    var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
+                    var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
+                    var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
+                    var dividedPOIList = POISelection.POIListDivision(gaussianBlurRidgesList);
+                    //var verSegmentList = new List<List<PointOfInterest>>();
+                    //var horSegmentList = new List<List<PointOfInterest>>();
+                    //var posDiSegmentList = new List<List<PointOfInterest>>();
+                    //var negDiSegmentList = new List<List<PointOfInterest>>();                   
+                    //ClusterAnalysis.ConnectRidgesToSegments(dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
+                    //    rows, cols, ref verSegmentList, ref horSegmentList, ref posDiSegmentList, ref negDiSegmentList);
+                    var verSegmentList = new List<AcousticEvent>();
+                    var horSegmentList = new List<AcousticEvent>();
+                    var posDiSegmentList = new List<AcousticEvent>();
+                    var negDiSegmentList = new List<AcousticEvent>();
+                    var frameDuration = spectrogram.FrameDuration * config.WindowOverlap;
+                    ClusterAnalysis.RidgeListToEvent(dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
+                        rows, cols, frameDuration, spectrogram.FBinWidth, ref verSegmentList, ref horSegmentList,
+                        ref posDiSegmentList, ref negDiSegmentList);
+                    //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, horSegmentList, eventThreshold, null);
+                    Bitmap bmp = (Bitmap)image;
+                    foreach (PointOfInterest poi in dividedPOIList[1])
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                        Point point = new Point(poi.Point.Y, poi.Point.X);
+                        double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
+                        var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                        double herzScale = spectrogram.FBinWidth; //43 hz
+                        TimeSpan time = TimeSpan.FromSeconds(poi.Point.Y * secondsScale);
+                        double herz = (256 - poi.Point.X) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        var poi1 = new PointOfInterest(time, herz);
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                    }
+                    var FileName = new FileInfo(audioFiles[i]);
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Filtered Gaussian blur.png");
+                    string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
+                    image = (Image)bmp;
+                    image.Save(annotatedImagePath);
+                }
+            }
+        }
+
     }
 }

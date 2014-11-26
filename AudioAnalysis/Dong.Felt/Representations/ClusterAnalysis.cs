@@ -164,7 +164,7 @@ namespace Dong.Felt.Representations
         /// <param name="horSegmentList"></param>
         /// <param name="posDiSegmentList"></param>
         /// <param name="negDiSegmentList"></param>
-        public static void ClusterRidgesToEvents(List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
+        public static void ConnectRidgesToSegments(List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
             List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, int rowsCount, int colsCount,
             ref List<List<PointOfInterest>> verSegmentList, ref List<List<PointOfInterest>> horSegmentList,
             ref List<List<PointOfInterest>> posDiSegmentList, ref List<List<PointOfInterest>> negDiSegmentList)
@@ -210,6 +210,124 @@ namespace Dong.Felt.Representations
             }
         }
 
+        /// <summary>
+        /// Cluster 4 sets of ridges into 4 groups of Acoustic events.
+        /// </summary>
+        /// <param name="verPoiList"></param>
+        /// <param name="horPoiList"></param>
+        /// <param name="posDiaPoiList"></param>
+        /// <param name="negDiaPoiList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="frameWidth"></param>
+        /// <param name="freqBin"></param>
+        /// <param name="verAcousticEvents"></param>
+        /// <param name="horAcousticEvents"></param>
+        /// <param name="posAcousticEvents"></param>
+        /// <param name="negAcousticEvents"></param>
+        public static void RidgeListToEvent(List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
+            List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, int rowsCount, int colsCount, double frameWidth, double freqBin,
+            ref List<AcousticEvent> verAcousticEvents, ref List<AcousticEvent> horAcousticEvents,
+            ref List<AcousticEvent> posAcousticEvents, ref List<AcousticEvent> negAcousticEvents)
+        {
+            var verPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(verPoiList, rowsCount, colsCount);
+            var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
+            var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
+            var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
+
+            for (var r = 0; r < rowsCount; r++)
+            {
+                for (var c = 0; c < colsCount; c++)
+                {
+                    // cluster vertical ridges into small segments                   
+                    if (verPoiMatrix[r, c] != null && verPoiMatrix[r, c].RidgeMagnitude != 0 && verPoiMatrix[r, c].IsLocalMaximum == false)
+                    {
+                        var verSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(verPoiMatrix[r, c], verPoiMatrix, ref verSegmentSubList);
+                        var frequencyIndex = new List<int>();
+                        var frameIndex = new List<int>();
+                        foreach (var v1 in verSegmentSubList)
+                        {
+                            frequencyIndex.Add(256 - v1.Point.Y);
+                            frameIndex.Add(v1.Point.X);
+                        }
+                        var minFrame = frameIndex.Min()-1;
+                        var maxFrame = frameIndex.Max()+1;
+                        var minFreq = frequencyIndex.Min();
+                        var maxFreq = frequencyIndex.Max()+1;
+                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+                        verAcousticEvents.Add(acousticEvent);
+                    }
+                    // cluster horizontal ridges
+                    if (horPoiMatrix[r, c] != null && horPoiMatrix[r, c].RidgeMagnitude != 0 && horPoiMatrix[r, c].IsLocalMaximum == false)
+                    {
+                        var horSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(horPoiMatrix[r, c], horPoiMatrix, ref horSegmentSubList);
+                        var frequencyIndex = new List<int>();
+                        var frameIndex = new List<int>();
+                        foreach (var h in horSegmentSubList)
+                        {
+                            frequencyIndex.Add(256 - h.Point.Y);
+                            frameIndex.Add(h.Point.X);
+                        }
+                        var minFrame = frameIndex.Min() - 1;
+                        var maxFrame = frameIndex.Max() + 1;
+                        var minFreq = frequencyIndex.Min();
+                        var maxFreq = frequencyIndex.Max() + 1;
+                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+                        acousticEvent.BorderColour = Color.Blue;
+                        horAcousticEvents.Add(acousticEvent);
+                    }
+                    // cluster positiveDiagonal ridges
+                    if (posDiPoiMatrix[r, c] != null && posDiPoiMatrix[r, c].RidgeMagnitude != 0 && posDiPoiMatrix[r, c].IsLocalMaximum == false)
+                    {
+                        var posSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(posDiPoiMatrix[r, c], posDiPoiMatrix, ref posSegmentSubList);
+                        var frequencyIndex = new List<int>();
+                        var frameIndex = new List<int>();
+                        foreach (var p in posSegmentSubList)
+                        {
+                            frequencyIndex.Add(256 - p.Point.Y);
+                            frameIndex.Add(p.Point.X);
+                        }
+                        var minFrame = frameIndex.Min() - 1;
+                        var maxFrame = frameIndex.Max() + 1;
+                        var minFreq = frequencyIndex.Min();
+                        var maxFreq = frequencyIndex.Max() + 1;
+                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+                        posAcousticEvents.Add(acousticEvent);
+                    }
+                    // cluster negativeDiagonal ridges
+                    if (negDiPoiMatrix[r, c] != null && negDiPoiMatrix[r, c].RidgeMagnitude != 0 && negDiPoiMatrix[r, c].IsLocalMaximum == false)
+                    {
+                        var negSegmentSubList = new List<PointOfInterest>();
+                        RegionGrow(negDiPoiMatrix[r, c], negDiPoiMatrix, ref negSegmentSubList);
+                        var frequencyIndex = new List<int>();
+                        var frameIndex = new List<int>();
+                        foreach (var n in negSegmentSubList)
+                        {
+                            frequencyIndex.Add(256 - n.Point.Y);
+                            frameIndex.Add(n.Point.X);
+                        }
+                        var minFrame = frameIndex.Min() - 1;
+                        var maxFrame = frameIndex.Max() + 1;
+                        var minFreq = frequencyIndex.Min();
+                        var maxFreq = frequencyIndex.Max() + 1;
+                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+                        negAcousticEvents.Add(acousticEvent);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Group 4 types of ridge based segments into one list. 
+        /// </summary>
+        /// <param name="verSegmentList"></param>
+        /// <param name="horSegmentList"></param>
+        /// <param name="posDiSegmentList"></param>
+        /// <param name="negDiSegmentList"></param>
+        /// <returns></returns>
         public static List<PointOfInterest> GroupeSepRidges(List<List<PointOfInterest>> verSegmentList, List<List<PointOfInterest>> horSegmentList,
             List<List<PointOfInterest>> posDiSegmentList, List<List<PointOfInterest>> negDiSegmentList)
         {

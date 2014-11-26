@@ -302,7 +302,23 @@ namespace Dong.Felt.ResultsOutput
             var result = AudioFilePreparer.PrepareFile(candidate.SourceFilePath.ToFileInfo(), fiOutputSegment, request, TempFileHelper.TempDir());       
         }
 
-
+        public static List<Tuple<double, double, double>> OutputTopRank(List<List<Tuple<double, double, double>>> similarityScoreTupleList, int rank)
+        {
+            var result = new List<Tuple<double, double, double>>();
+            var count = similarityScoreTupleList.Count;
+            for (int i = 1; i <= rank; i++)
+            {
+                var subListCount = similarityScoreTupleList[count - i].Count;
+                for (int j = 0; j < subListCount; j++)
+                {
+                    if (similarityScoreTupleList[count - i][j].Item1 > 0.7)
+                    {
+                        result.Add(similarityScoreTupleList[count - i][j]);
+                    }
+                }
+            }
+            return result;
+        }
 
     }
 }
