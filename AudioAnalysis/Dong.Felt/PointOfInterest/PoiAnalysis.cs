@@ -295,9 +295,9 @@ namespace Dong.Felt
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                     var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
-                    var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
-                    var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
-                    var dividedPOIList = POISelection.POIListDivision(gaussianBlurRidgesList);
+                    //var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
+                    //var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
+                    var dividedPOIList = POISelection.POIListDivision(ridges);
                     //var verSegmentList = new List<List<PointOfInterest>>();
                     //var horSegmentList = new List<List<PointOfInterest>>();
                     //var posDiSegmentList = new List<List<PointOfInterest>>();
@@ -308,14 +308,16 @@ namespace Dong.Felt
                     var horSegmentList = new List<AcousticEvent>();
                     var posDiSegmentList = new List<AcousticEvent>();
                     var negDiSegmentList = new List<AcousticEvent>();
+
                     var frameDuration = spectrogram.FrameDuration * config.WindowOverlap;
                     ClusterAnalysis.RidgeListToEvent(dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
                         rows, cols, frameDuration, spectrogram.FBinWidth, ref verSegmentList, ref horSegmentList,
                         ref posDiSegmentList, ref negDiSegmentList);
+                    //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, horSegmentList, eventThreshold, null);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, verSegmentList, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in dividedPOIList[1])
+                    foreach (PointOfInterest poi in dividedPOIList[0])
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         Point point = new Point(poi.Point.Y, poi.Point.X);
@@ -330,7 +332,7 @@ namespace Dong.Felt
                         poi.HerzScale = herzScale;
                     }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Filtered Gaussian blur.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Ridge detection-grouped vertical.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);

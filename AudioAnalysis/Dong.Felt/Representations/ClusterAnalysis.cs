@@ -234,6 +234,9 @@ namespace Dong.Felt.Representations
             var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
             var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
             var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
+            
+            var verDoubleMatrix = verPoiMatrix.Map(x=>x.RidgeMagnitude>0?1:0.0);
+            var result = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0, 257, false, verDoubleMatrix);
 
             for (var r = 0; r < rowsCount; r++)
             {
@@ -243,7 +246,7 @@ namespace Dong.Felt.Representations
                     if (verPoiMatrix[r, c] != null && verPoiMatrix[r, c].RidgeMagnitude != 0 && verPoiMatrix[r, c].IsLocalMaximum == false)
                     {
                         var verSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow(verPoiMatrix[r, c], verPoiMatrix, ref verSegmentSubList);
+                        RegionGrow8Direction(verPoiMatrix[r, c], verPoiMatrix, verSegmentSubList);
                         var frequencyIndex = new List<int>();
                         var frameIndex = new List<int>();
                         foreach (var v1 in verSegmentSubList)
@@ -262,7 +265,7 @@ namespace Dong.Felt.Representations
                     if (horPoiMatrix[r, c] != null && horPoiMatrix[r, c].RidgeMagnitude != 0 && horPoiMatrix[r, c].IsLocalMaximum == false)
                     {
                         var horSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow(horPoiMatrix[r, c], horPoiMatrix, ref horSegmentSubList);
+                        RegionGrow8Direction(horPoiMatrix[r, c], horPoiMatrix, horSegmentSubList);
                         var frequencyIndex = new List<int>();
                         var frameIndex = new List<int>();
                         foreach (var h in horSegmentSubList)
@@ -282,7 +285,7 @@ namespace Dong.Felt.Representations
                     if (posDiPoiMatrix[r, c] != null && posDiPoiMatrix[r, c].RidgeMagnitude != 0 && posDiPoiMatrix[r, c].IsLocalMaximum == false)
                     {
                         var posSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow(posDiPoiMatrix[r, c], posDiPoiMatrix, ref posSegmentSubList);
+                        RegionGrow8Direction(posDiPoiMatrix[r, c], posDiPoiMatrix, posSegmentSubList);
                         var frequencyIndex = new List<int>();
                         var frameIndex = new List<int>();
                         foreach (var p in posSegmentSubList)
@@ -301,7 +304,7 @@ namespace Dong.Felt.Representations
                     if (negDiPoiMatrix[r, c] != null && negDiPoiMatrix[r, c].RidgeMagnitude != 0 && negDiPoiMatrix[r, c].IsLocalMaximum == false)
                     {
                         var negSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow(negDiPoiMatrix[r, c], negDiPoiMatrix, ref negSegmentSubList);
+                        RegionGrow8Direction(negDiPoiMatrix[r, c], negDiPoiMatrix, negSegmentSubList);
                         var frequencyIndex = new List<int>();
                         var frameIndex = new List<int>();
                         foreach (var n in negSegmentSubList)
@@ -319,6 +322,43 @@ namespace Dong.Felt.Representations
                 }
             }
         }
+
+        /// <summary>
+        /// Group 4 types of ridge based acoustic events into one list. 
+        /// </summary>
+        /// <param name="verSegmentList"></param>
+        /// <param name="horSegmentList"></param>
+        /// <param name="posDiSegmentList"></param>
+        /// <param name="negDiSegmentList"></param>
+        /// <returns></returns>
+        public static List<AcousticEvent> GroupeSepEvents(List<AcousticEvent> verSegmentList, List<AcousticEvent> horSegmentList,
+            List<AcousticEvent> posDiSegmentList, List<AcousticEvent> negDiSegmentList)
+        {
+            var result = new List<AcousticEvent>();            
+            // Add all sublists into one poi list. 
+            foreach (var v in verSegmentList)
+            {               
+                 result.Add(v);               
+            }
+
+            foreach (var h in horSegmentList)
+            {
+                
+                result.Add(h);               
+            }
+
+            foreach (var p in posDiSegmentList)
+            {                
+                result.Add(p);
+            }
+
+            foreach (var n in negDiSegmentList)
+            {               
+                result.Add(n);
+            }
+            return result;
+        }
+
 
         /// <summary>
         /// Group 4 types of ridge based segments into one list. 
@@ -405,8 +445,46 @@ namespace Dong.Felt.Representations
             return result; 
         }
 
+        public static void RegionGrow8Direction(PointOfInterest currentPoi, PointOfInterest[,] poiMatrix, List<PointOfInterest> poiList)
+        {
+            var rowsCount = poiMatrix.GetLength(0);
+            var colsCount = poiMatrix.GetLength(1);
+            var PointX = 0;
+            var PointY = 0; 
+
+            if (currentPoi != null)
+            {
+                PointX = currentPoi.Point.X;
+                PointY = currentPoi.Point.Y;
+            }
+
+            if (StatisticalAnalysis.checkBoundary(PointX, PointY, colsCount, rowsCount)
+                && poiMatrix[PointY, PointX] != null && poiMatrix[PointY, PointX].RidgeMagnitude != 0.0)
+            {
+                poiList.Add(currentPoi);
+            }
+            
+            // clockwise search
+            // first right
+            RegionGrow8Direction(poiMatrix[PointY, PointX + 1], poiMatrix,  poiList);
+            // second bottom right
+            //RegionGrow8Direction(poiMatrix[PointY + 1, PointX + 1], poiMatrix, ref poiList);
+            //// third bottom 
+            //RegionGrow(poiMatrix[PointY + 1, PointX], poiMatrix, ref poiList);          
+            //// fourth bottom left
+            //RegionGrow8Direction(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);          
+            //// fifth left       
+            //RegionGrow8Direction(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);           
+            //// sixth top left
+            //RegionGrow8Direction(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);          
+            //// seventh top
+            //RegionGrow8Direction(poiMatrix[PointY - 1, PointX], poiMatrix, ref poiList);
+            //// eight top right
+            //RegionGrow8Direction(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);
+        }
+
         /// <summary>
-        /// Recursive process to get a connected segment
+        /// Recursive process to get a connected segment 6 directions
         /// </summary>
         /// <param name="currentPoi"></param>
         /// <returns></returns>
@@ -414,6 +492,7 @@ namespace Dong.Felt.Representations
         {
             var rowsCount = poiMatrix.GetLength(0);
             var colsCount = poiMatrix.GetLength(1);
+            var searchDirectionCount = 0;
 
             if (currentPoi != null && currentPoi.IsLocalMaximum == false)
             {
@@ -427,6 +506,7 @@ namespace Dong.Felt.Representations
                 {
                     //poiMatrix[PointY, PointX + 1].IsLocalMaximum = true;
                     RegionGrow(poiMatrix[PointY, PointX + 1], poiMatrix, ref poiList);
+                    searchDirectionCount++;
                 }
                 // second bottom right
                 if ((PointX + 1) < colsCount && (PointY + 1) < rowsCount &&
@@ -452,6 +532,27 @@ namespace Dong.Felt.Representations
                 // fifth left
                 if ((PointX - 1) > 0 &&
                     poiMatrix[PointY, PointX - 1] != null && poiMatrix[PointY, PointX - 1].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);
+                }
+                // sixth top left
+                if ((PointX - 1) > 0 && (PointY - 1) > 0 && 
+                    poiMatrix[PointY- 1, PointX - 1] != null && poiMatrix[PointY -1, PointX - 1].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);
+                }
+                // seventh top
+                if ((PointY - 1) > 0 && 
+                    poiMatrix[PointY-1, PointX] != null && poiMatrix[PointY-1, PointX].RidgeMagnitude != 0.0)
+                {
+                    //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
+                    RegionGrow(poiMatrix[PointY-1, PointX], poiMatrix, ref poiList);
+                }
+                // eight top right
+                if ((PointX + 1) < colsCount && (PointY - 1) > 0 && 
+                    poiMatrix[PointY -1, PointX + 1] != null && poiMatrix[PointY-1, PointX + 1].RidgeMagnitude != 0.0)
                 {
                     //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
                     RegionGrow(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);

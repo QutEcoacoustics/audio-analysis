@@ -173,6 +173,10 @@
       <Project>{0338570e-5a77-4a2e-8e17-7955c36ae1f7}</Project>
       <Name>Acoustics.Tools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AED\AED\AED.fsproj">
+      <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
+      <Name>AED</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80bc795a-a987-45ab-b29b-76cf190384ba}</Project>
       <Name>AnalysisBase</Name>
