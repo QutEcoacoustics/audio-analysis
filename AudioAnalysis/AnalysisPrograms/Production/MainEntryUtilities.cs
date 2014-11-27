@@ -21,6 +21,7 @@ namespace AnalysisPrograms
     using System.Runtime.Serialization;
     using System.Text;
 
+    using Acoustics.Shared;
 #if DEBUG
     using Acoustics.Shared.Debugging;
 #endif
@@ -359,6 +360,11 @@ namespace AnalysisPrograms
         internal static void HangBeforeExit()
         {
 #if DEBUG
+            if (AppConfigHelper.IsMono)
+            {
+                return;
+            }
+
             // if Michael is debugging with visual studio, this will prevent the window closing.
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
             if (parentProcess.ProcessName == "devenv")
