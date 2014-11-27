@@ -30,14 +30,14 @@
     /// </remarks>
     public class AnalysisCoordinator
     {
+        private const string StartingItem = "Starting item {0}: {1}.";
+        private const string CancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly bool saveIntermediateWavFiles;
         private readonly bool saveImageFiles;
         private readonly bool saveIntermediateCsvFiles;
-
-        private const string StartingItem = "Starting item {0}: {1}.";
-        private const string CancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisCoordinator"/> class.
@@ -106,7 +106,7 @@
         /// </returns>
         public AnalysisResult2[] Run(FileInfo file, IAnalyser2 analysis, AnalysisSettings settings)
         {
-            return Run(new List<FileSegment>() { new FileSegment() {OriginalFile = file} }, analysis, settings);
+            return this.Run(new List<FileSegment>() { new FileSegment() {OriginalFile = file} }, analysis, settings);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@
         /// </returns>
         public AnalysisResult2[] Run(FileSegment fileSegment, IAnalyser2 analysis, AnalysisSettings settings)
         {
-            return Run(new List<FileSegment>() {fileSegment}, analysis, settings);
+            return this.Run(new List<FileSegment>() {fileSegment}, analysis, settings);
         }
 
         /// <summary>
@@ -169,24 +169,25 @@
             // clones are made for sequential runs to to ensure consistency
             var settingsForThisItem = (AnalysisSettings)settings.Clone();
 
-            Log.DebugFormat("Analysis started in {0}.", this.IsParallel ? "parallel" : "sequence");
+            Log.InfoFormat("Analysis started in {0}.", this.IsParallel ? "parallel" : "sequence");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
             // Analyse the sub-segments in parallel or sequentially (IsParallel property), 
             // Create and delete directories and/or files as indicated by properties
             // DeleteFinished and SubFoldersUnique
             if (this.IsParallel)
             {
-                results = RunParallel(analysisSegments, analysis, settingsForThisItem);
+                results = this.RunParallel(analysisSegments, analysis, settingsForThisItem);
 
-                // TODO: determine of this is bad because we do not do it for sequential as well!
+                // TODO: determine if this is bad because we do not do it for sequential as well!
                 Array.Sort(results);
             }
             else
             {
                 // sequential
-                results = RunSequential(analysisSegments, analysis, settingsForThisItem);
+                results = this.RunSequential(analysisSegments, analysis, settingsForThisItem);
             }
 
             stopwatch.Stop();
