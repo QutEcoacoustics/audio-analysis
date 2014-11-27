@@ -40,7 +40,7 @@ namespace AnalysisPrograms
 
             if (true)  // construct 3Dimage of audio
             {
-                //LDSpectrogram3D.Main(null);
+                LDSpectrogram3D.Main(null);
                 LoggedConsole.WriteLine("FINSIHED");
             }
 
@@ -69,15 +69,6 @@ namespace AnalysisPrograms
             if (false)  // do test of new moving average method
             {
                 DataTools.TEST_FilterMovingAverage();
-                LoggedConsole.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
-            }
-
-
-            if (false)
-            {
-                ImageTools.TestCannyEdgeDetection();
             }
 
 
@@ -134,6 +125,7 @@ namespace AnalysisPrograms
             }
 
 
+
             if (false)  // concatenating spectrogram images with gaps between them.
             {
                 LDSpectrogramStitching.StitchPartialSpectrograms();
@@ -142,17 +134,13 @@ namespace AnalysisPrograms
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
-
-
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
             // problem is that Jason cuts them up into 6 hour blocks.
             if (false)
             {
                 LDSpectrogramStitching.ConcatenateSpectralIndexFiles();
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             } // end if (true)
+
 
 
 
@@ -174,32 +162,5 @@ namespace AnalysisPrograms
             System.Environment.Exit(0);
         }
 
-
-        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, double[,] overlay)
-        {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if (scores != null) image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
-            if ((poi != null) && (poi.Count > 0))
-                image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            if (overlay != null)
-            {
-                var m = MatrixTools.ThresholdMatrix2Binary(overlay, 0.5);
-                image.OverlayDiscreteColorMatrix(m);
-            }
-            return image.GetImage();
-        } //DrawSonogram()
-
-        public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, int[,] overlay)
-        {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.OverlayDiscreteColorMatrix(overlay);
-            return image.GetImage();
-        } //DrawSonogram()
     }
 }
