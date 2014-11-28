@@ -15,6 +15,139 @@ namespace Dong.Felt.Representations
 
         #region Public Methods
 
+        /// <summary>
+        /// SmoothRidges by elonging the ridges at particular directions. 
+        /// </summary>
+        /// <param name="ridgeMatrix"></param>
+        /// <param name="step"></param>
+        /// <returns></returns>
+        public static PointOfInterest[,] SmoothVerticalRidges(List<PointOfInterest> ridgeList, int rows, int cols,
+            int verticalStep, int horizontalStep)
+        {
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rows, cols);
+            var matrixRowlength = ridgeMatrix.GetLength(0);
+            var matrixColLength = ridgeMatrix.GetLength(1);           
+            var vradius = verticalStep / 2;
+            var hradius = horizontalStep /2;
+            var result = new PointOfInterest[matrixRowlength, matrixColLength];
+            for (int colIndex = 0; colIndex < matrixColLength; colIndex++)
+            {
+                for (int rowIndex = 0; rowIndex < matrixRowlength; rowIndex++)
+                {
+                    var point = new Point(colIndex, rowIndex);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    tempPoi.OrientationCategory = 10;
+                    result[rowIndex, colIndex] = tempPoi;
+                }
+            }
+            if (ridgeMatrix != null)
+            {
+                for (var r = vradius; r < matrixRowlength - vradius; r++)
+                {
+                    for (var c = hradius; c < matrixColLength - hradius; c++)
+                    {
+                        if (ridgeMatrix[r, c].OrientationCategory == (int)Direction.North)
+                        {
+                            var sumMagnitude = 0.0;
+                            var subMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(ridgeMatrix, r - vradius, c,
+                            r + vradius, c);
+                            for (var i = 0; i < subMatrix.GetLength(0); i++)
+                            {
+                                sumMagnitude += subMatrix[i, 0].RidgeMagnitude;
+                            }
+                            var avgMagnitude = sumMagnitude / verticalStep;
+                            for (var j = r - vradius; j <= r + vradius; j++)
+                            {
+                                if (ridgeMatrix[j, c].RidgeMagnitude == 0.0)
+                                {
+                                    result[j, c].RidgeMagnitude = avgMagnitude;
+                                    result[j, c].OrientationCategory = (int)Direction.North;
+                                }
+                                else
+                                {
+                                    result[j, c] = ridgeMatrix[j, c];
+                                }
+                            }
+                        }
+                        if (ridgeMatrix[r, c].OrientationCategory == (int)Direction.East)
+                        {
+                            var sumMagnitude = 0.0;
+                            var radius = horizontalStep / 2;
+                            var subMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(ridgeMatrix, r, c - hradius,
+                            r, c + hradius);
+                            for (var i = 0; i < subMatrix.GetLength(0); i++)
+                            {
+                                sumMagnitude = subMatrix[0, i].RidgeMagnitude;
+                            }
+                            var avgMagnitude = sumMagnitude / horizontalStep;
+                            for (var j = c - radius; j <= c + radius; j++)
+                            {
+                                if (ridgeMatrix[r, j].RidgeMagnitude == 0.0)
+                                {
+                                    result[r, j].RidgeMagnitude = avgMagnitude;
+                                    result[r, j].OrientationCategory = (int)Direction.East;
+                                }
+                                else
+                                {
+                                    result[r, j] = ridgeMatrix[r, j];
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// SmoothRidges by elonging the ridges at particular directions. 
+        /// </summary>
+        /// <param name="ridgeMatrix"></param>
+        /// <param name="step"></param>
+        /// <returns></returns>
+        public static List<PointOfInterest> SmoothHorizontalRidges(List<PointOfInterest> ridgeList, int rows, int cols, int horizontalStep
+                 )
+        {
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rows, cols);
+            var matrixRowlength = ridgeMatrix.GetLength(0);
+            var matrixColLength = ridgeMatrix.GetLength(1);
+            var result = new List<PointOfInterest>();
+
+            if (ridgeMatrix != null)
+            {
+                for (var r = 0; r < matrixRowlength; r++)
+                {
+                    for (var c = horizontalStep / 2; c < matrixColLength; c++)
+                    {
+                        if (ridgeMatrix[r, c].OrientationCategory == (int)Direction.East)
+                        {
+                            var sumMagnitude = 0.0;
+                            var radius = horizontalStep / 2;
+                            var subMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(ridgeMatrix, r, c - radius,
+                            r, c + radius);
+                            for (var i = 0; i < subMatrix.GetLength(0); i++)
+                            {
+                                sumMagnitude = subMatrix[0, i].RidgeMagnitude;
+                            }
+                            var avgMagnitude = sumMagnitude / horizontalStep;
+                            for (var j = c - radius; j <= c + radius; j++)
+                            {
+                                if (ridgeMatrix[r, j].RidgeMagnitude == 0.0)
+                                {
+                                    ridgeMatrix[r, j].RidgeMagnitude = avgMagnitude;
+                                    ridgeMatrix[r, j].OrientationCategory = (int)Direction.North;
+                                    result.Add(ridgeMatrix[r, j]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
         //Step 1: do blur to connect broken/seperated poi 
         /// <summary>
         /// Gaussian Blur tries to connect broken ridges. 
@@ -53,7 +186,7 @@ namespace Dong.Felt.Representations
                     {
                         //var subMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(poiMatrix, r - radius, c - radius,
                         //    r + radius, c + radius);
-                        
+
                         if (StatisticalAnalysis.checkBoundary(r - radius, c - radius, matrixRowlength, matrixColLength) &&
                         StatisticalAnalysis.checkBoundary(r + radius, c + radius, matrixRowlength, matrixColLength))
                         {
@@ -68,7 +201,7 @@ namespace Dong.Felt.Representations
                                     for (var j = -radius; j < radius; j++)
                                     {
                                         // check wheter need to change it. 
-                                        var tempMagnitude = centralMagnitude * gaussianKernal[radius+ i, radius + j];
+                                        var tempMagnitude = centralMagnitude * gaussianKernal[radius + i, radius + j];
 
                                         if (result[r + i, c + j].RidgeMagnitude < tempMagnitude)
                                         {
@@ -227,16 +360,19 @@ namespace Dong.Felt.Representations
         /// <param name="negAcousticEvents"></param>
         public static void RidgeListToEvent(List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
             List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, int rowsCount, int colsCount, double frameWidth, double freqBin,
-            ref List<AcousticEvent> verAcousticEvents, ref List<AcousticEvent> horAcousticEvents,
-            ref List<AcousticEvent> posAcousticEvents, ref List<AcousticEvent> negAcousticEvents)
+            List<AcousticEvent> verAcousticEvents, List<AcousticEvent> horAcousticEvents,
+            List<AcousticEvent> posAcousticEvents, List<AcousticEvent> negAcousticEvents)
         {
             var verPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(verPoiList, rowsCount, colsCount);
             var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
             var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
             var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
-            
-            var verDoubleMatrix = verPoiMatrix.Map(x=>x.RidgeMagnitude>0?1:0.0);
+
+            /// call AED to group ridges into event
+            var verDoubleMatrix = verPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             var result = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0, 257, false, verDoubleMatrix);
+
+
 
             for (var r = 0; r < rowsCount; r++)
             {
@@ -254,10 +390,10 @@ namespace Dong.Felt.Representations
                             frequencyIndex.Add(256 - v1.Point.Y);
                             frameIndex.Add(v1.Point.X);
                         }
-                        var minFrame = frameIndex.Min()-1;
-                        var maxFrame = frameIndex.Max()+1;
+                        var minFrame = frameIndex.Min() - 1;
+                        var maxFrame = frameIndex.Max() + 1;
                         var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max()+1;
+                        var maxFreq = frequencyIndex.Max() + 1;
                         var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
                         verAcousticEvents.Add(acousticEvent);
                     }
@@ -334,26 +470,26 @@ namespace Dong.Felt.Representations
         public static List<AcousticEvent> GroupeSepEvents(List<AcousticEvent> verSegmentList, List<AcousticEvent> horSegmentList,
             List<AcousticEvent> posDiSegmentList, List<AcousticEvent> negDiSegmentList)
         {
-            var result = new List<AcousticEvent>();            
+            var result = new List<AcousticEvent>();
             // Add all sublists into one poi list. 
             foreach (var v in verSegmentList)
-            {               
-                 result.Add(v);               
+            {
+                result.Add(v);
             }
 
             foreach (var h in horSegmentList)
             {
-                
-                result.Add(h);               
+
+                result.Add(h);
             }
 
             foreach (var p in posDiSegmentList)
-            {                
+            {
                 result.Add(p);
             }
 
             foreach (var n in negDiSegmentList)
-            {               
+            {
                 result.Add(n);
             }
             return result;
@@ -442,7 +578,7 @@ namespace Dong.Felt.Representations
                 }
             }
 
-            return result; 
+            return result;
         }
 
         public static void RegionGrow8Direction(PointOfInterest currentPoi, PointOfInterest[,] poiMatrix, List<PointOfInterest> poiList)
@@ -450,7 +586,7 @@ namespace Dong.Felt.Representations
             var rowsCount = poiMatrix.GetLength(0);
             var colsCount = poiMatrix.GetLength(1);
             var PointX = 0;
-            var PointY = 0; 
+            var PointY = 0;
 
             if (currentPoi != null)
             {
@@ -463,10 +599,10 @@ namespace Dong.Felt.Representations
             {
                 poiList.Add(currentPoi);
             }
-            
+
             // clockwise search
             // first right
-            RegionGrow8Direction(poiMatrix[PointY, PointX + 1], poiMatrix,  poiList);
+            RegionGrow8Direction(poiMatrix[PointY, PointX + 1], poiMatrix, poiList);
             // second bottom right
             //RegionGrow8Direction(poiMatrix[PointY + 1, PointX + 1], poiMatrix, ref poiList);
             //// third bottom 
@@ -537,22 +673,22 @@ namespace Dong.Felt.Representations
                     RegionGrow(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);
                 }
                 // sixth top left
-                if ((PointX - 1) > 0 && (PointY - 1) > 0 && 
-                    poiMatrix[PointY- 1, PointX - 1] != null && poiMatrix[PointY -1, PointX - 1].RidgeMagnitude != 0.0)
+                if ((PointX - 1) > 0 && (PointY - 1) > 0 &&
+                    poiMatrix[PointY - 1, PointX - 1] != null && poiMatrix[PointY - 1, PointX - 1].RidgeMagnitude != 0.0)
                 {
                     //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
                     RegionGrow(poiMatrix[PointY - 1, PointX - 1], poiMatrix, ref poiList);
                 }
                 // seventh top
-                if ((PointY - 1) > 0 && 
-                    poiMatrix[PointY-1, PointX] != null && poiMatrix[PointY-1, PointX].RidgeMagnitude != 0.0)
+                if ((PointY - 1) > 0 &&
+                    poiMatrix[PointY - 1, PointX] != null && poiMatrix[PointY - 1, PointX].RidgeMagnitude != 0.0)
                 {
                     //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
-                    RegionGrow(poiMatrix[PointY-1, PointX], poiMatrix, ref poiList);
+                    RegionGrow(poiMatrix[PointY - 1, PointX], poiMatrix, ref poiList);
                 }
                 // eight top right
-                if ((PointX + 1) < colsCount && (PointY - 1) > 0 && 
-                    poiMatrix[PointY -1, PointX + 1] != null && poiMatrix[PointY-1, PointX + 1].RidgeMagnitude != 0.0)
+                if ((PointX + 1) < colsCount && (PointY - 1) > 0 &&
+                    poiMatrix[PointY - 1, PointX + 1] != null && poiMatrix[PointY - 1, PointX + 1].RidgeMagnitude != 0.0)
                 {
                     //poiMatrix[PointY, PointX - 1].IsLocalMaximum = true;
                     RegionGrow(poiMatrix[PointY, PointX - 1], poiMatrix, ref poiList);
