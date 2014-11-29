@@ -294,7 +294,7 @@ namespace Dong.Felt
                     var cols = spectrogram.Data.GetLength(0);
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);                   
-                    var smoothedVerticalRidges = ClusterAnalysis.SmoothVerticalRidges(ridges, rows, cols, 5,3);
+                    var smoothedVerticalRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5,3);
                     var smoothedVerticalRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedVerticalRidges);
                     var verSegmentList = new List<AcousticEvent>();
                     var horSegmentList = new List<AcousticEvent>();
@@ -302,14 +302,14 @@ namespace Dong.Felt
                     var negDiSegmentList = new List<AcousticEvent>();
                     var dividedPOIList = POISelection.POIListDivision(smoothedVerticalRidgesList);
                     var frameDuration = spectrogram.FrameDuration * config.WindowOverlap;
-                    //ClusterAnalysis.RidgeListToEvent(dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
-                    //    rows, cols, frameDuration, spectrogram.FBinWidth, verSegmentList, horSegmentList,
-                    //    posDiSegmentList, negDiSegmentList);
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
+                        rows, cols, frameDuration, spectrogram.FBinWidth, out verSegmentList, horSegmentList,
+                        posDiSegmentList, negDiSegmentList);
                     //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, verSegmentList, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in dividedPOIList[1])
+                    foreach (PointOfInterest poi in dividedPOIList[0])
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         Point point = new Point(poi.Point.Y, poi.Point.X);
