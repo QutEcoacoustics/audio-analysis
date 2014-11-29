@@ -29,7 +29,37 @@
                 }
             }
         }
-        
+
+        public static double[,] MatrixRotate90Clockwise(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new double[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[rows - r - 1, c];
+            return ret;
+        }
+
+        public static double[,] ZeroPaddingMatrix(double[,] m, int colsNumber)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var zero = new double[rows, cols+colsNumber];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    zero[r, c] = m[r, c];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = cols - 1; c < cols + colsNumber; c++)
+                {
+                    zero[r, c] = 0.0;
+                }
+            }
+            return zero;
+        }
+
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
@@ -727,7 +757,7 @@
             }
             return result;
         }
-
+        
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// The returned submatrix includes the rows and column passed as bounds.

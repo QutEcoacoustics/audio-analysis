@@ -1,10 +1,12 @@
 ﻿using AForge.Imaging.Filters;
 using AudioAnalysisTools;
+using AudioAnalysisTools.StandardSpectrograms;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using TowseyLibrary;
 
 namespace Dong.Felt.Representations
 {
@@ -21,7 +23,7 @@ namespace Dong.Felt.Representations
         /// <param name="ridgeMatrix"></param>
         /// <param name="step"></param>
         /// <returns></returns>
-        public static PointOfInterest[,] SmoothVerticalRidges(List<PointOfInterest> ridgeList, int rows, int cols,
+        public static PointOfInterest[,] SmoothRidges(List<PointOfInterest> ridgeList, int rows, int cols,
             int verticalStep, int horizontalStep)
         {
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rows, cols);
@@ -95,53 +97,6 @@ namespace Dong.Felt.Representations
                             }
                         }
 
-                    }
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// SmoothRidges by elonging the ridges at particular directions. 
-        /// </summary>
-        /// <param name="ridgeMatrix"></param>
-        /// <param name="step"></param>
-        /// <returns></returns>
-        public static List<PointOfInterest> SmoothHorizontalRidges(List<PointOfInterest> ridgeList, int rows, int cols, int horizontalStep
-                 )
-        {
-            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rows, cols);
-            var matrixRowlength = ridgeMatrix.GetLength(0);
-            var matrixColLength = ridgeMatrix.GetLength(1);
-            var result = new List<PointOfInterest>();
-
-            if (ridgeMatrix != null)
-            {
-                for (var r = 0; r < matrixRowlength; r++)
-                {
-                    for (var c = horizontalStep / 2; c < matrixColLength; c++)
-                    {
-                        if (ridgeMatrix[r, c].OrientationCategory == (int)Direction.East)
-                        {
-                            var sumMagnitude = 0.0;
-                            var radius = horizontalStep / 2;
-                            var subMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(ridgeMatrix, r, c - radius,
-                            r, c + radius);
-                            for (var i = 0; i < subMatrix.GetLength(0); i++)
-                            {
-                                sumMagnitude = subMatrix[0, i].RidgeMagnitude;
-                            }
-                            var avgMagnitude = sumMagnitude / horizontalStep;
-                            for (var j = c - radius; j <= c + radius; j++)
-                            {
-                                if (ridgeMatrix[r, j].RidgeMagnitude == 0.0)
-                                {
-                                    ridgeMatrix[r, j].RidgeMagnitude = avgMagnitude;
-                                    ridgeMatrix[r, j].OrientationCategory = (int)Direction.North;
-                                    result.Add(ridgeMatrix[r, j]);
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -358,106 +313,121 @@ namespace Dong.Felt.Representations
         /// <param name="horAcousticEvents"></param>
         /// <param name="posAcousticEvents"></param>
         /// <param name="negAcousticEvents"></param>
-        public static void RidgeListToEvent(List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
+        public static void RidgeListToEvent(SpectrogramStandard sonogram, List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
             List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, int rowsCount, int colsCount, double frameWidth, double freqBin,
-            List<AcousticEvent> verAcousticEvents, List<AcousticEvent> horAcousticEvents,
+            out List<AcousticEvent> verAcousticEvents, List<AcousticEvent> horAcousticEvents,
             List<AcousticEvent> posAcousticEvents, List<AcousticEvent> negAcousticEvents)
         {
             var verPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(verPoiList, rowsCount, colsCount);
-            var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
-            var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
-            var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
-
+            //var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
+            //var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
+            //var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
+            
             /// call AED to group ridges into event
             var verDoubleMatrix = verPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
-            var result = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0, 257, false, verDoubleMatrix);
-
-
-
-            for (var r = 0; r < rowsCount; r++)
-            {
-                for (var c = 0; c < colsCount; c++)
-                {
-                    // cluster vertical ridges into small segments                   
-                    if (verPoiMatrix[r, c] != null && verPoiMatrix[r, c].RidgeMagnitude != 0 && verPoiMatrix[r, c].IsLocalMaximum == false)
-                    {
-                        var verSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow8Direction(verPoiMatrix[r, c], verPoiMatrix, verSegmentSubList);
-                        var frequencyIndex = new List<int>();
-                        var frameIndex = new List<int>();
-                        foreach (var v1 in verSegmentSubList)
-                        {
-                            frequencyIndex.Add(256 - v1.Point.Y);
-                            frameIndex.Add(v1.Point.X);
-                        }
-                        var minFrame = frameIndex.Min() - 1;
-                        var maxFrame = frameIndex.Max() + 1;
-                        var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max() + 1;
-                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
-                        verAcousticEvents.Add(acousticEvent);
-                    }
-                    // cluster horizontal ridges
-                    if (horPoiMatrix[r, c] != null && horPoiMatrix[r, c].RidgeMagnitude != 0 && horPoiMatrix[r, c].IsLocalMaximum == false)
-                    {
-                        var horSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow8Direction(horPoiMatrix[r, c], horPoiMatrix, horSegmentSubList);
-                        var frequencyIndex = new List<int>();
-                        var frameIndex = new List<int>();
-                        foreach (var h in horSegmentSubList)
-                        {
-                            frequencyIndex.Add(256 - h.Point.Y);
-                            frameIndex.Add(h.Point.X);
-                        }
-                        var minFrame = frameIndex.Min() - 1;
-                        var maxFrame = frameIndex.Max() + 1;
-                        var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max() + 1;
-                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
-                        acousticEvent.BorderColour = Color.Blue;
-                        horAcousticEvents.Add(acousticEvent);
-                    }
-                    // cluster positiveDiagonal ridges
-                    if (posDiPoiMatrix[r, c] != null && posDiPoiMatrix[r, c].RidgeMagnitude != 0 && posDiPoiMatrix[r, c].IsLocalMaximum == false)
-                    {
-                        var posSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow8Direction(posDiPoiMatrix[r, c], posDiPoiMatrix, posSegmentSubList);
-                        var frequencyIndex = new List<int>();
-                        var frameIndex = new List<int>();
-                        foreach (var p in posSegmentSubList)
-                        {
-                            frequencyIndex.Add(256 - p.Point.Y);
-                            frameIndex.Add(p.Point.X);
-                        }
-                        var minFrame = frameIndex.Min() - 1;
-                        var maxFrame = frameIndex.Max() + 1;
-                        var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max() + 1;
-                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
-                        posAcousticEvents.Add(acousticEvent);
-                    }
-                    // cluster negativeDiagonal ridges
-                    if (negDiPoiMatrix[r, c] != null && negDiPoiMatrix[r, c].RidgeMagnitude != 0 && negDiPoiMatrix[r, c].IsLocalMaximum == false)
-                    {
-                        var negSegmentSubList = new List<PointOfInterest>();
-                        RegionGrow8Direction(negDiPoiMatrix[r, c], negDiPoiMatrix, negSegmentSubList);
-                        var frequencyIndex = new List<int>();
-                        var frameIndex = new List<int>();
-                        foreach (var n in negSegmentSubList)
-                        {
-                            frequencyIndex.Add(256 - n.Point.Y);
-                            frameIndex.Add(n.Point.X);
-                        }
-                        var minFrame = frameIndex.Min() - 1;
-                        var maxFrame = frameIndex.Max() + 1;
-                        var minFreq = frequencyIndex.Min();
-                        var maxFreq = frequencyIndex.Max() + 1;
-                        var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
-                        negAcousticEvents.Add(acousticEvent);
-                    }
-                }
-            }
+            var rotateVerDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(verDoubleMatrix);
+            var zeroPaddingDoubleMatrix = StatisticalAnalysis.ZeroPaddingMatrix(rotateVerDoubleMatrix, 2);
+            var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0, 
+                sonogram.NyquistFrequency, false, zeroPaddingDoubleMatrix);
+            
+            // => to call a anonymous method
+            var events = oblongs.Select(
+                o =>
+                {                   
+                    return new AcousticEvent(                        
+                        o,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FrameDuration,
+                        sonogram.FrameStep,
+                        sonogram.FrameCount)
+                    ;
+                }).ToList();
+            verAcousticEvents = events;
+            //for (var r = 0; r < rowsCount; r++)
+            //{
+            //    for (var c = 0; c < colsCount; c++)
+            //    {
+            //        // cluster vertical ridges into small segments                   
+            //        if (verPoiMatrix[r, c] != null && verPoiMatrix[r, c].RidgeMagnitude != 0 && verPoiMatrix[r, c].IsLocalMaximum == false)
+            //        {
+            //            var verSegmentSubList = new List<PointOfInterest>();
+            //            RegionGrow8Direction(verPoiMatrix[r, c], verPoiMatrix, verSegmentSubList);
+            //            var frequencyIndex = new List<int>();
+            //            var frameIndex = new List<int>();
+            //            foreach (var v1 in verSegmentSubList)
+            //            {
+            //                frequencyIndex.Add(256 - v1.Point.Y);
+            //                frameIndex.Add(v1.Point.X);
+            //            }
+            //            var minFrame = frameIndex.Min() - 1;
+            //            var maxFrame = frameIndex.Max() + 1;
+            //            var minFreq = frequencyIndex.Min();
+            //            var maxFreq = frequencyIndex.Max() + 1;
+            //            var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+            //            verAcousticEvents.Add(acousticEvent);
+            //        }
+            //        // cluster horizontal ridges
+            //        if (horPoiMatrix[r, c] != null && horPoiMatrix[r, c].RidgeMagnitude != 0 && horPoiMatrix[r, c].IsLocalMaximum == false)
+            //        {
+            //            var horSegmentSubList = new List<PointOfInterest>();
+            //            RegionGrow8Direction(horPoiMatrix[r, c], horPoiMatrix, horSegmentSubList);
+            //            var frequencyIndex = new List<int>();
+            //            var frameIndex = new List<int>();
+            //            foreach (var h in horSegmentSubList)
+            //            {
+            //                frequencyIndex.Add(256 - h.Point.Y);
+            //                frameIndex.Add(h.Point.X);
+            //            }
+            //            var minFrame = frameIndex.Min() - 1;
+            //            var maxFrame = frameIndex.Max() + 1;
+            //            var minFreq = frequencyIndex.Min();
+            //            var maxFreq = frequencyIndex.Max() + 1;
+            //            var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+            //            acousticEvent.BorderColour = Color.Blue;
+            //            horAcousticEvents.Add(acousticEvent);
+            //        }
+            //        // cluster positiveDiagonal ridges
+            //        if (posDiPoiMatrix[r, c] != null && posDiPoiMatrix[r, c].RidgeMagnitude != 0 && posDiPoiMatrix[r, c].IsLocalMaximum == false)
+            //        {
+            //            var posSegmentSubList = new List<PointOfInterest>();
+            //            RegionGrow8Direction(posDiPoiMatrix[r, c], posDiPoiMatrix, posSegmentSubList);
+            //            var frequencyIndex = new List<int>();
+            //            var frameIndex = new List<int>();
+            //            foreach (var p in posSegmentSubList)
+            //            {
+            //                frequencyIndex.Add(256 - p.Point.Y);
+            //                frameIndex.Add(p.Point.X);
+            //            }
+            //            var minFrame = frameIndex.Min() - 1;
+            //            var maxFrame = frameIndex.Max() + 1;
+            //            var minFreq = frequencyIndex.Min();
+            //            var maxFreq = frequencyIndex.Max() + 1;
+            //            var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+            //            posAcousticEvents.Add(acousticEvent);
+            //        }
+            //        // cluster negativeDiagonal ridges
+            //        if (negDiPoiMatrix[r, c] != null && negDiPoiMatrix[r, c].RidgeMagnitude != 0 && negDiPoiMatrix[r, c].IsLocalMaximum == false)
+            //        {
+            //            var negSegmentSubList = new List<PointOfInterest>();
+            //            RegionGrow8Direction(negDiPoiMatrix[r, c], negDiPoiMatrix, negSegmentSubList);
+            //            var frequencyIndex = new List<int>();
+            //            var frameIndex = new List<int>();
+            //            foreach (var n in negSegmentSubList)
+            //            {
+            //                frequencyIndex.Add(256 - n.Point.Y);
+            //                frameIndex.Add(n.Point.X);
+            //            }
+            //            var minFrame = frameIndex.Min() - 1;
+            //            var maxFrame = frameIndex.Max() + 1;
+            //            var minFreq = frequencyIndex.Min();
+            //            var maxFreq = frequencyIndex.Max() + 1;
+            //            var acousticEvent = new AcousticEvent(minFrame * frameWidth, (maxFrame - minFrame) * frameWidth, minFreq * freqBin, maxFreq * freqBin);
+            //            negAcousticEvents.Add(acousticEvent);
+            //        }
+            //    }
         }
+
 
         /// <summary>
         /// Group 4 types of ridge based acoustic events into one list. 
