@@ -68,7 +68,7 @@ namespace AudioAnalysisTools.Indices
     /// <summary>
     /// This class is used to store the values of all indices regardless of type.
     /// They are stored in dictionaries in order to make them accessible by key without having to write a special method each time a new index is created.
-    /// SOme of the functionality is in the parent class IndexBase.
+    /// Some of the functionality is in the parent class IndexBase.
     /// </summary>
     public class SummaryIndexValues : SummaryIndexBase
     {

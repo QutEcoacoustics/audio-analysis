@@ -138,14 +138,10 @@ namespace AudioAnalysisTools.Indices
             SummaryIndexValues summaryIndexValues = result.SummaryIndexValues;
             
             double totalSeconds = wavDuration.TotalSeconds;
-            double highAmplIndex = dspOutput.MaxAmplitudeCount / totalSeconds;
-            summaryIndexValues.HighAmplitudeIndex = highAmplIndex;
-
             // average high ampl rate per second
-            summaryIndexValues.HighAmplitudeIndex = highAmplIndex;
-
+            summaryIndexValues.HighAmplitudeIndex = dspOutput.MaxAmplitudeCount / totalSeconds;
             // average clip rate per second
-            summaryIndexValues.ClippingIndex = dspOutput.ClipCount / totalSeconds;
+            summaryIndexValues.ClippingIndex      = dspOutput.ClipCount / totalSeconds;
 
             // following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
             // although signal appears zero, this condition is required
@@ -382,7 +378,7 @@ namespace AudioAnalysisTools.Indices
                 result.Hits = hits;
                 result.TrackScores = scores;
                 ////result.Tracks = trackInfo.listOfSPTracks;
-                IndexCalculate.MarkClippedSpectra(spectra, highAmplIndex, summaryIndexValues.ClippingIndex);
+                IndexCalculate.MarkClippedSpectra(spectra, summaryIndexValues.HighAmplitudeIndex, summaryIndexValues.ClippingIndex);
 
                 return result;
             }
@@ -448,7 +444,7 @@ namespace AudioAnalysisTools.Indices
             result.TrackScores = scores;
             result.Tracks = sptInfo.listOfSPTracks;
 
-            IndexCalculate.MarkClippedSpectra(spectra, highAmplIndex, summaryIndexValues.ClippingIndex); 
+            IndexCalculate.MarkClippedSpectra(spectra, summaryIndexValues.HighAmplitudeIndex, summaryIndexValues.ClippingIndex); 
 
             return result;
         }

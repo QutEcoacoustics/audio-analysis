@@ -330,6 +330,26 @@ CicadaIndex:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
+EventsTotal:
+  Name: Event Count
+  Comment: "The total count of acoustic events per minute of recording."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 15.0
+  ProjectID: Acoustic Indices
+  Units: ""
+EventsTotalThresholded:
+  Name: Event Count
+  Comment: "Count of acoustic events (wide range)"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 5
+  NormMax: 25
+  ProjectID: Acoustic Indices
+  Units: ""
 # ADD THE SUMMARY INDICES ABOVE HERE
 # ====================================================================================================================================
 # ====================================================================================================================================
