@@ -1,4 +1,5 @@
 ---
+AnalysisType: Towsey.Analysis
 FileName: TEST_TUITCE_20091215_220004
 InputDirectory: C:\SensorNetworks\Output\Test\TestYaml
 OutputDirectory: C:\SensorNetworks\Output\Test\TestYaml

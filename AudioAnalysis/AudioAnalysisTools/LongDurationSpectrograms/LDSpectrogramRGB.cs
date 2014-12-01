@@ -1326,30 +1326,42 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int herzInterval = 1000;
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
 
-            //Image ribbon1 = cs1.GetSummaryIndexRibbon(colorMap);
-            Image ribbon1 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
-            image1.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
-
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
             colorMap = colorMap2;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
-            //Image ribbon2 = cs1.GetSummaryIndexRibbon(colorMap);
-            Image ribbon2 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
-            Image ribbon3 = cs1.GetSpectrogramRibbon(colorMap, 32);
-
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
+
+
+            //HighAmplitudeIndex   ClippingIndex
+            // read high amplitude and clipping info into an image
+            //7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.Indices.csv
+            //string analysisType = configuration.AnalysisType;
+            string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" +configuration.AnalysisType + ".csv");
+            Image imageX = null;
+            //imageX = IndexCalculate.();
 
             var imageList = new List<Image>();
             imageList.Add(image1);
-            imageList.Add(ribbon1);
+            imageList.Add(imageX);
             imageList.Add(image2);
-            imageList.Add(ribbon2);
-            imageList.Add(ribbon3);
             Image image3 = ImageTools.CombineImagesVertically(imageList);
             image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
+
+            Image ribbon;
+            // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
+            ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
+            // ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
+            ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
+
+            ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
+            ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
         }
     }
 }
