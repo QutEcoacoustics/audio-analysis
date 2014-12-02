@@ -625,10 +625,19 @@ namespace AnalysisPrograms
         } //AddContext2Table()
 
 
+        /// <summary>
+        /// This method should no longer be used. 
+        /// It depends on use of the DataTable class which ceased when Anthony did a major refactor in mid-2014.
+        /// </summary>
+        /// <param name="fiCsvFile"></param>
+        /// <param name="fiConfigFile"></param>
+        /// <returns></returns>
         public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         {
-            return DrawSummaryIndices.ProcessCsvFile(fiCsvFile, fiConfigFile);
-        } // ProcessCsvFile()
+            //THIS METHOD HAS BEEn DEPRACATED
+            //return DrawSummaryIndices.ProcessCsvFile(fiCsvFile, fiConfigFile);
+            return null;
+        }
 
 
         public string DefaultConfiguration
