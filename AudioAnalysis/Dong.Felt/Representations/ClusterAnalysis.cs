@@ -24,13 +24,16 @@ namespace Dong.Felt.Representations
         /// <param name="step"></param>
         /// <returns></returns>
         public static PointOfInterest[,] SmoothRidges(List<PointOfInterest> ridgeList, int rows, int cols,
-            int verticalStep, int horizontalStep)
+            int verticalStep, int horizontalStep, double sigma, int GaussianBlurSize)
         {
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rows, cols);
             var matrixRowlength = ridgeMatrix.GetLength(0);
             var matrixColLength = ridgeMatrix.GetLength(1);           
             var vradius = verticalStep / 2;
             var hradius = horizontalStep /2;
+            var gaussianBlur = new GaussianBlur(sigma, GaussianBlurSize);
+            var gradius = gaussianBlur.Size / 2;
+            var gaussianKernal = gaussianBlur.Kernel;
             var result = new PointOfInterest[matrixRowlength, matrixColLength];
             for (int colIndex = 0; colIndex < matrixColLength; colIndex++)
             {
@@ -96,7 +99,33 @@ namespace Dong.Felt.Representations
                                 }
                             }
                         }
+                        if (ridgeMatrix[r, c].OrientationCategory == (int)Direction.NorthEast ||
+                            ridgeMatrix[r, c].OrientationCategory == (int)Direction.NorthWest)
+                        {
+                            if (StatisticalAnalysis.checkBoundary(r - gradius, c - gradius,
+                                matrixRowlength, matrixColLength) &&
+                                StatisticalAnalysis.checkBoundary(r + gradius, c + gradius,
+                                matrixRowlength, matrixColLength))
+                            {
+                                var centralMagnitude = ridgeMatrix[r, c].RidgeMagnitude;
+                                var centralOrientationCateg = ridgeMatrix[r, c].OrientationCategory;
+                                // convolution operation
+                                for (var i = -gradius; i <= gradius; i++)
+                                {
+                                    for (var j = -gradius; j < gradius; j++)
+                                    {
+                                        // check wheter need to change it. 
+                                        var tempMagnitude = centralMagnitude * gaussianKernal[gradius + i, gradius + j];
 
+                                        if (result[r + i, c + j].RidgeMagnitude < tempMagnitude)
+                                        {
+                                            result[r + i, c + j].RidgeMagnitude = tempMagnitude;
+                                            result[r + i, c + j].OrientationCategory = centralOrientationCateg;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -194,7 +223,6 @@ namespace Dong.Felt.Representations
                     tempPoi.RidgeMagnitude = 0.0;
                     tempPoi.OrientationCategory = 10;
                     result[rowIndex, colIndex] = tempPoi;
-
                 }
             }
             if (poiMatrix != null)
@@ -313,25 +341,33 @@ namespace Dong.Felt.Representations
         /// <param name="horAcousticEvents"></param>
         /// <param name="posAcousticEvents"></param>
         /// <param name="negAcousticEvents"></param>
-        public static void RidgeListToEvent(SpectrogramStandard sonogram, List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
-            List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, int rowsCount, int colsCount, double frameWidth, double freqBin,
-            out List<AcousticEvent> verAcousticEvents, List<AcousticEvent> horAcousticEvents,
-            List<AcousticEvent> posAcousticEvents, List<AcousticEvent> negAcousticEvents)
+        public static void RidgeListToEvent(SpectrogramStandard sonogram, 
+            List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
+            List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, 
+            int rowsCount, int colsCount, 
+            out List<AcousticEvent> verAcousticEvents, out List<AcousticEvent> horAcousticEvents,
+            out List<AcousticEvent> posAcousticEvents, out List<AcousticEvent> negAcousticEvents)
         {
+          
             var verPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(verPoiList, rowsCount, colsCount);
-            //var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
-            //var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
-            //var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
+            var horPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(horPoiList, rowsCount, colsCount);
+            var posDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(posDiaPoiList, rowsCount, colsCount);
+            var negDiPoiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(negDiaPoiList, rowsCount, colsCount);
             
             /// call AED to group ridges into event
             var verDoubleMatrix = verPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
+            var horDoubleMatrix = horPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
+            var posDoubleMatrix = posDiPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
+            var vegDoubleMatrix = negDiPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             var rotateVerDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(verDoubleMatrix);
-            //var zeroPaddingDoubleMatrix = StatisticalAnalysis.ZeroPaddingMatrix(rotateVerDoubleMatrix, 2);
-            var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0,
-                sonogram.NyquistFrequency, false, rotateVerDoubleMatrix);
+            var rotateHorDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(horDoubleMatrix);
+            var rotatePosDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(posDoubleMatrix);
+            var rotateNegDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(vegDoubleMatrix);        
+            var hoblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0,
+                sonogram.NyquistFrequency, false, rotateHorDoubleMatrix);
             
             // => to call a anonymous method
-            var events = oblongs.Select(
+            var hevents = hoblongs.Select(
                 o =>
                 {                   
                     return new AcousticEvent(                        
@@ -343,7 +379,58 @@ namespace Dong.Felt.Representations
                         sonogram.FrameCount)
                     ;
                 }).ToList();
-            verAcousticEvents = events;
+            horAcousticEvents = hevents;
+            var voblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0,
+                sonogram.NyquistFrequency, false, rotateVerDoubleMatrix);
+
+            // => to call a anonymous method
+            var vevents = voblongs.Select(
+                o =>
+                {
+                    return new AcousticEvent(
+                        o,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FrameDuration,
+                        sonogram.FrameStep,
+                        sonogram.FrameCount)
+                    ;
+                }).ToList();
+            verAcousticEvents = vevents;
+
+            var poblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0,
+                sonogram.NyquistFrequency, false, rotatePosDoubleMatrix);
+            // => to call a anonymous method
+            var pevents = poblongs.Select(
+                o =>
+                {
+                    return new AcousticEvent(
+                        o,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FrameDuration,
+                        sonogram.FrameStep,
+                        sonogram.FrameCount)
+                    ;
+                }).ToList();
+            posAcousticEvents = pevents;
+            var noblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0,
+                sonogram.NyquistFrequency, false, rotateNegDoubleMatrix);
+
+            // => to call a anonymous method
+            var nevents = noblongs.Select(
+                o =>
+                {
+                    return new AcousticEvent(
+                        o,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FrameDuration,
+                        sonogram.FrameStep,
+                        sonogram.FrameCount)
+                    ;
+                }).ToList();
+            negAcousticEvents = nevents;
             //for (var r = 0; r < rowsCount; r++)
             //{
             //    for (var c = 0; c < colsCount; c++)
