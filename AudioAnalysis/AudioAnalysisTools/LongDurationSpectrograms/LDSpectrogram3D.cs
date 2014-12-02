@@ -35,6 +35,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using log4net;
 
     using TowseyLibrary;
+using Acoustics.Shared.Csv;
 
     /// <summary>
     /// This class generates false-colour spectrograms of long duration audio recordings.
@@ -389,6 +390,120 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                        };
         }
 
+        /// <summary>
+        /// This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS 
+        ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
+        ///  
+        /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
+        /// </summary>
+        /// <param name="longDurationSpectrogramConfig">
+        /// </param>
+        /// <param name="indicesConfigPath">
+        /// The indices Config Path.
+        /// </param>
+        /// <param name="spectra">
+        /// Optional spectra to pass in. If specified the spectra will not be loaded from disk!
+        /// </param>
+        //public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, Dictionary<string, double[,]> spectra = null)
+        //{
+        //    LdSpectrogramConfig configuration = longDurationSpectrogramConfig;
+
+        //    Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
+        //    dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+
+        //    string fileStem = configuration.FileName;
+        //    DirectoryInfo outputDirectory = configuration.OutputDirectoryInfo;
+
+        //    // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+        //    string colorMap1 = configuration.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
+        //    string colorMap2 = configuration.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+
+        //    double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+        //    ////double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
+
+        //    // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
+        //    TimeSpan minuteOffset = configuration.MinuteOffset;   // default = zero minute of day i.e. midnight
+        //    TimeSpan xScale = configuration.XAxisTicInterval; // default is one minute spectra i.e. 60 per hour
+        //    int sampleRate = configuration.SampleRate;
+        //    int frameWidth = configuration.FrameWidth;
+
+        //    var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
+        //    cs1.FileName = fileStem;
+        //    cs1.BackgroundFilter = backgroundFilterCoeff;
+        //    cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
+
+        //    if (spectra == null)
+        //    {
+        //        // reads all known files spectral indices
+        //        Logger.Info("Reading spectra files from disk");
+        //        cs1.ReadCSVFiles(configuration.InputDirectoryInfo, fileStem);
+        //    }
+        //    else
+        //    {
+        //        // TODO: not sure if this works
+        //        Logger.Info("Spectra loaded from memory");
+        //        cs1.LoadSpectrogramDictionary(spectra);
+        //    }
+
+        //    if (cs1.GetCountOfSpectrogramMatrices() == 0)
+        //    {
+        //        LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+        //        return;
+        //    }
+
+        //    cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
+
+        //    cs1.CalculateStatisticsForAllIndices();
+        //    Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.indexStats);
+
+
+        //    cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
+
+        //    string colorMap = colorMap1;
+        //    Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+        //    string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+        //    Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+        //    int nyquist = cs1.SampleRate / 2;
+        //    int herzInterval = 1000;
+        //    image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
+
+        //    //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
+        //    colorMap = colorMap2;
+        //    Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+        //    title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+        //    titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
+        //    image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
+        //    image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
+
+        //    // read high amplitude and clipping info into an image
+        //    //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
+        //    string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
+        //    //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
+
+        //    Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
+        //    if (null != imageX)
+        //        imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
+
+        //    var imageList = new List<Image>();
+        //    imageList.Add(image1);
+        //    imageList.Add(imageX);
+        //    imageList.Add(image2);
+        //    Image image3 = ImageTools.CombineImagesVertically(imageList);
+        //    image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
+
+        //    Image ribbon;
+        //    // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
+        //    ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
+        //    ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
+        //    // ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
+        //    ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
+        //    ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
+
+        //    ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
+        //    ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
+        //    ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
+        //    ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
+        //}
 
 
         /// <summary>
@@ -410,7 +525,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(Title);
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Input .csv file: " + arguments.Source.Name);
+            LoggedConsole.WriteLine("# Input directory: " + arguments.Source.Name);
             LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
             LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
 
@@ -418,15 +533,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool verbose = arguments.Verbose;
 
             // 1. set up the necessary files
-            DirectoryInfo csvFileInfo = arguments.Source;
+            DirectoryInfo inputDirInfo = arguments.Source;
             FileInfo configFile = arguments.Config;
-            DirectoryInfo output = arguments.Output;
+            DirectoryInfo opDir = arguments.Output;
 
             // 2. get the config dictionary
             var configDict = GetConfiguration(configFile);
 
             // COMPONENT FILES IN DIRECTORY HAVE THIS STRUCTURE
-            //SERF_20130915_201727_000.wav\Towsey.Acoustic\SERF_20130915_201727_000.ACI.csv    ; SERF_20130915_201727_000.BGN.csv etc
+            //SERF_20130915_201727_000.wav\Towsey.Acoustic\SERF_20130915_201727_000.ACI.csv; SERF_20130915_201727_000.BGN.csv etc
 
 
             // print out the parameters
@@ -439,136 +554,79 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
 
+            DirectoryInfo[] dirList = inputDirInfo.GetDirectories();
 
-            // set up header of the output file
-            string outputPath = Path.Combine(output.FullName, "SNRInfoForConvDnnDataset.csv");
-            using (StreamWriter writer = new StreamWriter(outputPath))
+            // location to write the yaml config file for producing long duration spectrograms 
+            FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
+            // Initialise the default Yaml Config file
+            var config = new LdSpectrogramConfig("null", inputDirInfo, opDir); // default values have been set
+            // write the yaml file to config
+            config.WriteConfigToYaml(fiSpectrogramConfig);
+
+            // read the yaml Config file describing the Index Properties 
+            FileInfo indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo();
+            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+
+
+            foreach (DirectoryInfo dir in dirList)
             {
-                //string header = AudioToSonogramResult.GetCsvHeader();
-                //writer.WriteLine(header);
-            }
+                string targetDirectory = dir.FullName + @"\Towsey.Acoustic";
+                string targetFileName = dir.Name;
+                string[] nameArray = targetFileName.Split('.');
+                targetFileName = nameArray[0];
 
-            // following int's are counters to monitor file availability
-            int lineNumber = 0;
-            int fileExistsCount = 0;
-            int fileLocationNotInCsv = 0;
-            int fileInCsvDoesNotExist = 0;
+                //Write the default Yaml Config file for producing long duration spectrograms and place in the output directory
+                config = new LdSpectrogramConfig(targetFileName, inputDirInfo, opDir); // default values have been set
+                // write the yaml file to config
+                config.WriteConfigToYaml(fiSpectrogramConfig);
+                // read the yaml file to a LdSpectrogramConfig object
+                LdSpectrogramConfig configuration = LdSpectrogramConfig.ReadYamlToConfig(fiSpectrogramConfig);
+                configuration.InputDirectoryInfo = targetDirectory.ToDirectoryInfo();
 
-            // keep track of species names and distribution of classes.
-            // following dictionaries are to monitor species numbers
-            //var speciesCounts = new SpeciesCounts();
+                // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+                //string colorMap1 = configuration.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
+                string colorMap2 = configuration.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
 
+                double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+                //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
-            // read through the csv file containing info about recording locations and call bounds
-            try
-            {
-                var file = new FileStream(csvFileInfo.FullName, FileMode.Open);
-                var sr = new StreamReader(file);
+                // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
+                TimeSpan minuteOffset = configuration.MinuteOffset;   // default = zero minute of day i.e. midnight
+                TimeSpan xScale = configuration.XAxisTicInterval; // default is one minute spectra i.e. 60 per hour
+                int sampleRate = configuration.SampleRate;
+                int frameWidth = configuration.FrameWidth;
 
-                // read the header and discard
-                string strLine;
-                lineNumber++;
+                var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap2);
+                cs1.FileName = configuration.FileName;
+                cs1.BackgroundFilter = backgroundFilterCoeff;
+                cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
-                while ((strLine = sr.ReadLine()) != null)
+                // reads all known files spectral indices
+                Logger.Info("Reading spectra files from disk");
+                cs1.ReadCSVFiles(configuration.InputDirectoryInfo, configuration.FileName);
+
+                if (cs1.GetCountOfSpectrogramMatrices() == 0)
                 {
-                    lineNumber++;
-                    if (lineNumber % 5000 == 0)
-                    {
-                        Console.WriteLine(lineNumber);
-                    }
-
-                    // cannot use next line because reads the entire file
-                    ////var data = Csv.ReadFromCsv<string[]>(csvFileInfo).ToList();
-
-                    // read single record from csv file
-                    //var record = CsvDataRecord.ReadLine(strLine);
-
-                    //if (record.path == null)
-                    //{
-                    //    fileLocationNotInCsv++;
-                    //    ////string warning = String.Format("######### WARNING: line {0}  NULL PATH FIELD >>>null<<<", count);
-                    //    ////LoggedConsole.WriteWarnLine(warning);
-                    //    continue;
-                    //}
-
-                    //var sourceRecording = record.path;
-                    //var sourceDirectory = sourceRecording.Directory;
-                    //string parentDirectoryName = sourceDirectory.Parent.Name;
-                    //var imageOpDir = new DirectoryInfo(output.FullName + @"\" + parentDirectoryName);
-                    ////DirectoryInfo imageOpDir = new DirectoryInfo(outDirectory.FullName + @"\" + parentDirectoryName + @"\" + directoryName);
-
-                    /*#######################################
-                      #######################################
-                      my debug code for home to test on subset of data - comment these lines when at QUT! 
-                      Anthony will tell me I should use a conditional compilation flag.
-                        -- Anthony will tell you that this is completely unnecessary!
-                      ####################################### */
-                    ////DirectoryInfo localSourceDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\ConvDNNData");
-                    ////sourceRecording = Path.Combine(localSourceDir.FullName + @"\" + parentDirectoryName + @"\" + directoryName, fileName).ToFileInfo();
-                    ////record.path = sourceRecording;
-
-                    /* ####################################### */
-
-                    // TO TEST PORTION OF DATA 
-                    //doPreprocessing = false;
-                    //if (parentDirectoryName.Equals("0"))
-                    //{
-                    //    doPreprocessing = true;
-                    //}
-
-                    /* #######################################
-                       ####################################### */
+                    LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                    return;
+                }
 
 
-                    //if (!sourceRecording.Exists)
-                    //{
-                    //    fileInCsvDoesNotExist++;
-                    //    string warning = string.Format("FILE DOES NOT EXIST >>>," + sourceRecording.Name);
-                    //    using (StreamWriter writer = new StreamWriter(outputPath, true))
-                    //    {
-                    //        writer.WriteLine(warning);
-                    //    }
-                    //    ////LoggedConsole.WriteWarnLine(warning);
-                    //    continue;
-                    //}
 
-                    // ####################################################################
-                    //if (doPreprocessing)
-                    //{
-                    //    AudioToSonogramResult result = AnalyseOneRecording(record, configDict, output);
-                    //    string line = result.WriteResultAsLineOfCSV();
 
-                    //    // It is helpful to write to the output file as we go, so as to keep a record of where we are up to.
-                    //    // This requires to open and close the output file at each iteration
-                    //    using (StreamWriter writer = new StreamWriter(outputPath, true))
-                    //    {
-                    //        writer.WriteLine(line);
-                    //    }
-                    //}
+            } // foreach (DirectoryInfo dir in dirList)
 
-                    // everything should be OK - have jumped through all the hoops.
-                    fileExistsCount++;
-                    // keep track of species names and distribution of classes.
-                    //speciesCounts.AddSpeciesCount(record.common_tags);
-                    //speciesCounts.AddSpeciesID(record.common_tags, record.species_tags);
-                    //speciesCounts.AddSiteName(record.site_name);
 
-                } // end while()
 
-                string classDistributionOpPath = Path.Combine(output.FullName, "ClassDistributionsForConvDnnDataset.csv");
-                //speciesCounts.Save(classDistributionOpPath);
-            }
-            catch (IOException e)
-            {
-                LoggedConsole.WriteLine("Something went seriously bloody wrong!");
-                LoggedConsole.WriteLine(e.ToString());
-                return;
-            }
 
-            LoggedConsole.WriteLine("fileLocationNotInCsv =" + fileLocationNotInCsv);
-            LoggedConsole.WriteLine("fileInCsvDoesNotExist=" + fileInCsvDoesNotExist);
-            LoggedConsole.WriteLine("fileExistsCount      =" + fileExistsCount);
+            //LoggedConsole.WriteLine("fileLocationNotInCsv =" + fileLocationNotInCsv);
+            //LoggedConsole.WriteLine("fileInCsvDoesNotExist=" + fileInCsvDoesNotExist);
+            //LoggedConsole.WriteLine("fileExistsCount      =" + fileExistsCount);
         }
+
+
+
 
         // use the following paths for the command line for the <audio2sonogram> task. 
         public class Arguments
@@ -614,7 +672,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 //Source = @"Y:\Results\2013Feb05-184941 - Indicies Analysis of all of availae\SERF\Veg".ToDirectoryInfo(),
                 Source = @"Y:\Results\2013Nov30-023140 - SERF - November 2013 Download\SERF\November 2013 Download\Veg Plot WAV".ToDirectoryInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                Output = (@"C:\SensorNetworks\Output\XueyanDataset\" + datestamp).ToDirectoryInfo(),
+                Output = (@"C:\SensorNetworks\Output\FalseColourSpectrograms\Spectrograms3D\" + datestamp).ToDirectoryInfo(),
                 Verbose = true
             };
         }

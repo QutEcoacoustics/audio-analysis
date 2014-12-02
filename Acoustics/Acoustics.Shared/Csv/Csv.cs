@@ -271,7 +271,7 @@ namespace Acoustics.Shared.Csv
 
             // not tested!
             List<T[]> matrix;
-            using (var stream = source.OpenText())
+            using (var stream = new StreamReader(source.FullName))
             {
                 var reader = new CsvReader(stream, DefaultConfiguration);
 
