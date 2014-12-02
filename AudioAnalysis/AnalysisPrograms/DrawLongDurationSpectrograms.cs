@@ -47,9 +47,9 @@ namespace AnalysisPrograms
         {
             // INPUT and OUTPUT DIRECTORIES
             //2010 Oct 13th
-            string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
+            //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
+            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
@@ -74,6 +74,11 @@ namespace AnalysisPrograms
             //string ipFileName = "0f2720f2-0caa-460a-8410-df24b9318814_101017-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
+
+            // exclude the analysis type from file name i.e. "Indices"
+            string ipFileName = "BYR4_20131029_Towsey.Acoustic";
+            string ipdir = @"Y:\Results\2014Nov28-083415 - False Color, Mt Byron PRA, For Jason\to upload\Mt Byron\PRA\report\joined\BYR4_20131029.mp3\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);

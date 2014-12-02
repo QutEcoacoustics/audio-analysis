@@ -230,7 +230,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// For writing this method:
-        ///    See CLASS: IndicesCsv2Display
+        ///    See CLASS: DrawSummaryIndices
         ///       METHOD: Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, bool doNormalise)
         /// </summary>
         /// <param name="val"></param>

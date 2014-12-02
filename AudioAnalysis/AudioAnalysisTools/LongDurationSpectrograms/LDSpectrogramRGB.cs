@@ -1334,14 +1334,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
 
-
-            //HighAmplitudeIndex   ClippingIndex
             // read high amplitude and clipping info into an image
-            //7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.Indices.csv
-            //string analysisType = configuration.AnalysisType;
-            string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" +configuration.AnalysisType + ".csv");
-            Image imageX = null;
-            //imageX = IndexCalculate.();
+            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
+            string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
+            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
+
+            Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
+            if (null != imageX) 
+                imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
 
             var imageList = new List<Image>();
             imageList.Add(image1);
