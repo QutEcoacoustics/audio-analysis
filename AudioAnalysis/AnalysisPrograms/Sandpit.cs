@@ -14,12 +14,15 @@ using AudioAnalysisTools.DSP;
 using AudioAnalysisTools.WavTools;
 using Acoustics.Shared;
 
-
 namespace AnalysisPrograms
 {
     using PowerArgs;
     using AudioAnalysisTools.LongDurationSpectrograms;
 
+
+    /// <summary>
+    /// ACtivity Code for this class:= sandpit
+    /// </summary>
     public class Sandpit
     {
         public const int RESAMPLE_RATE = 17640;
