@@ -131,19 +131,10 @@ namespace Dong.Felt
         {
             var results = new List<RegionRerepresentation>();
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
-            var maxNhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
-            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
-            {
-                maxNhCountInRow--;
-            }
-            var tempFrameCount = (int)(spectrogram.FrameCount * compressConfig.CompressRate);
-            var minNhCountInColumn = (int)(tempFrameCount / neighbourhoodLength);
-            if (tempFrameCount % neighbourhoodLength == 0)
-            {
-                minNhCountInColumn--;
-            }
-            var ridgeNeighbourhood = StatisticalAnalysis.NhListToArray(nhRepresentationList, maxNhCountInRow, 
-                minNhCountInColumn);
+            var maxNhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
+            var maxNhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;            
+            var ridgeNeighbourhood = StatisticalAnalysis.NhListToArray(nhRepresentationList, maxNhCountInRow,
+                maxNhCountInColumn);
             var rowsCount = ridgeNeighbourhood.GetLength(0);
             var colsCount = ridgeNeighbourhood.GetLength(1);
 
@@ -567,7 +558,8 @@ namespace Dong.Felt
         /// <param name="candidates"></param>
         /// <returns></returns>
         public static List<Candidates> Feature5EuclideanDist2(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidates, double weight1, double weight2, string featurePropSet, CompressSpectrogramConfig compressConfig)
+            List<RegionRerepresentation> candidates, double weight1, double weight2, string featurePropSet, 
+            CompressSpectrogramConfig compressConfig)
         {
             var result = new List<Candidates>();
             var tempRegionList = new List<RegionRerepresentation>();
@@ -645,7 +637,8 @@ namespace Dong.Felt
                             weight2);
                     }
                     var item = new Candidates(distance, tempRegionList[0].FrameIndex / compressConfig.CompressRate,
-                            duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                            duration, tempRegionList[0].FrequencyIndex, 
+                            tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
                             tempRegionList[0].SourceAudioFile);
                     result.Add(item);
                 }

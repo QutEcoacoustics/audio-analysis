@@ -101,18 +101,17 @@
                 if (action == "batch")
                 {
                     /// Batch process for FELT
-                    var scores = new List<double>();
-                    scores.Add(1.0);
-                    var acousticEventlist = new List<AcousticEvent>();
-                    double eventThreshold = 0.5; // dummy variable - not used   
-                    AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
-                        scores, acousticEventlist, eventThreshold);
+                    //var scores = new List<double>();
+                    //scores.Add(1.0);
+                    //var acousticEventlist = new List<AcousticEvent>();
+                    //double eventThreshold = 0.5; // dummy variable - not used   
+                    //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
+                    //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                  //  MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  //ridgeConfig, compressConfig,
-                  //gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
-                    //MatchingBatchProcessSt(queryInputDirectory, inputDirectory.FullName, stConfiguation, config, rank, featurePropertySet,
-                    //    outputDirectory.FullName, tempDirectory);       
+                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                  ridgeConfig, compressConfig,
+                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
+                        
                 }
                 else if (action == "processOne")
                 {
@@ -134,11 +133,13 @@
                     //var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
                     //spectrogram.Data = compressedSpectrogram;                 
                     //spectrogram.Duration = tempDuration;                   
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig@"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\, featurePropertySet);
+                    
+                    /// Ridge detection analysis
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, featurePropertySet);
                     
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
                     //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
                     //OutputResults.MatchingSummary(inputDirectory, outputFile);
@@ -326,16 +327,14 @@
                 var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                 var queryGradients = POISelection.GradientPoiSelection(spectrogram, gradientConfig, featurePropSet);           
 
-                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
+                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                 var cols = spectrogram.Data.GetLength(0);
-                var queryNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-
+ 
                 var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
                 var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
-
-                queryNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
+                var queryNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
                     ridgeQNhRepresentationList,
                     gradientQNhRepresentationList, featurePropSet);    
                 //var normalizedNhRepresentationList = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(ridgeNhRepresentationList);
@@ -389,24 +388,10 @@
                         ridgeCNhRepresentationList,
                         gradientCNhRepresentationList, featurePropSet); 
                     //var normalisedCandidateRidgeNh = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(candidateRidgeNhRepresentationList);
-                    //var candHistogramCoding = StatisticalAnalysis.Nh4HistogramCoding(candidateRidgeNhRepresentationList);
                     var candidatesRegionList = Indexing.ExtractCandidateRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
                 candNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram, compressConfig);
                     //    var CanNormalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
                     //(candidateRidgeNhRepresentationList, featurePropSet);
-                    // this region representation depends on the query. 
-                    //var regionRepresentation = Indexing.RegionRepresentationFromAudioNhRepresentations(queryRepresentation, candidateRidgeNhRepresentationList,
-                    //candidatesAudioFiles[j], neighbourhoodLength, spectrogramConfig, candidateSpectrogram);
-                    // extract the candidates from the specific frequency
-                    //var candidatesRegionList = Indexing.ExtractCandidatesRegionRepresentationFromRegionRepresntations(queryRepresentation, regionRepresentation);
-                    //var splitRegionRepresentationListToBlock = StatisticalAnalysis.SplitRegionRepresentationListToBlock(candidatesRegionList);
-                    //foreach (var c in splitRegionRepresentationListToBlock)
-                    //{
-                    //    c[0].Features = new Feature(c);
-                    //    var matchScore = new Feature(queryRepresentation, c);
-                    //    c[0].Features.featureBlockMatch = matchScore.featureBlockMatch;
-                    //    candidatesList.Add(c[0]);
-                    //}
                     foreach (var c in candidatesRegionList)
                     {
                         candidatesList.Add(c);
@@ -426,7 +411,6 @@
                 //var simiScoreCandidatesList = StatisticalAnalysis.ConvertCombinedDistanceToSimilarityScore(candidateDistanceList,
                 //    candidatesList, weight1, weight2);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
-                //var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
                 /// To save all matched acoustic events                        
                 if (candidateDistanceList.Count != 0)
                 {

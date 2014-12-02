@@ -15,7 +15,7 @@ namespace Dong.Felt.ResultsOutput
 {
     public class OutputResults
     {
-        
+
         /// <summary>
         /// Matching step: 1. change candidate file path into file name for doing matching, output the changed files. 
         /// </summary>
@@ -33,20 +33,38 @@ namespace Dong.Felt.ResultsOutput
                 foreach (var c in subCandicatesList)
                 {
                     var audioFileName = Path.GetFileName(c.SourceFilePath);
-                    c.SourceFilePath = audioFileName;                    
+                    c.SourceFilePath = audioFileName;
                 }
-                CSVResults.CandidateListToCSV(new FileInfo(csvFiles[i]),subCandicatesList);
+                CSVResults.CandidateListToCSV(new FileInfo(csvFiles[i]), subCandicatesList);
             }
         }
 
+        public static void ChangeValueInCSVResult(DirectoryInfo inputDirectory)
+        {
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var csvFileCount = csvFiles.Count();
+
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
+                foreach (var c in subCandicatesList)
+                {
+                    if (c.Score > 1)
+                    {
+                        c.Score = 0.0;
+                    }
+                }
+                CSVResults.CandidateListToCSV(new FileInfo(csvFiles[i]), subCandicatesList);
+            }
+        }
         /// <summary>
         /// Matching step 2
         /// Match the improved csv files with groundtruth data, and output the results into original csv files. 
         /// The output csv files changed the score, if they found the match. 
         /// </summary>
-        public static void AutomatedMatchingAnalysis(DirectoryInfo inputDirectory, string groundTruthFile)          
+        public static void AutomatedMatchingAnalysis(DirectoryInfo inputDirectory, string groundTruthFile)
         {
-            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);            
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
             var csvFileCount = csvFiles.Count();
             var grounTruthList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
             var frequencyDifference = 1000; // 1000 hz
@@ -56,60 +74,37 @@ namespace Dong.Felt.ResultsOutput
             {
                 var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
                 var candidatesCount = subCandicatesList.Count();
-                for (var index =0; index<candidatesCount; index++)
+                for (var index = 0; index < candidatesCount; index++)
                 {
                     var currentCandidate = subCandicatesList[index];
                     foreach (var g in grounTruthList)
                     {
+                        var gEndTime = g.EndTime * secondToMilliSecondUnit;
+                        var gStartTime = g.StartTime * secondToMilliSecondUnit;
                         if (currentCandidate.SourceFilePath == g.SourceFilePath)
                         {
-                            if ((Math.Abs(currentCandidate.MaxFrequency - g.MaxFrequency) < frequencyDifference) &&
+                            if ((Math.Abs(currentCandidate.MaxFrequency - g.MaxFrequency) < frequencyDifference) ||
                                 (Math.Abs(currentCandidate.MinFrequency - g.MinFrequency) < frequencyDifference))
                             {
-                                var cDuration = currentCandidate.EndTime - currentCandidate.StartTime;
-                                var gDuration = (g.EndTime - g.StartTime) * secondToMilliSecondUnit;
-                                if (Math.Abs(cDuration - gDuration) < 2 * timeDifference)
+                                if ((Math.Abs(currentCandidate.StartTime - gStartTime) < timeDifference) ||
+                                   (Math.Abs(currentCandidate.EndTime - gEndTime) < timeDifference))
                                 {
-                                    if ((Math.Abs(currentCandidate.StartTime - g.StartTime * secondToMilliSecondUnit) < timeDifference)
-                                        &&
-                                       (Math.Abs(currentCandidate.EndTime - g.EndTime * secondToMilliSecondUnit) < timeDifference))
-                                    {
-                                        currentCandidate.Score = index + 1;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        currentCandidate.Score = 100;
-                                    }
+                                    currentCandidate.Score = index + 1;
+                                    break;
                                 }
                                 else
                                 {
-                                    if ((g.StartTime * secondToMilliSecondUnit - currentCandidate.StartTime < timeDifference) &&
-                                        (g.EndTime * secondToMilliSecondUnit - currentCandidate.EndTime < timeDifference))
-                                    {
-                                        currentCandidate.Score = index+1;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        if ((Math.Abs(g.StartTime * secondToMilliSecondUnit - currentCandidate.StartTime) < timeDifference)
-                                            ||
-                                        (Math.Abs(g.EndTime * secondToMilliSecondUnit - currentCandidate.EndTime) < timeDifference))
-                                        {
-                                            currentCandidate.Score = index + 1;
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            currentCandidate.Score = 100;
-                                        }
-                                    }
+                                    currentCandidate.Score = 100;
                                 }
                             }
                             else
                             {
                                 currentCandidate.Score = 100;
                             }
+                        }
+                        else
+                        {
+                            currentCandidate.Score = 100;
                         }
                     }
                 }
@@ -126,9 +121,9 @@ namespace Dong.Felt.ResultsOutput
         public static void MatchingSummary(DirectoryInfo inputDirectory, string outputFile)
         {
             var finalOutputResult = new List<Candidates>();
-            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);            
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
             var csvFileCount = csvFiles.Count();
-            
+
             for (int i = 0; i < csvFileCount; i++)
             {
                 var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
@@ -157,7 +152,7 @@ namespace Dong.Felt.ResultsOutput
                 foreach (var sc in subCandicatesList)
                 {
                     if (sc.Score >= 1)
-                    {                        
+                    {
                         candidatesList.Add(sc);
                     }
                 }
@@ -184,7 +179,7 @@ namespace Dong.Felt.ResultsOutput
 
             var matchedResults = Directory.GetFiles(fullPath, "*.csv", SearchOption.AllDirectories);
             var resultsCount = matchedResults.Count();
-            
+
             for (int index = 0; index < resultsCount; index++)
             {
                 // get the query species name                
@@ -194,7 +189,7 @@ namespace Dong.Felt.ResultsOutput
                 // read the audio source file
                 var content = CSVResults.CsvToCandidatesList(new FileInfo(matchedResults[index]));
                 var contentCount = content.Count();
-                var hit = new int[contentCount];               
+                var hit = new int[contentCount];
                 var tempScore = 0.0;
                 var firstPositionIndicator = 0;
                 var secondPositionIndicator = 0;
@@ -211,11 +206,11 @@ namespace Dong.Felt.ResultsOutput
                         {
                             tempScore = score;
                         }
-                    }                   
+                    }
                     if (querySpeciesName.Contains(candidateSpeciesName))
                     {
                         hit[i] = 1;
-                    }                       
+                    }
                 }
                 var correctHitCount = 0;
                 for (var j = 0; j < contentCount; j++)
@@ -230,7 +225,7 @@ namespace Dong.Felt.ResultsOutput
                         if (correctHitCount == 2)
                         {
                             secondPositionIndicator = j + 1;
-                        }                     
+                        }
                     }
                 }
                 string firstHitFileName;
@@ -248,19 +243,19 @@ namespace Dong.Felt.ResultsOutput
                 var splittedHitFileName = firstHitFileName.Split('-');
                 var hitSpeciesName = splittedHitFileName[splittedHitFileName.Count() - 1];
                 var item = new MathingResultsAnalysis
-                {                    
+                {
                     QuerySpeciesName = querySpeciesName,
                     HitSpeciesName = hitSpeciesName,
                     FirstHitPosition = firstPositionIndicator,
                     SecondHitPosition = secondPositionIndicator,
                     FirstHit = hit[0],
-                    SecondHit = hit[1],                    
-                    ThirdHit = hit[2],                   
-                    FourthHit = hit[3],                  
+                    SecondHit = hit[1],
+                    ThirdHit = hit[2],
+                    FourthHit = hit[3],
                     FifthHit = hit[4],
                     QueryAudioName = Path.GetFileNameWithoutExtension(matchedResults[index]),
                     MatchedAudioName = matchedHitName
-                };           
+                };
                 results.Add(item);
             }
 
@@ -278,19 +273,19 @@ namespace Dong.Felt.ResultsOutput
             // to cut out 2 sec either side, here buffer means the time offset.
             var buffer = new TimeSpan(0, 0, 1);
             var startTime = TimeSpan.FromMilliseconds(candidate.StartTime - buffer.TotalMilliseconds);
-            var endTime = TimeSpan.FromMilliseconds(candidate.EndTime + buffer.TotalMilliseconds);           
+            var endTime = TimeSpan.FromMilliseconds(candidate.EndTime + buffer.TotalMilliseconds);
             var sampleRate = 22050;
             if (startTime.TotalMilliseconds < 0)
-            {               
+            {
                 startTime = TimeSpan.FromMilliseconds(0);  // if startTime is 0 second
-                endTime = TimeSpan.FromMilliseconds(candidate.EndTime + 2 * buffer.TotalMilliseconds); 
+                endTime = TimeSpan.FromMilliseconds(candidate.EndTime + 2 * buffer.TotalMilliseconds);
             }
             // To check whether endTime is greater 60 seconds 
             if (endTime.TotalMilliseconds > 60000)
             {
                 startTime = TimeSpan.FromMilliseconds(candidate.EndTime - 2 * buffer.TotalMilliseconds);
                 var tempEndTime = new TimeSpan(0, 1, 0);
-                endTime = tempEndTime; 
+                endTime = tempEndTime;
             }
             var request = new AudioUtilityRequest
                     {
@@ -298,8 +293,8 @@ namespace Dong.Felt.ResultsOutput
                         OffsetStart = startTime,
                         OffsetEnd = endTime
                     };
-            
-            var result = AudioFilePreparer.PrepareFile(candidate.SourceFilePath.ToFileInfo(), fiOutputSegment, request, TempFileHelper.TempDir());       
+
+            var result = AudioFilePreparer.PrepareFile(candidate.SourceFilePath.ToFileInfo(), fiOutputSegment, request, TempFileHelper.TempDir());
         }
 
         public static List<Tuple<double, double, double>> OutputTopRank(List<List<Tuple<double, double, double>>> similarityScoreTupleList, int rank)

@@ -326,9 +326,9 @@ namespace Dong.Felt.Representations
             /// call AED to group ridges into event
             var verDoubleMatrix = verPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             var rotateVerDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(verDoubleMatrix);
-            var zeroPaddingDoubleMatrix = StatisticalAnalysis.ZeroPaddingMatrix(rotateVerDoubleMatrix, 2);
-            var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0, 
-                sonogram.NyquistFrequency, false, zeroPaddingDoubleMatrix);
+            //var zeroPaddingDoubleMatrix = StatisticalAnalysis.ZeroPaddingMatrix(rotateVerDoubleMatrix, 2);
+            var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0,
+                sonogram.NyquistFrequency, false, rotateVerDoubleMatrix);
             
             // => to call a anonymous method
             var events = oblongs.Select(
