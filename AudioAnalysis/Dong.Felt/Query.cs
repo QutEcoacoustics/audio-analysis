@@ -180,29 +180,27 @@
             this.nhCountInColumn = nhCountInCol;
             
         }
-
+       
+        /// <summary>
+        /// Keep it consistent with neighbourhoodRepresentation list. 
+        /// </summary>
+        /// <param name="queryCsvFile"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="spectrogram"></param>
+        /// <param name="spectrogramConfig"></param>
+        /// <param name="compressConfig"></param>
+        /// <returns></returns>
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength,
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
-            var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
-            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
-            {
-                nhCountInRow--;
-            }
-            var tempFrameCount = (int)(spectrogram.FrameCount * compressConfig.CompressRate);
-            var nhCountInColumn = (int)(tempFrameCount / neighbourhoodLength);
-            if (tempFrameCount % neighbourhoodLength == 0)
-            {
-                nhCountInColumn--;
-            }
+            var nhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
+            var nhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;
             var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
                 nhCountInRow, nhCountInColumn, spectrogramConfig, compressConfig);
             return result;
         }
-
 
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, 
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
