@@ -146,8 +146,8 @@
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
                     
                     ///GaussianBlur
-                    var inputDirect = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2";
-                    PointOfInterestAnalysis.GaussianBlur2(inputDirect, config, ridgeConfig, 1.0, 3);
+                    //var inputDirect = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2";
+                    //PointOfInterestAnalysis.GaussianBlur2(inputDirect, config, ridgeConfig, 1.0, 3);
                 }
                 else
                 {
@@ -273,7 +273,6 @@
             }
         }
               
-
         /// <summary>
         /// This one works well for ridge detection and histogram of gradients, it is designed for neighbourhood 
         /// </summary>
@@ -495,8 +494,8 @@
         }
 
         /// <summary>
-        /// This method is designed for retrieval algorithm based on gaussian blur. 
-        /// Gaussian blur is used for forming events to be compared rather than neighbourhood representation. 
+        /// This method is designed for retrieval algorithm based on AED. 
+        /// AED is used for forming events to be compared rather than neighbourhood representation. 
         /// </summary>
         /// <param name="queryFilePath"></param>
         /// <param name="inputFileDirectory"></param>
@@ -543,19 +542,18 @@
                     NyquistFrequency = spectrogram.NyquistFrequency,
                 };
                 var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
+                var rows = spectrogram.Data.GetLength(1) - 1;
                 var cols = spectrogram.Data.GetLength(0);
-
-                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
-                    rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                var queryEvents = EventBasedRepresentation.RidgesToAcousticEvents(spectrogram,
+                    queryRidges, rows, cols);
 
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
-                //var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram, 
-                //    spectrogramConfig);
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram,
                     spectrogramConfig, compressConfig);
-                
+
+                var queryRepresentation = Indexing.QueryRepresentationFromEventRepresentations(query, neighbourhoodLength,
+                queryEvents, queryAduioFiles[i], spectrogram);
                 /// To get all the candidates  
                 var candidatesList = new List<RegionRerepresentation>();
                 var seperateCandidatesList = new List<List<Candidates>>();
@@ -576,32 +574,14 @@
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
                     candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogram2(candidateSpectrogram.Data, compressConfig.CompressRate);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
-                    var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
-
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    var candNhRepresentationList = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-                    var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(candidateRidges,
-                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
-                    var gradientCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(candidateGradients,
-                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
-                    candNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
-                        ridgeCNhRepresentationList,
-                        gradientCNhRepresentationList, featurePropSet);
-                    //var normalisedCandidateRidgeNh = StatisticalAnalysis.NormalizeNhPropertiesForHistogram(candidateRidgeNhRepresentationList);
-                    //var candHistogramCoding = StatisticalAnalysis.Nh4HistogramCoding(candidateRidgeNhRepresentationList);
-                    var candidatesRegionList = Indexing.ExtractCandidateRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                candNhRepresentationList, candidatesAudioFiles[j], candidateSpectrogram, compressConfig);
-                    foreach (var c in candidatesRegionList)
-                    {
-                        candidatesList.Add(c);
-                    }
+                    var candidateEvents = EventBasedRepresentation.RidgesToAcousticEvents(candidateSpectrogram,
+                    queryRidges, rows1, cols1);
+                   
                 }// end of the loop for candidates
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.             
-                var weight3 = 1;
-                var weight4 = 1;
-                var weight5 = 1;
-                var weight6 = 1;
+                
                 var candidateDistanceList = new List<Candidates>();
                 Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
                 Log.Info("# calculate the distance between a query and a candidate");

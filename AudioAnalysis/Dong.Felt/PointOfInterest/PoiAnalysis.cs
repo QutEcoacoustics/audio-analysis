@@ -294,17 +294,17 @@ namespace Dong.Felt
                     var cols = spectrogram.Data.GetLength(0);
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);                   
-                    var smoothedVerticalRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5,3);
-                    var smoothedVerticalRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedVerticalRidges);
+                    var smoothedRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5,3, 1.0, 3);
+                    var smoothedRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedRidges);
                     var verSegmentList = new List<AcousticEvent>();
                     var horSegmentList = new List<AcousticEvent>();
                     var posDiSegmentList = new List<AcousticEvent>();
                     var negDiSegmentList = new List<AcousticEvent>();
-                    var dividedPOIList = POISelection.POIListDivision(smoothedVerticalRidgesList);
-                    var frameDuration = spectrogram.FrameDuration * config.WindowOverlap;
+                    var dividedPOIList = POISelection.POIListDivision(smoothedRidgesList);
+                    
                     ClusterAnalysis.RidgeListToEvent(spectrogram, dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
-                        rows, cols, frameDuration, spectrogram.FBinWidth, out verSegmentList, horSegmentList,
-                        posDiSegmentList, negDiSegmentList);
+                        rows, cols, out verSegmentList, out horSegmentList,
+                        out posDiSegmentList, out negDiSegmentList);
                     //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, verSegmentList, eventThreshold, null);

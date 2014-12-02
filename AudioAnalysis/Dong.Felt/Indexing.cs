@@ -93,6 +93,39 @@ namespace Dong.Felt
             return results;
         }
 
+        /// <summary>
+        /// To extract query region representation from an audio file which contains the query. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="ridgeNeighbourhood"></param>
+        /// <param name="audioFileName"></param>
+        /// <returns>
+        /// returns a list of acoustic event representation, each region represtation contains a ridge nh representation and some derived property. 
+        /// </returns>
+        public static List<AcousticEvent> QueryRepresentationFromEventRepresentations(Query query, int neighbourhoodLength,
+            List<AcousticEvent> nhRepresentationList, string audioFileName, SpectrogramStandard spectrogram)
+        {
+            var results = new List<AcousticEvent>();
+            var nhRowsCount = query.nhCountInRow;
+            var nhColsCount = query.nhCountInColumn;
+            var nhStartRowIndex = query.nhStartRowIndex;
+            var nhStartColIndex = query.nhStartColIndex;
+            var tempResult = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            var maxiRowIndex = nhStartRowIndex + nhRowsCount;
+            var maxiColIndex = nhStartColIndex + nhColsCount;
+            // Have to add in the boundary information of the query
+            // and to chech centroid of the events to see whether it is inside the bounday.
+
+            for (int rowIndex = nhStartRowIndex; rowIndex < maxiRowIndex; rowIndex++)
+            {
+                for (int colIndex = nhStartColIndex; colIndex < maxiColIndex; colIndex++)
+                {
+                    
+                }
+            }
+            return results;
+        }
+
         public static RegionRerepresentation ExtractQRepreFromAudioStRepr(Query query,
             List<PointOfInterest> stList, string audioFileName, SpectrogramStandard spectrogram)
         {
