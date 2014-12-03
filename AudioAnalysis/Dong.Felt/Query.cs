@@ -94,7 +94,8 @@
         /// <param name="minimumFrequency"></param>
         /// <param name="starttime"></param>
         /// <param name="endtime"></param>
-        public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime, int neighbourhoodLength,
+        public Query(double maximumFrequency, double minimumFrequency, 
+            double startTime, double endTime, int neighbourhoodLength,
             int maxFrequencyIndex, int maxFrameIndex,
             SpectrogramConfiguration spectrogramConfig)
         {
@@ -136,6 +137,19 @@
             GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
+        public Query(double maximumFrequency, double minimumFrequency, 
+            double startTime, double endTime,
+            CompressSpectrogramConfig compressConfig)
+        {
+            // the unit is confusing
+            var secondToMillisecond = 1000;
+            this.maxFrequency = maximumFrequency;
+            this.minFrequency = minimumFrequency;
+            this.startTime = startTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
+            this.endTime = endTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
+            this.duration = this.endTime - this.startTime;
+            this.frequencyRange = this.maxFrequency - this.minFrequency;
+        }
 
         public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime)
         {
@@ -222,13 +236,14 @@
                 nhCountInRow, nhCountInColumn,spectrogramConfig);
             return result;
         }
-
-        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile)
+        
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile,
+            CompressSpectrogramConfig compressConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
-                queryInfo.TimeEnd);
-            return result; 
+                queryInfo.TimeEnd, compressConfig);
+            return result;
         }
 
         #endregion

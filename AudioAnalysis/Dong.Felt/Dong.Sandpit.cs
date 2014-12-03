@@ -544,8 +544,8 @@
                 var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                 var rows = spectrogram.Data.GetLength(1) - 1;
                 var cols = spectrogram.Data.GetLength(0);
-                var queryEvents = EventBasedRepresentation.RidgesToAcousticEvents(spectrogram,
-                    queryRidges, rows, cols);
+                var queryEventsRepresentation = EventBasedRepresentation.RidgesToAcousticEvents(spectrogram,
+                    queryRidges, rows, cols,compressConfig);
 
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
@@ -553,7 +553,8 @@
                     spectrogramConfig, compressConfig);
 
                 var queryRepresentation = Indexing.QueryRepresentationFromEventRepresentations(query, neighbourhoodLength,
-                queryEvents, queryAduioFiles[i], spectrogram);
+                queryEventsRepresentation, queryAduioFiles[i], spectrogram, compressConfig);
+
                 /// To get all the candidates  
                 var candidatesList = new List<RegionRerepresentation>();
                 var seperateCandidatesList = new List<List<Candidates>>();
@@ -576,8 +577,8 @@
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    var candidateEvents = EventBasedRepresentation.RidgesToAcousticEvents(candidateSpectrogram,
-                    queryRidges, rows1, cols1);
+                    //var candidateEvents = EventBasedRepresentation.RidgesToAcousticEvents(candidateSpectrogram,
+                    //queryRidges, rows1, cols1);
                    
                 }// end of the loop for candidates
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.             
@@ -665,7 +666,8 @@
         public static void MatchingBatchProcessSt(string queryFilePath, string inputFileDirectory,
                                                   StructureTensorConfiguration stConfiguation,
                                                   SonogramConfig config, int rank, string featurePropSet,
-                                                  string outputPath, DirectoryInfo tempDirectory)
+                                                  string outputPath, DirectoryInfo tempDirectory,
+            CompressSpectrogramConfig compressConfig)
         {
             /// To read the query file
             var constructed = Path.GetFullPath(inputFileDirectory + queryFilePath);
@@ -698,7 +700,7 @@
                 /// 1. Read the query csv file by parsing the queryCsvFilePath
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
                 // read query poiList                
-                var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile);
+                var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, compressConfig);
                 var queryRepresentation = Indexing.ExtractQRepreFromAudioStRepr(query, queryAudioPOIs, queryAduioFiles[i], spectrogram);
                 //var poiCountInquery = queryRepresentation.POICount;               
                 ////var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
