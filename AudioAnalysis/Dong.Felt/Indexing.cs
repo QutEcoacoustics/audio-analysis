@@ -69,12 +69,30 @@ namespace Dong.Felt
             var nhStartRowIndex = query.nhStartRowIndex;
             var nhStartColIndex = query.nhStartColIndex;
             var tempResult = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            var maxiRowIndex = nhStartRowIndex + nhRowsCount;
-            var maxiColIndex = nhStartColIndex + nhColsCount;
-
-            for (int rowIndex = nhStartRowIndex; rowIndex < maxiRowIndex; rowIndex++)
+            var maxRowIndex = 0;
+            var maxColIndex = 0;
+            if (nhStartRowIndex + nhRowsCount > nhCountInRow)
             {
-                for (int colIndex = nhStartColIndex; colIndex < maxiColIndex; colIndex++)
+                maxRowIndex = nhCountInRow;
+                query.nhCountInRow--;
+            }
+            else
+            {
+                maxRowIndex = nhStartRowIndex + nhRowsCount;
+            }
+            if (nhStartColIndex + nhColsCount > nhCountInColumn)
+            {
+                maxColIndex = nhCountInColumn;
+                query.nhCountInColumn--;
+            }
+            else
+            {
+                maxColIndex = nhStartColIndex + nhColsCount;
+            }
+
+            for (int rowIndex = nhStartRowIndex; rowIndex < maxRowIndex; rowIndex++)
+            {
+                for (int colIndex = nhStartColIndex; colIndex < maxColIndex; colIndex++)
                 {
                     tempResult.Add(ridgeNeighbourhood[rowIndex, colIndex]);
                 }
@@ -102,29 +120,36 @@ namespace Dong.Felt
         /// <returns>
         /// returns a list of acoustic event representation, each region represtation contains a ridge nh representation and some derived property. 
         /// </returns>
-        public static List<AcousticEvent> QueryRepresentationFromEventRepresentations(Query query, int neighbourhoodLength,
-            List<AcousticEvent> nhRepresentationList, string audioFileName, SpectrogramStandard spectrogram)
+        public static List<EventBasedRepresentation> QueryRepresentationFromEventRepresentations(Query query, int neighbourhoodLength,
+            List<EventBasedRepresentation> eventRepresentationList, string audioFileName, 
+            SpectrogramStandard spectrogram, CompressSpectrogramConfig compressConfig)
         {
-            var results = new List<AcousticEvent>();
-            var nhRowsCount = query.nhCountInRow;
-            var nhColsCount = query.nhCountInColumn;
-            var nhStartRowIndex = query.nhStartRowIndex;
-            var nhStartColIndex = query.nhStartColIndex;
-            var tempResult = new List<RidgeDescriptionNeighbourhoodRepresentation>();
-            var maxiRowIndex = nhStartRowIndex + nhRowsCount;
-            var maxiColIndex = nhStartColIndex + nhColsCount;
+            var results = new List<EventBasedRepresentation>();
+            var frequencyBinWidth = spectrogram.FBinWidth;
+            var framePerSecond = spectrogram.FramesPerSecond * compressConfig.CompressRate;
+
+            var frameStart = (int)(query.startTime * framePerSecond);
+            var frameEnd = (int)(query.endTime * framePerSecond);
+            var highFrequency = (int)(query.maxFrequency * frequencyBinWidth);
+            var lowFrequency = (int)(query.minFrequency * frequencyBinWidth);
+           
             // Have to add in the boundary information of the query
             // and to chech centroid of the events to see whether it is inside the bounday.
-
-            for (int rowIndex = nhStartRowIndex; rowIndex < maxiRowIndex; rowIndex++)
+            foreach (var e in eventRepresentationList)
             {
-                for (int colIndex = nhStartColIndex; colIndex < maxiColIndex; colIndex++)
+                if (e.Centroid.Y >= lowFrequency && e.Centroid.Y <= highFrequency)
                 {
-                    
+                    if (e.Centroid.X >= frameStart && e.Centroid.X <= frameEnd)
+                    {
+                        results.Add(e);
+                    }
                 }
             }
             return results;
         }
+
+       
+
 
         public static RegionRerepresentation ExtractQRepreFromAudioStRepr(Query query,
             List<PointOfInterest> stList, string audioFileName, SpectrogramStandard spectrogram)

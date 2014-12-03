@@ -1,18 +1,55 @@
 ﻿using AudioAnalysisTools;
 using AudioAnalysisTools.StandardSpectrograms;
 using System;
+using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Dong.Felt.Configuration;
 
 namespace Dong.Felt.Representations
 {
-    class EventBasedRepresentation
+    public class EventBasedRepresentation:AcousticEvent
     {
-        public static List<AcousticEvent> RidgesToAcousticEvents(SpectrogramStandard sonogram,
-            List<PointOfInterest> ridges, int rows, int cols)
+        #region Public Properties
+        public static Color DEGAULT_BORDER_COLOR = Color.Crimson;
+        public static Color DEFAULT_SCORE_COLOR = Color.Black;
+
+        public Point Centroid { get; set; }
+
+        public double Width { get; set; }
+
+        public double Height { get; set; }
+
+        public double Area { get; set; }
+
+        public int POICount { get; set; }
+
+        #endregion
+
+
+        #region Public Methods
+
+        public EventBasedRepresentation(double minFrequency, double maxFrequency, double startTime, double duration)
         {
-            var result = new List<AcousticEvent>();
+            this.MaxFreq = maxFrequency;
+            this.MinFreq = minFrequency;
+            this.TimeStart = startTime;
+            this.Duration = duration;
+        }
+
+        /// <summary>
+        /// Take in ridges and detect events.
+        /// </summary>
+        /// <param name="sonogram"></param>
+        /// <param name="ridges"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <returns></returns>
+        public static List<EventBasedRepresentation> RidgesToAcousticEvents(SpectrogramStandard sonogram,
+            List<PointOfInterest> ridges, int rows, int cols, CompressSpectrogramConfig compressConfig)
+        {
+            var result = new List<EventBasedRepresentation>();
             // Gaussian blur on ridges 
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
             var verticalWindowLength = 5;
@@ -33,29 +70,44 @@ namespace Dong.Felt.Representations
                 out verAcousticEvents, out horAcousticEvents, out posAcousticEvents, out negAcousticEvents);
             foreach (var v in verAcousticEvents)
             {
-                var frequencyCentroid = (v.MaxFreq - v.MinFreq)/2.0;
-                v.DominantFreq = frequencyCentroid;
-                result.Add(v);
+                var ve = GetPropertiesFromEvents(sonogram, v, compressConfig);
+                result.Add(ve);
             }
             foreach (var h in horAcousticEvents)
             {
-                var frequencyCentroid = (h.MaxFreq - h.MinFreq) / 2.0;
-                h.DominantFreq = frequencyCentroid;
-                result.Add(h);
+                var he = GetPropertiesFromEvents(sonogram, h, compressConfig);
+                result.Add(he);
             }
             foreach (var p in posAcousticEvents)
             {
-                var frequencyCentroid = (p.MaxFreq - p.MinFreq) / 2.0;
-                p.DominantFreq = frequencyCentroid;
-                result.Add(p);
+                var pe = GetPropertiesFromEvents(sonogram, p, compressConfig);
+                result.Add(pe);
             }
             foreach (var n in negAcousticEvents)
             {
-                var frequencyCentroid = (n.MaxFreq - n.MinFreq) / 2.0;
-                n.DominantFreq = frequencyCentroid;
-                result.Add(n);
+                var ne = GetPropertiesFromEvents(sonogram, n, compressConfig);
+                result.Add(ne);
             }
             return result;
         }
+
+
+        public static EventBasedRepresentation GetPropertiesFromEvents(SpectrogramStandard sonogram, AcousticEvent aevent,
+            CompressSpectrogramConfig compressConfig)
+        {            
+            var frequencyBinWidth = sonogram.FBinWidth;
+            var framePerSecond = sonogram.FramesPerSecond * compressConfig.CompressRate;
+
+            var eventRep = new EventBasedRepresentation(aevent.MinFreq, aevent.MaxFreq, aevent.TimeStart, aevent.Duration);
+            eventRep.Height = (int)((aevent.MaxFreq - aevent.MinFreq) / frequencyBinWidth);
+            eventRep.Width = (int)((aevent.TimeEnd - aevent.TimeStart) * framePerSecond);
+            eventRep.Area = eventRep.Height * eventRep.Width;
+            var pointX = (int)(eventRep.Width * 0.5);
+            var pointY = (int)(eventRep.Height* 0.5);
+            eventRep.Centroid = new Point(pointX, pointY);
+
+            return eventRep;
+        }
+        #endregion
     }
 }

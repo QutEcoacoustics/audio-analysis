@@ -77,7 +77,7 @@ namespace Dong.Felt
             var frequencyBinWidth = 43.0;
             var framePerSecond = 86.0;
             var x = (int)((acousticEvent.MaxFreq - acousticEvent.MinFreq) / frequencyBinWidth * 0.5);
-            var y = (int)((acousticEvent.TimeStart - acousticEvent.TimeEnd) * framePerSecond * 0.5);
+            var y = (int)((acousticEvent.TimeEnd - acousticEvent.TimeStart) * framePerSecond * 0.5);
         }
 
         /// <summary>
