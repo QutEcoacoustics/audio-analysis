@@ -522,9 +522,9 @@ using Acoustics.Shared.Csv;
             }
 
             const string Title = "# READ LD Spectrogram csv files to prepare a 3D Spectrogram";
-            string date = "# DATE AND TIME: " + DateTime.Now;
+            string dateNow = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(Title);
-            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine(dateNow);
             LoggedConsole.WriteLine("# Input directory: " + arguments.Source.Name);
             LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
             LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
@@ -539,11 +539,6 @@ using Acoustics.Shared.Csv;
 
             // 2. get the config dictionary
             var configDict = GetConfiguration(configFile);
-
-            // COMPONENT FILES IN DIRECTORY HAVE THIS STRUCTURE
-            //SERF_20130915_201727_000.wav\Towsey.Acoustic\SERF_20130915_201727_000.ACI.csv; SERF_20130915_201727_000.BGN.csv etc
-
-
             // print out the parameters
             if (verbose)
             {
@@ -554,12 +549,30 @@ using Acoustics.Shared.Csv;
                 }
             }
 
-            DirectoryInfo[] dirList = inputDirInfo.GetDirectories();
+            // COMPONENT FILES IN DIRECTORY HAVE THIS STRUCTURE
+            //SERF_20130915_201727_000.wav\Towsey.Acoustic\SERF_20130915_201727_000.ACI.csv; SERF_20130915_201727_000.BGN.csv etc
+
+            // #################################################################
+            // ## To save a lot of mucking around, enter the first and last date of the recordings in list.
+            // #################################################################
+
+            // date time of first recording = 20130314_000021_000
+            DateTime startDate = new DateTime(2013, 03, 14, 00, 00, 21);
+            // date time of last  recording = 20131010_201733_000
+            DateTime endDate   = new DateTime(2013, 10, 10, 20, 17, 33);
+
+            int startDayOfyear = startDate.DayOfYear;
+            int endDayOfyear   = endDate.DayOfYear;
+            int totalDays = endDayOfyear - startDayOfyear + 1;
+            // total number of minutes in one day
+            int totalMinutes = 1440;
+
 
             // location to write the yaml config file for producing long duration spectrograms 
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             // Initialise the default Yaml Config file
             var config = new LdSpectrogramConfig("null", inputDirInfo, opDir); // default values have been set
+            int totalFreqBins = config.FrameWidth / 2; 
             // write the yaml file to config
             config.WriteConfigToYaml(fiSpectrogramConfig);
 
@@ -568,13 +581,35 @@ using Acoustics.Shared.Csv;
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
+            // set up the 3D matrix to store results.
+            var matrix3D = new Matrix3D("min", totalMinutes, "freq", totalFreqBins, "day", totalDays);
 
+            int count = 0;
+            DirectoryInfo[] dirList = inputDirInfo.GetDirectories();
             foreach (DirectoryInfo dir in dirList)
             {
-                string targetDirectory = dir.FullName + @"\Towsey.Acoustic";
                 string targetFileName = dir.Name;
-                string[] nameArray = targetFileName.Split('.');
+                string[] nameArray = targetFileName.Split('_');
+                string date = nameArray[1];
+                string time = nameArray[2];
+                int year   = Int32.Parse(date.Substring(0, 4));
+                int month  = Int32.Parse(date.Substring(4, 2));
+                int day    = Int32.Parse(date.Substring(6, 2));
+                int hour   = Int32.Parse(time.Substring(0, 2));
+                int minute = Int32.Parse(time.Substring(2, 2));
+                int second = Int32.Parse(time.Substring(4, 2));
+
+                DateTime thisDate = new DateTime(year, month, day, hour, minute, second);
+
+                int thisDayOfYear   = thisDate.DayOfYear;
+                int thisStartMinute = thisDate.Minute;
+                int dayIndex = thisDayOfYear - startDayOfyear;  
+
+
+                // get target file name without extention
+                nameArray = targetFileName.Split('.');
                 targetFileName = nameArray[0];
+                string targetDirectory = dir.FullName + @"\Towsey.Acoustic";
 
                 //Write the default Yaml Config file for producing long duration spectrograms and place in the output directory
                 config = new LdSpectrogramConfig(targetFileName, inputDirInfo, opDir); // default values have been set
@@ -612,11 +647,34 @@ using Acoustics.Shared.Csv;
                     return;
                 }
 
+                // get the ACI matrix oriented as per image
+                double[,] ACImatrix = cs1.GetNormalisedSpectrogramMatrix("ACI");
+ 
+                //int thisEndMinute = thisStartMinute + ACImatrix.GetLength(0);
+                //for (int Y = thisStartMinute; Y <= thisEndMinute; Y++)
+                for (int Y = 0; Y < ACImatrix.GetLength(0); Y++) // freq bins
+                {
+                    for (int X = 0; X < ACImatrix.GetLength(1); X++)  // minutes
+                    {
+                        matrix3D.SetValue(thisStartMinute + X, Y, dayIndex, ACImatrix[Y, X]);
+                    }
+                }
 
-
+                // for DEBUG
+                count++;
+                if(count >=20) break;
 
             } // foreach (DirectoryInfo dir in dirList)
 
+
+            for (int Z = 0; Z < 20; Z++)
+            {
+                float[,] m = matrix3D.GetMatrix("ZZ", Z);
+
+                string fileName = string.Format("sg.{0:d2}.ACI.png", Z);
+                string path = Path.Combine(opDir.FullName, fileName);
+                ImageTools.DrawMatrix(MatrixTools.ConvertMatrixOfFloat2Double(m), path);
+            }
 
 
 

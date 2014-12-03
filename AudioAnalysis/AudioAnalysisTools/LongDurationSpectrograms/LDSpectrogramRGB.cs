@@ -449,7 +449,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// returns a matrix of acoustic indices whose values are normalised.
-        /// In addition, small background values are reduced as per filter coefficient. 1.0 = unchanged. 
+        /// In addition, small background values are reduced as per filter coefficient. 1.0 = unchanged.
+        /// NOTE: The matrix is oriented as it would appear in the spectrogram image; i.e. rows = freq bins.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="backgroundFilterCoeff"></param>
