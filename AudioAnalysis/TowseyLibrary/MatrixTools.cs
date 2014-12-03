@@ -231,6 +231,22 @@ namespace TowseyLibrary
             return op;
         }
 
+        public static double[,] ConvertMatrixOfFloat2Double(float[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = (double)matrix[r, c];
+                }
+            }
+            return outM;
+        }
+
         /*
          * converts a matrix to a vector by concatenating columns.
          */

@@ -43,6 +43,7 @@ namespace AnalysisPrograms
 
             if (true)  // construct 3Dimage of audio
             {
+                //TowseyLibrary.Matrix3D.TestMatrix3dClass();
                 LDSpectrogram3D.Main(null);
                 LoggedConsole.WriteLine("FINSIHED");
             }

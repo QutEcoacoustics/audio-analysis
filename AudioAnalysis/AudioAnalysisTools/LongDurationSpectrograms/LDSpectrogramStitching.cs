@@ -12,10 +12,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
     /// <summary>
-    /// This class contains methods to stitch together images and/or indices derived from a sequence of short recordings.
-    /// As of August 2014, this class contains only one method to stitch images together.
-    /// Other methods could be added to derive the images (prior to stitching) from the original indices stored in csv files.
-    /// The following Powershell command was sued by Anthony to analyse a sequence of short recordings:
+    /// This class contains two methods:  (1) StitchPartialSpectrograms()   and    (2) ConcatenateSpectralIndexFiles()
+    /// 
+    /// (1) StitchPartialSpectrograms()
+    /// This method stitches together images and/or indices derived from a sequence of short recordings with gaps between them.
+    /// It was written to deal with a set of recordings with protocol of Gianna Pavan (10 minutes every 30 minutes).
+    /// 
+    /// The following Powershell command was constructed by Anthony to do the analysis and join the sequence of images so derived:
     /// Y:\Italy_GianniPavan\Sassofratino1day | % {& "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }   
     /// where:
     ///         Y:\Italy_GianniPavan\Sassofratino1day   is the directory containing recordings
@@ -26,11 +29,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     ///         -so ($_.FullName)  = the input file
     ///         -o "Y:\Italy_GianniPavan\output" = the output directory
     ///         -c "PATH\Towsey.Acoustic.Parallel.yml" is the config file
-
     /// 
     /// The following PowerShell command was used by Anthony to stitch together a sequence of spectrogam images without any gap between them.
     /// It requires ImageMagick software to be installed: i.e. C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe
     /// Y:\Italy_GianniPavan\output\Towsey.Acoustic> & "C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe" -mode concatenate -tile x1 *2MAP* "..\..\merge.png"
+    /// 
+    /// 
+    /// (2) ConcatenateSpectralIndexFiles()
+    /// This method was written to deal with a new recording protocol in which 24 hours of recording are made in 4 blocks of 6 hours each. 
+    /// It merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, into one file. It then creates the images. 
     /// </summary>
     public static class LDSpectrogramStitching
     {
