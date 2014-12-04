@@ -213,7 +213,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method ColourSpectrogram.ReadCSVFiles()";
+                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadCSVFiles()";
                     }
 
                     warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
@@ -228,7 +228,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (this.spectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
+                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadCSVFiles()");
                 LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
                 allOk = false;
             }
@@ -236,11 +236,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return allOk;
         }
 
-
         public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
         {
-            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
             string[] keys = indexKeys.Split('-');
+            return ReadSpectrogramCSVFiles(ipdir, fileName, keys, out freqBinCount);
+        }
+
+        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys, out int freqBinCount)
+        {
+            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
             string warning = null;
             freqBinCount = 256; // the default
             for (int key = 0; key < keys.Length; key++)
@@ -258,7 +262,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()";
+                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()";
                     }
 
                     warning += string.Format("\n      {0} File does not exist: {1}", keys[key], path);
@@ -275,7 +279,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return dict;
             }
 
-            LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()");
+            LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()");
             LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
 
             return dict;
@@ -285,7 +289,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             //string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
             int freqBinCount;
-            this.spgr_StdDevMatrices = ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
+            this.spgr_StdDevMatrices = LDSpectrogramRGB.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
             this.FrameWidth = freqBinCount * 2;
             if (this.spgr_StdDevMatrices == null)
             {
