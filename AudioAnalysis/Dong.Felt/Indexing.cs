@@ -75,6 +75,7 @@ namespace Dong.Felt
             {
                 maxRowIndex = nhCountInRow;
                 query.nhCountInRow--;
+                nhRowsCount--;
             }
             else
             {
@@ -84,6 +85,7 @@ namespace Dong.Felt
             {
                 maxColIndex = nhCountInColumn;
                 query.nhCountInColumn--;
+                nhColsCount--;
             }
             else
             {
