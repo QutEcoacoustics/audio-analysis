@@ -135,7 +135,8 @@
                     //spectrogram.Duration = tempDuration;                   
                     
                     /// Ridge detection analysis
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, featurePropertySet);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig, 
+                        featurePropertySet);
                     
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
@@ -229,7 +230,8 @@
         }       
                
         public static void RidgeDetectionBatchProcess(string audioFileDirectory, SonogramConfig config,
-            RidgeDetectionConfiguration ridgeConfig, GradientConfiguration gradientConfig, string featurePropSet)
+            RidgeDetectionConfiguration ridgeConfig, GradientConfiguration gradientConfig, 
+            CompressSpectrogramConfig compressConfig, string featurePropSet)
         {
             if (Directory.Exists(audioFileDirectory))
             {
@@ -238,6 +240,9 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                    var copySpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                    //spectrogram.Data = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
+                    copySpectrogram.Data = AudioPreprosessing.CompressSpectrogram2(copySpectrogram.Data, compressConfig.CompressRate);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -246,13 +251,14 @@
                     double eventThreshold = 0.5; // dummy variable - not used                               
                     Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     //Image image = ImageAnalysisTools.DrawNullSonogram(spectrogram);
-                    //var ridges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig,featurePropSet); 
-                    var ridges = POISelection.GradientPoiSelection(spectrogram, gradientConfig, featurePropSet);
-                    //var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, ridges, spectrogram.Data.GetLength(0),
-                    //    spectrogram.Data.GetLength(1));
-                    //spectrogram.Data = spectrogramData;
+                    var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
+                    var cols = spectrogram.Data.GetLength(0);
+
+                    var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                    //var compressedRidges = POISelection.RidgePoiSelection(copySpectrogram, ridgeConfig, featurePropSet);
+                    //var ridges = POISelection.AddRidges(queryRidges, compressedRidges, compressConfig, rows, cols);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in ridges)
+                    foreach (PointOfInterest poi in queryRidges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         //Point point = new Point(poi.Point.Y, poi.Point.X);
@@ -312,7 +318,7 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                spectrogram.Data = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
+                
                 //var data = spectrogram.Data;
                 //var maxMagnitude = data.Cast<double>().Max();
                 //var minMagnitude = data.Cast<double>().Min();
@@ -324,11 +330,12 @@
                     NyquistFrequency = spectrogram.NyquistFrequency,
                 };                
                 var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                
                 var queryGradients = POISelection.GradientPoiSelection(spectrogram, gradientConfig, featurePropSet);           
 
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                 var cols = spectrogram.Data.GetLength(0);
- 
+                
                 var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
                 var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,

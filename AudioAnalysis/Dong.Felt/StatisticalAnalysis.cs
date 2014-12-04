@@ -1018,6 +1018,7 @@
                         subMatrix[row, col].OrientationCategory = matrix[row1 + row, col1 + col].OrientationCategory;
                         subMatrix[row, col].RidgeMagnitude = matrix[row1 + row, col1 + col].RidgeMagnitude;
                         subMatrix[row, col].RidgeOrientation = matrix[row1 + row, col1 + col].RidgeOrientation;
+                        subMatrix[row, col].Intensity = matrix[row1 + row, col1 + col].Intensity;
                     }
                     else
                     {
@@ -1350,6 +1351,33 @@
             var unit = 1000.0;
             return seconds * unit;
         }
+
+        public static bool NullPoiMatrix(PointOfInterest[,] poiMatrix)
+        {
+            var rowsCount = poiMatrix.GetLength(0);
+            var colsCount = poiMatrix.GetLength(1);
+            var sumCount = rowsCount * colsCount;
+            var count = 0;
+            for (var r = 0; r < rowsCount; r++)
+            {
+                for (var c = 0; c < colsCount; c++)
+                {
+                    if (poiMatrix[r, c].RidgeMagnitude == 0.0)
+                    {
+                        count++;
+                    }
+                }
+            }
+            if (count == sumCount)
+            {
+                return true;
+            }
+            else                
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// ridge neighbourhood representation list to array.
