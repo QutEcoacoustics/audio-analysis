@@ -35,7 +35,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using log4net;
 
     using TowseyLibrary;
-using Acoustics.Shared.Csv;
+    using Acoustics.Shared.Csv;
 
     /// <summary>
     /// This class generates false-colour spectrograms of long duration audio recordings.
@@ -57,23 +57,10 @@ using Acoustics.Shared.Csv;
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
-        public LDSpectrogram3D()
-        {
-            this.BackgroundFilter = 1.0; // default value = no filtering
-            this.SampleRate = SpectrogramConstants.SAMPLE_RATE; // default recording starts at midnight
-            this.FrameWidth = SpectrogramConstants.FRAME_WIDTH; // default value - from which spectrogram was derived
-            this.XInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default = one minute spectra and hourly time lines
-            this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
-        }
-
-        public TimeSpan MinuteOffset { get; set; }
-
-        public TimeSpan XInterval { get; set; }
-
-        /// <summary>
-        /// Gets or sets the frame width. Used only to calculate scale of Y-axis to draw grid lines.
-        /// </summary>
-        public int FrameWidth { get; set; }
+        ///// <summary>
+        ///// Gets or sets the frame width. Used only to calculate scale of Y-axis to draw grid lines.
+        ///// </summary>
+        //public int FrameWidth { get; set; }
 
         /// <summary>
         /// The sample rate.
@@ -81,26 +68,13 @@ using Acoustics.Shared.Csv;
         /// default value - after resampling
         public int SampleRate { get; set; }
 
-        public int YInterval // mark 1 kHz intervals
-        {
-            get
-            {
-                double freqBinWidth = this.SampleRate / (double)this.FrameWidth;
-                return (int)Math.Round(1000 / freqBinWidth);
-            }
-        }
-
-        public double BackgroundFilter { get; set; }
 
         /// <summary>
         /// Gets or sets the ColorMap within current recording.
+        /// acoustic indices used to assign the three colour mapping.
         /// </summary>
         public string ColorMap { get; set; } 
         
-        /// <summary>
-        /// POSITIVE or NEGATIVE
-        /// </summary>
-        public string ColorMode { get; set; }     
 
         private Dictionary<string, IndexProperties> spectralIndexProperties; 
 
@@ -139,40 +113,6 @@ using Acoustics.Shared.Csv;
         /// </summary>
         public int SampleCount { get; set; }
 
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <param name="Xscale"></param>
-        /// <param name="sampleRate"></param>
-        /// <param name="colourMap"></param>
-        public LDSpectrogram3D(TimeSpan Xscale, int sampleRate, string colourMap)
-        {
-            this.BackgroundFilter = 1.0;
-            this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
-            this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
-            this.XInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-            this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
-            // set the X and Y axis scales for the spectrograms 
-            this.XInterval = Xscale;
-            this.SampleRate = sampleRate;
-            this.ColorMap = colourMap;
-        }
-
-
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <param name="minuteOffset">minute of day at which the spectrogram starts</param>
-        /// <param name="Xscale">time scale : pixels per hour</param>
-        /// <param name="sampleRate">recording smaple rate which also determines scale of Y-axis.</param>
-        /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
-        /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
-        public LDSpectrogram3D(TimeSpan minuteOffset, TimeSpan Xscale, int sampleRate, int frameWidth, string colourMap)
-            : this(Xscale, sampleRate, colourMap)
-        {
-            this.MinuteOffset = minuteOffset;
-            this.FrameWidth = frameWidth;
-        }
 
         public Dictionary<string, IndexProperties> GetSpectralIndexProperties()
         {
@@ -181,107 +121,100 @@ using Acoustics.Shared.Csv;
 
 
 
-        public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> _spectralIndexProperties)
-        {
-            this.spectralIndexProperties = _spectralIndexProperties;
-            this.spectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
-        }
+
+        //public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
+        //{            
+        //    return this.ReadCSVFiles(ipdir, fileName, this.spectrogramKeys);
+        //}
 
 
+        //public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
+        //{
+        //    bool allOk = true;
+        //    string warning = null;
+        //    for (int i = 0; i < keys.Length; i++)
+        //    {
+        //        string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
+        //        if (File.Exists(path))
+        //        {
+        //            int freqBinCount;
+        //            double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
+        //            matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+        //            this.spectrogramMatrices.Add(this.spectrogramKeys[i], matrix);
+        //            this.FrameWidth = freqBinCount * 2;
 
-        public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName)
-        {            
-            return this.ReadCSVFiles(ipdir, fileName, this.spectrogramKeys);
-        }
+        //        }
+        //        else
+        //        {
+        //            if (warning == null)
+        //            {
+        //                warning = "\nWARNING: from method LDSpectrogram3D.ReadCSVFiles()";
+        //            }
 
+        //            warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
+        //            allOk = false;
+        //        }
+        //    }
 
-        public bool ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
-        {
-            bool allOk = true;
-            string warning = null;
-            for (int i = 0; i < keys.Length; i++)
-            {
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
-                if (File.Exists(path))
-                {
-                    int freqBinCount;
-                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    this.spectrogramMatrices.Add(this.spectrogramKeys[i], matrix);
-                    this.FrameWidth = freqBinCount * 2;
+        //    if (warning != null)
+        //    {
+        //        LoggedConsole.WriteLine(warning);
+        //    }
 
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method ColourSpectrogram.ReadCSVFiles()";
-                    }
+        //    if (this.spectrogramMatrices.Count == 0)
+        //    {
+        //        LoggedConsole.WriteLine("WARNING: from method LDSpectrogram3D.ReadCSVFiles()");
+        //        LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
+        //        allOk = false;
+        //    }
 
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
-                    allOk = false;
-                }
-            }
-
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
-
-            if (this.spectrogramMatrices.Count == 0)
-            {
-                LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
-                LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
-                allOk = false;
-            }
-
-            return allOk;
-        }
+        //    return allOk;
+        //}
 
 
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
-        {
-            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
-            string[] keys = indexKeys.Split('-');
-            string warning = null;
-            freqBinCount = 256; // the default
-            for (int key = 0; key < keys.Length; key++)
-            {
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
-                if (File.Exists(path))
-                {
-                    int binCount;
-                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out binCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    dict.Add(keys[key], matrix);
-                    freqBinCount = binCount;
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()";
-                    }
+        //public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
+        //{
+        //    Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
+        //    string[] keys = indexKeys.Split('-');
+        //    string warning = null;
+        //    freqBinCount = 256; // the default
+        //    for (int key = 0; key < keys.Length; key++)
+        //    {
+        //        string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
+        //        if (File.Exists(path))
+        //        {
+        //            int binCount;
+        //            double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out binCount);
+        //            matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+        //            dict.Add(keys[key], matrix);
+        //            freqBinCount = binCount;
+        //        }
+        //        else
+        //        {
+        //            if (warning == null)
+        //            {
+        //                warning = "\nWARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()";
+        //            }
 
-                    warning += string.Format("\n      {0} File does not exist: {1}", keys[key], path);
-                }
-            }
+        //            warning += string.Format("\n      {0} File does not exist: {1}", keys[key], path);
+        //        }
+        //    }
 
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
+        //    if (warning != null)
+        //    {
+        //        LoggedConsole.WriteLine(warning);
+        //    }
 
-            if (dict.Count != 0)
-            {
-                return dict;
-            }
+        //    if (dict.Count != 0)
+        //    {
+        //        return dict;
+        //    }
 
-            LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()");
-            LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
+        //    LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()");
+        //    LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
 
-            return dict;
-        }
+        //    return dict;
+        //}
 
 
         public static double[,] ReadSpectrogram(string csvPath, out int binCount)
@@ -509,7 +442,7 @@ using Acoustics.Shared.Csv;
         /// <summary>
         /// This method started 27-11-2014 to process consecutive days of acoustic indices data for 3-D spectrograms.
         /// </summary>
-        public static void Main(Arguments arguments)
+        public static void Main_DISCONTINUED_ButMayStillContainUsefulCode(Arguments arguments)
         {
             if (arguments == null)
             {
@@ -682,6 +615,142 @@ using Acoustics.Shared.Csv;
             //LoggedConsole.WriteLine("fileInCsvDoesNotExist=" + fileInCsvDoesNotExist);
             //LoggedConsole.WriteLine("fileExistsCount      =" + fileExistsCount);
         }
+
+        /// <summary>
+        /// This method started 04-12-2014 to process consecutive days of acoustic indices data for 3-D spectrograms.
+        /// </summary>
+        public static void Main(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+            }
+
+            if (!arguments.Output.Exists)
+            {
+                arguments.Output.Create();
+            }
+
+            const string Title = "# READ LD Spectrogram csv files to prepare a 3D Spectrogram";
+            string dateNow = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine(Title);
+            LoggedConsole.WriteLine(dateNow);
+            LoggedConsole.WriteLine("# Input directory: " + arguments.Source.Name);
+            LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
+            LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
+
+
+            bool verbose = arguments.Verbose;
+
+            // 1. set up the necessary files
+            DirectoryInfo inputDirInfo = arguments.Source;
+            FileInfo configFile = arguments.Config;
+            DirectoryInfo opDir = arguments.Output;
+
+            // 2. get the config dictionary
+            var configDict = GetConfiguration(configFile);
+            // print out the parameters
+            if (verbose)
+            {
+                LoggedConsole.WriteLine("\nPARAMETERS");
+                foreach (var kvp in configDict)
+                {
+                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
+                }
+            }
+
+
+            // total number of minutes in one day
+            int totalMinutesInDay = 1440;
+
+
+            // location to write the yaml config file for producing long duration spectrograms 
+            FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
+            // Initialise the default Yaml Config file
+            var config = new LdSpectrogramConfig("null", inputDirInfo, opDir); // default values have been set
+            int totalFreqBins = config.FrameWidth / 2;
+            // write the yaml file to config
+            config.WriteConfigToYaml(fiSpectrogramConfig);
+
+            // read the yaml Config file describing the Index Properties 
+            FileInfo indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo();
+            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            string[] spectrogramKeys = dictIP.Keys.ToArray();
+
+
+            int count = 0;
+            DirectoryInfo[] dirList = inputDirInfo.GetDirectories();
+            foreach (DirectoryInfo dir in dirList)
+            {
+                // COMPONENT FILES IN DIRECTORY HAVE THIS STRUCTURE
+                // SERF_20130915_201727_000.wav\Towsey.Acoustic\SERF_20130915_201727_000.ACI.csv; SERF_20130915_201727_000.BGN.csv etc
+
+                string targetFileName = dir.Name;
+                string[] nameArray = targetFileName.Split('_');
+                string date = nameArray[1];
+                string time = nameArray[2];
+                int year = Int32.Parse(date.Substring(0, 4));
+                int month = Int32.Parse(date.Substring(4, 2));
+                int day = Int32.Parse(date.Substring(6, 2));
+                int hour = Int32.Parse(time.Substring(0, 2));
+                int minute = Int32.Parse(time.Substring(2, 2));
+                int second = Int32.Parse(time.Substring(4, 2));
+
+                DateTime thisDate = new DateTime(year, month, day, hour, minute, second);
+
+                int thisDayOfYear = thisDate.DayOfYear;
+                int thisStartMinute = thisDate.Minute;
+
+
+                // get target file name without extention
+                nameArray = targetFileName.Split('.');
+                targetFileName = nameArray[0];
+                string targetDirectory = dir.FullName + @"\Towsey.Acoustic";
+
+                //Write the default Yaml Config file for producing long duration spectrograms and place in the output directory
+                config = new LdSpectrogramConfig(targetFileName, inputDirInfo, opDir); // default values have been set
+                // write the yaml file to config
+                config.WriteConfigToYaml(fiSpectrogramConfig);
+                // read the yaml file to a LdSpectrogramConfig object
+                LdSpectrogramConfig configuration = LdSpectrogramConfig.ReadYamlToConfig(fiSpectrogramConfig);
+                var targetDirInfo = targetDirectory.ToDirectoryInfo();
+                configuration.InputDirectoryInfo = targetDirInfo;
+
+                int sampleRate = configuration.SampleRate;
+                int frameWidth = configuration.FrameWidth;
+
+
+                // reads all known files spectral indices
+                Logger.Info("Reading spectral-indices for file: " + targetFileName);
+                int freqBinCount;
+                Dictionary<string, double[,]> dict = LDSpectrogramRGB.ReadSpectrogramCSVFiles(targetDirInfo, targetFileName, spectrogramKeys, out freqBinCount);
+
+
+                if (dict.Count() == 0)
+                {
+                    LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                    return;
+                }
+
+                //for (int Y = 0; Y < ACImatrix.GetLength(0); Y++) // freq bins
+                //{
+                //    for (int X = 0; X < ACImatrix.GetLength(1); X++)  // minutes
+                //    {
+                //        matrix3D.SetValue(thisStartMinute + X, Y, dayIndex, ACImatrix[Y, X]);
+                //    }
+                //}
+
+                // for DEBUG
+                count++;
+                if (count >= 20) break;
+
+            } // foreach (DirectoryInfo dir in dirList)
+
+
+
+        } // end Main()
+
 
 
 
