@@ -11,5 +11,6 @@ namespace Dong.Felt.Configuration
         /// take 1 pixel every compressStep according to some rule.
         /// </summary>
         public double CompressRate { get; set; }
+
     }
 }
