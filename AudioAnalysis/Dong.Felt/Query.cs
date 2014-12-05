@@ -220,20 +220,11 @@
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
-            var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
-            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
-            {
-                nhCountInRow--;
-            }
-            var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
-            if (spectrogram.FrameCount % neighbourhoodLength == 0)
-            {
-                nhCountInColumn--;
-            }
+            var nhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
+            var nhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;
             var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
-                nhCountInRow, nhCountInColumn,spectrogramConfig);
+                nhCountInRow, nhCountInColumn, spectrogramConfig);
             return result;
         }
         

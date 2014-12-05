@@ -141,12 +141,13 @@ namespace Dong.Felt
 
         // This function is used for adding more ridges after ridge detection on compressedSpectrogram
         public static List<PointOfInterest> AddRidges(List<PointOfInterest> ridges,
+                                                      SpectrogramStandard spectrogram,
                                                       List<PointOfInterest> compressedRidges,
                                                       CompressSpectrogramConfig compressConfig,
                                                       int rows, int cols)
         {
             var result = new List<PointOfInterest>();
-            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
             var compressRate = (int)(1 / compressConfig.CompressRate);
             var compressedColsCount = cols / compressRate;
             if (cols % compressRate != 0)
@@ -168,10 +169,8 @@ namespace Dong.Felt
                     var intensity = new double[matrixLength];
 
                     for (var i = 0; i < matrixLength; i++)
-                    {
-                        
-                            intensity[i] = subMatrix[0, i].Intensity;
-
+                    {                        
+                         intensity[i] = subMatrix[0, i].Intensity;
                     }
                     // If no ridges in subMatrix
                     if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
@@ -185,6 +184,7 @@ namespace Dong.Felt
                             double diffMax = 0.0;
                             DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
                             ridgeMatrix[r, c + indexMax].RidgeMagnitude = compressRidgeMatrix[r, c / compressRate].RidgeMagnitude;
+                            ridgeMatrix[r, c + indexMax].OrientationCategory = compressRidgeMatrix[r, c / compressRate].OrientationCategory;
                         }
                     }
                 }
