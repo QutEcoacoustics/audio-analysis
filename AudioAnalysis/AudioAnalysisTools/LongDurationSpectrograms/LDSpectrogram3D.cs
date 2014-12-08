@@ -36,6 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     using TowseyLibrary;
     using Acoustics.Shared.Csv;
+    using System.Text;
 
     /// <summary>
     /// This class generates false-colour spectrograms of long duration audio recordings.
@@ -286,11 +287,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-
-
-        //############################################################################################################################################################
-        //# BELOW METHODS CALCULATE SUMMARY INDEX RIBBONS ############################################################################################################
-        
 
 
         //############################################################################################################################################################
@@ -661,7 +657,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
             // total number of minutes in one day
-            int totalMinutesInDay = 1440;
+            //int totalMinutesInDay = 1440;
 
 
             // location to write the yaml config file for producing long duration spectrograms 
@@ -677,7 +673,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
             string[] spectrogramKeys = dictIP.Keys.ToArray();
-
 
             int count = 0;
             DirectoryInfo[] dirList = inputDirInfo.GetDirectories();
@@ -696,54 +691,52 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int hour = Int32.Parse(time.Substring(0, 2));
                 int minute = Int32.Parse(time.Substring(2, 2));
                 int second = Int32.Parse(time.Substring(4, 2));
-
                 DateTime thisDate = new DateTime(year, month, day, hour, minute, second);
-
-                int thisDayOfYear = thisDate.DayOfYear;
-                int thisStartMinute = thisDate.Minute;
 
 
                 // get target file name without extention
                 nameArray = targetFileName.Split('.');
                 targetFileName = nameArray[0];
                 string targetDirectory = dir.FullName + @"\Towsey.Acoustic";
+                var targetDirInfo = targetDirectory.ToDirectoryInfo();
+
+                // construct the output file name
+                string opFileName = nameArray[0] + "_" + nameArray[1] + ".SpectralIndices.PivotTable.csv";
+                string opFilePath = Path.Combine(opDir.FullName, opFileName);
+                //Logger.Info("Reading spectral-indices for file: " + targetFileName);
+
+
+                ReadSpectralIndicesToPivotTable(spectrogramKeys, thisDate, targetDirInfo, targetFileName, opFilePath);
+
+
+                Dictionary<string, double[,]> dict = ReadPivotTableToSpectralIndices(opFilePath);
+
 
                 //Write the default Yaml Config file for producing long duration spectrograms and place in the output directory
                 config = new LdSpectrogramConfig(targetFileName, inputDirInfo, opDir); // default values have been set
                 // write the yaml file to config
                 config.WriteConfigToYaml(fiSpectrogramConfig);
                 // read the yaml file to a LdSpectrogramConfig object
-                LdSpectrogramConfig configuration = LdSpectrogramConfig.ReadYamlToConfig(fiSpectrogramConfig);
-                var targetDirInfo = targetDirectory.ToDirectoryInfo();
-                configuration.InputDirectoryInfo = targetDirInfo;
-
-                int sampleRate = configuration.SampleRate;
-                int frameWidth = configuration.FrameWidth;
+                // LdSpectrogramConfig configuration = LdSpectrogramConfig.ReadYamlToConfig(fiSpectrogramConfig);
+                // configuration.InputDirectoryInfo = targetDirInfo;
 
 
-                // reads all known files spectral indices
-                Logger.Info("Reading spectral-indices for file: " + targetFileName);
-                int freqBinCount;
-                Dictionary<string, double[,]> dict = LDSpectrogramRGB.ReadSpectrogramCSVFiles(targetDirInfo, targetFileName, spectrogramKeys, out freqBinCount);
 
 
-                if (dict.Count() == 0)
-                {
-                    LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
-                    return;
-                }
 
-                //for (int Y = 0; Y < ACImatrix.GetLength(0); Y++) // freq bins
-                //{
-                //    for (int X = 0; X < ACImatrix.GetLength(1); X++)  // minutes
-                //    {
-                //        matrix3D.SetValue(thisStartMinute + X, Y, dayIndex, ACImatrix[Y, X]);
-                //    }
-                //}
+
 
                 // for DEBUG
                 count++;
                 if (count >= 20) break;
+
+
+
+
+                //int sampleRate = configuration.SampleRate;
+                //int frameWidth = configuration.FrameWidth;
+
+
 
             } // foreach (DirectoryInfo dir in dirList)
 
@@ -751,6 +744,104 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         } // end Main()
 
+
+        public static void ReadSpectralIndicesToPivotTable(string[] spectrogramKeys, DateTime thisDate, DirectoryInfo targetDirInfo, string targetFileName, string opFilePath)
+        {
+            int year = thisDate.Year;
+            int thisDayOfYear = thisDate.DayOfYear;
+            int thisStartMinute = thisDate.Minute;
+
+            // reads all known files spectral indices
+            int freqBinCount;
+            Dictionary<string, double[,]> dict = LDSpectrogramRGB.ReadSpectrogramCSVFiles(targetDirInfo, targetFileName, spectrogramKeys, out freqBinCount);
+
+
+            if (dict.Count() == 0)
+            {
+                LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                return;
+            }
+
+            // set up the headers
+            string outputCSVHeader = "Year,DayOfYear,MinOfDay,FreqBin";
+            foreach (string key in dict.Keys)
+            {
+                outputCSVHeader = outputCSVHeader + "," + key;
+            }
+            FileTools.WriteTextFile(opFilePath, outputCSVHeader);
+
+            List<string> lines = new List<string>();
+            string linestart = String.Format("{0},{1}", year, thisDayOfYear);
+
+            //int minutesInThisMatrix = 2;
+            // number of minutes = number of columns in matrix
+            int minutesInThisMatrix = dict[spectrogramKeys[1]].GetLength(1);
+            freqBinCount = dict[spectrogramKeys[1]].GetLength(0);
+
+            for (int min = 0; min < minutesInThisMatrix; min++)
+            {
+                int numberOfMinutes = thisStartMinute + min;
+                for (int bin = 0; bin < freqBinCount; bin++)
+                {
+                    int binID = freqBinCount - bin - 1;
+                    StringBuilder line = new StringBuilder(linestart + "," + numberOfMinutes + "," + binID);
+
+                    foreach (string key in dict.Keys)
+                    {
+                        double[,] matrix = dict[key];
+                        double value = matrix[bin, min];
+                        line.Append("," + value);
+                    }
+
+                    lines.Add(line.ToString());
+                }
+            }
+
+            FileTools.Append2TextFile(opFilePath, lines);
+
+        }
+
+
+
+        public static Dictionary<string, double[,]> ReadPivotTableToSpectralIndices(string csvFileName)
+        {
+            // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
+            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
+            List<string> headers = tuple.Item1;
+            List<double[]> columns = tuple.Item2;
+
+            // set up dictionary of matrices
+            var dict = new Dictionary<string, double[,]>();
+
+
+            double min, max;
+            DataTools.MinMax(columns[2], out min, out max);
+            int minMinute = (int)min;
+            int maxMinute = (int)max;
+            DataTools.MinMax(columns[3], out min, out max);
+            int minFreqBin = (int)min;
+            int maxFreqBin = (int)max;
+            int rowCount = maxFreqBin - minFreqBin + 1;
+            int colCount = maxMinute  - minMinute  + 1;
+
+            int pivotTableRowCount = columns[0].Length;
+
+            for (int i = 4; i < headers.Count; i++)
+            {
+                var matrix = new double[rowCount, colCount];
+
+                for (int ptRow = 0; ptRow < pivotTableRowCount; ptRow++)
+                {
+                    int col = (int)columns[2][ptRow];
+                    int row = maxFreqBin - (int)columns[3][ptRow];
+                    matrix[row, col] = columns[i][ptRow];
+                }
+                string key = headers[i];
+                dict[key] = matrix;
+            }
+
+            return dict;
+        }
 
 
 
@@ -797,14 +888,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return new Arguments
             {
                 //Source = @"Y:\Results\2013Feb05-184941 - Indicies Analysis of all of availae\SERF\Veg".ToDirectoryInfo(),
-                Source = @"Y:\Results\2013Nov30-023140 - SERF - November 2013 Download\SERF\November 2013 Download\Veg Plot WAV".ToDirectoryInfo(),
+                Source = @"C:\SensorNetworks\OutputDataSets\SERF - November 2013 Download".ToDirectoryInfo(),
+                //Source = @"Y:\Results\2013Nov30-023140 - SERF - November 2013 Download\SERF\November 2013 Download\Veg Plot WAV".ToDirectoryInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
                 Output = (@"C:\SensorNetworks\Output\FalseColourSpectrograms\Spectrograms3D\" + datestamp).ToDirectoryInfo(),
                 Verbose = true
             };
         }
-
-
 
 
     }
