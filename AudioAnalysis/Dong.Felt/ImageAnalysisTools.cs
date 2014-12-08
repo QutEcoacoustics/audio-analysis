@@ -2327,7 +2327,7 @@ namespace Dong.Felt
             {
                 /// because the query always come from first place.                   
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
-                var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
+                var compressedSpectrogram = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.CompressRate);
                 spectrogram.Data = compressedSpectrogram;
                 var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                 //var ridges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);

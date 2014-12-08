@@ -249,7 +249,7 @@ namespace Dong.Felt.Preprocessing
         /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
         /// </param>
         /// <returns></returns>
-        public static double[,] CompressSpectrogram2(double[,] spectrogramData, double compressRate)
+        public static double[,] CompressSpectrogramInTime(double[,] spectrogramData, double compressRate)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
             var rowsCount = matrix.GetLength(0);
@@ -286,5 +286,52 @@ namespace Dong.Felt.Preprocessing
             }
             return result;
         }
+
+        /// <summary>
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
+        /// </summary>
+        /// <param name="spectrogramData"></param>
+        /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
+        /// </param>
+        /// <returns></returns>
+        public static double[,] CompressSpectrogramInFreq(double[,] spectrogramData, double compressRate)
+        {
+            var matrix = spectrogramData;
+            var rowsCount = matrix.GetLength(1);
+            var colsCount = matrix.GetLength(0);
+            var compressStep = (int)(1 / compressRate);
+            var compressedRowsCount = rowsCount / compressStep;
+            if (rowsCount % compressStep != 0)
+            {
+                compressedRowsCount++;
+            }
+            var result = new double[colsCount, compressedRowsCount];
+            for (var c = 0; c < colsCount; c++)
+            {
+                for (var r = 0; r < rowsCount; r += compressStep)
+                {
+                    var tempData = new List<double>();
+                    var maxIndex = 0;
+                    if (r + compressStep < rowsCount)
+                    {
+                        maxIndex = compressStep;
+                    }
+                    else
+                    {
+                        maxIndex = rowsCount - r;
+                    }
+                    for (var index = 0; index < maxIndex; index++)
+                    {
+                        tempData.Add(matrix[c, r + index]);
+                    }
+                    var maxValue = tempData.Max();
+                    var rowIndex = r / compressStep;
+                    result[c, rowIndex] = maxValue;
+                }
+            }
+            return result;
+        }
+
+
     }
 }
