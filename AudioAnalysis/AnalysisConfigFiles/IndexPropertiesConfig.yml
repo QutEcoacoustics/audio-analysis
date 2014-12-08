@@ -454,3 +454,27 @@ ENT:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
+TEN:
+  Name: spectralENT
+  Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.6
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+VAR:
+  Name: spectralVAR
+  Comment: "Spectrum of variance of dB amplitude in each frequency bin after noise removal. Paired with AVG"
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 100.0
+  ProjectID: Acoustic Indices
+  Units: "dB^2"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
