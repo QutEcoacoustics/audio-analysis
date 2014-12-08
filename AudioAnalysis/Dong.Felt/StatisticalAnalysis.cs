@@ -952,12 +952,6 @@
             }
             foreach (PointOfInterest poi in list)
             {
-                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
-                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
-                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
-                // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                //m[poi.Point.Y, poi.Point.X] = poi;
-                // Changed 2014-8-22
                 m[poi.Point.X, poi.Point.Y] = poi;
             }
             return m;

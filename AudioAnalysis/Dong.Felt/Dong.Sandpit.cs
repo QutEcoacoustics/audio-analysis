@@ -138,8 +138,8 @@
                     //spectrogram.Duration = tempDuration;                   
 
                     /// Ridge detection analysis
-                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                        featurePropertySet);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                    //    featurePropertySet);
 
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
@@ -244,7 +244,7 @@
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     var copySpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    copySpectrogram.Data = AudioPreprosessing.CompressSpectrogram2(copySpectrogram.Data, compressConfig.CompressRate);
+                    copySpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copySpectrogram.Data, compressConfig.CompressRate);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -257,10 +257,11 @@
                     var cols = spectrogram.Data.GetLength(0);
 
                     var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                    //var compressedRidges = POISelection.RidgePoiSelection(copySpectrogram, ridgeConfig, featurePropSet);
-                    //var ridges = POISelection.AddRidges(queryRidges, spectrogram, compressedRidges, compressConfig, rows, cols);
+                    var compressedRidges = POISelection.RidgePoiSelection(copySpectrogram, ridgeConfig, featurePropSet);
+                    var ridges = POISelection.AddResizeRidgesInFreq(queryRidges, spectrogram, compressedRidges, compressConfig, rows, cols);
+                    var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracksBasedOn4Direction(ridges, rows, cols);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in queryRidges)
+                    foreach (PointOfInterest poi in prunedPoiList)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     }
@@ -313,7 +314,7 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                spectrogram.Data = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
+                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.CompressRate);
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
@@ -358,7 +359,7 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogram2(candidateSpectrogram.Data, compressConfig.CompressRate);
+                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(candidateSpectrogram.Data, compressConfig.CompressRate);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
 
@@ -516,8 +517,8 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                //var copySpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                //copySpectrogram.Data = AudioPreprosessing.CompressSpectrogram2(copySpectrogram.Data, compressConfig.CompressRate);
+                var copySpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
+                copySpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copySpectrogram.Data, compressConfig.CompressRate);
                 //var data = spectrogram.Data;
                 //var maxMagnitude = data.Cast<double>().Max();
                 //var minMagnitude = data.Cast<double>().Min();
@@ -533,9 +534,9 @@
 
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                 var cols = spectrogram.Data.GetLength(0);
-                //var compressedRidges = POISelection.RidgePoiSelection(copySpectrogram, ridgeConfig, featurePropSet);
-                //var improvedQueryridges = POISelection.AddRidges(queryRidges, spectrogram, compressedRidges, compressConfig, rows, cols);
-                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
+                var compressedRidges = POISelection.RidgePoiSelection(copySpectrogram, ridgeConfig, featurePropSet);
+                var improvedQueryridges = POISelection.AddResizeRidgesInFreq(queryRidges, spectrogram, compressedRidges, compressConfig, rows, cols);
+                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(improvedQueryridges,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);                
                 var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
@@ -574,18 +575,18 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    //var copyCanSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                    //copyCanSpectrogram.Data = AudioPreprosessing.CompressSpectrogram2(copyCanSpectrogram.Data, compressConfig.CompressRate);
+                    var copyCanSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
+                    copyCanSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copyCanSpectrogram.Data, compressConfig.CompressRate);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
 
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    //var compressedCanRidges = POISelection.RidgePoiSelection(copyCanSpectrogram, ridgeConfig, featurePropSet);
-                    //var improvedCandidateridges = POISelection.AddRidges(candidateRidges, candidateSpectrogram, compressedCanRidges,
-                    //    compressConfig, rows1, cols1);
+                    var compressedCanRidges = POISelection.RidgePoiSelection(copyCanSpectrogram, ridgeConfig, featurePropSet);
+                    var improvedCandidateridges = POISelection.AddResizeRidgesInFreq(candidateRidges, candidateSpectrogram, compressedCanRidges,
+                        compressConfig, rows1, cols1);
 
-                    var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(candidateRidges,
+                    var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(improvedCandidateridges,
                         rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);                   
                     var gradientCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(candidateGradients,
                         rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
@@ -739,7 +740,7 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                spectrogram.Data = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
+                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.CompressRate);
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
@@ -779,7 +780,7 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogram2(candidateSpectrogram.Data, compressConfig.CompressRate);
+                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(candidateSpectrogram.Data, compressConfig.CompressRate);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
