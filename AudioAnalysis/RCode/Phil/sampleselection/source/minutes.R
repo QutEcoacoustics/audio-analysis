@@ -21,7 +21,10 @@ GetMinuteList <- function () {
     return(min.list)
     
 }
-CreateTargetMinutes <- function () { 
+CreateTargetMinutes <- function () {
+    # creates a list of target minute ids, based on
+    # the specified start date and time, end date and time, and % of minutes to use (eg, 50% will use every 2nd minute)
+    # writes the output to csv   
     study.min.list <- GetMinuteList()
     target.mins <- TargetSubset(study.min.list)
     if (g.percent.of.target < 100) { 

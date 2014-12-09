@@ -207,3 +207,4 @@ FakesAssemblies/
 
 # matlab
 *.asv
+.Rproj.user

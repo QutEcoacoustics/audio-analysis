@@ -95,6 +95,26 @@ GetType <- function (name) {
 
 
 ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, false.if.missing = FALSE) {
+    # reads the output for type 'name' 
+    #
+    # Args:
+    #   name: string; the output to read, eg "clusters", "features" etc
+    #   purpose: string; just to display to the user
+    #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
+    #   false.if.missing: bool; if true, will return false if the file is missing
+    #
+    # Value:
+    #   if include.meta, will return a list that has a 'data' key, that contains the data read in
+    #   if include.meta is false, will return the data read in, eg data frame if it's a csv
+    #
+    # Details:
+    #    first looks for the last accessed version of this output type
+    #    if it can't find it, then it will ask for user input. This means that 
+    #    only one version of a particular output type can be used within the same run
+    #    if the file is found, then it will set the 'last accessed' flag 
+    #    on the chosen output and it dependencies
+    #    Output data-type is different depending on the name of the output, for example, binary object for clustering
+    #    and and CSV for features
     
     meta.row <- GetLastAccessed(name)
     if (!is.data.frame(meta.row)) {
@@ -103,10 +123,7 @@ ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, fa
             return(FALSE)
         }
     }
-    
     SetLastAccessed.recursive(meta.row$name, meta.row$version)
-    
-
     type <- GetType(name)
     if (type == 'object') {   
         val <- (ReadObject(name, meta.row$version))
@@ -127,6 +144,24 @@ WriteOutput <- function (x, name, params, dependencies = list()) {
 
     meta <- ReadMeta()
     params <- toJSON(params)
+    
+    # if a dependency version is not supplied, then it tries 
+    # to use the version that was last accessed 
+    dependency.names <- names(dependencies)
+    missing <- c()
+    for (d.name in dependency.names) {
+        if (!dependencies[[d.name]] > 0) {
+            last.accessed <- GetLastAccessed(d.name)
+            if (class(last.accessed) == 'data.frame') {
+                dependencies[[d.name]] <- last.accessed$version
+            }
+        }
+    }
+    if (any(dependencies < 1)) {
+        # if any dependency versions are less than 1 (i.e. 0), stop and give the error message
+        stop(paste('dependency versions must be supplied for ', paste(names(dependencies[dependencies < 1]), collapse = ",")))
+    }
+    
     dependencies <- toJSON(dependencies)
     
     matching.name <- meta$name == name

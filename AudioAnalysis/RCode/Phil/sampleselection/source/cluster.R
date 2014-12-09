@@ -20,10 +20,9 @@ ClusterEvents <- function (num.groups = 'auto',
     #     Will create a csv file which is the same as 
     #     events.csv but with a new 'groups' column
     
-
-    # give the user the option to write to a new output path
-
     
+    # choose heirachical or Kmeans
+    choice <- GetUserChoice(c('HA', 'Kmeans'), choosing.what = "clustering method", default = 1, allow.range = FALSE)
 
     vals <- GetEventsAndFeatures()
     event.features <- vals$event.features
@@ -40,13 +39,20 @@ ClusterEvents <- function (num.groups = 'auto',
     event.features$data <- event.features$data[, feature.choices]
     weights <- GetFeatureWeights(event.features$data)
     params$weights <- weights
-    params$method <- method
-    fit <- DoCluster(event.features$data, weights = weights, method = method)
+    
+    if (choice == 1) {
+        params$method <- method
+        fit <- DoClusterKmeans(event.features$data, weights = weights) 
+    } else {
+        params$method <- method
+        fit <- DoClusterHA(event.features$data, weights = weights, method = method) 
+    }
+    
+
     dependencies = list(events = events$version, features = event.features$version)
     WriteOutput(fit, 'clustering', params = params, dependencies = dependencies)
     
 }
-
 
 
 
@@ -77,7 +83,7 @@ GetFeatureWeights <- function (df) {
     
 }
 
-DoCluster <- function (df, weights = 1, method = 'complete') {
+DoClusterHA <- function (df, weights = 1, method = 'complete') {
     Report(2, 'scaling features (m = ',  nrow(df), ')')
     ptm <- proc.time()
     features <- as.matrix(scale(df))  # standardize variables
