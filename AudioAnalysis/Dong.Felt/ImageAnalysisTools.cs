@@ -378,6 +378,48 @@ namespace Dong.Felt
             return result;
         }
 
+        public static double[,] GaussianFilter(double[,] m, int[,] gaussianKernel)
+        {
+            int MaximumXindex = m.GetLength(0);
+            int MaximumYindex = m.GetLength(1);
+            var result = new double[MaximumXindex, MaximumYindex];
+
+            int gaussianKernelRadius = gaussianKernel.GetLength(0) / 2;
+
+            for (int row = gaussianKernelRadius; row < (MaximumXindex - gaussianKernelRadius); row++)
+            {
+                for (int col = gaussianKernelRadius; col < (MaximumYindex - gaussianKernelRadius); col++)
+                {
+                    double sum = 0;
+                    for (int i = -gaussianKernelRadius; i <= gaussianKernelRadius; i++)
+                    {
+                        for (int j = -gaussianKernelRadius; j <= gaussianKernelRadius; j++)
+                        {
+                            sum = sum + m[row + i, col + j] * gaussianKernel[i + gaussianKernelRadius, j + gaussianKernelRadius];
+                        }
+                    }
+                    result[row, col] = sum;
+                }
+            }
+
+            return result;
+        }
+
+        public static double[,] IntKernalToDouble(int[,] kernal, double coefficient)
+        {
+            var rows = kernal.GetLength(0);
+            var cols = kernal.GetLength(1);
+            var result = new double[rows, cols];
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    result[r, c] = coefficient * kernal[r, c];
+                }
+            }
+            return result;
+        }
+
         // Finding gradients(it is actually a vector), we could use different edgemasks to get it
         // here, Sobel X and Y Masks are used to generate X & Y Gradients of Image
         public static Tuple<double[,], double[,]> Gradient(double[,] m, double[,] edgeMaskX, double[,] edgeMaskY)
