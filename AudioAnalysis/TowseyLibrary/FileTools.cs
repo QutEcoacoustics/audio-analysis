@@ -177,7 +177,7 @@ namespace TowseyLibrary
                 string[] array = line.Split(',');
 
                 // determine which CSV column contains the key
-                int columnID = 0;
+                int columnID = -1;
                 for (int i = 0; i < array.Length; i++)
                 {
                     if (array[i].Equals(key))
@@ -185,6 +185,13 @@ namespace TowseyLibrary
                         columnID = i;
                         break;
                     }
+                }
+
+                // the key was not found
+                if (columnID == -1)
+                {
+                    LoggedConsole.WriteErrorLine("THE KEY <" + key + "> WAS NOT FOUND IN FILE <" + fName + ">");
+                    return null;
                 }
 
                 while ((line = reader.ReadLine()) != null)
