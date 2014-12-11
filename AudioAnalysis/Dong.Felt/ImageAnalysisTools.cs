@@ -18,6 +18,7 @@ namespace Dong.Felt
     using Dong.Felt.ResultsOutput;
     using Dong.Felt.Preprocessing;
     using Dong.Felt.Representations;
+    using AForge.Imaging.Filters;
 
 
 
@@ -125,6 +126,17 @@ namespace Dong.Felt
         /// then a simple derivative operator(like Roberts Cross or Sobel operator) is applied to the smoothed image to highlight regions of the image. 
 
         #region Public Methods
+
+        public static double[,] GaussianBlur(double[,] matrix, double sigma, int size)
+        {           
+            var gaussianBlur = new GaussianBlur(sigma, size);
+            var radius = size /2;
+            // According to Gaussian blur thoery, the centroid of the kernel matrix is maximum. 
+            var maxValue = gaussianBlur.Kernel[radius, radius];
+            var doubleKernal = IntKernalToDouble(gaussianBlur.Kernel, 1.0 / maxValue);
+            return GaussianFilter(matrix, doubleKernal);
+        }
+
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent,
             double eventThreshold, List<PointOfInterest> poiList)
         {

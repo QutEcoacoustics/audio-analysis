@@ -244,9 +244,7 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    var gaussianBlur = new GaussianBlur(0.6, 3);
-                    var doubleKernal = ImageAnalysisTools.IntKernalToDouble(gaussianBlur.Kernel, 1.0/16.0);
-                    spectrogram.Data = ImageAnalysisTools.GaussianFilter(spectrogram.Data, doubleKernal);
+                    spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.6,3);
                     //var compressSpectrogramInFreq = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     //compressSpectrogramInFreq.Data = AudioPreprosessing.CompressSpectrogramInFreq(compressSpectrogramInFreq.Data, compressConfig.CompressRate);
                     var compressSpectrogramInTime = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
@@ -269,12 +267,12 @@
                     //ridges = POISelection.AddResizeRidgesInFreq(ridges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);
                     //var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracksBasedOn4Direction(ridges, rows, cols);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in originalRidges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in originalRidges)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ridge detection on blured spectrogram.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- spectrogram after Gaussian blur-sigma-0.6.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -526,8 +524,9 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                var copySpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                copySpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copySpectrogram.Data, compressConfig.CompressRate);
+
+                //var copySpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
+                //copySpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copySpectrogram.Data, compressConfig.CompressRate);
                 //var data = spectrogram.Data;
                 //var maxMagnitude = data.Cast<double>().Max();
                 //var minMagnitude = data.Cast<double>().Min();
@@ -543,10 +542,10 @@
 
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                 var cols = spectrogram.Data.GetLength(0);
-                var compressedRidges = POISelection.RidgePoiSelection(copySpectrogram, ridgeConfig, featurePropSet);
-                var improvedQueryridges = POISelection.AddResizeRidgesInFreq(queryRidges, spectrogram, 
-                    compressedRidges, compressConfig, rows, cols);
-                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(improvedQueryridges,
+                //var compressedRidges = POISelection.RidgePoiSelection(copySpectrogram, ridgeConfig, featurePropSet);
+                //var improvedQueryridges = POISelection.AddResizeRidgesInFreq(queryRidges, spectrogram, 
+                //    compressedRidges, compressConfig, rows, cols);
+                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);                
                 var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
