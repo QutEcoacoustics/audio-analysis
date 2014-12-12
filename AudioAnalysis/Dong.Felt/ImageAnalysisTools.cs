@@ -20,8 +20,6 @@ namespace Dong.Felt
     using Dong.Felt.Representations;
     using AForge.Imaging.Filters;
 
-
-
     class ImageAnalysisTools
     {
         #region public property
@@ -129,11 +127,18 @@ namespace Dong.Felt
 
         public static double[,] GaussianBlur(double[,] matrix, double sigma, int size)
         {           
-            var gaussianBlur = new GaussianBlur(sigma, size);
-            var radius = size /2;
+            var gaussianBlur = new GaussianBlur(sigma, size);           
+            var sumKernelValue = 0.0;
             // According to Gaussian blur thoery, the centroid of the kernel matrix is maximum. 
-            var maxValue = gaussianBlur.Kernel[radius, radius];
-            var doubleKernal = IntKernalToDouble(gaussianBlur.Kernel, 1.0 / maxValue);
+
+            for (var i = 0; i < size; i++)
+            {
+                for (var j = 0; j < size; j++)
+                {
+                    sumKernelValue += gaussianBlur.Kernel[i, j];
+                }
+            }           
+            var doubleKernal = IntKernalToDouble(gaussianBlur.Kernel, 1.0 / sumKernelValue);
             return GaussianFilter(matrix, doubleKernal);
         }
 

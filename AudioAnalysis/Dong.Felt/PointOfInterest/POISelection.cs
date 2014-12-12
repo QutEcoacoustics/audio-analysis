@@ -162,7 +162,7 @@ namespace Dong.Felt
                     var matrixLength = compressRate;
                     if (c + compressRate > cols)
                     {
-                        matrixLength = c + compressRate - cols;
+                        matrixLength = cols - c;
                     }
                     var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
                         r, c, r+1, c + matrixLength);
@@ -223,7 +223,7 @@ namespace Dong.Felt
                     var matrixLength = compressRate;
                     if (r + compressRate > rows)
                     {
-                        matrixLength = r + compressRate - rows;
+                        matrixLength = rows - r;
                     }
                     var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
                         r, c, r + matrixLength, c + 1);
