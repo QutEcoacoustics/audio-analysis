@@ -926,7 +926,7 @@
 
 
         // mark off Y-axis 12 month time scale.
-        public static Bitmap DrawYearScale(int offset, int trackHeight)
+        public static Bitmap DrawYearScale_vertical(int offset, int trackHeight)
         {
             int trackWidth = 30;
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
@@ -963,6 +963,38 @@
             // g.DrawString(title, stringFont, Brushes.White, new PointF(duration + 4, 3));
             return bmp;
         }
+
+        // mark off X-axis 12 month time scale.
+        public static Bitmap DrawYearScale_horizontal(int trackWidth, int trackHeight)
+        {
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+
+            int daysInYear = 366;
+            double interval = daysInYear / (double)12;
+
+            string[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+            Pen whitePen = new Pen(Color.White);
+            //Pen grayPen = new Pen(Color.Gray);
+            Font stringFont = new Font("Arial", 9);
+
+            for (int i = 0; i < 12; i++) 
+            {
+                int X = (int)Math.Round(i * interval);
+                g.DrawLine(whitePen, X, 0, X, trackHeight);
+                //g.DrawLine(whitePen, X, 0, X, trackWidth, Y);
+                g.DrawString(months[i], stringFont, Brushes.White, new PointF(X+2, 2)); //draw time
+            } // end over all pixels
+            g.DrawLine(whitePen, 0, daysInYear, trackWidth, daysInYear);
+            //g.DrawLine(whitePen, 0, offset, trackWidth, offset);          //draw lower boundary
+            // g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
+
+            // g.DrawString(title, stringFont, Brushes.White, new PointF(duration + 4, 3));
+            return bmp;
+        }
+
 
 
 

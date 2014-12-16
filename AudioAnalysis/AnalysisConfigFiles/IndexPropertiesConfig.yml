@@ -408,14 +408,15 @@ CLS:
   ComboWeight: 0.0
 CVR:
   Name: spectralCVR
-  Comment: "Freq bin COVER: Spectrum of the % of active elements in each freq bin - i.e. amplitude > threshold = 3 dB."
+  Comment: "Freq bin COVER: Spectrum of the fraction of active elements in each freq bin where amplitude > threshold = 3 dB."
+  # IMPORTANT - sometimes this is expressed as a percentage rather than fraction. NEED TO CHECK!!
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 50.0
+  NormMax: 0.7
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 EVN:
