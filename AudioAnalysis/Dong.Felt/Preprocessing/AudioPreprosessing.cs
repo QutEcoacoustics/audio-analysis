@@ -180,8 +180,17 @@ namespace Dong.Felt.Preprocessing
         {
             var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
             var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
-            var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig.CompressRate);
-            spectrogram.Data = compressedSpectrogram;
+            if (compressConfig.TimeCompressRate != 1.0)
+            {
+                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
+            }
+            else
+            {
+                if (compressConfig.FreqCompressRate != 1.0)
+                {
+                    spectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(spectrogram.Data, compressConfig.FreqCompressRate);
+                }
+            }
             /// spectrogram drawing setting
             var scores = new List<double>();
             scores.Add(1.0);

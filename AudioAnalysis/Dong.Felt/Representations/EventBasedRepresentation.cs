@@ -96,7 +96,7 @@ namespace Dong.Felt.Representations
             CompressSpectrogramConfig compressConfig)
         {            
             var frequencyBinWidth = sonogram.FBinWidth;
-            var framePerSecond = sonogram.FramesPerSecond * compressConfig.CompressRate;
+            var framePerSecond = sonogram.FramesPerSecond * compressConfig.TimeCompressRate;
 
             var eventRep = new EventBasedRepresentation(aevent.MinFreq, aevent.MaxFreq, aevent.TimeStart, aevent.Duration);
             eventRep.Height = (int)((aevent.MaxFreq - aevent.MinFreq) / frequencyBinWidth);

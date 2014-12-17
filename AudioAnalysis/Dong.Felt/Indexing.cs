@@ -186,7 +186,7 @@ namespace Dong.Felt
         {
             var results = new List<EventBasedRepresentation>();
             var frequencyBinWidth = spectrogram.FBinWidth;
-            var framePerSecond = spectrogram.FramesPerSecond * compressConfig.CompressRate;
+            var framePerSecond = spectrogram.FramesPerSecond * compressConfig.TimeCompressRate;
 
             var frameStart = (int)(query.startTime * framePerSecond);
             var frameEnd = (int)(query.endTime * framePerSecond);
@@ -712,9 +712,9 @@ namespace Dong.Felt
                         distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
                             weight2);
                     }
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex / compressConfig.CompressRate,
-                            duration, tempRegionList[0].FrequencyIndex, 
-                            tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                    var item = new Candidates(distance, tempRegionList[0].FrameIndex / compressConfig.TimeCompressRate,
+                            duration, tempRegionList[0].FrequencyIndex / compressConfig.FreqCompressRate, 
+                            (tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange) / compressConfig.FreqCompressRate,
                             tempRegionList[0].SourceAudioFile);
                     result.Add(item);
                 }

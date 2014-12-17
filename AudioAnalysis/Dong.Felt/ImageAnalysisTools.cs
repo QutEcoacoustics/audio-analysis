@@ -2142,10 +2142,6 @@ namespace Dong.Felt
             query.EndTime = query.StartTime + queryInfo.Duration * 1000;
             query.MaxFrequency = queryInfo.MaxFreq;
             query.MinFrequency = queryInfo.MinFreq;
-            //query.StartTime = queryRepresentation[0].FrameIndex;
-            //query.EndTime = queryRepresentation[0].FrameIndex + queryRepresentation[0].Duration.TotalMilliseconds;
-            //query.MaxFrequency = candidates[0].MaxFrequency;
-            //query.MinFrequency = candidates[0].MinFrequency;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
             var querycsvFilePath = new FileInfo(queryCsvFilePath);
@@ -2386,15 +2382,24 @@ namespace Dong.Felt
             {
                 /// because the query always come from first place.                   
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
-                var compressedSpectrogram = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.CompressRate);
-                spectrogram.Data = compressedSpectrogram;
+                if (compressConfig.TimeCompressRate != 1.0)
+                {
+                    spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
+                }
+                else
+                {
+                    if (compressConfig.FreqCompressRate != 1.0)
+                    {
+                        spectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(spectrogram.Data, compressConfig.FreqCompressRate);
+                    }
+                }
                 var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                 //var ridges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);
                 /// To show the ridges on the spectrogram. 
                 var scores = new List<double>();
                 scores.Add(0.0);
                 double eventThreshold = 0.5; // dummy variable - not used  
-                var startTime = 1.0 * compressConfig.CompressRate;
+                var startTime = 1.0 * compressConfig.TimeCompressRate;
                 var secondToMilliSecond = 1000.0;
                 var duration = (candidates[i].EndTime - candidates[i].StartTime) / secondToMilliSecond;
                 var endTime = candidates[i].EndTime / secondToMilliSecond;
@@ -2414,13 +2419,15 @@ namespace Dong.Felt
 
                     var queryAcousticEvent = new AcousticEvent(startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
-                    queryAcousticEvent.Duration = queryAcousticEvent.Duration * compressConfig.CompressRate;
+                    queryAcousticEvent.MaxFreq = queryAcousticEvent.MaxFreq * compressConfig.FreqCompressRate;
+                    queryAcousticEvent.MinFreq = queryAcousticEvent.MinFreq * compressConfig.FreqCompressRate;
+                    queryAcousticEvent.Duration = queryAcousticEvent.Duration * compressConfig.TimeCompressRate;
                     queryAcousticEvent.TimeEnd = startTime + queryAcousticEvent.Duration;
                     queryAcousticEvent.BorderColour = Color.Crimson;
                     acousticEventlistForQuery.Add(queryAcousticEvent);
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForQuery, eventThreshold, null);
                     Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForQuery,
-                        eventThreshold, null, compressConfig.CompressRate);
+                        eventThreshold, null, compressConfig.TimeCompressRate);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in ridges)
                     {
@@ -2441,7 +2448,7 @@ namespace Dong.Felt
                     acousticEventlistForCandidate.Add(candAcousticEvent);
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
                     Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate,
-                        eventThreshold, null, compressConfig.CompressRate);
+                        eventThreshold, null, compressConfig.TimeCompressRate);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in ridges)
                     {

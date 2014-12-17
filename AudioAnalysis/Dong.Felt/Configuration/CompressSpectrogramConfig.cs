@@ -10,7 +10,9 @@ namespace Dong.Felt.Configuration
         /// <summary>
         /// take 1 pixel every compressStep according to some rule.
         /// </summary>
-        public double CompressRate { get; set; }
+        public double TimeCompressRate { get; set; }
+
+        public double FreqCompressRate { get; set; }
 
     }
 }
