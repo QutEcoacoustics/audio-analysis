@@ -47,7 +47,8 @@
             NoiseReductionType noiseReductionType = configuration.NoiseReductionType;
             double windowOverlap = configuration.WindowOverlap;
             double noiseReductionParameter = configuration.NoiseReductionParameter;
-            double compressRate = configuration.CompressRate;
+            double timeCompressRate = configuration.TimeCompressRate;
+            double freqCompressRate = configuration.FreqCompressRate;
 
             double ridgeDetectionmMagnitudeThreshold = configuration.RidgeDetectionMagnitudeThreshold;
             int ridgeMatrixLength = configuration.RidgeMatrixLength;
@@ -89,7 +90,8 @@
                 };
                 var compressConfig = new CompressSpectrogramConfig
                 {
-                    CompressRate = compressRate,
+                    TimeCompressRate = timeCompressRate,
+                    FreqCompressRate = freqCompressRate,
                 };
                 var gradientConfig = new GradientConfiguration
                 {
@@ -134,7 +136,7 @@
                     /// RidgeDetectionBatchProcess   
                     //var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
                     //var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
-                    //var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram2(spectrogram.Data, compressConfig.CompressRate);
+                    AudioPreprosessing.AudioToCompressedSpectrogram(config, compressConfig);
                     //spectrogram.Data = compressedSpectrogram;                 
                     //spectrogram.Duration = tempDuration;                   
 
@@ -143,11 +145,11 @@
                     //    featurePropertySet);
 
                     ///Automatic check
-                    OutputResults.ChangeCandidateFileName(inputDirectory);
-                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
-                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
-                    OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    //OutputResults.ChangeCandidateFileName(inputDirectory);
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
+                    //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
+                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
                     ///GaussianBlur
@@ -172,7 +174,8 @@
                 new { 
                     RidgeDetectionMagnitudeThreshold = (double)configuration.RidgeDetectionMagnitudeThreshold,
                     NeighbourhoodLength = (int)configuration.NeighbourhoodLength,
-                    CompressRate = (double)configuration.CompressRate,
+                    TimeCompressRate = (double)configuration.TimeCompressRate,
+                    FreqCompressRate = (double)configuration.FreqCompressRate,
                     //StThreshold = (double)configuration.StThreshold,
                     //StAvgNhLength = (int)configuration.StAvgNhLength,
                     //StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
@@ -185,7 +188,8 @@
                 var folderName = string.Format("Run_{0}_{1}",
                     entry.RidgeDetectionMagnitudeThreshold,
                     //entry.NeighbourhoodLength);
-                    entry.CompressRate);
+                    entry.TimeCompressRate,
+                    entry.FreqCompressRate);
                 //var folderName = string.Format("Run_{0}_{1}",
                 //    entry.StThreshold,                   
                 //    entry.StMatchedThreshold);
@@ -203,7 +207,8 @@
                     NoiseReductionType = configuration.NoiseReductionType,
                     WindowOverlap = configuration.WindowOverlap,
                     NoiseReductionParameter = configuration.NoiseReductionParameter,
-                    CompressRate = configuration.CompressRate,
+                    TimeCompressRate = configuration.TimeCompressRate,
+                    FreqCompressRate = configuration.FreqCompressRate,
                     GradientMatrixLength = configuration.GradientMatrixLength,
                     GradientThreshold = configuration.GradientThreshold,
 
@@ -248,7 +253,7 @@
                     //var compressSpectrogramInFreq = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     //compressSpectrogramInFreq.Data = AudioPreprosessing.CompressSpectrogramInFreq(compressSpectrogramInFreq.Data, compressConfig.CompressRate);
                     var compressSpectrogramInTime = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    compressSpectrogramInTime.Data = AudioPreprosessing.CompressSpectrogramInTime(compressSpectrogramInTime.Data, compressConfig.CompressRate);
+                    compressSpectrogramInTime.Data = AudioPreprosessing.CompressSpectrogramInTime(compressSpectrogramInTime.Data, compressConfig.TimeCompressRate);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -320,7 +325,17 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTimeAvg(spectrogram.Data, compressConfig.CompressRate);
+                if (compressConfig.TimeCompressRate != 1.0)
+                {
+                    spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
+                }
+                else
+                {
+                    if (compressConfig.FreqCompressRate != 1.0)                   
+                    {
+                        spectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(spectrogram.Data, compressConfig.FreqCompressRate);
+                    }
+                }
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
@@ -365,7 +380,17 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTimeAvg(candidateSpectrogram.Data, compressConfig.CompressRate);
+                    if (compressConfig.TimeCompressRate != 1.0)
+                    {
+                        candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(candidateSpectrogram.Data, compressConfig.TimeCompressRate);
+                    }
+                    else
+                    {
+                        if (compressConfig.FreqCompressRate != 1.0)
+                        {
+                            candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(candidateSpectrogram.Data, compressConfig.FreqCompressRate);
+                        }
+                    }
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
 
@@ -525,7 +550,7 @@
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
                 var copySpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                copySpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copySpectrogram.Data, compressConfig.CompressRate);
+                copySpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copySpectrogram.Data, compressConfig.TimeCompressRate);
                 //var data = spectrogram.Data;
                 //var maxMagnitude = data.Cast<double>().Max();
                 //var minMagnitude = data.Cast<double>().Min();
@@ -584,7 +609,7 @@
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);                   
                     var copyCanSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    copyCanSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyCanSpectrogram.Data, compressConfig.CompressRate);
+                    copyCanSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyCanSpectrogram.Data, compressConfig.TimeCompressRate);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
 
@@ -749,7 +774,7 @@
             {
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.CompressRate);
+                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
@@ -789,7 +814,7 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(candidateSpectrogram.Data, compressConfig.CompressRate);
+                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(candidateSpectrogram.Data, compressConfig.TimeCompressRate);
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);

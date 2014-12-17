@@ -126,10 +126,10 @@
         {
             // the unit is confusing
             var secondToMillisecond = 1000;
-            this.maxFrequency = maximumFrequency;
-            this.minFrequency = minimumFrequency;
-            this.startTime = startTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
-            this.endTime = endTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
+            this.maxFrequency = maximumFrequency * compressConfig.FreqCompressRate;
+            this.minFrequency = minimumFrequency * compressConfig.FreqCompressRate;
+            this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
+            this.endTime = endTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
             this.duration = this.endTime - this.startTime;
             this.frequencyRange = this.maxFrequency - this.minFrequency;
             this.maxNhColIndex = maxFrameIndex;
@@ -145,8 +145,8 @@
             var secondToMillisecond = 1000;
             this.maxFrequency = maximumFrequency;
             this.minFrequency = minimumFrequency;
-            this.startTime = startTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
-            this.endTime = endTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
+            this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
+            this.endTime = endTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
             this.duration = this.endTime - this.startTime;
             this.frequencyRange = this.maxFrequency - this.minFrequency;
         }

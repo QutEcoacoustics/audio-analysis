@@ -148,7 +148,7 @@ namespace Dong.Felt
         {
             var result = new List<PointOfInterest>();
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
-            var compressRate = (int)(1 / compressConfig.CompressRate);
+            var compressRate = (int)(1 / compressConfig.TimeCompressRate);
             var compressedColsCount = cols / compressRate;
             if (cols % compressRate != 0)
             {
@@ -208,7 +208,7 @@ namespace Dong.Felt
         {
             var result = new List<PointOfInterest>();
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
-            var compressRate = (int)(1 / compressConfig.CompressRate);
+            var compressRate = (int)(1 / compressConfig.FreqCompressRate);
             var compressedRowsCount = rows / compressRate;
             var count = 0;
             if (rows % compressRate != 0)

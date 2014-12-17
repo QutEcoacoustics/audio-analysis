@@ -83,7 +83,7 @@ namespace Dong.Felt.ResultsOutput
                         var gStartTime = g.StartTime * secondToMilliSecondUnit;
                         if (currentCandidate.SourceFilePath == g.SourceFilePath)
                         {
-                            if ((Math.Abs(currentCandidate.MaxFrequency - g.MaxFrequency) < frequencyDifference) ||
+                            if ((Math.Abs(currentCandidate.MaxFrequency - g.MaxFrequency) < frequencyDifference) &&
                                 (Math.Abs(currentCandidate.MinFrequency - g.MinFrequency) < frequencyDifference))
                             {
                                 if ((Math.Abs(currentCandidate.StartTime - gStartTime) < timeDifference) ||
