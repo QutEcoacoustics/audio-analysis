@@ -137,7 +137,7 @@
             lock (new object())
             {
                 // 10 bytes == 80 bits == 80/5 == 16 chars in our (base32) encoding
-                // This gives us exactly 8 chars. We want to avoid the 8.3 short name issue
+                // This gives us exactly 32 chars
                 byte[] key = new byte[20];
 
                 using (var rng = new RNGCryptoServiceProvider())
