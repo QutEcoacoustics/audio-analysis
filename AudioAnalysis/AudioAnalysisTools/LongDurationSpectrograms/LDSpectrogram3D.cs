@@ -156,29 +156,29 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //SpectralIndicesToAndFromTable.ReadAllSpectralIndicesAndWriteToDataTable(indexPropertiesConfig, inputDirInfo, dataTableDirInfo);
 
 
-            // ############ use next three lines to obtain slices at constant MINUTE OF DAY
-            string key = "DayOfYear";
-            int step = 1;
-            int maxSliceCount = LDSpectrogram3D.Total_Days_In_Year;
-            var XInterval = TimeSpan.FromMinutes(60); // average days per month
-            int rowID = 3; // FreqBin
-            int colID = 2; // MinOfDay
+            // ############ use next three lines to obtain slices at constant DAY OF YEAR
+            //string key = "DayOfYear";
+            //int step = 1;
+            //int maxSliceCount = LDSpectrogram3D.Total_Days_In_Year;
+            //var XInterval = TimeSpan.FromMinutes(60); // average days per month
+            //int rowID = 3; // FreqBin
+            //int colID = 2; // MinOfDay
 
             // ############ use next three lines to obtain slices at constant FREQUENCY
             //string key = "FreqBin";
-            //int step = 200;
+            //int step = 100;
             //int maxSliceCount = nyquistFreq;
             //var XInterval = TimeSpan.FromMinutes(60);
             //int rowID = 1; // DayOfYear
             //int colID = 2; // MinOfDay
 
             // ############ use next three lines to obtain slices at constant MINUTE OF DAY
-            //string key = "MinOfDay";
-            //int step = 5;
-            //int maxSliceCount = LDSpectrogram3D.Total_Minutes_In_Day;
-            //var XInterval = TimeSpan.FromDays(30.4); // average days per month
-            //int rowID = 3; // FreqBin
-            //int colID = 1; // DayOfYear
+            string key = "MinOfDay";
+            int step = 5;
+            int maxSliceCount = LDSpectrogram3D.Total_Minutes_In_Day;
+            var XInterval = TimeSpan.FromDays(30.4); // average days per month
+            int rowID = 3; // FreqBin
+            int colID = 1; // DayOfYear
 
             // These are the column names and order in the csv data strings.
             // Year, DayOfYear, MinOfDay, FreqBin, ACI, AVG, BGN, CVR, TEN, VAR
@@ -194,7 +194,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int arrayID = sliceID;
                 if (key == "FreqBin")
                     arrayID = (int)Math.Round(sliceID / (double)freqBinWidth);
-                string fileStem = String.Format("SERF_2013_" + key + "_{0}", arrayID);
+                string fileStem = String.Format("SERF_2013_" + key + "_{0:d4}", arrayID);
 
                 // 3. Read a data slice from the data table files
                 List<string> data;
@@ -262,6 +262,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 string[] fields = line.Split(',');
                 int row = Int32.Parse(fields[rowID]);
                 int col = Int32.Parse(fields[colID]);
+                if (key == "MinOfDay")
+                {
+                    row = freqBinCount -1 - row;
+                }
+
                 redValue = Double.Parse(fields[redID]);
                 grnValue = Double.Parse(fields[grnID]);
                 bluValue = Double.Parse(fields[bluID]);
