@@ -1,12 +1,8 @@
-randomSampling <- function(filepath, nsample){
+randomSampling <- function(calls, nsample){
   source('C:/Work/decision tree/Accumulative Curve.R')
   
   set.seed(as.numeric(Sys.time()) %% 1000)
-  sampleMin <- 1:1435
-  
-  oct.calls <- read.csv(filepath)
-  colname <- names(oct.calls)
-  calls <- oct.calls[ ,colname[4:80]]
+  sampleMin <- 1:nrow(calls)
 
   mins <- sample(sampleMin, length(sampleMin))
   randomResult <- calls[mins, ]

@@ -1,10 +1,10 @@
-decisionTree <- function(filepath, cp=0.001, approach='anova'){
+decisionTree <- function(filepath, threshold=0.01, approach='anova'){
   require(rpart)
   
   training<-read.csv(filepath)
   
   #fit a model
-#   temp <- rpart.control(cp)
+  temp <- rpart.control(cp=threshold)
   fit <- rpart(callCount~., data=training, method=approach, control=temp)
 #   pfit <- prune(fit, cp=fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
   
