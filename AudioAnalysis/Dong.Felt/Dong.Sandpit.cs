@@ -136,17 +136,17 @@
                     /// RidgeDetectionBatchProcess   
                     //var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
                     //var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
-                    AudioPreprosessing.AudioToCompressedSpectrogram(config, compressConfig);
+                    //AudioPreprosessing.AudioToCompressedSpectrogram(config, compressConfig);
                     //spectrogram.Data = compressedSpectrogram;                 
                     //spectrogram.Duration = tempDuration;                   
 
                     /// Ridge detection analysis
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                    //    featurePropertySet);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                        featurePropertySet);
 
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
                     //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
                     //OutputResults.MatchingSummary(inputDirectory, outputFile);
@@ -249,11 +249,12 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.6, 3);
+                    //spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.6, 3);
+                    spectrogram.Data = ImageAnalysisTools.Dilation(spectrogram.Data, 3);
                     //var compressSpectrogramInFreq = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     //compressSpectrogramInFreq.Data = AudioPreprosessing.CompressSpectrogramInFreq(compressSpectrogramInFreq.Data, compressConfig.CompressRate);
-                    var compressSpectrogramInTime = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    compressSpectrogramInTime.Data = AudioPreprosessing.CompressSpectrogramInTime(compressSpectrogramInTime.Data, compressConfig.TimeCompressRate);
+                    //var compressSpectrogramInTime = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                    //compressSpectrogramInTime.Data = AudioPreprosessing.CompressSpectrogramInTime(compressSpectrogramInTime.Data, compressConfig.TimeCompressRate);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -277,7 +278,7 @@
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- spectrogram after Gaussian blur-sigma-0.6.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
