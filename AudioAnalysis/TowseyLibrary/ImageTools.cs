@@ -2654,6 +2654,7 @@ namespace TowseyLibrary
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
             {
+                if (null == array[i]) continue;
                 compositeHeight += array[i].Height;
             }
 
@@ -2664,7 +2665,8 @@ namespace TowseyLibrary
 
             for (int i = 0; i < array.Length; i++)
             {
-                gr.DrawImage(array[i], 0, yOffset); //draw in the top spectrogram
+                if (null == array[i]) continue;
+                gr.DrawImage(array[i], 0, yOffset); //draw in the top image
                 yOffset += array[i].Height;
             }
             return (Image)compositeBmp;

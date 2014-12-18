@@ -180,8 +180,17 @@ namespace Dong.Felt.Preprocessing
         {
             var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
             var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
-            var compressedSpectrogram = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig.CompressRate);
-            spectrogram.Data = compressedSpectrogram;
+            if (compressConfig.TimeCompressRate != 1.0)
+            {
+                spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
+            }
+            else
+            {
+                if (compressConfig.FreqCompressRate != 1.0)
+                {
+                    spectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(spectrogram.Data, compressConfig.FreqCompressRate);
+                }
+            }
             /// spectrogram drawing setting
             var scores = new List<double>();
             scores.Add(1.0);
@@ -249,7 +258,7 @@ namespace Dong.Felt.Preprocessing
         /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
         /// </param>
         /// <returns></returns>
-        public static double[,] CompressSpectrogram2(double[,] spectrogramData, double compressRate)
+        public static double[,] CompressSpectrogramInTime(double[,] spectrogramData, double compressRate)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
             var rowsCount = matrix.GetLength(0);
@@ -286,5 +295,142 @@ namespace Dong.Felt.Preprocessing
             }
             return result;
         }
+
+        /// <summary>
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose average over N pixels.  
+        /// </summary>
+        /// <param name="spectrogramData"></param>
+        /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
+        /// </param>
+        /// <returns></returns>
+        public static double[,] CompressSpectrogramInTimeAvg(double[,] spectrogramData, double compressRate)
+        {
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+            var rowsCount = matrix.GetLength(0);
+            var colsCount = matrix.GetLength(1);
+            var compressStep = (int)(1 / compressRate);
+            var compressedColsCount = colsCount / compressStep;
+            if (colsCount % compressStep != 0)
+            {
+                compressedColsCount++;
+            }
+            var result = new double[compressedColsCount, rowsCount];
+            for (var r = 0; r < rowsCount; r++)
+            {
+                for (var c = 0; c < colsCount; c += compressStep)
+                {
+                    var tempData = new List<double>();
+                    var maxIndex = 0;
+                    if (c + compressStep < colsCount)
+                    {
+                        maxIndex = compressStep;
+                    }
+                    else
+                    {
+                        maxIndex = colsCount - c;
+                    }
+                    for (var index = 0; index < maxIndex; index++)
+                    {
+                        tempData.Add(matrix[r, c + index]);
+                    }
+                    var avgValue = tempData.Average();
+                    var colIndex = c / compressStep;
+                    result[colIndex, rowsCount - 1 - r] = avgValue;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
+        /// </summary>
+        /// <param name="spectrogramData"></param>
+        /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
+        /// </param>
+        /// <returns></returns>
+        public static double[,] CompressSpectrogramInFreq(double[,] spectrogramData, double compressRate)
+        {
+            var matrix = spectrogramData;
+            var rowsCount = matrix.GetLength(1);
+            var colsCount = matrix.GetLength(0);
+            var compressStep = (int)(1 / compressRate);
+            var compressedRowsCount = rowsCount / compressStep;
+            if (rowsCount % compressStep != 0)
+            {
+                compressedRowsCount++;
+            }
+            var result = new double[colsCount, compressedRowsCount];
+            for (var c = 0; c < colsCount; c++)
+            {
+                for (var r = 0; r < rowsCount; r += compressStep)
+                {
+                    var tempData = new List<double>();
+                    var maxIndex = 0;
+                    if (r + compressStep < rowsCount)
+                    {
+                        maxIndex = compressStep;
+                    }
+                    else
+                    {
+                        maxIndex = rowsCount - r;
+                    }
+                    for (var index = 0; index < maxIndex; index++)
+                    {
+                        tempData.Add(matrix[c, r + index]);
+                    }
+                    var maxValue = tempData.Max();
+                    var rowIndex = r / compressStep;
+                    result[c, rowIndex] = maxValue;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This method aims to compress spectrogram data by extracting particular pixels, like choose average over N pixels.  
+        /// </summary>
+        /// <param name="spectrogramData"></param>
+        /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
+        /// </param>
+        /// <returns></returns>
+        public static double[,] CompressSpectrogramInFreqAvg(double[,] spectrogramData, double compressRate)
+        {
+            var matrix = spectrogramData;
+            var rowsCount = matrix.GetLength(1);
+            var colsCount = matrix.GetLength(0);
+            var compressStep = (int)(1 / compressRate);
+            var compressedRowsCount = rowsCount / compressStep;
+            if (rowsCount % compressStep != 0)
+            {
+                compressedRowsCount++;
+            }
+            var result = new double[colsCount, compressedRowsCount];
+            for (var c = 0; c < colsCount; c++)
+            {
+                for (var r = 0; r < rowsCount; r += compressStep)
+                {
+                    var tempData = new List<double>();
+                    var maxIndex = 0;
+                    if (r + compressStep < rowsCount)
+                    {
+                        maxIndex = compressStep;
+                    }
+                    else
+                    {
+                        maxIndex = rowsCount - r;
+                    }
+                    for (var index = 0; index < maxIndex; index++)
+                    {
+                        tempData.Add(matrix[c, r + index]);
+                    }
+                    var avgValue = tempData.Average();
+                    var rowIndex = r / compressStep;
+                    result[c, rowIndex] = avgValue;
+                }
+            }
+            return result;
+        }
+
+
     }
 }

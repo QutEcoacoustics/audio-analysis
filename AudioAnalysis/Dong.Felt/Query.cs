@@ -94,7 +94,8 @@
         /// <param name="minimumFrequency"></param>
         /// <param name="starttime"></param>
         /// <param name="endtime"></param>
-        public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime, int neighbourhoodLength,
+        public Query(double maximumFrequency, double minimumFrequency, 
+            double startTime, double endTime, int neighbourhoodLength,
             int maxFrequencyIndex, int maxFrameIndex,
             SpectrogramConfiguration spectrogramConfig)
         {
@@ -125,10 +126,10 @@
         {
             // the unit is confusing
             var secondToMillisecond = 1000;
-            this.maxFrequency = maximumFrequency;
-            this.minFrequency = minimumFrequency;
-            this.startTime = startTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
-            this.endTime = endTime * secondToMillisecond * compressConfig.CompressRate; // millisecond
+            this.maxFrequency = maximumFrequency * compressConfig.FreqCompressRate;
+            this.minFrequency = minimumFrequency * compressConfig.FreqCompressRate;
+            this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
+            this.endTime = endTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
             this.duration = this.endTime - this.startTime;
             this.frequencyRange = this.maxFrequency - this.minFrequency;
             this.maxNhColIndex = maxFrameIndex;
@@ -136,6 +137,19 @@
             GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
+        public Query(double maximumFrequency, double minimumFrequency, 
+            double startTime, double endTime,
+            CompressSpectrogramConfig compressConfig)
+        {
+            // the unit is confusing
+            var secondToMillisecond = 1000;
+            this.maxFrequency = maximumFrequency;
+            this.minFrequency = minimumFrequency;
+            this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
+            this.endTime = endTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
+            this.duration = this.endTime - this.startTime;
+            this.frequencyRange = this.maxFrequency - this.minFrequency;
+        }
 
         public Query(double maximumFrequency, double minimumFrequency, double startTime, double endTime)
         {
@@ -180,57 +194,47 @@
             this.nhCountInColumn = nhCountInCol;
             
         }
-
+       
+        /// <summary>
+        /// Keep it consistent with neighbourhoodRepresentation list. 
+        /// </summary>
+        /// <param name="queryCsvFile"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="spectrogram"></param>
+        /// <param name="spectrogramConfig"></param>
+        /// <param name="compressConfig"></param>
+        /// <returns></returns>
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength,
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
-            var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
-            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
-            {
-                nhCountInRow--;
-            }
-            var tempFrameCount = (int)(spectrogram.FrameCount * compressConfig.CompressRate);
-            var nhCountInColumn = (int)(tempFrameCount / neighbourhoodLength);
-            if (tempFrameCount % neighbourhoodLength == 0)
-            {
-                nhCountInColumn--;
-            }
+            var nhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
+            var nhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;
             var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
                 nhCountInRow, nhCountInColumn, spectrogramConfig, compressConfig);
             return result;
         }
 
-
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, 
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
-            var nhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
-            if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
-            {
-                nhCountInRow--;
-            }
-            var nhCountInColumn = (int)(spectrogram.FrameCount / neighbourhoodLength);
-            if (spectrogram.FrameCount % neighbourhoodLength == 0)
-            {
-                nhCountInColumn--;
-            }
+            var nhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
+            var nhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;
             var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
-                nhCountInRow, nhCountInColumn,spectrogramConfig);
+                nhCountInRow, nhCountInColumn, spectrogramConfig);
             return result;
         }
-
-        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile)
+        
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile,
+            CompressSpectrogramConfig compressConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
             var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
-                queryInfo.TimeEnd);
-            return result; 
+                queryInfo.TimeEnd, compressConfig);
+            return result;
         }
 
         #endregion

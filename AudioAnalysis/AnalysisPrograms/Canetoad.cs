@@ -1,6 +1,7 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Canetoad.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+//  The ACTION code for this analysis is: "Canetoad"
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
@@ -32,19 +33,19 @@ namespace AnalysisPrograms
 
     using ProcessRunner = TowseyLibrary.ProcessRunner;
 
+
+
     /// <summary>
-    ///     NOTE: In order to detect canetoad oscillations which can reach 15 per second one requires a frame rate of at least
-    ///     30 frames per second and preferably
-    ///     a frame rate = 60 so that this period sits near middle of the array of DCT coefficients.
-    ///     The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. User may wish
-    ///     to set SR and FRAME LENGTH should = 512 or 1024.
-    ///     Therefore best way to adjust frame rate is to adjust frame overlap.
-    ///     Have decided on the option of automatically calculating the frame overlap to suit the maximum oscillation to be
-    ///     detected.
-    ///     This is written in the method OscillationDetector.CalculateRequiredFrameOverlap();
-    ///     Do not want the DCT length to be too long because DCT is expensive to calculate. 0.5s - 1.0s is adequate for
-    ///     canetoad -depends on the expected osc rate.
-    ///     Analysis() method.
+    ///     NOTE: In order to detect canetoad oscillations, which can reach 15 per second, one requires a frame rate of at least
+    ///     30 frames per second and preferably a frame rate = 60 so that this period sits near middle of the array of DCT coefficients.
+    ///     The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. 
+    ///     1) User may wish to resample and so lower the SR. 
+    ///     2) FRAME LENGTH should = 512 or 1024 depending on oscillation rate. Higher oscillation rate requires shorter frame length.
+    ///     3) The best way to adjust frame rate is to adjust frame overlap. I decided to do this by automatically calculating 
+    ///        the frame overlap to suit the maximum oscillation to be detected. This is written in the method OscillationDetector.CalculateRequiredFrameOverlap();
+    ///        
+    ///     Avoid a long DCT length because the DCT is expensive to calculate. 0.5s - 1.0s is adequate for
+    ///     canetoad - depends on the expected osc rate.
     /// </summary>
     public class Canetoad : AbstractStrongAnalyser
     {

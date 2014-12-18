@@ -182,7 +182,7 @@
         {
             List<Exception> exceptions = new List<Exception>(3);
 
-            while (exceptions.Count < 3)
+            while (exceptions.Count < 10)
             {
                 this.process.Refresh();
 
@@ -324,23 +324,30 @@
 
         private void ProcessTimeout(string arguments, string workingDirectory, int retryCount, Action<string, string, int> retryMethod)
         {
-            var exited = this.process.HasExited; 
+            this.process.Refresh();
+            var exited = this.process.HasExited;
+
             if (!exited)
             {
-                this.process.Kill();
+                this.KillProcess();
             }
 
+            // attempt to read what we can from the stream
+            // (because ReadStream will not return while the process is running)
+            this.standardOutput.Append(ReadStream(this.process.StandardOutput));
+            this.errorOutput.Append(ReadStream(this.process.StandardError));
+
+
             this.failedRuns.Add(string.Format(
-                "[{0} UTC] {1} with args {2} running in {3}. Waited for {4}. Process had{7} already terminated after timeout.\n\nStdout: {5}\n\nStderr: {6}",
+                "[{0} UTC] {1} with args {2} running in {3}. Waited for {4}. Process had{5} already terminated after timeout.\n\nStdout: {6}\n\nStderr: {7}",
                 DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture),
                 this.ExecutableFile.Name,
                 arguments,
                 workingDirectory,
                 TimeSpan.FromMilliseconds(this.WaitForExitMilliseconds).ToString("c"),
-                exited ? "" : " not",
+                exited ? string.Empty : " not",
                 this.StandardOutput,
-                this.ErrorOutput
-                ));
+                this.ErrorOutput));
 
             if (this.MaxRetries > 0 && retryCount < this.MaxRetries)
             {

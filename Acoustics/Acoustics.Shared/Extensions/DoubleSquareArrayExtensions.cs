@@ -97,9 +97,9 @@ namespace System
         /// </returns>
         public static T[,] Fill<T>(this T[,] array, T value)
         {
-            for (int i = 0; i < array.GetUpperBound(0); i++)
+            for (int i = 0; i < array.GetLength(0); i++)
             {
-                for (int j = 0; j < array.GetUpperBound(1); j++)
+                for (int j = 0; j < array.GetLength(1); j++)
                 {
                     array[i, j] = value;
                 }
@@ -110,8 +110,8 @@ namespace System
 
         public static U[,] Map<T, U>(this T[,] array, Func<T, U> f)
         {
-            var jUpper = array.GetUpperBound(1);
-            var iUpper = array.GetUpperBound(0);
+            var jUpper = array.GetLength(1);
+            var iUpper = array.GetLength(0);
 
             var result = new U[iUpper, jUpper];
             for (int i = 0; i < iUpper; i++)
@@ -127,8 +127,8 @@ namespace System
 
         public static U Fold<T, U>(this T[,] array, Func<U, T, U> f, U seed)
         {
-            var jUpper = array.GetUpperBound(1);
-            var iUpper = array.GetUpperBound(0);
+            var jUpper = array.GetLength(1);
+            var iUpper = array.GetLength(0);
 
             var result = new U[iUpper, jUpper];
             for (int i = 0; i < iUpper; i++)

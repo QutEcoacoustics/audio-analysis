@@ -245,6 +245,7 @@
     <Compile Include="ConfigDict.cs" />
     <Compile Include="ConfigDictionary.cs" />
     <Compile Include="HoughTransform.cs" />
+    <Compile Include="Matrix3D.cs" />
     <Compile Include="StructureTensor.cs" />
     <Compile Include="WaveletTransformContinuous.cs" />
     <Compile Include="CsvTools.cs" />

@@ -207,4 +207,5 @@ FakesAssemblies/
 
 # matlab
 *.asv
-AudioAnalysis/RCode/Liang/smart sampling/.Rhistory
+*.Rhistory
+*.Rproj.user
