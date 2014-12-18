@@ -12,6 +12,7 @@
     using System.Globalization;
     using AForge.Math;
     using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
 
     class StatisticalAnalysis
     {
@@ -29,7 +30,37 @@
                 }
             }
         }
-        
+
+        public static double[,] MatrixRotate90Clockwise(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new double[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[rows - r - 1, c];
+            return ret;
+        }
+
+        public static double[,] ZeroPaddingMatrix(double[,] m, int colsNumber)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var zero = new double[rows, cols+colsNumber];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    zero[r, c] = m[r, c];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = cols - 1; c < cols + colsNumber; c++)
+                {
+                    zero[r, c] = 0.0;
+                }
+            }
+            return zero;
+        }
+
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
@@ -727,7 +758,7 @@
             }
             return result;
         }
-
+        
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// The returned submatrix includes the rows and column passed as bounds.
@@ -792,13 +823,15 @@
         /// <param name="rows"></param>
         /// <param name="cols"></param>
         /// <returns></returns>
-        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
+        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, SpectrogramStandard spectrogram,
+            int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
             //var fftMatrix = list[0].fftMatrix; 
             //var matrixRowCount = fftMatrix.GetLength(0);
             //var matrixColCount = fftMatrix.GetLength(1);
-            //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount]; 
+            //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount];
+            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -808,6 +841,7 @@
                     tempPoi.RidgeMagnitude = 0.0;
                     // tempPoi.fftMatrix = defaultFFTMatrix;
                     tempPoi.OrientationCategory = 10;
+                    tempPoi.Intensity = spectrogramMatrix[rowIndex, colIndex]; 
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }
@@ -822,6 +856,43 @@
             return m;
         }
 
+        /// <summary>
+        /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <returns></returns>
+        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list,
+            int rows, int cols)
+        {
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];
+            //var fftMatrix = list[0].fftMatrix; 
+            //var matrixRowCount = fftMatrix.GetLength(0);
+            //var matrixColCount = fftMatrix.GetLength(1);
+            //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount];            
+            for (int colIndex = 0; colIndex < cols; colIndex++)
+            {
+                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+                {
+                    var point = new Point(colIndex, rowIndex);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    // tempPoi.fftMatrix = defaultFFTMatrix;
+                    tempPoi.OrientationCategory = 10;                  
+                    m[rowIndex, colIndex] = tempPoi;
+                }
+            }
+            foreach (PointOfInterest poi in list)
+            {
+                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
+                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
+                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
+                // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
+                m[poi.Point.Y, poi.Point.X] = poi;
+            }
+            return m;
+        }
         /// <summary>
         /// This version is for structure tensor matrix 
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
@@ -881,12 +952,6 @@
             }
             foreach (PointOfInterest poi in list)
             {
-                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
-                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
-                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
-                // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                //m[poi.Point.Y, poi.Point.X] = poi;
-                // Changed 2014-8-22
                 m[poi.Point.X, poi.Point.Y] = poi;
             }
             return m;
@@ -988,6 +1053,7 @@
                         subMatrix[row, col].OrientationCategory = matrix[row1 + row, col1 + col].OrientationCategory;
                         subMatrix[row, col].RidgeMagnitude = matrix[row1 + row, col1 + col].RidgeMagnitude;
                         subMatrix[row, col].RidgeOrientation = matrix[row1 + row, col1 + col].RidgeOrientation;
+                        subMatrix[row, col].Intensity = matrix[row1 + row, col1 + col].Intensity;
                     }
                     else
                     {
@@ -1320,6 +1386,33 @@
             var unit = 1000.0;
             return seconds * unit;
         }
+
+        public static bool NullPoiMatrix(PointOfInterest[,] poiMatrix)
+        {
+            var rowsCount = poiMatrix.GetLength(0);
+            var colsCount = poiMatrix.GetLength(1);
+            var sumCount = rowsCount * colsCount;
+            var count = 0;
+            for (var r = 0; r < rowsCount; r++)
+            {
+                for (var c = 0; c < colsCount; c++)
+                {
+                    if (poiMatrix[r, c].RidgeMagnitude == 0.0)
+                    {
+                        count++;
+                    }
+                }
+            }
+            if (count == sumCount)
+            {
+                return true;
+            }
+            else                
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// ridge neighbourhood representation list to array.

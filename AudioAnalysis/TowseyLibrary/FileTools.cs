@@ -166,6 +166,48 @@ namespace TowseyLibrary
             return lines;
         }// end ReadtextFile()
 
+
+        public static List<string> ReadSelectedLinesOfCsvFile(string fName, string key, int value)
+        {
+            var lines = new List<string>();
+            using (TextReader reader = new StreamReader(fName))
+            {
+                //read header line
+                string line = reader.ReadLine();
+                string[] array = line.Split(',');
+
+                // determine which CSV column contains the key
+                int columnID = -1;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    if (array[i].Equals(key))
+                    {
+                        columnID = i;
+                        break;
+                    }
+                }
+
+                // the key was not found
+                if (columnID == -1)
+                {
+                    LoggedConsole.WriteErrorLine("THE KEY <" + key + "> WAS NOT FOUND IN FILE <" + fName + ">");
+                    return null;
+                }
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    //read one line at a time in string array
+                    array = line.Split(',');
+                    if (Int32.Parse(array[columnID]) == value)
+                    {
+                        lines.Add(line);
+                    }
+                }//end while
+            }//end using
+            return lines;
+        }// end ReadtextFile()
+
+
         public static byte[] ReadSerialisedObject(string path)
         {
             FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);

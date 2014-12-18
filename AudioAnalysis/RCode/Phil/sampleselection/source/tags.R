@@ -8,7 +8,6 @@ GetTags <- function (target.only = TRUE, study.only = TRUE, no.duplicates = TRUE
     # Value:
     #   data.frame
     #     site, date, time, species.id, min
-    
     Report(2, 'Checking mySql database of labeled minutes (tags)');
     tag.fields <- c('site',
                     'start_date', 
@@ -29,11 +28,30 @@ GetTags <- function (target.only = TRUE, study.only = TRUE, no.duplicates = TRUE
                       }, date.col, time.col)
     tags <- as.data.frame(cbind(tags, min.nums))
     colnames(tags) <- c('site', 'date', 'time', 'species.id','min')
-    
-    return(tags);
-    
+    return(tags);    
 }
 
+
+GetTargetRange <- function (tmids = NULL) {  
+    
+    range <- list();
+    
+    if (!is.data.frame(tmids)) {
+        tmids <- ReadOutput('target.min.ids')$data   
+    }
+
+
+        len <- nrow(tmids)        
+        range$sites <- unique(tmids$site)  
+        range$start.date <- tmids$date[1]
+        range$end.date <- tmids$date[len]
+        range$start.min <- tmids$min[1]
+        range$end.min <- tmids$min[len]
+        range$target.min.ids <- tmids       
+
+    return(range)
+    
+}
 
 
 ReadTagsFromDb <- function (fields = c('start_date', 
@@ -49,40 +67,44 @@ ReadTagsFromDb <- function (fields = c('start_date',
     require('RMySQL')
     
     if (class(target) == 'list') {
+        
+        # get tags for a specific list on minute ids
+        
+        
+        
     
     } else if (target == TRUE) {
         # TODO: multi part of day minute selection
         # currently selects from the start of the first part 
         # until the end of the last partQ
-        start.min <- g.minute.ranges[1]
-        end.min <- g.minute.ranges[length(g.minute.ranges)]
-        start.date <- g.start.date
-        end.date <- g.end.date
-        sites <- g.sites
+        
+        range <- GetTargetRange()
+        
     } else if (study.only) {
-        start.min <- g.study.start.min
-        end.min <- g.study.end.min
-        start.date <- g.study.start.date
-        end.date <- g.study.end.date
-        sites <- g.study.sites 
+        range <- list()
+        range$start.min <- g.study.start.min
+        range$end.min <- g.study.end.min
+        range$start.date <- g.study.start.date
+        range$end.date <- g.study.end.date
+        range$sites <- g.study.sites 
     }
     
     where.statement <- ''
     
     if (target || study.only) {
         
-        start.time <- MinToTime(start.min)
-        end.time <- MinToTime(end.min + 1) # target is inclusive of end min
+        start.time <- MinToTime(range$start.min)
+        end.time <- MinToTime(range$end.min + 1) # target is inclusive of end min
         
         # need to round start time down to the nearest 10 mins 
         # and end time up to the nearest 10 mins. 
         
-        start.date.time <- paste0("'",start.date," ",start.time,"'")
-        end.date.time <- paste0("'",end.date," ",end.time,"'")
+        start.date.time <- paste0("'",range$start.date," ",start.time,"'")
+        end.date.time <- paste0("'",range$end.date," ",end.time,"'")
         
         # convert vector of sites to comma separated list of 
         # quoted strings between parentheses
-        sites <- paste0("('",paste0(sites, collapse="','"),"')")     
+        sites <- paste0("('",paste0(range$sites, collapse="','"),"')")     
         
         where.statement <- paste("WHERE species_id > 0",
                                          
@@ -97,12 +119,18 @@ ReadTagsFromDb <- function (fields = c('start_date',
     
     if (no.duplicates) {
         if (where.statement != '') {
-            where.statement <- paste(where.statement, " duplicate = 0", sep = "AND")
+            where.statement <- paste(where.statement, " duplicate = 0", sep = " AND")
         } else {
             where.statement <- "WHERE duplicate = 0"
         }
     }
     
+    if (target) {
+        # TODO
+        # we have searched for all tags between the first and last row of the target
+        # but we need to remove any mins that are not present in the target
+        # for now it doesn't matter, because we are only looking at one full day 
+    }
 
     
     # construct SQL statement

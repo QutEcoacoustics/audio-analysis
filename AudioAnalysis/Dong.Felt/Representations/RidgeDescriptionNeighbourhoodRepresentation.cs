@@ -307,6 +307,7 @@ namespace Dong.Felt.Representations
         {
             PointList = pointList;
         }
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -484,7 +485,8 @@ namespace Dong.Felt.Representations
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="spectrogramConfig"></param>
-        public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, SpectrogramConfiguration spectrogramConfig)
+        public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, 
+            SpectrogramConfiguration spectrogramConfig)
         {
             var EastBin = 0.0;
             var NorthEastBin = 0.0;
@@ -1917,7 +1919,6 @@ namespace Dong.Felt.Representations
         {
             int maximumRowIndex = poiNeighbourhood.GetLength(0);
             int maximumColIndex = poiNeighbourhood.GetLength(1);
-
 
             var ridgeNeighbourhoodFeatureVector = RectangularRepresentation.SliceRidgeRepresentation(poiNeighbourhood, 0, 0);
             var ridgeDominantOrientationRepresentation = RectangularRepresentation.SliceMainSlopeRepresentation(ridgeNeighbourhoodFeatureVector);

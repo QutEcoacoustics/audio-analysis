@@ -500,17 +500,53 @@ RemoveFileExtension <- function (fn) {
     return(paste0(tmp[1:(length(tmp)-1)], collapse='.'))
 }
 
-SampleAtLeastOne <- function (pool, num) {
-    # given a pool of elements and a num greater than the number of elements
-    # randomly picks num of them, including all of the elements at least once
-    if (length(pool) > num) {
-        stop('num items to return must be greater than the number of items in the pool')
+SampleAtLeastOne <- function (pool, num, prob = NULL, at.least.one.of = NULL) {
+    # given a pool of elements and a num greater (or equal) than the number of elements in the at.least.one.of
+    # randomly picks num of them, including all of the elements in at.least.one.of at least once
+    # pool must contain all of at.least.one.of 
+    # if at.least.one.of is not supplied, pool is used. i.e. choose num elements from pool with at least one of each from pool
+    
+    if (is.null(at.least.one.of)) {
+        at.least.one.of <- unique(pool)
+    } else {
+        if (length(union(pool, at.least.one.of)) != length(unique(pool))) {
+            stop('pool must contain all items in mandatory pool')
+        }
     }
-    result <- sample(pool, num, replace = TRUE)
-    result[sample(1:num, length(pool), replace = FALSE)] <- sample(pool, length(pool), replace = FALSE) 
+    
+    if (length(at.least.one.of) > num) {
+        result <- NA
+        stop('num items to return must be greater than the number of items in the mandatory pool')
+    } else {
+        # first do a normal sample, which doesn't guarantee that every element of the pool is used
+        result <- sample.vec(pool, num, replace = TRUE, prob = prob) 
+        missing <- setdiff(at.least.one.of, result)      
+        if (length(missing) > 0) {
+            # then, to make sure that all mandatory have been used, assign one of each of the mandatory pool to random spots
+            
+            # only replace indicies of the result where the value is either not mandatory OR occurs more than once
+            can.replace <- which(duplicated(result) | !result %in% at.least.one.of)
+            if (length(can.replace) == 0) {
+                print('stop')
+            }
+            to.replace <- sample.vec(can.replace, length(missing), replace = FALSE)
+            replacement <- sample.vec(missing, length(missing), replace = FALSE)
+            original.result <- result
+            result[to.replace] <- replacement 
+        }
+    }
+    
+    if (length(setdiff(at.least.one.of, result)) > 0) {
+        print('stop')
+    }
+    
+    
     return(result)
 }
 
+# stupid hack workaround to fix the crap caused by the built in 'convenience' of R's native sample behavious
+# i.e if the x is a vector of length 1 is a single number treats is at 1:(x[1])
+sample.vec <- function(x, ...) x[sample(length(x), ...)]
 
 
 

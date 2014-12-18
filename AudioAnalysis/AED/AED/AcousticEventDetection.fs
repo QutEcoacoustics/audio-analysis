@@ -120,16 +120,20 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold doNoiseRemoval m =
 let detectEventsMinor intensityThreshold smallAreaThreshold (bandPassFilter:float*float) doNoiseRemoval a =
     if (fst bandPassFilter > snd bandPassFilter) then failwith "bandPassFilter args invalid"
     let m = Math.Matrix.ofArray2D a |> mTranspose
-    if m.NumRows = 257 
-        then
-            let (min, max) = fst bandPassFilter |> frequencyToPixels floor, snd bandPassFilter |> frequencyToPixels ceil 
-            // remove first row (DC values) like in matlab and remove bandpass pixels (length i really needs that +1!)
-            let mPrime = m.Region (1 + min, 0, 1 + max - min, m.NumCols) 
-            detectEventsMatlab intensityThreshold smallAreaThreshold doNoiseRemoval mPrime    
-            // transpose results back & compensate for removing first row & any bandpass
-            |> Seq.map (mapEventToAbsolute (0, min + 1))
-        else 
-            failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
+    
+    let (min, max) = fst bandPassFilter |> frequencyToPixels floor, snd bandPassFilter |> frequencyToPixels ceil 
+    // remove first row (DC values) like in matlab and remove bandpass pixels (length i really needs that +1!)
+    let mPrime = 
+        match m.NumRows with
+        | 257 -> m.Region (1 + min, 0, 1 + max - min, m.NumCols) 
+        | 256 -> m.Region (0 + min, 0, 0 + max - min, m.NumCols) 
+        | _ -> failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
+
+    detectEventsMatlab intensityThreshold smallAreaThreshold doNoiseRemoval mPrime    
+    // transpose results back & compensate for removing first row & any bandpass
+    |> Seq.map (mapEventToAbsolute (0, min + 1))
+
+            
 
 let detectEvents intensityThreshold smallAreaThreshold bandPassFilter doNoiseRemoval a =
     detectEventsMinor intensityThreshold smallAreaThreshold bandPassFilter doNoiseRemoval a

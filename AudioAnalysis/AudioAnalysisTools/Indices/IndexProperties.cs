@@ -230,7 +230,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// For writing this method:
-        ///    See CLASS: IndicesCsv2Display
+        ///    See CLASS: DrawSummaryIndices
         ///       METHOD: Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, bool doNormalise)
         /// </summary>
         /// <param name="val"></param>
@@ -282,7 +282,7 @@ namespace AudioAnalysisTools.Indices
 
 
 
-        private static readonly ConcurrentDictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new ConcurrentDictionary<string, Dictionary<string, IndexProperties>>();
+        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
 
         private string dataType;
 
@@ -299,27 +299,33 @@ namespace AudioAnalysisTools.Indices
             // AT: the effects of this method have been significantly altered
             // a) caching introduced - unkown effects for parallelism and dodgy file rewriting stuff
             // b) static deserialisation utilised (instead of dynamic)
-            Dictionary<string, IndexProperties> propertySet = CachedProperties.GetOrAdd(
-                configFile.FullName,
-                fileName =>
+            lock (CachedProperties)
+            {
+                Dictionary<string, IndexProperties> props;
+                if (CachedProperties.TryGetValue(configFile.FullName, out props))
+                {
+                    return props;
+                }
+                else
+                {
+                    var deserialised = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
+
+                    int i = 0;
+                    foreach (var kvp in deserialised)
                     {
-                        var deserialised = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
+                        // assign the key to the object for consistency
+                        kvp.Value.Key = kvp.Key;
 
-                        int i = 0;
-                        foreach (var kvp in deserialised)
-                        {
-                            // assign the key to the object for consistency
-                            kvp.Value.Key = kvp.Key;
+                        // HACK: infer order of properties for visualisation based on order of for-each
+                        kvp.Value.Order = i;
+                        i++;
+                    }
 
-                            // HACK: infer order of properties for visualisation based on order of for-each
-                            kvp.Value.Order = i;
-                            i++;
-                        }
+                    CachedProperties.Add(configFile.FullName, deserialised);
+                    return deserialised;
+                }
+            }
 
-                        return deserialised;
-                    });
-
-            return propertySet;
             /*
             dynamic configuration = Yaml.Deserialise(configFile);
 

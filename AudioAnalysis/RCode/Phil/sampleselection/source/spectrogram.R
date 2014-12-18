@@ -202,12 +202,8 @@ Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
     #  Returns:
     #    NULL
     require('grid')
-    
-    
-    amp <- spectro$vals
-    
 
-    
+    amp <- spectro$vals
     
     width <- ncol(amp)
     height <- nrow(amp)

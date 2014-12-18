@@ -1,274 +1,66 @@
 
+# Instructions:
+# 1. Get the species.mins using GetSpeciesMins
+# 2. Read the events from previous output using ReadOutput
+# EITHER
+# 3. Simulate artificial clustering using SimulateClustering
+# 4. Calculate B-cubed using BCubed
+# OR 
+# 3. run EvaluateBCubed, which does the simulation many times (can take a while)
 
-ClusterQuality <- function (version = 1, use.ideal = TRUE) {
-    events <- ApplyGroupToEvents() 
+source('artificial.clustering.R')
 
-
-    species.mins <- GetTags();
-    species.mins <- AddMinuteIdCol(species.mins)
+GetACForVis <- function (fn, fraction.of.events = 0.3, fraction.of.minutes = 0.04, amount.random = 0) {
+    # shortcut function to get the output for visualization, 
+    # mainly so that I can remember the steps needed
     
+    species.mins <- GetSpeciesMins()
+    events <- ReadOutput('events', include.meta = FALSE)
+    reduced <- ReduceEventsAndMinutes(events, species.mins, fraction.of.events = fraction.of.events, fraction.of.minutes = fraction.of.minutes)
+    reduced$events <- SimulateClustering(events = reduced$events, species.mins = reduced$species.mins, num.clusters = 240)
+    reduced$events <- AddRandom(reduced$events, amount.random)
+    OutputForVis(fn, reduced)
+    
+}
+
+
+
+
+
+GetSpeciesMins <- function () {
+    # creates a list of species-minute pairs
+    species.mins <- GetTags();
+    species.mins <- AddMinuteIdCol(species.mins) 
+    return(species.mins)
+}
+
+GetGroupMins <- function (species.mins = NA, use.ideal = FALSE, use.random = FALSE) {
+    # creates a list of cluster group - minute pairs
+    # Args
+    #   use.ideal: boolean; if true it will simulate ideal clustering
+    #   use.random: boolean; if true it will simulate very bad quality clusters (randomly assign groups)
+    #                        if use.ideal and use random are both false, it will look for actual clustering results 
+    #                        in the output csv files 
     if (use.ideal) {
+        if (!is.data.frame(species.mins)) {
+            stop('species.mins must be supplied if simulating ideal clustering')
+        }
         group.mins <- SimulatePerfectClustering(species.mins)
     } else {
-        cluster.mins <- events$data[c('min.id', 'group')]
-        group.mins <- unique(cluster.mins)   
-    }
-    
-    
-    groups <- unique(group.mins$group)
-    species <- unique(species.mins$species.id)
-    groups <- groups[order(groups)]
-    species <- species[order(species)]
-    
-    m <- matrix(NA, nrow = length(species), ncol = length(groups))
-
-    for (s in 1:length(species)) {
-        Dot()
-        for (g in 1:length(groups)) {
-            if (version == 1) {
-                m[s,g] <- MatchSpeciesGroup(species.id = species[s], group = groups[g], species.mins, group.mins, TRUE)
-            } else if (version == 2) {
-                m[s,g] <- MatchSpeciesGroup(species.id = species[s], group = groups[g], species.mins, group.mins, FALSE)
-            } else if (version == 3) {
-                m[s,g] <- MatchSpeciesGroup2(species.id = species[s], group = groups[g], species.mins, group.mins)
-            } else if (version == 4) {
-                m[s,g] <- MatchSpeciesGroup3(species.id = species[s], group = groups[g], species.mins, group.mins)
-            }
-        }
-    }
-    DrawCQMatrix.3(m, species, groups)
-    
-}
-
-DrawCQMatrix.4 <- function (m, species, groups) {
-    require(lattice)
-    m <- m
-    levelplot(m, 
-              col.regions=gray.colors(256,start=1,end=0), 
-              xlab = "Cluster Groups",
-              ylab = "Species id",
-              row.values = species,
-              column.values = groups)
-    
-    
-}
-
-DrawCQMatrix.3 <- function (m, species, groups) {
-    
-    image(t(m), col=gray.colors(256,start=1,end=0), axes = FALSE)
-    
-    at.x <- 1:ncol(m) / ncol(m)
-    at.y <- 1:nrow(m) / nrow(m)
-    
-    #axis(3, at = at.x, labels=as.character(groups), srt=45,tick=FALSE)
-    #axis(2, at = at.y, labels=as.character(species), srt=45,tick=FALSE)
-    
-    mtext("species", 2, line=0)
-    mtext("clusters", 1, line=0)
-    
-}
-
-
-DrawCQMatrix.2 <- function (m, species, groups) { 
-    library(pheatmap)
-    m <- m
-    pheatmap(m, cluster_row = FALSE, cluster_col = FALSE, color=gray.colors(256,start=1,end=0), scale = 'none')
-}
-
-DrawCQMatrix.1 <- function (m, species, groups) { 
-    library(gplots)
-    #Format the data for the plot
-    xval <- formatC(m, format="f", digits=2)
-    pal <- colorRampPalette(c(rgb(0.96,0.96,1), rgb(0,0,0)), space = "rgb")
-    #Plot the matrix
-    x_hm <- heatmap.2(m, 
-                      Rowv=FALSE, 
-                      Colv=FALSE, 
-                      dendrogram="none", 
-                      main="8 X 8 Matrix Using Heatmap.2", 
-                      xlab="Cluster", 
-                      ylab="Species", 
-                      col=pal, 
-                      tracecol="#303030", 
-                      trace="none", 
-                      cellnote=xval, 
-                      notecol="black", 
-                      notecex=0.8, 
-                      keysize = 1.5, 
-                      margins=c(5, 5))
-    
-}
-
-
-SimulatePerfectClustering <- function (species.mins = NULL) {
-    
-    if (is.null(species.mins)) {
-        species.mins <- GetTags();
-        species.mins <- AddMinuteIdCol(species.mins)
-    }
-    
-    
-    
-    #species.ids <- unique(species.mins$species.id)
-    species.ids <- as.data.frame(table(species.mins$species.id))
-    colnames(species.ids) <- c('species.id', 'count')
-    species.ids <- species.ids[order(species.ids$species.id), ]
-    species.mins <- species.mins[, c('species.id', 'min.id')]
-    
-    
-    
-    # create a list of "calls" call belongs to species, species has many calls
-    call.ids <- 1:(nrow(species.ids)*2)
-    
-    # assign a species id to each call. 
-    # species appearing in fewer than x mins will only be assigned to 1 call, to reduce the chance of a species having more calls than mins it appears in
-    x <- 8
-    frequent.species <- species.ids[species.ids$count >= x, ]
-    rare.species <- species.ids[species.ids$count < x, ]
-    call.ids.for.rare.species <- call.ids[1:nrow(rare.species)]
-    call.ids.for.frequent.species <- call.ids[(length(call.ids.for.rare.species) + 1):length(call.ids)]
-
-    ok <- FALSE
-    num <- 0
-    while (!ok && num < 50) {
-        calls.of.frequent.species <- data.frame(call.id = call.ids.for.frequent.species, 
-                                                species.id = sample(frequent.species$species.id, length(call.ids.for.frequent.species), replace = TRUE))
-        # ensure all species have at least 1 call
-        # select random indices of the list of calls of frequent species 
-        indices <- sample(1:length(call.ids.for.frequent.species), nrow(frequent.species), replace = FALSE)
-        # assign each species to those random indices
-        calls.of.frequent.species$species.id[indices] <- sample(frequent.species$species.id, nrow(frequent.species), replace = FALSE)
-        # check that no species has more calls than mins it appears in
-        # freaky random sampling may have done this, but unlikely
-        call.count <- as.data.frame(table(as.integer(calls.of.frequent.species$species.id)))
-        colnames(call.count) <- c('species.id', 'count')
-        call.count <- call.count[order(call.count$species.id), ]
-        if (all(call.count$count <= frequent.species$count)) {
-            ok <- TRUE
-        }
-        num <- num + 1
-    }
-    
-    calls.of.rare.species <- data.frame(call.id = call.ids.for.rare.species, 
-                                        species.id = as.integer(as.character(rare.species$species.id)))
-    
-    calls <- rbind(calls.of.rare.species, calls.of.frequent.species)
-    
-    
-    # each call has 1 or more events. Each event belongs to 1 cluster. So, each call has 1 or more clusters. each cluster belongs to 1 call
-    
-    cluster.ids <- 1:(length(call.ids) * 2)
-    clusters <- data.frame(cluster.id = cluster.ids, call.id = SampleAtLeastOne(call.ids, length(call.ids)))
-    #calls$species.id[sample(1:nrow(calls), length(species.ids), replace = FALSE)] <- sample(species.ids, length(species.ids), replace = FALSE)  # ensure all species have at least 1 call
-    
-    clusters$call.id[sample(1:nrow(clusters), length(call.ids), replace = FALSE)] = sample(call.ids, length(call.ids), replace = FALSE)  # ensure all calls have at least 1 cluster
-    
-    # so, now we have each species with a number 1 or more calls (average of 2)
-    # and each call has 1 or more cluster groups (average of 2)
-    # assume that in any particular minute, only one call from each species is present. i.e. a species won't call with 2 different call types in the same minute
-    
-
-    
-    # for each species-minute pair, assign a call.id
-    # then add the relevant events to the cluster.minutes df
-    species.mins$call.id <- rep(NA, nrow(species.mins))
-    for (s.id in as.numeric(as.character(species.ids$species.id))) {   
-        species.mins.rows <- which(species.mins$species.id == s.id) 
-        species.call.ids <- calls$call.id[calls$species.id == s.id]
-        
-        if (length(species.call.ids) == 1) {
-            species.mins$call.id[species.mins.rows] <- species.call.ids
+        if (use.random) {
+            events <- ApplyRandomGroupToEvents()
         } else {
-            #if the species has more than one call, randomly assign the calls to the minutes of that species
-            # but make sure to include each call id at least once
-            
-            
-            species.mins$call.id[species.mins.rows] <- SampleAtLeastOne(species.call.ids, length(species.mins.rows))
-        }                                  
+            events <- ApplyGroupToEvents()
+        }
+        cluster.mins <- events$data[c('min.id', 'group')]
+        group.mins <- unique(cluster.mins)  
     }
-    
-    # create a list of cluster-minute pairs
-    cluster.minutes <- data.frame(min.id = integer(), group = integer())
-    
-    for (i in 1:nrow(calls)) {
-        this.species.mins <- species.mins[species.mins$call.id == calls$call.id[i], ]
-        this.clusters <- clusters[clusters$call.id == calls$call.id[i], ]
-        this.cluster.minutes <- data.frame(min.id = rep(this.species.mins$min.id, times = nrow(this.clusters)),  group = rep(this.clusters$cluster.id, times = 1, each = nrow(this.species.mins)))
-        cluster.minutes <- rbind(cluster.minutes, this.cluster.minutes)
-    }
-
-
-    
-    return(cluster.minutes)
-
-    
-}
-
-MatchSpeciesGroup3 <- function (species.id, group, species.mins, group.mins) {
-    # finds the number of minutes containing both particular species and a particular group
-    # divided by the number of minutes containing the species 
-    
-    mins.with.species <- species.mins$min.id[species.mins$species.id == species.id]
-    mins.with.group <- group.mins$min.id[group.mins$group == group] 
-    mins.with.both <- intersect(mins.with.species, mins.with.group)
-    
-    #score <-  (chance.of.both.if.random ) /  ((length(mins.with.both) / total.num.mins) + )
-    
-    score <- length(mins.with.both)^2 / (length(mins.with.species) * length(mins.with.group))
-    
-    return(score)
-    
-}
-
-MatchSpeciesGroup2 <- function (species.id, group, species.mins, group.mins) {
-    # finds the number of minutes containing both particular species and a particular group
-    # divided by the number of minutes containing the species 
-    
-    total.num.mins <- length(unique(c(species.mins$min.id, group.mins$min.id)))
-
-    mins.with.species <- species.mins$min.id[species.mins$species.id == species.id]
-    mins.with.group <- group.mins$min.id[group.mins$group == group] 
-    mins.with.both <- intersect(mins.with.species, mins.with.group)
-    
-    chance.of.both.if.random <- (length(mins.with.species)/total.num.mins) * (length(mins.with.group)/total.num.mins)
-    
-    #score <-  (chance.of.both.if.random ) /  ((length(mins.with.both) / total.num.mins) + )
-    
-    score <- (length(mins.with.both) / total.num.mins) / chance.of.both.if.random
-    
-    
-    return(score)
-    
-}
-
-
-MatchSpeciesGroup <- function (species.id, group, species.mins, group.mins, over.species = TRUE) {
-    # finds the number of minutes containing both particular species and a particular group
-    # divided by the number of minutes containing the species
-    
-    mins.with.species <- species.mins$min.id[species.mins$species.id == species.id]
-    mins.with.group <- group.mins$min.id[group.mins$group == group] 
-    mins.with.both <- intersect(mins.with.species, mins.with.group)
-    if (over.species) {
-        return(length(mins.with.both)/length(mins.with.species))  
-    } else {
-        return(length(mins.with.both)/length(mins.with.group)) 
-    }
-
+    return(group.mins)
 }
 
 
 
 
-ApplyGroupToEvents <- function (num.cluster.groups = 240, events = NA, clustering = NA) {  
-    if (!is.data.frame(events)) {
-        events <- ReadOutput('events')
-        fit <- ReadOutput('clustering')
-    } 
-    group <- cutree(fit$data, num.cluster.groups)
-    events$data$group <- group #temporarily add the group to the events for ranking
-    return(events)
-}
 
 InspectCountEventsByGroupInMins <- function () {
     events <- ApplyGroupToEvents()
@@ -276,7 +68,6 @@ InspectCountEventsByGroupInMins <- function () {
     counts <- counts[order(counts$all.events.count),]
     plot(counts$all.events.count)
 }
-
 
 CountEventsByGroupInMins <- function (min.ids, all.events) {
     minute.events <- all.events[all.events$min.id %in% min.ids, ]
@@ -296,13 +87,10 @@ CountEventsByGroupInMins <- function (min.ids, all.events) {
     return(counts)
 }
 
-
 InspectEventsPerGroupAllMins <- function () {
     events <- ApplyGroupToEvents()
     event.count.all.mins <- EventsPerGroupAllMins(events)
 }
-
-
 
 EventsPerGroupAllMins <- function (events) {
     min.ids <- unique(events$min.id)
@@ -329,3 +117,278 @@ EventsPerGroup <- function (events, group.ids) {
     }  
     return(count) 
 }
+
+BCubedAll.old <- function (cluster.minutes, species.minutes) {
+    # calculate Bcubed precision for all clusters
+    clusters <- unique(cluster.minutes$group)
+    b.cubed.all <- rep(NA, length(clusters))
+    
+    jaccard.indexes <- ReadOutput('jaccard.indexes')
+    
+    for (i in 1:length(clusters)) {
+        Dot()
+        # the minutes that this cluster is contained in
+        min.ids <- cluster.minutes$min.id[cluster.minutes$group == clusters[i]]
+        
+        b.cubed.all[i] <- BCubed(min.ids, jaccard.indexes$data)
+    }
+    
+    return(b.cubed.all)
+}
+
+BCubed.old <- function (min.ids, jaccard.indexes = NA) {
+    # preforms a kind of BCubed precision for a particular cluster
+    # Args:
+    #   min.ids: integer vector; the min.ids that this cluster appears in
+    #   species.minutes: data.frame; pairs of species.ids and minute ids
+    # Details: 
+    #    There may be some minutes that this cluster appears in which are not in the species.minutes
+    #    data frame, because there are no species in that minute (in that case the events are non-bird,
+    #    but it is still possible)
+    
+    #pairs <- expand.grid(min.ids, min.ids)
+    #pairs <- pairs[pairs[,2]>pairs[,1],] # remove same and reciprocals
+    
+    pairs <- jaccard.indexes[jaccard.indexes$min.a %in% min.ids & jaccard.indexes$min.b %in% min.ids, ]
+
+    ## the mean of the jaccard indexes (total jaccard indexes divided by number of pairs, not number of minutes)
+    bcubed <- mean(pairs$jaccard.index)
+    return(bcubed)
+}
+
+JaccardIndexAll <- function (species.mins) {
+    # creates a jaccard index for ALL minute pairs for which there are species present
+    # this could take a while, because for N minutes there are (n*n-1)/2 pairs
+    # BUT, if many randomised simluations are done, this will end up being quicker than re-calculating
+    min.ids <- unique(species.mins$min.id)
+    pairs <- expand.grid(min.a = min.ids, min.b = min.ids)
+    pairs <- pairs[pairs[,2]>pairs[,1],] # remove same and reciprocals
+    jaccard.index <- apply(pairs, 1, function (pair) {  
+        a <- species.mins$species.id[species.mins$min.id == pair[1]]
+        b <- species.mins$species.id[species.mins$min.id == pair[2]]
+        intersection.length <- length(intersect(a, b))
+        union.length <- length(union(a,b))
+        return(intersection.length / union.length)   
+    })
+    pairs <- data.frame(min.a = pairs$min.a, min.b = pairs$min.b, jaccard.index = jaccard.index)
+    #WriteOutput(pairs, 'jaccard.indexes', params = c(), dependencies = list())
+    return(pairs)
+}
+
+
+EvaluateBCubed <- function (events, species.mins, fraction.of.events = 0.3, fraction.of.minutes = 0.3, iterations = 1) {
+    # performs artificial clustering with a variety of known qualities, then gets the b-cubed score for them
+    # to the correlation
+
+    reduced <- ReduceEventsAndMinutes(events, species.mins, fraction.of.events, fraction.of.minutes)
+    events <- reduced$events
+    species.mins <- reduced$species.mins
+    
+    # get a complete list of species with tVheir weights
+    species <- SpeciesWeights(species.mins)
+    
+
+    
+    amount.random = seq(0,1,0.2)
+    
+    # scores is a matrix where each row is a different quality of artificial clustering
+    # and columns are repetitions to get a mean, since there is a lot of randomness in the artificial clustering
+    scores <- matrix(NA, nrow = length(amount.random), ncol = iterations)
+    
+    for (c in 1:iterations) {
+        
+        events <- SimulateClustering(events, species.mins)
+        
+        for (r in 1:length(amount.random)) {
+            events.with.random <- AddRandom(events, amount.random[c])
+            scores[r, c] <- BCubed(events.with.random, species.mins, species)  
+        }    
+    }
+   
+    # row means and sds
+    means <- apply(scores, 1, mean)
+    sds <- apply(scores, 1, sd)
+    
+    return(data.frame(amount.random = amount.random, mean.score = means, sd = sd))
+
+
+    
+}
+
+ReduceEventsAndMinutes <- function (events, species.mins, fraction.of.events, fraction.of.minutes) {
+    # for testing, to reduce the number of events processed 
+    # we randomly select a subset of the minutes
+    
+    min.ids <- unique(species.mins$min.id)
+    num.minutes <- round(length(min.ids) * fraction.of.minutes)
+    min.ids <- sample(min.ids, num.minutes, replace = FALSE)
+    species.mins <- species.mins[species.mins$min.id %in% min.ids, ]
+    events <- events[events$min.id %in% min.ids, ]
+    
+    # for testing, we can reduce the number of events as well
+    num.events <- round(nrow(events) * fraction.of.events)
+    events <- events[sample(nrow(events), num.events), ]
+    
+    return(list(events = events, species.mins = species.mins))
+    
+}
+
+
+BCubed <- function (events, species.mins, species) {
+    
+
+    # get a list of cluster-species groups (clusters that appear in the same minute as the species)
+    # and the number of times they appear (number of events of cluster x in a minute with species y)
+    clusters.species <- ClustersSpecies(species.mins, events) 
+    
+    # set the priority for each species for each cluster
+    clusters.species <- ClusterSpeciesPriorities(clusters.species, species)
+    
+    # for each event, select its priority species
+    # i.e. the species in the minute it appears in which has the highest priority
+    #  out of all the species its cluster is associated with
+    events <- SetEventPriorityLabel(events, clusters.species)
+    
+    events <- SetEventPriorityLabelWeight(events, species)
+    
+    events <- EventPrecision(events)
+    
+    return(sum(events$precision * events$pl.weight) / sum(events$pl.weight))
+    
+    
+}
+
+
+
+
+SpeciesWeights <- function (species.mins) {
+    # given a list of species-minute pairs, 
+    # calcualtes the weight for each species. 
+    # weight is the number of minutes a species occurs in / the total number of minutes that species occur in
+    species <- as.data.frame(table(species.mins[, 'species.id'], dnn = c("species.id")))
+    species$weight <- 1 - (species$Freq / sum(species$Freq))
+    return(species)
+}
+
+
+
+ClustersSpecies <- function (species.mins, events) {
+    # creates a dataframe of species-cluster pairs
+    # including the number of events where this pair occurs
+    # TODO: figure out a more efficient way to do this.
+    #
+    # args:
+    #   species.mins: data.frame; a data frame of species minute pairs
+    #   evemts: data.frame; a data frame of events, including the minute id and the group
+    #
+    # value:
+    #   data.frame: species.id, group, Freq, 
+    #      where Freq is the number of events in that cluster 
+    #      which are in a minute with the species
+    events <- events[,c('min.id','group')]
+    clusters.species <- data.frame(group = c(), species.id = c())
+    dot.every <- 30
+    print(paste("please wait for ", round(nrow(events) / dot.every),"dots to appear"))
+    for (i in 1:nrow(events)) {
+        if (i %% dot.every == 0) {
+            Dot()     
+        }
+
+        # get the species for this event's minute
+        species <- species.mins$species.id[species.mins$min.id == events$min.id[i]]
+        new.rows <- data.frame(group = rep(events$group[i], length(species)), species.id = species)
+        clusters.species <- rbind(clusters.species, new.rows)
+    }
+    
+    clusters.species <- as.data.frame(table(clusters.species))
+    #remove species-cluster pairs that don't exist
+    clusters.species <- clusters.species[clusters.species$Freq > 0,]
+    
+    return(clusters.species)  
+}
+
+
+ClusterSpeciesPriorities <- function (species.clusters, species) {
+    # given a list of species-cluster pairs, and their frequency
+    # adds priority column to each row
+    # priority is ordered first by Freq (high to low) and then weight (high to low)
+    # priority == 1 means that species has the highest priority in the 
+    species.clusters.freq$priority <- NA
+    groups <- unique(species.clusters$group)
+    print(paste('please wait for ', length(groups), 'dots'))
+    for (g in groups) {
+        Dot()
+        selection <- species.clusters$group == g
+        species.in.cluster <- species.clusters[selection, ]
+        species.weights <- species[species$species.id %in% species.in.cluster$species.id, ]
+        species.in.cluster <- species.in.cluster[order(species.in.cluster$species.id),]
+        species.weights <- species.weights[order(species.weights$species.id),]
+        priority <- (1:sum(selection))[order(species.in.cluster$Freq, species.weights$weight, decreasing = TRUE)]
+        species.clusters$priority[selection] <- priority  
+    }
+    return(species.clusters)
+}
+
+SetEventPriorityLabel <- function (events, clusters.species) {
+    # given a df of events with group assigned to each event
+    # and a list of cluster species pairs with priorities
+    # for each event, chooses the label for that cluster with the highest priority
+    
+    
+    labels <- sapply(events$group, function (g, clusters.species) {
+        labels <- clusters.species[clusters.species$group == g, ]
+        label <- labels$species.id[which.min(labels$priority)]
+        return(label) 
+    }, clusters.species)
+    
+    events$priority.label <- labels
+    return(events) 
+    
+}
+
+SetEventPriorityLabelWeight <- function (events, species) {
+    events$pl.weight <- NA
+    for (i in 1:nrow(species)) {
+        events$pl.weight[events$priority.label == species$species.id[i]] <- species$weight[i]
+    }
+    return(events)
+}
+
+EventPrecision <- function (events) {
+    # for each cluster:
+    #   for each event
+    #     sum the number of events of the same priority label
+    
+    groups <- unique(events$group)
+    events$precision <- NA
+    
+    for (g in groups) { 
+        Dot()
+        event.selection <- events$group == g
+        
+        # debug:
+        num.events.in.group <- sum(event.selection)
+        num.unique.priority.species <- length(unique(events$priority.label[event.selection]))
+        
+        
+        precisions <- sapply(events$priority.label[event.selection], function (this.pl, all.pls) {
+            # mean on boolean treats them as 1 or 0
+             return(mean(all.pls == this.pl))
+        }, events$priority.label[event.selection]) 
+        
+        if (all(precisions == 1)) {
+            print("1") 
+        } else {
+            print("different") 
+        }
+        
+        events$precision[event.selection] <- precisions
+        
+    }
+    return(events)
+}
+
+
+
+
+

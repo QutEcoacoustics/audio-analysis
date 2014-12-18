@@ -213,7 +213,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method ColourSpectrogram.ReadCSVFiles()";
+                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadCSVFiles()";
                     }
 
                     warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
@@ -228,7 +228,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (this.spectrogramMatrices.Count == 0)
             {
-                LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadCSVFiles()");
+                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadCSVFiles()");
                 LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
                 allOk = false;
             }
@@ -236,11 +236,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return allOk;
         }
 
-
         public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
         {
-            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
             string[] keys = indexKeys.Split('-');
+            return ReadSpectrogramCSVFiles(ipdir, fileName, keys, out freqBinCount);
+        }
+
+        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys, out int freqBinCount)
+        {
+            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
             string warning = null;
             freqBinCount = 256; // the default
             for (int key = 0; key < keys.Length; key++)
@@ -258,7 +262,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()";
+                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()";
                     }
 
                     warning += string.Format("\n      {0} File does not exist: {1}", keys[key], path);
@@ -275,7 +279,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return dict;
             }
 
-            LoggedConsole.WriteLine("WARNING: from method ColourSpectrogram.ReadSpectrogramCSVFiles()");
+            LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()");
             LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
 
             return dict;
@@ -285,7 +289,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             //string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
             int freqBinCount;
-            this.spgr_StdDevMatrices = ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
+            this.spgr_StdDevMatrices = LDSpectrogramRGB.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
             this.FrameWidth = freqBinCount * 2;
             if (this.spgr_StdDevMatrices == null)
             {
@@ -449,7 +453,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// returns a matrix of acoustic indices whose values are normalised.
-        /// In addition, small background values are reduced as per filter coefficient. 1.0 = unchanged. 
+        /// In addition, small background values are reduced as per filter coefficient. 1.0 = unchanged.
+        /// NOTE: The matrix is oriented as it would appear in the spectrogram image; i.e. rows = freq bins.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="backgroundFilterCoeff"></param>
@@ -1326,30 +1331,42 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int herzInterval = 1000;
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
 
-            //Image ribbon1 = cs1.GetSummaryIndexRibbon(colorMap);
-            Image ribbon1 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
-            image1.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
-
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
             colorMap = colorMap2;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
-            //Image ribbon2 = cs1.GetSummaryIndexRibbon(colorMap);
-            Image ribbon2 = cs1.GetSummaryIndexRibbonWeighted(colorMap);
-            Image ribbon3 = cs1.GetSpectrogramRibbon(colorMap, 32);
-
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
+
+            // read high amplitude and clipping info into an image
+            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
+            string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
+            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
+
+            Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
+            if (null != imageX) 
+                imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
 
             var imageList = new List<Image>();
             imageList.Add(image1);
-            imageList.Add(ribbon1);
+            imageList.Add(imageX);
             imageList.Add(image2);
-            imageList.Add(ribbon2);
-            imageList.Add(ribbon3);
             Image image3 = ImageTools.CombineImagesVertically(imageList);
             image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
+
+            Image ribbon;
+            // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
+            ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
+            // ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
+            ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
+
+            ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
+            ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
         }
     }
 }

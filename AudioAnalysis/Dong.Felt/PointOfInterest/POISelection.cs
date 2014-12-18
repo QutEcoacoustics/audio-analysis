@@ -55,7 +55,7 @@ namespace Dong.Felt
         {
             var instance = new POISelection(new List<PointOfInterest>());
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            var rows = matrix.GetLength(0)-1;
+            var rows = matrix.GetLength(0) - 1;
             var cols = matrix.GetLength(1);
             var ridgeMagnitudeMatrix = new double[rows, cols];
             var byteMatrix = FourDirectionsRidgeDetection(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
@@ -88,35 +88,35 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
-        public static List<PointOfInterest> RidgePoiSelection(SpectrogramStandard spectrogram, 
+        public static List<PointOfInterest> RidgePoiSelection(SpectrogramStandard spectrogram,
             RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
         {
-             var result = new List<PointOfInterest>();
-             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
-                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 
-                 )                
-             {
-                 result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
-             }
+            var result = new List<PointOfInterest>();
+            if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17
+                )
+            {
+                result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
+            }
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
-                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20 
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20
                 )
             {
                 result = PostRidgeDetection8Dir(spectrogram, ridgeConfig);
-            }           
+            }
             return result;
         }
 
-        public static List<PointOfInterest> GradientPoiSelection(SpectrogramStandard spectrogram, 
+        public static List<PointOfInterest> GradientPoiSelection(SpectrogramStandard spectrogram,
             GradientConfiguration gradientConfig, string featurePropSet)
         {
             var result = new List<PointOfInterest>();
@@ -139,6 +139,129 @@ namespace Dong.Felt
             return result;
         }
 
+        // This function is used for adding more ridges after ridge detection on compressedSpectrogram
+        public static List<PointOfInterest> AddResizeRidgesInTime(List<PointOfInterest> ridges,
+                                                      SpectrogramStandard spectrogram,
+                                                      List<PointOfInterest> compressedRidges,
+                                                      CompressSpectrogramConfig compressConfig,
+                                                      int rows, int cols)
+        {
+            var result = new List<PointOfInterest>();
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
+            var compressRate = (int)(1 / compressConfig.TimeCompressRate);
+            var compressedColsCount = cols / compressRate;
+            if (cols % compressRate != 0)
+            {
+                compressedColsCount++;
+            }
+            var compressRidgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(compressedRidges, rows, compressedColsCount);
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c += compressRate)
+                {
+                    var matrixLength = compressRate;
+                    if (c + compressRate > cols)
+                    {
+                        matrixLength = cols - c;
+                    }
+                    var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
+                        r, c, r+1, c + matrixLength);
+                    var intensity = new double[matrixLength];
+
+                    for (var i = 0; i < matrixLength; i++)
+                    {                        
+                         intensity[i] = subMatrix[0, i].Intensity;
+                    }
+                    // If no ridges in subMatrix
+                    if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
+                    {
+                        if (compressRidgeMatrix[r, c / compressRate].RidgeMagnitude != 0.0)
+                        {
+                            // get the index with max intensity value
+                            int indexMin = 0;
+                            int indexMax = 0;
+                            double diffMin = 0.0;
+                            double diffMax = 0.0;
+                            DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
+                            ridgeMatrix[r, c + indexMax].RidgeMagnitude = compressRidgeMatrix[r, c / compressRate].RidgeMagnitude;
+                            ridgeMatrix[r, c + indexMax].OrientationCategory = compressRidgeMatrix[r, c / compressRate].OrientationCategory;
+                        }
+                    }
+                }
+            }
+            var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
+            foreach (var r in ridges1)
+            {
+                if (r.RidgeMagnitude > 0.0)
+                {
+                    result.Add(r);
+                }
+            }
+            return result;
+        }
+
+        public static List<PointOfInterest> AddResizeRidgesInFreq(List<PointOfInterest> ridges,
+                                                      SpectrogramStandard spectrogram,
+                                                      List<PointOfInterest> compressedRidges,
+                                                      CompressSpectrogramConfig compressConfig,
+                                                      int rows, int cols)
+        {
+            var result = new List<PointOfInterest>();
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
+            var compressRate = (int)(1 / compressConfig.FreqCompressRate);
+            var compressedRowsCount = rows / compressRate;
+            var count = 0;
+            if (rows % compressRate != 0)
+            {
+                compressedRowsCount++;
+            }
+            var compressRidgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(compressedRidges, compressedRowsCount, cols);
+            for (var c = 0; c < cols; c++)
+            {
+                for (var r = 0; r < rows; r += compressRate)
+                {
+                    var matrixLength = compressRate;
+                    if (r + compressRate > rows)
+                    {
+                        matrixLength = rows - r;
+                    }
+                    var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
+                        r, c, r + matrixLength, c + 1);
+                    count++;
+                    var intensity = new double[matrixLength];
+
+                    for (var i = 0; i < matrixLength; i++)
+                    {
+                        intensity[i] = subMatrix[i, 0].Intensity;
+                    }
+                    // If no ridges in subMatrix
+                    if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
+                    {
+                        if (compressRidgeMatrix[r / compressRate, c].RidgeMagnitude != 0.0)
+                        {
+                            // get the index with max intensity value
+                            int indexMin = 0;
+                            int indexMax = 0;
+                            double diffMin = 0.0;
+                            double diffMax = 0.0;
+                            DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
+                            ridgeMatrix[r + indexMax, c].RidgeMagnitude = compressRidgeMatrix[r / compressRate, c].RidgeMagnitude;
+                            ridgeMatrix[r + indexMax, c].OrientationCategory = compressRidgeMatrix[r / compressRate, c].OrientationCategory;
+                        }
+                    }
+                }
+            }
+            var count1 = count;
+            var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
+            foreach (var r in ridges1)
+            {
+                if (r.RidgeMagnitude > 0.0)
+                {
+                    result.Add(r);
+                }
+            }
+            return result;
+        }
 
         // This function still needs to be considered. 
         public static List<PointOfInterest> ShowupPoiInsideBox(List<PointOfInterest> filterPoiList, List<PointOfInterest> finalPoiList, int rowsCount, int colsCount)
@@ -174,7 +297,7 @@ namespace Dong.Felt
             return PointOfInterest.TransferPOIMatrix2List(result);
         }
 
-        public static List<PointOfInterest> Post8DirGradient(SpectrogramStandard spectrogram, 
+        public static List<PointOfInterest> Post8DirGradient(SpectrogramStandard spectrogram,
             GradientConfiguration gradientConfig)
         {
             var instance = new POISelection(new List<PointOfInterest>());
@@ -187,7 +310,7 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
-        public static List<PointOfInterest> Post4DirGradient(SpectrogramStandard spectrogram, 
+        public static List<PointOfInterest> Post4DirGradient(SpectrogramStandard spectrogram,
             GradientConfiguration gradientConfig)
         {
             var instance = new POISelection(new List<PointOfInterest>());
@@ -295,7 +418,7 @@ namespace Dong.Felt
                         poi.Intensity = matrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        poiList.Add(poi);                        
+                        poiList.Add(poi);
                     }
                 }
             }  /// filter out some redundant ridges   
@@ -309,7 +432,7 @@ namespace Dong.Felt
             double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
             int rows = ridgeIndiMatrix.GetLength(0);
             int cols = ridgeIndiMatrix.GetLength(1);
-            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data); 
+            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -370,7 +493,7 @@ namespace Dong.Felt
                         poiList.Add(poi);
                     }
                 }
-            }           
+            }
             var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
             poiList = filteredPoiList;
         }
@@ -382,12 +505,12 @@ namespace Dong.Felt
         /// <param name="newMatrix"></param>
         /// <param name="ridgeConfiguration"></param>
         /// <returns></returns>
-        public static byte[,] FourDirectionsRidgeDetection(double[,] matrix, out double[,] newMatrix, 
+        public static byte[,] FourDirectionsRidgeDetection(double[,] matrix, out double[,] newMatrix,
         RidgeDetectionConfiguration ridgeConfiguration)
-        {         
+        {
             int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;            
-            int rows = matrix.GetLength(0)-1;
+            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
+            int rows = matrix.GetLength(0) - 1;
             int cols = matrix.GetLength(1);
             int halfLength = ridgeLength / 2;
             var hits = new byte[rows, cols];
@@ -416,27 +539,27 @@ namespace Dong.Felt
                     }
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
-                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1);                      
+                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1);
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
                         double localThreshold = sd * 1.3;
-                        if ((subM2[halfLength+1, halfLength+1] - av) < localThreshold) continue;                       
+                        if ((subM2[halfLength + 1, halfLength + 1] - av) < localThreshold) continue;
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
-                        hits[r, c] = (byte)(orientation+1);
+                        hits[r, c] = (byte)(orientation + 1);
                         newMatrix[r, c] = magnitude;
                         if (orientation == 2)
                         {
                             hits[r - 1, c + 1] = (byte)(orientation + 1);
                             newMatrix[r - 1, c + 1] = magnitude;
                             hits[r + 1, c - 1] = (byte)(orientation + 1);
-                            newMatrix[r + 1, c - 1] = magnitude;                           
+                            newMatrix[r + 1, c - 1] = magnitude;
                         }
                         else if (orientation == 6)
                         {
                             hits[r + 1, c + 1] = (byte)(orientation + 1);
                             newMatrix[r + 1, c + 1] = magnitude;
                             hits[r - 1, c - 1] = (byte)(orientation + 1);
-                            newMatrix[r - 1, c - 1] = magnitude;                            
+                            newMatrix[r - 1, c - 1] = magnitude;
                         }
                         else if (orientation == 4)
                         {
@@ -459,9 +582,9 @@ namespace Dong.Felt
                             newMatrix[r, c - 2] = magnitude;
                             hits[r, c + 2] = (byte)(orientation + 1);
                             newMatrix[r, c + 2] = magnitude;
-                        }                        
+                        }
                     }
-                }                   
+                }
             }  /// filter out some redundant ridges          
             return hits;
         }
@@ -671,7 +794,7 @@ namespace Dong.Felt
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation + 1);
                         newMatrix[r, c] = magnitude;
-                        if (orientation == 2 )
+                        if (orientation == 2)
                         {
                             hits[r - 1, c + 1] = (byte)(orientation + 1);
                             newMatrix[r - 1, c + 1] = magnitude;
@@ -715,8 +838,8 @@ namespace Dong.Felt
             }  /// filter out some redundant ridges          
             return hits;
         }
-        
-        public static byte[,] Gradient8DirCalculation(double[,] matrix, out double[,] newMatrix, 
+
+        public static byte[,] Gradient8DirCalculation(double[,] matrix, out double[,] newMatrix,
             GradientConfiguration gradientConfiguration)
         {
             int ridgeLength = gradientConfiguration.GradientMatrixLength;
@@ -739,28 +862,28 @@ namespace Dong.Felt
                     ImageAnalysisTools.GradientCalculation(subM, out isRidge, out magnitude, out direction);
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
-                        newMatrix[r, c] = magnitude; 
-                        if (direction >= 0.0 && direction < Math.PI/8)
+                        newMatrix[r, c] = magnitude;
+                        if (direction >= 0.0 && direction < Math.PI / 8)
                         {
-                            hits[r, c] = (byte)(1);                                                    
+                            hits[r, c] = (byte)(1);
                         }
                         if (direction >= Math.PI / 8 && direction < Math.PI / 4)
                         {
-                            hits[r, c] = (byte)(2);                                                
+                            hits[r, c] = (byte)(2);
                         }
-                        if (direction >= Math.PI / 4 && direction < Math.PI*3 / 8)
+                        if (direction >= Math.PI / 4 && direction < Math.PI * 3 / 8)
                         {
-                            hits[r, c] = (byte)(3);                                                 
+                            hits[r, c] = (byte)(3);
                         }
                         if (direction >= Math.PI * 3 / 8 && direction < Math.PI / 2)
                         {
-                            hits[r, c] = (byte)(4);                         
+                            hits[r, c] = (byte)(4);
                         }
                         if (direction >= Math.PI / 2 && direction < Math.PI * 5 / 8)
                         {
                             hits[r, c] = (byte)(5);
                         }
-                        if (direction >= Math.PI * 5 / 8 && direction < Math.PI*3 / 4)
+                        if (direction >= Math.PI * 5 / 8 && direction < Math.PI * 3 / 4)
                         {
                             hits[r, c] = (byte)(6);
                         }
@@ -774,11 +897,11 @@ namespace Dong.Felt
                         }
                     }
                 }
-            }     
+            }
             return hits;
         }
 
-        public static byte[,] Gradient4DirCalculation(double[,] matrix, out double[,] newMatrix, 
+        public static byte[,] Gradient4DirCalculation(double[,] matrix, out double[,] newMatrix,
             GradientConfiguration gradientConfiguration)
         {
             int ridgeLength = gradientConfiguration.GradientMatrixLength;
@@ -805,28 +928,28 @@ namespace Dong.Felt
                         if (direction >= 0.0 && direction < Math.PI / 4)
                         {
                             hits[r, c] = (byte)(1);
-                        }                        
+                        }
                         if (direction >= Math.PI / 4 && direction < Math.PI / 2)
                         {
                             hits[r, c] = (byte)(3);
-                        }                        
+                        }
                         if (direction >= Math.PI / 2 && direction < Math.PI * 3 / 4)
                         {
                             hits[r, c] = (byte)(5);
-                        }                        
+                        }
                         if (direction >= Math.PI * 3 / 4 && direction < Math.PI)
                         {
                             hits[r, c] = (byte)(7);
-                        }                       
+                        }
                     }
                 }
             }
             return hits;
         }
         public static List<double> intensityThresholdForSpectrogram(double[,] matrix)
-        {            
+        {
             int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);          
+            int cols = matrix.GetLength(1);
             var intensityList = new List<double>();
             for (var r = 0; r < rows; r++)
             {
@@ -851,7 +974,7 @@ namespace Dong.Felt
             result = l * maxIntensity / binCount;
             return result;
         }
-        
+
         public void ImprovedRidgeDetection(SpectrogramStandard spectrogram, RidgeDetectionConfiguration ridgeConfiguration)
         {
             // This step tries to convert spectrogram data into image matrix. The spectrogram data has the dimension of totalFrameCount * totalFreCount and the matrix is totalFreCount * totalFrameCount. 
@@ -1145,7 +1268,7 @@ namespace Dong.Felt
 
                         poiMatrix[r, c].RidgeMagnitude = Math.Sqrt(Math.Pow(deltaMagnitudeX, 2) + Math.Pow(deltaMagnitudeY, 2));
                         // because the gradient direction is perpendicular with its real direction, here we add another pi/2 to get its real value.
-                        
+
                         poiMatrix[r, c].RidgeOrientation = Math.Atan(deltaMagnitudeY / deltaMagnitudeX) + Math.PI / 2;
                         var realOrientation = poiMatrix[r, c].RidgeOrientation;
                         if (realOrientation > 0 && realOrientation < Math.PI / 8)
@@ -1340,7 +1463,7 @@ namespace Dong.Felt
             var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(pruneAdjacentPoi, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
             return filterPoiList;
         }
-       
+
         public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);

@@ -330,6 +330,26 @@ CicadaIndex:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
+EventsTotal:
+  Name: Event Count
+  Comment: "The total count of acoustic events per minute of recording."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 15.0
+  ProjectID: Acoustic Indices
+  Units: ""
+EventsTotalThresholded:
+  Name: Event Count
+  Comment: "Count of acoustic events (wide range)"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 5
+  NormMax: 25
+  ProjectID: Acoustic Indices
+  Units: ""
 # ADD THE SUMMARY INDICES ABOVE HERE
 # ====================================================================================================================================
 # ====================================================================================================================================
@@ -388,14 +408,15 @@ CLS:
   ComboWeight: 0.0
 CVR:
   Name: spectralCVR
-  Comment: "Freq bin COVER: Spectrum of the % of active elements in each freq bin - i.e. amplitude > threshold = 3 dB."
+  Comment: "Freq bin COVER: Spectrum of the fraction of active elements in each freq bin where amplitude > threshold = 3 dB."
+  # IMPORTANT - sometimes this is expressed as a percentage rather than fraction. NEED TO CHECK!!
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 50.0
+  NormMax: 0.7
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 EVN:
@@ -432,5 +453,29 @@ ENT:
   NormMax: 0.6
   ProjectID: Acoustic Indices
   Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+TEN:
+  Name: spectralENT
+  Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.6
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+VAR:
+  Name: spectralVAR
+  Comment: "Spectrum of variance of dB amplitude in each frequency bin after noise removal. Paired with AVG"
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 100.0
+  ProjectID: Acoustic Indices
+  Units: "dB^2"
   IncludeInComboIndex: false
   ComboWeight: 0.0

@@ -53,6 +53,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public LdSpectrogramConfig()
         {
             // default values
+            this.AnalysisType = SpectrogramConstants.DefaultAnalysisType;
             this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
@@ -65,6 +66,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         #endregion
 
         #region Public Properties
+
+        /// <summary>
+        /// Name of the analysis type used in file name extentions etc.
+        /// </summary>
+        public string AnalysisType { get; set; }
 
         /// <summary>
         /// 

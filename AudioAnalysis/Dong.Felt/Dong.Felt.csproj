@@ -90,10 +90,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\2.0\Runtime\v4.0\FSharp.Core.dll</HintPath>
-    </Reference>
+    <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
@@ -172,6 +169,10 @@
     <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
       <Project>{0338570e-5a77-4a2e-8e17-7955c36ae1f7}</Project>
       <Name>Acoustics.Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AED\AED\AED.fsproj">
+      <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
+      <Name>AED</Name>
     </ProjectReference>
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
       <Project>{80bc795a-a987-45ab-b29b-76cf190384ba}</Project>

@@ -191,6 +191,33 @@ MergeAnnotationsAsEvents <- function () {
 }
 
 
+AddSpeciesIdToEvents <- function () {
+    # adds a species id to events by checking the database of annotations
+    #
+    # Details:
+    #   event will only be given a species_id if
+    #   - it ovelaps an annotation AND
+    #   EITHER
+    #       - the annotation it overlaps doesnt overlap any other events OR
+    #       - the event is entirely inside the annotation OR
+    #       - there is only one species in that minute
+    
+    events <- ReadOutput('events')
+    
+    min.ids <- unique(events$min.ids)
+    
+    for (min.id in min.ids) {
+        
+        annotations <- GetTags()
+        
+        
+        
+    }
+    
+    
+}
+
+
 
 GetInnerTargetEvents <- function () {
     min.list <- ReadOutput('minlist')
@@ -324,7 +351,6 @@ FilterEvents1 <- function (min.ids = FALSE, events = NA, rating.features = NA) {
 }
 
 CreateEventAndFeaturesSubset <- function () {
-    
     # given the target minute ids, the events and features, and a limit for the 
     # maximum number of events, saves a new dataframe for events, features and rating features
     
@@ -357,6 +383,8 @@ CreateEventAndFeaturesSubset <- function () {
     event.features <- event.features[with(event.features, order(event.id)) ,]
     rating.features <- rating.features[with(rating.features, order(event.id)) ,]
     
+    
+    # filter events based on quality
     event.filter <- FilterEvents1(events = events, rating.features = rating.features)
     events <- events[event.filter, ]
     event.features <- event.features[event.filter, ]
