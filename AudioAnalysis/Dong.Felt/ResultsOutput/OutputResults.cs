@@ -68,7 +68,7 @@ namespace Dong.Felt.ResultsOutput
             var csvFileCount = csvFiles.Count();
             var grounTruthList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
             var frequencyDifference = 1000; // 1000 hz
-            var timeDifference = 1000; // 1000 ms
+            var timeDifference = 500; // 1000 ms
             var secondToMilliSecondUnit = 1000;
             for (int i = 0; i < csvFileCount; i++)
             {
@@ -83,10 +83,10 @@ namespace Dong.Felt.ResultsOutput
                         var gStartTime = g.StartTime * secondToMilliSecondUnit;
                         if (currentCandidate.SourceFilePath == g.SourceFilePath)
                         {
-                            if ((Math.Abs(currentCandidate.MaxFrequency - g.MaxFrequency) < frequencyDifference) &&
+                            if ((Math.Abs(currentCandidate.MaxFrequency - g.MaxFrequency) < frequencyDifference) ||
                                 (Math.Abs(currentCandidate.MinFrequency - g.MinFrequency) < frequencyDifference))
                             {
-                                if ((Math.Abs(currentCandidate.StartTime - gStartTime) < timeDifference) ||
+                                if ((Math.Abs(currentCandidate.StartTime  - gStartTime) < timeDifference) ||
                                    (Math.Abs(currentCandidate.EndTime - gEndTime) < timeDifference))
                                 {
                                     currentCandidate.Score = index + 1;

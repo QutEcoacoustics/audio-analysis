@@ -125,6 +125,34 @@ namespace Dong.Felt
 
         #region Public Methods
 
+        // Horizontal line structure
+        public static double[,] Dilation(double[,] matrix, int windowSize)
+        {         
+            // According to Gaussian blur thoery, the centroid of the kernel matrix is maximum. 
+            double[,] rotateMatrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+            var rows = rotateMatrix.GetLength(0) - 1;
+            var cols = rotateMatrix.GetLength(1);
+            var halfWindowSize = windowSize /2;
+            var dilatedMatrix = new double[rows, cols];
+            for (var r = halfWindowSize; r < rows - halfWindowSize; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var subMatrix = MatrixTools.Submatrix(rotateMatrix, r - halfWindowSize, c,
+                        r + halfWindowSize,c);
+                    var subMatrixList = new List<double>();
+                    foreach (var s in subMatrix)
+                    {
+                        subMatrixList.Add(s);
+                    }
+                    var max = subMatrixList.Max();
+                    dilatedMatrix[r, c] = max;
+                }
+            }
+            var result = MatrixTools.MatrixRotate90Clockwise(dilatedMatrix);
+            return result;
+        }
+
         public static double[,] GaussianBlur(double[,] matrix, double sigma, int size)
         {           
             var gaussianBlur = new GaussianBlur(sigma, size);           
