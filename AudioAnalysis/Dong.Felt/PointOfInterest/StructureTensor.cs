@@ -14,8 +14,9 @@
     using TowseyLibrary;
     using Dong.Felt.Configuration;
     using Dong.Felt.Preprocessing;
+    using Dong.Felt.SpectrogramDrawing;
 
-    class StructureTensorAnalysis
+    public class StructureTensorAnalysis
     {
 
         // It has a kernel which is 3 * 3, and all values is equal to 1. 
@@ -149,10 +150,10 @@
                     double eventThreshold = 0.5; // dummy variable - not used                               
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     poiList = StructureTensorAnalysis.ExtractPOIFromStructureTensor(spectrogram, neighbourhoodSize, threshold);
-                    var spectrogramData = ImageAnalysisTools.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
+                    var spectrogramData = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
                         spectrogram.Data.GetLength(1));
                     spectrogram.Data = spectrogramData;
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     //foreach (PointOfInterest poi in poiList)
                     //{
@@ -259,19 +260,19 @@
                     if (StatisticalAnalysis.checkBoundary(i, j, maximumRowIndex - neighbourhoodRadius, maximumColIndex - neighbourhoodRadius,
                         neighbourhoodRadius, neighbourhoodRadius))
                     {
-                        var subMatrixTopLeft = StatisticalAnalysis.Submatrix(matrixTopLeft, i - neighbourhoodRadius, j - neighbourhoodRadius,
+                        var subMatrixTopLeft = MatrixTools.Submatrix(matrixTopLeft, i - neighbourhoodRadius, j - neighbourhoodRadius,
                             i + neighbourhoodRadius, j + neighbourhoodRadius);
                         averageStructureTensor[0, 0] = StatisticalAnalysis.averageMatrix(subMatrixTopLeft);
 
-                        var subMatrixTopRight = StatisticalAnalysis.Submatrix(matrixTopRight, i - neighbourhoodRadius, j - neighbourhoodRadius,
+                        var subMatrixTopRight = MatrixTools.Submatrix(matrixTopRight, i - neighbourhoodRadius, j - neighbourhoodRadius,
                             i + neighbourhoodRadius, j + neighbourhoodRadius);
                         averageStructureTensor[0, 1] = StatisticalAnalysis.averageMatrix(subMatrixTopRight);
 
-                        var subMatrixBottomLeft = StatisticalAnalysis.Submatrix(matrixBottormLeft, i - neighbourhoodRadius, j - neighbourhoodRadius,
+                        var subMatrixBottomLeft = MatrixTools.Submatrix(matrixBottormLeft, i - neighbourhoodRadius, j - neighbourhoodRadius,
                             i + neighbourhoodRadius, j + neighbourhoodRadius);
                         averageStructureTensor[1, 0] = StatisticalAnalysis.averageMatrix(subMatrixBottomLeft);
 
-                        var subMatrixBottormRight = StatisticalAnalysis.Submatrix(matrixBottormRight, i - neighbourhoodRadius, j - neighbourhoodRadius,
+                        var subMatrixBottormRight = MatrixTools.Submatrix(matrixBottormRight, i - neighbourhoodRadius, j - neighbourhoodRadius,
                             i + neighbourhoodRadius, j + neighbourhoodRadius);
                         averageStructureTensor[1, 1] = StatisticalAnalysis.averageMatrix(subMatrixTopLeft);
                     }
@@ -556,11 +557,11 @@
             var resultList = new List<double[,]>();
             for (var c = 0; c < colsCount - cols; c += cols)
             {
-                var subMatrix = StatisticalAnalysis.Submatrix(attentionMatrix, 0, c, rowsCount - 1, c + cols);                
+                var subMatrix = MatrixTools.Submatrix(attentionMatrix, 0, c, rowsCount - 1, c + cols);                
                 resultList.Add(subMatrix);                             
             }
-            
-            var addSubMatrix = StatisticalAnalysis.Submatrix(attentionMatrix, 0, (segmentCount - 1) * cols, rowsCount - 1, colsCount);
+
+            var addSubMatrix = MatrixTools.Submatrix(attentionMatrix, 0, (segmentCount - 1) * cols, rowsCount - 1, colsCount);
             resultList.Add(addSubMatrix);
             
             return resultList;

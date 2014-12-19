@@ -234,7 +234,7 @@
             var result = new List<RidgeNeighbourhoodFeatureVector>();
 
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
-            var Matrix = StructureTensorTest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            var Matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             // limite the frequency rang
             for (int row = 12; row < rowsCount; row++)
@@ -370,7 +370,7 @@
             var result = new List<RidgeNeighbourhoodFeatureVector>();
 
             // To search in a neighbourhood, the original pointsOfInterst should be converted into a pointOfInterst of Matrix
-            var Matrix = StructureTensorTest.TransferPOIsToMatrix(poiList, rowsCount, colsCount);
+            var Matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             var radiusOfNeighbourhood = sizeOfNeighbourhood / 2;
             // limite the frequency rang
             for (int row = 12; row < rowsCount; row++)

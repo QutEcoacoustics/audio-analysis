@@ -473,7 +473,7 @@ namespace Dong.Felt.Representations
                 //(ridgeNhRepresentationList, featurePropSet);
                 var ridgeNhListFileBeforeNormal = new FileInfo(audioFiles[i] + "NhRepresentationListBeforeNormal.csv");
                 var ridgeNhListFileAfterNormal = new FileInfo(audioFiles[i] + "NhRepresentationListAfterNormal.csv");
-                CSVResults.NhRepresentationListToCSV(ridgeNhListFileBeforeNormal, ridgeNhRepresentationList);
+                CSVResults.NeighbourhoodRepresentationsToCSV(ridgeNhRepresentationList,ridgeNhListFileBeforeNormal);
                 //CSVResults.NhRepresentationListToCSV(ridgeNhListFileAfterNormal, normalizedNhRepresentationList);
             }
         }
@@ -1771,11 +1771,11 @@ namespace Dong.Felt.Representations
             var vLineOfBestfit = 100.0;
             if (hSlope != 100)
             {
-                hLineOfBestfit = StatisticalAnalysis.MeasureHLineOfBestfit(pointsOfInterest, hSlope, hYIntersect);
+                hLineOfBestfit = PointOfInterestAnalysis.MeasureHLineOfBestfit(pointsOfInterest, hSlope, hYIntersect);
             }
             if (vSlope != 100)
             {
-                vLineOfBestfit = StatisticalAnalysis.MeasureVLineOfBestfit(pointsOfInterest, vSlope, vYIntersect);
+                vLineOfBestfit = PointOfInterestAnalysis.MeasureVLineOfBestfit(pointsOfInterest, vSlope, vYIntersect);
             }
             this.HLineOfBestfitMeasure = hLineOfBestfit;
             this.VLineOfBestfitMeasure = vLineOfBestfit;
@@ -1858,7 +1858,7 @@ namespace Dong.Felt.Representations
             FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
             this.POICount = pointsCount;
             this.neighbourhoodSize = poiMatrixLength;
-            this.LineOfBestfitMeasure = StatisticalAnalysis.MeasureLineOfBestfit(pointsOfInterest, slope, yIntersect);
+            this.LineOfBestfitMeasure = PointOfInterestAnalysis.MeasureLineOfBestfit(pointsOfInterest, slope, yIntersect);
             GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
         }
 
@@ -2307,7 +2307,7 @@ namespace Dong.Felt.Representations
             int nhRadius = neighbourhoodLength / 2;
             int maxFrequencyBand = 257;
             int x = StatisticalAnalysis.MilliSecondsToFrameIndex(nhRepresentation.FrameIndex);
-            int y = maxFrequencyBand - StatisticalAnalysis.FrequencyToFruencyBandIndex(nhRepresentation.FrequencyIndex);
+            int y = maxFrequencyBand - StatisticalAnalysis.FrequencyToFrequencyBin(nhRepresentation.FrequencyIndex, 43.0);
             //int dominantOrientationCategory = nhRepresentation.dominantOrientationType;
             //int dominantPOICount = nhRepresentation.dominantPOICount;
             double orientation = nhRepresentation.orientation;

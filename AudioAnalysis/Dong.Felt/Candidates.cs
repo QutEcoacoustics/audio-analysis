@@ -54,6 +54,9 @@ namespace Dong.Felt
             this.SourceFilePath = sourceFile;
         }
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public Candidates()
         {
         }

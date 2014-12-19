@@ -16,6 +16,7 @@
     using Representations;
     using Dong.Felt.Features;
     using Dong.Felt.Configuration;
+    using Dong.Felt.SpectrogramDrawing;
     using Dong.Felt.Preprocessing;
     using Dong.Felt.ResultsOutput;
     using System.Reflection;
@@ -261,7 +262,7 @@
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used                               
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     //Image image = ImageAnalysisTools.DrawNullSonogram(spectrogram);
                     var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
@@ -486,7 +487,7 @@
                 }
                 if (matchedCandidateFile != null)
                 {
-                    ImageAnalysisTools.DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                    DrawSpectrogram.DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
                         outputPath,
                         rank, ridgeConfig, config, compressConfig,
                         featurePropSet, tempDirectory);
@@ -711,7 +712,7 @@
                 }
                 if (matchedCandidateFile != null)
                 {
-                    ImageAnalysisTools.DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                    DrawSpectrogram.DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
                         outputPath,
                         rank, ridgeConfig, config,
                         featurePropSet, tempDirectory);
@@ -892,7 +893,7 @@
                 }
                 if (matchedCandidateFile != null)
                 {
-                    ImageAnalysisTools.DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                    DrawSpectrogram.DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
                         outputPath,
                         rank, ridgeConfig, config, compressConfig,
                         featurePropSet, tempDirectory);
@@ -1041,7 +1042,7 @@
                 }
                 if (matchedCandidateFile != null)
                 {
-                    ImageAnalysisTools.DrawingCandiOutputStSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                    DrawSpectrogram.DrawingCandiOutputStSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
                         outputPath,
                         rank, stConfiguation, config,
                         featurePropSet, tempDirectory);

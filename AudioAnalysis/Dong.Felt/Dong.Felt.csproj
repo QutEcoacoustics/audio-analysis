@@ -137,7 +137,6 @@
     <Compile Include="Experiments\Experiments.cs" />
     <Compile Include="Features\Features.cs" />
     <Compile Include="Indexing.cs" />
-    <Compile Include="Node.cs" />
     <Compile Include="Preprocessing\AudioPreprosessing.cs" />
     <Compile Include="Representations\ClusterAnalysis.cs" />
     <Compile Include="Representations\EventBasedRepresentation.cs" />
@@ -156,6 +155,7 @@
     <Compile Include="ResultsOutput\MathingResultsAnalysis.cs" />
     <Compile Include="ResultsOutput\OutputResults.cs" />
     <Compile Include="SimilarityMatching\SimilarityMatching.cs" />
+    <Compile Include="SpectrogramDrawing\DrawSpectrogram.cs" />
     <Compile Include="StatisticalAnalysis.cs" />
     <Compile Include="PointOfInterest\StructureTensor.cs" />
     <Compile Include="TemplateTools.cs" />
