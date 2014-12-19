@@ -24,6 +24,7 @@ namespace Dong.Felt
     using Accord.Math.Decompositions;
     using Dong.Felt.Preprocessing;
     using Dong.Felt.Representations;
+    using Dong.Felt.SpectrogramDrawing;
 
     // several types of points of interest (for later use)
     public enum FeatureType { NONE, LOCALMAXIMA, RIDGE, STRUCTURE_TENSOR }
@@ -307,7 +308,7 @@ namespace Dong.Felt
                         out posDiSegmentList, out negDiSegmentList);
                     //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
-                    Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, verSegmentList, eventThreshold, null);
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, verSegmentList, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in dividedPOIList[0])
                     {
@@ -332,5 +333,161 @@ namespace Dong.Felt
             }
         }
 
+        public static double MeasureHLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
+        {
+            var r = 0.0;
+            var Sreg = 0.0;
+            var Stot = 0.0;
+            var poiMatrixLength = poiMatrix.GetLength(0);
+            var matrixRadius = poiMatrixLength / 2;
+            var improvedRowIndex = 0.0;
+            var poiCount = 0;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
+                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    {
+                        int tempColIndex = colIndex - matrixRadius;
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
+                        improvedRowIndex += tempRowIndex;
+                        Sreg += Math.Pow(verticalDistance, 2.0);
+                        poiCount++;
+                    }
+                }
+            }
+            var nullLineYIntersect = improvedRowIndex / poiCount;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
+                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    {
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
+                        Stot += Math.Pow(verticalDistance1, 2.0);
+                    }
+                }
+            }
+            if (Stot != 0)
+            {
+                r = 1 - Sreg / Stot;
+            }
+            else
+            {
+                r = 1;
+            }
+            return r;
+        }
+
+        public static double MeasureVLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
+        {
+            var r = 0.0;
+            var Sreg = 0.0;
+            var Stot = 0.0;
+            var poiMatrixLength = poiMatrix.GetLength(0);
+            var matrixRadius = poiMatrixLength / 2;
+            var improvedRowIndex = 0.0;
+            var poiCount = 0;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
+                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                    {
+                        int tempColIndex = colIndex - matrixRadius;
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
+                        improvedRowIndex += tempRowIndex;
+                        Sreg += Math.Pow(verticalDistance, 2.0);
+                        poiCount++;
+                    }
+                }
+            }
+            var nullLineYIntersect = improvedRowIndex / poiCount;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
+                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                    {
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
+                        Stot += Math.Pow(verticalDistance1, 2.0);
+                    }
+                }
+            }
+            if (lineOfSlope == Math.PI / 2)
+            {
+                r = 1;
+            }
+            else
+            {
+                if (Stot != 0)
+                {
+                    r = 1 - Sreg / Stot;
+                }
+                else
+                {
+                    r = 1;
+                }
+            }
+            return r;
+        }
+
+
+        public static double MeasureLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
+        {
+            var r = 0.0;
+            var Sreg = 0.0;
+            var Stot = 0.0;
+            var poiMatrixLength = poiMatrix.GetLength(0);
+            var matrixRadius = poiMatrixLength / 2;
+            var improvedRowIndex = 0.0;
+            var poiCount = 0;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0)
+                    {
+                        int tempColIndex = colIndex - matrixRadius;
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
+                        improvedRowIndex += tempRowIndex;
+                        Sreg += Math.Pow(verticalDistance, 2.0);
+                        poiCount++;
+                    }
+                }
+            }
+            var nullLineYIntersect = improvedRowIndex / poiCount;
+            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0)
+                    {
+                        int tempRowIndex = matrixRadius - rowIndex;
+                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
+                        Stot += Math.Pow(verticalDistance1, 2.0);
+                    }
+                }
+            }
+
+            if (Stot != 0)
+            {
+                r = 1 - Sreg / Stot;
+            }
+            else
+            {
+                r = 1;
+            }
+            return r;
+        }
     }
 }

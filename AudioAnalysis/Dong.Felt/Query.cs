@@ -71,6 +71,9 @@
         /// </summary>
         public int nhStartColIndex { get; set; }
 
+
+        public const int secondToMillisecond = 1000;
+        
         #endregion
 
         #region Constructors
@@ -99,8 +102,7 @@
             int maxFrequencyIndex, int maxFrameIndex,
             SpectrogramConfiguration spectrogramConfig)
         {
-            // the unit is confusing
-            var secondToMillisecond = 1000;
+            // the unit is confusing            
             this.maxFrequency = maximumFrequency;
             this.minFrequency = minimumFrequency;
             this.startTime = startTime *secondToMillisecond; // millisecond
@@ -124,8 +126,7 @@
             SpectrogramConfiguration spectrogramConfig,
             CompressSpectrogramConfig compressConfig)
         {
-            // the unit is confusing
-            var secondToMillisecond = 1000;
+            // the unit is confusing           
             this.maxFrequency = maximumFrequency * compressConfig.FreqCompressRate;
             this.minFrequency = minimumFrequency * compressConfig.FreqCompressRate;
             this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
@@ -141,8 +142,7 @@
             double startTime, double endTime,
             CompressSpectrogramConfig compressConfig)
         {
-            // the unit is confusing
-            var secondToMillisecond = 1000;
+            // the unit is confusing          
             this.maxFrequency = maximumFrequency;
             this.minFrequency = minimumFrequency;
             this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond

@@ -67,68 +67,17 @@
             }
             return centeroid;
         }
-
-        /// <summary>
-        /// Convert from frequency to frequency bin.
-        /// </summary>
-        /// <param name="frequency">
-        /// The frequency.
-        /// </param>
-        /// <param name="frequencyBinWidth">
-        /// The frequency bin width.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
-        public static int FrequencyToFrequencyBin(int frequency, double frequencyBinWidth)
+       
+        public static int FrequencyToFrequencyBin(double frequency, double frequencyBinWidth)
         {
             return (int)(frequency / frequencyBinWidth);
         }
 
-        /// <summary>
-        /// Convert from million seconds to Frame index.
-        /// </summary>
-        /// <param name="millionSecond">
-        /// The million second.
-        /// </param>
-        /// <param name="framePerSecond">
-        /// The frame per second.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
         public static int MillionSecondsToFrame(int millionSecond, double framePerSecond)
         {
             var secToMillSecUnit = 1000;
             var second = millionSecond / secToMillSecUnit;
             return (int)(second * framePerSecond);
-        }
-
-        /// <summary>
-        /// The pixel per million second.
-        /// </summary>
-        /// <param name="framePerSecond">
-        /// The frame Per Second.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
-        public static int PixelPerMillionsecond(double framePerSecond)
-        {
-            const int SecondToMillionsecond = 1000;
-            return (int)(framePerSecond / SecondToMillionsecond);
-        }
-
-
-        public static double[,] MatrixRotate90Clockwise(double[,] m)
-        {
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            var ret = new double[cols, rows];
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    ret[c, r] = m[rows - r - 1, c];
-            return ret;
         }
 
         public static double[,] ZeroPaddingMatrix(double[,] m, int colsNumber)
@@ -229,8 +178,6 @@
             return result;
         }
 
-
-
         public static List<List<RegionRerepresentation>> SplitRegionRepresentationListToBlock(List<RegionRerepresentation> regionRepresentationList)
         {
             var result = new List<List<RegionRerepresentation>>();
@@ -253,163 +200,7 @@
             }
             return result;
         }
-
-        public static double MeasureHLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
-        {
-            var r = 0.0;
-            var Sreg = 0.0;
-            var Stot = 0.0;
-            var poiMatrixLength = poiMatrix.GetLength(0);
-            var matrixRadius = poiMatrixLength / 2;
-            var improvedRowIndex = 0.0;
-            var poiCount = 0;
-            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
-            {
-                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
-                {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                    {
-                        int tempColIndex = colIndex - matrixRadius;
-                        int tempRowIndex = matrixRadius - rowIndex;
-                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
-                        improvedRowIndex += tempRowIndex;
-                        Sreg += Math.Pow(verticalDistance, 2.0);
-                        poiCount++;
-                    }
-                }
-            }
-            var nullLineYIntersect = improvedRowIndex / poiCount;
-            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
-            {
-                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
-                {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
-                    {
-                        int tempRowIndex = matrixRadius - rowIndex;
-                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
-                        Stot += Math.Pow(verticalDistance1, 2.0);
-                    }
-                }
-            }
-            if (Stot != 0)
-            {
-                r = 1 - Sreg / Stot;
-            }
-            else
-            {
-                r = 1;
-            }
-            return r;
-        }
-
-        public static double MeasureVLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
-        {
-            var r = 0.0;
-            var Sreg = 0.0;
-            var Stot = 0.0;
-            var poiMatrixLength = poiMatrix.GetLength(0);
-            var matrixRadius = poiMatrixLength / 2;
-            var improvedRowIndex = 0.0;
-            var poiCount = 0;
-            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
-            {
-                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
-                {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
-                    {
-                        int tempColIndex = colIndex - matrixRadius;
-                        int tempRowIndex = matrixRadius - rowIndex;
-                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
-                        improvedRowIndex += tempRowIndex;
-                        Sreg += Math.Pow(verticalDistance, 2.0);
-                        poiCount++;
-                    }
-                }
-            }
-            var nullLineYIntersect = improvedRowIndex / poiCount;
-            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
-            {
-                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
-                {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
-                    {
-                        int tempRowIndex = matrixRadius - rowIndex;
-                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
-                        Stot += Math.Pow(verticalDistance1, 2.0);
-                    }
-                }
-            }
-            if (lineOfSlope == Math.PI / 2)
-            {
-                r = 1;
-            }
-            else
-            {
-                if (Stot != 0)
-                {
-                    r = 1 - Sreg / Stot;
-                }
-                else
-                {
-                    r = 1;
-                }
-            }
-            return r;
-        }
-
-        public static double MeasureLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
-        {
-            var r = 0.0;
-            var Sreg = 0.0;
-            var Stot = 0.0;
-            var poiMatrixLength = poiMatrix.GetLength(0);
-            var matrixRadius = poiMatrixLength / 2;
-            var improvedRowIndex = 0.0;
-            var poiCount = 0;
-            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
-            {
-                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
-                {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0)
-                    {
-                        int tempColIndex = colIndex - matrixRadius;
-                        int tempRowIndex = matrixRadius - rowIndex;
-                        double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
-                        improvedRowIndex += tempRowIndex;
-                        Sreg += Math.Pow(verticalDistance, 2.0);
-                        poiCount++;
-                    }
-                }
-            }
-            var nullLineYIntersect = improvedRowIndex / poiCount;
-            for (int rowIndex = 0; rowIndex < poiMatrixLength; rowIndex++)
-            {
-                for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
-                {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0)
-                    {
-                        int tempRowIndex = matrixRadius - rowIndex;
-                        double verticalDistance1 = tempRowIndex - nullLineYIntersect;
-                        Stot += Math.Pow(verticalDistance1, 2.0);
-                    }
-                }
-            }
-
-            if (Stot != 0)
-            {
-                r = 1 - Sreg / Stot;
-            }
-            else
-            {
-                r = 1;
-            }
-            return r;
-        }
-
+        
         public static RegionRerepresentation[,] RegionRepreListToMatrix(List<RegionRerepresentation> region)
         {
             var rowsCount = region[0].NhCountInRow;
@@ -442,6 +233,16 @@
             return candidates;
         }
 
+        public static List<RegionRerepresentation> SubRegionFromRegionList(List<RegionRerepresentation> regionList, int startIndex, int count)
+        {
+            var result = new List<RegionRerepresentation>();
+            var endIndex = startIndex + count;
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                result.Add(regionList[i]);
+            }
+            return result;
+        }
         /// <summary>
         /// this is feature set 1, it only involves 2 values, magnitude and orientation.
         /// </summary>
@@ -835,52 +636,8 @@
                 result.Add(nh);
             }
             return result;
-        }
+        }      
 
-        public static List<RegionRerepresentation> SubRegionFromRegionList(List<RegionRerepresentation> regionList, int startIndex, int count)
-        {
-            var result = new List<RegionRerepresentation>();
-            var endIndex = startIndex + count;
-            for (int i = startIndex; i < endIndex; i++)
-            {
-                result.Add(regionList[i]);
-            }
-            return result;
-        }
-        
-        /// <summary>
-        /// Returns the submatrix of passed matrix.
-        /// The returned submatrix includes the rows and column passed as bounds.
-        /// Assume that RowTop < RowBottom, ColumnLeft < ColumnRight. 
-        /// Row, column indices start at 0
-        /// </summary>
-        /// <param name="M"></param>
-        /// <param name="r1"></param>
-        /// <param name="c1"></param>
-        /// <param name="r2"></param>
-        /// <param name="c2"></param>
-        /// <returns></returns>
-        public static PointOfInterest[,] SubmatrixFromPointOfInterest(PointOfInterest[,] poiMatrix, int r1, int c1, int r2, int c2)
-        {
-            int subRowCount = r2 - r1 + 1;
-            int subColCount = c2 - c1 + 1;
-
-            PointOfInterest[,] sm = new PointOfInterest[subRowCount, subColCount];
-            var rowsCount = poiMatrix.GetLength(0);
-            var colsCount = poiMatrix.GetLength(1);
-
-            for (int i = 0; i < subRowCount; i++)
-            {
-                for (int j = 0; j < subColCount; j++)
-                {
-                    if (checkBoundary(r1 + i, c1 + j, rowsCount, colsCount))
-                    {
-                        sm[i, j] = poiMatrix[r1 + i, c1 + j];
-                    }
-                }
-            }
-            return sm;
-        }
         public static bool CheckFullMatrix(PointOfInterest[,] poiMatrix)
         {
             var count = 0;
@@ -905,8 +662,9 @@
                 return false;
             }
         }
+        
         /// <summary>
-        /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
+        /// This function is different from the one with the same name, the difference is that this one calculate intensity values from spectrogram.Data.
         /// </summary>
         /// <param name="list"></param>
         /// <param name="rows"></param>
@@ -955,11 +713,7 @@
         public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list,
             int rows, int cols)
         {
-            PointOfInterest[,] m = new PointOfInterest[rows, cols];
-            //var fftMatrix = list[0].fftMatrix; 
-            //var matrixRowCount = fftMatrix.GetLength(0);
-            //var matrixColCount = fftMatrix.GetLength(1);
-            //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount];            
+            PointOfInterest[,] m = new PointOfInterest[rows, cols];          
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -967,7 +721,6 @@
                     var point = new Point(colIndex, rowIndex);
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
-                    // tempPoi.fftMatrix = defaultFFTMatrix;
                     tempPoi.OrientationCategory = 10;                  
                     m[rowIndex, colIndex] = tempPoi;
                 }
@@ -983,45 +736,10 @@
             return m;
         }
         /// <summary>
+        
         /// This version is for structure tensor matrix 
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
-        /// </summary>
-        /// <param name="list"></param>
-        /// <param name="rows"></param>
-        /// <param name="cols"></param>
-        /// <returns></returns>
-        public static PointOfInterest[,] TransposePOIsToMatrix1(List<PointOfInterest> list, int rows, int cols)
-        {
-            PointOfInterest[,] m = new PointOfInterest[rows, cols];
-            //var fftMatrix = list[0].fftMatrix; 
-            //var matrixRowCount = fftMatrix.GetLength(0);
-            //var matrixColCount = fftMatrix.GetLength(1);
-            //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount]; 
-            for (int colIndex = 0; colIndex < cols; colIndex++)
-            {
-                for (int rowIndex = 0; rowIndex < rows; rowIndex++)
-                {
-                    var point = new Point(colIndex, rowIndex);
-                    var tempPoi = new PointOfInterest(point);
-                    tempPoi.RidgeMagnitude = 0.0;
-                    // tempPoi.fftMatrix = defaultFFTMatrix;
-                    tempPoi.OrientationCategory = 10;
-                    m[rowIndex, colIndex] = tempPoi;
-                }
-            }
-            foreach (PointOfInterest poi in list)
-            {
-                // There is a trick. The coordinate of poi is derived by graphic device. The coordinate of poi starts from top left and its X coordinate is equal to the column 
-                // of the matrix (X = colIndex). Another thing is Y starts from the top while the matrix should start from bottom 
-                // to get the real frequency and time location in the spectram. However, to draw ridges on the spectrogram, we 
-                // have to use the graphical coorinates. And especially, rows = 257, the index of the matrix is supposed to 256.
-                // Changed 2014-8-22 for structure tensor calculation
-                m[poi.Point.X, poi.Point.Y] = poi;
-            }
-            return m;
-        }
-
-        public static PointOfInterest[,] TransposePOIsToMatrix2(List<PointOfInterest> list, int rows, int cols)
+        public static PointOfInterest[,] TransposeStPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
             var fftMatrix = list[0].fftMatrix;
@@ -1045,6 +763,7 @@
             }
             return m;
         }
+
         /// <summary>
         /// It is a reverse process to TransposePOIsToMatrix.
         /// </summary>
@@ -1081,11 +800,8 @@
             for (int r = 0; r < rowsMax; r++)
             {
                 for (int c = 0; c < colsMax; c++)
-                {
-                    if (matrix[r, c] != null)
-                    {
-                        result.Add(matrix[r, c]);
-                    }
+                {                 
+                    result.Add(matrix[r, c]);
                 }
             }
             return result;
@@ -1139,10 +855,7 @@
                     subMatrix[row, col] = new PointOfInterest(new Point(pointX, pointY));
                     if (matrix[row1 + row, col1 + col] != null)
                     {
-                        subMatrix[row, col].OrientationCategory = matrix[row1 + row, col1 + col].OrientationCategory;
-                        subMatrix[row, col].RidgeMagnitude = matrix[row1 + row, col1 + col].RidgeMagnitude;
-                        subMatrix[row, col].RidgeOrientation = matrix[row1 + row, col1 + col].RidgeOrientation;
-                        subMatrix[row, col].Intensity = matrix[row1 + row, col1 + col].Intensity;
+                        subMatrix[row, col] = matrix[row1 + row, col1 + col];                        
                     }
                     else
                     {
@@ -1152,32 +865,7 @@
                 }
             }
             return subMatrix;
-        }
-
-        /// <summary>
-        /// Substract double matrix from the origional matrix by providing the top-left and bottom right index of the sub-matrix. 
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="row1"></param>
-        /// <param name="col1"></param>
-        /// <param name="row2"></param>
-        /// <param name="col2"></param>
-        /// <returns></returns>
-        public static double[,] Submatrix(double[,] matrix, int row1, int col1, int row2, int col2)
-        {
-            int subRowCount = row2 - row1;
-            int subColCount = col2 - col1;
-
-            var subMatrix = new double[subRowCount, subColCount];
-            for (int row = 0; row < subRowCount; row++)
-            {
-                for (int col = 0; col < subColCount; col++)
-                {
-                    subMatrix[row, col] = matrix[row1 + row, col1 + col];
-                }
-            }
-            return subMatrix;
-        }
+        }      
 
         public static double averageMatrix(double[,] matrix)
         {
@@ -1195,8 +883,6 @@
 
             return sum / maxXIndex * maxYIndex;
         }
-
-
 
         public static RidgeDescriptionNeighbourhoodRepresentation[,] SubRegionMatrix(RidgeDescriptionNeighbourhoodRepresentation[,] matrix, int row1, int col1, int row2, int col2)
         {
@@ -1418,27 +1104,7 @@
             }
             return result;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <param name="path"></param>
-        public static void WriteCSV<T>(IEnumerable<T> items, string path)
-        {
-            Type itemType = typeof(T);
-            var props = itemType.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name);
-            using (var writer = new StreamWriter(path))
-            {
-                writer.WriteLine(string.Join(", ", props.Select(p => p.Name)));
-                foreach (var item in items)
-                {
-                    writer.WriteLine(string.Join(", ", props.Select(p => p.GetValue(item, null))));
-                }
-            }
-        }
-
+       
         /// <summary>
         /// Transfer millisends to frame index.
         /// </summary>
@@ -1452,30 +1118,7 @@
             int timeTransfromUnit = 1000; // from ms to s 
             return (int)(milliSeconds / timeTransfromUnit * framePerSecond);
         }
-
-        /// <summary>
-        /// Transfer frequency value to frequency band index. 
-        /// </summary>
-        /// <param name="frequency"></param>
-        /// <returns></returns>
-        public static int FrequencyToFruencyBandIndex(double frequency)
-        {
-
-            double frequencyScale = 43.0;
-            return (int)(frequency / frequencyScale);
-        }
-
-        /// <summary>
-        /// Transfer seconds to million seconds. 
-        /// </summary>
-        /// <param name="seconds"></param>
-        /// <returns></returns>
-        public static double SecondsToMillionSeconds(double seconds)
-        {
-            var unit = 1000.0;
-            return seconds * unit;
-        }
-
+              
         public static bool NullPoiMatrix(PointOfInterest[,] poiMatrix)
         {
             var rowsCount = poiMatrix.GetLength(0);
@@ -1660,17 +1303,6 @@
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="degree"></param>
-        /// <returns></returns>
-        public static double ConvertDegreeToRadians(double degree)
-        {
-            var result = degree / 180 * Math.PI;
-            return result;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="distanceValue"></param>
         /// <returns></returns>
         public static List<double> ConvertDistanceToPercentageSimilarityScore(List<double> distanceValue)
@@ -1806,11 +1438,6 @@
             return result;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="similarityScoreList"></param>
-        /// <returns></returns>
         public static List<List<Tuple<double, double, double>>> SimilarityScoreListToVector(List<Tuple<double, double, double>> similarityScoreList)
         {
             var result = new List<List<Tuple<double, double, double>>>();

@@ -11,10 +11,11 @@ using System.Drawing;
 using System.IO;
 using System.Drawing.Imaging;
 using Dong.Felt.Configuration;
+using Dong.Felt.SpectrogramDrawing;
 
 namespace Dong.Felt.Preprocessing
 {
-    class AudioPreprosessing
+    public class AudioPreprosessing
     {
         public static void BatchSpectrogramGenerationFromAudio(DirectoryInfo audioFileDirectory, 
             SonogramConfig config, List<double> scores,
@@ -31,8 +32,8 @@ namespace Dong.Felt.Preprocessing
             var audioFilesCount = audioFiles.Count();          
             for (int j = 0; j < audioFilesCount; j++)
             {      
-                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[j]);
-                Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEvent, eventThreshold, null);
+                var spectrogram = AudioToSpectrogram(config, audioFiles[j]);
+                Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEvent, eventThreshold, null);
                 var spectrogramFileName = audioFiles[j] + ".png";
                 image.Save(spectrogramFileName, ImageFormat.Png); 
             }
@@ -197,7 +198,7 @@ namespace Dong.Felt.Preprocessing
             var acousticEventlist = new List<AcousticEvent>();
             var poiList = new List<PointOfInterest>();
             double eventThreshold = 0.5; // dummy variable - not used                               
-            Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+            Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
             var FileName = new FileInfo(inputFilePath);
             string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-compressed spectrogram.png");
             var inputDirect = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2";

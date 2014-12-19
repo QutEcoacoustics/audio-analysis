@@ -55,7 +55,7 @@ namespace Dong.Felt.Representations
                         if (ridgeMatrix[r, c].OrientationCategory == (int)Direction.North)
                         {
                             var sumMagnitude = 0.0;
-                            var subMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(ridgeMatrix, r - vradius, c,
+                            var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix, r - vradius, c,
                             r + vradius, c);
                             for (var i = 0; i < subMatrix.GetLength(0); i++)
                             {
@@ -79,7 +79,7 @@ namespace Dong.Felt.Representations
                         {
                             var sumMagnitude = 0.0;
                             var radius = horizontalStep / 2;
-                            var subMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(ridgeMatrix, r, c - hradius,
+                            var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix, r, c - hradius,
                             r, c + hradius);
                             for (var i = 0; i < subMatrix.GetLength(0); i++)
                             {
@@ -359,10 +359,10 @@ namespace Dong.Felt.Representations
             var horDoubleMatrix = horPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             var posDoubleMatrix = posDiPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             var vegDoubleMatrix = negDiPoiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
-            var rotateVerDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(verDoubleMatrix);
-            var rotateHorDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(horDoubleMatrix);
-            var rotatePosDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(posDoubleMatrix);
-            var rotateNegDoubleMatrix = StatisticalAnalysis.MatrixRotate90Clockwise(vegDoubleMatrix);        
+            var rotateVerDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(verDoubleMatrix);
+            var rotateHorDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(horDoubleMatrix);
+            var rotatePosDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(posDoubleMatrix);
+            var rotateNegDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(vegDoubleMatrix);        
             var hoblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 3, 0.0,
                 sonogram.NyquistFrequency, false, rotateHorDoubleMatrix);
             

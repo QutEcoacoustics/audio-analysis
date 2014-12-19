@@ -455,7 +455,7 @@ namespace Dong.Felt
                     }
                 }
             }
-            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracksBasedOn4Direction(poiList, rows, cols);
+            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
             //var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
             //var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
             //var filteredPoiList = ImageAnalysisTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
@@ -1302,7 +1302,7 @@ namespace Dong.Felt
                 {
                     if (poiMatrix[row, col].RidgeMagnitude != 0)
                     {
-                        var matrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(poiMatrix, row - radius, col - radius, row + radius, col + radius);
+                        var matrix = StatisticalAnalysis.Submatrix(poiMatrix, row - radius, col - radius, row + radius, col + radius);
                         double[,] m = 
                     {{matrix[0,0].RidgeMagnitude, matrix[0,1].RidgeMagnitude, matrix[0,2].RidgeMagnitude, matrix[0,3].RidgeMagnitude, matrix[0,4].RidgeMagnitude},
                     {matrix[1,0].RidgeMagnitude, matrix[1,1].RidgeMagnitude, matrix[1,2].RidgeMagnitude, matrix[1,3].RidgeMagnitude, matrix[1,4].RidgeMagnitude},

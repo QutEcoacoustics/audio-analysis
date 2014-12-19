@@ -112,22 +112,5 @@
             return result;
         }
 
-        /// <summary>
-        /// I am trying to represent the query, but it's not easy. From a box into a pointofInterest matrix.
-        /// </summary>
-        /// <param name="list"></param>
-        /// <param name="rows"></param>
-        /// <param name="cols"></param>
-        /// <returns></returns>
-        public static PointOfInterest[,] TransferPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
-        {
-            PointOfInterest[,] m = new PointOfInterest[rows, cols];
-            foreach (PointOfInterest poi in list)
-            {
-                m[poi.Point.X, poi.Point.Y] = poi;
-            }
-            return m;
-        }       
-
     }
 }

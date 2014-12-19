@@ -214,16 +214,16 @@ namespace Dong.Felt
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             var rowsCount = matrix.GetLength(0) - 1;
             var colsCount = matrix.GetLength(1);
-            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix1(stList, rowsCount, colsCount);
+            var stMatrix = StatisticalAnalysis.TransposeStPOIsToMatrix(stList, rowsCount, colsCount);
             var frequencyScale = spectrogram.FBinWidth;
             var timeScale = spectrogram.FrameDuration / 2;
             // be careful about the index here.
             var rowStart = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.maxFrequency / frequencyScale);
             var rowEnd = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency / frequencyScale); 
             var colStart = (int)(query.startTime / 1000 / timeScale);
-            var colEnd = (int)(query.endTime / 1000 / timeScale);     
-      
-            var regionMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(stMatrix, rowStart, colStart, rowEnd, colEnd);
+            var colEnd = (int)(query.endTime / 1000 / timeScale);
+
+            var regionMatrix = StatisticalAnalysis.Submatrix(stMatrix, rowStart, colStart, rowEnd, colEnd);
             var result = new RegionRerepresentation();
             result.POICount = StructureTensorAnalysis.StructureTensorCountInEvent(regionMatrix);
             result.StartRowIndex = rowStart;
@@ -238,7 +238,6 @@ namespace Dong.Felt
             result.SourceAudioFile = audioFileName;
             return result;
         }
-
 
         public static List<RegionRerepresentation> ExtractCandidateRegionRepresentationFromAudioNhRepresentations(Query query, 
             int neighbourhoodLength,
@@ -302,7 +301,7 @@ namespace Dong.Felt
             var endRowIndex = queryRepresentation.EndRowIndex;         
             var colRange = queryRepresentation.fftFeatures.GetLength(1) - 1;
             // The one sets the none structure tensor point to null features. 
-            var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix1(stList, rowsCount, colsCount);
+            var stMatrix = StatisticalAnalysis.TransposeStPOIsToMatrix(stList, rowsCount, colsCount);
             // The one sets all the features in the region to 0,  this one is useful to calculate the distance based on purely Euclidean
             //var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix2(stList, rowsCount, colsCount);
             
@@ -311,7 +310,7 @@ namespace Dong.Felt
             {
                 if (StatisticalAnalysis.checkBoundary(startRowIndex, colIndex, endRowIndex, colsCount))
                 {
-                    var subRegionMatrix = StatisticalAnalysis.SubmatrixFromPointOfInterest(stMatrix, startRowIndex, colIndex, 
+                    var subRegionMatrix = StatisticalAnalysis.Submatrix(stMatrix, startRowIndex, colIndex, 
                                                                     endRowIndex, colIndex + colRange);
                     // check whether the region is null
                     var regionItem = new RegionRerepresentation();
@@ -821,6 +820,7 @@ namespace Dong.Felt
             }
             return result;
         }
+        
         /// <summary>
         /// Euclidean Distance calculation Hausdorff distance for feature set 10.
         /// </summary>
