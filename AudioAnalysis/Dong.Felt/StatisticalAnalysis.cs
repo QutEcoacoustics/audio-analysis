@@ -31,6 +31,95 @@
             }
         }
 
+        /// <summary>
+        /// The get centroid point. It returns the centroid point among a bunch of points. 
+        /// </summary>
+        /// <param name="points">
+        /// The points.
+        /// </param>
+        /// <returns>
+        /// The centroid point<see cref="Point"/>.
+        /// </returns>
+        public static Point GetCentroidPoint(List<Point> points)
+        {
+            var centeroid = new Point();
+            var numberOfVertex = points.Count;
+            var distance = new double[numberOfVertex];
+            var minimumDistance = double.MaxValue;
+
+            var minX = points.Min(p => p.X);
+            var minY = points.Max(p => p.Y);
+            var maxX = points.Min(p => p.X);
+            var maxY = points.Max(p => p.Y);
+            var centeroidX = (maxX + minX) / 2;
+            var centeroidY = (maxY + minY) / 2;
+            var tempCenteroid = new Point(centeroidX, centeroidY);
+
+            // find the nearest point the to centeroid
+            for (int j = 0; j < numberOfVertex; j++)
+            {
+                distance[j] = Distance.EuclideanDistanceForPoint(tempCenteroid, points[j]);
+                if (distance[j] < minimumDistance)
+                {
+                    minimumDistance = distance[j];
+                    centeroid = new Point(points[j].X, points[j].Y);
+                }
+            }
+            return centeroid;
+        }
+
+        /// <summary>
+        /// Convert from frequency to frequency bin.
+        /// </summary>
+        /// <param name="frequency">
+        /// The frequency.
+        /// </param>
+        /// <param name="frequencyBinWidth">
+        /// The frequency bin width.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int FrequencyToFrequencyBin(int frequency, double frequencyBinWidth)
+        {
+            return (int)(frequency / frequencyBinWidth);
+        }
+
+        /// <summary>
+        /// Convert from million seconds to Frame index.
+        /// </summary>
+        /// <param name="millionSecond">
+        /// The million second.
+        /// </param>
+        /// <param name="framePerSecond">
+        /// The frame per second.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int MillionSecondsToFrame(int millionSecond, double framePerSecond)
+        {
+            var secToMillSecUnit = 1000;
+            var second = millionSecond / secToMillSecUnit;
+            return (int)(second * framePerSecond);
+        }
+
+        /// <summary>
+        /// The pixel per million second.
+        /// </summary>
+        /// <param name="framePerSecond">
+        /// The frame Per Second.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int PixelPerMillionsecond(double framePerSecond)
+        {
+            const int SecondToMillionsecond = 1000;
+            return (int)(framePerSecond / SecondToMillionsecond);
+        }
+
+
         public static double[,] MatrixRotate90Clockwise(double[,] m)
         {
             int rows = m.GetLength(0);

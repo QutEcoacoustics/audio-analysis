@@ -712,9 +712,14 @@ namespace Dong.Felt
                         distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
                             weight2);
                     }
+                    var minFrequency = tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange;
+                    if (minFrequency < 0)
+                    {
+                        minFrequency = 0.0;
+                    }
                     var item = new Candidates(distance, tempRegionList[0].FrameIndex / compressConfig.TimeCompressRate,
-                            duration, tempRegionList[0].FrequencyIndex / compressConfig.FreqCompressRate, 
-                            (tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange) / compressConfig.FreqCompressRate,
+                            duration, tempRegionList[0].FrequencyIndex / compressConfig.FreqCompressRate,
+                            minFrequency / compressConfig.FreqCompressRate,
                             tempRegionList[0].SourceAudioFile);
                     result.Add(item);
                 }

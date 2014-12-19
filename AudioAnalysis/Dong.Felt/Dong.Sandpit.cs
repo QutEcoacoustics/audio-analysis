@@ -141,15 +141,15 @@
                     //spectrogram.Duration = tempDuration;                   
 
                     /// Ridge detection analysis
-                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                        featurePropertySet);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                    //    featurePropertySet);
 
                     ///Automatic check
-                    //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
-                    //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
-                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    OutputResults.ChangeCandidateFileName(inputDirectory);
+                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
+                    OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
                     ///GaussianBlur
@@ -330,13 +330,12 @@
                 {
                     spectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(spectrogram.Data, compressConfig.TimeCompressRate);
                 }
-                else
-                {
+               
                     if (compressConfig.FreqCompressRate != 1.0)                   
                     {
                         spectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(spectrogram.Data, compressConfig.FreqCompressRate);
                     }
-                }
+              
                 var secondToMillionSecondUnit = 1000;
                 var spectrogramConfig = new SpectrogramConfiguration
                 {
@@ -350,7 +349,7 @@
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                 var cols = spectrogram.Data.GetLength(0);
                 var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
-                   rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                   rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig, compressConfig);
                 var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
                 var queryNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
@@ -385,20 +384,18 @@
                     {
                         candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(candidateSpectrogram.Data, compressConfig.TimeCompressRate);
                     }
-                    else
-                    {
+                   
                         if (compressConfig.FreqCompressRate != 1.0)
                         {
                             candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(candidateSpectrogram.Data, compressConfig.FreqCompressRate);
-                        }
-                    }
+                        }                  
                     var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
                     var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
 
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
                     var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(candidateRidges,
-                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
+                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig, compressConfig);
                     var gradientCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(candidateGradients,
                         rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
 
@@ -571,7 +568,7 @@
                 var improvedQueryridges = POISelection.AddResizeRidgesInTime(queryRidges, spectrogram,
                     compressedRidges, compressConfig, rows, cols);
                 var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(improvedQueryridges,
-                    rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);                
+                    rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig, compressConfig);                
                 var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
                 var queryNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.CombinedNhRepresentation(
@@ -622,7 +619,7 @@
                         compressConfig, rows1, cols1);
 
                     var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(improvedCandidateridges,
-                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);                   
+                        rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig, compressConfig);                   
                     var gradientCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(candidateGradients,
                         rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
 
@@ -734,7 +731,7 @@
             //}
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
-
+       
         /// <summary>
         /// This method is designed for retrieval algorithm based on AED. 
         /// AED is used for forming events to be compared rather than neighbourhood representation. 

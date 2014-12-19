@@ -21,7 +21,7 @@ namespace Dong.Felt
     using Representations;
 
     /// <summary>
-    /// The template tools.
+    /// The template tools aim to detect birds using template matching.
     /// </summary>
     public class TemplateTools
     {
@@ -30,33 +30,10 @@ namespace Dong.Felt
         /// </summary>
         public static readonly int CentroidFrequencyOfLewinsRailTemplate = 91;
 
-
         /// <summary>
         /// The centroid frequency for Crow.
         /// </summary>
         public static readonly int CentroidFrequencyOfCrowTemplate = 80;
-
-        //public const string VectorTypeHorizontal = "h";
-        //public const string VectorTypeHorizontal = "v";
-        //public const string VectorTypeHorizontal = "pd";
-        //public const string VectorTypeHorizontal = "nd";
-
-        //public static IEnumerable<FeatureVector> ReadCSVFileToFeatureVector(FileInfo filePath)
-        //{
-        //    using(var textReader = filePath.OpenText())
-        //    using (var csv = new CsvReader(textReader))
-        //    {
-        //        while (csv.Read())
-        //        {
-        //            var frameNumber = csv.GetField<double>("FrameNumber");
-        //            var distance = csv.GetField<double>("Distance");
-        //            var sliceNumber = csv.GetField<int>("SliceNumber");
-        //            var vectorDirection = csv.GetField<string>("VectorDirection");
-        //            var values = csv.CurrentRecord.Skip(4);
-
-        //        }
-        //    }
-        //}
 
         public static List<RidgeNeighbourhoodFeatureVector> Grey_Fantail1()
         {
@@ -156,24 +133,6 @@ namespace Dong.Felt
                 });
             }
             return result;
-        }
-
-        public static double[,] ReadCSVFile2Matrix(string csvFileName)
-        {
-            System.Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
-            List<double[]> columns = tuple.Item2;
-            int rows = columns[0].Length;
-            int cols = columns.Count;
-            double[,] matrix = new double[rows, cols];
-
-            for (int c = 0; c < cols; c++)
-            {
-                for (int r = 0; r < rows; r++)
-                {
-                    matrix[r, c] = columns[c][r];
-                }
-            }
-            return matrix;
         }
 
         public static void featureVectorToCSV(List<Tuple<double, int, List<RidgeNeighbourhoodFeatureVector>>> listOfPositions, string filePath)
@@ -393,104 +352,11 @@ namespace Dong.Felt
         {
             var result = new RidgeNeighbourhoodFeatureVector(new Point(0, 0));
             // fuzzy presentation
-            //var verticalByte = new int[]   { 4, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            //var horizontalByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 4, 6 };
             var verticalBitByte = new int[] { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             var horizontaBitlByte = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1 };
             result.VerticalBitVector = verticalBitByte;
             result.HorizontalBitVector = horizontaBitlByte;
-            //result.NeighbourhoodSize = verticalBitByte.Count();
             return result;
-        }
-
-        /// <summary>
-        /// The get centroid. It will calculate the centroid in a fixed area where many points are. 
-        /// </summary>
-        /// <param name="points">
-        /// The points.
-        /// </param>
-        /// <returns>
-        /// The <see cref="Point"/>.
-        /// </returns>
-        public static Point GetCentroid(List<Point> points)
-        {
-            var centeroid = new Point();
-            var numberOfVertex = points.Count;
-            var distance = new double[numberOfVertex];
-            var minimumDistance = double.MaxValue;
-
-            var minX = points.Min(p => p.X);
-            var minY = points.Max(p => p.Y);
-            var maxX = points.Min(p => p.X);
-            var maxY = points.Max(p => p.Y);
-            var centeroidX = (maxX + minX) / 2;
-            var centeroidY = (maxY + minY) / 2;
-            var tempCenteroid = new Point(centeroidX, centeroidY);
-
-            // find the nearest point the to centeroid
-            for (int j = 0; j < numberOfVertex; j++)
-            {
-                distance[j] = Distance.EuclideanDistanceForPoint(tempCenteroid, points[j]);
-                if (distance[j] < minimumDistance)
-                {
-                    minimumDistance = distance[j];
-                    centeroid = new Point(points[j].X, points[j].Y);
-                }
-            }
-
-            return centeroid;
-        }
-
-        /// <summary>
-        /// Convert from frequency to frequency bin.
-        /// </summary>
-        /// <param name="frequency">
-        /// The frequency.
-        /// </param>
-        /// <param name="frequencyBinWidth">
-        /// The frequency bin width.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
-        public static int FrequencyToFrequencyBin(int frequency, double frequencyBinWidth)
-        {
-            return (int)(frequency / frequencyBinWidth);
-        }
-
-        /// <summary>
-        /// Convert from million seconds to Frame index.
-        /// </summary>
-        /// <param name="millionSecond">
-        /// The million second.
-        /// </param>
-        /// <param name="framePerSecond">
-        /// The frame per second.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
-        public static int MillionSecondsToFrame(int millionSecond, double framePerSecond)
-        {
-            var second = millionSecond / 1000;
-            return (int)(second * framePerSecond);
-        }
-
-        /// <summary>
-        /// The pixel per million second.
-        /// </summary>
-        /// <param name="framePerSecond">
-        /// The frame Per Second.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
-        public static int PixelPerMillionsecond(double framePerSecond)
-        {
-            const int SecondToMillionsecond = 1000;
-            return (int)(framePerSecond / SecondToMillionsecond);
-        }
-
-
+        }       
     }
 }

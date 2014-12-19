@@ -447,7 +447,7 @@ namespace Dong.Felt.Representations
         }
 
         public static void AudioNeighbourhoodRepresentation(DirectoryInfo audioFileDirectory, SonogramConfig config, RidgeDetectionConfiguration ridgeConfig,
-            int neighbourhoodLength, string featurePropSet)
+            int neighbourhoodLength, string featurePropSet, CompressSpectrogramConfig compressConfig)
         {
             if (!Directory.Exists(audioFileDirectory.FullName))
             {
@@ -468,7 +468,7 @@ namespace Dong.Felt.Representations
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context line. 
                 var cols = spectrogram.Data.GetLength(0);
                 var ridgeNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromAudioFilePointOfInterestList(queryRidges, rows, cols,
-                neighbourhoodLength, featurePropSet, spectrogramConfig);
+                neighbourhoodLength, featurePropSet, spectrogramConfig, compressConfig);
                 //var normalizedNhRepresentationList = RidgeDescriptionRegionRepresentation.NomalizeNhRidgeProperties
                 //(ridgeNhRepresentationList, featurePropSet);
                 var ridgeNhListFileBeforeNormal = new FileInfo(audioFiles[i] + "NhRepresentationListBeforeNormal.csv");
@@ -486,7 +486,7 @@ namespace Dong.Felt.Representations
         /// <param name="col"></param>
         /// <param name="spectrogramConfig"></param>
         public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col, 
-            SpectrogramConfiguration spectrogramConfig)
+            SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
         {
             var EastBin = 0.0;
             var NorthEastBin = 0.0;
@@ -520,7 +520,7 @@ namespace Dong.Felt.Representations
                 }
             }
             this.FrameIndex = col * timeScale;
-            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            var maxFrequency = spectrogramConfig.NyquistFrequency * compressConfig.FreqCompressRate;
             this.FrequencyIndex = maxFrequency - row * frequencyScale;
             this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
             this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
@@ -2014,7 +2014,7 @@ namespace Dong.Felt.Representations
 
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList,
             int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
-            SpectrogramConfiguration spectrogramConfig)
+            SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
@@ -2038,7 +2038,7 @@ namespace Dong.Felt.Representations
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
                         {
                             //ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
-                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig);
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig, compressConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
                         {
@@ -2078,7 +2078,7 @@ namespace Dong.Felt.Representations
        
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromRidgePOIList(List<PointOfInterest> ridgeList,
             int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
-            SpectrogramConfiguration spectrogramConfig)
+            SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
         {
             var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
             var matrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rowsCount, colsCount);
@@ -2108,7 +2108,8 @@ namespace Dong.Felt.Representations
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
                         {                           
-                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, spectrogramConfig);
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col, 
+                                spectrogramConfig, compressConfig);
                         }
                         if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
                             featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||

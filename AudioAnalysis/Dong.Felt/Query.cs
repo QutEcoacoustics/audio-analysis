@@ -175,23 +175,31 @@
             // get a greater value than the parameter for enlarging the later used NH boundary- enlarge.
             var enlargedOffset = 1;
             // ceiling is try to increase the value.
-            var nhCountInRow = (int)Math.Ceiling(frequencyRange / nhFrequencyLength) + enlargedOffset;
-            var nhCountInCol = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
+            var nhCountInRows = (int)Math.Ceiling(frequencyRange / nhFrequencyLength) + enlargedOffset;
+            var nhCountInCols = (int)Math.Ceiling(this.duration / nhFrameLength) + enlargedOffset;
             /// Here is a trick. Trying to get the nearest and lowest NH frame and frequencyIndex.          
             this.nhStartColIndex = (int)Math.Floor(this.startTime / nhFrameLength);
             this.nhStartRowIndex = this.maxNhRowIndex - (int)Math.Ceiling(this.maxFrequency / nhFrequencyLength);
-            var nhendTime = (this.nhStartColIndex + nhCountInCol) * nhFrameLength;
+            var nhendTime = (this.nhStartColIndex + nhCountInCols) * nhFrameLength;
             //var nhLowerFreq = (this.nhStartRowIndex + nhCountInRow) * nhFrequencyLength;
-            if (this.nhStartRowIndex + nhCountInRow >= this.maxNhRowIndex)
+            if (this.nhStartRowIndex + nhCountInRows > this.maxNhRowIndex)
             {
                 this.nhStartRowIndex--;
             }
-            if (this.nhStartColIndex + nhCountInCol >= this.maxNhColIndex)
+            if (this.nhStartColIndex + nhCountInCols > this.maxNhColIndex)
             {
                 this.nhStartColIndex--;
             }
-            this.nhCountInRow = nhCountInRow;
-            this.nhCountInColumn = nhCountInCol;
+            if (nhCountInRows > this.maxNhRowIndex)
+            {
+                nhCountInRows = this.maxNhRowIndex;
+            }
+            if (nhCountInCols > this.maxNhColIndex)
+            {
+                nhCountInCols= this.maxNhColIndex;
+            }
+            this.nhCountInRow = nhCountInRows;
+            this.nhCountInColumn = nhCountInCols;
             
         }
        
