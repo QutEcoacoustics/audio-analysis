@@ -14,4 +14,4 @@ function [ cEnergy,cEnergyThreshold ] = column_energy(I,lowBin,highBin)
     cEnergyThreshold = mids(maxIndex)*2*0.8;
  
 end
-% END of function
+% EOF
