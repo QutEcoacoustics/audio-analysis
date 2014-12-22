@@ -3647,6 +3647,23 @@ namespace TowseyLibrary
       string str = String.Format("{0}m {1:f3}s", mins, remainder);
       return str;
   }
+        /// <summary>
+        /// assumes date string has following 8 digit strcture YYYYMMDD
+        /// </summary>
+        /// <param name="dateString"></param>
+        /// <returns></returns>
+  public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
+  {
+      // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
+      string yr = dateString.Substring(0, 4);
+      string mn = dateString.Substring(4, 2);
+      string dy = dateString.Substring(6, 2);
+
+      DateTime dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
+      return dt;
+  }
+  public static string[] MonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+  //============================================================================================================================
 
 
   public static int String2Int(string str)
