@@ -625,7 +625,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int kHzInterval = herzInterval / 1000;
             double Y_interval = bmp.Height / (double)(nyquist / (double)herzInterval);
             int gridCount = (int)(rows / Y_interval);
-            for (int i = 1; i < gridCount; i++)
+            for (int i = 1; i <= gridCount; i++)
             {
                 int row = (int)(i * Y_interval);
                 int rowFromBottom = rows - row;
