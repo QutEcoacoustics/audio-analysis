@@ -519,8 +519,10 @@ SampleAtLeastOne <- function (pool, num, prob = NULL, at.least.one.of = NULL) {
         stop('num items to return must be greater than the number of items in the mandatory pool')
     } else {
         # first do a normal sample, which doesn't guarantee that every element of the pool is used
-        result <- sample.vec(pool, num, replace = TRUE, prob = prob) 
-        missing <- setdiff(at.least.one.of, result)      
+        result <- sample.vec(pool, num, replace = TRUE, prob = prob)
+        
+        missing <- setdiff(at.least.one.of, result)
+        
         if (length(missing) > 0) {
             # then, to make sure that all mandatory have been used, assign one of each of the mandatory pool to random spots
             
@@ -534,6 +536,8 @@ SampleAtLeastOne <- function (pool, num, prob = NULL, at.least.one.of = NULL) {
             original.result <- result
             result[to.replace] <- replacement 
         }
+        
+
     }
     
     if (length(setdiff(at.least.one.of, result)) > 0) {
@@ -547,7 +551,6 @@ SampleAtLeastOne <- function (pool, num, prob = NULL, at.least.one.of = NULL) {
 # stupid hack workaround to fix the crap caused by the built in 'convenience' of R's native sample behavious
 # i.e if the x is a vector of length 1 is a single number treats is at 1:(x[1])
 sample.vec <- function(x, ...) x[sample(length(x), ...)]
-
 
 
 

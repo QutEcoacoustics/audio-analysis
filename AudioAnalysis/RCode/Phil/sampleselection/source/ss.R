@@ -139,9 +139,8 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
 
     
     # Step 0:
-    # Audio Event Detection
-    # This is done by another program, currently birgit's matlab code
-    # Events are detected. Frequency bounds, start time and duration
+    # Acoustic Event Detection
+    # This is done by another program. Frequency bounds, start time and duration
     # are written to a csv file for each audio file. 
 
     steps.aed <- list(

@@ -60,6 +60,9 @@ SimulateClustering <- function (events = NULL, species.mins = NULL, num.clusters
     for (sp in 1:nrow(species)) {
         event.selection <- events$species.id == species$species.id[sp]
         clusters <- species.clusters$group[species.clusters$species.id == species$species.id[sp]]
+        if (length(clusters) == 0) {
+            print('stop')
+        }
         events$group[event.selection] <- SampleAtLeastOne(clusters, sum(event.selection))
     }
     
@@ -73,40 +76,37 @@ SimulateClustering <- function (events = NULL, species.mins = NULL, num.clusters
     
 }
 
+AddRandomGroups <- function (events, amount.random) {    
+    events$group <- AddRandom(events$group, amount.random)
+    return(events)
+}
 
-AddRandom <- function (events, amount.random) {
+
+AddRandom <- function (vals, amount.random) {
     # given a df of events, each with a group
     # assigns a random group to a subset of them
-    groups <- unique(events$group)
-    new.groups <- c()
-    num.random <- round(nrow(events) * amount.random)
+    # alternatively, a vector
+    unique.vals <- unique(vals)
+    num.random <- round(length(vals) * amount.random)
+    # randomly choose some events to change
+    spots.to.change <- rep(FALSE, length(vals))
+    spots.to.change[sample(length(vals), num.random, replace = FALSE)] <- TRUE
+    # identify the groups that are only in the ones being swapped out
+    # these must be included in the random events to ensure that 
+    # all groups are still represented  
+    vals.to.include <- setdiff(vals[spots.to.change], vals[!spots.to.change])
+    # choose some random groups to set these events to
+    # ensuring that all groups are still represented at the end
+    rand.vals <- SampleAtLeastOne(vals, num.random, at.least.one.of = vals.to.include)        
+    new.vals <- vals
+    new.vals[spots.to.change] <- rand.vals   
     
-    # there is a chance that not all groups will be represented
-    # as long as num.random is a lot bigger than num groups, this is fairly small
-    max <- 20
-    for (i in 1:max) {
-        rand.event.rows <- sample(nrow(events), num.random, replace = FALSE)
-        rand.groups <- sample(groups, num.random, replace = TRUE)      
-        events$group[rand.event.rows] <- rand.groups
-        new.groups <- unique(events$group)
-        if (length(setdiff(groups, new.groups)) == 0) {
-            break()
-        }
-    }
     
-    if (length(setdiff(groups, new.groups)) > 0) {
-        # the number of groups is too high, so it means that just picking out randomly with replacement
-        # is likely to miss some grounds. So, instead we just shuffle the given num.random so that all 
-        # the groups are maintained
-        print('warning: add random shuffled instead of picking with replacement')
-        rand.event.rows <- sample(nrow(events), num.random, replace = FALSE)
-        original.groups <- 
-        rand.groups <- sample(groups, num.random, replace = TRUE)     
-        
-    }
 
-
-    return(events)
+    
+    
+    
+    return(new.vals)
 }
 
 
@@ -206,6 +206,10 @@ SetNumClustersPerSpeciesInner <- function (species, num.clusters) {
     
     av.num.per.species <- num.clusters / nrow(species)
     
+    if (av.num.per.species < 1) {
+        stop('Not enough clusters for the number of species when setting num clusters per species SetNumClustersPerSpeciesInner')
+    }
+    
     pool <- 1:(round(2*av.num.per.species))
     sd <- av.num.per.species/2
     # probablity for number of clusters is set to be almost gausian around the average number
@@ -225,7 +229,6 @@ SetNumClustersPerSpeciesInner <- function (species, num.clusters) {
     attempts <- 1
     max.attempts <- 10
     while(deficit != 0 && attempts < max.attempts) {
-
         
         if (deficit > 0) {
             add <- 1
@@ -237,9 +240,15 @@ SetNumClustersPerSpeciesInner <- function (species, num.clusters) {
         # but only for species that have plenty of events, and are not on the max 
         
         # only change species where the new number will be less than the number of events
+        # i.e. species will not have more clusters than events
         condition.1 <- species$num.clusters + add <= species$num.events
+
+        # and only change species where the new number will > 0
+        # i.e. each species needs at least 1 cluster
+        condition.2 <- species$num.clusters + add > 0
+        
         # and only change species where the new number will be less than or equal to the maximum allowed
-        # condition.2 <- species$num.clusters + add < max(pool)
+        # condition.3 <- species$num.clusters + add < max(pool)
         # allow more than max
         to.change <- which(condition.1)
         if (length(to.change) > abs(deficit)) {

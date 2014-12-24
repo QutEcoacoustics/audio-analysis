@@ -306,7 +306,7 @@ MetaToFn <- function (meta, units = 'm', ext = FALSE) {
 
 
 FileNamesInTarget <- function (ext) {
-    mins <- ReadOutput('target.min.ids', level = 0)
+    mins <- ReadOutput('target.min.ids', purpose = 'file names in target')
     
     site.col <- which('site' == colnames(mins))
     date.col <- which('date' == colnames(mins))

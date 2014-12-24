@@ -10,15 +10,29 @@
 
 source('artificial.clustering.R')
 
-GetACForVis <- function (fn, fraction.of.events = 0.3, fraction.of.minutes = 0.04, amount.random = 0) {
+GetACForVis <- function (fn = NULL, fraction.of.events = 0.4, fraction.of.minutes = 0.06, amount.random = 1, species.mins = NULL) {
     # shortcut function to get the output for visualization, 
     # mainly so that I can remember the steps needed
+    if (is.null(species.mins)) {
+        species.mins <- GetSpeciesMins()      
+    }
     
-    species.mins <- GetSpeciesMins()
+    if (is.null(fn)) {
+        fn = paste(fraction.of.events, fraction.of.minutes, amount.random, sep = "_")
+    }
+
     events <- ReadOutput('events', include.meta = FALSE)
     reduced <- ReduceEventsAndMinutes(events, species.mins, fraction.of.events = fraction.of.events, fraction.of.minutes = fraction.of.minutes)
-    reduced$events <- SimulateClustering(events = reduced$events, species.mins = reduced$species.mins, num.clusters = 240)
-    reduced$events <- AddRandom(reduced$events, amount.random)
+    
+    num.events <- nrow(reduced$events)
+    num.clusters <- round(length(unique(reduced$species.mins$species))*2)
+    print(paste('num.events',num.events))  
+    print(paste('num.clusters',num.clusters))
+    
+    reduced$events <- SimulateClustering(events = reduced$events, species.mins = reduced$species.mins, num.clusters = num.clusters)
+    randomised <- AddRandomGroups(reduced$events, amount.random)
+    diff = sum(reduced$events$group != randomised$group)
+    print(paste('adding random. diff = ', diff, '/', nrow(reduced$events)))
     OutputForVis(fn, reduced)
     
 }
@@ -200,7 +214,7 @@ EvaluateBCubed <- function (events, species.mins, fraction.of.events = 0.3, frac
         events <- SimulateClustering(events, species.mins)
         
         for (r in 1:length(amount.random)) {
-            events.with.random <- AddRandom(events, amount.random[c])
+            events.with.random <- AddRandomGroups(events, amount.random[c])
             scores[r, c] <- BCubed(events.with.random, species.mins, species)  
         }    
     }

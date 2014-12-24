@@ -116,6 +116,10 @@ ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, fa
     #    Output data-type is different depending on the name of the output, for example, binary object for clustering
     #    and and CSV for features
     
+    if (!is.na(purpose)) {
+        Report(1, 'Reading output for:', purpose)     
+    }
+
     meta.row <- GetLastAccessed(name)
     if (!is.data.frame(meta.row)) {
         meta.row <- ChooseOutputVersion(name, params, false.if.missing = false.if.missing)
@@ -141,7 +145,23 @@ ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, fa
 
 
 WriteOutput <- function (x, name, params, dependencies = list()) {
+    # writes output to a file
+    # Args
+    #   x: data.frame (normally); The data to write
+    #   name: string; what to call the output. This is used in: the filename and the meta file to keep track of versions and dependencies
+    #   params: list;  The parameters used when generating this output. Saved in the meta file.
+    #   dependencies: list; The output from previous steps that was used as input data for the process that created this output. List of name/version pairs
+    #
+    # Details
+    #   output will be saved with the filename like: name.version.csv  The version is detected automatically. 
+    #   If output for this name with the same parameters and dependencies is already saved, then it will be overwritten (after user confirmation).
+    #   If params or dependencies are different, then a new version is saved. The version number is created automatically. 
+    #
+    #   The version for the dependency can be ommited (by putting a value < 1). If this happens, then it will be assumed to be the last accessed version
+    #   of the dependency output. So, the process which generated the output will have accesed some other output it depends on. Then, when it saves its output
+    #   it need only pass the name of the input data without the version, and the WriteOutput function will know which version it was.
 
+    # read the meta for all outputs
     meta <- ReadMeta()
     params <- toJSON(params)
     
@@ -159,6 +179,7 @@ WriteOutput <- function (x, name, params, dependencies = list()) {
     }
     if (any(dependencies < 1)) {
         # if any dependency versions are less than 1 (i.e. 0), stop and give the error message
+        # This will happen if the dependency verion was not supplied AND the last accesed verion is not stored
         stop(paste('dependency versions must be supplied for ', paste(names(dependencies[dependencies < 1]), collapse = ",")))
     }
     
@@ -173,13 +194,14 @@ WriteOutput <- function (x, name, params, dependencies = list()) {
 
     if (any(matching.p.and.d)) {
         # todo: check if this file is the dependency of other files. If so, maybe not safe to overwrite?
-        msg <- paste("Overwrite output for version ", meta$version[matching.p.and.d], " (", meta$date[matching.p.and.d], ")?")
+        msg <- paste0("Overwrite output for version ", meta$version[matching.p.and.d], " of ", name," (", meta$date[matching.p.and.d], ") ?")
         overwrite <- Confirm(msg)
         if (!overwrite) {
             return(FALSE)
         } else {
             meta$date[matching.p.and.d] <- DateTime()
             new.v.num <- meta$version[matching.p.and.d]
+            meta.row <- meta[matching.p.and.d, ]
         }
     } else {       
         if (any(matching.name)) {
@@ -188,10 +210,13 @@ WriteOutput <- function (x, name, params, dependencies = list()) {
             new.v.num <- 1
         }
         
-        new.meta.row <- MakeMetaRow(name, new.v.num, params, dependencies) 
-        meta <- rbind(meta, new.meta.row)
+        meta.row <- MakeMetaRow(name, new.v.num, params, dependencies) 
+        meta <- rbind(meta, meta.row)
         
-    }    
+    }
+    
+    SetLastAccessed(name, meta.row)
+    
     WriteMeta(meta)
     WriteOutputFile(x, name, new.v.num)
     
@@ -276,7 +301,7 @@ DateTime <- function () {
 
 WriteMeta <- function (meta) {
     path <- file.path(g.output.meta.dir, 'meta.csv')
-    meta <- meta[order(meta$date), ]
+    meta <- meta[order(meta$date, decreasing = TRUE), ]
     write.csv(meta, path, row.names = FALSE)  
 }
 
@@ -284,6 +309,19 @@ WriteMeta <- function (meta) {
 
 
 ChooseOutputVersion <- function (name, params, false.if.missing = FALSE) {
+    # gets user input to choose a version of output to read
+    #
+    # Args:
+    #   name: string; Name of the output to read
+    #   params: list; Optional. Parameters that the output must have to appear in the list
+    #   false.if.missing: Boolean. If FALSE will stop if there is no output. 
+    #                              If TRUE, will return false if there is no output
+    #
+    # Value:
+    #   
+    # Details:
+    #   When presenting the choices, it will find the parameters of the output choice as well as each of their dependencies parameters. 
+    #   So that the user can choose based on the unique set of input parameters that have generated the output. 
     VerifyMeta()
     meta <- ReadMeta()
     name.meta <- meta[meta$name == name & meta$file.exists == 1, ]
@@ -342,18 +380,25 @@ GetParams.recursive <- function (name, v.num, meta = NA) {
 }
 
 MultiParamsToString <- function (list) {
-    #  given a list of params, versions and dates of multiple files
+    #  given a list of lists of params, versions and dates of multiple files
     #  converts it all to a readable string
-    #  list is in the form
+    #  inner list is in the form
     #  list(name = 'clustering', date = '2014-10-10', params = "{ ... JSON ... }" )
+    #  outer list names are the names of outout, and values are the inner list
     data <- sapply(list, function (x) {
         return(paste0('v', as.character(x$version), " ", as.character(x$date), " ", as.character(x$params)))
-    })  
-    params <- paste(names(list), data, sep = ":", collapse = " , ")
-    return(params)
+    })
+    str <- paste(names(list), data, sep = ":", collapse = "\n     ")
+    return(str)
+    
 }
 
-VerifyMeta <- function () {  
+VerifyMeta <- function () {
+    # updates the "file.exists" column of the meta csv
+    # i.e. checkes if the file exists
+    # files may get deleted, however this should not necessarily 
+    # mean the meta row should be deleted, since it can still be 
+    # used to show information about dependencies.
     meta <- ReadMeta()
     files.exist <- apply(meta, 1, function (row) {
         path <- OutputPath(row['name'], row['version'])

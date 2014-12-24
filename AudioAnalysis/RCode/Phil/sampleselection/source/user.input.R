@@ -1,6 +1,16 @@
-Confirm <- function (msg, default = FALSE) {
+Confirm <- function (msg, default = NULL) {
     options <- c('Yes', 'No')
-    choice <- GetUserChoice(options, msg, default)
+    if (!is.null(default)) {    
+        if (default %in% c('y', 'Y', 'yes', 1, TRUE)) {
+            default <- 1
+        } else {
+            default <- 2
+        }   
+        options[default] <- paste(options[default], "(default)")
+    }
+    # output yes / no
+    cat(paste0(1:length(options), ") ", options, collapse = '\n'))    
+    choice <- GetValidatedInt(msg, max = length(options), default = default, parse.range = FALSE, equivalents = list('y' = 1, 'n' = 2))
     if (choice == 1) {
         return(TRUE)
     } else {
@@ -75,10 +85,33 @@ GetMultiUserchoice <- function (options, choosing.what = 'one of the following',
     return(chosen)
 }
 
-GetValidatedInt <- function (msg, max = NA, min = 1, default = NA, num.attempts = 0, parse.range = FALSE) { 
+
+
+GetValidatedInt <- function (msg, max = NA, min = 1, default = NULL, num.attempts = 0, parse.range = FALSE, equivalents = list(), quit = "Q") { 
+    # gets user user input, which must be an integer must be between max and min to validate.
+    # msg: string; the message to display. eg, choose a number between 1 and 10, or choose from the following options
+    # max: int; optional. the highest allowed integer
+    # min: int; optional. the lowest allowed integer
+    # default: int; optional. The integer which will be returned if nothing is inputted (i.e. user hits return)
+    # num.attempts: int; The number of attempts attempted so far. The method recurses on itself to give the user another chance if
+    #                    the input doesn't validate. This is only used by the recusive function call.
+    # parse.range: boolean; if TRUE, validates a range of int in the form "from-to", eg 2-4, and returns a vector containing that range
+    # equivalents: list; Allows the user to enter any of the values in the list which will be interpreted as the corresponding name in the list
+    # quit: string; If the input equals this, the program will quit. Allows the user to quit during a request for input
+    
+    
     max.attempts <- 8
     choice <- readline(paste(msg, " : "))
-    if (choice == '' && !is.na(default)) {
+    
+    if (choice == quit) {
+        stop('quitting')
+    }
+    
+    if (!is.null(equivalents[[choice]])) {
+        choice <- equivalents[[choice]]
+    } 
+    
+    if (choice == '' && !is.null(default)) {
         choice <- as.integer(default)
     } else if (grepl("^[0-9]+$",choice)) {
         choice <- as.integer(choice)
@@ -94,15 +127,18 @@ GetValidatedInt <- function (msg, max = NA, min = 1, default = NA, num.attempts 
         if (num.attempts == 0) {
             msg <- paste("Invalid choice.", msg)
         }
-        GetValidatedInt(msg, max = max, min = min, default = default, num.attempts = num.attempts + 1, parse.range = parse.range)
+        GetValidatedInt(msg, max = max, min = min, default = default, num.attempts = num.attempts + 1, parse.range = parse.range, equivalents = equivalents)
     } else {
         return(choice)
     }
 }
 
-GetValidatedFloat <- function (msg = 'Enter a number', max = NA, min = 0, default = NA, num.attempts = 0) {
+GetValidatedFloat <- function (msg = 'Enter a number', max = NA, min = 0, default = NA, num.attempts = 0, quit = "Q") {
     max.attempts <- 8 
     val <- readline(paste(msg, " : "))
+    if (val == quit) {
+        stop('quitting')
+    }
     if (val == '' && !is.na(default)) {
         val <- as.numeric(default)
     } else if (grepl("^-?[0-9]+.?[0-9]*$",val)) {
@@ -130,6 +166,11 @@ ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NA) 
     if (!is.na(max)) {
         extra <- c(extra, paste('max', max))
     }
+    
+    if (!is.na(default)) {
+        extra <- c(extra, paste('default', default))
+    }
+    
     if (length(extra) > 0) {
         msg <- paste0(msg, " (", paste(extra, collapse = ", "), ")")
     }

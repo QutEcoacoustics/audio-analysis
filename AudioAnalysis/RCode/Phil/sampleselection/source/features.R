@@ -16,8 +16,10 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     #   the events are sorted by site then date then start second. 
     
     library('tuneR')
-    all.events <- ReadOutput('all.events')
+    all.events <- ReadOutput('all.events', purpose = "feature extraction")
     if (min.id == FALSE) {
+        # this will do feature extraction not on the 'target minutes' but
+        # on the the 'target subset'. See minutes.R for the difference
         events <- TargetSubset(all.events$data)        
     } else {
         events <- all.events$data[all.events$data$min.id == min.id, ]
@@ -26,11 +28,10 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     # make sure it is sorted by filename 
     events <- events[with(events, order(filename)) ,]
     params <- list()
-    #params$features.hash <- HashFileContents('features.R')
     dependencies <- list(all.events = all.events$version)
     
-    already.extracted.features <- ReadOutput('all.features', params, false.if.missing = TRUE)
-    already.rated.events <- ReadOutput('all.rating.features', params, false.if.missing = TRUE)
+    already.extracted.features <- ReadOutput('all.features', purpose = 'adding to features', params = params, false.if.missing = TRUE)
+    already.rated.events <- ReadOutput('all.rating.features', purpose = 'adding to rating features', params = params, false.if.missing = TRUE)
     
     already.extracted.features <- already.extracted.features$data
     already.rated.events <- already.rated.events$data
@@ -124,8 +125,8 @@ DoFeatureExtraction <- function (min.id = FALSE) {
         
         features.all <- OrderBy(features.all, 'event.id')
         rating.features.all <- OrderBy(rating.features.all, 'event.id')
-        WriteOutput(features.all, 'all.features', params)
-        WriteOutput(rating.features.all, 'all.rating.features', params)
+        WriteOutput(features.all, 'all.features', params, dependencies)
+        WriteOutput(rating.features.all, 'all.rating.features', params, dependencies)
         
     } else {
         

@@ -239,8 +239,8 @@ ApplyGroupToEvents.old <- function (num.cluster.groups = 240, events = NA, clust
     #
     
     if (!is.data.frame(events)) {
-        events <- ReadOutput('events')
-        fit <- ReadOutput('clustering')
+        events <- ReadOutput('events', purpose = 'apply group to events')
+        fit <- ReadOutput('clustering', purpose = 'apply group to events')
     } 
     group <- cutree(fit$data, num.cluster.groups)
     events$data$group <- group #temporarily add the group to the events for ranking
@@ -262,7 +262,7 @@ ApplyRandomGroupToEvents.old <- function (num.cluster.groups = 240, events = NA)
     #
     
     if (!is.data.frame(events)) {
-        events <- ReadOutput('events')
+        events <- ReadOutput('events', purpose = 'apply random group to events')
     } 
     group <- SampleAtLeastOne(1:num.cluster.groups, nrow(events$data))
     events$data$group <- group

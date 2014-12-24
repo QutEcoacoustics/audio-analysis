@@ -20,7 +20,7 @@ ClusterEvents <- function (num.groups = 'auto',
     #     Will create a csv file which is the same as 
     #     events.csv but with a new 'groups' column
     
-    
+    print('test')
     # choose heirachical or Kmeans
     choice <- GetUserChoice(c('HA', 'Kmeans'), choosing.what = "clustering method", default = 1, allow.range = FALSE)
 
@@ -40,9 +40,11 @@ ClusterEvents <- function (num.groups = 'auto',
     weights <- GetFeatureWeights(event.features$data)
     params$weights <- weights
     
-    if (choice == 1) {
+    if (choice == 2) {
+        #k-means
         params$method <- method
-        fit <- DoClusterKmeans(event.features$data, weights = weights) 
+        fit <- DoClusterKmeans(event.features$data, weights = weights)
+        params$num.clusters <- length(fit$size)
     } else {
         params$method <- method
         fit <- DoClusterHA(event.features$data, weights = weights, method = method) 
@@ -79,6 +81,10 @@ GetFeatureWeights <- function (df) {
         }
     }
     
+    # user can enter any numbers. They will now be scaled so they add up to 1
+    weights <- weights / sum(weights)
+    weights <- round(weights, 3)
+    
     return(weights)
     
 }
@@ -99,6 +105,20 @@ DoClusterHA <- function (df, weights = 1, method = 'complete') {
     fit <- hclust(d, method=method)
     Timer(ptm, 'clustering')
     return(fit)
+}
+
+DoClusterKmeans <- function (df, weights) {
+
+    Report(2, 'scaling features (m = ',  nrow(df), ')')
+    ptm <- proc.time() 
+    features <- as.matrix(scale(df))  # standardize variables
+    Timer(ptm, 'scaling features')  
+    features <- t(weights * t(features))
+    num.clusters <- ReadInt('number of clusters for K Means', default = 240)
+    kmeans.result <- kmeans(df, num.clusters, algorithm = "Hartigan-Wong")
+    
+    return(kmeans.result)
+    
     
 }
 

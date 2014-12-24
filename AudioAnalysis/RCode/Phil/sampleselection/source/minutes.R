@@ -21,6 +21,7 @@ GetMinuteList <- function () {
     return(min.list)
     
 }
+
 CreateTargetMinutes <- function () {
     # creates a list of target minute ids, based on
     # the specified start date and time, end date and time, and % of minutes to use (eg, 50% will use every 2nd minute)
@@ -31,8 +32,6 @@ CreateTargetMinutes <- function () {
         num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
         to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
         target.min.ids <- target.mins$min.id[to.include]
-        # create a new folder inside the output path
-        # because target minutes are not deterministic if percent < 100
     }
     
     # create a new output directory if there is less than 100 % of the target
@@ -41,30 +40,11 @@ CreateTargetMinutes <- function () {
     WriteOutput(target.mins, 'target.min.ids', list(minute.ranges = g.minute.ranges, start.date = g.start.date, end.date = g.end.date, sites = g.sites))
 }
 
-CreateTargetMinutesRandom <- function () {
-    # randomly selects a subset of the target minutes
-    # abandoned because it is non-deterministic and was making 
-    # it difficult to save output based on minute selection
-    # now use deterministic funciton CreateTargetMinutes
-    study.min.list <- GetMinuteList()
-    target.mins <- TargetSubset(study.min.list)
-    if (g.percent.of.target < 100) { 
-        random.mins <- sample(1:nrow(target.mins), floor(nrow(target.mins)*g.percent.of.target/100))
-        target.min.ids <- target.mins$min.id[random.mins]
-        # create a new folder inside the output path
-        # because target minutes are not deterministic if percent < 100
-        OutputPathL1(new = TRUE)
-    }
-    
-    # create a new output directory if there is less than 100 % of the target
-    # being used, because the random minutes will be different
-    
-    WriteOutput(target.mins, 'target.min.ids')
-}
 
 TargetSubset <- function (df) {
     # returns a subset of the dataframe, includes only rows that 
-    # belong within the outer target sites/times. 
+    # belong within sites, dates and minute ranges (1 or more pairs of start/end minutes of the day)
+    # defined in config
     #
     # Args:
     #   df: data.frame; must have the columns site, date, min
@@ -227,5 +207,26 @@ SetMinute <- function (events, start.sec.col = "start.sec")  {
     new <- cbind(events, min)
     return (new)
     
+}
+
+CreateTargetMinutesRandom.old <- function () {
+    # randomly selects a subset of the target minutes
+    # abandoned because it is non-deterministic and was making 
+    # it difficult to save output based on minute selection
+    # now use deterministic funciton CreateTargetMinutes
+    study.min.list <- GetMinuteList()
+    target.mins <- TargetSubset(study.min.list)
+    if (g.percent.of.target < 100) { 
+        random.mins <- sample(1:nrow(target.mins), floor(nrow(target.mins)*g.percent.of.target/100))
+        target.min.ids <- target.mins$min.id[random.mins]
+        # create a new folder inside the output path
+        # because target minutes are not deterministic if percent < 100
+        OutputPathL1(new = TRUE)
+    }
+    
+    # create a new output directory if there is less than 100 % of the target
+    # being used, because the random minutes will be different
+    
+    WriteOutput(target.mins, 'target.min.ids')
 }
 

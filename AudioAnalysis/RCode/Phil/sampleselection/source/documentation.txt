@@ -1,0 +1,12 @@
+## Target Minutes
+
+A dataframe of minutes (min.id, site, date, min) to use for a survey. 
+Determined by the #Target Subset, and the #percent.of.target
+
+## Target Subset
+
+The sites, start.date, end.date and minute ranges
+For example sites = NW, NE; start.date = 12/10/2010; 
+for example, minute.ranges: [100,120,240, 340] includes the minutes between minute
+100 and 120 and between 240 and 340
+
