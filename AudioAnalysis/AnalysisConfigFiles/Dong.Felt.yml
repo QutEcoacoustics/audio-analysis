@@ -30,8 +30,8 @@ WindowOverlap: 0.5
 NoiseReductionParameter: 0.0
 
 # CompressSpectrogram
-TimeCompressRate: 1.0
-FreqCompressRate: 0.125
+TimeCompressRate: 0.5
+FreqCompressRate: 0.5
 
 # RidgeDetection Config 
 RidgeDetectionMagnitudeThreshold: 6.0

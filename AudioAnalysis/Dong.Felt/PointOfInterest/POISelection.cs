@@ -139,128 +139,170 @@ namespace Dong.Felt
             return result;
         }
 
-        // This function is used for adding more ridges after ridge detection on compressedSpectrogram
-        public static List<PointOfInterest> AddResizeRidgesInTime(List<PointOfInterest> ridges,
+        public static List<PointOfInterest> AddResizeRidges(List<PointOfInterest> ridges,
                                                       SpectrogramStandard spectrogram,
                                                       List<PointOfInterest> compressedRidges,
                                                       CompressSpectrogramConfig compressConfig,
                                                       int rows, int cols)
         {
             var result = new List<PointOfInterest>();
+            if (compressConfig.TimeCompressRate != 1.0)
+            {
+                result = AddResizeRidgesInTime(ridges, 
+                                               spectrogram,
+                                               compressedRidges,
+                                               compressConfig.TimeCompressRate,
+                                                rows, cols);
+            }
+
+            if (compressConfig.FreqCompressRate != 1.0)
+            {
+                result = AddResizeRidgesInFreq(ridges, 
+                                               spectrogram,
+                                               compressedRidges,
+                                               compressConfig.FreqCompressRate,
+                                               rows,  cols);
+            }
+            return result;
+        }
+        
+        // This function is used for adding more ridges after ridge detection on compressedSpectrogram
+        public static List<PointOfInterest> AddResizeRidgesInTime(List<PointOfInterest> ridges,
+                                                      SpectrogramStandard spectrogram,
+                                                      List<PointOfInterest> compressedRidges,
+                                                      double timeCompressRate,
+                                                      int rows, int cols)
+        {
+            var result = new List<PointOfInterest>();
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
-            var compressRate = (int)(1 / compressConfig.TimeCompressRate);
+            var compressRate = (int)(1 / timeCompressRate);
             var compressedColsCount = cols / compressRate;
             if (cols % compressRate != 0)
             {
                 compressedColsCount++;
             }
-            var compressRidgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(compressedRidges, rows, compressedColsCount);
-            for (var r = 0; r < rows; r++)
+            if (compressedRidges.Count != 0)
             {
-                for (var c = 0; c < cols; c += compressRate)
+                var compressRidgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(compressedRidges, rows, compressedColsCount);
+                for (var r = 0; r < rows; r++)
                 {
-                    var matrixLength = compressRate;
-                    if (c + compressRate > cols)
+                    for (var c = 0; c < cols; c += compressRate)
                     {
-                        matrixLength = cols - c;
-                    }
-                    var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
-                        r, c, r+1, c + matrixLength);
-                    var intensity = new double[matrixLength];
-
-                    for (var i = 0; i < matrixLength; i++)
-                    {                        
-                         intensity[i] = subMatrix[0, i].Intensity;
-                    }
-                    // If no ridges in subMatrix
-                    if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
-                    {
-                        if (compressRidgeMatrix[r, c / compressRate].RidgeMagnitude != 0.0)
+                        var matrixLength = compressRate;
+                        if (c + compressRate > cols)
                         {
-                            // get the index with max intensity value
-                            int indexMin = 0;
-                            int indexMax = 0;
-                            double diffMin = 0.0;
-                            double diffMax = 0.0;
-                            DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
-                            ridgeMatrix[r, c + indexMax].RidgeMagnitude = compressRidgeMatrix[r, c / compressRate].RidgeMagnitude;
-                            ridgeMatrix[r, c + indexMax].OrientationCategory = compressRidgeMatrix[r, c / compressRate].OrientationCategory;
+                            matrixLength = cols - c;
+                        }
+                        var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
+                            r, c, r + 1, c + matrixLength);
+                        var intensity = new double[matrixLength];
+
+                        for (var i = 0; i < matrixLength; i++)
+                        {
+                            intensity[i] = subMatrix[0, i].Intensity;
+                        }
+                        // If no ridges in subMatrix
+                        if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
+                        {
+                            if (compressRidgeMatrix[r, c / compressRate].RidgeMagnitude != 0.0)
+                            {
+                                // get the index with max intensity value
+                                int indexMin = 0;
+                                int indexMax = 0;
+                                double diffMin = 0.0;
+                                double diffMax = 0.0;
+                                DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
+                                ridgeMatrix[r, c + indexMax].RidgeMagnitude = compressRidgeMatrix[r, c / compressRate].RidgeMagnitude;
+                                ridgeMatrix[r, c + indexMax].OrientationCategory = compressRidgeMatrix[r, c / compressRate].OrientationCategory;
+                            }
                         }
                     }
                 }
-            }
-            var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
-            foreach (var r in ridges1)
-            {
-                if (r.RidgeMagnitude > 0.0)
+                var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
+                foreach (var r in ridges1)
                 {
-                    result.Add(r);
+                    if (r.RidgeMagnitude > 0.0)
+                    {
+                        result.Add(r);
+                    }
                 }
+                return result;
             }
-            return result;
+            else
+            {
+                return ridges;
+            }
+           
         }
 
         public static List<PointOfInterest> AddResizeRidgesInFreq(List<PointOfInterest> ridges,
                                                       SpectrogramStandard spectrogram,
                                                       List<PointOfInterest> compressedRidges,
-                                                      CompressSpectrogramConfig compressConfig,
+                                                      double freqCompressRate,
                                                       int rows, int cols)
         {
             var result = new List<PointOfInterest>();
             var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
-            var compressRate = (int)(1 / compressConfig.FreqCompressRate);
+            var compressRate = (int)(1 / freqCompressRate);
             var compressedRowsCount = rows / compressRate;
             var count = 0;
             if (rows % compressRate != 0)
             {
                 compressedRowsCount++;
             }
-            var compressRidgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(compressedRidges, compressedRowsCount, cols);
-            for (var c = 0; c < cols; c++)
+            if (compressedRidges.Count != 0)
             {
-                for (var r = 0; r < rows; r += compressRate)
+                var compressRidgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(compressedRidges, compressedRowsCount, cols);
+                for (var c = 0; c < cols; c++)
                 {
-                    var matrixLength = compressRate;
-                    if (r + compressRate > rows)
+                    for (var r = 0; r < rows; r += compressRate)
                     {
-                        matrixLength = rows - r;
-                    }
-                    var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
-                        r, c, r + matrixLength, c + 1);
-                    count++;
-                    var intensity = new double[matrixLength];
-
-                    for (var i = 0; i < matrixLength; i++)
-                    {
-                        intensity[i] = subMatrix[i, 0].Intensity;
-                    }
-                    // If no ridges in subMatrix
-                    if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
-                    {
-                        if (compressRidgeMatrix[r / compressRate, c].RidgeMagnitude != 0.0)
+                        var matrixLength = compressRate;
+                        if (r + compressRate > rows)
                         {
-                            // get the index with max intensity value
-                            int indexMin = 0;
-                            int indexMax = 0;
-                            double diffMin = 0.0;
-                            double diffMax = 0.0;
-                            DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
-                            ridgeMatrix[r + indexMax, c].RidgeMagnitude = compressRidgeMatrix[r / compressRate, c].RidgeMagnitude;
-                            ridgeMatrix[r + indexMax, c].OrientationCategory = compressRidgeMatrix[r / compressRate, c].OrientationCategory;
+                            matrixLength = rows - r;
+                        }
+                        var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
+                            r, c, r + matrixLength, c + 1);
+                        count++;
+                        var intensity = new double[matrixLength];
+
+                        for (var i = 0; i < matrixLength; i++)
+                        {
+                            intensity[i] = subMatrix[i, 0].Intensity;
+                        }
+                        // If no ridges in subMatrix
+                        if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
+                        {
+                            if (compressRidgeMatrix[r / compressRate, c].RidgeMagnitude != 0.0)
+                            {
+                                // get the index with max intensity value
+                                int indexMin = 0;
+                                int indexMax = 0;
+                                double diffMin = 0.0;
+                                double diffMax = 0.0;
+                                DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
+                                ridgeMatrix[r + indexMax, c].RidgeMagnitude = compressRidgeMatrix[r / compressRate, c].RidgeMagnitude;
+                                ridgeMatrix[r + indexMax, c].OrientationCategory = compressRidgeMatrix[r / compressRate, c].OrientationCategory;
+                            }
                         }
                     }
                 }
-            }
-            var count1 = count;
-            var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
-            foreach (var r in ridges1)
-            {
-                if (r.RidgeMagnitude > 0.0)
+                var count1 = count;
+                var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
+                foreach (var r in ridges1)
                 {
-                    result.Add(r);
+                    if (r.RidgeMagnitude > 0.0)
+                    {
+                        result.Add(r);
+                    }
                 }
+                return result;
             }
-            return result;
+            else
+            {
+                return ridges;
+            }
         }
 
         // This function still needs to be considered. 
