@@ -473,7 +473,7 @@ namespace Dong.Felt.Representations
                 //(ridgeNhRepresentationList, featurePropSet);
                 var ridgeNhListFileBeforeNormal = new FileInfo(audioFiles[i] + "NhRepresentationListBeforeNormal.csv");
                 var ridgeNhListFileAfterNormal = new FileInfo(audioFiles[i] + "NhRepresentationListAfterNormal.csv");
-                CSVResults.NeighbourhoodRepresentationsToCSV(ridgeNhRepresentationList,ridgeNhListFileBeforeNormal);
+                CSVResults.NeighbourhoodRepresentationsToCSV(ridgeNhListFileBeforeNormal, ridgeNhRepresentationList);
                 //CSVResults.NhRepresentationListToCSV(ridgeNhListFileAfterNormal, normalizedNhRepresentationList);
             }
         }

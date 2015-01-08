@@ -76,7 +76,7 @@ namespace Dong.Felt.Representations
         /// </summary>
         public string SourceAudioFile { get; set; }
 
-        public List<double> HistogramOfOrientatedGradient { get; set;}
+        public List<double> HistogramOfOrientatedGradient { get; set; }
         /// <summary>
         /// Gets or sets the count of points of interest (pois) with horizontal orentation in the neighbourhood.
         /// </summary>
