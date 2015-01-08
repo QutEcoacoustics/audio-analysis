@@ -21,6 +21,7 @@
     using Dong.Felt.ResultsOutput;
     using System.Reflection;
     using AForge.Imaging.Filters;
+    using Dong.Felt.Experiments;
 
     public class DongSandpit
     {
@@ -141,16 +142,22 @@
                     //spectrogram.Data = compressedSpectrogram;                 
                     //spectrogram.Duration = tempDuration;                   
 
+                    /// Output nh representation result
+                    Experiment.NhRepresentationCSVOutput(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                    ridgeConfig, compressConfig,
+                    gradientConfig, config, rank,
+                    featurePropertySet, outputDirectory.FullName);
+
                     /// Ridge detection analysis
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
                     //    featurePropertySet);
 
                     ///Automatic check
-                    OutputResults.ChangeCandidateFileName(inputDirectory);
-                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
-                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
-                    OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    //OutputResults.ChangeCandidateFileName(inputDirectory);
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
+                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
                     ///GaussianBlur
@@ -251,7 +258,7 @@
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     //spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.6, 3);
-                    spectrogram.Data = ImageAnalysisTools.Dilation(spectrogram.Data, 3);
+                    //spectrogram.Data = ImageAnalysisTools.Dilation(spectrogram.Data, 3);
                     //var compressSpectrogramInFreq = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     //compressSpectrogramInFreq.Data = AudioPreprosessing.CompressSpectrogramInFreq(compressSpectrogramInFreq.Data, compressConfig.CompressRate);
                     //var compressSpectrogramInTime = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);

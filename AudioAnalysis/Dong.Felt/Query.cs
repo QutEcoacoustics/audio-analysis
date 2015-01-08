@@ -228,8 +228,16 @@
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
-            var nhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
+            var nhCountInRow = (spectrogram.Data.GetLength(1) - 1) / neighbourhoodLength;
+            if ((spectrogram.Data.GetLength(1) - 1) % neighbourhoodLength == 0)
+            {
+                nhCountInRow--;
+            }
             var nhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;
+            if (spectrogram.Data.GetLength(0) % neighbourhoodLength == 0)
+            {
+                nhCountInColumn--;
+            }
             var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
                 queryInfo.TimeEnd, neighbourhoodLength,
                 nhCountInRow, nhCountInColumn, spectrogramConfig);
