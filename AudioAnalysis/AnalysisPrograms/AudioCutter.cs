@@ -192,7 +192,7 @@
              for (var index = 0; index < fileSegments.Count; index++)
             {
                 var item = fileSegments[index];
-                CreateSegment(sourcePreparer, item, settings, arguments, index + 1, totalItems);
+                CreateSegment(sourcePreparer, item, settings, arguments, index + 1, totalItems, arguments.MixDownToMono);
             }
         }
 
@@ -206,11 +206,11 @@
                     var item1 = item;
                     int index1 = Convert.ToInt32(index);
 
-                    CreateSegment(sourcePreparer, item1, settings, arguments, index1 + 1, totalItems);
+                    CreateSegment(sourcePreparer, item1, settings, arguments, index1 + 1, totalItems, arguments.MixDownToMono);
                 });
         }
 
-        private static void CreateSegment(ISourcePreparer sourcePreparer, FileSegment fileSegment, AnalysisSettings settings, Arguments arguments, int itemNumber, int itemCount)
+        private static void CreateSegment(ISourcePreparer sourcePreparer, FileSegment fileSegment, AnalysisSettings settings, Arguments arguments, int itemNumber, int itemCount, bool mixDownToMono)
         {
             var preparedFile = sourcePreparer.PrepareFile(
                     arguments.OutputDir,
@@ -219,7 +219,8 @@
                     fileSegment.SegmentStartOffset.Value,
                     fileSegment.SegmentEndOffset.Value,
                     settings.SegmentTargetSampleRate,
-                    settings.AnalysisInstanceTempDirectory);
+                    settings.AnalysisInstanceTempDirectory, 
+                    mixDownToMono);
             LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.OriginalFile.Name);
         }
     }

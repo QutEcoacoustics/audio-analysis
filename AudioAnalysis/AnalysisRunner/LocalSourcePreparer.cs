@@ -238,31 +238,33 @@ namespace AnalysisRunner
         /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
         /// </summary>
         /// <param name="outputDirectory">
-        /// The analysis Base Directory.
+        ///     The analysis Base Directory.
         /// </param>
         /// <param name="source">
-        /// The source audio file.
+        ///     The source audio file.
         /// </param>
         /// <param name="outputMediaType">
-        /// The output Media Type.
+        ///     The output Media Type.
         /// </param>
         /// <param name="startOffset">
-        /// The start Offset from start of entire original file.
+        ///     The start Offset from start of entire original file.
         /// </param>
         /// <param name="endOffset">
-        /// The end Offset from start of entire original file.
+        ///     The end Offset from start of entire original file.
         /// </param>
         /// <param name="targetSampleRateHz">
-        /// The target Sample Rate Hz.
+        ///     The target Sample Rate Hz.
         /// </param>
+        /// <param name="temporaryFilesDirectory"></param>
+        /// <param name="mixDownToMono"></param>
         /// <returns>
         /// The prepared file. The returned FileSegment will have the OriginalFile and OriginalFileDuration set - 
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
-        public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory)
+        public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, bool? mixDownToMono)
         {
-            var request = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz };
+            var request = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz, MixDownToMono = mixDownToMono};
             var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, request, temporaryFilesDirectory);
 
             var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
