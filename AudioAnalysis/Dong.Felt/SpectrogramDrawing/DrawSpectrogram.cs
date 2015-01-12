@@ -191,10 +191,12 @@ namespace Dong.Felt.SpectrogramDrawing
         {
             foreach (var poi in poiList)
             {
-                //var xCoordinate = poi.Point.Y;
-                //var yCoordinate = poi.Point.X;
-                var xCoordinate = poi.Point.X;
-                var yCoordinate = poi.Point.Y;
+                /// This one is for ridge detection
+                var xCoordinate = poi.Point.Y;
+                var yCoordinate = poi.Point.X;
+                ///This one is for structure tensor
+                //var xCoordinate = poi.Point.X;
+                //var yCoordinate = poi.Point.Y;
                 spectrogram.Data[yCoordinate, cols - xCoordinate] = 20.0;
             }
             for (int r = 0; r < rows; r++)

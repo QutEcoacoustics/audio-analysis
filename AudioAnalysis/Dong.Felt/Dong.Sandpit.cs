@@ -135,7 +135,7 @@
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
                     ///extract POI based on structure tensor
                     //POIStrctureTensorDetectionBatchProcess(inputDirectory.FullName, config, neighbourhoodLength, stConfiguation.Threshold);
-                    /// RidgeDetectionBatchProcess   
+                    /// SPECTROGRAM COMPRESSION 
                     //var inputFilePath = @"C:\XUEYAN\PHD research work\Second experiment\Training recordings2\Grey Fantail1.wav";
                     //var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, inputFilePath);
                     //AudioPreprosessing.AudioToCompressedSpectrogram(config, compressConfig);
@@ -143,21 +143,22 @@
                     //spectrogram.Duration = tempDuration;                   
 
                     /// Output nh representation result
-                    Experiment.NhRepresentationCSVOutput(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                    ridgeConfig, compressConfig,
-                    gradientConfig, config, rank,
-                    featurePropertySet, outputDirectory.FullName);
+                    //Experiment.NhRepresentationCSVOutput(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                    //ridgeConfig, compressConfig,
+                    //gradientConfig, config, rank,
+                    //featurePropertySet, outputDirectory.FullName);
 
                     /// Ridge detection analysis
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                    //    featurePropertySet);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                        featurePropertySet);
 
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
                     //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
                     //OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
                     ///GaussianBlur
@@ -259,32 +260,30 @@
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
                     //spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.6, 3);
                     //spectrogram.Data = ImageAnalysisTools.Dilation(spectrogram.Data, 3);
-                    //var compressSpectrogramInFreq = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    //compressSpectrogramInFreq.Data = AudioPreprosessing.CompressSpectrogramInFreq(compressSpectrogramInFreq.Data, compressConfig.CompressRate);
-                    //var compressSpectrogramInTime = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    //compressSpectrogramInTime.Data = AudioPreprosessing.CompressSpectrogramInTime(compressSpectrogramInTime.Data, compressConfig.TimeCompressRate);
+                    spectrogram.Data = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
-                    double eventThreshold = 0.5; // dummy variable - not used                               
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                    //Image image = ImageAnalysisTools.DrawNullSonogram(spectrogram);
+                    double eventThreshold = 0.5; // dummy variable - not used                 
+                    
                     var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
-
+                    
                     var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     //var compressedRidgesInFreq = POISelection.RidgePoiSelection(compressSpectrogramInFreq, ridgeConfig, featurePropSet);
-                    //var compressedRidgesInTime = POISelection.RidgePoiSelection(compressSpectrogramInTime, ridgeConfig, featurePropSet);
-                    //var ridges = POISelection.AddResizeRidgesInFreq(originalRidges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);
                     //ridges = POISelection.AddResizeRidgesInFreq(ridges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);
                     //var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracksBasedOn4Direction(ridges, rows, cols);
+                    //spectrogram.Data = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, originalRidges, spectrogram.Data.GetLength(0),
+                    //    spectrogram.Data.GetLength(1));
+
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in originalRidges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in originalRidges)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
                     string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
