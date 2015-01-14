@@ -32,21 +32,22 @@ GetTags <- function (target.only = TRUE, study.only = TRUE, no.duplicates = TRUE
 }
 
 
-GetTargetRange <- function (tmids = NULL) {  
+GetTargetRange <- function (tmids = NULL) {
+    # gets the smallest range to search the database
+    # while only specifying start and end for date and minute
     
     range <- list();
     
     if (!is.data.frame(tmids)) {
         tmids <- ReadOutput('target.min.ids')$data   
     }
-
-
-        len <- nrow(tmids)        
-        range$sites <- unique(tmids$site)  
-        range$start.date <- tmids$date[1]
-        range$end.date <- tmids$date[len]
-        range$start.min <- tmids$min[1]
-        range$end.min <- tmids$min[len]
+    
+      
+        range$sites <-  unique(tmids$site) 
+        range$start.date <- min(tmids$date)
+        range$end.date <- max(tmids$date)
+        range$start.min <- min(tmids$min)
+        range$end.min <- max(tmids$min)
         range$target.min.ids <- tmids       
 
     return(range)
@@ -90,6 +91,9 @@ ReadTagsFromDb <- function (fields = c('start_date',
     }
     
     where.statement <- ''
+    
+    range$sites <- MapSites(range$sites)
+    
     
     if (target || study.only) {
         
@@ -152,6 +156,18 @@ ReadTagsFromDb <- function (fields = c('start_date',
     mysqlCloseConnection(con)
     Report(5, 'query complete')
     return(data)
+}
+
+MapSites <- function (sites) {
+    
+    from <- c('NE', 'NW', 'SE', 'SW')
+    to <- c('NE', 'NW', 'SE', 'SW Backup')
+    mapped <- to[match(sites, from)]
+    if (any(is.na(mapped))) {
+        stop('invalid site for database query')
+    }
+    return(mapped)
+    
 }
 
 

@@ -22,7 +22,8 @@ ClusterEvents <- function (num.groups = 'auto',
     
     print('test')
     # choose heirachical or Kmeans
-    choice <- GetUserChoice(c('HA', 'Kmeans'), choosing.what = "clustering method", default = 1, allow.range = FALSE)
+    # use config setting if available
+    choice <- GetUserChoice(c('HA', 'Kmeans'), choosing.what = "clustering method", default = 1, allow.range = FALSE, config.setting = 'clustering.method')
 
     vals <- GetEventsAndFeatures()
     event.features <- vals$event.features
@@ -33,28 +34,90 @@ ClusterEvents <- function (num.groups = 'auto',
     # replace the 'event.id' column (which is not a feature), with 'all'
     # to use all features
     feature.options <- colnames(event.features$data)
-    feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE)  
+    feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE, config.setting = 'features.for.clustering')  
     params$features <- feature.options[feature.choices]
     # use only the chosen features
     event.features$data <- event.features$data[, feature.choices]
     weights <- GetFeatureWeights(event.features$data)
     params$weights <- weights
     
+    dependencies = list(events = events$version, features = event.features$version)
+    
+    num.clusters <- GetNumClusters()
+    
     if (choice == 2) {
         #k-means
-        params$method <- method
-        fit <- DoClusterKmeans(event.features$data, weights = weights)
-        params$num.clusters <- length(fit$size)
+        clustering.result <- DoClusterKmeans(event.features$data, weights = weights, num.clusters = num.clusters)
+        params$num.clusters <- num.clusters
+        version <- WriteOutput(clustering.result, 'clustering.kmeans', params = params, dependencies = dependencies)
+        groups.df <- CreateEventGroups.kmeans(events$data, clustering.result)
+        groups.df.dependencies <- list('clustering.kmeans' = version)
+        WriteOutput(groups.df, 'clustered.events', dependencies = groups.df.dependencies)
     } else {
         params$method <- method
-        fit <- DoClusterHA(event.features$data, weights = weights, method = method) 
+        clustering.result <- DoClusterHA(event.features$data, weights = weights, method = method) 
+        WriteOutput(fit, 'clustering.HA', params = params, dependencies = dependencies)
+        CreateEventGroups.HA(events$data, clustering.result)
     }
     
+}
 
-    dependencies = list(events = events$version, features = event.features$version)
-    WriteOutput(fit, 'clustering', params = params, dependencies = dependencies)
+
+
+CreateEventGroups.kmeans <- function (events, clustering.results) {
+    # given a Kmeans clustering result, which is the result of kmeans for various numbers of clusters
+    # will product a dataframe of the groups for each number of clusters
+    
+    groups.df <- matrix(NA, nrow = nrow(events), ncol = length(clustering.results))
+    names <- rep(NA, length(clustering.results))
+    for (i in 1:length(clustering.results)) {
+        # name is the number of clusters in this clustering result
+        names[i] <- length(clustering.results[[i]]$size)   
+        groups.df[,i] <- clustering.results[[i]]$cluster 
+    }
+    
+    groups.df <- as.data.frame(groups.df)
+    colnames(groups.df) <- names
+    groups.df$event.id <- events$event.id
+    return(groups.df)
     
 }
+
+# untested
+CreateEventGroups.HA <- function (events, clustering.resuls) {
+    # given a HA clustering result
+    # will product a dataframe of the groups for each number of clusters
+    num.clusters <- GetNumClusters()
+    groups.df <- matrix(NA, nrow = nrow(events), ncol = length(num.clusters))
+    names <- num.clusters
+    for (i in 1:length(num.clusters)) {
+        groups[,i] <- cutree(fit$data, num.clusters[i])
+    }
+    groups <- as.data.frame(groups)
+    colnames(groups) <- names
+    return(groups)
+}
+
+
+
+
+GetNumClusters <- function () {
+    # returns the various numbers of clusters to try. 
+    # This is so that the same clustering with various numbers of clusters can be tested
+    # with HA clustering, this is used after clustering is performed once
+    # with Kmeans, kmeans is run for each number of clusters
+    
+
+    num.num.clusters <- 1  # this many different numbers of clusters
+    num.clusters.start <- 240 # lowest number of clusters
+    num.clusters.multiplier <- 2 # each number of clusters is this many times the last
+    num.clusters <- round(num.clusters.start * num.clusters.multiplier^(0:(num.num.clusters-1))) 
+    
+    return(num.clusters)
+    
+    
+}
+
 
 
 
@@ -107,17 +170,23 @@ DoClusterHA <- function (df, weights = 1, method = 'complete') {
     return(fit)
 }
 
-DoClusterKmeans <- function (df, weights) {
+DoClusterKmeans <- function (df, weights, num.clusters = NULL) {
 
     Report(2, 'scaling features (m = ',  nrow(df), ')')
     ptm <- proc.time() 
     features <- as.matrix(scale(df))  # standardize variables
     Timer(ptm, 'scaling features')  
     features <- t(weights * t(features))
-    num.clusters <- ReadInt('number of clusters for K Means', default = 240)
-    kmeans.result <- kmeans(df, num.clusters, algorithm = "Hartigan-Wong")
+    if (is.null(num.clusters)) {
+        num.clusters <- ReadInt('number of clusters for K Means', default = 240)     
+    }
     
-    return(kmeans.result)
+    kmeans.results <- as.list(rep(NA, length(num.clusters)))
+    for (i in 1:length(num.clusters)) {
+        kmeans.results[[i]] <- kmeans(df, num.clusters[i], algorithm = "Hartigan-Wong")   
+    }
+    
+    return(kmeans.results)
     
     
 }

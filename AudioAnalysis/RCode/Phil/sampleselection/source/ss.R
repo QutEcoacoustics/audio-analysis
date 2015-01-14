@@ -43,6 +43,7 @@ source('events.R')
 source('features.R')
 source('cluster.R')
 source('ranking.R')
+source('temporal.dispersal.R')
 source('evaluation.R')
 source('random.sampling.R')
 source('inspection.R')
@@ -91,11 +92,6 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
                        'evaluation',
                        'inspect.samples')
     }
-    
-
-    
-
-    
     
     if (is.na(from.step)) {
         from.step.num <- 1
@@ -156,34 +152,34 @@ SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
             DoFeatureExtraction() 
         },
         function () {
-            # 
+            # step 3
             CreateEventAndFeaturesSubset()
         },
         function () {
-            # Step 3: 
+            # Step 4: 
             # creates a new output csv file, identical to the events file,
             # except for the addition of a "group" column.
             ClusterEvents() 
         },
         function () {
-            # Step 4:
+            # Step 5:
             # calculates the sum of distances between all pairs of 
             # events in each minute
             InternalMinuteDistances()
         },
         function () {
-            # Step 5:
+            # Step 6:
             # chooses samples based on cluster groups
             # outputs a list of minute samples to a csv file
-            RankSamples(use.lines = FALSE)
+            RankSamples()
         },
         function () {
-            # Step 6:
+            # Step 7:
             # Evaluates the Richness survey from ranked samples
             EvaluateSamples() 
         },
         function () {
-            # Step 7:
+            # Step 8:
             # output a series of spectrograms of the samples
             # with the events colorcoded by cluster
             InspectSamples()

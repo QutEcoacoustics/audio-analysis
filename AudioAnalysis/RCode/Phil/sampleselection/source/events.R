@@ -1,4 +1,4 @@
-MergeEvents <- function () {
+MergeEventsFromMatlabOutput <- function () {
     # merge all events into 1 file, adding extra columns
     # this is not done again after changing target. It only needs to 
     # be called if the original event detection is redone
@@ -50,7 +50,7 @@ MergeEvents <- function () {
 
 
 
-MergeEventsF2 <- function () {
+MergeEventsFromFsharpOutput <- function () {
     # Reads events produced from the F# AED and converts the format
     # of the csv to be compatible with this system. 
     # this is not done again after changing target. It only needs to 
@@ -58,6 +58,18 @@ MergeEventsF2 <- function () {
     files <- list.files(path = g.events.source.dir, full.names = FALSE)
     Report(3, "Merging events")
     orig.col.names <- c('start.sec.in.file', 'duration', 'bottom.f', 'top.f')
+    
+    # the names of the columns in the original CSV produced by AED
+    # sometimes this changes when AED is uploaded. If this happens, change it here
+    colmap <- list(
+        start.second = 'EventStartSeconds',
+        duration = 'Duration',
+        bottom.f = 'MinHz',
+        top.f = 'MaxHz',
+        min = 'StartOffsetMinute' 
+        )
+    
+    
     
     for(f in 1:length(files)) {
         filepath <- file.path(g.events.source.dir, files[f])
@@ -73,8 +85,8 @@ MergeEventsF2 <- function () {
         date <- rep(file.info$date, nrow(events))
         site <- rep(file.info$site, nrow(events))
         
-        start.sec <- events$EvStartSec  # seconds from teh start of the minute the event is in
-        min <- as.integer(events$EvStartMin)  # minute of the day (midnight is minute number 0)
+        start.sec <- events[,colmap$start.second]  # seconds from the start of the minute the event is in
+        min <- as.integer(events[,colmap$min])  # minute of the day (midnight is minute number 0)
         
         #filename and start.sec.in.file are needed when finding the audio which 
         # matches the events. Because these events were detected from audio which was segmented differently,
@@ -87,9 +99,9 @@ MergeEventsF2 <- function () {
                              filename = NAs, 
                              start.sec = start.sec, 
                              start.sec.in.file = NAs,   
-                             duration = events$EvDuration,
-                             bottom.f = events$MIN_HZ,
-                             top.f = events$MAX_HZ)
+                             duration = events[,colmap$duration],
+                             bottom.f = events[,colmap$bottom.f],
+                             top.f = events[,colmap$top.f])
         if (f == 1) {
             all.events <- events
         } else {
@@ -107,6 +119,7 @@ MergeEventsF2 <- function () {
     all.events.with.min.id <- merge(all.events, min.ids, c('site', 'date', 'min'))
     all.events.with.min.id <- all.events.with.min.id[order(all.events.with.min.id$min.id),]
     
+    # this is the part that can take a while
     all.events.with.min.id <- AddFileInfo(all.events.with.min.id)
     
     WriteOutput(all.events.with.min.id, 'all.events', list(events.source = g.all.events.version));
@@ -272,6 +285,8 @@ EventFile <- function (site, date, min, ext = 'wav.txt') {
 
 ParseEventFileName <- function (fn) {
     # given an filename named according to the convention for output of AED
+    # i.e. [site].[date(yyyy_mm_dd)].[start.min].[duration].[AED params].csv
+    # e.g. NE.2010_10.13.000.1440.AED_5.0_400.csv
     # will return the meta data encoded in the filename as a list
     # site, date, start min, duraion
 
@@ -350,59 +365,93 @@ FilterEvents1 <- function (min.ids = FALSE, events = NA, rating.features = NA) {
 
 }
 
+
+FileterEvents2 <- function (events) {
+    # filter events based on thresholds of height / width
+    ok <- rep(NA, nrow(events))
+    f1 <- (events$top.f - events$bottom.f) / events$duration
+    f1.threshold <- 5000
+    pass.1 <- f1 < f1.threshold
+    
+    return(pass.1)
+    
+}
+
+
+
 CreateEventAndFeaturesSubset <- function () {
     # given the target minute ids, the events and features, and a limit for the 
     # maximum number of events, saves a new dataframe for events, features and rating features
     
     
-    limit <- ReadInt('limit the number of events', default = 20000) 
+    limit <- ReadInt('limit the number of events (0 for no limit)', default = 20000, min = 0) 
     dependencies <- list()
     
     Report(4, 'Retrieving target events and features. Copying from master')   
     target.min.ids <- ReadOutput('target.min.ids', include.meta = TRUE)
     dependencies$target.min.ids <- target.min.ids$version
+    
     all.events <- ReadOutput('all.events', include.meta = TRUE)
-    all.features <- ReadOutput('all.features', include.meta = TRUE)
-    all.rating.features <- ReadOutput('all.rating.features', include.meta = TRUE)
     dependencies$all.events = all.events$version
-    dependencies$all.features = all.features$version
-    dependencies$all.rating.features = all.rating.features$version
-    
-    
     events <- all.events$data[all.events$data$min.id %in% target.min.ids$data$min.id, ]
-    event.features <- all.features$data[all.features$data$event.id %in% events$event.id, ]
-    rating.features <- all.rating.features$data[all.rating.features$data$event.id %in% events$event.id, ]
-    
-    if (nrow(events) != nrow(event.features) || nrow(events) != nrow(rating.features)) {
-        stop(paste('only', nrow(event.features), 'out of', nrow(events), 'events have had features extracted'))
-    }
-    
-    
     #ensure that all are sorted by event id
     events <- events[with(events, order(event.id)) ,]
-    event.features <- event.features[with(event.features, order(event.id)) ,]
-    rating.features <- rating.features[with(rating.features, order(event.id)) ,]
     
+    all.features <- ReadOutput('all.features', include.meta = TRUE, optional = TRUE)
+    if (is.data.frame(all.features)) {
+        dependencies$all.features = all.features$version   
+        event.features <- all.features$data[all.features$data$event.id %in% events$event.id, ]
+        if (nrow(events) != nrow(event.features)) {
+            stop(paste('only', nrow(event.features), 'out of', nrow(events), 'events have had features extracted'))
+        }
+        event.features <- event.features[with(event.features, order(event.id)) ,]
+    }
+
+    all.rating.features <- ReadOutput('all.rating.features', include.meta = TRUE, optional = TRUE)
+    if (is.data.frame(all.rating.features)) {
+        dependencies$all.rating.features = all.rating.features$version
+        rating.features <- all.rating.features$data[all.rating.features$data$event.id %in% events$event.id, ]
+        if (nrow(events) != nrow(rating.features)) {
+            stop(paste('only', nrow(rating.features), 'out of', nrow(events), 'events have had rating features extracted'))
+        }
+        rating.features <- rating.features[with(rating.features, order(event.id)) ,]
+        
+        # filter events based on quality
+        if (Confirm('do quality filtering?')) {
+            event.filter <- FilterEvents1(events = events, rating.features = rating.features)
+            events <- events[event.filter, ]
+            if (exists('event.features')) {
+                event.features <- event.features[event.filter, ] 
+            }
+            rating.features <- rating.features[event.filter, ]  
+        }
+    }
     
-    # filter events based on quality
-    event.filter <- FilterEvents1(events = events, rating.features = rating.features)
-    events <- events[event.filter, ]
-    event.features <- event.features[event.filter, ]
-    rating.features <- rating.features[event.filter, ]
-    
+    filter.result <- FileterEvents2(events)
+    events <- events[filter.result,]
+    filter <- TRUE
     
     # limit the number
-    if (limit < nrow(events)) {
-        Report(4, 'Number of target events (', nrow(events), ") is greater than limit (", limit ,"). Not all the events will be included. ")           
-        include <- GetIncluded(nrow(events), limit)
-        events <- events[include, ]
-        event.features <- event.features[include, ]
-        rating.features <- rating.features[include, ]
-    }      
+    if (limit > 0) {
+        if (limit < nrow(events)) {
+            Report(4, 'Number of target events (', nrow(events), ") is greater than limit (", limit ,"). Not all the events will be included. ")           
+            include <- GetIncluded(nrow(events), limit)
+            events <- events[include, ]
+            event.features <- event.features[include, ]
+            rating.features <- rating.features[include, ]
+        }        
+    } else {
+        limit = 'none'
+    }
+     
     
-    WriteOutput(events, 'events', params = list(limit = limit), dependencies = dependencies)
-    WriteOutput(event.features, 'features', params = list(limit = limit), dependencies = dependencies)
-    WriteOutput(rating.features, 'rating.features', params = list(limit = limit), dependencies = dependencies)
+    WriteOutput(events, 'events', params = list(limit = limit, filter = filter), dependencies = dependencies)
+    if (exists('event.features')) {
+        WriteOutput(event.features, 'features', params = list(limit = limit), dependencies = dependencies)
+    }
+    if (exists('rating.features')) {
+        WriteOutput(rating.features, 'rating.features', params = list(limit = limit), dependencies = dependencies)
+    }
     
     
     

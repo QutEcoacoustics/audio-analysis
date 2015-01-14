@@ -86,15 +86,24 @@ CheckPaths <- function () {
 
 
 GetType <- function (name) { 
-    if (name %in% c('clustering', 'ranked.samples')) {
+    if (name %in% c('clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples')) {
         return('object')
     } else {
         return('csv')
     }
 }
 
+GetOutputTypes <- function () {
+    # reads the meta file and returns all the types of output that exist
+    meta <- ReadMeta()
+    output.types <- meta$name[meta$file.exists == 1]
+    output.types <- unique(output.types)
+    return(output.types)
+    
+}
 
-ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, false.if.missing = FALSE) {
+
+ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = NA, dependencies = NA, false.if.missing = FALSE, optional = FALSE) {
     # reads the output for type 'name' 
     #
     # Args:
@@ -102,6 +111,7 @@ ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, fa
     #   purpose: string; just to display to the user
     #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
     #   false.if.missing: bool; if true, will return false if the file is missing
+    #   optional: boolean; if true, an option is added to select none and return false
     #
     # Value:
     #   if include.meta, will return a list that has a 'data' key, that contains the data read in
@@ -116,13 +126,22 @@ ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, fa
     #    Output data-type is different depending on the name of the output, for example, binary object for clustering
     #    and and CSV for features
     
+    if (is.na(name)) {
+        
+        # if name is ommited from function call, get user input
+        # this should only happen when calling directly from the commandline
+        choices = GetOutputTypes()
+        choice = GetUserChoice(choices, choosing.what = "choose a type of output")
+        name = choices[choice]
+    }
+    
     if (!is.na(purpose)) {
         Report(1, 'Reading output for:', purpose)     
     }
 
     meta.row <- GetLastAccessed(name)
-    if (!is.data.frame(meta.row)) {
-        meta.row <- ChooseOutputVersion(name, params, false.if.missing = false.if.missing)
+    if (!is.data.frame(meta.row) || optional) {
+        meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional)
         if (!is.data.frame(meta.row)) {
             return(FALSE)
         }
@@ -144,13 +163,16 @@ ReadOutput <- function (name, purpose = NA, include.meta = TRUE, params = NA, fa
 }
 
 
-WriteOutput <- function (x, name, params, dependencies = list()) {
+WriteOutput <- function (x, name, params = list(), dependencies = list()) {
     # writes output to a file
     # Args
     #   x: data.frame (normally); The data to write
     #   name: string; what to call the output. This is used in: the filename and the meta file to keep track of versions and dependencies
     #   params: list;  The parameters used when generating this output. Saved in the meta file.
     #   dependencies: list; The output from previous steps that was used as input data for the process that created this output. List of name/version pairs
+    #
+    # Value
+    #   the version that it gets saved as
     #
     # Details
     #   output will be saved with the filename like: name.version.csv  The version is detected automatically. 
@@ -220,6 +242,8 @@ WriteOutput <- function (x, name, params, dependencies = list()) {
     WriteMeta(meta)
     WriteOutputFile(x, name, new.v.num)
     
+    return(new.v.num)
+    
     
     
 }
@@ -268,12 +292,14 @@ OutputPath <- function (name, version, ext = NA) {
 
 
 ReadMeta <- function () {
+
     path <- file.path(g.output.meta.dir, 'meta.csv')
     if (file.exists(path)) {
         meta <- read.csv(path, stringsAsFactors=FALSE)  
     } else {   
         return(EmptyMeta())
     }
+    meta <- VerifyMeta(meta)
     return(meta)
 }
 
@@ -308,21 +334,23 @@ WriteMeta <- function (meta) {
 
 
 
-ChooseOutputVersion <- function (name, params, false.if.missing = FALSE) {
+ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = FALSE, optional = FALSE) {
     # gets user input to choose a version of output to read
     #
     # Args:
     #   name: string; Name of the output to read
     #   params: list; Optional. Parameters that the output must have to appear in the list
+    #   dependencies: list; Optional. Dependencies that the output must have to appear in the list
     #   false.if.missing: Boolean. If FALSE will stop if there is no output. 
     #                              If TRUE, will return false if there is no output
+    #   optional: boolean; if TRUE, adds a user choice to return false
     #
     # Value:
     #   
     # Details:
     #   When presenting the choices, it will find the parameters of the output choice as well as each of their dependencies parameters. 
     #   So that the user can choose based on the unique set of input parameters that have generated the output. 
-    VerifyMeta()
+    
     meta <- ReadMeta()
     name.meta <- meta[meta$name == name & meta$file.exists == 1, ]
     if (nrow(name.meta) == 0) {
@@ -334,8 +362,11 @@ ChooseOutputVersion <- function (name, params, false.if.missing = FALSE) {
     if (is.list(params)) {
         params <- toJSON(params)
     }
+    if (is.list(dependencies)) {
+        params <- toJSON(dependencies)
+    }
     if (is.character(params)) {
-        name.meta <- name.meta[name.meta$params == params, ] 
+        name.meta <- name.meta[name.meta$params == params & name.meta$dependencies == dependencies , ] 
     }
     if (nrow(name.meta) == 0) {
         if (false.if.missing) {
@@ -347,8 +378,13 @@ ChooseOutputVersion <- function (name, params, false.if.missing = FALSE) {
         params <- GetParams.recursive(name, v.num, meta)
         return(MultiParamsToString(params))
     })
-    which.version <- GetUserChoice(choices)
-    return(name.meta[which.version, ])  
+    which.version <- GetUserChoice(choices, optional = optional)
+    if (which.version == 0 && optional) {
+        return(FALSE)
+    } else {
+        return(name.meta[which.version, ])  
+    }
+
 }
 
 
@@ -393,19 +429,22 @@ MultiParamsToString <- function (list) {
     
 }
 
-VerifyMeta <- function () {
+VerifyMeta <- function (meta = NULL) {
     # updates the "file.exists" column of the meta csv
     # i.e. checkes if the file exists
     # files may get deleted, however this should not necessarily 
     # mean the meta row should be deleted, since it can still be 
     # used to show information about dependencies.
-    meta <- ReadMeta()
+    if (is.null(meta)) {
+        meta <- ReadMeta()    
+    }
     files.exist <- apply(meta, 1, function (row) {
         path <- OutputPath(row['name'], row['version'])
         return(file.exists(path))
     })
     meta$file.exists <- as.integer(files.exist)
     WriteMeta(meta)
+    return(meta)
 }
 
 DependenciesToDf <- function (str) {

@@ -22,7 +22,7 @@ GetMinuteList <- function () {
     
 }
 
-CreateTargetMinutes <- function () {
+CreateTargetMinutes1 <- function () {
     # creates a list of target minute ids, based on
     # the specified start date and time, end date and time, and % of minutes to use (eg, 50% will use every 2nd minute)
     # writes the output to csv   
@@ -36,8 +36,107 @@ CreateTargetMinutes <- function () {
     
     # create a new output directory if there is less than 100 % of the target
     # being used, because the random minutes will be different
+    params <- list(minute.ranges = g.minute.ranges, start.date = g.start.date, end.date = g.end.date, sites = g.sites)
+    params$study <- paste0(g.study.start.date, '-', g.study.end.date, ' ',  g.study.start.min, '-', g.study.end.min, " ", paste(g.study.sites, collapse = ",")) # include the study, because it affects the minute ids
     
-    WriteOutput(target.mins, 'target.min.ids', list(minute.ranges = g.minute.ranges, start.date = g.start.date, end.date = g.end.date, sites = g.sites))
+    
+    
+    WriteOutput(target.mins, 'target.min.ids', params = params)
+}
+
+CreateTargetMinutes <- function () {
+    # creates a list of target minute ids, based on
+    # the g.target nested list in config
+    # writes the output to csv  
+    study.min.list <- GetMinuteList()
+    target.mins <- TargetSubset2(study.min.list)
+    if (g.percent.of.target < 100) { 
+        num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
+        to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
+        target.min.ids <- target.mins$min.id[to.include]
+    }
+    
+    params <- list(target = GetTargetDescription())
+    WriteOutput(target.mins, 'target.min.ids', params = params)
+    
+    
+}
+
+TargetSubset2 <- function (df) {
+    # returns a subset of the dataframe, includes only rows that 
+    # belong within sites, dates and minute ranges (1 or more pairs of start/end minutes of the day)
+    # using the g.target nested list
+    # defined in config
+    #
+    # Args:
+    #   df: data.frame; must have the columns site, date, min
+    # 
+    # Value
+    #   data.frame
+    
+    sites <- names(g.target)
+    
+    selection <- rep(FALSE, nrow(df))
+    
+    for (site in sites) {
+        dates <- names(g.target[[site]])
+        for (date in dates) {
+            ranges <- g.target[[site]][[date]]
+            start.mins <- ranges[seq(1, length(ranges) - 1, 2)]
+            end.mins <- ranges[seq(2, length(ranges), 2)]
+            for (i in 1:length(start.mins)) {    
+                cur.selection <- df$site == site & df$date == date & df$min >= start.mins[i] & df$min <= end.mins[i]    
+                selection[cur.selection] <- TRUE 
+            }  
+        }
+    }
+ 
+    return(df[selection,])
+}
+    
+
+GetTargetDescription <- function () {
+    sites <- names(g.target)
+    sites.txt <- sites
+    # first get all dates, to if they are all the same year or month
+    all.dates <- c()
+    for (site in sites) {
+        all.dates <- c(all.dates, names(g.target[[site]]))
+    }
+    all.dates <- strsplit(all.dates, "-")
+    dates.matrix <- matrix(NA, nrow = length(all.dates), ncol = 3)
+    for (r in 1:length(all.dates)) {
+        dates.matrix[r,]  <- as.numeric(all.dates[[r]])
+    }  
+    y.same = abs(max(dates.matrix[,1]) - min(dates.matrix[,1])) < 0.25
+    m.same = abs(max(dates.matrix[,2]) - min(dates.matrix[,2])) < 0.25
+    d.same = abs(max(dates.matrix[,3]) - min(dates.matrix[,3])) < 0.25
+    same <- c(y.same, m.same, d.same)
+    prefix <- paste(dates.matrix[1,same], collapse = "-")
+    for (s in 1:length(sites)) {
+        site <- sites[s]
+
+        dates <- names(g.target[[site]])
+        dates.txt <- dates
+        for (d in 1:length(dates)) {
+            date <- dates[d]
+            dates.txt[d] <- paste(strsplit(dates.txt[d], "-")[[1]][!same], collapse = "-")
+            ranges <- g.target[[site]][[date]]
+            if (any(ranges != c(0,1439))) {
+                # if the ranges for this date are anything except all day, 
+                # specify it, else ommit it since it is all day by default
+                dates.txt[d] <- paste0(dates.txt[d], "(", paste(ranges, collapse = ","),")")
+            }
+        }
+        
+        sites.txt[s] <- paste(site, paste(dates.txt, collapse = ","), sep = ":")
+    }
+    d <- paste(sites.txt, collapse = ";")
+    d <- paste(prefix, d)
+    
+    return(d)
+    
+    
 }
 
 

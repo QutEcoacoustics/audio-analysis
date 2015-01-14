@@ -1,65 +1,100 @@
-RankSamples <- function (use.lines = TRUE) {
+RankSamples <- function () {
  
-    if (use.lines) {
-        events <- ReadOutput('line.events') 
-    } else {
-        events <- ReadOutput('events')
-    }
-
+    
+    events <- ReadOutput('events')
     mins <- ReadOutput('target.min.ids')
+    
     ranking.methods <- list()
     ranking.methods[[1]] <- RankSamples1
-    ranking.methods[[2]] <- RankSamples2
-    ranking.methods[[3]] <- RankSamples3
-    ranking.methods[[4]] <- RankSamples4
-    ranking.methods[[5]] <- RankSamples5
-    ranking.methods[[6]] <- RankSamples6
+    ranking.methods[[2]] <- RankSamples2 # by cluster with decay rate 2 and event count as multiplier
+    ranking.methods[[3]] <- RankSamples3 # internal distance
+    ranking.methods[[4]] <- RankSamples4 # event count only
+    ranking.methods[[5]] <- RankSamples5 # clusters (no multiplier) high decay rate (ignores found clusters)
+    ranking.methods[[6]] <- RankSamples6 #
     ranking.methods[[7]] <- RankSamples7
-    ranking.methods[[8]] <- RankSamples8
+    ranking.methods[[8]] <- RankSamples8 # event count only with temporar dispersal
     
-    use.ranking.methods <- c(4,8)
+    use.ranking.methods <- c(4,5,6,8)
     
-    # the different number of clusters to perform ranking for
-    num.num.clusters <- 1  # this many different numbers of clusters
-    num.clusters.start <- 240 # lowest number of clusters
-    num.clusters.multiplier <- 2 # each number of clusters is this many times the last
-    num.clusters <- round(num.clusters.start * num.clusters.multiplier^(0:(num.num.clusters-1)))
+
     
     # make sure we are not trying to use more clusters than events
-    num.clusters <- num.clusters[num.clusters < nrow(events$data)]
+    # num.clusters <- num.clusters[num.clusters < nrow(events$data)]
+    clustered.events <- ReadOutput('clustered.events')
     
+    # the clustered events df has a column of event ids, and the other columns are the group, 
+    # with the name of the column being the number of clusters
+    num.clusters <- colnames(clustered.events$data)
+    num.clusters <- num.clusters[num.clusters != 'event.id']
+    
+    # initialise a 3 dimentional array
+    # x: ranking methods
+    # y: number of clusters
+    # z: minutes
+    # so, for each ranking method and number of clusters, we have a rank for each minute
     output <- array(data = NA, dim = c(length(use.ranking.methods), length(num.clusters), nrow(mins$data)), dimnames = list(ranking.method = as.character(use.ranking.methods), num.clusters = num.clusters, min.id = mins$data$min.id))
-
-    groups <- as.data.frame(matrix(NA, ncol = length(num.clusters), nrow = nrow(events$data)))
-    groups.col.names <- paste0('group.', num.clusters)
-    colnames(groups) <- groups.col.names
-    groups <- cbind(events$data, groups)
     
-    fit <- ReadOutput('clustering')
+    
     for (n in 1:length(num.clusters)) {
-        group <- cutree(fit$data, num.clusters[n])
+        group <- clustered.events$data[,num.clusters[n]]
         events$data$group <- group #temporarily add the group to the events for ranking
-        groups[, groups.col.names[n]] <- group  # also add it here so it gets saved
-        for (m in 1:length(use.ranking.methods)) {
-            
+        for (m in 1:length(use.ranking.methods)) {    
             Report(1, 'Ranking samples:', use.ranking.methods[m], ' num.clusters:', num.clusters[n])
-            
             r.m <- use.ranking.methods[m]
-            
-            r <- ranking.methods[[r.m]](events = events$data, min.ids = mins$data$min.id)   
-            r <- r[order(r$min.id), ]
+            r <- ranking.methods[[r.m]](events = events$data, min.ids = mins$data$min.id)
+            r <- r[order(r$min.id), ] 
             output[as.character(r.m), n, ] <- r$rank
         }
     }
     
     params <- list(num.clusters = num.clusters, ranking.methods = use.ranking.methods)
-    dependencies <- list(target.min.ids = mins$version, clustering = fit$version)
+    dependencies <- list(target.min.ids = mins$version, clustered.events = clustered.events$version)
     
     
     WriteOutput(output, 'ranked.samples', params = params, dependencies = dependencies)
-    WriteOutput(groups, 'clusters', params = params, dependencies = dependencies)
     
 }
+
+
+RankSamplesEventCountOnly <- function () {
+    # stripped down version of RankSamples
+    # only uses ranking methods that rely on event count and not on clusters
+    #
+    # TODO: change the representation of ranked minutes from having the min.id as a dimension
+    #       with the rank as the value, to having the minute id as the value, in order of rank
+    #       that way it converts to a dataframe without losing any information
+    
+    events <- ReadOutput('events')
+    mins <- ReadOutput('target.min.ids')
+    
+    ranking.methods <- list()
+    ranking.methods[['4']] <- RankSamples4 # event count only
+    ranking.methods[['8']] <- RankSamples8 # event count only with temporar dispersal
+    use.ranking.methods <- c('4','8')
+    
+    # initialise 2 3 dimentional array
+    # x: ranking methods
+    # y: minutes
+    # so, for each ranking method, we have a rank for each minute
+    output <- data.frame(matrix(NA, ncol = length(use.ranking.methods), nrow = nrow(mins$data)))
+    colnames(output) <- as.character(use.ranking.methods)
+                         
+    
+    
+    for (m in 1:length(use.ranking.methods)) {    
+        Report(1, 'Ranking samples:', use.ranking.methods[m])
+        r.m <- use.ranking.methods[m]
+        r <- ranking.methods[[r.m]](events = events$data, min.ids = mins$data$min.id)
+        r <- r[order(r$rank), ] 
+        output[, as.character(r.m)] <- r$min.id
+    }
+    
+    params <- list(ranking.methods = use.ranking.methods)
+    dependencies <- list(target.min.ids = mins$version, events = events$version)
+    WriteOutput(output, 'ranked.samples.ec', params = params, dependencies = dependencies) 
+    
+}
+
 
 
 
@@ -79,6 +114,8 @@ RankSamples2 <- function (events, min.ids) {
     # use the iterateOnSparseMatrix raking algorithm, 
     # using the number of events as the multiplier
     
+    decay.rate <- 2
+    
     Report(5, 'calculating number of events in each minute')
     # count removes duplicates and adds a 'freq' column which is the number 
     # of occurances of that row (i.e. the number of duplicates removed plus 1)
@@ -86,7 +123,7 @@ RankSamples2 <- function (events, min.ids) {
     colnames(multiplier) <- c('min.id', 'multiplier')
     # multipliers <- data.frame(min.id = num.clusters.per.min$min.id, rep(initial.weight, nrow(num.clusters.per.min)))
     
-    return(IterateOnSparseMatrix(events, multiplier))
+    return(IterateOnSparseMatrix(events, multiplier, decay.rate))
     
 }
 
@@ -189,12 +226,17 @@ RankSamples7 <- function (events, min.ids) {
     
 }
 
-RankSamples8 <- function (events, min.ids) {
-
+RankSamples8 <- function (events, min.ids, trim.to = 2000) {
     # rank samples using only the number of events and time of day
     # ignores clustering completely
     # minutes are scored by both the number of events and the distance in time
     # from the closest higher ranked minute
+    #
+    # Args
+    #   events: data.frame
+    #   min.ids: data.frame
+    #   trim.to: int; if number of events is very high, temporal dispersal can be slow. So, trim.to will 
+    #                 limit the number of minutes to do temporal dispersal for at. i.e. uses the top trim.to minutes by event.count
     
     event.count <- as.data.frame(table(events$min.id))
     colnames(event.count) <- c('min.id', 'count')  
@@ -207,6 +249,13 @@ RankSamples8 <- function (events, min.ids) {
     }
     
     event.count <- event.count[order(event.count$count, decreasing = TRUE),]
+    
+    # uses only the first trim.to rows, to increase compute speed
+    if (is.numeric(trim.to) && trim.to < nrow(event.count)) {
+        ignore.minutes <- event.count[(trim.to+1):nrow(event.count),]
+        event.count <- event.count[1:trim.to,]
+    }
+    
     o <- order(event.count$min.id)
     rank <- (1:nrow(event.count))[o]
     
@@ -230,48 +279,30 @@ RankSamples8 <- function (events, min.ids) {
         result$score[i] <- max(combined.scores) 
     }
     
+    if (exists('ignore.minutes')) {
+        # add on any we didn't do temporal dispersal for
+        ignore.minutes$rank <- (1+nrow(result)):(nrow(ignore.minutes)+nrow(result))
+        ignore.minutes$score <- ignore.minutes$count
+        ignore.minutes <- ignore.minutes[,c('min.id', 'rank', 'score')]      
+        result <- rbind(result, ignore.minutes)         
+    }
+    
     result <- result[order(result$min.id), ]
+    
+
+
+    
     
     return(result)
     
     
 }
 
-DistScores <- function (from.min.ids, to.closest.in.min.ids) {
-    #for each of from.min.ids, finds the distance in time to the closest out of the mins in to.closest.min.ids
-    # currently, distance is measured by min.id which only works if min.ids are consecutive.  eg, 1-day recording of 1440 mins 
-    dist.scores <- sapply(from.min.ids, function (min.id) { 
-        return(min(abs(to.closest.in.min.ids - min.id), na.rm = TRUE)) 
-    }) 
-    return(dist.scores) 
-}
-
-
-TransformDistScores <- function (dist.scores, threshold = 30, amount = 1) {
-    # given a list of distances scores, transforms to a value that 
-    # can be used as a weight for score based on something else
-    # 
-    # Args: 
-    #   threshold: int; up to this point, the distance makes a difference. Over this point, 
-    #                   the weight will be equal to the weight of 
-    #                   a distance score of 60
-    #   amount: float [0,1] how much the distance score should affect the weight 
-    
-    
-    dist.scores[dist.scores > threshold] <- threshold
-    dist.scores <- ((threshold^2-((dist.scores-threshold)^2))^0.5)
-    dist.scores <- dist.scores / threshold # convert to [0:1]  (maybe use max instead of threshold? but don't think so)
-    dist.scores <- dist.scores * amount + (1-amount)
-    return(dist.scores)
-    
-}
 
 
 EventCountByMin <- function (min.ids, events.per.group.per.min) {
-    
+    ## ??
     return(events.per.group.per.min$event.counts[events.per.group.per.min$min.ids %in% min.ids, ])
-    
-    
 }
 
 

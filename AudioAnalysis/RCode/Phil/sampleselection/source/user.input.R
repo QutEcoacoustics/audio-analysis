@@ -19,23 +19,60 @@ Confirm <- function (msg, default = NULL) {
 }
 
 
-GetUserChoice <- function (choices, choosing.what = "one of the following", default = 1, allow.range = FALSE) {
+GetUserChoice <- function (choices, choosing.what = "one of the following", default = 1, allow.range = FALSE, config.setting = NULL, optional = FALSE) {
+    # given a list of choices, returns the index of the choice selected by the user
+    # 
+    # Args
+    #   choices: vector of strings
+    #   choosing.what: string; used for presenting the instructions to the user
+    #   default: int; if the user just hits enter, this will be chosen
+    #   allow.rangs: Boolean; if TRUE, the user can enter something like 2-4 which will return c(2,3,4)
+    #   config.setting: string or NULL. If set, will look for a value set in config, instead of asking for user input
+    #   optional: boolean; if TRUE, user can select 0 to return false (i.e. no choice)
+    
+    # to avoid tedious repeated selection of the same choice, 
+    # config settings can be set to do the choice automatically
+    choice <- GetConfigSettingForInput(choices, config.setting)
+    if (choice != FALSE) {
+        return(choice)
+    }
+    
+    
     #todo recursive validation like http://www.rexamples.com/4/Reading%20user%20input
     cat(paste0("choose ", choosing.what, ":\n"))
-    cat(paste0(1:length(choices), ") ", choices, collapse = '\n'))
+    if (optional) {
+        cat(paste0(0:length(choices), ") ", c("none", choices), collapse = '\n'))
+        min <- 0
+    } else {
+        cat(paste0(1:length(choices), ") ", choices, collapse = '\n'))
+        min <- 1
+    }
+
     if (default %in% 1:length(choices)) {
         cat(paste('\ndefault: ', default))
     } else {
         default = NA
     }
     msg <- paste0("enter int 1 to ",length(choices),": ")
-    choice <- GetValidatedInt(msg, max = length(choices), default = default, parse.range = allow.range)  
+    choice <- GetValidatedInt(msg, min = min, max = length(choices), default = default, parse.range = allow.range)  
     return(choice)
 }
 
-GetMultiUserchoice <- function (options, choosing.what = 'one of the following', default = 1, all = FALSE) {
+GetMultiUserchoice <- function (options, choosing.what = 'one of the following', default = 1, all = FALSE, config.setting = NULL) {
     # allows the user to select 1 or more of the choices, returning a vector 
     # of the choice numbers
+    #
+    # Args
+    #   options: string vector; list of choices
+    #   choosing what: string; instrucitons for user
+    #   default: int or string "all"; which options should be selected if the just hits clicks 'enter'
+    #   all: boolean: should there be an extra option at the end to choose all the options in the list?
+    #   config.setting: string or NULL. If set, will look for a value set in config, instead of asking for user input
+    
+    choice <- GetConfigSettingForInput(options, config.setting)
+    if (choice != FALSE) {
+        return(choice)
+    }
     
     if (length(options) == 1 && (default == 1 || default == 'all')) {
         # if there was only 1 option and the default is 1 or 'all',
@@ -83,6 +120,29 @@ GetMultiUserchoice <- function (options, choosing.what = 'one of the following',
     # setdiff also returns unique
     chosen <- setdiff(chosen, c(exit.choice, all.choice))
     return(chosen)
+}
+
+GetConfigSettingForInput <- function (choices, config.setting.name = NULL) {
+    # Sometimes, the user is required to choose from a list of choices, 
+    # however, the choice can also be set in the config, saving the hassle of entering the same
+    # choice over and over. This function looks for the config setting for the choice and 
+    # returns its number. If the config.setting.name is NULL or the value of the config setting 
+    # is NULL or is not in the list of choices, will return FALSE
+    # 
+    # Args
+    #   choices: string vector; the list of possible choices
+    #   config.setting.name; string; the name of the config setting for user input which holds which of the choices to select. 
+    
+    if (!is.null(config.setting.name) && !is.null(g.user.input[[config.setting.name]])) {
+        val <- g.user.input[[config.setting.name]]
+        val.index <- match(val, choices)
+        if (!is.na(val.index[1])) {
+            return(val.index)
+        } else {
+            Report('user choice set in config is not in the list of choices. Getting user choice. ')
+        }
+    }
+    return(FALSE);
 }
 
 

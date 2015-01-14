@@ -22,7 +22,7 @@ IsDawn <- function (mins, all.dawn = FALSE) {
 
 RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA, 
                            mins = NA, 
-                           num.repetitions = 100, 
+                           num.repetitions = 10, 
                            dawn.first = TRUE, 
                            dawn.from = 315, dawn.to = 495, 
                            block.size = 1) {
@@ -42,7 +42,12 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA,
     #   list: mean: the mean species count progression (count only)
     #   list: sd: the standard deviation minute by minute
     
-    Report(3, 'performing random sampling at dawn (RSAD)')
+    if (dawn.first) {
+        msg <-  'performing random sampling at dawn (RSAD)'   
+    } else {
+        msg <-  'performing random sampling'     
+    }
+    Report(3, msg)
     
     mins <- ValidateMins(mins)
     

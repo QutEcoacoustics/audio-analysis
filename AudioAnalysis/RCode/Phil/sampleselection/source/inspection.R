@@ -1,16 +1,42 @@
-
 # todo: this is completely broken since the multicluster group stuff
 InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.groups = 50) {
-    #for each of the given cluster groups, will append randomly select duration.per.group
-    # worth of events from that cluster group and append the spectrograms of each event
-    # side by side, with the event box shown. 
-    # all the cluster groups will be appended one under the other. 
+    #  shows individual events of a selected clusters, next to each other
+    #  
+    #  Args:
+    #    cluster.groups: vector of ints; which cluster groups to show
+    #    duration.per.group: int; number of seconds of audio to show per group (because some events are longer than others,
+    #                              the number of events will be different per group. This way there is a similar horizontal size per row)
+    #    max.groups: if cluster.groups is not provided it will be set to either the number of groups or max.groups (whichever is smaller)
+    #
+    #  Details:
+    #    Randomply chooses events from the group 1 by 1 until their total duration (plus the padding on each side), reaches the duration.per.group
+    #    It then generates spectrogram of the event plus the padding, and appends them to form a spectrogram of length duration.per.group
+    #    each clustergroup will have its own row
+    #
+
+    events <- ReadOutput('events') # contains events including bounds
+    clustered.events <- ReadOutput('clustered.events')  # contains only group and event id
     
-    events <- ReadOutput('clusters')
+    # get the different clusterings for different number of clusters
+    clusterings <- colnames(clustered.events)
+    clusterings <- clusterings[clusterings != 'event.id']
+    
+    if (length(clusterings) > 1) {
+        which.k <- GetUserChoice(clusterings, 'which clustering (which size k) for inspection')
+        all.groups <- unique(clustered.events[,which.k])
+    } else {
+        all.groups <- unique(clustered.events)
+    }
     
     if (is.numeric(cluster.groups)) {
-        events <- events[events$group %in% cluster.groups  ,]
+        # make sure that the cluster groups given are actually real groups
+        cluster.groups <- cluster.groups[cluster.groups %in% all.groups]
     }
+    
+    
+    events <- events[events$group %in% cluster.groups  ,]
+    
+    
     # just incase the argument contains non-existent groups
     cluster.groups <- unique(events$group)  
     # make sure max is not exceeded
@@ -170,13 +196,6 @@ InspectEvents <- function (min.ids = 405) {
                       img.path = output.path)
     
     Sp.Draw(spectro)
-    
-
-
-
-    
-
-    
     return(TRUE)    
 }
 

@@ -138,6 +138,8 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     
 }
 
+
+
 # I think this isn't used anymore
 GetExistingFeatures <- function () {
     # determines if any feature extraction already completed is still valid. 
@@ -181,7 +183,7 @@ CalculateFeatures <- function (event, spectro) {
     
 
     
-    
+    # first the simple ones
     features <- list(
         duration = event$duration,
         mid.f = (event$bottom.f + event$top.f) / 2,
@@ -208,6 +210,8 @@ CalculateFeatures <- function (event, spectro) {
     features$peak.f.osc <- (VectorFluctuation(peaks) * spectro$hz.per.bin)
     
     features$peak.amp.osc <- VectorFluctuation(peak.vals)
+    
+    #mfccs <- GetMFCC()
     
     # Feature: pureness of tone
 #    pure.tone.score <- mean(GetPureness(event_vals))
