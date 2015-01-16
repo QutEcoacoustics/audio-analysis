@@ -778,10 +778,10 @@
             {
                 for (int c = 0; c < colsMax; c++)
                 {
-                    if (matrix[r, c].Point.X != 0 && matrix[r, c].Point.Y != 0)
-                    {
+                    //if (matrix[r, c].Point.X != 0 && matrix[r, c].Point.Y != 0)
+                    //{
                         result.Add(matrix[r, c]);
-                    }
+                    //}
                 }
             }
             return result;
