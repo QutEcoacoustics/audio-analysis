@@ -24,7 +24,8 @@ QueryInputDirectory: "..\\..\\Query"
 # SonogramConfig
 NoiseReductionType: STANDARD
 #NoiseReductionType: NONE
-WindowOverlap: 0.9
+WindowSize: 512
+WindowOverlap: 0.5
 NoiseReductionParameter: 0.0
 
 # CompressSpectrogram

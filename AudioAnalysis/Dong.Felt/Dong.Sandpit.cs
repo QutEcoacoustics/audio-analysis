@@ -153,16 +153,16 @@
                     /// Ridge detection analysis
                     //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
                     //    featurePropertySet);
-                    RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
+                    //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
 
                     /// Jie request ridge detection
                     
                     ///Automatic check
-                    //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
-                    //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
-                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    OutputResults.ChangeCandidateFileName(inputDirectory);
+                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
+                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
+                    OutputResults.MatchingSummary(inputDirectory, outputFile);
                     
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
