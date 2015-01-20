@@ -21,10 +21,10 @@ EvaluateSamples <- function () {
 
 }
 
-EvaluateSamplesEventCountOnly <- function () {
+EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE) {
 
-    ranks <- ReadOutput('ranked.samples.ec')
-    EvaluateSamples2d.2(ranks$data) 
+    ranks <- ReadOutput('ranked.samples.ec', use.last.accessed = use.last.accessed)
+    EvaluateSamples2d.2(ranks) 
 }
 
 
@@ -93,14 +93,34 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA) {
     #   ranks: data.frame; colnames are the names of the ranking method
     #                      values are min.ids in ascending order or ranke (best first)
 
-    add.dawn = Confirm("Add Dawn?")
-
-    # if 'add dawn' equals true, we are prepending some dawn minutes to ranked minutes which appear outside of dawn
-    # we therefore comparing our method with the whole day
-    speciesmins <- GetTags(target.only = !add.dawn);  # get tags within outer target 
+    #add.dawn = Confirm("Add Dawn?")
+    add.dawn <- FALSE;
+    
+    # save target.min.ids version so that we can save the 
+    # species.in.each.sample and optimal sampling for these
+    target.min.ids.version <- ranks$ranked.min.ids$version
+    ranks <- ranks$data
     
     # these min ids have been ranked
-    ranked.min.ids <- ReadOutput('target.min.ids')
+    # used to read these separately, but we should just used the dependency target.min.ids used
+    # for ranking, right?
+    # ranked.min.ids <- ReadOutput('target.min.ids', purpose = "evaluating ranked samples")
+    # mins.for.comparison <- ranked.min.ids$data
+
+    # double check to make sure that everything is using the same minutes
+    # check that all versions of ranks have the same minute ids (if not the ranking code is buggy)
+    if (ncol(ranks) > 1) {
+        for (i in 2:ncol(ranks)) {
+            if (!setequal(ranks[,i], ranks[,1])) {
+                stop("rankings have different minute ids from each other")
+            }
+        }     
+    }
+    mins.for.comparison <- ranks[,1]
+    mins.for.comparison <- ExpandMinId(mins.for.comparison)
+    
+    # needs fixing
+
     
 #     # hacked in for escience paper
 #     if (add.dawn) {
@@ -111,30 +131,25 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA) {
 #         mins.for.comparison <- ranked.min.ids$data
 #     }
     
-    mins.for.comparison <- ranked.min.ids$data
-    dependencies = list('target.min.ids' = ranked.min.ids$version)
+
     
-    # temp for escience paper
-    if (add.dawn) {
-        dawn <- GetDawnMins()
-        if (length(intersect(dawn$min.id, ranked.min.ids$data$min.id)) > 0) {
-            stop('cant add dawn if dawn is already in the target')
-        }
-    }
-    
-    species.in.each.sample <- ReadOutput('species.in.each.min', dependencies = dependencies, false.if.missing = TRUE)
-    if (!is.list(species.in.each.sample)) {
-        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins.for.comparison)
-        WriteOutput(species.in.each.sample, 'species.in.each.min', dependencies = dependencies)
-    } else {
-        species.in.each.sample <- species.in.each.sample$data
-    }
-    
-    
+#    # temp for escience paper
+#    if (add.dawn) {
+#        dawn <- GetDawnMins()
+#        if (length(intersect(dawn$min.id, ranked.min.ids$data$min.id)) > 0) {
+#            stop('cant add dawn if dawn is already in the target')
+#        }
+#    }
+
+    species.in.each.sample <- SpeciesInEachSampleCached(mins.for.comparison$min.id)
+    # holds a lot of info about the species found
     ranked.progressions <- list()
+
+    # holds only the running total of species
     ranked.count.progressions <- list()
-    
     methods <- names(ranks)
+    species.in.each.sample.df <- data.frame(min.id = names(species.in.each.sample), species = as.character(species.in.each.sample))
+
     
     i <- 1
     while (i <= length(methods)) {
@@ -155,6 +170,12 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA) {
             ranked.count.progressions[[method]] <- list(mean = apply(species.count.progressions, 2, mean), sd = apply(species.count.progressions, 2, sd))
         } else {
             ranked.progressions[[method]] <- GetProgression(species.in.each.sample, ordered.min.ids)
+            # sort the minutes in each species by ranking by the ranking
+            species.ranked <- species.in.each.sample.df[match(ordered.min.ids, as.numeric(names(species.in.each.sample))),]
+            # add a column to show new species
+            species.ranked$new.species.ids <- as.character(ranked.progressions[[method]]$new.species)
+            # add the table
+            ranked.progressions[[method]]$table <- species.ranked
             #WriteRichnessResults(ordered.min.ids, ranked.progressions[[method]], method, species.in.each.sample)
             ranked.count.progressions[[method]] <- ranked.progressions[[method]]$count
         }
@@ -163,6 +184,7 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA) {
     }
     
 
+    dependencies <- list(target.min.ids = target.min.ids.version)
     optimal <- ReadOutput('optimal.samples', dependencies = dependencies, false.if.missing = TRUE)
     if (!is.list(optimal)) {
         optimal <- OptimalSamples(speciesmins, mins = mins.for.comparison$min.id, species.in.each.min = species.in.each.sample)
@@ -188,6 +210,66 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA) {
                       random.all = random.all)
     
 }
+
+SpeciesInEachSampleCached <- function (min.ids = NULL) {
+    # checks if we have a saved species.in.each.sample for the target mins already
+    # and if so, uses it, if not looks in the database etc
+    # 
+    # Args:
+    #   min.ids: data.frame; the minutes that we want to look in
+    #   params: list; the params to save the results with
+    #   dependencies: list; the dependencies to save the results with
+    
+    params = list(study = GetStudyDescription())
+    # todo: remove "use last accessed" after building a check for matching params and dependencies into ReadOutput
+    species.in.each.sample <- ReadOutput('species.in.each.min', params = params, false.if.missing = TRUE, use.last.accessed = FALSE) 
+    if (!is.list(species.in.each.sample)) {
+        speciesmins <- GetTags(target.only = FALSE, study.only = TRUE);  # get tags from whole study
+        speciesmins <- AddMinuteIdCol(speciesmins)
+        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins)
+        WriteOutput(species.in.each.sample, 'species.in.each.min', params = params)
+    } else {
+        species.in.each.sample <- species.in.each.sample$data
+    }
+    
+    # todo: ability to add dawn mins
+    if (is.null(min.ids)) {
+        return(species.in.each.sample)
+    } else {
+        # we only want the ones with the specified min ids
+        list.indexes <- match(min.ids, names(species.in.each.sample))
+        return(species.in.each.sample[list.indexes])    
+    }
+
+    
+}
+
+SpeciesInEachSampleCached.1 <- function (min.ids, target.min.ids.version, add.dawn) {
+    # checks if we have a saved species.in.each.sample for the target mins already
+    # and if so, uses it, if not looks in the database etc
+    # 
+    # Args:
+    #   min.ids: data.frame; the minutes that we want to look in
+    #   params: list; the params to save the results with
+    #   dependencies: list; the dependencies to save the results with
+    
+
+    species.in.each.sample <- ReadOutput('species.in.each.min', dependencies = dependencies, false.if.missing = TRUE)
+    if (!is.list(species.in.each.sample)) {
+        # if 'add dawn' equals true, we are prepending some dawn minutes to ranked minutes which appear outside of dawn
+        # we therefore comparing our method with the whole day
+        speciesmins <- GetTags(target.only = !add.dawn);  # get tags within outer target 
+        speciesmins <- AddMinuteIdCol(speciesmins)
+        species.in.each.sample <- ListSpeciesInEachMinute(speciesmins, mins.for.comparison)
+        WriteOutput(species.in.each.sample, 'species.in.each.min', dependencies = dependencies)
+    } else {
+        species.in.each.sample <- species.in.each.sample$data
+    }
+}
+
+
+
+
 
 EvaluateSamples3d <- function (ranks) {
     # given a list of minutes
@@ -396,8 +478,8 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
     # creates a list of species for each minute in mins
     #
     # Args:
-    #   speciesmins: list of all the tags
-    #   min.ids: vector of minute ids or data frame of minutes
+    #   speciesmins: list of all the tags, with their site, date and min-of-the-day
+    #   mins: vector of minute ids or data frame of minutes, if ommited will use all minutes in speciesmins
     #  
     # Returns: list. names of the list are the min.id. values of each element is a vector of species ids
     #
@@ -406,12 +488,25 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
     #  if min.ids is not supplied, mins must be supplied. 
     
     Report(5, 'counting species in each minute')
+    
+    if (!("min.id" %in% colnames(speciesmins))) {
+        AddMinIdCol(speciesmins)
+    }
+    
+    if (is.null(mins)) {
+        mins <- unique(as.integer(species.mins$min.id))
+    }
     mins <- ValidateMins(mins)
     species.in.each.min <- vector("list")
+#     for (i in 1:nrow(mins)) {
+#         sp.list <- speciesmins$species.id[speciesmins$site == mins$site[i] & speciesmins$date == mins$date[i] & speciesmins$min == mins$min[i]]
+#         species.in.each.min[[as.character(mins$min.id[i])]] <- sp.list
+#     }
     for (i in 1:nrow(mins)) {
-        sp.list <- speciesmins$species.id[speciesmins$site == mins$site[i] & speciesmins$date == mins$date[i] & speciesmins$min == mins$min[i]]
+        sp.list <- speciesmins$species.id[speciesmins$min.id == mins$min.id[i]]
         species.in.each.min[[as.character(mins$min.id[i])]] <- sp.list
     }
+    
     return(species.in.each.min)
 }
 
@@ -435,7 +530,7 @@ GraphProgressions <- function (ranked.count.progressions, optimal, random.at.daw
         } 
         if (is.list(random.all)) {
             random.all$mean  <- Truncate(random.all$mean, cutoff)
-            random.all$sd  <- Truncate(random.all$sd, cutoff)         
+            random.all$sd  <- Truncate(random.all$sd, cutoff)
         } 
         
         if (length(rank.names) > 0) {

@@ -103,7 +103,7 @@ GetOutputTypes <- function () {
 }
 
 
-ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = NA, dependencies = NA, false.if.missing = FALSE, optional = FALSE) {
+ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = NA, dependencies = NA, false.if.missing = FALSE, optional = FALSE, use.last.accessed = TRUE) {
     # reads the output for type 'name' 
     #
     # Args:
@@ -112,6 +112,7 @@ ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = N
     #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
     #   false.if.missing: bool; if true, will return false if the file is missing
     #   optional: boolean; if true, an option is added to select none and return false
+    #   use.last.accessed: boolean; if true (default) will look for the version that was last written or read in this session
     #
     # Value:
     #   if include.meta, will return a list that has a 'data' key, that contains the data read in
@@ -139,7 +140,13 @@ ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = N
         Report(1, 'Reading output for:', purpose)     
     }
 
-    meta.row <- GetLastAccessed(name)
+    if (use.last.accessed) {
+        #todo: check if last accessed has the same dependencies and params as specified
+        #      and only use if true
+        meta.row <- GetLastAccessed(name) 
+    } else {
+        meta.row <- FALSE
+    }
     if (!is.data.frame(meta.row) || optional) {
         meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional)
         if (!is.data.frame(meta.row)) {
@@ -359,15 +366,18 @@ ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = 
         }
         stop(paste("Missing output file:", name))
     }
+    filter <- rep(TRUE, nrow(name.meta))
     if (is.list(params)) {
         params <- toJSON(params)
+        filter[name.meta$params != params] <- FALSE
     }
     if (is.list(dependencies)) {
-        params <- toJSON(dependencies)
+        dependencies <- toJSON(dependencies)
+        filter[name.meta$dependencies != dependencies] <- FALSE
     }
-    if (is.character(params)) {
-        name.meta <- name.meta[name.meta$params == params & name.meta$dependencies == dependencies , ] 
-    }
+
+    name.meta <- name.meta[filter, ] 
+    
     if (nrow(name.meta) == 0) {
         if (false.if.missing) {
             return(FALSE)

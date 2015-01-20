@@ -22,12 +22,12 @@ GetMinuteList <- function () {
     
 }
 
-CreateTargetMinutes1 <- function () {
+CreateTargetMinutes.old <- function () {
     # creates a list of target minute ids, based on
     # the specified start date and time, end date and time, and % of minutes to use (eg, 50% will use every 2nd minute)
     # writes the output to csv   
     study.min.list <- GetMinuteList()
-    target.mins <- TargetSubset(study.min.list)
+    target.mins <- TargetSubset.old(study.min.list)
     if (g.percent.of.target < 100) { 
         num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
         to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
@@ -44,28 +44,64 @@ CreateTargetMinutes1 <- function () {
     WriteOutput(target.mins, 'target.min.ids', params = params)
 }
 
-CreateTargetMinutes <- function () {
+
+CreateTargetMinutesDayByDay <- function () {
+    # creates a separate list of target minute ids for each day in the target, 
+    targets <- SplitTargetIntoDays(g.target)
+    for (t in 1:length(targets)) {
+        CreateTargetMinutes(targets[[t]])
+    }
+}
+
+GetStudyDescription <- function () {
+    # creates a deterministic string from the variables that define the study
+    # while keeping it as short as possible
+    
+    sites <- paste(g.study.sites, collapse = ",")
+    date.parts <- GetDateParts(c(g.study.start.date, g.study.end.date))
+    date.txt <- paste(date.parts$prefix, paste(date.parts$dates, collapse = '-'), sep = " ")
+    
+    val <- paste(sites, date.txt, sep = ":");
+    if (g.study.start.min != 0 || g.study.end.min != 1439) {
+        min.txt <- paste(g.study.start.min, g.study.end.min, sep = "-")
+        val <- paste(val, min.txt, sep = ":")
+    }
+
+    return(val)
+    
+
+    
+    
+    
+}
+
+
+CreateTargetMinutes <- function (target = NULL) {
     # creates a list of target minute ids, based on
-    # the g.target nested list in config
+    # the target nested list in config
     # writes the output to csv  
+    if (is.null(target)) {
+        target <- g.target
+    }
+    
     study.min.list <- GetMinuteList()
-    target.mins <- TargetSubset2(study.min.list)
+    target.mins <- TargetSubset(study.min.list, target)
     if (g.percent.of.target < 100) { 
         num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
         to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
         target.min.ids <- target.mins$min.id[to.include]
     }
     
-    params <- list(target = GetTargetDescription())
+    params <- list(target = GetTargetDescription(target))
     WriteOutput(target.mins, 'target.min.ids', params = params)
     
     
 }
 
-TargetSubset2 <- function (df) {
+TargetSubset <- function (df, target) {
     # returns a subset of the dataframe, includes only rows that 
     # belong within sites, dates and minute ranges (1 or more pairs of start/end minutes of the day)
-    # using the g.target nested list
+    # using the target nested list
     # defined in config
     #
     # Args:
@@ -74,14 +110,14 @@ TargetSubset2 <- function (df) {
     # Value
     #   data.frame
     
-    sites <- names(g.target)
+    sites <- names(target)
     
     selection <- rep(FALSE, nrow(df))
     
     for (site in sites) {
-        dates <- names(g.target[[site]])
+        dates <- names(target[[site]])
         for (date in dates) {
-            ranges <- g.target[[site]][[date]]
+            ranges <- target[[site]][[date]]
             start.mins <- ranges[seq(1, length(ranges) - 1, 2)]
             end.mins <- ranges[seq(2, length(ranges), 2)]
             for (i in 1:length(start.mins)) {    
@@ -93,35 +129,50 @@ TargetSubset2 <- function (df) {
  
     return(df[selection,])
 }
+
+ SplitTargetIntoDays <- function (target) {
+     # takes the nested target list
+     # and creates a bunch of lists with the same structure
+     
+     targets <- list()
+     sites <- names(target)
+     for (site in sites) {
+         dates <- names(target[[site]])
+         for (date in dates) {
+             ranges <- target[[site]][[date]]
+             l <- list()
+             l[[site]] <- list()
+             l[[site]][[date]] <- ranges
+             targets[[length(targets) + 1]] <- l
+         }
+     }  
+     
+     return(targets)
+     
+ }
+
+
     
 
-GetTargetDescription <- function () {
-    sites <- names(g.target)
+GetTargetDescription <- function (target) {
+    sites <- names(target)
     sites.txt <- sites
     # first get all dates, to if they are all the same year or month
     all.dates <- c()
     for (site in sites) {
-        all.dates <- c(all.dates, names(g.target[[site]]))
+        all.dates <- c(all.dates, names(target[[site]]))
     }
-    all.dates <- strsplit(all.dates, "-")
-    dates.matrix <- matrix(NA, nrow = length(all.dates), ncol = 3)
-    for (r in 1:length(all.dates)) {
-        dates.matrix[r,]  <- as.numeric(all.dates[[r]])
-    }  
-    y.same = abs(max(dates.matrix[,1]) - min(dates.matrix[,1])) < 0.25
-    m.same = abs(max(dates.matrix[,2]) - min(dates.matrix[,2])) < 0.25
-    d.same = abs(max(dates.matrix[,3]) - min(dates.matrix[,3])) < 0.25
-    same <- c(y.same, m.same, d.same)
-    prefix <- paste(dates.matrix[1,same], collapse = "-")
+    date.parts <- GetDateParts(all.dates)
+    
     for (s in 1:length(sites)) {
         site <- sites[s]
 
-        dates <- names(g.target[[site]])
+        dates <- names(target[[site]])
         dates.txt <- dates
         for (d in 1:length(dates)) {
             date <- dates[d]
-            dates.txt[d] <- paste(strsplit(dates.txt[d], "-")[[1]][!same], collapse = "-")
-            ranges <- g.target[[site]][[date]]
+            dates.txt[d] <- paste(strsplit(dates.txt[d], "-")[[1]][date.parts$selector], collapse = "-")
+            ranges <- target[[site]][[date]]
             if (any(ranges != c(0,1439))) {
                 # if the ranges for this date are anything except all day, 
                 # specify it, else ommit it since it is all day by default
@@ -132,15 +183,51 @@ GetTargetDescription <- function () {
         sites.txt[s] <- paste(site, paste(dates.txt, collapse = ","), sep = ":")
     }
     d <- paste(sites.txt, collapse = ";")
-    d <- paste(prefix, d)
+    d <- paste(date.parts$prefix, d)
+    return(d)  
+}
+
+
+GetDateParts <- function (dates) {
+    # given a set of dates, will return a list with 2 elements
+    # the part of the date that is the same (eg year, or year and month)
+    # and the part of the date that is different as a vector of length length(dates)
     
-    return(d)
+    # split into a matrix of nrow = length(dates) and a column for year, month and day
+    all.dates <- strsplit(dates, "-")
+    dates.matrix <- matrix(NA, nrow = length(all.dates), ncol = 3)
+    for (r in 1:length(all.dates)) {
+        dates.matrix[r,1:3]  <- as.numeric(all.dates[[r]])
+    }  
+    # find the part that is the same among all dates
+    same <- c(FALSE, FALSE, FALSE)
+    for (i in 1:3) {
+        if (abs(max(dates.matrix[,i]) - min(dates.matrix[,i])) < 0.25) {
+            same[i] <- TRUE
+        } else {
+            break()
+        }
+    }
+    prefix <- paste(dates.matrix[1,same], collapse = "-") 
+    sig <- apply(dates.matrix, 1, function (row){ 
+        paste(row[!same], collapse = "-")
+        })
+    return(list(prefix = prefix, dates = sig, selector = !same))
+}
+
+
+TargetListToDF <- function () {
+    # converts a nested list of sites and dates and ranges to 
+    # 
     
     
 }
 
 
-TargetSubset <- function (df) {
+
+
+
+TargetSubset.old <- function (df) {
     # returns a subset of the dataframe, includes only rows that 
     # belong within sites, dates and minute ranges (1 or more pairs of start/end minutes of the day)
     # defined in config

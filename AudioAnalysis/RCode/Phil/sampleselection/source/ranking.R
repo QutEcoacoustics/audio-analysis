@@ -56,7 +56,7 @@ RankSamples <- function () {
 }
 
 
-RankSamplesEventCountOnly <- function () {
+RankSamplesEventCountOnly <- function (events = NULL) {
     # stripped down version of RankSamples
     # only uses ranking methods that rely on event count and not on clusters
     #
@@ -64,8 +64,11 @@ RankSamplesEventCountOnly <- function () {
     #       with the rank as the value, to having the minute id as the value, in order of rank
     #       that way it converts to a dataframe without losing any information
     
-    events <- ReadOutput('events')
-    mins <- ReadOutput('target.min.ids')
+    if (is.null(events)) {
+        events <- ReadOutput('events', use.last.accessed = FALSE)
+    }
+    # the correct version of mins should be taken based on the dependency of events
+    mins <- ReadOutput('target.min.ids', use.last.accessed = TRUE)
     
     ranking.methods <- list()
     ranking.methods[['4']] <- RankSamples4 # event count only
@@ -288,10 +291,6 @@ RankSamples8 <- function (events, min.ids, trim.to = 2000) {
     }
     
     result <- result[order(result$min.id), ]
-    
-
-
-    
     
     return(result)
     

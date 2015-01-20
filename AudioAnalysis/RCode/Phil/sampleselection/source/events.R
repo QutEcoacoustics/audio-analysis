@@ -388,7 +388,7 @@ CreateEventAndFeaturesSubset <- function () {
     dependencies <- list()
     
     Report(4, 'Retrieving target events and features. Copying from master')   
-    target.min.ids <- ReadOutput('target.min.ids', include.meta = TRUE)
+    target.min.ids <- ReadOutput('target.min.ids', include.meta = TRUE, use.last.accessed = FALSE)
     dependencies$target.min.ids <- target.min.ids$version
     
     all.events <- ReadOutput('all.events', include.meta = TRUE)

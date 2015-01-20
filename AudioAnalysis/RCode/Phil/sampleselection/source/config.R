@@ -60,6 +60,10 @@ g.minute.ranges <- c(0, 1439)
 # which sites to include in sample selection
 g.sites <- c('NE','NW','SE','SW')
 
+
+
+
+
 g.target <- list(
     'NE' = list(
         '2010-10-13' = c(0, 1439),
@@ -79,7 +83,7 @@ g.target <- list(
     )
 )
 
-g.target.description <- "8 days for iccs"
+
 
 # select this many percent of the target minutes
 # to use as target. Reason for this is to have a 
