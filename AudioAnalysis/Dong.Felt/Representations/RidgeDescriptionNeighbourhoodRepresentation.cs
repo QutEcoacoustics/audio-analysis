@@ -473,13 +473,128 @@ namespace Dong.Felt.Representations
                 //(ridgeNhRepresentationList, featurePropSet);
                 var ridgeNhListFileBeforeNormal = new FileInfo(audioFiles[i] + "NhRepresentationListBeforeNormal.csv");
                 var ridgeNhListFileAfterNormal = new FileInfo(audioFiles[i] + "NhRepresentationListAfterNormal.csv");
-                CSVResults.NeighbourhoodRepresentationsToCSV(ridgeNhRepresentationList,ridgeNhListFileBeforeNormal);
+                CSVResults.NeighbourhoodRepresentationsToCSV(ridgeNhListFileBeforeNormal, ridgeNhRepresentationList);
                 //CSVResults.NhRepresentationListToCSV(ridgeNhListFileAfterNormal, normalizedNhRepresentationList);
             }
         }
 
+        public void FeatureSet5Representation(PointOfInterest[,] pointsOfInterest, int row, int col,
+            SpectrogramConfiguration spectrogramConfig)
+        {
+            var EastBin = 0.0;
+            var NorthEastBin = 0.0;
+            var NorthBin = 0.0;
+            var NorthWestBin = 0.0;
+            var frequencyScale = spectrogramConfig.FrequencyScale;
+            var timeScale = spectrogramConfig.TimeScale; // millisecond
+            for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(0); colIndex++)
+                {
+                    if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                        {
+                            EastBin += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthEast)
+                        {
+                            NorthEastBin += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                        {
+                            NorthBin += 1.0;
+                        }
+                        if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.NorthWest)
+                        {
+                            NorthWestBin += 1.0;
+                        }
+                    }
+                }
+            }
+            this.FrameIndex = col * timeScale;
+            var maxFrequency = spectrogramConfig.NyquistFrequency;
+            this.FrequencyIndex = maxFrequency - row * frequencyScale;
+            this.Duration = TimeSpan.FromMilliseconds(pointsOfInterest.GetLength(1) * timeScale);
+            this.FrequencyRange = pointsOfInterest.GetLength(0) * frequencyScale;
+            GetNeighbourhoodRepresentationPOIProperty(pointsOfInterest);
+
+            var sumPOICount = (double)(EastBin + NorthEastBin + NorthBin + NorthWestBin);
+            var maxPOICount = 2.0 * pointsOfInterest.GetLength(0);
+
+            if (sumPOICount == 0)
+            {
+                this.HOrientationPOIHistogram = 0.0;
+                this.VOrientationPOIHistogram = 0.0;
+                this.PDOrientationPOIHistogram = 0.0;
+                this.NDOrientationPOIHistogram = 0.0;
+                // changed
+                this.ColumnEnergyEntropy = 0.0;
+                this.RowEnergyEntropy = 0.0;
+            }
+            else
+            {
+                this.HOrientationPOIHistogram = EastBin / maxPOICount;
+                this.VOrientationPOIHistogram = NorthBin / maxPOICount;
+                this.PDOrientationPOIHistogram = NorthEastBin / maxPOICount;
+                this.NDOrientationPOIHistogram = NorthWestBin / maxPOICount;
+
+                var columnEnergy = new double[pointsOfInterest.GetLength(1)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[colIndex, rowIndex].RidgeMagnitude != 0)
+                        {
+                            // added if will consider the orientation, comment it will not consider the orientation. 
+                            //if (pointsOfInterest[colIndex, rowIndex].OrientationCategory == (int)Direction.North)
+                            //{
+                            //columnEnergy[rowIndex] += 1.0;   // Count of POI
+                            var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            columnEnergy[rowIndex] += magnitude;
+                            //}
+                        }
+                    }
+                }
+                var rowEnergy = new double[pointsOfInterest.GetLength(0)];
+                for (int rowIndex = 0; rowIndex < pointsOfInterest.GetLength(0); rowIndex++)
+                {
+                    for (int colIndex = 0; colIndex < pointsOfInterest.GetLength(1); colIndex++)
+                    {
+                        if (pointsOfInterest[rowIndex, colIndex].RidgeMagnitude != 0)
+                        {
+                            //if (pointsOfInterest[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                            //{
+                            //rowEnergy[rowIndex] += 1.0;
+                            var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
+                            rowEnergy[rowIndex] += magnitude;
+                            //}
+                        }
+                    }
+                }
+                var columnEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
+                var rowEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+                if (double.IsNaN(columnEnergyEntropy))
+                {
+                    this.ColumnEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.ColumnEnergyEntropy = columnEnergyEntropy;
+                }
+                if (double.IsNaN(rowEnergyEntropy))
+                {
+                    this.RowEnergyEntropy = 1;
+                }
+                else
+                {
+                    this.RowEnergyEntropy = rowEnergyEntropy;
+                }
+            }
+        }
+
         /// <summary>
-        /// This method is based on ridge count.
+        /// This method is based on ridge count for freqCompression.
         /// </summary>
         /// <param name="pointsOfInterest"></param>
         /// <param name="row"></param>
@@ -2076,6 +2191,17 @@ namespace Dong.Felt.Representations
             return result;
         }
        
+        /// <summary>
+        /// This one is for freq compression only.
+        /// </summary>
+        /// <param name="ridgeList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="featurePropertySet"></param>
+        /// <param name="spectrogramConfig"></param>
+        /// <param name="compressConfig"></param>
+        /// <returns></returns>
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromRidgePOIList(List<PointOfInterest> ridgeList,
             int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
             SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
@@ -2151,7 +2277,92 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromGradientPOIList(List<PointOfInterest> gradientList,
+        /// <summary>
+        /// This one is for non-compression spectrogram.
+        /// </summary>
+        /// <param name="ridgeList"></param>
+        /// <param name="rowsCount"></param>
+        /// <param name="colsCount"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="featurePropertySet"></param>
+        /// <param name="spectrogramConfig"></param>
+        /// <param name="compressConfig"></param>
+        /// <returns></returns>
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> FromRidgePOIList(List<PointOfInterest> ridgeList,
+            int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
+            SpectrogramConfiguration spectrogramConfig)
+        {
+            var result = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            var matrix = StatisticalAnalysis.TransposePOIsToMatrix(ridgeList, rowsCount, colsCount);
+            for (int row = 0; row < rowsCount; row += neighbourhoodLength)
+            {
+                for (int col = 0; col < colsCount; col += neighbourhoodLength)
+                {
+                    if (StatisticalAnalysis.checkBoundary(row + neighbourhoodLength, col + neighbourhoodLength, rowsCount, colsCount))
+                    {
+                        var subMatrix = StatisticalAnalysis.Submatrix(matrix, row, col, row + neighbourhoodLength, col + neighbourhoodLength);
+                        var ridgeNeighbourhoodRepresentation = new RidgeDescriptionNeighbourhoodRepresentation();
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1
+                            || featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
+                        {
+                            ridgeNeighbourhoodRepresentation.BestFitLineNhRepresentation(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3)
+                        {
+                            //ridgeNeighbourhoodRepresentation.SplittedBestLineFitNhRepresentation(subMatrix, row, col, spectrogramConfig);
+                            // 4 directional ridges magnitude based
+                            ridgeNeighbourhoodRepresentation.FeatureSet3Representation(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4)
+                        {
+                            // 4 directional ridges count based
+                            ridgeNeighbourhoodRepresentation.FeatureSet4Representation(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
+                        {
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col,
+                                spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9 ||
+                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                        {
+                            ridgeNeighbourhoodRepresentation.FeatureSet9Representation(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
+                        {
+                            // This one is similar to featureSet5, but based on POI Magnitude. 
+                            ridgeNeighbourhoodRepresentation.FeatureSet11Representation(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                        {
+                            // This one is similar to featureSet5, but give more directions. 
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation2(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19)
+                        {
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation3(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
+                        {
+                            ridgeNeighbourhoodRepresentation.FeatureSet5Representation4(subMatrix, row, col, spectrogramConfig);
+                        }
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                        {
+                            var instance = new RidgeDescriptionNeighbourhoodRepresentation(new List<Point>());
+                            instance.FeatureSet10Representation(subMatrix, row, col, spectrogramConfig);
+                            ridgeNeighbourhoodRepresentation = instance;
+                        }
+                        result.Add(ridgeNeighbourhoodRepresentation);
+                    }
+                }
+            }
+            return result;
+        }
+ 
+        public static List<RidgeDescriptionNeighbourhoodRepresentation> FromGradientPOIList(List<PointOfInterest> gradientList,
             int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
             SpectrogramConfiguration spectrogramConfig)
         {

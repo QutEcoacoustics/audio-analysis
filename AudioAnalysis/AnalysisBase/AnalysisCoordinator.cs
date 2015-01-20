@@ -334,13 +334,14 @@
             // create the file for the analysis
             // save created audio file to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
             var preparedFile = this.SourcePreparer.PrepareFile(
-                GetInstanceDirTempElseOutput(localCopyOfSettings),
+                this.GetInstanceDirTempElseOutput(localCopyOfSettings),
                 fileSegment.OriginalFile,
                 localCopyOfSettings.SegmentMediaType,
                 start,
                 end,
                 localCopyOfSettings.SegmentTargetSampleRate,
-                tempDir);
+                tempDir, 
+                mixDownToMono: true);
 
             var preparedFilePath = preparedFile.OriginalFile;
             var preparedFileDuration = preparedFile.OriginalFileDuration;

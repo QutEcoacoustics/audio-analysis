@@ -140,6 +140,7 @@
     <Compile Include="Preprocessing\AudioPreprosessing.cs" />
     <Compile Include="Representations\ClusterAnalysis.cs" />
     <Compile Include="Representations\EventBasedRepresentation.cs" />
+    <Compile Include="Representations\NeighbourhoodRepresentationOutput.cs" />
     <Compile Include="Representations\RegionRrepresentation.cs" />
     <Compile Include="Representations\RidgeDescriptionRegionRepresentation.cs" />
     <Compile Include="Representations\RidgeNeighbourhoodFeatureVector.cs" />
