@@ -16,6 +16,7 @@ namespace Dong.Felt
     using TowseyLibrary;
     using AnalysisBase;
     using Dong.Felt.ResultsOutput;
+    using Dong.Felt.Features;
 
     public class CSVResults
     {
@@ -78,7 +79,29 @@ namespace Dong.Felt
         {
             Csv.WriteToCsv(outputFilePath, poiList);       
         }
-     
+
+        public static void RidgeListToCSV(FileInfo outputFilePath, List<Ridge> ridgeList)
+        {
+            Csv.WriteToCsv(outputFilePath, ridgeList);
+        }
+
+        public static List<double> CSVToSpectrogramData(FileInfo file)
+        {
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var result = new List<Double>();
+            foreach (var csvRow in lines)
+            {
+                var item = 0.0;
+                if (csvRow[0] != "")
+                {
+                    item = double.Parse(csvRow[0]); 
+                }
+                result.Add(item);
+            }
+            return result;
+        }
+
         public static void MatchingStatResultsToCSV(FileInfo file, List<MathingResultsAnalysis> matchedResults)
         {         
             Csv.WriteToCsv(file, matchedResults);

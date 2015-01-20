@@ -504,6 +504,47 @@ namespace Dong.Felt
             poiList = prunedPoiList;
         }
 
+        /// <summary>
+        /// Simplified version of ridge detection.
+        /// </summary>
+        /// <param name="ridgeIndiMatrix"></param>
+        /// <param name="RidgeMagnitudematrix"></param>
+        /// <param name="spectrogram"></param>
+        public static List<PointOfInterest> SConvertRidgeIndicatorToPOIList(byte[,] ridgeIndiMatrix, double[,] RidgeMagnitudematrix)
+        {
+            var poiList = new List<PointOfInterest>();
+            double secondsScale = 0.0116;
+            var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+            double herzScale = 86; //43 hz
+            double freqBinCount = 128; //256
+            int rows = ridgeIndiMatrix.GetLength(0);
+            int cols = ridgeIndiMatrix.GetLength(1);
+                        
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (ridgeIndiMatrix[r, c] > 0)
+                    {
+                        Point point = new Point(c, r);
+                        TimeSpan time = TimeSpan.FromSeconds(c * secondsScale);
+                        double herz = (freqBinCount - r - 1) * herzScale;
+                        // time will be assigned to timelocation of the poi, herz will go to frequencyposition of the poi. 
+                        var poi = new PointOfInterest(time, herz);
+                        poi.Point = point;
+                        // OrientationCategory only has 4/8 values, they are 0, 1, 2, 3,4,5,6,7. 
+                        poi.OrientationCategory = ridgeIndiMatrix[r, c] - 1;
+                        poi.RidgeMagnitude = RidgeMagnitudematrix[r, c];                       
+                        poi.TimeScale = timeScale;
+                        poi.HerzScale = herzScale;
+                        poiList.Add(poi);
+                    }
+                }
+            }
+            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
+            return prunedPoiList;
+        }
+
         // This version is suitable for HOG features. 
         public void ConvertRidgeIndiToPOIList2(byte[,] ridgeIndiMatrix, double[,] RidgeMagnitudematrix, SpectrogramStandard spectrogram)
         {

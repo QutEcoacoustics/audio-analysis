@@ -48,6 +48,7 @@
 
             NoiseReductionType noiseReductionType = configuration.NoiseReductionType;
             double windowOverlap = configuration.WindowOverlap;
+            int windowSize = configuration.WindowSize;
             double noiseReductionParameter = configuration.NoiseReductionParameter;
             double timeCompressRate = configuration.TimeCompressRate;
             double freqCompressRate = configuration.FreqCompressRate;
@@ -81,6 +82,7 @@
                 {
                     NoiseReductionType = noiseReductionType,
                     WindowOverlap = windowOverlap,
+                    WindowSize = windowSize,
                     NoiseReductionParameter = noiseReductionParameter
                 };
                 var ridgeConfig = new RidgeDetectionConfiguration
@@ -149,15 +151,18 @@
                     //featurePropertySet, outputDirectory.FullName);
 
                     /// Ridge detection analysis
-                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                        featurePropertySet);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                    //    featurePropertySet);
+                    //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
 
+                    /// Jie request ridge detection
+                    
                     ///Automatic check
-                    //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
-                    //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
-                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    OutputResults.ChangeCandidateFileName(inputDirectory);
+                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
+                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
+                    OutputResults.MatchingSummary(inputDirectory, outputFile);
                     
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
@@ -185,6 +190,8 @@
                     NeighbourhoodLength = (int)configuration.NeighbourhoodLength,
                     TimeCompressRate = (double)configuration.TimeCompressRate,
                     FreqCompressRate = (double)configuration.FreqCompressRate,
+                    WindowSize = (int)configuration.WindowSize,
+                    WindowOverlap = (double)configuration.WindowOverlap,
                     //StThreshold = (double)configuration.StThreshold,
                     //StAvgNhLength = (int)configuration.StAvgNhLength,
                     //StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
@@ -196,12 +203,11 @@
             {
                 var folderName = string.Format("Run_{0}_{1}",
                     entry.RidgeDetectionMagnitudeThreshold,
+                    entry.WindowSize,
+                    entry.WindowOverlap);
                     //entry.NeighbourhoodLength);
-                    entry.TimeCompressRate,
-                    entry.FreqCompressRate);
-                //var folderName = string.Format("Run_{0}_{1}",
-                //    entry.StThreshold,                   
-                //    entry.StMatchedThreshold);
+                    //entry.TimeCompressRate,
+                    //entry.FreqCompressRate);
 
                 var fullPath = Path.Combine(outputDirectory.FullName, folderName);
 
@@ -215,6 +221,7 @@
                     QueryInputDirectory = configuration.QueryInputDirectory,
                     NoiseReductionType = configuration.NoiseReductionType,
                     WindowOverlap = configuration.WindowOverlap,
+                    WindowSize = configuration.WindowSize,
                     NoiseReductionParameter = configuration.NoiseReductionParameter,
                     TimeCompressRate = configuration.TimeCompressRate,
                     FreqCompressRate = configuration.FreqCompressRate,
@@ -258,26 +265,23 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    //spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.6, 3);
                     //spectrogram.Data = ImageAnalysisTools.Dilation(spectrogram.Data, 3);
-                    spectrogram.Data = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig);
+                    //spectrogram.Data = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
                     var acousticEventlist = new List<AcousticEvent>();
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used                 
-                    
+
                     var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
                     
                     var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     //var compressedRidgesInFreq = POISelection.RidgePoiSelection(compressSpectrogramInFreq, ridgeConfig, featurePropSet);
                     //ridges = POISelection.AddResizeRidgesInFreq(ridges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);
-                    //var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracksBasedOn4Direction(ridges, rows, cols);
                     //spectrogram.Data = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, originalRidges, spectrogram.Data.GetLength(0),
                     //    spectrogram.Data.GetLength(1));
-
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     //foreach (PointOfInterest poi in originalRidges)
@@ -291,6 +295,32 @@
                     image.Save(annotatedImagePath);
                 }
             }
+        }
+        
+        public static void RidgeDetectionForJie(string audioFileDirectory, 
+            RidgeDetectionConfiguration ridgeConfig)
+        {
+            var csvFiles = Directory.GetFiles(audioFileDirectory, @"*.csv", SearchOption.TopDirectoryOnly);
+            var csvFilesCount = csvFiles.Count();
+            for (int i = 0; i < csvFilesCount; i++)
+                {
+                    var csvFileInfo = new FileInfo(csvFiles[i]);
+                    var spectrogramData = CSVResults.CSVToSpectrogramData(csvFileInfo);   
+                    var maxRow = 128;
+                    var maxCol = spectrogramData.Count();
+                    var matrix = StatisticalAnalysis.DoubleListToArray(spectrogramData, 128, maxCol / maxRow);
+                    var rows = matrix.GetLength(0);
+                    var cols = matrix.GetLength(1);
+                    var ridgeMagnitudeMatrix = new double[rows, cols];
+                    var byteMatrix = POISelection.FourDirectionsRidgeDetection(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
+                    var poiList = POISelection.SConvertRidgeIndicatorToPOIList(byteMatrix, ridgeMagnitudeMatrix);                    
+                    var outputRidgeList = Ridge.FromPointOfInterest(poiList);
+                    var FileName = new FileInfo(csvFiles[i]);
+                    string outputFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.csv");
+                    string outputFilePath = Path.Combine(audioFileDirectory, outputFileName);
+                    var outputFile = new FileInfo(outputFilePath);
+                    CSVResults.RidgeListToCSV(outputFile, outputRidgeList);
+                }
         }
 
         /// <summary>
