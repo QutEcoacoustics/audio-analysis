@@ -64,12 +64,17 @@ namespace Dong.Felt
        
         /// Write ridgeNeighbourhoodRepresentation list into csv file by using CsvTools.WriteResultsToCsv. 
         /// Notice, this method can only write the public properties in the class and it should have get and set.  
-        public static void NeighbourhoodRepresentationsToCSV(List<RidgeDescriptionNeighbourhoodRepresentation> poiList, FileInfo outputFilePath)
+        public static void NeighbourhoodRepresentationsToCSV(FileInfo outputFilePath, List<RidgeDescriptionNeighbourhoodRepresentation> nhList)
         {
-            Csv.WriteToCsv(outputFilePath, poiList);
+            Csv.WriteToCsv(outputFilePath, nhList);
         }
 
-        public static void PointOfInterestListToCSV(List<PointOfInterest> poiList, FileInfo outputFilePath)
+        public static void NeighbourhoodRepresentationsToCSV(FileInfo outputFilePath, List<NeighbourhoodRepresentationOutput> nhList)
+        {
+            Csv.WriteToCsv(outputFilePath, nhList);
+        }
+
+        public static void PointOfInterestListToCSV(FileInfo outputFilePath, List<PointOfInterest> poiList)
         {
             Csv.WriteToCsv(outputFilePath, poiList);       
         }
@@ -134,7 +139,7 @@ namespace Dong.Felt
                 poiList.SelectPointOfInterestFromAudioFile(fileEntries[fileIndex], ridgeLength, magnitudeThreshold);
                 var filterPoi = POISelection.FilterPointsOfInterest(poiList.poiList, poiList.RowsCount, poiList.ColsCount);               
                 var file = new FileInfo(fileEntries[fileIndex] + "fileIndex.csv");
-                PointOfInterestListToCSV(filterPoi, file);
+                PointOfInterestListToCSV(file, filterPoi);
             }
         }
 

@@ -39,30 +39,31 @@
         /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
         /// </summary>
         /// <param name="outputDirectory">
-        /// The analysis Base Directory.
+        ///     The analysis Base Directory.
         /// </param>
         /// <param name="source">
-        /// The source audio file.
+        ///     The source audio file.
         /// </param>
         /// <param name="outputMediaType">
-        /// The output Media Type.
+        ///     The output Media Type.
         /// </param>
         /// <param name="startOffset">
-        /// The start Offset from start of entire original file.
+        ///     The start Offset from start of entire original file.
         /// </param>
         /// <param name="endOffset">
-        /// The end Offset from start of entire original file.
+        ///     The end Offset from start of entire original file.
         /// </param>
         /// <param name="targetSampleRateHz">
-        /// The target Sample Rate Hz.
+        ///     The target Sample Rate Hz.
         /// </param>
         /// <param name="temporaryFilesDirectory">
-        /// The directory for temporary files.
+        ///     The directory for temporary files.
         /// </param>
+        /// <param name="mixDownToMono"></param>
         /// <returns>
         /// The prepared file.
         /// </returns>
-        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory);
+        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, bool? mixDownToMono);
 
         /// <summary>
         /// Calculate the file segments for analysis.

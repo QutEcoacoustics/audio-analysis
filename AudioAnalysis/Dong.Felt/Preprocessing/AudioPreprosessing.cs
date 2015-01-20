@@ -208,48 +208,17 @@ namespace Dong.Felt.Preprocessing
             image.Save(annotatedImagePath);
         }
 
-
-        /// <summary>
-        /// This method aims to compress spectrogram data by extracting particular pixels, like choose maximum every 3 pixel.  
-        /// </summary>
-        /// <param name="spectrogramData"></param>
-        /// <param name="compressStep">compress step, could be 1/2, 1/4, 1/8....
-        /// </param>
-        /// <returns></returns>
-        public static double[,] CompressSpectrogram(double[,] spectrogramData, double compressRate)
+        public static double[,] CompressSpectrogram(double[,] spectrogramData, CompressSpectrogramConfig compressConfig)
         {
-            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
-            var rowsCount = matrix.GetLength(0);
-            var colsCount = matrix.GetLength(1);
-            var compressStep = (int)(1 / compressRate);
-            var result = new double[colsCount, rowsCount];
-            for (var r = 0; r < rowsCount; r++)
+            if (compressConfig.TimeCompressRate != 1.0)
             {
-                for (var c = 0; c < colsCount; c+=compressStep)
-                {
-                    var maxValue = 0.0;                   
-                    var maxIndex = 0;
-                    var localMaxIndex = 0;
-                    if (c + compressStep < colsCount)
-                    {
-                        maxIndex = compressStep;
-                    }
-                    else
-                    {
-                        maxIndex = colsCount - c;
-                    }
-                    var tempData = new double[maxIndex];
-                    for (var step = 0; step < maxIndex; step++)
-                    {
-                        tempData[step] = matrix[r, c + step];
-                        maxValue = tempData.Max();                        
-                        StatisticalAnalysis.MaxIndex(tempData, out localMaxIndex);                       
-                    }
-                    var colIndex = c + localMaxIndex;
-                    result[colIndex, rowsCount - 1 - r] = maxValue;
-                }
+                spectrogramData = CompressSpectrogramInTime(spectrogramData, compressConfig.TimeCompressRate);
             }
-            return result;
+            if (compressConfig.FreqCompressRate != 1.0)
+            {
+                spectrogramData = CompressSpectrogramInFreq(spectrogramData, compressConfig.FreqCompressRate);
+            }
+            return spectrogramData;
         }
 
         /// <summary>
@@ -261,40 +230,47 @@ namespace Dong.Felt.Preprocessing
         /// <returns></returns>
         public static double[,] CompressSpectrogramInTime(double[,] spectrogramData, double compressRate)
         {
-            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
-            var rowsCount = matrix.GetLength(0);
-            var colsCount = matrix.GetLength(1);
-            var compressStep = (int)(1 / compressRate);
-            var compressedColsCount = colsCount / compressStep;
-            if (colsCount % compressStep != 0)
+            if (compressRate == 1.0)
             {
-                compressedColsCount++;
+                return null;
             }
-            var result = new double[compressedColsCount, rowsCount];
-            for (var r = 0; r < rowsCount; r++)
+            else
             {
-                for (var c = 0; c < colsCount; c += compressStep)
-                {                   
-                    var tempData = new List<double>();
-                    var maxIndex = 0;
-                    if (c + compressStep < colsCount)
-                    {
-                        maxIndex = compressStep;
-                    }
-                    else
-                    {
-                        maxIndex = colsCount - c;
-                    }
-                    for (var index = 0; index < maxIndex; index++)
-                    {
-                        tempData.Add(matrix[r, c+index]);
-                    }
-                    var maxValue = tempData.Max();
-                    var colIndex = c / compressStep;
-                    result[colIndex, rowsCount - 1 - r] = maxValue;
+                var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+                var rowsCount = matrix.GetLength(0);
+                var colsCount = matrix.GetLength(1);
+                var compressStep = (int)(1 / compressRate);
+                var compressedColsCount = colsCount / compressStep;
+                if (colsCount % compressStep != 0)
+                {
+                    compressedColsCount++;
                 }
+                var result = new double[compressedColsCount, rowsCount];
+                for (var r = 0; r < rowsCount; r++)
+                {
+                    for (var c = 0; c < colsCount; c += compressStep)
+                    {
+                        var tempData = new List<double>();
+                        var maxIndex = 0;
+                        if (c + compressStep < colsCount)
+                        {
+                            maxIndex = compressStep;
+                        }
+                        else
+                        {
+                            maxIndex = colsCount - c;
+                        }
+                        for (var index = 0; index < maxIndex; index++)
+                        {
+                            tempData.Add(matrix[r, c + index]);
+                        }
+                        var maxValue = tempData.Max();
+                        var colIndex = c / compressStep;
+                        result[colIndex, rowsCount - 1 - r] = maxValue;
+                    }
+                }
+                return result;
             }
-            return result;
         }
 
         /// <summary>

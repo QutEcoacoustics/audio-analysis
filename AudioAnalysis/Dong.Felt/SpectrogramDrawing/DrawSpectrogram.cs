@@ -32,22 +32,6 @@ namespace Dong.Felt.SpectrogramDrawing
             return image.GetImage();
         } //DrawSonogram()
 
-        public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent,
-            double eventThreshold, List<PointOfInterest> poiList, double compressRate)
-        {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            var tempDuration = TimeSpan.FromSeconds(sonogram.Duration.Seconds * compressRate);
-            image.AddTrack(Image_Track.GetTimeTrack(tempDuration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0, 0.0, 0));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            if ((acousticEvent != null) && (acousticEvent.Count > 0))
-            {
-                image.AddEvents(acousticEvent, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            }
-            return image.GetImage();
-        } //DrawSonogram()
-
         public static Image DrawRankingSonogram(BaseSonogram sonogram, List<double> scores, string s, string outputFilePath)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -207,10 +191,12 @@ namespace Dong.Felt.SpectrogramDrawing
         {
             foreach (var poi in poiList)
             {
-                //var xCoordinate = poi.Point.Y;
-                //var yCoordinate = poi.Point.X;
-                var xCoordinate = poi.Point.X;
-                var yCoordinate = poi.Point.Y;
+                /// This one is for ridge detection
+                var xCoordinate = poi.Point.Y;
+                var yCoordinate = poi.Point.X;
+                ///This one is for structure tensor
+                //var xCoordinate = poi.Point.X;
+                //var yCoordinate = poi.Point.Y;
                 spectrogram.Data[yCoordinate, cols - xCoordinate] = 20.0;
             }
             for (int r = 0; r < rows; r++)
@@ -679,7 +665,7 @@ namespace Dong.Felt.SpectrogramDrawing
                     queryAcousticEvent.BorderColour = Color.Crimson;
                     acousticEventlistForQuery.Add(queryAcousticEvent);                    
                     Image image = DrawSonogram(spectrogram, scores, acousticEventlistForQuery,
-                        eventThreshold, null, compressConfig.TimeCompressRate);
+                        eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in ridges)
                     {
@@ -696,11 +682,13 @@ namespace Dong.Felt.SpectrogramDrawing
                     var acousticEventlistForCandidate = new List<AcousticEvent>();
                     var candAcousticEvent = new AcousticEvent(startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
+                    candAcousticEvent.MaxFreq = candAcousticEvent.MaxFreq * compressConfig.FreqCompressRate;
+                    candAcousticEvent.MinFreq = candAcousticEvent.MinFreq * compressConfig.FreqCompressRate;
+                    candAcousticEvent.Duration = candAcousticEvent.Duration * compressConfig.TimeCompressRate;
+                    candAcousticEvent.TimeEnd = startTime + candAcousticEvent.Duration;
                     candAcousticEvent.BorderColour = Color.Green;
                     acousticEventlistForCandidate.Add(candAcousticEvent);
-                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
-                    Image image = DrawSonogram(spectrogram, scores, acousticEventlistForCandidate,
-                        eventThreshold, null, compressConfig.TimeCompressRate);
+                    Image image = DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     foreach (PointOfInterest poi in ridges)
                     {
