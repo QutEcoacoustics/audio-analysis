@@ -331,7 +331,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="MSBuild.Community.Tasks.ReadMe.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
