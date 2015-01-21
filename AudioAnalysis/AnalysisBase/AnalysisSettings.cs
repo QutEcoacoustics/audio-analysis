@@ -47,7 +47,7 @@ namespace AnalysisBase
         private int? instanceId = null;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
+        /// CONSTRUCTOR: Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
         /// </summary>
         public AnalysisSettings()
         {
@@ -212,6 +212,12 @@ namespace AnalysisBase
         /// For a large file, analyzed in minute segments, this will store Minute offsets (e.g. min 1, min 2, min 3...).
         /// </summary>
         public TimeSpan? SegmentStartOffset { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration of the sub-segment for which indices are calulated. 
+        /// Default = 60 seconds i.e. same duration as the Segment.
+        /// </summary>
+        public TimeSpan? IndexCalculationDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
