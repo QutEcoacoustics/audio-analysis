@@ -834,7 +834,7 @@ namespace TowseyLibrary
         {
             if (boolArray[i])
             {
-                    counter++;
+                counter++;
                 if (! inEvent)
                 {
                     inEvent = true;

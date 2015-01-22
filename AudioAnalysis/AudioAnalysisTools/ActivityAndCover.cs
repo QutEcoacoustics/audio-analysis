@@ -22,16 +22,16 @@ namespace AudioAnalysisTools
     /// </summary>
     public class SummaryActivity
     {
-        public double percentActiveFrames, activeAvDB;
+        public double fractionOfActiveFrames, activeAvDB, eventCount;
         public TimeSpan avEventDuration;
-        public int activeFrameCount, eventCount;
+        public int activeFrameCount;
         public bool[] activeFrames, eventLocations;
 
-        public SummaryActivity(bool[] _activeFrames, int _activeFrameCount, double _activeAvDB, bool[] _events, int _eventCount, TimeSpan _avEventDuration)
+        public SummaryActivity(bool[] _activeFrames, int _activeFrameCount, double _activeAvDB, bool[] _events, double _eventCount, TimeSpan _avEventDuration)
         {
             activeFrames = _activeFrames;
             activeFrameCount = _activeFrameCount;
-            percentActiveFrames = activeFrameCount * 100 / (double)activeFrames.Length;
+            fractionOfActiveFrames = activeFrameCount / (double)activeFrames.Length;
             activeAvDB = _activeAvDB;
             eventCount = _eventCount;
             avEventDuration = _avEventDuration;
@@ -96,15 +96,16 @@ namespace AudioAnalysisTools
                 return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, new bool[dBarray.Length], 0, TimeSpan.Zero);
 
 
-            // store record of events longer than one frame
+            // store record of events
             bool[] events = (bool[]) activeFrames.Clone();
+            // remove one frame events
             for (int i = 1; i < activeFrames.Length - 1; i++)
             {
                 if (!events[i - 1] && events[i] && !events[i + 1])
                     events[i] = false; //remove solitary active frames
             }
 
-            //bool[] events2 = {false, false, true, true, true, false, true, true, false, false, true, true, true}; //3 events; lenths = 3, 2, 3
+            //bool[] events2 = {false, false, true, true, true, false, true, true, false, false, true, true, true}; //3 events; lengths = 3, 2, 3
             List<int> eventList = DataTools.GetEventLengths(events);
             var filtered = eventList.Where(x => x >= minFrameLength);
             int eventCount = filtered.Count();
@@ -150,7 +151,7 @@ namespace AudioAnalysisTools
                 activity = ActivityAndCover.CalculateActivity(bin, frameDuration);
                 //bool[] a1 = activity.activeFrames;
                 //int a2 = activity.activeFrameCount;
-                coverSpectrum[c] = activity.percentActiveFrames; 
+                coverSpectrum[c] = activity.fractionOfActiveFrames; 
                 //double a4 = activity.activeAvDB;
                 eventSpectrum[c] = activity.eventCount / recordingDuration;
                 //TimeSpan a6 = activity.avEventDuration;
