@@ -187,7 +187,14 @@ namespace AudioAnalysisTools.Indices
 
 
                 double[] initArray = (new double[spectrumLength]).FastFill(kvp.Value.DefaultValue);
-                this.SetPropertyValue(kvp.Key, initArray);
+                try
+                {
+                    this.SetPropertyValue(kvp.Key, initArray);
+                }
+                catch(Exception e)
+                {
+                    LoggedConsole.WriteWarnLine("The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexvalues class!");
+                }
             }
         }
 

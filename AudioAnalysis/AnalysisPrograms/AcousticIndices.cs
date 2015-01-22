@@ -345,29 +345,37 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
-
-            // ######################################################################
-            var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings);
-
-            // ######################################################################
-            if (indexCalculateResult == null)
+            double recordingDuration = recording.Duration().TotalSeconds;
+            TimeSpan ts = (TimeSpan)analysisSettings.IndexCalculationDuration;
+            double subsegmentDuration = ts.TotalSeconds;
+            int subsegmentCount = (int)Math.Floor(recordingDuration / subsegmentDuration);
+            for (int i = 0; i < subsegmentCount; i++ )
             {
-                return analysisResults; // nothing to process 
+
+                analysisSettings.SubsegmentOffset = TimeSpan.FromSeconds(i * subsegmentDuration);
+
+                // ######################################################################
+                var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings);
+
+                // ######################################################################
+                if (indexCalculateResult == null)
+                {
+                    return analysisResults; // nothing to process 
+                }
+
+                analysisResults.SummaryIndices = new SummaryIndexBase[] { indexCalculateResult.SummaryIndexValues };
+                analysisResults.SpectralIndices = new SpectralIndexBase[] { indexCalculateResult.SpectralIndexValues };
             }
 
-            analysisResults.SummaryIndices = new SummaryIndexBase[] { indexCalculateResult.SummaryIndexValues };
-            analysisResults.SpectralIndices = new SpectralIndexBase[] { indexCalculateResult.SpectralIndexValues };
+            //if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
+            //{
+            //    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
+            //    var image = DrawSonogram(indexCalculateResult.Sg, indexCalculateResult.Hits, indexCalculateResult.TrackScores, indexCalculateResult.Tracks);
+            //    image.Save(imagePath, ImageFormat.Png);
+            //    analysisResults.ImageFile = new FileInfo(imagePath);
 
-
-            if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
-            {
-                string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
-                var image = DrawSonogram(indexCalculateResult.Sg, indexCalculateResult.Hits, indexCalculateResult.TrackScores, indexCalculateResult.Tracks);
-                image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = new FileInfo(imagePath);
-
-                // ############################### SAVE OSCILLATION IMAGE HERE ###############################
-            }
+            //    // ############################### SAVE OSCILLATION IMAGE HERE ###############################
+            //}
 
             if (analysisSettings.SummaryIndicesFile != null)
             {

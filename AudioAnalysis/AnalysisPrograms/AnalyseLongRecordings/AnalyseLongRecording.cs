@@ -72,10 +72,15 @@ Output  to  directory: {1}
                 tempFilesDirectory = arguments.Output;
             }
 
-            LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.Name);
+            LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
+
+            if (!sourceAudio.Exists)
+            {
+                Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
+            }
 
             // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -127,7 +132,7 @@ Output  to  directory: {1}
             }
             else
             {
-                Log.Warn("Both offsets were not provided, thus all ignored");
+                Log.Warn("Neither start nor end segment offsets provided. Therefore ignored");
             }
 
             // 5. initialise the analyser
@@ -154,16 +159,28 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
             }
 
-            // set overlap
+            // set IndexCalculationDuration i.e. duration of a subsegment
             try
             {
-                int rawOverlap = configuration[AnalysisKeys.SegmentOverlap];
-                analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
+                int indexCalculationDuration = configuration[AnalysisKeys.IndexCalculationDuration];
+                analysisSettings.IndexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDuration);
             }
             catch (Exception ex)
             {
-                analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
-                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value  of " + analysisSettings.SegmentOverlapDuration + " used)");
+                analysisSettings.IndexCalculationDuration = TimeSpan.FromSeconds(60);
+                Log.Warn("Cannot read IndexCalculationDuration from config file (Exceptions squashed. Used default value = " + analysisSettings.IndexCalculationDuration + ")");
+            }
+
+            // set background noise neighbourhood
+            try
+            {
+                int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                analysisSettings.BGNoiseNeighbourhood = TimeSpan.FromSeconds(bgnNh);
+            }
+            catch (Exception ex)
+            {
+                analysisSettings.BGNoiseNeighbourhood = analysisSettings.SegmentMaxDuration;
+                Log.Warn("Cannot read BGNNeighbourhood from config file (Exceptions squashed. Used default value = " + analysisSettings.BGNoiseNeighbourhood + ")");
             }
 
             // set target sample rate

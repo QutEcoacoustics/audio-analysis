@@ -220,6 +220,21 @@ namespace AnalysisBase
         public TimeSpan? IndexCalculationDuration { get; set; }
 
         /// <summary>
+        /// Gets or sets the start time of the required subsegment relative to start of segment. 
+        /// Units = seconds
+        /// </summary>
+        public TimeSpan? SubsegmentOffset { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
+        /// Units = seconds
+        /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighbourhood = 10 seconds) 
+        ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
+        ///                In case of edge effects, the BGnoise neighbourhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
+        /// </summary>
+        public TimeSpan? BGNoiseNeighbourhood { get; set; }
+
+        /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
         /// This is initially set to the value of the <c>DefaultTargetSampleRateKey</c> setting in the app.config.
         /// This used to be set by a constant in each implementation of an analysis.
