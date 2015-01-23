@@ -78,6 +78,7 @@ ReadTagsFromDb <- function (fields = c('start_date',
         # TODO: multi part of day minute selection
         # currently selects from the start of the first part 
         # until the end of the last partQ
+        # TODO: this is broken!
         
         range <- GetTargetRange()
         
@@ -155,13 +156,26 @@ ReadTagsFromDb <- function (fields = c('start_date',
     data <- fetch(res, n = - 1)
     mysqlCloseConnection(con)
     Report(5, 'query complete')
+    data$site <- MapSites(data$site, FALSE)
     return(data)
 }
 
-MapSites <- function (sites) {
+MapSites <- function (sites, to.db = TRUE) {
+    # site names in the database are sometimes different from how we label them
+    # in this system. This function converts between the names before and after
+    # making database queries
     
-    from <- c('NE', 'NW', 'SE', 'SW')
-    to <- c('NE', 'NW', 'SE', 'SW Backup')
+    r.vals <- c('NE', 'NW', 'SE', 'SW')
+    db.vals <- c('NE', 'NW', 'SE', 'SW Backup')
+    
+    if (to.db) {
+        from <- r.vals
+        to <- db.vals
+    } else {
+        from <- db.vals
+        to <- r.vals
+    }
+    
     mapped <- to[match(sites, from)]
     if (any(is.na(mapped))) {
         stop('invalid site for database query')
@@ -187,5 +201,33 @@ InspectTags <- function () {
     plot(tags$min, col = rgb(0,0,0,0.2))
 }
 
-
+DayByDaySummary <- function () {
+    
+    days <- c('NE', '2010-10-13',
+              'NE', '2010-10-14',
+              'NE', '2010-10-17',
+              'NW', '2010-10-13',
+              'NW', '2010-10-14',
+              'SE', '2010-10-13',
+              'SE', '2010-10-17',
+              'SW', '2010-10-16'
+              )
+    
+    days <- as.data.frame(matrix(days, ncol = 2, byrow = TRUE))
+    days <- cbind(days, rep(NA, nrow(days)))
+    colnames(days) <- c('site', 'date', 'num.species')
+    
+    tags <- GetTags(target.only = FALSE)
+    
+    for (d in 1:nrow(days)) {  
+        days$num.species[d] <- length(unique(tags$species.id[tags$site == as.character(days$site[d]) & tags$date == as.character(days$date[d])]))  
+    }
+    
+    total <- length(unique(tags$species.id))
+    
+    days <- rbind(days, data.frame(site = 'total', date = '', num.species = total))
+    
+    return(days)
+    
+}
 

@@ -261,6 +261,32 @@ Report <- function (level, ..., nl.before = FALSE, nl.after = TRUE) {
     }
 }
 
+ReportAnimated <- function (level, ..., nl.before = FALSE, nl.after = TRUE, duration = NULL, after = 4) {
+    # prints to screen, but does it one character at a time
+    if (level <= g.report.level) {
+        if (nl.before) {
+            cat("\n")
+        }
+        str <- paste(c(paste(as.vector(list(...)),  collapse = " ")), collapse = "")
+        str <- strsplit(str, '')[[1]]
+        str <- c(str, rep(".", round(after*length(str))))
+        if (is.null(duration)) {
+            sleep.for <- 0.1
+        } else {
+            sleep.for <- duration / length(str)  
+        }
+
+        for (char in str) {
+            cat(char)
+            Sys.sleep(sleep.for)
+        }
+        
+        if (nl.after) {
+            cat("\n")
+        }
+    }
+}
+
 Dot <- function(level = 5) {
     #outputs a dot, used for feedback during long loops
     if (level <= g.report.level) {

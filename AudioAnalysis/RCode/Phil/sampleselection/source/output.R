@@ -18,9 +18,20 @@ ClearAccessLog <- function () {
 SetLastAccessed <- function (name, meta.row) {
     g.access.log[[name]] <<- meta.row  
 }
-GetLastAccessed <- function (name) {
-    if (!is.null(g.access.log[[name]])) {
-        return(g.access.log[[name]])
+GetLastAccessed <- function (name, params = NULL, dependencies = NULL, version = NULL) {
+    # checks the last accessed log for the output type of 'name' and 
+    # returns it if the params, dependencies and version match, 
+    # otherwise returns false
+    if (!is.null(g.access.log[[name]])) {     
+        if (!is.null(params) && g.access.log[[name]]$params != toJSON(params)) {
+            return(FALSE)
+        } else if (!is.null(dependencies) && g.access.log[[name]]$dependencies != toJSON(dependencies)) {
+            return(FALSE)
+        } else if (!is.null(version) && g.access.log[[name]]$version != version) {
+            return(FALSE)
+        } else {
+            return(g.access.log[[name]])
+        }
     } else {
         return(FALSE)
     }
@@ -103,32 +114,36 @@ GetOutputTypes <- function () {
 }
 
 
-ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = NA, dependencies = NA, false.if.missing = FALSE, optional = FALSE, use.last.accessed = TRUE) {
+ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = NULL, dependencies = NULL, false.if.missing = FALSE, optional = FALSE, use.last.accessed = TRUE, version = NULL) {
     # reads the output for type 'name' 
     #
     # Args:
-    #   name: string; the output to read, eg "clusters", "features" etc
+    #   name: string; Optional. the output to read, eg "clusters", "features" etc.  If ommited, will first ask the user which type of output they want
     #   purpose: string; just to display to the user
     #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
+    #   params: list; Optional. If supplied, will only consider returing output with the matching params
+    #   dependencies: list; optional. If supplied, will only consider returning output with the matching 
     #   false.if.missing: bool; if true, will return false if the file is missing
     #   optional: boolean; if true, an option is added to select none and return false
     #   use.last.accessed: boolean; if true (default) will look for the version that was last written or read in this session
+    #   version: int; If the required version is known, then it can be supplied. This version will be used if it exists
     #
     # Value:
     #   if include.meta, will return a list that has a 'data' key, that contains the data read in
     #   if include.meta is false, will return the data read in, eg data frame if it's a csv
     #
     # Details:
-    #    first looks for the last accessed version of this output type
-    #    if it can't find it, then it will ask for user input. This means that 
-    #    only one version of a particular output type can be used within the same run
-    #    if the file is found, then it will set the 'last accessed' flag 
-    #    on the chosen output and it dependencies
-    #    Output data-type is different depending on the name of the output, for example, binary object for clustering
-    #    and and CSV for features
+    #    1) if name is not supplied, will ask user, 
+    #    2) then if version is supplied, find the that version of the output type. If it doesn't exist, will return false or stop
+    #    3) looks for the last accessed version if it matches the version OR  params, dependencies
+    #    4) if no matching last accessed verion is found, it will ask the user to select a version
+    #       This means that for a particular set of params and dependencies, only one version of a particular output type can be used within the same run
+    #    5) if the file is found, then it will set the 'last accessed' flag 
+    #       on the chosen output and it dependencies
+    #    6) Output data-type is different depending on the name of the output, for example, binary object for clustering
+    #       and and CSV for features. This is defined in the GetType function
     
     if (is.na(name)) {
-        
         # if name is ommited from function call, get user input
         # this should only happen when calling directly from the commandline
         choices = GetOutputTypes()
@@ -141,14 +156,12 @@ ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = N
     }
 
     if (use.last.accessed) {
-        #todo: check if last accessed has the same dependencies and params as specified
-        #      and only use if true
-        meta.row <- GetLastAccessed(name) 
+        meta.row <- GetLastAccessed(name, params, dependencies, version) 
     } else {
         meta.row <- FALSE
     }
     if (!is.data.frame(meta.row) || optional) {
-        meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional)
+        meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional = optional, version = version)
         if (!is.data.frame(meta.row)) {
             return(FALSE)
         }
@@ -328,6 +341,15 @@ MakeMetaRow <- function (name, v.num, params = list(), dependencies = list(), da
     return(row)
 }
 
+GetMeta <- function (name, version) {
+    meta <- ReadMeta()
+    meta <- meta[meta$name == name & meta$version == version,]
+    meta <- as.list(meta)
+    meta$params <- fromJSON(meta$params)
+    meta$dependencies <- fromJSON(meta$dependencies)
+    return(meta)
+}
+
 DateTime <- function () {
     return(format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
 }
@@ -341,7 +363,7 @@ WriteMeta <- function (meta) {
 
 
 
-ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = FALSE, optional = FALSE) {
+ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = FALSE, optional = FALSE, version = NULL) {
     # gets user input to choose a version of output to read
     #
     # Args:
@@ -375,6 +397,10 @@ ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = 
         dependencies <- toJSON(dependencies)
         filter[name.meta$dependencies != dependencies] <- FALSE
     }
+    if (!is.null(version)) {
+        filter[name.meta$version != version] <- FALSE
+    }
+    
 
     name.meta <- name.meta[filter, ] 
     
@@ -383,12 +409,21 @@ ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = 
             return(FALSE)
         }
         stop(paste("Missing output file with specified params:", name, params))
-    }
+    } 
     choices <- sapply(name.meta$version, function (v.num) {
         params <- GetParams.recursive(name, v.num, meta)
         return(MultiParamsToString(params))
     })
-    which.version <- GetUserChoice(choices, optional = optional)
+    if (nrow(name.meta) == 1) {
+        # we only have one thing to choose from, so choose it for them
+        # but show them which one is being chosen
+        ReportAnimated(5, choices[1], duration = 6)
+        which.version <- 1
+    } else {
+        which.version <- GetUserChoice(choices, optional = optional)   
+    }
+    
+
     if (which.version == 0 && optional) {
         return(FALSE)
     } else {

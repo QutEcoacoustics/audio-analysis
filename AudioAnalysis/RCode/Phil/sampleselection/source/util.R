@@ -316,13 +316,12 @@ OrderBy <- function (df, col, decreasing = FALSE) {
     return(df)
 }
 
-Truncate <- function (v, num) {
-    if (length(v) > num) {
+Truncate <- function (v, num = NA) {
+    if (is.numeric(num) && length(v) > num) {
         return(v[1:num])
     } else {
         return(v)
     }
-    
 }
 
 ExplodeDatetime <- function (datetime) {
