@@ -156,25 +156,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //SpectralIndicesToAndFromTable.ReadAllSpectralIndicesAndWriteToDataTable(indexPropertiesConfig, inputDirInfo, dataTableDirInfo);
 
 
-            // ############ use next three lines to obtain slices at constant DAY OF YEAR
+            // ############ use next seven lines to obtain slices at constant DAY OF YEAR
             string key = keyDayOfYear;
             int step = 1;
-            int maxSliceCount = LDSpectrogram3D.Total_Days_In_Year;
+            int firstIndex = 71;
+            int maxSliceCount = LDSpectrogram3D.Total_Days_In_Year + 1;
             var XInterval = TimeSpan.FromMinutes(60); // one hour intervals = 60 pixels
             int rowID = 3; // FreqBin
             int colID = 2; // MinOfDay
 
-            // ############ use next three lines to obtain slices at constant FREQUENCY
+            // ############ use next seven lines to obtain slices at constant FREQUENCY
             //string key = keyFreqBin;
             //int step = 100;
+            //int firstIndex = 0;
             //int maxSliceCount = nyquistFreq;
             //var XInterval = TimeSpan.FromMinutes(60);
             //int rowID = 1; // DayOfYear
             //int colID = 2; // MinOfDay
 
-            // ############ use next three lines to obtain slices at constant MINUTE OF DAY
+            // ############ use next seven lines to obtain slices at constant MINUTE OF DAY
             //string key = keyMinOfDay;
             //int step = 5;
+            //int firstIndex = 0;
             //int maxSliceCount = LDSpectrogram3D.Total_Minutes_In_Day;
             //var XInterval = TimeSpan.FromDays(30.4); // average days per month
             //int rowID = 3; // FreqBin
@@ -188,10 +191,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int bluID = 7; // CVR
             int year = 2013;
 
-            for (int sliceID = 0; sliceID < maxSliceCount; sliceID += step)
+            for (int sliceID = firstIndex; sliceID < maxSliceCount; sliceID += step)
             {
                 // DEFINE THE SLICE
-                //int sliceID = 300; // Herz
+                //sliceID = 300; // Herz
                 int arrayID = sliceID;
                 if (key == "FreqBin")
                     arrayID = (int)Math.Round(sliceID / (double)freqBinWidth);
@@ -207,7 +210,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
                 else
                 {
-                    data = LDSpectrogram3D.GetDataSlice(dataTableDirInfo, key, arrayID);
+                    if (key == keyDayOfYear)
+                    {
+                        data = LDSpectrogram3D.GetDaySlice(dataTableDirInfo, year, arrayID);
+                    }
+                    else
+                    {
+                        data = LDSpectrogram3D.GetDataSlice(dataTableDirInfo, key, arrayID);
+                    }
                     FileTools.WriteTextFile(path, data);
                 }
 
@@ -230,7 +240,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 outputFileName = String.Format("{0}.png", fileStem);
                 path = Path.Combine(opDir.FullName, outputFileName);
                 image.Save(path);
-            } // end loop trhough slices
+            } // end loop through slices
 
         } // end Main()
 
@@ -332,7 +342,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Font stringFont = new Font("Arial", 12);
             //Font stringFont = new Font("Tahoma", 9);
 
-            DateTime theDate = new DateTime(year, 1, 1).AddDays(dayOfYear);
+            DateTime theDate = new DateTime(year, 1, 1).AddDays(dayOfYear-1);
             string dateString = String.Format("{0} {1} {2:d2}", year, DataTools.MonthNames[theDate.Month-1], theDate.Day);
             g.DrawString(dateString, stringFont, Brushes.Wheat, new PointF(10, 3));
 
@@ -462,9 +472,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-
+        /// <summary>
+        /// This method assumes that the argument "dayValue" will not take zero value i.e. dayValue=1 represents January 1st.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="sunriseSetData"></param>
+        /// <param name="dayValue"></param>
+        /// <returns></returns>
         public static Bitmap AddSunTrackToImage(int width, FileInfo sunriseSetData, int dayValue)
         {
+            // if dayValue >= 366, then set dayValue = 365  
+            // i.e. a rough hack to deal with leap years and other astronomical catastrophes.
+            if (dayValue >= 366) dayValue = 365;
+
             List<string> lines = FileTools.ReadTextFile(sunriseSetData.FullName);
             int trackHeight = 10;
             Bitmap image = new Bitmap(width, trackHeight);
@@ -472,7 +492,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // if not leap year will not have 366 days
             if ((lines.Count-1) <= dayValue) return image;
             
-            string[] fields = lines[dayValue + 1].Split(',');
+            string[] fields = lines[dayValue].Split(',');
             // the sunrise/sunset data has the following line format
             // DayOfyear	Date	Astro start	Astro end	Naut start	Naut end	Civil start	Civil end	Sunrise	  Sunset
             //    1	      1-Jan-13	3:24 AM	     8:19 PM	3:58 AM	     7:45 PM	4:30 AM	    7:13 PM	    4:56 AM	  6:47 PM
@@ -615,6 +635,43 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         }
 
+
+        /// <summary>
+        /// This method reads a single file containg a single day of index values.
+        /// The method assumes that the file name has following structure:  XXXXX_YYYYMMDD.SpectralIndices.PivotTable.csv
+        /// </summary>
+        /// <param name="dataTableDir"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static List<string> GetDaySlice(DirectoryInfo dataTableDir, int year, int dayOfYear)
+        {
+            string key = keyDayOfYear;
+            LoggedConsole.WriteLine("GetDataSlice() for DayOfYear=" + dayOfYear + ": ");
+
+            //get structure of the first file name in the directory
+            FileInfo[] fileList = dataTableDir.GetFiles();
+            FileInfo file = fileList[0];
+            // split the file name into component parts
+            string[] nameParts = file.Name.Split('.');
+            string[] stemParts = nameParts[0].Split('_');
+
+            DateTime date = new DateTime(year, 1, 1).AddDays(dayOfYear - 1); 
+            
+            //string stem = stemParts[0] + "_" + date.Year + date.Month + date.Day + "." + nameParts[1] + "." + nameParts[2] + nameParts[3];
+            string stem = String.Format("{0}_{1:d4}{2:d2}{3:d2}.{4}.{5}.{6}", stemParts[0], date.Year, date.Month, date.Day, nameParts[1], nameParts[2], nameParts[3]);
+
+
+            string path = Path.Combine(dataTableDir.FullName, stem);
+            if(! File.Exists(path)) 
+                return new List<string>();
+
+            List<string> list = FileTools.ReadSelectedLinesOfCsvFile(path, key, dayOfYear);
+            if (list == null) 
+                return new List<string>(); 
+            return list;
+        }
+
+
         public static List<string> GetDataSlice(DirectoryInfo dataTableDir, string key, int value)
         {
             LoggedConsole.Write("GetDataSlice() " + key + "=" + value + ": ");
@@ -625,15 +682,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             foreach (FileInfo file in fileList)
             {
                 Console.Write("."); // so impatient user knows something is happening!   
-                if (key == keyDayOfYear)
-                {
-                    // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
-                    string[] parts = file.Name.Split('.');
-                    parts = parts[0].Split('_');
-                    DateTime date = DataTools.Time_ConvertDateString2DayOfYear(parts[1]);
-                    value += 1;    // values start at zero but first day of year = 1
-                    if (value != date.DayOfYear) continue;
-                }
 
                 List<string> list = FileTools.ReadSelectedLinesOfCsvFile(file.FullName, key, value);
                 if (list == null) continue;
