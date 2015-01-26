@@ -27,12 +27,19 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
     #   use.last.accessed: if TRUE, will use the last version of ranked samples used (unless versions is set)
     #   version: numeric vector; if supplied, will do evaulation on each of the specified ranked samples versions
 
-    if (is.numeric(versions)) {
+    if (is.numeric(versions)) {        
+        results <- list()
         for (v in versions) {
             ranks <- ReadOutput('ranked.samples.ec', use.last.accessed = use.last.accessed, version = v)
             heading <- GetHeading(ranks)
-            EvaluateSamples2d.2(ranks, heading = heading) 
+            # plots results and returns SACs
+            results[[as.character(v)]] <- EvaluateSamples2d.2(ranks, heading = heading) 
         }
+        
+        return(results)
+        
+        
+        
     } else {
         ranks <- ReadOutput('ranked.samples.ec', use.last.accessed = use.last.accessed)
         heading <- GetHeading(ranks)
@@ -42,6 +49,81 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
 
 
 }
+
+
+Summary <- function (days) {
+    # given a list of evaluation results, including random at dawn and some ranking methods 
+    # calculates the average improvement over random at dawn
+    
+    
+    # each of the ranking methods
+    ranking.methods <- names(days[[1]])
+    
+    # each of the non-comparison ranking methods
+    to.score <- ranking.methods[!ranking.methods %in% c('optimal', 'random.at.dawn', 'random.all')]
+    
+    results <- list()
+    
+    max.val <- -100
+    min.val <- 100
+    
+    for (cur.to.score in to.score) {
+        
+        # each col is a day
+        # each row is a min
+        m <- matrix(NA, nrow = length(days[[1]][['random.at.dawn']]$mean), ncol = length(days))      
+        
+        for (d in 1:length(days)) {   
+            r.a.d <- days[[d]][['random.at.dawn']]$mean
+            ranked <- days[[d]][[cur.to.score]]
+            percent.improvement <- ((ranked / r.a.d) - 1) * 100
+            m[,d] <-  percent.improvement
+        }
+        
+        
+            
+        res.mean <- apply(m, 1, mean)
+        if (min(res.mean) < min.val) {
+            min.val <- min(res.mean)
+        }
+        if (max(res.mean) > max.val) {
+            max.val <- max(res.mean)
+        }
+        
+        
+        results[[cur.to.score]] <- res.mean
+    }
+    
+    cutoff <- 120
+
+    setup.data <- rep(max.val, cutoff)
+    setup.data[1] <- min.val
+    par(mar=c(5, 4, 4, 5) + 0.1, cex=1.4, col = 'black')
+    colors <- sapply(to.score, GetColorForName)
+    heading <- "Average improvement over random sampling at dawn"
+    plot(setup.data, main=heading, type = 'n', xlab="After this many minutes", ylab="mean % improvement over random at dawn")
+    for (i in 1:length(to.score)) {              
+        line <- results[[i]]
+        sd <- NA  
+        PlotLine(line, sd = sd, col.rgb = colors[,i], lty = 'solid')
+    }
+    
+    legend.names <- sapply(to.score, GetRankingLegendName)
+    legend.cols <- apply(colors, 2, RgbCol)
+    legend("bottomright",  legend = legend.names, 
+           col = legend.cols, 
+           lty = 'solid', text.col = "black", lwd = 2)
+    
+    par(col = 'black')
+    points(rep(0, 1440), type='l', lty = 'dotted', lwd = 2)
+
+    
+    return(results)
+    
+    
+    
+}
+
 
 GetHeading <- function (ranks) {
     target.min.ids <- GetMeta('target.min.ids', ranks$dependencies$target.min.ids)
@@ -220,13 +302,13 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA, heading =
     
     if (IsDawn(mins.for.comparison$min)) {
         # if any of the mins are in dawn, do the random at dawn for comparison agains our results
-        random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, mins.for.comparison$min.id, dawn.first = TRUE)   
+        random.at.dawn <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, mins.for.comparison$min.id, dawn.first = TRUE, num.repetitions = 100)   
     } else {
         random.at.dawn <- NA
     }
     
     
-    random.all <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, mins.for.comparison$min.id, dawn.first = FALSE)
+    random.all <- RandomSamples(speciesmins = speciesmins, species.in.each.sample, mins.for.comparison$min.id, dawn.first = FALSE, num.repetitions = 100)
     #from.indices <- IndicesProgression(species.in.each.sample, min.ids)
 
 
@@ -242,8 +324,10 @@ EvaluateSamples2d.2 <- function (ranks, add.dawn = FALSE, cutoff = NA, heading =
     filepath <- file.path('/Users/n8933464/Documents/sample_selection_output/plots', fn)
     heading <- paste("Species accumulation Curve:", heading)
 
+    progressions <- c(ranked.count.progressions, comparison.progressions)
+    GraphProgressions(progressions, heading = heading, fn = filepath)
 
-    GraphProgressions(progressions = c(ranked.count.progressions, comparison.progressions), heading = heading, fn = filepath)
+    return(progressions)
     
 }
 
@@ -547,7 +631,7 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
 
 
 GraphProgressions <- function (progressions, 
-                               cutoff = 150, 
+                               cutoff = 120, 
                                heading = NULL,
                                fn = NULL) {
     
@@ -571,7 +655,7 @@ GraphProgressions <- function (progressions,
     
     if (!is.null(fn)) {
         png(filename = fn,
-            width = 900, height = 600, units = "px", pointsize = 13,
+            width = 700, height = 700, units = "px", pointsize = 13,
             bg = "white",  res = NA,
             type = c("cairo", "cairo-png", "Xlib", "quartz"))
     }
@@ -583,6 +667,7 @@ GraphProgressions <- function (progressions,
 
     plot.width <- 0
     plot.height <- 0
+    #TODO: don't really need to truncate, just define the width for the plot and it will be cropped
         for (i in 1:length(progressions)) {
             if (is.numeric(progressions[[i]])) {
                 progressions[[i]] <- Truncate(progressions[[i]], cutoff)
@@ -632,29 +717,9 @@ GraphProgressions <- function (progressions,
     line.styles <- rep('solid', length(progressions))
     line.styles[is.comparison.curve] <- 'dashed'
         
-    colors.1 <- list(
-        'optimal' = c(0.1,0.1,0.1),
-        'random.at.dawn' = c(0.0,0.8,0.0),
-        'random.all' = c(0.9,0.6,0.2),
-        'indices' = c(.3, .6, .6)
-    )
-    colors.2 <- list(
-        'r.1' = c(1,0.3,0),
-        'r.2' = c(0,0.6,0.9),
-        'r.3' = c(0.7,0.1,0.9),
-        'r.4' = c(0.8,0.2,0.2)
-    )
+
     
-    colors <- sapply(names(progressions), function (name) { 
-        if (name %in% names(colors.1)) {
-            return(colors.1[name])
-        } else {
-            return(FALSE)
-        }
-    })
-    if (sum(!is.comparison.curve) > 0) {
-        colors[!is.comparison.curve] <-  colors.2[1:sum(!is.comparison.curve)]
-    }
+    colors <- sapply(names(progressions), GetColorForName)
 
     
     p.names <- names(progressions)
@@ -666,10 +731,10 @@ GraphProgressions <- function (progressions,
             line <- progressions[[i]]
             sd <- NA
         }             
-        PlotLine(line, sd = sd, col.rgb = colors[[i]], lty = line.styles[i])
+        PlotLine(line, sd = sd, col.rgb = colors[,i], lty = line.styles[i])
     }
     
-    legend.cols <- sapply(colors, RgbCol)
+    legend.cols <- apply(colors, 2, RgbCol)
 
     legend.names <- p.names
     legend.names[!is.comparison.curve] <- sapply(legend.names[!is.comparison.curve], GetRankingLegendName)
@@ -679,11 +744,39 @@ GraphProgressions <- function (progressions,
            lty = line.styles, text.col = "black", lwd = 2)
 
     if (!is.null(fn)) {
-        dev.off()     
+        dev.off()   
     }
 
     
 }
+
+GetColorForName <- function (name) {
+    colors.1 <- list(
+        'optimal' = c(0.1,0.1,0.1),
+        'random.at.dawn' = c(0.0,0.8,0.0),
+        'random.all' = c(0.9,0.6,0.2),
+        'indices' = c(.3, .6, .6)
+    )
+    colors.2 <- list(
+        'c.1' = c(1,0.3,0),
+        'c.2' = c(0,0.6,0.9),
+        'c.3' = c(0.7,0.1,0.9),
+        'c.4' = c(0.8,0.2,0.2)
+    )
+    if (name %in% names(colors.1)) {
+        return(colors.1[[name]])
+    } else {
+        return(colors.2[[MapColor(name)]])
+    }   
+}
+
+MapColor <- function (rank.name) {
+    # maps ranking method names to colour names
+    # this can change between papers, but keep consistent within a paper
+    map <- list('X4' = 'c.1', 'X8' = 'c.2')
+    return(map[[rank.name]]) 
+}
+
 
 
 GetRankingLegendName <- function (ranking.code) {
