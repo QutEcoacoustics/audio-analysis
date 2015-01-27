@@ -198,7 +198,6 @@ namespace AudioAnalysisTools.DSP
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
             int maxAmplitudeCount, clipCount;
             Clipping.GetClippingCount(signal, envelope, frameStepSize, epsilon, out maxAmplitudeCount, out clipCount);
-            //int clipCount = Clipping.GetClippingCount(signal, envelope.Max(), epsilon);
 
             // Remove the DC column ie column zero from amplitude spectrogram.
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);

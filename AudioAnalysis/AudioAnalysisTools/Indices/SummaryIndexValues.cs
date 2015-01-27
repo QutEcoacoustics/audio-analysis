@@ -30,24 +30,32 @@ namespace AudioAnalysisTools.Indices
     using NeuralNets;
 
     using TowseyLibrary;
+    using AnalysisBase;
 
     public class IndexCalculateResult
     {
-        public IndexCalculateResult(TimeSpan wavDuration, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan startOffset)
+        //public IndexCalculateResult(TimeSpan wavDuration, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan startOffset)
+        public IndexCalculateResult(AnalysisSettings analysisSettings, int freqBinCount, Dictionary<string, IndexProperties> indexProperties)
         {
+            TimeSpan wavDuration = (TimeSpan)analysisSettings.IndexCalculationDuration; // subsegment TimeSpan
+            //TimeSpan startOffset = analysisSettings.SegmentStartOffset.Value; // offset from beginning of source audio
+            TimeSpan subsegmentOffsetFromStartOfSource = analysisSettings.SubsegmentOffset.Value; // offset from beginning of source audio
+
             this.Hits = null;
             this.Tracks = null;
             this.TrackScores = new List<Plot>();
 
             this.SummaryIndexValues = new SummaryIndexValues(wavDuration, indexProperties)
                                           {
-                                              // give the index a offset value so it can be sorted. 
-                                              StartOffset = startOffset
+                                              // give the results object an offset value so it can be sorted. 
+                                              StartOffset = subsegmentOffsetFromStartOfSource,
+                                              SegmentDuration = wavDuration
                                           };
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
                                            {
-                                               // give the index a offset value so it can be sorted. 
-                                               StartOffset = startOffset
+                                              // give the results object an offset value so it can be sorted. 
+                                              StartOffset = subsegmentOffsetFromStartOfSource,
+                                              SegmentDuration = wavDuration
                                            };
         }
 

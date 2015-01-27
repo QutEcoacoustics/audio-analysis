@@ -463,7 +463,7 @@
                    "If events were produced and an events file was expected, then the events file should exist");
            }
 
-           Debug.Assert(result.SummaryIndices != null, "The SummaryIndices array should never be null. No SummaryIndices should be represted by a zero length SummaryIndices array.");
+           Debug.Assert(result.SummaryIndices != null, "The SummaryIndices array should never be null. No SummaryIndices should be represented by a zero length SummaryIndices array.");
            if (result.SummaryIndices.Length != 0 && preAnalysisSettings.SummaryIndicesFile != null)
            {
                Debug.Assert(
@@ -471,7 +471,7 @@
                    "If SummaryIndices were produced and an SummaryIndices file was expected, then the SummaryIndices file should exist");
            }
 
-           Debug.Assert(result.SpectralIndices != null, "The SpectralIndices array should never be null. No SpectralIndices should be represted by a zero length SpectralIndices array.");
+           Debug.Assert(result.SpectralIndices != null, "The SpectralIndices array should never be null. No SpectralIndices should be represented by a zero length SpectralIndices array.");
            if (result.SpectralIndices.Length != 0 && preAnalysisSettings.SpectrumIndicesDirectory != null)
            {
                foreach (var spectraIndicesFile in result.SpectraIndicesFiles)
