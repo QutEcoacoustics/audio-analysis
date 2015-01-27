@@ -151,18 +151,17 @@
                     //featurePropertySet, outputDirectory.FullName);
 
                     /// Ridge detection analysis
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                    //    featurePropertySet);
-                    //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
-
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                        featurePropertySet);
                     /// Jie request ridge detection
-                    
+                    //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
+             
                     ///Automatic check
-                    OutputResults.ChangeCandidateFileName(inputDirectory);
-                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
-                    OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
-                    OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    //OutputResults.ChangeCandidateFileName(inputDirectory);
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
+                    //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
+                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
                     
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
@@ -265,8 +264,6 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    //spectrogram.Data = ImageAnalysisTools.Dilation(spectrogram.Data, 3);
-                    //spectrogram.Data = AudioPreprosessing.CompressSpectrogram(spectrogram.Data, compressConfig);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -274,14 +271,16 @@
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used                 
 
-                    var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
+                    var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
                     
                     var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     //var compressedRidgesInFreq = POISelection.RidgePoiSelection(compressSpectrogramInFreq, ridgeConfig, featurePropSet);
                     //ridges = POISelection.AddResizeRidgesInFreq(ridges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);
                     //spectrogram.Data = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, originalRidges, spectrogram.Data.GetLength(0),
-                    //    spectrogram.Data.GetLength(1));
+                    //    spectrogram.Data.GetLength(1));                    
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, originalRidges, rows, cols, out acousticEventlist);
+                    //ClusterAnalysis.ChangeEventBorderColor(acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     //foreach (PointOfInterest poi in originalRidges)
