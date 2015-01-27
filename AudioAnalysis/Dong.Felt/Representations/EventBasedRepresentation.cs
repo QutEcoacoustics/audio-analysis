@@ -39,7 +39,8 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// Take in ridges and detect events.
+        /// Take in ridges and form events.
+        /// This method aims to detect events from seperated (4 directional) ridges. 
         /// </summary>
         /// <param name="sonogram"></param>
         /// <param name="ridges"></param>
@@ -64,7 +65,7 @@ namespace Dong.Felt.Representations
             var horAcousticEvents = new List<AcousticEvent>();
             var posAcousticEvents = new List<AcousticEvent>();
             var negAcousticEvents = new List<AcousticEvent>();
-            ClusterAnalysis.RidgeListToEvent(sonogram, dividedPOIList[0],
+            ClusterAnalysis.SeperateRidgeListToEvent(sonogram, dividedPOIList[0],
                 dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
                 rows, cols,
                 out verAcousticEvents, out horAcousticEvents, out posAcousticEvents, out negAcousticEvents);

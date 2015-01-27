@@ -302,8 +302,8 @@ namespace Dong.Felt
                     var posDiSegmentList = new List<AcousticEvent>();
                     var negDiSegmentList = new List<AcousticEvent>();
                     var dividedPOIList = POISelection.POIListDivision(smoothedRidgesList);
-                    
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
+
+                    ClusterAnalysis.SeperateRidgeListToEvent(spectrogram, dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
                         rows, cols, out verSegmentList, out horSegmentList,
                         out posDiSegmentList, out negDiSegmentList);
                     //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
