@@ -23,7 +23,7 @@ DisplayWeightedIndices: false
 
 #SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
-SaveIntermediateCsvFiles: false
+SaveIntermediateCsvFiles: true
 SaveSonogramFiles: false
 DisplayCsvImage: true
 DoNoiseReduction: true

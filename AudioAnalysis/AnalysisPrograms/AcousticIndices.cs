@@ -349,33 +349,29 @@ namespace AnalysisPrograms
             TimeSpan ts = (TimeSpan)analysisSettings.IndexCalculationDuration;
             double subsegmentDuration = ts.TotalSeconds;
             int subsegmentCount = (int)Math.Floor(recordingDuration / subsegmentDuration);
+
+            analysisResults.SummaryIndices = new SummaryIndexBase[subsegmentCount];
+            analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
+
+            
             for (int i = 0; i < subsegmentCount; i++ )
             {
 
-                analysisSettings.SubsegmentOffset = TimeSpan.FromSeconds(i * subsegmentDuration);
+                analysisSettings.SubsegmentOffset = analysisSettings.SegmentStartOffset  + TimeSpan.FromSeconds(i * subsegmentDuration);
 
                 // ######################################################################
                 var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings);
 
                 // ######################################################################
-                if (indexCalculateResult == null)
-                {
-                    return analysisResults; // nothing to process 
-                }
+                //if (indexCalculateResult == null)
+                //{
+                //    return analysisResults; // nothing to process 
+                //}
 
-                analysisResults.SummaryIndices = new SummaryIndexBase[] { indexCalculateResult.SummaryIndexValues };
-                analysisResults.SpectralIndices = new SpectralIndexBase[] { indexCalculateResult.SpectralIndexValues };
-            }
+                analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
+                analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
 
-            //if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
-            //{
-            //    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
-            //    var image = DrawSonogram(indexCalculateResult.Sg, indexCalculateResult.Hits, indexCalculateResult.TrackScores, indexCalculateResult.Tracks);
-            //    image.Save(imagePath, ImageFormat.Png);
-            //    analysisResults.ImageFile = new FileInfo(imagePath);
-
-            //    // ############################### SAVE OSCILLATION IMAGE HERE ###############################
-            //}
+            } // subSegment loop
 
             if (analysisSettings.SummaryIndicesFile != null)
             {
@@ -388,6 +384,16 @@ namespace AnalysisPrograms
             {
                 this.WriteSpectrumIndicesFiles(analysisSettings.SpectrumIndicesDirectory, Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name), analysisResults.SpectralIndices);
             }
+            //if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
+            //{
+            //    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
+            //    var image = DrawSonogram(indexCalculateResult.Sg, indexCalculateResult.Hits, indexCalculateResult.TrackScores, indexCalculateResult.Tracks);
+            //    image.Save(imagePath, ImageFormat.Png);
+            //    analysisResults.ImageFile = new FileInfo(imagePath);
+
+            //    // ############################### SAVE OSCILLATION IMAGE HERE ###############################
+            //}
+
 
             return analysisResults;
         }
