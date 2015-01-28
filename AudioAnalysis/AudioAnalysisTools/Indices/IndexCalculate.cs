@@ -315,19 +315,20 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
             summaryIndexValues.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
 
+
             // (C) ################################## EXTRACT INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
                         
             // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
             deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
 
             // ii: Calculate background noise spectrum in decibels
+            spectra.BGN = spectralDecibelBGN;
+            //DataTools.writeBarGraph(spectralDecibelBGN);
+
+            // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM 
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBGN);
             nhThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold);
-            //ImageTools.DrawMatrix(deciBelSpectrogram, @"C:\SensorNetworks\Output\LSKiwi3\AfterRefactoring\Towsey.Acoustic\image.png", false);
-            //DataTools.writeBarGraph(indices.backgroundSpectrum);
-
-            // iii: CALCULATE AVERAGE DECIBEL SPECTRUM - and variance spectrum 
             var tuple2 = SpectrogramTools.CalculateSpectralAvAndVariance(deciBelSpectrogram);
             spectra.AVG = tuple2.Item1;
 
