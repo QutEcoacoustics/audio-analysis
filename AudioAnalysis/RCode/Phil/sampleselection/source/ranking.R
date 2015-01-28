@@ -356,18 +356,13 @@ IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) 
 
     # multiply each row by the distance score for that minute
     cluster.matrix <- cluster.matrix * mapped.multipliers
-    
     # add a column for the min id, 
     empty.col <- rep(-1, nrow(cluster.matrix))
-    
     rankings <- data.frame(temp.id = 1:nrow(cluster.matrix), rank = empty.col, score = empty.col)
     
     #initialise empty dataframe for storing the ranked minutes (including scores)
     #ranked.mins <- as.data.frame(matrix(rep(NA, 4*nrow(mins)), ncol = 4))
-    
     # repeatedly select the best scoring minute until all minutes have been selected
-    
-   
     
     for (i in 1:nrow(cluster.matrix)) {
         Dot()

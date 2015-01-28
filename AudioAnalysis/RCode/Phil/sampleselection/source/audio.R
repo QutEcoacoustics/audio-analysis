@@ -59,7 +59,50 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
     
 } 
 
+GetAudioFile <- function (site, date, mins) {
+    # audio is in a folder structure like:
+    # sitename/UID_YYMMDD-0000.mp3/UID_date-0000_0min.mp3
 
+    audio.dir <- Path('audio')
+    
+    site.dir <- file.path(audio.dir, site)
+    # need to upgrade R version for 'full.names' to work
+    # so, for workaround, use strsplit to do this manually   
+    day.folders <- list.dirs(site.dir, full.names = FALSE, recursive = FALSE)
+    day.folders <- strsplit(day.folders, "/", fixed = FALSE, perl = FALSE, useBytes = FALSE)
+    
+    day.folders <- sapply(day.folders, function (folder) {
+        folder <- folder[[length(folder)]] # get the last dir in the full path
+        date <- unlist(strsplit(unlist(strsplit(folder, c("_")))[2], "-"))[1]
+        prefix <- substr(folder,start=1,stop=(nchar(folder)-4))
+        return(c(folder, DateFromShortFormat(date), prefix))
+    })
+    day.folders <- as.data.frame(t(day.folders), stringsAsFactors = FALSE)
+    colnames(day.folders) <- c('folder', 'date', 'prefix')
+    day.folder <- day.folders[day.folders$date == date,]
+    
+    # files are done every 10 mins, so min should be rounded DOWN to the nearest min ending with 0
+    mins <- floor(mins/10)*10;
+    
+    min.suffix <- sapply(mins, function (min) {
+        paste0("_",as.character(min), "min.wav")
+    })
+    selected.files <- sapply(min.suffix, function (m) {
+        fn <- paste0(day.folder$prefix, m)
+        path <- file.path(site.dir, day.folder$folder, fn)
+        return(path)
+    })
+    return(as.character(selected.files))
+}
+
+DateFromShortFormat <- function (date, decade = '20') {
+    # converts a date string from YYMMDD to
+    # YYYY-MM-DD
+    YY <- substr(date,start=1,stop=2)
+    MM <- substr(date,start=3,stop=4)
+    DD <- substr(date,start=5,stop=6)
+    return(paste0(decade, YY, "-", MM, "-", DD))
+}
 
 
 DateTimeToFn <- function (site, start.datetime = NA, end.datetime = NA, start.date = NA, start.min = NA, ext = FALSE) {

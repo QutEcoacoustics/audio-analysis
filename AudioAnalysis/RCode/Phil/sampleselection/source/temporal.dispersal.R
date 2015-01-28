@@ -27,3 +27,28 @@ TransformDistScores <- function (dist.scores, threshold = 30, amount = 1) {
     return(dist.scores)
     
 }
+
+
+PlotFunction <- function ( threshold = 30, amount = 1, range = 50) {
+    # for illustration purposes, plots the temporal dispersal score transform function
+    
+    orig <- 0:range
+    transformed <- TransformDistScores(orig, threshold = threshold, amount = amount)
+    print(transformed)
+    
+    par(col = 'black')
+    heading <- ""
+    plot.height = 1.2
+    setup.data <- transformed 
+    setup.data[c(3,4)] <- c(0,plot.height)
+
+    par(mar=c(4, 4, 2, 2) + 0.1,    # margin
+        cex=1.1)                    #font size
+    plot(x = orig, y = setup.data, main=heading, type = 'n', xlab="Distance to nearest ranked sample (minutes)", ylab="score multiplier")
+    
+    points(x = orig, y = transformed, type='l', lty = 'dashed', lwd = 3)
+    
+    
+}
+
+

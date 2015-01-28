@@ -699,11 +699,12 @@ GraphProgressions <- function (progressions,
     
     setup.data <- rep(plot.height, plot.width)
     setup.data[1] <- 0
-    par(mar=c(5, 4, 4, 5) + 0.1, cex=1.4)
+    par(mar=c(4, 3, 3, 4) + 0.1,    # margin
+        cex=1.4)                    #font size
     plot(setup.data, main=heading, type = 'n', xlab="After this many minutes", ylab="Number of species found")
     
     percent.ticks.at <- (0:6)/6
-    axis(4, at=percent.ticks.at*60, labels=round(percent.ticks.at*100))
+    axis(4, at=percent.ticks.at*plot.height, labels=round(percent.ticks.at*100))
     mtext("% of total", side=4, line=2.5)
     par(cex=1.2)
 

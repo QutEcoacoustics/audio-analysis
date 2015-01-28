@@ -2,6 +2,14 @@ g.output.parent.dir <- "/Users/n8933464/Documents/sample_selection_output"
 g.output.master.dir <- file.path(g.output.parent.dir, 'master')
 g.hash.dir <- file.path(g.output.parent.dir, 'hash')
 g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')
+
+
+g.cachepath <- c(
+    '/Volumes/files/qut_data/cache'
+    )
+
+
+
 require('rjson')
 
 # the way the output works is that each output file will have parameters and dependent output
@@ -586,7 +594,8 @@ HashFileContents <- function (filepaths) {
 }
 
 CachePath <- function (cache.id) {
-    return(file.path(g.output.parent.dir, 'cache', cache.id))
+    cache.dir <- Path('audio')
+    return(file.path(cache.dir, cache.id))
 }
 
 ReadCache <- function (cache.id) {

@@ -2,7 +2,7 @@
 
 
 
-DoFeatureExtraction <- function (min.id = FALSE) {
+DoFeatureExtraction <- function (min.id = FALSE, event.ids = NULL, all.events = NULL) {
     # performs feature extraction on the outer target events
     # i.e. the events which fall within the target sites/dates/times, 
     #      but ignoring the percent of target
@@ -16,11 +16,18 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     #   the events are sorted by site then date then start second. 
     
     library('tuneR')
-    all.events <- ReadOutput('all.events', purpose = "feature extraction")
-    if (min.id == FALSE) {
+    if (is.null(all.events)) {
+        all.events <- ReadOutput('all.events', purpose = "feature extraction")
+    }
+
+    if (is.numeric(event.ids)) {
+        # mainly for debugging, can pass an event id to only do that event
+        events <- all.events$data[all.events$data$event.id %in% event.ids,]
+    
+    } else if (min.id == FALSE) {
         # this will do feature extraction not on the 'target minutes' but
         # on the the 'target subset'. See minutes.R for the difference
-        events <- TargetSubset(all.events$data)        
+        events <- TargetSubset(all.events$data, g.target)        
     } else {
         events <- all.events$data[all.events$data$min.id == min.id, ]
     }
@@ -30,11 +37,13 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     params <- list()
     dependencies <- list(all.events = all.events$version)
     
-    already.extracted.features <- ReadOutput('all.features', purpose = 'adding to features', params = params, false.if.missing = TRUE)
-    already.rated.events <- ReadOutput('all.rating.features', purpose = 'adding to rating features', params = params, false.if.missing = TRUE)
+    already.extracted.features <- ReadOutput('all.features', purpose = 'adding to features', params = params, dependencies = dependencies, false.if.missing = TRUE)
+    already.rated.events <- ReadOutput('all.rating.features', purpose = 'adding to rating features', params = params, dependencies = dependencies, false.if.missing = TRUE)
     
-    already.extracted.features <- already.extracted.features$data
-    already.rated.events <- already.rated.events$data
+    if (is.list(already.extracted.features)) {
+        already.extracted.features <- already.extracted.features$data
+        already.rated.events <- already.rated.events$data
+    }
     
     # features will be calculated and added to the already extracted features
     # therefore, don't calculate for events which are already calculated
@@ -61,7 +70,10 @@ DoFeatureExtraction <- function (min.id = FALSE) {
                              events$top.f[ev],
                              events$bottom.f[ev]))
         #fn <- EventFile(events$site[ev], events$date[ev], events$min[ev], ext = 'wav')
-        wav.path <- file.path(g.audio.dir, paste(events$filename[ev], 'wav', sep='.'))
+        #wav.path <- file.path(g.audio.dir, paste(events$filename[ev], 'wav', sep='.'))
+        
+        wav.path <- GetAudioFile(events$site[ev], events$date[ev], events$min[ev])
+        
         if (wav.path != cur.wav.path) {
             if (ev > 1) {
                 #not starting the first file, so we can report on the previous
@@ -91,7 +103,7 @@ DoFeatureExtraction <- function (min.id = FALSE) {
         }
 
         rating.features <- as.data.frame(CalculateRatingFeatures(events[ev,], cur.spectro, mean.amp, sd.amp));
-        
+  
         features <- as.data.frame(CalculateFeatures(events[ev,], cur.spectro));
         features$event.id <- events$event.id[ev]
         rating.features$event.id <- events$event.id[ev]
@@ -111,17 +123,20 @@ DoFeatureExtraction <- function (min.id = FALSE) {
     Timer(ptmt, paste('feature extraction for all',nrow(events),'events'), nrow(events), 'event')
     
     if (nrow(events) > 0) {
-    
+        
+        # read again, even though it has already been read, because 
+        # maybe this is being paralleized 
+        already.extracted.features <- ReadOutput('all.features', purpose = 'adding to features', params = params, dependencies = dependencies, false.if.missing = TRUE)
+        already.rated.events <- ReadOutput('all.rating.features', purpose = 'adding to rating features', params = params, dependencies = dependencies, false.if.missing = TRUE)
+        
         # merge these features with the previously extracted
         if (class(already.extracted.features) == 'data.frame') {
-            features.all <- rbind(features.all, already.extracted.features)  
+            features.all <- rbind(features.all, already.extracted.features$data)  
         }
         
         if (class(already.rated.events) == 'data.frame') {
-            rating.features.all <- rbind(rating.features.all, already.rated.events)  
+            rating.features.all <- rbind(rating.features.all, already.rated.events$data)  
         }
-        
-        
         
         features.all <- OrderBy(features.all, 'event.id')
         rating.features.all <- OrderBy(rating.features.all, 'event.id')
@@ -229,9 +244,10 @@ CalculateRatingFeatures <- function (event, spectro, file.mean.amp, file.sd.amp)
     # calculates a different set of features for the purpose of assessing the 
     # likelyhood that this event is not rubbish
     
-    if (event$event.id == 26619) {
-        print(event)
-    }
+
+    
+    
+    
     
     top.f.row <- FrequencyToRowNum(event$top.f, spectro$hz.per.bin)
     bottom.f.row <- FrequencyToRowNum(event$bottom.f, spectro$hz.per.bin)

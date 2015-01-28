@@ -69,7 +69,8 @@ Sp.CreateFromFile <- function (path, draw = FALSE) {
 
     
     split <- strsplit(path, .Platform$file.sep)
-    cache.id <- paste0(split[length(split)], '.spectro')
+    basepath <- BasePath(path)
+    cache.id <- paste0(basepath, '.spectro')
     
     spectro <- ReadCache(cache.id)
     if (class(spectro) != 'spectrogram') {
