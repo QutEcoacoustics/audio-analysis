@@ -201,11 +201,45 @@ namespace AudioAnalysisTools.Indices
                 }
                 catch(Exception e)
                 {
-                    LoggedConsole.WriteWarnLine("The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexvalues class!");
+                    // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
+                    // This prevents multiple warnings through loop.
+                    // LoggedConsole.WriteWarnLine("The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
                 }
             }
         }
 
+
+        /// <summary>
+        /// Used to check that the keys in the indexProperties dictionary corerspond to Properties in the SpectralIndexValues class.
+        /// Call this method before entering a loop because do not want the error message at every iteration through loop.
+        /// </summary>
+        /// <param name="indexProperties"></param>
+        public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
+        {
+
+            var siv = new SpectralIndexValues();
+            int spectrumLength = 4;
+            double[] dummyArray = (new double[spectrumLength]).FastFill(0.0);
+
+            foreach (var kvp in indexProperties)
+            {
+                if (!kvp.Value.IsSpectralIndex)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    siv.SetPropertyValue(kvp.Key, dummyArray);
+                }
+                catch (Exception e)
+                {
+                    LoggedConsole.WriteWarnLine("### WARNING: The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
+                }
+            }
+        }
+
+        
         public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
         {
             get

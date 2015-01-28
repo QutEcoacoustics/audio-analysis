@@ -220,7 +220,8 @@ namespace AnalysisBase
         public TimeSpan? IndexCalculationDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the start time of the required subsegment relative to start of segment. 
+        /// Gets or sets the start time of the required subsegment relative to start of SOURCE audio recording. 
+        /// i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
         /// Units = seconds
         /// </summary>
         public TimeSpan? SubsegmentOffset { get; set; }

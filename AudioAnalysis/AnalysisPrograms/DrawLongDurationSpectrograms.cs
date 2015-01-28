@@ -76,10 +76,14 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
 
             // exclude the analysis type from file name i.e. "Indices"
-            string ipFileName = "BYR4_20131029_Towsey.Acoustic";
-            string ipdir = @"Y:\Results\2014Nov28-083415 - False Color, Mt Byron PRA, For Jason\to upload\Mt Byron\PRA\report\joined\BYR4_20131029.mp3\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
+            //string ipFileName = "BYR4_20131029_Towsey.Acoustic";
+            //string ipdir = @"Y:\Results\2014Nov28-083415 - False Color, Mt Byron PRA, For Jason\to upload\Mt Byron\PRA\report\joined\BYR4_20131029.mp3\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
+            // zoomable spectrograms
+            string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             DirectoryInfo opDir = new DirectoryInfo(opdir);
@@ -118,6 +122,9 @@ namespace AnalysisPrograms
             }
 
             var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+
+            config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
+            config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
 
             LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig);
         }

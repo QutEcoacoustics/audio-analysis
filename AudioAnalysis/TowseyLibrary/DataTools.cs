@@ -119,7 +119,7 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="A"></param>
         /// <param name="start"></param>
-        /// <param name="length"></param>
+        /// <param name="length">the length of the subarray to be returned </param>
         /// <returns></returns>
         public static double[] Subarray(double[] A, int start, int length)
         {

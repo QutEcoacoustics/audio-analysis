@@ -883,27 +883,27 @@
             return bmp;
         }
 
-        public static Bitmap DrawTimeTrack(int duration, TimeSpan scale, int trackWidth, int trackHeight, string title)
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan scale, int trackWidth, int trackHeight, string title)
         {
             TimeSpan offsetMinute = TimeSpan.Zero;
-            return DrawTimeTrack(duration, offsetMinute, scale, trackWidth, trackHeight, title);
+            return DrawTimeTrack(fullDuration, offsetMinute, scale, trackWidth, trackHeight, title);
         }
         
         // mark off X-axis time scale according to scale.
-        public static Bitmap DrawTimeTrack(int duration, TimeSpan offsetMinute, TimeSpan scale, int trackWidth, int trackHeight, string title)
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startOffset, TimeSpan ticInterval, int trackWidth, int trackHeight, string title)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
 
             int hour;
-            int min = (int)offsetMinute.TotalMinutes - 1;
-            int XaxisScale = (int)scale.TotalMinutes;
+            int min = (int)startOffset.TotalMinutes - 1;
+            int XaxisScale = (int)ticInterval.TotalMinutes;
             Pen whitePen = new Pen(Color.White);
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
 
-            for (int x = 0; x < duration; x++) //for pixels in the line
+            for (int x = 0; x < trackWidth; x++) //for pixels in the line
             {
                 min++;
                 if (min % XaxisScale != 0) continue;
@@ -918,9 +918,9 @@
             }//end over all pixels
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
-            g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
+            g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
 
-            g.DrawString(title, stringFont, Brushes.White, new PointF(duration + 4, 3));
+            g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
             return bmp;
         }
 

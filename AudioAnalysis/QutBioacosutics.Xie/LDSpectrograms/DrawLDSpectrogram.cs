@@ -157,6 +157,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
 
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
+
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
@@ -196,7 +197,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             int hzInterval = 1000;
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, nyquist, hzInterval);
+            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, hzInterval);
             image1.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
 
             //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
@@ -204,7 +205,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, nyquist, hzInterval);
+            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, hzInterval);
             image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
             Image[] array = new Image[2];
             array[0] = image1;
