@@ -609,11 +609,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         // #######################################################################################################################################
-        // ### BELOW METHODS DRAW GRID LINES ON SPECTROGRAMS ####################################################################################
+        // ### BELOW METHODS DRAW GRID LINES ON SPECTROGRAMS #####################################################################################
         // #######################################################################################################################################
 
 
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval)
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval)
         {
             int rows = bmp.Height;
             int cols = bmp.Width;
@@ -636,11 +636,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     column += 2;
                 }
                 int band = (int)(rowFromBottom / Y_interval);
-                g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
+                g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Gray, 2, row - 5);
             }
 
-            // for columns, draw in X-axis hour lines
-            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds));
+            // for columns, draw in X-axis lines
+            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
+            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
             for (int column = 1; column < cols; column++)
             {
 

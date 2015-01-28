@@ -37,6 +37,7 @@ namespace AudioAnalysisTools.Indices
     {
         // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 22050) THEN frame duration = 5.805ms.
         // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 22050) THEN frame duration = 11.61ms.
+        // EXTRACT INDICES: IF (frameLength = 512 AND sample rate = 22050) THEN frame duration = 23.22ms.
         // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 11025) THEN frame duration = 11.61ms.
         // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 11025) THEN frame duration = 23.22ms.
         // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 17640) THEN frame duration = 18.576ms.
@@ -127,26 +128,29 @@ namespace AudioAnalysisTools.Indices
             double subsegmentDuration = subsegmentTimeSpan.TotalSeconds;
             TimeSpan ts = (TimeSpan)analysisSettings.SubsegmentOffset;
             double subsegmentOffset = ts.TotalSeconds;
+            ts = (TimeSpan)analysisSettings.SegmentStartOffset;
+            double segmentOffset = ts.TotalSeconds;
+            double localOffsetInSeconds = subsegmentOffset - segmentOffset;
             ts = (TimeSpan)analysisSettings.BGNoiseNeighbourhood;
             double BGNoiseNeighbourhood = ts.TotalSeconds;
 
             // calculate start and end samples of the subsegment and noise segment
-            int subsegmentStart = (int)(subsegmentOffset * sampleRate);
+            int sampleStart = (int)(localOffsetInSeconds * sampleRate);
             int subsegmentSampleCount = (int)(subsegmentDuration * sampleRate);
-            int subsegmentEnd   = subsegmentStart + subsegmentSampleCount;
+            int sampleEnd   = sampleStart + subsegmentSampleCount - 1;
 
-            int noiseBuffer        = (int)(BGNoiseNeighbourhood * sampleRate);
-            int bgnSubsegmentStart = subsegmentStart - noiseBuffer;
-            int bgnSubsegmentEnd   = subsegmentEnd   + noiseBuffer;
-            if (bgnSubsegmentStart < 0) bgnSubsegmentStart = 0;
-            if (bgnSubsegmentEnd >= signalLength) bgnSubsegmentEnd = signalLength - 1;
-            int bgnSubsegmentSampleCount = bgnSubsegmentEnd - bgnSubsegmentStart + 1;
+            int noiseBuffer    = (int)(BGNoiseNeighbourhood * sampleRate);
+            int bgnSampleStart = sampleStart - noiseBuffer;
+            int bgnSampleEnd   = sampleEnd + noiseBuffer;
+            if (bgnSampleStart < 0) bgnSampleStart = 0;
+            if (bgnSampleEnd >= signalLength) bgnSampleEnd = signalLength - 1;
+            int bgnSubsegmentSampleCount = bgnSampleEnd - bgnSampleStart + 1;
 
             // set the SUBSEGMENT recording = total segment if its length >= 60 seconds
             AudioRecording subsegmentRecording = recording;
             if (analysisSettings.IndexCalculationDuration < recordingSegmentDuration)
             {
-                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, subsegmentStart, subsegmentSampleCount);
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, sampleStart, subsegmentSampleCount);
                 Acoustics.Tools.Wav.WavReader wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }
@@ -156,9 +160,9 @@ namespace AudioAnalysisTools.Indices
 
             // set the BACKGROUND NOISE SUBSEGMENT = total segment if its length >= 60 seconds
             AudioRecording bgnSubsegmentRecording = recording;
-            if (bgnSubsegmentSampleCount >= signalLength)
+            if (bgnSubsegmentSampleCount <= signalLength)
             {
-                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, bgnSubsegmentStart, bgnSubsegmentEnd);
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, bgnSampleStart, bgnSubsegmentSampleCount);
                 Acoustics.Tools.Wav.WavReader wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 bgnSubsegmentRecording = new AudioRecording(wr);
             }
@@ -318,7 +322,7 @@ namespace AudioAnalysisTools.Indices
 
             // ii: Calculate background noise spectrum in decibels
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBGN);
-            nhThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
+            nhThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold);
             //ImageTools.DrawMatrix(deciBelSpectrogram, @"C:\SensorNetworks\Output\LSKiwi3\AfterRefactoring\Towsey.Acoustic\image.png", false);
             //DataTools.writeBarGraph(indices.backgroundSpectrum);

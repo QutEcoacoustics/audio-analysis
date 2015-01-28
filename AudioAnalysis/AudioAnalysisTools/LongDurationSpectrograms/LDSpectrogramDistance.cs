@@ -136,8 +136,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             spg1Image = LDSpectrogramRGB.FrameLDSpectrogram(
                 spg1Image, 
                 titleBar, 
-                minuteOffset, 
-                cs1.XInterval, 
+                minuteOffset,
+                cs1.IndexCalculationDuration, 
+                cs1.XTicInterval, 
                 nyquist, herzInterval);
 
             string outputFileName2 = inputFileName2.Name;
@@ -164,8 +165,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             spg2Image = LDSpectrogramRGB.FrameLDSpectrogram(
                 spg2Image, 
                 titleBar, 
-                minuteOffset, 
-                cs2.XInterval, 
+                minuteOffset,
+                cs1.IndexCalculationDuration, 
+                cs2.XTicInterval, 
                 nyquist, herzInterval);
 
             string outputFileName4 = inputFileName1 + ".EuclidianDistance.png";
@@ -177,7 +179,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 colorArray, 
                 deltaSp.Width, 
                 SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
-            deltaSp = LDSpectrogramRGB.FrameLDSpectrogram(deltaSp, titleBar, minuteOffset, cs2.XInterval, nyquist, herzInterval);
+            deltaSp = LDSpectrogramRGB.FrameLDSpectrogram(deltaSp, titleBar, minuteOffset, cs2.IndexCalculationDuration, cs2.XTicInterval, nyquist, herzInterval);
             deltaSp.Save(Path.Combine(outputDirectory.FullName, outputFileName4));
 
             string outputFileName5 = inputFileName1 + ".2SpectrogramsAndDistance.png";

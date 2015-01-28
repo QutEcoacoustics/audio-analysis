@@ -350,7 +350,7 @@ namespace AnalysisPrograms
             double subsegmentDuration = ts.TotalSeconds;
             int subsegmentCount = (int)Math.Floor(recordingDuration / subsegmentDuration);
 
-            analysisResults.SummaryIndices = new SummaryIndexBase[subsegmentCount];
+            analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
             analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
 
             
@@ -363,10 +363,6 @@ namespace AnalysisPrograms
                 var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings);
 
                 // ######################################################################
-                //if (indexCalculateResult == null)
-                //{
-                //    return analysisResults; // nothing to process 
-                //}
 
                 analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
@@ -376,6 +372,7 @@ namespace AnalysisPrograms
             if (analysisSettings.SummaryIndicesFile != null)
             {
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
+                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
 
                 // ############################### SAVE OSCILLATION CSV HERE ###############################
             }
@@ -383,6 +380,7 @@ namespace AnalysisPrograms
             if (analysisSettings.SpectrumIndicesDirectory != null)
             {
                 this.WriteSpectrumIndicesFiles(analysisSettings.SpectrumIndicesDirectory, Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name), analysisResults.SpectralIndices);
+                analysisResults.SpectraIndicesFiles = spectralIndexFiles;
             }
             //if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
             //{
@@ -408,15 +406,20 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
+        private List<FileInfo> spectralIndexFiles;
+
         public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             var selectors = results.First().GetSelectors();
+
+            spectralIndexFiles = new List<FileInfo>(selectors.Count);
 
             foreach (var kvp in selectors)
             {   
                 // write spectrogram to disk as CSV file
                 ////string fileName = ;
                 var saveCsvPath = destination.CombineFile(fileNameBase + "." + kvp.Key + ".csv");
+                spectralIndexFiles.Add(saveCsvPath);
                 Csv.WriteMatrixToCsv(saveCsvPath, results, kvp.Value);
             }
         }
@@ -437,7 +440,7 @@ namespace AnalysisPrograms
 
             int frameWidth = 512;
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
-            int sampleRate = 17640;
+            int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
 
             // gather spectra to form spectrograms.  Assume same spectra in all analyser results
@@ -451,15 +454,24 @@ namespace AnalysisPrograms
                                  FileName = fileName,
                                  OutputDirectoryInfo = resultsDirectory,
                                  InputDirectoryInfo = resultsDirectory,
-
                                  SampleRate = sampleRate,
                                  FrameWidth = frameWidth,
+
+                                 IndexCalculationDuration = settings.IndexCalculationDuration.Value,
                                  XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+
                                  MinuteOffset = SpectrogramConstants.MINUTE_OFFSET,
                                  ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                                  ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR,
                                  BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF       
                              };
+
+            // THIS iS A TEMPORARY HACK - IT FORCES GRID LINES TO BE 60 pixels apart.
+            if (config.IndexCalculationDuration != null)
+            {
+                double interval = config.IndexCalculationDuration.TotalSeconds * 60;
+                config.XAxisTicInterval = TimeSpan.FromSeconds(interval);
+            }
 
             FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
 

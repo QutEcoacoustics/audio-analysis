@@ -55,6 +55,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // default values
             this.AnalysisType = SpectrogramConstants.DefaultAnalysisType;
             this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
+            this.IndexCalculationDuration = TimeSpan.FromMinutes(1.0);
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
             this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
@@ -143,8 +144,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public int SampleRate { get; set; }
 
+
+
         /// <summary>
-        ///  assume one minute spectra and hourly time lines
+        /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed. 
+        /// User must enter the time span over which indices are calculated.
+        /// This TimeSpan is used to calculate a tic interval that is appropriate to the time scale of the spectrogram.
+        /// </summary>
+        public TimeSpan IndexCalculationDuration { get; set; }
+
+        /// <summary>
+        /// The default is one minute spectra i.e. 60 per hour
+        /// But as of January 2015, this is not fixed. The user can adjust
+        ///  the tic interval to be appropriate to the time scale of the spectrogram.
         /// </summary>
         public TimeSpan XAxisTicInterval { get; set; }
 

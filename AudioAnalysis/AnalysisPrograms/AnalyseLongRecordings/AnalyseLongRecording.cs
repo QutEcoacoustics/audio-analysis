@@ -194,6 +194,15 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.SegmentTargetSampleRate + " used)");
             }
 
+
+            //var config = analysisSettings.Configuration;
+            //var indicesPropertiesConfig = FindIndicesConfig.Find(config, analysisSettings.ConfigFile);
+            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+            AudioAnalysisTools.Indices.SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+
+
+
+
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
@@ -201,6 +210,7 @@ Output  to  directory: {1}
             // ##############################################################################################
             // 8. PROCESS THE RESULTS
             LoggedConsole.WriteLine(string.Empty);
+            LoggedConsole.WriteLine("START PROCESSING RESULTS ...");
             if (analyserResults == null)
             {
                 LoggedConsole.WriteErrorLine("###################################################\n");
@@ -256,7 +266,7 @@ Output  to  directory: {1}
             Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
             Debug.Assert(analysisSettings.SourceFile == fileSegment.OriginalFile);
 
-            // Important - this is where IAnalyser2's post processer gets called. I.e. Long duration spectrograms are drawn IFF anlaysis type is Towsey.Acoustic
+            // Important - this is where IAnalyser2's post processer gets called. I.e. Long duration spectrograms are drawn IFF analysis type is Towsey.Acoustic
             analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);
 
 

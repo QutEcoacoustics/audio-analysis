@@ -121,7 +121,8 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Returns the number of acoustic events in the each frequency bin
+        /// Returns the number of acoustic events per second in the each frequency bin.
+        /// Also returns the fractional cover in each freq bin, that is, the fraction of frames where amplitude > threshold.
         /// </summary>
         /// <param name="spectrogram"></param>
         /// <param name="bgThreshold"></param>
@@ -139,7 +140,7 @@ namespace AudioAnalysisTools
             int highFreqBinIndex = spectrogram.GetLength(1) - 1; // avoid top row which can have edge effects
             int rows = spectrogram.GetLength(0); // frames
             int cols = spectrogram.GetLength(1); // # of freq bins
-            double recordingDuration = rows * frameDuration.TotalSeconds;
+            double recordingDurationInSeconds = rows * frameDuration.TotalSeconds;
 
             SummaryActivity activity;
             double[] coverSpectrum = new double[cols];
@@ -153,7 +154,7 @@ namespace AudioAnalysisTools
                 //int a2 = activity.activeFrameCount;
                 coverSpectrum[c] = activity.fractionOfActiveFrames; 
                 //double a4 = activity.activeAvDB;
-                eventSpectrum[c] = activity.eventCount / recordingDuration;
+                eventSpectrum[c] = activity.eventCount / recordingDurationInSeconds;
                 //TimeSpan a6 = activity.avEventDuration;
                 //bool[] a7 = activity.eventLocations;
             }
