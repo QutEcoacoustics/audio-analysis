@@ -896,9 +896,11 @@
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
 
+            TimeSpan gridInterval = CalculateGridInterval(fullDuration, trackWidth);
+
             int hour;
             int min = (int)startOffset.TotalMinutes - 1;
-            int XaxisScale = (int)ticInterval.TotalMinutes;
+            int XaxisScale = (int)gridInterval.TotalMinutes;
             Pen whitePen = new Pen(Color.White);
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
@@ -922,6 +924,21 @@
 
             g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
             return bmp;
+        }
+
+        public static TimeSpan CalculateGridInterval(TimeSpan totalDuration, int width)
+        {
+            double pixelDuration = totalDuration.TotalMinutes / width;
+            double[] gridIntervals = { 0.5, 1.0, 2.0, 4.0, 8.0, 15.0, 30.0, 60.0 }; //minutes
+
+            double pixelInterval = 0;
+            foreach (double gridInterval in gridIntervals)
+            {
+                pixelInterval = gridInterval / pixelDuration;
+                if (pixelInterval > 110) break;
+            }
+            TimeSpan ts = TimeSpan.FromMinutes(pixelInterval * pixelDuration);
+            return ts;
         }
 
 
