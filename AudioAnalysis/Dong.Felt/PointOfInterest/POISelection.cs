@@ -55,7 +55,7 @@ namespace Dong.Felt
         {
             var instance = new POISelection(new List<PointOfInterest>());
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            var rows = matrix.GetLength(0) - 1;
+            var rows = matrix.GetLength(0);
             var cols = matrix.GetLength(1);
             var ridgeMagnitudeMatrix = new double[rows, cols];
             var byteMatrix = FourDirectionsRidgeDetection(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
