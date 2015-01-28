@@ -493,7 +493,11 @@ namespace Dong.Felt
                         poi.Intensity = spectrogramMatrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        poiList.Add(poi);
+                        // ADD CONDITION CHECK-2015-01-28
+                        if (poi.Intensity >= 10)
+                        {
+                            poiList.Add(poi);
+                        }
                     }
                 }
             }
