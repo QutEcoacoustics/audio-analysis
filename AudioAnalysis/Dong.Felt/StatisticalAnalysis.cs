@@ -735,8 +735,27 @@
             }
             return m;
         }
-        /// <summary>
+
+        public static Point[,] TransposePointsToMatrix(List<Point> pointList, int rows, int cols, int rowBottom, int colLeft)
+        {
+            Point[,] m = new Point[rows, cols];
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var point = new Point(0, 0);
+                    m[r, c] = point; 
+                }
+            }
+            
+            foreach (var p in pointList)
+            {
+                m[p.X-rowBottom, p.Y-colLeft] = p;
+            }
+            return m;
+        }
         
+        /// <summary>       
         /// This version is for structure tensor matrix 
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
         public static PointOfInterest[,] TransposeStPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)

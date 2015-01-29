@@ -280,8 +280,8 @@
                     //spectrogram.Data = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, originalRidges, spectrogram.Data.GetLength(0),
                     //    spectrogram.Data.GetLength(1));                    
                     ClusterAnalysis.RidgeListToEvent(spectrogram, originalRidges, rows, cols, out acousticEventlist);
-                    //ClusterAnalysis.ChangeEventBorderColor(acousticEventlist);
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    var acousticEvents = ClusterAnalysis.SplitAcousticEvent(acousticEventlist);
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEvents, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     //foreach (PointOfInterest poi in originalRidges)
                     //{

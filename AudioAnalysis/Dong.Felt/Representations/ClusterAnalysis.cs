@@ -455,12 +455,12 @@ namespace Dong.Felt.Representations
             int rowsCount, int colsCount,
             out List<AcousticEvent> acousticEvents)
         {
-            //var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             /////call AED to group ridges into event-based on ridge
             //var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             //var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
-            //var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 6, 400.0,
-            //    10000, false, rotateDoubleMatrix);
+            //var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 55, 400.0,
+            //    8000, false, rotateDoubleMatrix);
 
             /// based on spectrogram intensity matrix directly
             var rotateDoubleMatrix = sonogram.Data;
@@ -479,11 +479,99 @@ namespace Dong.Felt.Representations
                         sonogram.FrameCount);
                     e.HitColour = Color.Black;
                     return e;
-                }).ToList();
-            // change the color of the event
+                }).ToList();           
             acousticEvents = events;          
         }
-      
+        
+        //todo: split large events to small events 
+        public static List<AcousticEvent> SplitAcousticEvent(List<AcousticEvent> acousticEvent)
+        {
+            var result = new List<AcousticEvent>();
+            foreach (var e in acousticEvent)
+            {
+                var hitList = e.HitElements.ToList();
+                // X:frames
+                var rows = e.Oblong.RowWidth;
+                // Y:frequency
+                var cols = e.Oblong.ColWidth;
+                var eventHitMatrix = StatisticalAnalysis.TransposePointsToMatrix(hitList, rows, cols, e.Oblong.RowTop,
+                    e.Oblong.ColumnLeft);
+                var doubleEventHitMatrix = eventHitMatrix.Map(x => x.X != 0 ? 1.0 : 0.0);
+                // calculate energy for each column in eventHitMatrix
+                var rowEnergy = new double[rows];
+                for (var i = 0; i < rows; i++)
+                {
+                    for (var j = 0; j < cols; j++)
+                    {
+                        rowEnergy[i] += doubleEventHitMatrix[i, j]; 
+                    }
+                }
+                //  Find the middle column which has sparse energy
+                int offset = 3;
+                int middleRowIndex = rows / 2;
+                var potentialGapEnergy = new double[offset * 2];
+                // Check whether there is a colEnergy lower than a threshold, 20% of the cols.
+                var splitRowIndex = e.Oblong.RowBottom;
+                if ((middleRowIndex - offset) > 0 && (middleRowIndex + offset) < rows)
+                {
+                    for (var r = middleRowIndex - offset; r < middleRowIndex + offset; r++)
+                    {
+                        var energyThreshold = 0.1 * cols;
+                        var pIndex = r - (middleRowIndex - offset);
+                        if (rowEnergy[r] < energyThreshold)
+                        {
+                            potentialGapEnergy[pIndex] = rowEnergy[r];
+                        }
+                        else
+                        {
+                            potentialGapEnergy[pIndex] = cols;
+                        }
+                    }
+                    int indexMin = rows;
+                    int indexMax = rows;
+                    double min = 0.0;
+                    double max = 0.0;
+                    DataTools.MinMax(potentialGapEnergy, out indexMin, out indexMax, out min, out max);
+                    splitRowIndex = middleRowIndex - offset + indexMin;
+
+                    //
+                    if (e.Oblong.RowTop + splitRowIndex < e.Oblong.RowBottom)
+                    {
+                        // so split the event into 2 small events
+                        var e1 = new AcousticEvent();
+                        e1.TimeStart = 0.0;
+                        e1.TimeEnd = 0.0;
+                        e1.MinFreq = e.MinFreq;
+                        e1.MaxFreq = e.MaxFreq;
+                        var o = new Oblong(e.Oblong.RowTop, e.Oblong.ColumnLeft, e.Oblong.RowBottom, e.Oblong.ColumnRight);
+                        e1.Oblong = o;
+                        e1.Oblong.RowBottom = e.Oblong.RowTop + splitRowIndex;
+                        result.Add(e1);
+
+                        var e2 = new AcousticEvent();
+                        e2.TimeStart = 0.0;
+                        e2.TimeEnd = 0.0;
+                        e2.MinFreq = e.MinFreq;
+                        e2.MaxFreq = e.MaxFreq;
+                        var o2 = new Oblong(e.Oblong.RowTop, e.Oblong.ColumnLeft, e.Oblong.RowBottom, e.Oblong.ColumnRight);
+                        e2.Oblong = o2;
+                        e2.Oblong.RowTop = e.Oblong.RowTop + splitRowIndex + 3;
+                        result.Add(e2);
+                    }
+                    else
+                    {
+                        result.Add(e);
+                    }
+                }
+                else
+                {
+                    result.Add(e);
+                }
+                
+            }
+            return result;
+        }
+
         /// <summary>
         /// Group 4 types of ridge based acoustic events into one list. 
         /// </summary>
