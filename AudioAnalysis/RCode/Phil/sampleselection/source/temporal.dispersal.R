@@ -20,7 +20,7 @@ TransformDistScores <- function (dist.scores, threshold = 30, amount = 1) {
     #   amount: float [0,1] how much the distance score should affect the weight 
     
     
-    dist.scores[dist.scores > threshold] <- threshold
+    dist.scores[dist.scores > threshold] <- threshold # above threshold value is equal to threshold
     dist.scores <- ((threshold^2-((dist.scores-threshold)^2))^0.5)
     dist.scores <- dist.scores / threshold # convert to [0:1]  (maybe use max instead of threshold? but don't think so)
     dist.scores <- dist.scores * amount + (1-amount)

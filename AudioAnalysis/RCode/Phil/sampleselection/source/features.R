@@ -2,7 +2,7 @@
 
 
 
-DoFeatureExtraction <- function (min.id = FALSE, event.ids = NULL, all.events = NULL) {
+DoFeatureExtraction <- function (min.id = FALSE, event.ids = NULL, all.events = NULL, save.every = 5000) {
     # performs feature extraction on the outer target events
     # i.e. the events which fall within the target sites/dates/times, 
     #      but ignoring the percent of target
@@ -49,6 +49,7 @@ DoFeatureExtraction <- function (min.id = FALSE, event.ids = NULL, all.events = 
     # therefore, don't calculate for events which are already calculated
     if (is.data.frame(already.extracted.features)) {
         event.ids.to.process <- setdiff(events$event.id, already.extracted.features$event.id)
+        Report(5, nrow(already.extracted.features), 'out of', nrow(all.events$data), 'events have had features extracted.', nrow(events) - nrow(already.extracted.features), 'to go!') 
         events <- events[events$event.id %in% event.ids.to.process, ]   
     }
  
@@ -90,10 +91,10 @@ DoFeatureExtraction <- function (min.id = FALSE, event.ids = NULL, all.events = 
                 time.so.far <- (proc.time() - ptmt)[3]
                 estimated.total.time <- nrow(events) * time.so.far / ev
                 remaining.time <- estimated.total.time - time.so.far
-                Report(3, percent.complete, "% complete. Time remaining: ", round(remaining.time), 'secs')
+                Report(3, percent.complete, "% complete. Time remaining: ", HumanReadableTime(remaining.time, suffix = 'remaining'))
             }
             Report(3, 'processing features for events in', wav.path)
-            Report(3, 'starting with event', ev)
+            Report(3, 'starting with event',events$event.id[ev],'(', ev, 'of', nrow(events),')')
             cur.spectro <- Sp.CreateFromFile(wav.path)
             cur.wav.path <- wav.path
             # calculate the mean and standard deviation for each frequency band,
@@ -116,32 +117,23 @@ DoFeatureExtraction <- function (min.id = FALSE, event.ids = NULL, all.events = 
         }
         ev <- ev + 1
         
-
+        if (ev %% save.every  == 0) {
+            SaveFeatures2(features.all, rating.features.all, params, dependencies)       
+            SaveFeatures(features.all, rating.features.all, params, dependencies)
+            features.all <- features.all[NULL, ]
+            rating.features.all <- rating.features.all[NULL, ]
+        }
         
         
     }
+    
+    
+    
     Timer(ptmt, paste('feature extraction for all',nrow(events),'events'), nrow(events), 'event')
     
     if (nrow(events) > 0) {
         
-        # read again, even though it has already been read, because 
-        # maybe this is being paralleized 
-        already.extracted.features <- ReadOutput('all.features', purpose = 'adding to features', params = params, dependencies = dependencies, false.if.missing = TRUE)
-        already.rated.events <- ReadOutput('all.rating.features', purpose = 'adding to rating features', params = params, dependencies = dependencies, false.if.missing = TRUE)
-        
-        # merge these features with the previously extracted
-        if (class(already.extracted.features) == 'data.frame') {
-            features.all <- rbind(features.all, already.extracted.features$data)  
-        }
-        
-        if (class(already.rated.events) == 'data.frame') {
-            rating.features.all <- rbind(rating.features.all, already.rated.events$data)  
-        }
-        
-        features.all <- OrderBy(features.all, 'event.id')
-        rating.features.all <- OrderBy(rating.features.all, 'event.id')
-        WriteOutput(features.all, 'all.features', params, dependencies)
-        WriteOutput(rating.features.all, 'all.rating.features', params, dependencies)
+        SaveFeatures(features.all, rating.features.all, params, dependencies)
         
     } else {
         
@@ -150,6 +142,46 @@ DoFeatureExtraction <- function (min.id = FALSE, event.ids = NULL, all.events = 
     }
     
  
+    
+}
+
+SaveFeatures2 <- function (features.all, rating.features.all, params, dependencies) {
+    
+    from.event.id <- min(features.all$event.id)
+    to.event.id <- max(features.all$event.id)
+    fn <- paste0(from.event.id, "_", to.event.id, '.csv')
+    fn.f <- paste0('features.',fn)
+    fn.rf <- paste0('rf.',fn)
+    
+    path.f = '/Users/n8933464/Documents/sample_selection_output/features_parts/features'
+    path.rf = '/Users/n8933464/Documents/sample_selection_output/features_parts/rf'
+    
+    write.csv(features.all, file = file.path(path.f, fn.f), row.names = FALSE)
+    write.csv(rating.features.all, file = file.path(path.rf, fn.rf), row.names = FALSE)
+    
+}
+
+SaveFeatures <- function (features.all, rating.features.all, params, dependencies) {
+    
+    # read again, even though it has already been read, because 
+    # maybe this is being paralleized 
+    already.extracted.features <- ReadOutput('all.features', purpose = 'adding to features', params = params, dependencies = dependencies, false.if.missing = TRUE)
+    already.rated.events <- ReadOutput('all.rating.features', purpose = 'adding to rating features', params = params, dependencies = dependencies, false.if.missing = TRUE)
+    
+    # merge these features with the previously extracted
+    if (is.list(already.extracted.features)) {
+        features.all <- rbind(features.all, already.extracted.features$data)  
+    }
+    
+    if (is.list(already.rated.events)) {
+        rating.features.all <- rbind(rating.features.all, already.rated.events$data)  
+    }
+    
+    features.all <- OrderBy(features.all, 'event.id')
+    rating.features.all <- OrderBy(rating.features.all, 'event.id')
+    WriteOutput(features.all, 'all.features', params = params, dependencies = dependencies, check.before.overwrite = FALSE)
+    WriteOutput(rating.features.all, 'all.rating.features', params = params, dependencies = dependencies, check.before.overwrite = FALSE)
+    
     
 }
 

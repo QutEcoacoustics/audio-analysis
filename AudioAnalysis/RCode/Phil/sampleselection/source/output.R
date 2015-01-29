@@ -191,7 +191,7 @@ ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = N
 }
 
 
-WriteOutput <- function (x, name, params = list(), dependencies = list()) {
+WriteOutput <- function (x, name, params = list(), dependencies = list(), check.before.overwrite = TRUE) {
     # writes output to a file
     # Args
     #   x: data.frame (normally); The data to write
@@ -244,8 +244,13 @@ WriteOutput <- function (x, name, params = list(), dependencies = list()) {
 
     if (any(matching.p.and.d)) {
         # todo: check if this file is the dependency of other files. If so, maybe not safe to overwrite?
-        msg <- paste0("Overwrite output for version ", meta$version[matching.p.and.d], " of ", name," (", meta$date[matching.p.and.d], ") ?")
-        overwrite <- Confirm(msg)
+        if (check.before.overwrite) {
+            msg <- paste0("Overwrite output for version ", meta$version[matching.p.and.d], " of ", name," (", meta$date[matching.p.and.d], ") ?")
+            overwrite <- Confirm(msg) 
+        } else {
+            overwrite <- TRUE
+        }
+
         if (!overwrite) {
             return(FALSE)
         } else {
@@ -594,15 +599,29 @@ HashFileContents <- function (filepaths) {
 }
 
 CachePath <- function (cache.id) {
-    cache.dir <- Path('audio')
+    cache.dir <- Path('cache')
     return(file.path(cache.dir, cache.id))
 }
 
 ReadCache <- function (cache.id) {
     path <- CachePath(cache.id)
-    if (file.exists(path)) {  
+    if (file.exists(path)) {
         load(path)
-        return(x)  # this is the name of the variable used when saving
+#         result <- tryCatch({
+#             load(path)
+#         }, warning = function (w) {
+#             print('warning: corrupt cache file')
+#             print(w)
+#         }, error = function (e) {
+#             print('error: corrupt cache file')
+#             print(e)
+#         } , finally =  {
+#            
+#         })
+        if (exists('x') && class(x) == 'spectrogram') {
+            print('successfully read file from cache')
+            return(x)  # this is the name of the variable used when saving   
+        }
     } 
     return(FALSE) 
 }

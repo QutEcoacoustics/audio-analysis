@@ -3,7 +3,9 @@
 paths <- list(
     audio = c("/Volumes/My Passport/Phil#61/Audio/OriginalAudio/TaggedRecordings",
                      "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
-    cache = c('/Volumes/files/qut_data/cache')
+    cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
+              '/Volumes/files/qut_data/cache',
+              '/Users/n8933464/Documents/sample_selection_output/cache')
     )
 
 
@@ -17,7 +19,12 @@ Path <- function (path.name) {
     # if muliple paths are supplied for the pathname, will return the first one
     # this is used so that different hard drives can be used (for home and work)
     path <- paths[[path.name]][match(TRUE, file.exists(paths[[path.name]]))]
-    return(path)
+    if (is.character(path)) {
+        return(path)
+    } else {
+        stop(paste("path for", path.name,"doesn't exist:", path))
+    }
+
 }
 
 

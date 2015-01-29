@@ -555,5 +555,31 @@ SampleAtLeastOne <- function (pool, num, prob = NULL, at.least.one.of = NULL) {
 # i.e if the x is a vector of length 1 is a single number treats is at 1:(x[1])
 sample.vec <- function(x, ...) x[sample(length(x), ...)]
 
+HumanReadableTime <- function (secs, suffix = NULL) {
+    # for a given number of seconds,
+    # returns a string showing the number of hours, mins and seconds
+    # for brevity, will ommit seconds if hours > 1
+    secs <- round(secs)
+    
+    m.s  <- secs %% 3600
+    h <- (secs - m.s) / 3600
+    s <- m.s %% 60
+    m <- (m.s - s) / 60
 
+    
+    if (h > 0) {
+        str <- paste0(h, 'h ', m, 'm')
+    } else if (m > 0) {
+        str <- paste0( m, 'm ', s, 's')
+    } else {
+        str <- paste0(s, 'secs') 
+    }
+    
+    if (! is.null(suffix)) {
+        str <- paste(str, suffix)
+    }
+    
+    return(str)
+    
+}
 
