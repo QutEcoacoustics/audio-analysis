@@ -572,7 +572,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             int nyquist = this.SampleRate / 2; 
             int herzInterval = 1000;
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, this.XTicInterval, xAxisPixelDuration, nyquist, herzInterval);
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, nyquist, herzInterval);
             return bmp;
         }
 
@@ -672,7 +674,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             int herzInterval = 1000;
             int nyquist = this.SampleRate / 2;
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, this.XTicInterval, xAxisPixelDuration, nyquist, herzInterval);
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, this.XTicInterval, nyquist, herzInterval);
             return bmp;
         }
 
@@ -721,7 +725,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string title = string.Format("FALSE COLOUR and BACKGROUND NOISE SPECTROGRAMS      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", this.ColorMap);
             Bitmap titleBmp = Image_Track.DrawTitleTrack(bmp2.Width, TrackHeight, title);
             TimeSpan timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, timeScale, bmp2.Width, TrackHeight, "hours");
+            TimeSpan offsetMinute = TimeSpan.Zero;
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, offsetMinute, timeScale, bmp2.Width, TrackHeight, "hours");
 
             Bitmap compositeBmp = new Bitmap(bmp2.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -1038,7 +1043,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             int trackHeight = 20;
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startOffset, bmp1.Width, trackHeight);
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -1292,29 +1297,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </param>
         public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, Dictionary<string, double[,]> spectra = null)
         {
-            LdSpectrogramConfig configuration = longDurationSpectrogramConfig;
+            LdSpectrogramConfig config = longDurationSpectrogramConfig;
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
-            string fileStem = configuration.FileName;
-            DirectoryInfo outputDirectory = configuration.OutputDirectoryInfo;
+            string fileStem = config.FileName;
+            DirectoryInfo outputDirectory = config.OutputDirectoryInfo;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string colorMap1 = configuration.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
-            string colorMap2 = configuration.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+            string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
+            string colorMap2 = config.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
 
-            double backgroundFilterCoeff = (double?)configuration.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            ////double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
+            double backgroundFilterCoeff = (double?)config.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
-            // These parameters describe the frequency and time scales for drawing the X and Y axes on the spectrograms
-            TimeSpan minuteOffset = configuration.MinuteOffset;   // default = zero minute of day i.e. midnight
-            //TimeSpan xScale = configuration.XAxisTicInterval;     // default is one minute spectra i.e. 60 per hour
-            int sampleRate = configuration.SampleRate;
-            int frameWidth = configuration.FrameWidth;
-
-            // var cs1 = new LDSpectrogramRGB(minuteOffset, configuration.XAxisTicInterval, sampleRate, frameWidth, colorMap1);
-            var cs1 = new LDSpectrogramRGB(configuration, colorMap1);
+            var cs1 = new LDSpectrogramRGB(config, colorMap1);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
@@ -1323,7 +1321,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // reads all known files spectral indices
                 Logger.Info("Reading spectra files from disk");
-                cs1.ReadCSVFiles(configuration.InputDirectoryInfo, fileStem);
+                cs1.ReadCSVFiles(config.InputDirectoryInfo, fileStem);
             }
             else
             {
@@ -1350,6 +1348,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+
+            TimeSpan minuteOffset = config.MinuteOffset;   // default = zero minute of day i.e. midnight
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
@@ -1364,7 +1364,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // read high amplitude and clipping info into an image
             //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
-            string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
+            string indicesFile = Path.Combine(config.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
             //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
 
             Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());

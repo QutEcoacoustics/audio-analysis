@@ -718,7 +718,9 @@ namespace AudioBrowser
             //set up the composite image parameters
             int imageHt = trackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, DrawSummaryIndices.TimeScale, imageWidth, trackHeight, "Time (hours)");
+
+            TimeSpan timeDuration = TimeSpan.FromMinutes(duration);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(timeDuration, DrawSummaryIndices.TimeScale, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image

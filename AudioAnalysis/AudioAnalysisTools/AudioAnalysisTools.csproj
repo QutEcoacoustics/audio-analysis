@@ -269,6 +269,7 @@
     <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="DSP\AudioSegmentation.cs" />
     <Compile Include="AnalysisKeys.cs" />
+    <Compile Include="LongDurationSpectrograms\ZoomingSpectrograms.cs" />
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SURFFeatures.cs" />
