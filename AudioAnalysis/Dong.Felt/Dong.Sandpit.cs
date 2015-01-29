@@ -264,6 +264,7 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
+                    spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 1.0, 3);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -273,15 +274,13 @@
 
                     var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
-                    
+
                     var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     //var compressedRidgesInFreq = POISelection.RidgePoiSelection(compressSpectrogramInFreq, ridgeConfig, featurePropSet);
-                    //ridges = POISelection.AddResizeRidgesInFreq(ridges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);
-                    //spectrogram.Data = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, originalRidges, spectrogram.Data.GetLength(0),
-                    //    spectrogram.Data.GetLength(1));                    
+                    //ridges = POISelection.AddResizeRidgesInFreq(ridges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);                                  
                     ClusterAnalysis.RidgeListToEvent(spectrogram, originalRidges, rows, cols, out acousticEventlist);
-                    var acousticEvents = ClusterAnalysis.SplitAcousticEvent(acousticEventlist);
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEvents, eventThreshold, null);
+                    //var acousticEvents = ClusterAnalysis.SplitAcousticEvent(acousticEventlist);
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
                     //foreach (PointOfInterest poi in originalRidges)
                     //{
