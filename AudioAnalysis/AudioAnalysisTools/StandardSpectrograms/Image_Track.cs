@@ -883,13 +883,65 @@
             return bmp;
         }
 
-        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan scale, int trackWidth, int trackHeight, string title)
-        {
-            TimeSpan offsetMinute = TimeSpan.Zero;
-            return DrawTimeTrack(fullDuration, offsetMinute, scale, trackWidth, trackHeight, title);
-        }
         
-        // mark off X-axis time scale according to scale.
+        /// <summary>
+        /// Returns a bitmap of a time scale.
+        /// Interval between tic marks is calculated automatically.
+        /// THis method is used for long duration spectrograms.
+        /// It could be generalised for any time track.
+        /// </summary>
+        /// <param name="fullDuration">time span of entire time track to be drawn</param>
+        /// <param name="startOffset">time at start of track </param>
+        /// <param name="trackWidth">X pixel dimension</param>
+        /// <param name="trackHeight">Y pixel dimension</param>
+        /// <returns></returns>
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startOffset, int trackWidth, int trackHeight)
+        {
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+
+            TimeSpan xAxisTicInterval = CalculateGridInterval(fullDuration, trackWidth);
+
+            Pen whitePen = new Pen(Color.White);
+            //Pen grayPen = new Pen(Color.Gray);
+            Font stringFont = new Font("Arial", 8);
+
+                        int rows = bmp.Height;
+            int cols = bmp.Width;
+
+            // for columns, draw in X-axis lines
+            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
+            int xPixelInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            for (int x = 1; x < cols; x++)
+            {
+
+                if (x % xPixelInterval == 0)
+                {
+                    g.DrawLine(whitePen, x, 0, x, trackHeight);
+                    TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * x);
+                    TimeSpan absoluteTS = startOffset + elapsedTimeSpan;
+                    string time = String.Format("{0}h{1:d2}m{2:d2}s", absoluteTS.Hours, absoluteTS.Minutes, absoluteTS.Seconds);
+                    g.DrawString(time, stringFont, Brushes.White, new PointF(x, 1)); //draw time
+                }
+            }
+            g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
+            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            //g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
+            //g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
+            return bmp;
+        }
+
+        /// <summary>
+        /// Like the above method but adds a label at end displaying units of time.
+        /// </summary>
+        /// <param name="fullDuration"></param>
+        /// <param name="startOffset"></param>
+        /// <param name="ticInterval"></param>
+        /// <param name="trackWidth"></param>
+        /// <param name="trackHeight"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
         public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startOffset, TimeSpan ticInterval, int trackWidth, int trackHeight, string title)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
@@ -934,8 +986,8 @@
             double pixelInterval = 0;
             foreach (double gridInterval in gridIntervals)
             {
-                pixelInterval = gridInterval / pixelDuration;
                 if (pixelInterval > 110) break;
+                pixelInterval = gridInterval / (double)pixelDuration;
             }
             TimeSpan ts = TimeSpan.FromMinutes(pixelInterval * pixelDuration);
             return ts;

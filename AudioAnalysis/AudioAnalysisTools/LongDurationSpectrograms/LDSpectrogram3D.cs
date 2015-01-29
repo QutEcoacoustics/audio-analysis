@@ -347,15 +347,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             g.DrawString(dateString, stringFont, Brushes.Wheat, new PointF(10, 3));
 
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
-            var minOffset = TimeSpan.Zero;
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, xAxisPixelDuration, nyquistFreq, 1000);
+            var minuteOffset = TimeSpan.Zero;
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minuteOffset, fullDuration, X_interval, nyquistFreq, 1000);
 
-            TimeSpan fullDuration = TimeSpan.FromMinutes(bmp1.Width);
             int trackHeight = 20;
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
             TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
-            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
+            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(fullDuration, minuteOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
 
             var imageList = new List<Image>();
             imageList.Add(titleBar);
@@ -395,9 +395,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             var startOffset = TimeSpan.Zero;
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, X_interval, xAxisPixelDuration, nyquistFreq, 1000);
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, X_interval, nyquistFreq, 1000);
 
             int trackHeight = 20;
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;

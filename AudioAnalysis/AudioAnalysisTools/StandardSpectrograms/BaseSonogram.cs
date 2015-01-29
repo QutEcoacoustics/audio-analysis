@@ -305,7 +305,9 @@
             int HertzInterval = 1000;
             if (this.Configuration.WindowSize < 512) 
                 HertzInterval = 2000;
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, xInterval, xAxisPixelDuration, this.NyquistFrequency, HertzInterval);
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, this.NyquistFrequency, HertzInterval);
 
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             Bitmap timeBmp = Image_Track.DrawTimeTrack(this.Duration, image.Width);
@@ -866,16 +868,18 @@
         //    return image;
         //}
 
-        public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
+        public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minuteOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
                                           TimeSpan labelInterval, int nyquist, int herzInterval)
         {
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minOffset, xAxisTicInterval, xAxisPixelDuration, nyquist, herzInterval);
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
 
             int imageWidth = image.Width;
             int trackHeight = 20;
             int imageHt = image.Height + trackHeight + trackHeight + trackHeight;
 
-            Bitmap timeBmp = BaseSonogram.DrawTimeTrack(minOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, trackHeight, "Seconds");
+            Bitmap timeBmp = BaseSonogram.DrawTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, trackHeight, "Seconds");
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);

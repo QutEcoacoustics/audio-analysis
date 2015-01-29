@@ -3,9 +3,9 @@ AnalysisName: Towsey.Acoustic
 #SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
 SegmentDuration: 1
 SegmentOverlap: 0
-# IndexCalculationDuration: units=seconds (default=60 seconds);   BGNoiseNeighbourhood: units=seconds (default=SegmentDuration = 60 seconds);
-IndexCalculationDuration: 1
-BGNoiseNeighbourhood: 10
+# IndexCalculationDuration: units=seconds (default=60 seconds);   BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds);
+IndexCalculationDuration: 
+BGNoiseNeighbourhood: 
 #FRAME LENGTH in samples and Frame Overlap as fraction 
 FrameLength: 512
 FrameOverlap: 0.0
@@ -23,7 +23,7 @@ DisplayWeightedIndices: false
 
 #SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
-SaveIntermediateCsvFiles: true
+SaveIntermediateCsvFiles: false
 SaveSonogramFiles: false
 DisplayCsvImage: true
 DoNoiseReduction: true

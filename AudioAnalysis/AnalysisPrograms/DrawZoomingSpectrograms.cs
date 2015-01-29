@@ -1,11 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// <copyright file="DrawZoomingSpectrograms.cs" company="QutEcoacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Ecoacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
-//   Defines the DrawLongDurationSpectrograms type.
 //
-// Action code for this analysis = ColourSpectrogram
+// Action code for this analysis = ZoomingSpectrograms
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -20,9 +19,9 @@ namespace AnalysisPrograms
 
 
     /// <summary>
-    /// First argument on command line to call this action is "ColourSpectrogram"
+    /// First argument on command line to call this action is "ZoomingSpectrograms"
     /// </summary>
-    public static class DrawLongDurationSpectrograms
+    public static class DrawZoomingSpectrograms
     {
 
         public class Arguments
@@ -82,8 +81,10 @@ namespace AnalysisPrograms
 
             // zoomable spectrograms
             string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             DirectoryInfo opDir = new DirectoryInfo(opdir);
@@ -112,7 +113,7 @@ namespace AnalysisPrograms
                 if (verbose)
                 {
                     string date = "# DATE AND TIME: " + DateTime.Now;
-                    LoggedConsole.WriteLine("# DRAW LONG DURATION SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES OBTAINED FROM AN AUDIO RECORDING");
+                    LoggedConsole.WriteLine("# DRAW ZOOMING SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES OBTAINED FROM AN AUDIO RECORDING");
                     LoggedConsole.WriteLine(date);
                     LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
                     LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
@@ -123,12 +124,10 @@ namespace AnalysisPrograms
 
             var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
 
-            //config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
-            //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
-            config.IndexCalculationDuration = TimeSpan.FromSeconds(60.0);
-            config.XAxisTicInterval = TimeSpan.FromSeconds(3600.0);
+            config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
+            config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
 
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig);
+            ZoomingSpectrograms.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig);
         }
 
 

@@ -132,6 +132,14 @@ namespace AnalysisPrograms.Production
             return DrawLongDurationSpectrograms.Execute;
         }
 
+        [ArgDescription("Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.")]
+        public DrawZoomingSpectrograms.Arguments ZoomingSpectrogramsArgs { get; set; }
+        public static Action<DrawZoomingSpectrograms.Arguments> ZoomingSpectrograms()
+        {
+            return DrawZoomingSpectrograms.Execute;
+        }
+        
+
         [ArgDescription("Calls DifferenceSpectrogram.Execute():  Produces ")]
         public DifferenceSpectrogram.Arguments DifferenceSpectrogramArgs { get; set; }
         public static Action<DifferenceSpectrogram.Arguments> DifferenceSpectrogram()

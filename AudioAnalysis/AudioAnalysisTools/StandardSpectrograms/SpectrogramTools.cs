@@ -629,7 +629,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 int row = (int)(i * Y_interval);
                 int rowFromBottom = rows - row;
-                for (int column = 0; column < cols - 1; column++)
+                for (int column = 30; column < cols - 1; column++) // skip first 10 pixels because writing scale value
                 {
                     bmp.SetPixel(column, rowFromBottom, Color.Black);
                     bmp.SetPixel(column + 1, rowFromBottom, Color.White);
@@ -640,21 +640,21 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             // for columns, draw in X-axis lines
-            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
-            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
-            for (int column = 1; column < cols; column++)
-            {
+            //double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
+            //int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            //for (int column = 1; column < cols; column++)
+            //{
 
-                if (column % xInterval == 0)
-                {
-                    for (int row = 0; row < rows - 1; row++)
-                    {
-                        bmp.SetPixel(column, row, Color.Black);
-                        bmp.SetPixel(column, row + 1, Color.White);
-                        row += 2;
-                    }
-                }
-            }
+            //    if (column % xInterval == 0)
+            //    {
+            //        for (int row = 0; row < rows - 1; row++)
+            //        {
+            //            bmp.SetPixel(column, row, Color.Black);
+            //            bmp.SetPixel(column, row + 1, Color.White);
+            //            row += 2;
+            //        }
+            //    }
+            //}
         } // DrawGridLInesOnImage()
 
 

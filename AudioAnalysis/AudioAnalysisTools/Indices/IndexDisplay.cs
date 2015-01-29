@@ -105,7 +105,7 @@
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = TrackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleDuration, DrawSummaryIndices.TimeScale, imageWidth, TrackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, imageWidth, TrackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
