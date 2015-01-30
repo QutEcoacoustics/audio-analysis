@@ -455,7 +455,7 @@ namespace Dong.Felt.Representations
             int rowsCount, int colsCount,
             out List<AcousticEvent> acousticEvents)
         {
-            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
+            //var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             /////call AED to group ridges into event-based on ridge
             //var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             //var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
@@ -473,7 +473,7 @@ namespace Dong.Felt.Representations
                     var e = new AcousticEvent(
                         o,
                         sonogram.NyquistFrequency,
-                        sonogram.Configuration.FreqBinCount,
+                        sonogram.Configuration.FreqBinCount,                                                                                                                                                                                                                                                                                                                                                          
                         sonogram.FrameDuration,
                         sonogram.FrameStep,
                         sonogram.FrameCount);
@@ -489,6 +489,7 @@ namespace Dong.Felt.Representations
             var result = new List<AcousticEvent>();
             foreach (var e in acousticEvent)
             {
+                // prepare the hitMatrix
                 var hitList = e.HitElements.ToList();
                 // X:frames
                 var rows = e.Oblong.RowWidth;
@@ -506,17 +507,18 @@ namespace Dong.Felt.Representations
                         rowEnergy[i] += doubleEventHitMatrix[i, j]; 
                     }
                 }
-                //  Find the middle column which has sparse energy
-                int offset = 3;
+                //  Find the middle columns which has sparse energy
+                int offset = 5;
                 int middleRowIndex = rows / 2;
-                var potentialGapEnergy = new double[offset * 2];
-                // Check whether there is a colEnergy lower than a threshold, 20% of the cols.
-                var splitRowIndex = e.Oblong.RowBottom;
                 if ((middleRowIndex - offset) > 0 && (middleRowIndex + offset) < rows)
-                {
+                {                                        
+                    // Temperal energy array [offset *2 ]
+                    var potentialGapEnergy = new double[offset * 2];
+                    
                     for (var r = middleRowIndex - offset; r < middleRowIndex + offset; r++)
                     {
-                        var energyThreshold = 0.1 * cols;
+                        // Check whether there is a colEnergy lower than a threshold, 20% of the cols.
+                        var energyThreshold = 0.2 * cols;
                         var pIndex = r - (middleRowIndex - offset);
                         if (rowEnergy[r] < energyThreshold)
                         {
@@ -527,17 +529,18 @@ namespace Dong.Felt.Representations
                             potentialGapEnergy[pIndex] = cols;
                         }
                     }
-                    int indexMin = rows;
-                    int indexMax = rows;
+                    int indexMin = 0;
+                    int indexMax = 0;
                     double min = 0.0;
                     double max = 0.0;
                     DataTools.MinMax(potentialGapEnergy, out indexMin, out indexMax, out min, out max);
-                    splitRowIndex = middleRowIndex - offset + indexMin;
+                    var splitRowIndex = middleRowIndex - offset + indexMin;
+                    var splitMinValue = min;
 
-                    //
-                    if (e.Oblong.RowTop + splitRowIndex < e.Oblong.RowBottom)
+                    if (min != cols)
                     {
                         // so split the event into 2 small events
+                        // To further check whether the energy in the splitted events are sparse
                         var e1 = new AcousticEvent();
                         e1.TimeStart = 0.0;
                         e1.TimeEnd = 0.0;
@@ -545,9 +548,11 @@ namespace Dong.Felt.Representations
                         e1.MaxFreq = e.MaxFreq;
                         var o = new Oblong(e.Oblong.RowTop, e.Oblong.ColumnLeft, e.Oblong.RowBottom, e.Oblong.ColumnRight);
                         e1.Oblong = o;
-                        e1.Oblong.RowBottom = e.Oblong.RowTop + splitRowIndex;
+                        e1.Oblong.RowBottom = e.Oblong.RowTop + splitRowIndex - 1;
+                        e1.HitElements = e.HitElements;
+                        e1.HitColour = Color.Black;
                         result.Add(e1);
-
+                        
                         var e2 = new AcousticEvent();
                         e2.TimeStart = 0.0;
                         e2.TimeEnd = 0.0;
@@ -555,7 +560,7 @@ namespace Dong.Felt.Representations
                         e2.MaxFreq = e.MaxFreq;
                         var o2 = new Oblong(e.Oblong.RowTop, e.Oblong.ColumnLeft, e.Oblong.RowBottom, e.Oblong.ColumnRight);
                         e2.Oblong = o2;
-                        e2.Oblong.RowTop = e.Oblong.RowTop + splitRowIndex + 3;
+                        e2.Oblong.RowTop = e.Oblong.RowTop + splitRowIndex;
                         result.Add(e2);
                     }
                     else
