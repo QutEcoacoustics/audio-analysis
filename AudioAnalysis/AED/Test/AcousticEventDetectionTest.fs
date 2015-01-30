@@ -5,6 +5,7 @@ open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Common
 open FsCheckArbs
 open Xunit
+open FsUnit.Xunit
 open QutSensors.AudioAnalysis.AED.Util
 
 [<Fact>]
@@ -42,15 +43,15 @@ let testToFillIn () =
 [<Fact>]
 let testJoinHorizontalLinesQuick () =
     let m = Math.Matrix.zero 5 10 
-    Assert.Equal(m, joinHorizontalLines m)
+    Assert.Equal<matrix>(m, joinHorizontalLines m)
     m.[0,1] <- 1.0
-    Assert.Equal(m, joinHorizontalLines m)
+    Assert.Equal<matrix>(m, joinHorizontalLines m)
     m.[0,2] <- 1.0
-    Assert.Equal(m, joinHorizontalLines m)
+    Assert.Equal<matrix>(m, joinHorizontalLines m)
     m.[0,4] <- 1.0
     let m' = Math.Matrix.copy m
     m'.[0,3] <- 1.0
-    Assert.Equal(m', joinHorizontalLines m)
+    Assert.Equal<matrix>(m', joinHorizontalLines m)
     
 [<Fact>]
 let testJoinHorizontalLines () =
@@ -84,7 +85,7 @@ let testSeparateLargeEvents () =
         let ae2 = loadTestFile "I6.csv" md |> getAcousticEvents |> separateLargeEvents |> selectBounds
         let ae2m = loadIntEventsFile "AE2.csv" md
         Assert.Equal(Seq.length ae2m, Seq.length ae2)
-        Assert.Equal(Seq.sort ae2m, Seq.sort ae2)
+        Assert.Equal<seq<_>>(Seq.sort ae2m, Seq.sort ae2)
     testAll f
     
 
@@ -109,7 +110,7 @@ let testFilterOutSmallEvents () =
         let ae2m = loadIntEventsFile "AE2.csv" md |> createEvents
         let ae3 = filterOutSmallEvents md.smallThreshIn ae2m |> selectBounds
         let ae3m = loadIntEventsFile "AE3.csv" md
-        Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
+        Assert.Equal<seq<_>>(Seq.sort ae3m, Seq.sort ae3)
     testAll f
 
 
@@ -197,23 +198,23 @@ module AcousticEventDetectionTestsForSeperateLargeEvents =
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 0
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 18, x + 4)) expectedEvent1
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 2`` () =
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 1
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 1, x + 4)) expectedEvent2
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 3`` () =
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 2
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 43)) expectedEvent3
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
-        (*
+        
 // This is a fake matrix for testing whether separateLargeEvents works horizontally. 
 module AcousticEventDetectionTestsForHorizontalSeperateLargeEvents =
     let testMatrix = parseStringAsMatrix @"
@@ -225,7 +226,7 @@ module AcousticEventDetectionTestsForHorizontalSeperateLargeEvents =
 0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111100
 0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111100
 0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111000
-0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111001
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111000
 0000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100
 0000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000
 0000111111111111111111111111111111111111111111111100000011111111111111111111111111111111111111111111
@@ -289,14 +290,14 @@ module AcousticEventDetectionTestsForHorizontalSeperateLargeEvents =
 011111111111111111111111111111111111
 111111111111111111111111111111111111
 "
-   let expectedBounds = 
+    let expectedBounds = 
         [
             lengthsToRect 4 1 39 20;            
             lengthsToRect 43 9 21 3;
             lengthsToRect 64 1 36 20;
         ] :> seq<Rectangle<int, int>>
 
-        [<Fact>]
+    [<Fact>]
     let ``seperate large events - testing  bounds`` () = 
         let results = testMatrix |> getAcousticEvents |> separateLargeEvents |> Array.ofSeq
 
@@ -311,19 +312,18 @@ module AcousticEventDetectionTestsForHorizontalSeperateLargeEvents =
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 0
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 4)) expectedHorizontalEvent1
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 2`` () =
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 1
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 9, x + 43)) expectedHorizontalEvent2
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 3`` () =
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 2
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 64)) expectedHorizontalEvent3
-        Assert.Equal(absoluteHits, result.Elements)
-*)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
