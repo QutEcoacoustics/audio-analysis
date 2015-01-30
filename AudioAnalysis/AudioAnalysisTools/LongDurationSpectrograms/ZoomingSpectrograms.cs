@@ -20,93 +20,131 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     {
 
 
-        public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, Dictionary<string, double[,]> spectra = null)
+        public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath)
         {
             LdSpectrogramConfig config = longDurationSpectrogramConfig;
+
+            //Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
+            //dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+
+            // THREE BASIC PARAMETERS
+            TimeSpan focalTime = TimeSpan.FromMinutes(35);
+            int imageWidth = 1600;
+            TimeSpan dataScale = config.IndexCalculationDuration;
+
+            string fileStem = config.FileName;
+            //string[] keys = config.ColourMap2.Split('-');
+            string[] keys = {"ACI", "AVG", "ENT", "EVN"};
+
+            Dictionary<string, double[,]> spectra = ReadCSVFiles(config.InputDirectoryInfo, fileStem, keys);
+            //Dictionary<string, double[,]> spectra = null;
+
+
+            // standard scales in seconds per pixel.
+            int[] scales = {1, 2, 4, 8, 16, 30, 60 };
+
+            var imageList = new List<Image>();
+
+            for (int i = 6; i >= 0; i--)
+            {
+                int scale = scales[i];
+                TimeSpan imageScale = TimeSpan.FromSeconds(dataScale.TotalSeconds * scale);
+                Image image = DrawSpectrogramAtScale(config, indicesConfigPath, focalTime, dataScale, imageScale, imageWidth, spectra);
+                imageList.Add(image);
+
+            }
+
+            Image combinedImage = ImageTools.CombineImagesVertically(imageList);
+            combinedImage.Save(Path.Combine(config.OutputDirectoryInfo.FullName, "ZOOM.png"));
+        }
+
+
+
+
+        public static Image DrawSpectrogramAtScale(LdSpectrogramConfig config, FileInfo indicesConfigPath,
+                                    TimeSpan focalTime, TimeSpan dataScale, TimeSpan imageScale, int imageWidth, Dictionary<string, double[,]> spectra)
+        {
+            if (spectra == null)
+            {
+                LoggedConsole.WriteLine("WARNING: NO SPECTRAL DATA SUPPLIED");
+                return null;
+            }
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
-            // THREE BASIC PARAMETERS
-            TimeSpan focalTime = TimeSpan.FromMinutes(16);
-            int imageWidth = 1600;
-            TimeSpan xScale = config.IndexCalculationDuration;
-            TimeSpan ImageDuration = TimeSpan.FromTicks(imageWidth * xScale.Ticks);
-            TimeSpan halfImageDuration = TimeSpan.FromTicks(imageWidth * xScale.Ticks / 2);
+            TimeSpan sourceMinuteOffset = config.MinuteOffset;   // default = zero minute of day i.e. midnight
+            var defaultTimeScale = TimeSpan.FromSeconds(1);
+
+            TimeSpan dataDuration = TimeSpan.FromSeconds((60 * 74) + 56);
+
+            TimeSpan offsetTime = TimeSpan.Zero;
+            TimeSpan ImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
+            TimeSpan halfImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks / 2);
             TimeSpan startTime = focalTime - halfImageDuration;
-            TimeSpan endTime   = focalTime + halfImageDuration;
-            Image imageDummy = new Bitmap(imageWidth, 256);
-            Graphics g = Graphics.FromImage(imageDummy);
-            Pen pen = new Pen(Color.Red);
-            int x1 = imageWidth / 2;
-            g.DrawLine(pen, x1, 0, x1, imageDummy.Height);
-            int nyquist = 22050 / 2;
-            int herzInterval = 1000;
-            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", "DUMMY", SpectrogramConstants.RGBMap_ACI_ENT_EVN);
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageDummy.Width);
-            imageDummy = LDSpectrogramRGB.FrameLDSpectrogram(imageDummy, titleBar, startTime, xScale, config.XAxisTicInterval, nyquist, herzInterval);
-            imageDummy.Save(Path.Combine(config.OutputDirectoryInfo.FullName, "ZOOM.png"));
+            if (startTime < TimeSpan.Zero)
+            {
+                offsetTime = TimeSpan.Zero - startTime;
+                startTime  = TimeSpan.Zero;
+            }
+            TimeSpan endTime = focalTime + halfImageDuration;
+            if (endTime > dataDuration) endTime = dataDuration; 
+            TimeSpan spectrogramDuration = endTime - startTime;
+            int spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
 
+            int startIndex = (int)(startTime.Ticks / dataScale.Ticks);
+            int endIndex   = (int)(endTime.Ticks   / dataScale.Ticks);
+            var spectralSelection = new Dictionary<string, double[,]>();
+            foreach (string key in spectra.Keys)
+            {
+                double[,] matrix = spectra[key];
+                int rowCount = matrix.GetLength(0);
+                spectralSelection[key] = MatrixTools.Submatrix(matrix, 0, startIndex, rowCount-1, endIndex-1);
+            }
 
-            string fileStem = config.FileName;
-            DirectoryInfo outputDirectory = config.OutputDirectoryInfo;
+            // compress spectrograms to correct scale
+            if (imageScale != defaultTimeScale)
+                spectralSelection = CompressSpectrograms(spectralSelection, imageScale, defaultTimeScale);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
             string colorMap2 = config.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+            string colorMap = colorMap2;
 
             double backgroundFilterCoeff = (double?)config.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
-            var cs1 = new LDSpectrogramRGB(config, colorMap1);
-            cs1.FileName = fileStem;
+            var cs1 = new LDSpectrogramRGB(config, colorMap);
+            cs1.FileName = config.FileName;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
-            if (spectra == null)
-            {
-                // reads all known files spectral indices
-                //Logger.Info("Reading spectra files from disk");
-                cs1.ReadCSVFiles(config.InputDirectoryInfo, fileStem);
-            }
-            else
-            {
-                // TODO: not sure if this works
-                //Logger.Info("Spectra loaded from memory");
-                cs1.LoadSpectrogramDictionary(spectra);
-            }
-
-            if (cs1.GetCountOfSpectrogramMatrices() == 0)
-            {
-                LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
-                return;
-            }
-
-            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
-
-            //cs1.CalculateStatisticsForAllIndices();
-            //Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.indexStats);
+            // TODO: not sure if this works
+            //Logger.Info("Spectra loaded from memory");
+            cs1.LoadSpectrogramDictionary(spectralSelection);
 
 
-            //cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
+            Image LDSpectrogram = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            //Image LDSpectrogram = new Bitmap(spectrogramWidth, 256);
+            Graphics g2 = Graphics.FromImage(LDSpectrogram);
 
-            //string colorMap = colorMap1;
-            //Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-            //string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-            //Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
 
-            TimeSpan minuteOffset = config.MinuteOffset;   // default = zero minute of day i.e. midnight
-            //int nyquist = cs1.SampleRate / 2;
-            //int herzInterval = 1000;
-            //image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
 
-            //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
-            //colorMap = colorMap2;
-            //Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-            //title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-            //titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            //image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-            //image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
+
+            // draw focus time
+            Pen pen = new Pen(Color.Red);
+            TimeSpan focalOffset = focalTime - startTime;
+            int x1 = (int)(focalOffset.Ticks / imageScale.Ticks);
+            g2.DrawLine(pen, x1, 0, x1, LDSpectrogram.Height);
+
+            int nyquist = 22050 / 2;
+            int herzInterval = 1000;
+            string title = string.Format("ZOOM SCALE={0}s/pixel   Image duration={1}    (colour:R-G-B={2})",
+                                                                       imageScale.TotalSeconds, spectrogramDuration, colorMap);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, LDSpectrogram.Width);
+            LDSpectrogram = LDSpectrogramRGB.FrameLDSpectrogram(LDSpectrogram, titleBar, startTime, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
+
+
 
             // read high amplitude and clipping info into an image
             //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
@@ -117,28 +155,109 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //if (null != imageX)
             //    imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
 
-            //var imageList = new List<Image>();
-            //imageList.Add(image1);
-            //imageList.Add(imageX);
-            //imageList.Add(image2);
-            //Image image3 = ImageTools.CombineImagesVertically(imageList);
-            //image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
+            // create the base image
+            Image image = new Bitmap(imageWidth, LDSpectrogram.Height);
+            Graphics g1 = Graphics.FromImage(image);
+            g1.Clear(Color.DarkGray);
 
-            //Image ribbon;
-            //// ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
-            //ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
-            //ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
-            //// ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
-            //ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
-            //ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
+            int Xoffset = (int)(offsetTime.Ticks / imageScale.Ticks);
+            g1.DrawImage(LDSpectrogram, Xoffset, 0);
 
-            //ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
-            //ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
-            //ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
-            //ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
+            return image;
         }
 
 
+
+        public static Dictionary<string, double[,]> ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
+        {
+            string warning = null;
+
+            Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
+            for (int i = 0; i < keys.Length; i++)
+            {
+                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
+                if (File.Exists(path))
+                {
+                    int freqBinCount;
+                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
+                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                    spectrogramMatrices.Add(keys[i], matrix);
+                    //this.FrameWidth = freqBinCount * 2;
+                }
+                else
+                {
+                    if (warning == null)
+                    {
+                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadCSVFiles()";
+                    }
+
+                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
+                }
+            }
+
+            if (warning != null)
+            {
+                LoggedConsole.WriteLine(warning);
+            }
+
+            if (spectrogramMatrices.Count == 0)
+            {
+                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadCSVFiles()");
+                LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
+            }
+
+            return spectrogramMatrices;
+        }
+
+        public static Dictionary<string, double[,]> CompressSpectrograms(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan defaultTimeScale)
+        {
+            int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / defaultTimeScale.TotalMilliseconds);
+            var compressedSpectra = new Dictionary<string, double[,]>();
+            int step = scalingFactor - 1;
+            foreach (string key in spectra.Keys)
+            {
+                double[,] matrix = spectra[key];
+                int rowCount = matrix.GetLength(0);
+                int colCount = matrix.GetLength(1);
+                int compressedLength = (colCount / scalingFactor);
+                var newMatrix = new double[rowCount, compressedLength];
+                double[] tempArray = new double[scalingFactor];
+
+                if ((key == "ENT") && (scalingFactor > 1))
+                {
+                    //matrix = spectra["AVG"];
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        int colIndex = 0;
+                        for (int c = 0; c < colCount - scalingFactor; c += step)
+                        {
+                            colIndex = c / scalingFactor;
+                            for (int i = 0; i < scalingFactor; i++) tempArray[i] = matrix[r, c + i];
+                            double entropy = DataTools.Entropy_normalised(tempArray);
+                            if (Double.IsNaN(entropy)) 
+                                entropy = 1.0;
+                            newMatrix[r, colIndex] = 1 - entropy;
+                        }
+                    }
+                }
+                else // average all other spectral indices
+                {
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        int colIndex = 0;
+                        for (int c = 0; c < colCount - scalingFactor; c += step)
+                        {
+                            colIndex = c / scalingFactor;
+                            for (int i = 0; i < scalingFactor; i++) tempArray[i] = matrix[r, c + i];
+                            //newMatrix[r, colIndex] = matrix[r, c];
+                            newMatrix[r, colIndex] = tempArray.Average();
+                        }
+                    }
+                }
+                compressedSpectra[key] = newMatrix;
+            }
+            return compressedSpectra;
+        }
 
 
 

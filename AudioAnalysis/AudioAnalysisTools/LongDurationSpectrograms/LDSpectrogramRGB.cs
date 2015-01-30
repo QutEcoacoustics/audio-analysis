@@ -1036,8 +1036,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan startOffset, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval)
         {
-            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
-            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
 

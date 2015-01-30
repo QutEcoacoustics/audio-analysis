@@ -986,7 +986,7 @@
             double pixelInterval = 0;
             foreach (double gridInterval in gridIntervals)
             {
-                if (pixelInterval > 110) break;
+                if (pixelInterval > 111) break;
                 pixelInterval = gridInterval / (double)pixelDuration;
             }
             TimeSpan ts = TimeSpan.FromMinutes(pixelInterval * pixelDuration);
