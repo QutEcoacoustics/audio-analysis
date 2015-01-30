@@ -583,3 +583,10 @@ HumanReadableTime <- function (secs, suffix = NULL) {
     
 }
 
+
+AreNumbersEqual <- function (nums, tol = .Machine$double.eps) {
+   return(max(nums) - min(nums) < tol)
+}
+
+
+

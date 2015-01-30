@@ -1,8 +1,73 @@
-RankSamples <- function () {
- 
+
+Batch1 <- function () {
+    # performs a batch with pre-defined versions
+    #- 2010-10-17 NE     12      9      3
+    #- 2010-10-13 NW     13      10     4
+    #- 2010-10-14 NW     14      11     5
+    #- 2010-10-13 SE     15      12     6
+    #- 2010-10-17 SE     16      13     7
+    # 2010-10-13 NE     18      7       9
+    # 2010-10-14 NE     19      8       10
+    #
+    #
+    #events <- c(12,13,14,15,16,18,19)
+    #mins <- c(9,10,11,12,13,7,8)
+    #clustered.events  <- c(3,4,5,6,7,9,10)
     
-    events <- ReadOutput('events')
-    mins <- ReadOutput('target.min.ids')
+    events <- c(13,14,15,16,18,19)
+    mins <- c(10,11,12,13,7,8)
+    clustered.events  <- c(4,5,6,7,9,10)
+    
+    RankSamplesBatch(events, clustered.events, mins)
+    
+}
+
+
+RankSamplesBatch <- function (events.versions, clustered.events.versions, target.min.ids.versions) {
+    # performs many iterations of RankSamples, using the supplied versions
+    
+    if (!AreNumbersEqual(c(length(events.versions), length(clustered.events.versions), length(target.min.ids.versions)))) {
+        # tried passing a different number of items for each parameter
+        
+        Report(5, length(events.versions), length(clustered.events.versions), length(target.min.ids.versions))
+        stop('bad parameters')
+    }
+    
+    for (i in 1:length(events.versions)) {
+        events <- ReadOutput('events', version = events.versions[i], use.last.accessed = FALSE) 
+        if (events$dependencies$target.min.ids != target.min.ids.versions[i]) {
+            Report(5, events$dependencies$target.min.ids, '!=', target.min.ids.versions[i])
+            stop('mismatched versions 1')
+        }
+        mins <- ReadOutput('target.min.ids', version = target.min.ids.versions[i], use.last.accessed = FALSE)
+        clustered.events <- ReadOutput('clustered.events', version = clustered.events.versions[i], use.last.accessed = FALSE)
+ 
+        if (!setequal(clustered.events$data$event.id, events$data$event.id)) {
+            stop('mismatched versions 2')
+        }
+        
+        # can't check clustered events, because no is not directly dependent on other stuff here
+        # todo: make output return full dependency chain
+    
+        
+        
+        RankSamples(events = events, mins = mins, clustered.events = clustered.events)
+    }
+}
+
+
+
+RankSamples <- function (events = NULL, mins = NULL, clustered.events = NULL) {
+ 
+    if (is.null(events)) {
+        events <- ReadOutput('events') 
+    }
+    if (is.null(mins)) {
+        mins <- ReadOutput('target.min.ids')
+    }
+    if (is.null(clustered.events)) {
+        clustered.events <- ReadOutput('clustered.events')
+    }
     
     ranking.methods <- list()
     ranking.methods[[1]] <- RankSamples1
@@ -10,17 +75,16 @@ RankSamples <- function () {
     ranking.methods[[3]] <- RankSamples3 # internal distance
     ranking.methods[[4]] <- RankSamples4 # event count only
     ranking.methods[[5]] <- RankSamples5 # clusters (no multiplier) high decay rate (ignores found clusters)
-    ranking.methods[[6]] <- RankSamples6 #
+    ranking.methods[[6]] <- RankSamples6 # clusters (no multiplier) low decay rate (considers found clusters)
     ranking.methods[[7]] <- RankSamples7
     ranking.methods[[8]] <- RankSamples8 # event count only with temporar dispersal
+    ranking.methods[[9]] <- RankSamples9 # same as 5 but with temporal dispersal
+    ranking.methods[[10]] <- RankSamples10 # same as 6 but with temporal dispersal
     
-    use.ranking.methods <- c(4,5,6,8)
+    use.ranking.methods <- c(4,5,6,8,9,10)
+    #use.ranking.methods <- c(9)
     
 
-    
-    # make sure we are not trying to use more clusters than events
-    # num.clusters <- num.clusters[num.clusters < nrow(events$data)]
-    clustered.events <- ReadOutput('clustered.events')
     
     # the clustered events df has a column of event ids, and the other columns are the group, 
     # with the name of the column being the number of clusters
@@ -32,8 +96,7 @@ RankSamples <- function () {
     # y: number of clusters
     # z: minutes
     # so, for each ranking method and number of clusters, we have a rank for each minute
-    output <- array(data = NA, dim = c(length(use.ranking.methods), length(num.clusters), nrow(mins$data)), dimnames = list(ranking.method = as.character(use.ranking.methods), num.clusters = num.clusters, min.id = mins$data$min.id))
-    
+    output <- array(data = NA, dim = c(nrow(mins$data), length(use.ranking.methods), length(num.clusters)), dimnames = list(min.id = mins$data$min.id, ranking.method = as.character(use.ranking.methods), num.clusters = num.clusters))
     
     for (n in 1:length(num.clusters)) {
         group <- clustered.events$data[,num.clusters[n]]
@@ -42,14 +105,13 @@ RankSamples <- function () {
             Report(1, 'Ranking samples:', use.ranking.methods[m], ' num.clusters:', num.clusters[n])
             r.m <- use.ranking.methods[m]
             r <- ranking.methods[[r.m]](events = events$data, min.ids = mins$data$min.id)
-            r <- r[order(r$min.id), ] 
-            output[as.character(r.m), n, ] <- r$rank
+            r <- r[order(r$rank), ] 
+            output[,as.character(r.m), n] <- r$min.id
         }
     }
     
-    params <- list(num.clusters = num.clusters, ranking.methods = use.ranking.methods)
+    params <- list(ranking.methods = use.ranking.methods)
     dependencies <- list(target.min.ids = mins$version, clustered.events = clustered.events$version)
-    
     
     WriteOutput(output, 'ranked.samples', params = params, dependencies = dependencies)
     
@@ -166,13 +228,12 @@ RankSamples4 <- function (events, min.ids) {
     return(data.frame(min.id = min.ids, rank = rank, score = event.count$count))
 }
 
-
 RankSamples5 <- function (events, min.ids) {
     # rank samples using sparse matrix iterator
     # multiplyer is 1 for all minutes. i.e. work only on number of clusters
     # decay rate means that previously found cluster groups are ignored
     
-    return(IterateOnSparseMatrix(events, decay.rate = 10))
+    return(IterateOnSparseMatrix(events, decay.rate = 10, min.ids = min.ids))
     
 }
 
@@ -182,7 +243,7 @@ RankSamples6 <- function (events, min.ids) {
     # decay rate of 1 means that only the number of clusters per minute is considered
     # not whether they are used before
     
-    return(IterateOnSparseMatrix(events, decay.rate = 1))
+    return(IterateOnSparseMatrix(events, decay.rate = 1, min.ids = min.ids))
     
 }
 
@@ -275,11 +336,11 @@ RankSamples8 <- function (events, min.ids, trim.to = 2000) {
         unranked <- event.count[event.count$min.id %in% setdiff(event.count$min.id, result$min.id), ]
         dist.scores <- DistScores(unranked$min.id, result$min.id)
         # transform dist scores so that far away and very far away are equally good. 
-        dist.scores <- TransformDistScores(dist.scores)
-        combined.scores <- dist.scores * unranked$count
-        result$min.id[i] <- unranked$min.id[which.max(combined.scores)]
+        weights <- TransformDistScores(dist.scores)
+        weighted.scores <- weights * unranked$count
+        result$min.id[i] <- unranked$min.id[which.max(weighted.scores)]
         result$rank[i] <- i
-        result$score[i] <- max(combined.scores) 
+        result$score[i] <- max(weighted.scores) # not really relevant
     }
     
     if (exists('ignore.minutes')) {
@@ -297,6 +358,24 @@ RankSamples8 <- function (events, min.ids, trim.to = 2000) {
     
 }
 
+RankSamples9 <- function (events, min.ids) {
+    # rank samples using sparse matrix iterator
+    # multiplyer is 1 for all minutes. i.e. work only on number of clusters
+    # decay rate means that previously found cluster groups are ignored
+    
+    return(IterateOnSparseMatrix(events, decay.rate = 10, min.ids = min.ids, temporal.dispersal = list(t = 30, a = 1)))
+    
+}
+
+RankSamples10 <- function (events, min.ids) {
+    # rank samples using sparse matrix iterator
+    # multiplyer is 1 for all minutes.  i.e. work only on number of clusters
+    # decay rate of 1 means that only the number of clusters per minute is considered
+    # not whether they are used before
+    
+    return(IterateOnSparseMatrix(events, decay.rate = 1, min.ids = min.ids, temporal.dispersal = list(t = 30, a = 1)))
+    
+}
 
 
 EventCountByMin <- function (min.ids, events.per.group.per.min) {
@@ -306,10 +385,149 @@ EventCountByMin <- function (min.ids, events.per.group.per.min) {
 
 
 
+IterateOnSparseMatrix <- function (events, multipliers = NA, min.ids,  decay.rate = 2.2, temporal.dispersal = NULL) {
+    # ranks all the minutes in the target in the order 
+    #
+    # Args:
+    #   events: data.frame
+    #   multipliers: ?
+    #   decay.rate: after each iteration, a cluster-minute pair will have the value decay.rate^(num times this cluster has been included in previously ranked minutes)
+    #   temporal.dispersal: list; in the form list(a = amount, t = threshold)
+    
+    # that should find the most species in the shortest number of minute
+    # samples
+    #
+    # Value:
+    #   data.frame; cols: min.id, rank, score
+    #
+    # Details:
+    # reads the list of clustered events (i.e. events with a 'group' column)
+    # creates a sparse matrix of minutes/groups
+    # multiplies each row (minute) by that minute's distance score. 
+    # iterates over the rows of the matrix, determining the sum of each row
+    # (i.e. the number of events * the distance score for that minute). On iteration n highest
+    # scoring unranked minute given the rank n. 
+    # before continuing to iteration n+1, the columns (groups) of the highest scoring minute in iteration n
+    # are reduced. This reduces the influence these groups have over subsequent rankings, so that 
+    # the whole range of cluster groups are included in high ranking mintues. 
+    
+    require('plyr')
+    require('Matrix')
+    
+    # list of unique group-minute pairs 
+    # (i.e. remove duplicate groups from the same minute)
+    unique.cluster.minutes <- unique(events[, c('min.id', 'group')])
+    #num.clusters.per.min <- count(unique.cluster.minutes$min.id)
+    
+    #sparseMatrix goes from zero to the max min id. map min id to temporary minute ids
+    # so that sparse matrix has the minimum rows needed
+    
+    unique.min.id <- unique(events$min.id)
+    rankings <- unranked.map <- map <- data.frame(min.id = unique.min.id, temp.id = 1:length(unique.min.id))
+    rankings$rank <- -1
+    rankings$score <- -1
+    
+    mapped.min.id <- map$temp.id[match(events$min.id, map$min.id)]
+    cluster.matrix <- as.matrix(sparseMatrix(mapped.min.id, events$group)) * 1
+    
+    # multipliers <- multipliers[multipliers$min.id == unique.min.id  ,]
+    
+    if (class(multipliers) != 'logical') {
+        mapped.multipliers <- multipliers$multiplier[match(map$min.id, multipliers$min.id)]
+    } else {
+        mapped.multipliers <- rep(1, nrow(map))
+    }
+    
+    
+    # multiply each row by the distance score for that minute
+    cluster.matrix <- cluster.matrix * mapped.multipliers
+    # add a column for the min id, 
+    # empty.col <- rep(-1, nrow(cluster.matrix))
+
+    
+    #initialise empty dataframe for storing the ranked minutes (including scores)
+    #ranked.mins <- as.data.frame(matrix(rep(NA, 4*nrow(mins)), ncol = 4))
+    # repeatedly select the best scoring minute until all minutes have been selected
+    
+    for (i in 1:nrow(cluster.matrix)) {
+        Dot()
+        unranked <- rankings$rank == -1
+        if (class(cluster.matrix) == "matrix") {
+            scores <- apply(cluster.matrix, 1, sum)
+        } else  {
+            #down to the last row, so the apply won't work
+            scores <- sum(cluster.matrix)
+        }
+        
+        unranked.map$scores <- scores
+        
+        if (!is.null(temporal.dispersal) && sum(!unranked) > 0) {
+            # if we should be doing temporal dispersal, and it's not the first iteration
+            # (temporal dispersal only works after the first iteration)
+            
+            # get the distance from each of the 
+            dist.scores <- DistScores(from.min.ids = unranked.map$min.id, 
+                                      to.closest.in.min.ids = rankings$min.id[!unranked])
+            # transform dist scores so that far away and very far away are equally good. 
+            weights <- TransformDistScores(dist.scores, threshold = temporal.dispersal$t, amount = temporal.dispersal$a)
+            weighted.scores <- weights * scores  
+        } else {
+            weighted.scores <- scores
+        }
+        
+
+        
+        
+        unranked.map$scores <- weighted.scores
+        
+        
+        best <- which.max(weighted.scores)
+        # the best is the index out of the unranked 
+        # need to find which actual minute id (ranked or unranked)
+        #real.best <- rankings$temp.id[unranked][best]
+        #rankings$rank[real.best] <- i
+        #rankings$score[real.best] <- scores[best]  
+        
+        best.min.id <- unranked.map$min.id[best]
+        
+        rankings$rank[rankings$min.id == best.min.id] <- i
+        rankings$score[rankings$min.id == best.min.id] <- weighted.scores[best]
+        
+        if (class(cluster.matrix) == "matrix") {
+            #reduce the value of the found clusters, and 
+            # remove the row for the next round
+            found.clusters <- which(cluster.matrix[best, ] >0) # is this necessary?
+            cluster.matrix[,found.clusters] <- cluster.matrix[,found.clusters] / decay.rate
+            cluster.matrix <- cluster.matrix[-best,]
+            unranked.map <- unranked.map[-best,]            
+        } else {
+            break()
+        }        
+    }
+    
+    # re-map back to actual minute ids
+    # ranked.min.ids <- map$min.id[rankings$temp.id]
+    # rankings <- data.frame(min.id = ranked.min.ids, score = rankings$score, rank = rankings$rank)
+    
+    rankings <- rankings[,c('min.id', 'rank', 'score')]
+    
+    #mins.sorted <- rankings[order(rankings$rank, decreasing = FALSE),]
+    
+    #append empty minutes
+    #mins <- ReadOutput('target.min.ids')
+    unranked.ids <- setdiff(min.ids, rankings$min.id)
+    
+    if (length(unranked.ids > 0)) {
+        unranked.mins <- data.frame(min.id = unranked.ids, rank = (max(rankings$rank)+1):length(min.ids), score = rep(0, length(unranked.ids)))
+        rankings <- rbind(rankings, unranked.mins)  
+    }
+    
+    return(rankings)
+    
+}
 
 
-
-IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) {
+IterateOnSparseMatrix.orig <- function (events, multipliers = NA,  decay.rate = 2.2) {
     # ranks all the minutes in the target in the order 
     
     # that should find the most species in the shortest number of minute
@@ -365,6 +583,8 @@ IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) 
     # repeatedly select the best scoring minute until all minutes have been selected
     
     for (i in 1:nrow(cluster.matrix)) {
+        # there is 1 iteration for each minute sample
+        
         Dot()
         unranked <- rankings$rank == -1
         if (class(cluster.matrix) == "matrix") {
@@ -373,6 +593,8 @@ IterateOnSparseMatrix <- function (events, multipliers = NA,  decay.rate = 2.2) 
             #down to the last row, so the apply won't work
             scores <- sum(cluster.matrix)
         }
+
+        
         best <- which.max(scores)
         # the best is the index out of the unranked 
         # need to find which actual minute id (ranked or unranked)

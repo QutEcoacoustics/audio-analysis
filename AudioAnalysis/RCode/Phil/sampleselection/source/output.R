@@ -430,7 +430,7 @@ ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = 
     if (nrow(name.meta) == 1) {
         # we only have one thing to choose from, so choose it for them
         # but show them which one is being chosen
-        ReportAnimated(5, choices[1], duration = 6)
+        ReportAnimated(5, choices[1], duration = 3)
         which.version <- 1
     } else {
         which.version <- GetUserChoice(choices, optional = optional)   
