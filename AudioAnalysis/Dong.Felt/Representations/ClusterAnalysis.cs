@@ -10,6 +10,10 @@ using TowseyLibrary;
 
 namespace Dong.Felt.Representations
 {
+    using Acoustics.Shared.Extensions;
+
+    using QutSensors.AudioAnalysis.AED;
+
     class ClusterAnalysis
     {
         #region Public Properties
@@ -464,9 +468,18 @@ namespace Dong.Felt.Representations
 
             /// based on spectrogram intensity matrix directly
             var rotateDoubleMatrix = sonogram.Data;
-            var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(10.0, 30, 400.0,
-                8000, false, rotateDoubleMatrix);
-             //=> to call a anonymous method
+
+            // TODO: correct nyquist!
+            var aedOptions = new AedOptions(11025)
+                                 {
+                                     IntensityThreshold = 10.0,
+                                     SmallAreaThreshold = 30,
+                                     BandPassFilter = Tuple.Create(400.0, 8000.0).ToOption(),
+                                     DoNoiseRemoval = false
+                                 };
+            var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
+            
+            // => to call a anonymous method
             var events = oblongs.Select(
                 o =>
                 {
@@ -476,8 +489,10 @@ namespace Dong.Felt.Representations
                         sonogram.Configuration.FreqBinCount,                                                                                                                                                                                                                                                                                                                                                          
                         sonogram.FrameDuration,
                         sonogram.FrameStep,
-                        sonogram.FrameCount);
-                    e.HitColour = Color.Black;
+                        sonogram.FrameCount)
+                                {
+                                    HitColour = Color.Black
+                                };
                     return e;
                 }).ToList();           
             acousticEvents = events;          
