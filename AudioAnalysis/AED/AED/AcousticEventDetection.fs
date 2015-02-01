@@ -8,7 +8,7 @@ open Option
 open Default
 open System.Drawing
 
-let frequencyToPixels rndFunc maxFreq freq = int (rndFunc ((255.0 * freq) / maxFreq))
+let frequencyToPixels rndFunc maxPixels maxFreq freq = int (rndFunc (((float maxPixels) * freq) / maxFreq))
 
 let removeSubbandModeIntensities (m:matrix) =
     let modes =
@@ -73,25 +73,25 @@ let separateLargeEvents serparateStyle aes =
             
             // add the hit elements from the extended bounds
             let inline f r (y, x) =  isWithin r (x, y)
-            let aboveHits = Set.filter (f sectionA) originalAe.Elements
-            let belowHits = Set.filter (f sectionB) originalAe.Elements
+            let sectionAHits = Set.filter (f sectionA) originalAe.Elements
+            let sectionBHits = Set.filter (f sectionB) originalAe.Elements
 
-            let hits = aboveHits + absElements + belowHits
+            let hits = sectionAHits + absElements + sectionBHits
             {Bounds = extendedBounds; Elements = hits}
         else
             {Bounds = absBounds; Elements = absElements}
-    let blackoutNarrowSections summer getMax threshold m =
+    let blackoutNarrowSections summer getMax threshold indexChooser m =
         // measure widths
-        let s = summer m |> Math.Vector.toArray |> Array.map (fun x -> percent (x / (m |> getMax |> float))  <= threshold)
+        let chopIndexes = summer m |> Math.Vector.toArray |> Array.map (fun x -> percent (x / (m |> getMax |> float))  <= threshold)
         // actually chop the event in half at the thin points
-        Math.Matrix.mapi (fun i _ x -> if s.[i] then 0.0 else x) m
+        Math.Matrix.mapi (fun i j x -> if  (i, j) |> indexChooser |> Array.get chopIndexes then 0.0 else x) m
     let separate parameters ae =
         let m = aeToMatrix ae
         let m1 = match serparateStyle with
-                 | Horizontal _ -> blackoutNarrowSections sumRows (fun m -> m.NumCols) parameters.MainThreshold m
-                 | Vertical _ -> blackoutNarrowSections sumColumns (fun m -> m.NumRows) parameters.MainThreshold m
+                 | Horizontal _ -> blackoutNarrowSections sumRows (fun m -> m.NumCols) parameters.MainThreshold fst m
+                 | Vertical _ -> blackoutNarrowSections sumColumns (fun m -> m.NumRows) parameters.MainThreshold snd m
                  | _ -> failwith "Invalud separateStyle"
-        
+
         // scan for new acoustic events (returned events have relative co-ordinates)
         let splitEvents = 
             getAcousticEvents m1
@@ -142,19 +142,20 @@ let detectEventsMatlab (options: AedOptions) m =
 let detectEventsMinor (options: AedOptions) a =
     let m = Math.Matrix.ofArray2D a |> mTranspose
     
+    // remove first row (DC values) like in matlab and remove bandpass pixels (length i really needs that +1!)
+    let dc, actualRows = 
+        match m.NumRows with
+        | 257 | 513 | 1025 | 2049 -> 1, m.NumRows - 1
+        | 256 | 512 | 1024 | 2048 -> 0, m.NumRows
+        | _ -> failwith (sprintf "Expecting matrix with 256, 51, 1024, or 2048 frequency cols, but got %d" m.NumRows)
+
     let min, max = 
         match options.BandPassFilter with
         | Some (low, high) ->
             if (low > high) then failwith "bandPassFilter args invalid"
-            low |> frequencyToPixels floor options.NyquistFrequency, high |> frequencyToPixels ceil options.NyquistFrequency
+            low |> frequencyToPixels floor actualRows options.NyquistFrequency, high |> frequencyToPixels ceil actualRows options.NyquistFrequency
         | None -> (0, m.NumRows)
-   
-    // remove first row (DC values) like in matlab and remove bandpass pixels (length i really needs that +1!)
-    let dc = 
-        match m.NumRows with
-        | 257 | 513 | 1025 | 2049 -> 1
-        | 256 | 512 | 1024 | 2048 -> 0
-        | _ -> failwith (sprintf "Expecting matrix with 256, 51, 1024, or 2048 frequency cols, but got %d" m.NumRows)
+
     let mPrime =  m.Region (dc + min, 0, dc + max - min, m.NumCols) 
 
     detectEventsMatlab options mPrime    
