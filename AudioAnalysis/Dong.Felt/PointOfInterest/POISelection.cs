@@ -602,9 +602,12 @@ namespace Dong.Felt
             int halfLength = ridgeLength / 2;
             var hits = new byte[rows, cols];
             newMatrix = new double[rows, cols];
-            for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
+            /// Increase the enlarged neighbourhood size for further checking. 
+            var offset = 1;
+            // var offset = 1; 
+            for (int r = halfLength + offset; r < rows - halfLength - offset; r++)
             {
-                for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
+                for (int c = halfLength + offset; c < cols - halfLength - offset; c++)
                 {
                     if (hits[r, c] > 0) continue;
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
@@ -626,11 +629,12 @@ namespace Dong.Felt
                     }
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
-                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1);
+                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - offset, c - halfLength - offset,
+                            r + halfLength + offset, c + halfLength + offset);
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
-                        double localThreshold = sd * 1.3;
-                        if ((subM2[halfLength + 1, halfLength + 1] - av) < localThreshold) continue;
+                        double localThreshold = sd * 0.9; ;
+                        if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation + 1);
                         newMatrix[r, c] = magnitude;
