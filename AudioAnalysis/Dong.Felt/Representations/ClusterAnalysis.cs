@@ -464,7 +464,7 @@ namespace Dong.Felt.Representations
 
             /// based on spectrogram intensity matrix directly
             var rotateDoubleMatrix = sonogram.Data;
-            var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(10.0, 30, 400.0,
+            var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(9.0, 50, 400.0,
                 8000, false, rotateDoubleMatrix);
              //=> to call a anonymous method
             var events = oblongs.Select(
