@@ -83,7 +83,8 @@ namespace AnalysisPrograms
             string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.250msIndices";
             string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
@@ -123,9 +124,9 @@ namespace AnalysisPrograms
             }
 
             var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
-
-            config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
-            config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
+            // need to set the data scale. THis info not available at present
+            config.IndexCalculationDuration = TimeSpan.FromSeconds(0.25);
+            //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
 
             ZoomingSpectrograms.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig);
         }

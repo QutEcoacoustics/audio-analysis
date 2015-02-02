@@ -125,7 +125,7 @@ namespace AudioAnalysisTools.Indices
 
             // get TimeSpans and durations
             TimeSpan subsegmentTimeSpan = (TimeSpan)analysisSettings.IndexCalculationDuration;
-            double subsegmentDuration = subsegmentTimeSpan.TotalSeconds;
+            double subsegmentSecondsDuration = subsegmentTimeSpan.TotalSeconds;
             TimeSpan ts = (TimeSpan)analysisSettings.SubsegmentOffset;
             double subsegmentOffset = ts.TotalSeconds;
             ts = (TimeSpan)analysisSettings.SegmentStartOffset;
@@ -136,7 +136,7 @@ namespace AudioAnalysisTools.Indices
 
             // calculate start and end samples of the subsegment and noise segment
             int sampleStart = (int)(localOffsetInSeconds * sampleRate);
-            int subsegmentSampleCount = (int)(subsegmentDuration * sampleRate);
+            int subsegmentSampleCount = (int)(subsegmentSecondsDuration * sampleRate);
             int sampleEnd   = sampleStart + subsegmentSampleCount - 1;
 
             int noiseBuffer    = (int)(BGNoiseNeighbourhood * sampleRate);
@@ -188,7 +188,7 @@ namespace AudioAnalysisTools.Indices
             // average absolute value over the minute recording
             // double[] avAbsolute = dspOutput1.Average; 
             double[] signalEnvelope = dspOutput1.Envelope;
-            double avSignalEnvelope = signalEnvelope.Average();
+            double avgSignalEnvelope = signalEnvelope.Average();
 
 
             // set up DATA STORAGE struct and class in which to return all the indices and other data.
@@ -196,28 +196,25 @@ namespace AudioAnalysisTools.Indices
             SummaryIndexValues summaryIndexValues = result.SummaryIndexValues;
             
             // average high ampl rate per second
-            summaryIndexValues.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentDuration;
+            summaryIndexValues.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentSecondsDuration;
             // average clip rate per second
-            summaryIndexValues.ClippingIndex = dspOutput1.ClipCount / subsegmentDuration;
+            summaryIndexValues.ClippingIndex = dspOutput1.ClipCount / subsegmentSecondsDuration;
 
             // Following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
             // Although signal appears zero, this condition is required
-            if (avSignalEnvelope < 0.001)
+            if (avgSignalEnvelope < 0.001)
             {
-                Logger.Debug("Segment skipped because avSignalEnvelope is too small!");
+                Logger.Debug("Segment skipped because avSignalEnvelope is < 0.001!");
 
                 return result;
             }
 
-            // i: FRAME ENERGIES - convert signal to decibels and subtract background noise. By default, number of noise SDs = ZERO
+            // i: FRAME ENERGIES - convert signal to decibels and subtract background noise.
             double[] dBSignal = SNR.Signal2Decibels(dspOutput1.Envelope);
             double[] dBArray  = SNR.SubtractAndTruncate2Zero(dBSignal, signalBGN);
 
-            // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
-            var activity = ActivityAndCover.CalculateActivity(dBArray, frameTimeSpan);
-
-            // fraction of frames having acoustic activity 
-            summaryIndexValues.Activity = activity.fractionOfActiveFrames;
+            // 10 times log of amplitude squared     
+            summaryIndexValues.AvgSignalAmplitude = 20 * Math.Log10(avgSignalEnvelope);
 
             // bg noise in dB
             summaryIndexValues.BackgroundNoise = signalBGN;
@@ -225,21 +222,24 @@ namespace AudioAnalysisTools.Indices
             // SNR
             summaryIndexValues.Snr = dBArray.Max(); 
 
+            // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
+            var activity = ActivityAndCover.CalculateActivity(dBArray, frameTimeSpan);
+
+            // fraction of frames having acoustic activity 
+            summaryIndexValues.Activity = activity.fractionOfActiveFrames;
+
             // snr calculated from active frames only
             summaryIndexValues.AvgSnrOfActiveFrames = activity.activeAvDB;
-
-            // 10 times log of amplitude squared     
-            summaryIndexValues.AvgSignalAmplitude = 20 * Math.Log10(avSignalEnvelope);
 
             // ENTROPY of ENERGY ENVELOPE -- 1-Ht because want measure of concentration of acoustic energy.
             double entropy = DataTools.Entropy_normalised(DataTools.SquareValues(signalEnvelope));
             summaryIndexValues.TemporalEntropy = 1 - entropy;
 
-            // number of segments whose duration > one frame
-            summaryIndexValues.EventsPerSecond = activity.eventCount / subsegmentDuration;
+            // average number of events per second whose duration > one frame
+            summaryIndexValues.EventsPerSecond = activity.eventCount / subsegmentSecondsDuration;
 
-            // av event duration in milliseconds
-            summaryIndexValues.AvgEventDuration = activity.avEventDuration;
+            // average event duration in milliseconds - no longer calculated
+            //summaryIndexValues.AvgEventDuration = activity.avEventDuration;
 
 
             // (B) ################################## EXTRACT INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
@@ -356,12 +356,7 @@ namespace AudioAnalysisTools.Indices
             spectra.SPT = sptInfo.spSpectrum;
 
             summaryIndexValues.AvgSptDuration = sptInfo.avTrackDuration;
-            summaryIndexValues.SptPerSecond = sptInfo.trackCount / subsegmentDuration;
-
-
-            // TODO: calculate av track duration and total duration as fraction of recording duration
-            ////ImageTools.DrawMatrix(sptInfo.peaks, @"C:\SensorNetworks\Output\LSKiwi3\Test_00April2014\Towsey.Acoustic\peaks.png");
-
+            summaryIndexValues.SptPerSecond = sptInfo.trackCount / subsegmentSecondsDuration;
 
             // #V#####################################################################################################################################################
             // iv:  set up other info to return
@@ -408,15 +403,12 @@ namespace AudioAnalysisTools.Indices
             // return if activeFrameCount too small or segmentCount == 0  because no point doing clustering
             if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0))
             {
-                summaryIndexValues.ClusterCount = 0;
-                summaryIndexValues.AvgClusterDuration = TimeSpan.Zero;
-                summaryIndexValues.ThreeGramCount = 0;
+                //summaryIndexValues.ClusterCount = 0;
+                //summaryIndexValues.AvgClusterDuration = TimeSpan.Zero;
+                //summaryIndexValues.ThreeGramCount = 0;
                 result.Sg = sonogram;
                 result.Hits = hits;
                 result.TrackScores = scores;
-                ////result.Tracks = trackInfo.listOfSPTracks;
-                //IndexCalculate.MarkClippedSpectra(spectra, summaryIndexValues.HighAmplitudeIndex, summaryIndexValues.ClippingIndex);
-
                 return result;
             }
 
@@ -444,17 +436,16 @@ namespace AudioAnalysisTools.Indices
             if (data.trainingData.Count <= 8)     
             {
                 clusterInfo.clusterHits2 = null;
-                summaryIndexValues.ClusterCount = 0;
-                summaryIndexValues.AvgClusterDuration = TimeSpan.Zero;
-                summaryIndexValues.ThreeGramCount = 0;
+                //summaryIndexValues.ClusterCount = 0;
+                //summaryIndexValues.AvgClusterDuration = TimeSpan.Zero;
+                //summaryIndexValues.ThreeGramCount = 0;
             }
             else
             {
                 clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, WtThreshold, HitThreshold, data.selectedFrames);
-                ////Log.WriteLine("Cluster Count=" + clusterInfo.clusterCount);
-                summaryIndexValues.ClusterCount = clusterInfo.clusterCount;
-                summaryIndexValues.AvgClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameTimeSpan.TotalSeconds); // av cluster duration
-                summaryIndexValues.ThreeGramCount = clusterInfo.triGramUniqueCount;
+                //summaryIndexValues.ClusterCount = clusterInfo.clusterCount;
+                //summaryIndexValues.AvgClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameTimeSpan.TotalSeconds); // av cluster duration
+                //summaryIndexValues.ThreeGramCount = clusterInfo.triGramUniqueCount;
 
                 double[] clusterSpectrum = clusterInfo.clusterSpectrum;
                 spectra.CLS = SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor);
@@ -480,9 +471,6 @@ namespace AudioAnalysisTools.Indices
             result.Hits = hits;
             result.TrackScores = scores;
             result.Tracks = sptInfo.listOfSPTracks;
-
-            //IndexCalculate.MarkClippedSpectra(spectra, summaryIndexValues.HighAmplitudeIndex, summaryIndexValues.ClippingIndex); 
-
             return result;
         } // end of method Analysis()
 

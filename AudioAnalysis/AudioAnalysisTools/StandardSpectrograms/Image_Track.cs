@@ -921,8 +921,10 @@
                     g.DrawLine(whitePen, x, 0, x, trackHeight);
                     TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * x);
                     TimeSpan absoluteTS = startOffset + elapsedTimeSpan;
-                    string time = String.Format("{0}h{1:d2}m{2:d2}s", absoluteTS.Hours, absoluteTS.Minutes, absoluteTS.Seconds);
+                    string time = String.Format("{0}", absoluteTS);
                     g.DrawString(time, stringFont, Brushes.White, new PointF(x, 1)); //draw time
+                    //string time = String.Format("{0}h{1:d2}m{2:d2}s", absoluteTS.Hours, absoluteTS.Minutes, absoluteTS.Seconds);
+                    //g.DrawString(time, stringFont, Brushes.White, new PointF(x, 1)); //draw time
                 }
             }
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary

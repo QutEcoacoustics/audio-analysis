@@ -107,9 +107,9 @@ namespace AudioAnalysisTools
 
             //bool[] events2 = {false, false, true, true, true, false, true, true, false, false, true, true, true}; //3 events; lengths = 3, 2, 3
             List<int> eventList = DataTools.GetEventLengths(events);
-            var filtered = eventList.Where(x => x >= minFrameLength);
-            int eventCount = filtered.Count();
-            int eventSum   = filtered.Sum();
+            var listOfFilteredEvents = eventList.Where(x => x >= minFrameLength);
+            int eventCount = listOfFilteredEvents.Count();
+            int eventSum   = listOfFilteredEvents.Sum();
 
             if (eventCount == 0)
                 return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, 0, TimeSpan.Zero);

@@ -96,7 +96,9 @@ namespace AudioAnalysisTools.Indices
 
         public double EventsPerSecond { get; set; }
 
-        public TimeSpan AvgEventDuration { get; set; }
+        // Commented out on 2nd Feb 2015.
+        // AvgEventDuration is no longer accurately calculated now that estimating it on subsegments of < 1 second duration.
+        //public TimeSpan AvgEventDuration { get; set; }
 
         public double HighFreqCover { get; set; }
 
@@ -114,11 +116,12 @@ namespace AudioAnalysisTools.Indices
 
         public double EntropyPeaks { get; set; }
 
-        public int ClusterCount { get; set; }
+        //meaningless when calculated over short
+        //public int ClusterCount { get; set; }
 
-        public TimeSpan AvgClusterDuration { get; set; }
+        //public TimeSpan AvgClusterDuration { get; set; }
 
-        public int ThreeGramCount { get; set; }
+        //public int ThreeGramCount { get; set; }
 
         public double SptPerSecond { get; set; }
 
