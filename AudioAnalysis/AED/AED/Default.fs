@@ -41,7 +41,7 @@ module Default =
     let eprNormalisedMinScore = 4.0/15.0
 
 open System.Runtime.InteropServices
-type AedOptions (nyquistFrequency : float,
+type AedOptions (nyquistFrequency : double,
                  ?intensityThreshold,
                  ?smallAreaThreshold ,
                  ?bandPassFilter,
@@ -55,4 +55,4 @@ type AedOptions (nyquistFrequency : float,
     member val DoNoiseRemoval      = defaultArg doNoiseRemoval       Default.doNoiseRemoval       with get, set   
     member val LargeAreaHorizontal = defaultArg largeAreaHorizontal  Default.largeAreaHorizontal  with get, set
     member val LargeAreaVeritical = defaultArg largeAreaVeritical    Default.largeAreaVeritical   with get, set
-    new(nyquistFrequency : float) = AedOptions(nyquistFrequency)
+    new(nyquistFrequency : double) = AedOptions(nyquistFrequency, intensityThreshold=Default.intensityThreshold)
