@@ -4,8 +4,8 @@ AnalysisName: Towsey.Acoustic
 SegmentDuration: 1
 SegmentOverlap: 0
 # IndexCalculationDuration: units=seconds (default=60 seconds);   BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds);
-IndexCalculationDuration: 
-BGNoiseNeighbourhood: 
+IndexCalculationDuration: 0.25
+BGNoiseNeighbourhood: 5
 #FRAME LENGTH in samples and Frame Overlap as fraction 
 FrameLength: 512
 FrameOverlap: 0.0

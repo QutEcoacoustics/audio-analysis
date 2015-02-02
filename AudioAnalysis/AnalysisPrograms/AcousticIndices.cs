@@ -39,6 +39,7 @@ namespace AnalysisPrograms
     using PowerArgs;
 
     using TowseyLibrary;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     public class Acoustic : IAnalyser2
     {
@@ -246,94 +247,6 @@ namespace AnalysisPrograms
             return;
         }
 
-        /// <summary>
-        /// Directs task to the appropriate method based on the first argument in the command line string.
-        /// </summary>
-        /// <returns></returns>
-        //public static void Execute(Arguments arguments)
-        //{
-        //    Contract.Requires(arguments != null);
-  
-        //    // loads a csv file for visulisation
-        //    if (arguments.TaskIsLoadCsv)
-        //    {
-        //        string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
-        //        var fiCsvFile = arguments.InputCsv;
-        //        var fiConfigFile = arguments.Config;
-        //        //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-        //        IAnalyser analyser = new Acoustic();
-        //        var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
-        //        //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
-        //    } 
-        //    else if (arguments.TaskIsAnalyse)
-        //    {
-        //        // perform the analysis task
-        //        ExecuteAnalysis(arguments);
-        //    }
-        //} // Execute()
-
-
-        /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
-        /// To be called as an executable with command line arguments.
-        /// </summary>
-        //public static void ExecuteAnalysis(Arguments args)
-        //{
-        //    // Check arguments and that paths are valid
-        //    AnalysisSettings analysisSettings = GetAndCheckAllArguments(args);
-        //    analysisSettings.SegmentStartOffset = new TimeSpan(0, 0, args.Start ?? 0);
-        //    analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
-
-        //    // EXTRACT THE REQUIRED RECORDING SEGMENT
-        //    FileInfo fiSource = analysisSettings.SourceFile;
-        //    FileInfo tempF = analysisSettings.AudioFile;
-        //    if (tempF.Exists) { tempF.Delete(); }
-
-        //    // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
-        //    AudioUtilityModifiedInfo beforeAndAfterInfo;
-
-        //    if (analysisSettings.SegmentMaxDuration != null) // Process entire file
-        //    {
-        //        beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-        //    }
-        //    else
-        //    {
-        //        beforeAndAfterInfo = AudioFilePreparer.PrepareFile(
-        //            fiSource,
-        //            tempF,
-        //            new AudioUtilityRequest
-        //            {
-        //                TargetSampleRate = IndexCalculate.RESAMPLE_RATE,
-        //                OffsetStart = analysisSettings.SegmentStartOffset,
-        //                OffsetEnd = analysisSettings.SegmentStartOffset.Value.Add(analysisSettings.SegmentMaxDuration.Value)
-        //            }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-        //    }
-
-        //    // Store source sample rate - may need during the analysis if have upsampled the source.
-        //    analysisSettings.SampleRateOfOriginalAudioFile = beforeAndAfterInfo.SourceInfo.SampleRate;
-
-        //    // DO THE ANALYSIS
-        //    // #############################################################################################################################################
-        //    IAnalyser analyser = new Acoustic();
-        //    AnalysisResult result = analyser.Analyse(analysisSettings);
-        //    DataTable dt = result.Data;
-        //    if (dt == null) { throw new InvalidOperationException("Data table of results is null"); }
-        //    // #############################################################################################################################################
-
-        //    // ADD IN ADDITIONAL INFO TO RESULTS TABLE
-        //    int iter = 0; // dummy - iteration number would ordinarily be available at this point.
-        //    int startMinute = (int)(args.Start ?? 0);
-        //    foreach (DataRow row in dt.Rows)
-        //    {
-        //        row[IndexProperties.header_count] = iter;
-        //        row[IndexProperties.header_startMin] = startMinute;
-        //        row[IndexProperties.header_SecondsDuration] = result.AudioDuration.TotalSeconds;
-        //    }
-
-        //    CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
-        //    //DataTableTools.WriteTable2Console(dt);
-        //} // ExecuteAnalysis()
-
 
 
         public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
@@ -382,6 +295,24 @@ namespace AnalysisPrograms
                 this.WriteSpectrumIndicesFiles(analysisSettings.SpectrumIndicesDirectory, Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name), analysisResults.SpectralIndices);
                 analysisResults.SpectraIndicesFiles = spectralIndexFiles;
             }
+
+            // write the one minute spectrogram to CSV
+            SonogramConfig sonoConfig = new SonogramConfig(); // default values config
+            sonoConfig.SourceFName = recording.FilePath;
+            sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
+            sonoConfig.WindowOverlap = (double?)analysisSettings.Configuration[AnalysisKeys.FrameOverlap] ?? 0.0; // the default
+            //sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
+            //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            // remove the DC row of the spectrogram
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
+            string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+            Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
+
+
+
+
+
             //if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
             //{
             //    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);

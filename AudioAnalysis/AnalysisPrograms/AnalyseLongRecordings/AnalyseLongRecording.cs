@@ -162,7 +162,7 @@ Output  to  directory: {1}
             // set IndexCalculationDuration i.e. duration of a subsegment
             try
             {
-                int indexCalculationDuration = configuration[AnalysisKeys.IndexCalculationDuration];
+                double indexCalculationDuration = configuration[AnalysisKeys.IndexCalculationDuration];
                 analysisSettings.IndexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDuration);
             }
             catch (Exception ex)

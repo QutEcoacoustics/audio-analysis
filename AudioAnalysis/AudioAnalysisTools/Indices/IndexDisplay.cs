@@ -92,8 +92,8 @@
                 scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array);
 
-
-                arrayOfBitmaps[ip.Order] = bitmap;
+                if (arrayOfBitmaps.Length > ip.Order) // THIS IF CONDITION IS A HACK. THERE IS A BUG SOMEWHERE.
+                        arrayOfBitmaps[ip.Order] = bitmap;
             }
 
             var listOfBitmaps = arrayOfBitmaps.Where(b => b != null).ToList();
