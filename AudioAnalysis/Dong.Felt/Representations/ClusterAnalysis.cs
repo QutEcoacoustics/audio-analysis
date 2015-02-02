@@ -469,7 +469,6 @@ namespace Dong.Felt.Representations
             /// based on spectrogram intensity matrix directly
             var rotateDoubleMatrix = sonogram.Data;
 
-            // TODO: correct nyquist!
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
                                  {
                                      IntensityThreshold = 10.0,
@@ -480,10 +479,8 @@ namespace Dong.Felt.Representations
                                      LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(3000, 30, 20, false))
 
                                  };
-            var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
-
-            
-            // => to call a anonymous method
+            var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);     
+             //=> to call a anonymous method
             var events = oblongs.Select(
                 o =>
                 {

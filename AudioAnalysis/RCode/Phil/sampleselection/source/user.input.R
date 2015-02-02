@@ -70,7 +70,7 @@ GetMultiUserchoice <- function (options, choosing.what = 'one of the following',
     #   config.setting: string or NULL. If set, will look for a value set in config, instead of asking for user input
     
     choice <- GetConfigSettingForInput(options, config.setting)
-    if (choice != FALSE) {
+    if (is.numeric(choice)) {
         return(choice)
     }
     

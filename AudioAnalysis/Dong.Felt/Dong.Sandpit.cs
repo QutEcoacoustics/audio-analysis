@@ -264,7 +264,7 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 1.0, 3);
+                    //spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.4, 3);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -282,12 +282,12 @@
                     //var acousticEvents = ClusterAnalysis.SplitAcousticEvent(acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    //foreach (PointOfInterest poi in originalRidges)
-                    //{
-                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    //}
+                    foreach (PointOfInterest poi in originalRidges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- AED.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
