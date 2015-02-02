@@ -279,13 +279,12 @@
                     //var compressedRidgesInFreq = POISelection.RidgePoiSelection(compressSpectrogramInFreq, ridgeConfig, featurePropSet);
                     //ridges = POISelection.AddResizeRidgesInFreq(ridges, spectrogram, compressedRidgesInFreq, compressConfig, rows, cols);                                  
                     ClusterAnalysis.RidgeListToEvent(spectrogram, originalRidges, rows, cols, out acousticEventlist);
-                    //var acousticEvents = ClusterAnalysis.SplitAcousticEvent(acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in originalRidges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in originalRidges)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
                     string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- AED.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
