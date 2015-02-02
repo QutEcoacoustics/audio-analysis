@@ -463,21 +463,17 @@ namespace Dong.Felt.Representations
             /////call AED to group ridges into event-based on ridge
             //var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             //var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
-            //var oblongs = QutSensors.AudioAnalysis.AED.AcousticEventDetection.detectEvents(0.5, 55, 400.0,
-            //    8000, false, rotateDoubleMatrix);
 
             /// based on spectrogram intensity matrix directly
             var rotateDoubleMatrix = sonogram.Data;
-
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
                                  {
-                                     IntensityThreshold = 10.0,
-                                     SmallAreaThreshold = 30,
-                                     BandPassFilter = Tuple.Create(400.0, 8000.0).ToOption(),
+                                     IntensityThreshold = 15.0,
+                                     SmallAreaThreshold = 50,
+                                     BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
                                      DoNoiseRemoval = false,
-                                     LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(4000,20,10,false)),
-                                     LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(3000, 30, 20, false))
-
+                                     LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
+                                     LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
                                  };
             var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);     
              //=> to call a anonymous method
@@ -487,13 +483,13 @@ namespace Dong.Felt.Representations
                     var e = new AcousticEvent(
                         o,
                         sonogram.NyquistFrequency,
-                        sonogram.Configuration.FreqBinCount,                                                                                                                                                                                                                                                                                                                                                          
+                        sonogram.Configuration.FreqBinCount,
                         sonogram.FrameDuration,
                         sonogram.FrameStep,
-                        sonogram.FrameCount)
-                                {
-                                    HitColour = Color.Black
-                                };
+                        sonogram.FrameCount);
+                                //{
+                                //    HitColour = Color.Black
+                                //};
                     return e;
                 }).ToList();           
             acousticEvents = events;          
