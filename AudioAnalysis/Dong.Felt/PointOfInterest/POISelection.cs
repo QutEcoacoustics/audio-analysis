@@ -493,8 +493,8 @@ namespace Dong.Felt
                         poi.Intensity = spectrogramMatrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        // ADD CONDITION CHECK-2015-01-28
-                        if (poi.Intensity >= 10)
+                        //ADD CONDITION CHECK-2015-01-28
+                        if (poi.Intensity > 9.0)
                         {
                             poiList.Add(poi);
                         }
@@ -505,7 +505,7 @@ namespace Dong.Felt
             //var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
             //var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
             //var filteredPoiList = ImageAnalysisTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
-            poiList = prunedPoiList;
+            //poiList = prunedPoiList;
         }
 
         /// <summary>
@@ -597,7 +597,7 @@ namespace Dong.Felt
         {
             int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
             double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
-            int rows = matrix.GetLength(0) - 1;
+            int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = ridgeLength / 2;
             var hits = new byte[rows, cols];
@@ -633,7 +633,7 @@ namespace Dong.Felt
                             r + halfLength + offset, c + halfLength + offset);
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
-                        double localThreshold = sd * 0.9; ;
+                        double localThreshold = sd * 0.9; 
                         if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation + 1);
