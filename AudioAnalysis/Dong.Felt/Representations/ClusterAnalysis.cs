@@ -470,14 +470,18 @@ namespace Dong.Felt.Representations
             var rotateDoubleMatrix = sonogram.Data;
 
             // TODO: correct nyquist!
-            var aedOptions = new AedOptions(11025)
+            var aedOptions = new AedOptions(sonogram.NyquistFrequency)
                                  {
                                      IntensityThreshold = 10.0,
                                      SmallAreaThreshold = 30,
                                      BandPassFilter = Tuple.Create(400.0, 8000.0).ToOption(),
-                                     DoNoiseRemoval = false
+                                     DoNoiseRemoval = false,
+                                     LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(4000,20,10,false)),
+                                     LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(3000, 30, 20, false))
+
                                  };
             var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
+
             
             // => to call a anonymous method
             var events = oblongs.Select(
@@ -498,7 +502,6 @@ namespace Dong.Felt.Representations
             acousticEvents = events;          
         }
         
-        //todo: split large events to small events 
         public static List<AcousticEvent> SplitAcousticEvent(List<AcousticEvent> acousticEvent)
         {
             var result = new List<AcousticEvent>();
