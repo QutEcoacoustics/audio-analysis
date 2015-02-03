@@ -5,9 +5,10 @@ open Matlab
 open TowseyLibrary
 open Util
 open Option
+open Default
 open System.Drawing
 
-let frequencyToPixels rndFunc f = int (rndFunc ((255.0 * f) / Default.freqMax))
+let frequencyToPixels rndFunc maxPixels maxFreq freq = int (rndFunc (((float maxPixels) * freq) / maxFreq))
 
 let removeSubbandModeIntensities (m:matrix) =
     let modes =
@@ -48,33 +49,49 @@ let mapEventToAbsolute (absLeft, absTop) event =
         Elements = Set.map (fun (i,j) -> absTop + i, absLeft + j) event.Elements;
     }
 
-let separateLargeEvents aes =
-    let areat = 3000
-    let freqt = 20.0
-    let timet = 100.0 / 3.0
-    let maskOverExtendedBridgedElement originalAe bae =
-        let oL, oT, oB = left originalAe.Bounds, top originalAe.Bounds, bottom originalAe.Bounds
+let separateLargeEvents serparateStyle aes =
+    let maskOverExtendedBridgedElement p originalAe bae =
+        let oL, oR, oT, oB = left originalAe.Bounds, right originalAe.Bounds, top originalAe.Bounds, bottom originalAe.Bounds
         // map results back to absolute co-ordinates
         let absoluteEvent = mapEventToAbsolute (oL, oT) bae
         let absBounds, absElements = absoluteEvent.Bounds, absoluteEvent.Elements
-        let l,w,t,b = left absBounds, width absBounds, top absBounds, bottom absBounds
-        // reset the bounds to full height of parent event (matches old behaviour, we want overlapping events)
-        let extendedBounds = {absBounds with Top = oT; Bottom = oB}
-        // add the hit elements from the extended bounds
-        let inline f r (y, x) =  isWithin r (x, y)
-        let aboveRect = lengthsToRect l oT w (t - oT)
-        let belowRect = lengthsToRect l b w (oB - b + 1)
-        let aboveHits = Set.filter (f aboveRect) originalAe.Elements
-        let belowHits = Set.filter (f belowRect) originalAe.Elements
+        let l,r,w,t,b,h = left absBounds, right absBounds, width absBounds, top absBounds, bottom absBounds, height absBounds
 
-        let hits = aboveHits + absElements + belowHits
-        {Bounds = extendedBounds; Elements = hits}
-    let separate ae =
-        let m = aeToMatrix ae
+        if p.ExtrapolateBridgeEvents then
+            // reset the bounds to full height XOR width of parent event (matches old behaviour, we want overlapping events)
+            let extendedBounds, sectionA, sectionB =
+                match serparateStyle with
+                | Horizontal _ -> 
+                    {absBounds with Top = oT; Bottom = oB}, 
+                    lengthsToRect l oT w (t - oT), // above
+                    lengthsToRect l b w (oB - b + 1) // below
+                | Vertical _ -> 
+                    {absBounds with Left = oL; Right = oR},
+                    lengthsToRect oL t (l - oL) h, // left
+                    lengthsToRect r t (oR - r + 1) h // right
+                | _ -> failwith "Invalud separateStyle"
+            
+            // add the hit elements from the extended bounds
+            let inline f r (y, x) =  isWithin r (x, y)
+            let sectionAHits = Set.filter (f sectionA) originalAe.Elements
+            let sectionBHits = Set.filter (f sectionB) originalAe.Elements
+
+            let hits = sectionAHits + absElements + sectionBHits
+            {Bounds = extendedBounds; Elements = hits}
+        else
+            {Bounds = absBounds; Elements = absElements}
+    let blackoutNarrowSections summer getMax threshold indexChooser m =
         // measure widths
-        let s = sumRows m |> Math.Vector.toArray |> Array.map (fun x -> x / (float) m.NumCols * 100.0 <= freqt)
+        let chopIndexes = summer m |> Math.Vector.toArray |> Array.map (fun x -> percent (x / (m |> getMax |> float))  <= threshold)
         // actually chop the event in half at the thin points
-        let m1 = Math.Matrix.mapi (fun i _ x -> if s.[i] then 0.0 else x) m
+        Math.Matrix.mapi (fun i j x -> if  (i, j) |> indexChooser |> Array.get chopIndexes then 0.0 else x) m
+    let separate parameters ae =
+        let m = aeToMatrix ae
+        let m1 = match serparateStyle with
+                 | Horizontal _ -> blackoutNarrowSections sumRows (fun m -> m.NumCols) parameters.MainThreshold fst m
+                 | Vertical _ -> blackoutNarrowSections sumColumns (fun m -> m.NumRows) parameters.MainThreshold snd m
+                 | _ -> failwith "Invalud separateStyle"
+
         // scan for new acoustic events (returned events have relative co-ordinates)
         let splitEvents = 
             getAcousticEvents m1
@@ -84,12 +101,16 @@ let separateLargeEvents aes =
         let m2 = m - m1
         let bridgingEvents = 
             getAcousticEvents m2
-            |> List.filter (fun x -> (float) (height x.Bounds ) * 100.0 / (float) m2.NumRows >= timet)
-            |> List.map (maskOverExtendedBridgedElement ae)
+            // filter out briding events that too small... i.e. less the x% of the original event's height/width
+            |> List.filter (fun x -> percent ((x.Bounds |> height |> float) / (float m2.NumRows)) >= parameters.OrthogonalThreshold)
+            |> List.map (maskOverExtendedBridgedElement parameters ae)
 
         // NOTE: no longer returns rectangles only (fixes coordiantes and returns full acoustic event)
         splitEvents @ bridgingEvents
-    Seq.collect (fun ae -> if area ae.Bounds < areat then [ae] else separate ae) aes
+
+    match serparateStyle with
+    | Horizontal p | Vertical p -> Seq.collect (fun ae -> if areaUnits ae.Bounds < p.AreaThreshold then [ae] else separate p ae) aes
+    | Skip -> aes
 
 let smallFirstMin cs h t =
     let s = Seq.pairwise h |> Seq.map (fun (x,y) -> x-y) |> Seq.zip cs
@@ -106,37 +127,44 @@ let filterOutSmallEvents t aes =
     let t' = smallThreshold t aes
     Seq.filter (fun ae -> area (ae.Bounds) > t') aes
 
-let detectEventsMatlab intensityThreshold smallAreaThreshold doNoiseRemoval m =
+let detectEventsMatlab (options: AedOptions) m =
     m
-        |?> (doNoiseRemoval, Matlab.wiener2 5)  
-        |?> (doNoiseRemoval, removeSubbandModeIntensities)
-        |> toBlackAndWhite intensityThreshold
+        |?> (options.DoNoiseRemoval, Matlab.wiener2 5)  
+        |?> (options.DoNoiseRemoval, removeSubbandModeIntensities)
+        |> toBlackAndWhite options.IntensityThreshold
         |> joinVerticalLines
         |> joinHorizontalLines 
         |> getAcousticEvents
-        |> separateLargeEvents
-        |> filterOutSmallEvents smallAreaThreshold
+        |> separateLargeEvents options.LargeAreaHorizontal
+        |> separateLargeEvents options.LargeAreaVeritical
+        |> filterOutSmallEvents options.SmallAreaThreshold
     
-let detectEventsMinor intensityThreshold smallAreaThreshold (bandPassFilter:float*float) doNoiseRemoval a =
-    if (fst bandPassFilter > snd bandPassFilter) then failwith "bandPassFilter args invalid"
+let detectEventsMinor (options: AedOptions) a =
     let m = Math.Matrix.ofArray2D a |> mTranspose
     
-    let (min, max) = fst bandPassFilter |> frequencyToPixels floor, snd bandPassFilter |> frequencyToPixels ceil 
     // remove first row (DC values) like in matlab and remove bandpass pixels (length i really needs that +1!)
-    let mPrime = 
+    let dc, actualRows = 
         match m.NumRows with
-        | 257 -> m.Region (1 + min, 0, 1 + max - min, m.NumCols) 
-        | 256 -> m.Region (0 + min, 0, 0 + max - min, m.NumCols) 
-        | _ -> failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
+        | 257 | 513 | 1025 | 2049 -> 1, m.NumRows - 1
+        | 256 | 512 | 1024 | 2048 -> 0, m.NumRows
+        | _ -> failwith (sprintf "Expecting matrix with 256, 51, 1024, or 2048 frequency cols, but got %d" m.NumRows)
 
-    detectEventsMatlab intensityThreshold smallAreaThreshold doNoiseRemoval mPrime    
+    let min, max = 
+        match options.BandPassFilter with
+        | Some (low, high) ->
+            if (low > high) then failwith "bandPassFilter args invalid"
+            low |> frequencyToPixels floor actualRows options.NyquistFrequency, high |> frequencyToPixels ceil actualRows options.NyquistFrequency
+        | None -> (0, m.NumRows)
+
+    let mPrime =  m.Region (dc + min, 0, dc + max - min, m.NumCols) 
+
+    detectEventsMatlab options mPrime    
     // transpose results back & compensate for removing first row & any bandpass
-    |> Seq.map (mapEventToAbsolute (0, min + 1))
+    |> Seq.map (mapEventToAbsolute (0, dc + min))
+ 
 
-            
-
-let detectEvents intensityThreshold smallAreaThreshold bandPassFilter doNoiseRemoval a =
-    detectEventsMinor intensityThreshold smallAreaThreshold bandPassFilter doNoiseRemoval a
+let detectEvents options a =
+    detectEventsMinor options a
     |> Seq.map (fun ae ->
         let points = new System.Collections.Generic.HashSet<Point>(Seq.map toPoint2 ae.Elements)
         new Oblong(ae.Bounds.Left, ae.Bounds.Top, right ae.Bounds, bottom ae.Bounds, points))

@@ -114,8 +114,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CsvHelper.2.7.0\lib\net40-client\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="GeorgeCloney">
-      <HintPath>..\packages\GeorgeCloney.1.0.0.11\lib\net40\GeorgeCloney.dll</HintPath>
+    <Reference Include="GeorgeCloney, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GeorgeCloney.1.1.1.17\lib\net40\GeorgeCloney.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>

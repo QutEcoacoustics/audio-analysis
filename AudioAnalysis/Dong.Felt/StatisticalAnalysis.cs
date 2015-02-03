@@ -670,7 +670,7 @@
         /// <param name="rows"></param>
         /// <param name="cols"></param>
         /// <returns></returns>
-        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, SpectrogramStandard spectrogram,
+        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, double[,] spectrogramData,
             int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
@@ -678,7 +678,7 @@
             //var matrixRowCount = fftMatrix.GetLength(0);
             //var matrixColCount = fftMatrix.GetLength(1);
             //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount];
-            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -796,11 +796,8 @@
             for (int r = 0; r < rowsMax; r++)
             {
                 for (int c = 0; c < colsMax; c++)
-                {
-                    //if (matrix[r, c].Point.X != 0 && matrix[r, c].Point.Y != 0)
-                    //{
-                        result.Add(matrix[r, c]);
-                    //}
+                {                  
+                     result.Add(matrix[r, c]);
                 }
             }
             return result;
