@@ -116,6 +116,7 @@ namespace Dong.Felt
             return result;
         }
 
+
         public static List<PointOfInterest> GradientPoiSelection(SpectrogramStandard spectrogram,
             GradientConfiguration gradientConfig, string featurePropSet)
         {
@@ -174,7 +175,7 @@ namespace Dong.Felt
                                                       int rows, int cols)
         {
             var result = new List<PointOfInterest>();
-            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram.Data, rows, cols);
             var compressRate = (int)(1 / timeCompressRate);
             var compressedColsCount = cols / compressRate;
             if (cols % compressRate != 0)
@@ -242,7 +243,7 @@ namespace Dong.Felt
                                                       int rows, int cols)
         {
             var result = new List<PointOfInterest>();
-            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram, rows, cols);
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram.Data, rows, cols);
             var compressRate = (int)(1 / freqCompressRate);
             var compressedRowsCount = rows / compressRate;
             var count = 0;
@@ -493,8 +494,8 @@ namespace Dong.Felt
                         poi.Intensity = spectrogramMatrix[r, c];
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
-                        // ADD CONDITION CHECK-2015-01-28
-                        if (poi.Intensity >= 10)
+                        //ADD CONDITION CHECK-2015-01-28
+                        if (poi.Intensity > 9.0)
                         {
                             poiList.Add(poi);
                         }
@@ -597,17 +598,21 @@ namespace Dong.Felt
         {
             int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
             double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
-            int rows = matrix.GetLength(0) - 1;
+            int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = ridgeLength / 2;
             var hits = new byte[rows, cols];
             newMatrix = new double[rows, cols];
-            for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
+            /// Increase the enlarged neighbourhood size for further checking. 
+            var offset = 3;
+            // var offset = 1; 
+            for (int r = halfLength + offset; r < rows - halfLength - offset; r++)
             {
-                for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
+                for (int c = halfLength + offset; c < cols - halfLength - offset; c++)
                 {
                     if (hits[r, c] > 0) continue;
-                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
+                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength,
+                        r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude = 0.0;
                     double direction = 0.0;
                     bool isRidge = false;
@@ -626,11 +631,14 @@ namespace Dong.Felt
                     }
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
-                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1);
+                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - offset, c - halfLength - offset,
+                            r + halfLength + offset, c + halfLength + offset);
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
-                        double localThreshold = sd * 1.3;
-                        if ((subM2[halfLength + 1, halfLength + 1] - av) < localThreshold) continue;
+                        //double localThreshold = sd * 0.9; 
+                        //if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;
+                        double localThreshold = 1.5 * av;
+                        if (subM2[halfLength + offset, halfLength + offset] < localThreshold) continue;
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation + 1);
                         newMatrix[r, c] = magnitude;
@@ -1048,7 +1056,6 @@ namespace Dong.Felt
                     }
                 }
             }
-
             return intensityList;
         }
 
@@ -1119,8 +1126,7 @@ namespace Dong.Felt
             var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
             var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
             //var connectedPoiList = PoiAnalysis.ConnectPOI(filteredPoiList);
-            var refinedPoiList = POISelection.RefineRidgeDirection(filteredPoiList, rows, cols);
-            poiList = refinedPoiList;
+            poiList = prunedPoiList1;
         }
 
         /// <summary>
@@ -1374,151 +1380,6 @@ namespace Dong.Felt
             }
             var result = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
             return result;
-        }
-
-        ///Until now, ridge direction has up to 4, which are 0, pi/2, pi/4, -pi/4. 
-        ///But they might be not enough to differenciate the lines with slope change, so here we refine the original 4 direction to 12. 
-        public static List<PointOfInterest> RefineRidgeDirection(List<PointOfInterest> poiList, int rowsMax, int colsMax)
-        {
-            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsMax, colsMax);
-            int lenghth = 5;
-            int radius = lenghth / 2;
-            for (int row = radius; row < rowsMax - radius; row++)
-            {
-                for (int col = radius; col < colsMax - radius; col++)
-                {
-                    if (poiMatrix[row, col].RidgeMagnitude != 0)
-                    {
-                        var matrix = StatisticalAnalysis.Submatrix(poiMatrix, row - radius, col - radius, row + radius, col + radius);
-                        double[,] m = 
-                    {{matrix[0,0].RidgeMagnitude, matrix[0,1].RidgeMagnitude, matrix[0,2].RidgeMagnitude, matrix[0,3].RidgeMagnitude, matrix[0,4].RidgeMagnitude},
-                    {matrix[1,0].RidgeMagnitude, matrix[1,1].RidgeMagnitude, matrix[1,2].RidgeMagnitude, matrix[1,3].RidgeMagnitude, matrix[1,4].RidgeMagnitude},
-                    {matrix[2,0].RidgeMagnitude, matrix[2,1].RidgeMagnitude, matrix[2,2].RidgeMagnitude, matrix[2,3].RidgeMagnitude, matrix[2,4].RidgeMagnitude},
-                    {matrix[3,0].RidgeMagnitude, matrix[3,1].RidgeMagnitude, matrix[3,2].RidgeMagnitude, matrix[3,3].RidgeMagnitude, matrix[3,4].RidgeMagnitude},
-                    {matrix[4,0].RidgeMagnitude, matrix[4,1].RidgeMagnitude, matrix[4,2].RidgeMagnitude, matrix[4,3].RidgeMagnitude, matrix[4,4].RidgeMagnitude},
-                    };
-                        var magnitude = 0.0;
-                        var direction = 0.0;
-                        var poiCountInMatrix = 0;
-                        for (int i = 0; i < lenghth; i++)
-                        {
-                            for (int j = 0; j < lenghth; j++)
-                            {
-                                if (m[i, j] > 0)
-                                {
-                                    poiCountInMatrix++;
-                                }
-                            }
-                        }
-                        if (poiCountInMatrix >= 5)
-                        {
-                            RecalculateRidgeDirection(m, out magnitude, out direction);
-                            poiMatrix[row, col].RidgeMagnitude = magnitude;
-                            poiMatrix[row, col].RidgeOrientation = direction;
-                        }
-                    }
-                }
-            }
-            var result = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
-            return result;
-        }
-
-        // Refine Directions
-        public static void RecalculateRidgeDirection(double[,] m, out double magnitude, out double direction)
-        {
-            double[,] dir0Mask = { {  0,   0,   0,   0,   0},
-                                   {  0,   0,   0,   0,   0},
-                                   {0.1, 0.1, 0.1, 0.1, 0.1},
-                                   {  0,   0,   0,   0,   0},
-                                   {  0,   0,   0,   0,   0},
-                                 };
-            double[,] dir1Mask = { {  0,   0,   0,   0,   0},
-                                   {  0,   0,   0,   0, 0.1},
-                                   {  0, 0.1, 0.1, 0.1,   0},
-                                   {0.1,   0,   0,   0,   0},
-                                   {  0,   0,   0,   0,   0},
-                                 };
-            double[,] dir2Mask = { {  0,   0,   0,   0,   0},
-                                   {  0,   0,   0, 0.1, 0.1},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {0.1, 0.1,   0,   0,   0}, 
-                                   {  0,   0,   0,   0,   0},
-                                 };
-            // The fourth mask for pi/4. But something got wrong.
-            double[,] dir3Mask = { {  0,   0,   0,   0, 0.1},
-                                   {  0,   0,   0, 0.1,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0, 0.1,   0,   0,   0}, 
-                                   {0.1,   0,   0,   0,   0},
-                                 };
-            double[,] dir4Mask = { {  0,   0,   0, 0.1,   0},
-                                   {  0,   0,   0, 0.1,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0, 0.1,   0,   0,   0},
-                                   {  0, 0.1,   0,   0,   0},
-                                 };
-            double[,] dir5Mask = { {  0,   0,   0, 0.1,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0}, 
-                                   {  0, 0.1,   0,   0,   0},
-                                 };
-            double[,] dir6Mask = { {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                 };
-            double[,] dir7Mask = { {  0, 0.1,   0,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0, 0.1,   0,   0}, 
-                                   {  0,   0,   0, 0.1,   0},
-                                 };
-            double[,] dir8Mask = { {  0, 0.1,   0,   0,   0},
-                                   {  0, 0.1,   0,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0,   0, 0.1,   0},
-                                   {  0,   0,   0, 0.1,   0},
-                                 };
-            // The tenth mask for 3*pi/4. But something got wrong.
-            double[,] dir9Mask = { {0.1,   0,   0,   0,   0},
-                                   {  0, 0.1,   0,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0,   0, 0.1,   0},
-                                   {  0,   0,   0,   0, 0.1},
-                                  };
-            double[,] dir10Mask = {{  0,   0,   0,   0,   0},
-                                   {0.1, 0.1,   0,   0,   0},
-                                   {  0,   0, 0.1,   0,   0},
-                                   {  0,   0,   0, 0.1, 0.1},
-                                   {  0,   0,   0,   0,   0},
-                                  };
-            double[,] dir11Mask = {{  0,   0,   0,   0,   0},
-                                   {0.1,   0,   0,   0,   0},
-                                   {  0, 0.1, 0.1, 0.1,   0},
-                                   {  0,   0,   0,   0, 0.1},
-                                   {  0,   0,   0,   0,   0},
-                                  };
-            double[] magnitudes = new double[12];
-            magnitudes[0] = MatrixTools.DotProduct(dir0Mask, m);
-            magnitudes[1] = MatrixTools.DotProduct(dir1Mask, m);
-            magnitudes[2] = MatrixTools.DotProduct(dir2Mask, m);
-            magnitudes[3] = MatrixTools.DotProduct(dir3Mask, m);
-            magnitudes[4] = MatrixTools.DotProduct(dir4Mask, m);
-            magnitudes[5] = MatrixTools.DotProduct(dir5Mask, m);
-            magnitudes[6] = MatrixTools.DotProduct(dir6Mask, m);
-            magnitudes[7] = MatrixTools.DotProduct(dir7Mask, m);
-            magnitudes[8] = MatrixTools.DotProduct(dir8Mask, m);
-            magnitudes[9] = MatrixTools.DotProduct(dir9Mask, m);
-            magnitudes[10] = MatrixTools.DotProduct(dir10Mask, m);
-            magnitudes[11] = MatrixTools.DotProduct(dir11Mask, m);
-
-            int indexMin, indexMax;
-            double sumMin, sumMax;
-            DataTools.MinMax(magnitudes, out indexMin, out indexMax, out sumMin, out sumMax);
-            magnitude = sumMax;
-            direction = indexMax * Math.PI / (double)12;
         }
 
         public void SelectPointOfInterestFromAudioFile(string wavFilePath, int ridgeLength, double magnitudeThreshold)

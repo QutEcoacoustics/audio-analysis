@@ -2,10 +2,14 @@
 
 open QutSensors.AudioAnalysis.AED.AcousticEventDetection
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
+open QutSensors.AudioAnalysis.AED.Default
 open Common
 open FsCheckArbs
 open Xunit
+open FsUnit.Xunit
 open QutSensors.AudioAnalysis.AED.Util
+
+let sleDefaults = QutSensors.AudioAnalysis.AED.Default.largeAreaHorizontal
 
 [<Fact>]
 let testRemoveSubbandModeIntensities () =
@@ -42,15 +46,15 @@ let testToFillIn () =
 [<Fact>]
 let testJoinHorizontalLinesQuick () =
     let m = Math.Matrix.zero 5 10 
-    Assert.Equal(m, joinHorizontalLines m)
+    Assert.Equal<matrix>(m, joinHorizontalLines m)
     m.[0,1] <- 1.0
-    Assert.Equal(m, joinHorizontalLines m)
+    Assert.Equal<matrix>(m, joinHorizontalLines m)
     m.[0,2] <- 1.0
-    Assert.Equal(m, joinHorizontalLines m)
+    Assert.Equal<matrix>(m, joinHorizontalLines m)
     m.[0,4] <- 1.0
     let m' = Math.Matrix.copy m
     m'.[0,3] <- 1.0
-    Assert.Equal(m', joinHorizontalLines m)
+    Assert.Equal<matrix>(m', joinHorizontalLines m)
     
 [<Fact>]
 let testJoinHorizontalLines () =
@@ -81,10 +85,10 @@ let aeToMatrixElements () =
 [<Fact(Timeout=600000)>]
 let testSeparateLargeEvents () =
     let f md =
-        let ae2 = loadTestFile "I6.csv" md |> getAcousticEvents |> separateLargeEvents |> selectBounds
+        let ae2 = loadTestFile "I6.csv" md |> getAcousticEvents |> separateLargeEvents sleDefaults |> selectBounds
         let ae2m = loadIntEventsFile "AE2.csv" md
         Assert.Equal(Seq.length ae2m, Seq.length ae2)
-        Assert.Equal(Seq.sort ae2m, Seq.sort ae2)
+        Assert.Equal<seq<_>>(Seq.sort ae2m, Seq.sort ae2)
     testAll f
     
 
@@ -109,7 +113,7 @@ let testFilterOutSmallEvents () =
         let ae2m = loadIntEventsFile "AE2.csv" md |> createEvents
         let ae3 = filterOutSmallEvents md.smallThreshIn ae2m |> selectBounds
         let ae3m = loadIntEventsFile "AE3.csv" md
-        Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
+        Assert.Equal<seq<_>>(Seq.sort ae3m, Seq.sort ae3)
     testAll f
 
 
@@ -174,6 +178,23 @@ module AcousticEventDetectionTestsForSeperateLargeEvents =
 0000000001111111111
 "
 
+    let expectedEvent3Alternate = hitsToCoordinates << parseStringAsMatrix <| @"
+0111111111111111111
+0111111111111111111
+1111111111111100000
+0000001111110000000
+0000111111110000000
+0000011111111000000
+0001111111110000000
+0000000011110000000
+0011111111111110000
+0111111111111110000
+0111111111111111000
+0111111111111111110
+0111111111111111111
+0111111111111111110
+"
+
     let expectedBounds = 
         [
             lengthsToRect 4 18 156 3;
@@ -181,9 +202,10 @@ module AcousticEventDetectionTestsForSeperateLargeEvents =
             lengthsToRect 43 1 19 20;
         ] :> seq<Rectangle<int, int>>
 
+
     [<Fact>]
     let ``seperate large events - testing  bounds`` () = 
-        let results = testMatrix |> getAcousticEvents |> separateLargeEvents |> Array.ofSeq
+        let results = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults |> Array.ofSeq
 
         // expect threee events
         Assert.Equal(3, results.Length)
@@ -193,21 +215,172 @@ module AcousticEventDetectionTestsForSeperateLargeEvents =
 
     [<Fact>]
     let ``seperate large events - hits returned for event 1`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 0
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults|> Seq.nth 0
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 18, x + 4)) expectedEvent1
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 2`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 1
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults |> Seq.nth 1
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 1, x + 4)) expectedEvent2
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 3`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents |> Seq.nth 2
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults |> Seq.nth 2
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 43)) expectedEvent3
-        Assert.Equal(absoluteHits, result.Elements)
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
+    
+    [<Fact>]
+    let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
+        let sleParams = match sleDefaults with Horizontal p -> {p with ExtrapolateBridgeEvents = false} |> Horizontal
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams|> Seq.nth 2
+        
+        let absoluteHits = Set.map (fun (y, x) -> (y + 4, x + 43)) expectedEvent3Alternate
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
+
+        
+// This is a fake matrix for testing whether separateLargeEvents works horizontally. 
+module AcousticEventDetectionTestsForVerticalSeperateLargeEvents =
+    let testMatrix = parseStringAsMatrix @"
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111000
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111100
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111100
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111000
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111000
+0000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100
+0000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000
+0000111111111111111111111111111111111111111111111100000011111111111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000011111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000111111111111111111111111111111111111111100000000000000000000011111111111111111111111111111111111
+0000111111111111111111111111111111111111111000000000000000000000111111111111111111111111111111111111
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+"       
+    let expectedEvent1 = hitsToCoordinates << parseStringAsMatrix <| @"
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111000
+111111111111111111111111111111111100
+111111111111111111111111111111111100
+111111111111111111111111111111111000
+111111111111111111111111111111111000
+111111111111111111111111111111111100
+111111111111111111111111111111111000
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+111111111111111111111111111111111111
+011111111111111111111111111111111111
+111111111111111111111111111111111111
+"
+
+    let expectedEvent2 = hitsToCoordinates << parseStringAsMatrix <| @"
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+011111111111111111111111111111111111111
+111111111111111111111111111111111111111
+111111111111111111111111111111111111111
+"
+       
+
+
+    let expectedEvent3 = hitsToCoordinates << parseStringAsMatrix <| @"
+111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100
+111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000
+111111111111111111111111111111111111111111111100000011111111111111111111111111111111111111111111
+"
+
+    let expectedEvent3Alternate = hitsToCoordinates << parseStringAsMatrix <| @"
+111111111111111111111
+111111111111111111111
+111111100000011111111
+"
+
+
+    let sleParams = Vertical {
+        AreaThreshold = 1900<px *px>;
+        MainThreshold = 20.0.percent;
+        OrthogonalThreshold = 10.0.percent;
+        ExtrapolateBridgeEvents = true
+    }
+
+    let expectedBounds = 
+        [
+            lengthsToRect 64 1 36 20;  
+            lengthsToRect 4 1 39 20;
+            lengthsToRect 4 9 96 3;
+        ] :> seq<Rectangle<int, int>>
+
+    [<Fact>]
+    let ``seperate large events - testing  bounds`` () = 
+        let results =  testMatrix |> getAcousticEvents  |> separateLargeEvents sleParams |> Array.ofSeq
+
+        // expect threee events
+        Assert.Equal(3, results.Length)
+
+        // expect those three events to have the proper bounds
+        Seq.iter2 (fun expected actualAcousticEvent -> Assert.Equal(expected, actualAcousticEvent.Bounds)) expectedBounds results
+
+    [<Fact>]
+    let ``seperate large events - hits returned for event 1`` () =
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 0
+        
+        let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 64)) expectedEvent1
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
+
+    [<Fact>]
+    let ``seperate large events - hits returned for event 2`` () =
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 1
+        
+        let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 4)) expectedEvent2
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
+
+    [<Fact>]
+    let ``seperate large events - hits returned for event 3`` () =
+        
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 2
+        
+        let absoluteHits = Set.map (fun (y, x) -> (y + 9, x + 4)) expectedEvent3
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
+
+    [<Fact>]
+    let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
+        let sleParams = match sleParams with Vertical p -> {p with ExtrapolateBridgeEvents = false} |> Vertical
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 2
+        
+        let absoluteHits = Set.map (fun (y, x) -> (y + 9, x + 43)) expectedEvent3Alternate
+        Assert.Equal<Set<_>>(absoluteHits, result.Elements)
+

@@ -109,7 +109,7 @@ let ``matrix parsing test`` () =
         |]
 
     let actual = parseStringAsMatrix pattern
-    Assert.Equal(expected, actual)
+    Assert.Equal<matrix>(expected, actual)
 
 let matrixToCoordinates predicate matrix =
     let f i j s x = if predicate x then Set.add (i,j) s else s
@@ -128,7 +128,7 @@ let ``matrix parsing hit to coordinates test`` () =
     let expected = [(0,0); (0,8); (0,15); (1,0); (1,7); (1,9); (1,15); (2,0); (2,8); (2,15);] |> Set.ofList
 
     let actual = parseStringAsMatrix pattern |> hitsToCoordinates
-    Assert.Equal(expected, actual)
+    Assert.Equal<Set<_>>(expected, actual)
 
 
 [<Fact>]
@@ -141,7 +141,7 @@ let ``matrix order tests for sanities`` () =
     let mString = pattern |> parseStringAsMatrix
     let m = matrix [ [1.0;4.0;7.0;0.0]; [2.0;5.0;8.0;1.0]; [3.0;6.0;9.0;2.0]]
     
-    Assert.Equal(mString, m)
+    Assert.Equal<matrix>(mString, m)
     Assert.Equal(5.0, m.[1,1])
     Assert.Equal(9.0, m.[2,2])
     Assert.Equal(1.0, m.[1, 3]) // row, then column - y, then x

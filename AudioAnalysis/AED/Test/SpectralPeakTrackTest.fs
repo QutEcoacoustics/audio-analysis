@@ -27,8 +27,8 @@ indexMaxNeighbour i ni m nj == None ==> Set.isEmpty ni || forall x in ni |i-x| >
 
 [<Fact>]
 let testHorizontalTracksQuick () =
-    Assert.Equal(List.replicate 3 Set.empty, horizontalTracks (List.replicate 3 ([|10.0; 11.0|], Set.empty)))
-    Assert.Equal([Set.ofList [0]; Set.ofList [1]; Set.empty],
+    Assert.Equal<list<_>>(List.replicate 3 Set.empty, horizontalTracks (List.replicate 3 ([|10.0; 11.0|], Set.empty)))
+    Assert.Equal<Set<_>>([Set.ofList [0]; Set.ofList [1]; Set.empty],
         horizontalTracks [([|9.0; 0.0|], Set.ofList [0]); ([|10.0; 11.0|], Set.ofList [0; 1]); ([|10.0; 11.0|], Set.empty)])
     
 [<Fact>]
