@@ -146,7 +146,7 @@ MergeAnnotationsAsEvents <- function () {
     
     fields <- c('site', 'start_date', 'start_date_time_char', 'end_date_time_char', 'start_frequency', 'end_frequency')
     
-    all.tags <- ReadTagsFromDb(fields = fields, target = FALSE)
+    all.tags <- ReadTargetTagsFromDb(fields = fields, target = FALSE)
     
     
     # temp small subset for debug

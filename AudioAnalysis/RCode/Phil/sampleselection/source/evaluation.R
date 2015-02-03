@@ -1,28 +1,72 @@
-EvaluateSamples <- function () {
+source('evaluation.plots.R')
+
+Batch1 <- function () {
+    # specific set of rankings to compare
+    batch <- c(13,14,15,16,17,18,19)
+    # subset.rankings <- c(6,10) # clustering decay = 1, with and without temp.disp
+    subset.rankings <- c(4,8) # event count only, with and without temp.disp
+    return(EvaluateSamples(versions = batch, subset.rankings = subset.rankings))
+}
+
+EvaluateSamples <- function (use.last.accessed = FALSE, versions = NULL, subset.rankings = NULL) {
     
-    ranks <- ReadOutput('ranked.samples')
-    d.names <- dimnames(ranks$data)
+    if (is.numeric(versions)) {  
+        results <- list()
+        for (v in versions) {     
+            ranks <- ReadOutput('ranked.samples', use.last.accessed = use.last.accessed, version = v)
+            ranks <- ChooseNumClusters(ranks)
+            ranks <- ChooseRankingsToComapre(ranks, subset.rankings)
+            heading <- GetHeading(ranks)
+            results[[as.character(v)]] <- EvaluateSamples2d(ranks, heading = heading)  
+        }
+        return(results)
+    } else {
+        ranks <- ReadOutput('ranked.samples', use.last.accessed = use.last.accessed)
+        ranks <- ChooseNumClusters(ranks)
+        ranks <- ChooseRankingsToComapre(ranks, subset.rankings)
+        heading <- GetHeading(ranks)
+        EvaluateSamples2d(ranks, heading = heading)  
+        # don't return results because we only use that to get averages across many
+    }
+    
+    
+}
+
+ChooseNumClusters <- function (ranks) {
+    # if there is more than one number of clusters ranked
+    # gets the user to choose which one they want
+    # then the array is reduced down to 2 dimensions
+    
+    d.names <- dimnames(ranks$data)      
     num.clusters.options <- d.names$num.clusters
     default <- ceiling(length(num.clusters.options) / 2)  # default is the middle num clust
-    num.clusters.choices <- GetMultiUserchoice(num.clusters.options, 'num clusters', default = default)
     
-    
-    
+    # todo: HACK! won't work if there is more than one num.clusters chosen
+    # change to GetUserChoice (single)
+    num.clusters.choice <- GetMultiUserchoice(num.clusters.options, 'num clusters', default = default)
     # reduce the array down to the chosen num clusters
-    ranks$data <- ranks$data[,,num.clusters.choices]
-    heading <- GetHeading(ranks)
-    if (length(num.clusters.choices) > 1) {
-        # more than 2 dimensions to graph, so make 3d plot
-        EvaluateSamples3d(ranks$data)
-    } else {
-        # convert to data frame
-        
-        # TODO!!!! convert to data frame
-        
-        EvaluateSamples2d(ranks, heading = heading)  
+    new.ranks.data <- ranks$data[,,num.clusters.choice] # returns matrix (2d array)
+    new.ranks.data <- as.data.frame(new.ranks.data)
+    ranks$data <- new.ranks.data
+
+    return(ranks)
+}
+
+
+ChooseRankingsToComapre <- function (ranks, subset.rankings = NULL) {
+    # given a ranking output which may contain many rankings
+    # on the same data done with different ranking algorithms 
+    # creates a subset
+    
+    if (!is.null(subset.rankings)) {
+        colnames(ranks$data) <- ConsistentRankNames(colnames(ranks$data))
+        subset.rankings <- ConsistentRankNames(subset.rankings)    
+        ranks$data <- ranks$data[,subset.rankings]    
     }
 
+    return(ranks)  
 }
+
 
 EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions = NULL) {
     # does evaluation on sampling by event count.
@@ -36,7 +80,7 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
             ranks <- ReadOutput('ranked.samples.ec', use.last.accessed = use.last.accessed, version = v)
             heading <- GetHeading(ranks)
             # plots results and returns SACs
-            results[[as.character(v)]] <- EvaluateSamples2d.2(ranks, heading = heading) 
+            results[[as.character(v)]] <- EvaluateSamples2d(ranks, heading = heading) 
         }
         
         return(results)
@@ -54,78 +98,6 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
 }
 
 
-Summary <- function (days) {
-    # given a list of evaluation results, including random at dawn and some ranking methods 
-    # calculates the average improvement over random at dawn
-    
-    
-    # each of the ranking methods
-    ranking.methods <- names(days[[1]])
-    
-    # each of the non-comparison ranking methods
-    to.score <- ranking.methods[!ranking.methods %in% c('optimal', 'random.at.dawn', 'random.all')]
-    
-    results <- list()
-    
-    max.val <- -100
-    min.val <- 100
-    
-    for (cur.to.score in to.score) {
-        
-        # each col is a day
-        # each row is a min
-        m <- matrix(NA, nrow = length(days[[1]][['random.at.dawn']]$mean), ncol = length(days))      
-        
-        for (d in 1:length(days)) {   
-            r.a.d <- days[[d]][['random.at.dawn']]$mean
-            ranked <- days[[d]][[cur.to.score]]
-            percent.improvement <- ((ranked / r.a.d) - 1) * 100
-            m[,d] <-  percent.improvement
-        }
-        
-        
-            
-        res.mean <- apply(m, 1, mean)
-        if (min(res.mean) < min.val) {
-            min.val <- min(res.mean)
-        }
-        if (max(res.mean) > max.val) {
-            max.val <- max(res.mean)
-        }
-        
-        
-        results[[cur.to.score]] <- res.mean
-    }
-    
-    cutoff <- 120
-
-    setup.data <- rep(max.val, cutoff)
-    setup.data[1] <- min.val
-    par(mar=c(5, 4, 4, 5) + 0.1, cex=1.4, col = 'black')
-    colors <- sapply(to.score, GetColorForName)
-    heading <- "Average improvement over random sampling at dawn"
-    plot(setup.data, main=heading, type = 'n', xlab="After this many minutes", ylab="mean % improvement over random at dawn")
-    for (i in 1:length(to.score)) {              
-        line <- results[[i]]
-        sd <- NA  
-        PlotLine(line, sd = sd, col.rgb = colors[,i], lty = 'solid')
-    }
-    
-    legend.names <- sapply(to.score, GetRankingLegendName)
-    legend.cols <- apply(colors, 2, RgbCol)
-    legend("bottomright",  legend = legend.names, 
-           col = legend.cols, 
-           lty = 'solid', text.col = "black", lwd = 2)
-    
-    par(col = 'black')
-    points(rep(0, 1440), type='l', lty = 'dotted', lwd = 2)
-
-    
-    return(results)
-    
-    
-    
-}
 
 
 GetHeading <- function (ranks) {
@@ -152,7 +124,7 @@ EvaluateSamples2d <- function (ranks, add.dawn = FALSE, cutoff = NA, heading = '
     #add.dawn = Confirm("Add Dawn?")
     add.dawn <- FALSE;
     
-    colnames(ranks$data) <- ConsistentRankNames(colnames(ranks$data))
+
     
     # these min ids have been ranked
     # used to read these separately, but we should just used the dependency target.min.ids used
@@ -271,8 +243,8 @@ EvaluateSamples2d <- function (ranks, add.dawn = FALSE, cutoff = NA, heading = '
         )
  
     #return(c(ranked.count.progressions, comparison.progressions))
-
-    fn <- paste0(heading,'.png')
+    rankings.string <- paste(names(ranked.count.progressions), collapse = '_')
+    fn <- paste(heading,rankings.string,'png', sep = '.')
     filepath <- file.path('/Users/n8933464/Documents/sample_selection_output/plots', fn)
     heading <- paste("Species accumulation Curve:", heading)
 
@@ -592,371 +564,63 @@ ListSpeciesInEachMinute <- function (speciesmins, mins = NA) {
 
 
 
-GraphProgressions <- function (progressions, 
-                               cutoff = 120, 
-                               heading = NULL,
-                               fn = NULL) {
-    
-    # graphs Species Accumulation Curves. A 'curve' is an integer vector, which is the total number of species found
-    #
+
+GetProgression <- function (species.in.each.sample, ordered.min.list) {
+    # returns the count of new species given a list of species vectors
+    # 
     # Args: 
-    #   progressions: list; in the form: name = list(line, legend, sd)
-    
-    
-    #   ranked.count.progressions: list; one memeber of the list for each ranking. 
-    #                                    Each memeber is an integer vector representing the total number of species at that sample
-    #   optimal: integer vector; 
-    #   random.at.dawn: list; 2 integer vectors: the mean and the standard deviation curves
-    #   random.all: list; see random.at.dawn
-    #   from.indicies; integer.vector; sampling from indicies
-    #   cutoff: integer; where to cut the graph off at (after how many samples)
-    #   ranked.legend: character vector; what to put for each of the 'ranked.count.progressions'
-    #   heading: string; title of the graph
-    
-    #ranked.count.progressions <- NA
-    
-    if (!is.null(fn)) {
-        png(filename = fn,
-            width = 700, height = 700, units = "px", pointsize = 13,
-            bg = "white",  res = NA,
-            type = c("cairo", "cairo-png", "Xlib", "quartz"))
-    }
-    
-    rank.names <- names(progressions);
-    #rank.names <- c()
-    
-    # truncate all output at cuttoff
-
-    plot.width <- 0
-    plot.height <- 0
-    #TODO: don't really need to truncate, just define the width for the plot and it will be cropped
-        for (i in 1:length(progressions)) {
-            if (is.numeric(progressions[[i]])) {
-                progressions[[i]] <- Truncate(progressions[[i]], cutoff)
-                plot.width <- max(plot.width, length(progressions[[i]]))
-                plot.height <- max(plot.height, max(progressions[[i]]))
-            } else if (is.list(progressions[[i]])) {
-                progressions[[i]]$mean  <- Truncate(progressions[[i]]$mean, cutoff)
-                progressions[[i]]$sd  <- Truncate(progressions[[i]]$sd, cutoff)   
-                plot.width <- max(plot.width, length(progressions[[i]]$mean))
-                plot.height <- max(plot.height, max(progressions[[i]]$mean))
-            }  else {
-                stop("invalid progressions data type")
-            }
-        }
-
-    
-#     # initialise a dataframe to hold all the info about each plot
-#     col.names <- c('legend', 'r', 'g', 'b', 'line.style')
-#     plots <- as.data.frame(matrix(NA, nrow = length(progressions), ncol = length(col.names)))
-#     colnames(plots) <- col.names
-#     nextrow <- function () {
-#         return(match(NA, plots$legend))
-#     }
-    
-    par(col = 'black')
-    if (is.null(heading)) {
-        heading <- "Species accumulation curve"
-    }
-    
-    setup.data <- rep(plot.height, plot.width)
-    setup.data[1] <- 0
-    par(mar=c(4, 3, 3, 4) + 0.1,    # margin
-        cex=1.4)                    #font size
-    plot(setup.data, main=heading, type = 'n', xlab="After this many minutes", ylab="Number of species found")
-    
-    percent.ticks.at <- (0:6)/6
-    axis(4, at=percent.ticks.at*plot.height, labels=round(percent.ticks.at*100))
-    mtext("% of total", side=4, line=2.5)
-    par(cex=1.2)
-
-    # whether each of the progressions is a comparison curve or the result of 
-    # our smart sampling
-    is.comparison.curve <- sapply(names(progressions), function (name) {
-        to.match <- c('random', 'optimal', 'indices')
-        return(length(grep(paste(to.match, collapse = "|"), name)) > 0)
-    })
-    
-    line.styles <- rep('solid', length(progressions))
-    line.styles[is.comparison.curve] <- 'dashed'
-        
-
-    
-    colors <- sapply(names(progressions), GetColorForName)
-
-    
-    p.names <- names(progressions)
-    for (i in 1:length(p.names)) {              
-        if (is.list(progressions[[i]])) {
-            line <- progressions[[i]]$mean
-            sd <-  progressions[[i]]$sd
-        } else {
-            line <- progressions[[i]]
-            sd <- NA
-        }             
-        PlotLine(line, sd = sd, col.rgb = colors[,i], lty = line.styles[i])
-    }
-    
-    legend.cols <- apply(colors, 2, RgbCol)
-
-    legend.names <- p.names
-    legend.names[!is.comparison.curve] <- sapply(legend.names[!is.comparison.curve], GetRankingLegendName)
-    
-    legend("bottomright",  legend = legend.names, 
-           col = legend.cols, 
-           lty = line.styles, text.col = "black", lwd = 2)
-
-    if (!is.null(fn)) {
-        dev.off()   
-    }
-
-    
-}
-
-GetColorForName <- function (name) {
-    colors.1 <- list(
-        'optimal' = c(0.1,0.1,0.1),
-        'random.at.dawn' = c(0.0,0.8,0.0),
-        'random.all' = c(0.9,0.6,0.2),
-        'indices' = c(.3, .6, .6)
-    )
-    colors.2 <- list(
-        'c.1' = c(1,0.3,0),
-        'c.2' = c(0,0.6,0.9),
-        'c.3' = c(0.7,0.1,0.9),
-        'c.4' = c(0.8,0.2,0.2),
-        'c.5' = c(0,0.2,0.8),
-        'c.6' = c(0.25,0.6,0.0)
-    )
-    if (name %in% names(colors.1)) {
-        return(colors.1[[name]])
-    } else {
-        return(colors.2[[MapColor(name)]])
-    }   
-}
-
-MapColor <- function (rank.name) {
-    # maps ranking method names to colour names
-    # this can change between papers, but keep consistent within a paper
-    map <- list('X4' = 'c.1', 'X8' = 'c.2', 'X5' = 'c.3', 'X6' = 'c.4', 'X9' = 'c.5', 'X10' = 'c.6')
-    return(map[[rank.name]]) 
-}
-
-
-
-GetRankingLegendName <- function (ranking.code) {
-    codes <- list(
-        "X4" = "Ranked by Event Count",
-        "X8" = "Ranked by Event Count with Temporal Dispersal",
-        "X5" = "Ranked by clusters (δ = 0.1)",
-        "X6" = "Ranked by clusters (δ = 1)",
-        "X9" = "Ranked by clusters (δ = 1) with Temporal Dispersal",
-        "X10" = "Ranked by clusters (δ = 1) with Temporal Dispersal"
-    )
-    if (ranking.code %in% names(codes)) {
-        return(codes[[ranking.code]])
-    } else {
-        return(ranking.code)
-    }
-}
-
-
-GraphProgressions.old <- function (progressions, 
-                               cutoff = 150, 
-                               ranked.legend = NA, 
-                               heading = NA) {
-    
-    # graphs Species Accumulation Curves. A 'curve' is an integer vector, which is the total number of species found
+    #   species.in.each.sample: list
+    #   ordered.min.list: vector; the minute ids in the order they should appear in the progression
     #
-    # Args: 
-    #   progressions: list; in the form: name = list(line, legend, sd)
+    # Value:
+    #   list
+    #
+    # Details:
+    #   example input: list(c(1,2,3), c(3,4,5), c(4,5,7), c(5,7))
+    #   output: list containing a list for each sample
+    #           each of those lists contains a list or vector corresponding to the 
+    #           input list
+    #           - count: vector; the total number of species up until each of the samples
+    #           - new.count: vector; the number of new species for each sample
+    #           - species: list of vectors which contain the total species ids until each sample
+    #           - new.species: list of vectors which contain the new species found in each sample
     
     
-    #   ranked.count.progressions: list; one memeber of the list for each ranking. 
-    #                                    Each memeber is an integer vector representing the total number of species at that sample
-    #   optimal: integer vector; 
-    #   random.at.dawn: list; 2 integer vectors: the mean and the standard deviation curves
-    #   random.all: list; see random.at.dawn
-    #   from.indicies; integer.vector; sampling from indicies
-    #   cutoff: integer; where to cut the graph off at (after how many samples)
-    #   ranked.legend: character vector; what to put for each of the 'ranked.count.progressions'
-    #   heading: string; title of the graph
-   
-    #ranked.count.progressions <- NA
     
-    rank.names <- names(ranked.count.progressions);
-    #rank.names <- c()
     
-    # truncate all output at cuttoff
-    if (is.numeric(cutoff)) {
-        optimal <- Truncate(optimal, cutoff)
-        if (!is.null(from.indices)) {
-            from.indices <- Truncate(from.indices, cutoff)
-        }
-        
-        if (is.list(random.at.dawn)) {
-            random.at.dawn$mean  <- Truncate(random.at.dawn$mean, cutoff)
-            random.at.dawn$sd  <- Truncate(random.at.dawn$sd, cutoff)         
-        } 
-        if (is.list(random.all)) {
-            random.all$mean  <- Truncate(random.all$mean, cutoff)
-            random.all$sd  <- Truncate(random.all$sd, cutoff)
-        } 
-        
-        if (length(rank.names) > 0) {
-            for (i in 1:length(rank.names)) {
-                if (is.list(ranked.count.progressions[[rank.names[i]]])) {
-                    ranked.count.progressions[[rank.names[i]]]$mean <- Truncate(ranked.count.progressions[[rank.names[i]]]$mean, cutoff)
-                    ranked.count.progressions[[rank.names[i]]]$sd <- Truncate(ranked.count.progressions[[rank.names[i]]]$sd, cutoff)
-                    plot.width <- length(ranked.count.progressions[[rank.names[i]]]$sd)
-                } else {
-                    ranked.count.progressions[[rank.names[i]]] <- Truncate(ranked.count.progressions[[rank.names[i]]], cutoff)
-                    plot.width <- length(ranked.count.progressions[[rank.names[i]]])
-                }
-                
-            }
-        } else {
-            plot.width <- cutoff
-        }
+    found.species.count.progression <- rep(NA, length(ordered.min.list))
+    found.species.progression <- vector("list", length(ordered.min.list))
+    new.species.count.progression <- rep(0, length(ordered.min.list))
+    new.species.progression <- vector("list", length(ordered.min.list))
+    all.found.species <- numeric()
+    
+    
+    
+    if (is.numeric(ordered.min.list)) {
+        ordered.min.list <- as.character(ordered.min.list)
     }
     
-    # initialise a dataframe to hold all the info about each plot
-    num.plots <- length(ranked.count.progressions) + sum(!c(is.null(optimal), is.null(random.at.dawn), is.null(random.all), is.null(from.indices)))
-    col.names <- c('legend', 'r', 'g', 'b', 'line.style')
-    plots <- as.data.frame(matrix(NA, nrow = num.plots, ncol = length(col.names)))
-    colnames(plots) <- col.names
-    nextrow <- function () {
-        return(match(NA, plots$legend))
+    
+    for (i in 1:length(ordered.min.list)) {
+        min.id <- ordered.min.list[i]
+        new.species <- setdiff(species.in.each.sample[[min.id]], all.found.species) 
+        all.found.species <- c(all.found.species, new.species)
+        found.species.count.progression[i] <- length(all.found.species)
+        new.species.count.progression[i] <- length(new.species)
+        found.species.progression[[i]] <- all.found.species
+        new.species.progression[[i]] <- new.species
     }
     
-    par(col = 'black')
-    if (is.null(heading)) {
-        heading <- "Species accumulation curve"
-    }
+    # this might not be necessary now
+    found.species.count.progression <- found.species.count.progression[! is.na(found.species.count.progression)]
     
-    # setup using optimal for the y axis, since it will have all the species
-    setup.data <- rep(max(optimal), plot.width)
-    setup.data[1] <- 0
-    par(mar=c(5, 4, 4, 5) + 0.1)
-    plot(setup.data, main=heading, type = 'n', xlab="After this many minutes", ylab="Number of species found")
+    return(list(count = found.species.count.progression, 
+                new.count = new.species.count.progression, 
+                species = found.species.progression, 
+                new.species = new.species.progression))
     
-    percent.ticks.at <- (0:6)/6
-    axis(4, at=percent.ticks.at*60, labels=round(percent.ticks.at*100))
-    mtext("% of total", side=4, line=2.5)
-    # plot each of the ranking results
-    line.colours <- matrix(NA, ncol = 3, nrow = 0)
-
-    
-    # plot random at dawn, with standard deviations
-    # colours : http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
-    if (is.list(random.at.dawn) && length(random.at.dawn$mean) > 0) {
-        row <- nextrow()
-        col <- c(0.0,0.8,0.0)
-        plots[row, c('r', 'g', 'b')] <- col
-        plots$legend[row] <- "Random sampling at dawn"
-        plots$line.style <- 'dashed'
-        PlotLine(line = random.at.dawn$mean, col.rgb = col, sd = random.at.dawn$sd, lty = 'dashed')
-    }
-    
-    # plot random, with standard deviations
-    if (is.list(random.all) && length(random.all$mean) > 0) {
-        row <- nextrow()
-        col <- c(0.9,0.6,0.2)
-        plots[row, c('r', 'g', 'b')] <- col
-        plots$legend[row] <- "Random sampling"
-        plots$line.style <- 'dashed'
-        PlotLine(line = random.all$mean, col.rgb = col, sd = random.all$sd, lty = 'dashed')
-    }
-    
-    # plot optimal
-    if (!is.nul(optimal)) {
-        row <- nextrow()
-        col <- c(0.1,0.1,0.1)
-        plots[row, c('r', 'g', 'b')] <- col
-        plots$legend[row] <- "Optimal sampling"
-        plots$line.style <- 'dashed'
-        PlotLine(optimal, col.rgb = col, lty = 'dashed')  
-    }
-
-    
-    # plot from indices
-    # !! if this is activated, colours will be wong
-    if (!is.null(from.indices)) {
-        row <- nextrow()
-        col <- c(.3, .6, .6)  # dark pink
-        plots[row, c('r', 'g', 'b')] <- col
-        plots$legend[row] <- "Indices"
-        plots$line.style <- 'dashed'
-        PlotLine(optimal, col.rgb = col, lty = 'dashed')
-    }
-    
-    #ranking.method.names <- c(
-    #    "Samples ranked by event count only",
-    #    "Samples ranked by number of clusters (A)",
-    #    "Samples ranked by number of clusters (B)"
-    #    )
-    
-    
-    #matrix: rows are colours, columns are channels 
-    ranking.method.colours <- matrix(c(1,0.3,0,
-                                       0,0.6,0.9,
-                                       0.7,0.1,0.9,
-                                       0.8,0.2,0.2), ncol = 3, byrow = TRUE)
-    
-    # give the ranking methods a name here to plot them on the graph
-    # leave the name blank to ommit from the graph
-    
-    if (is.null(ranked.legend)) {
-        ranked.legend <- c('Smart Sampling by Event Count', 
-                             "Smart Sampling by Event count with temporal dispersal")   
-    }
-
-    
-
-    if (length(rank.names) > 0) {
-        for (i in 1:length(rank.names)) {
-            if (ss.method.names[i] != "") {                
-                if (is.list(ranked.count.progressions[[i]])) {
-                    line <- ranked.count.progressions[[i]]$mean
-                    sd <-  ranked.count.progressions[[i]]$sd
-                } else {
-                    line <- ranked.count.progressions[[i]]
-                    sd <- NA
-                }             
-                PlotLine(line, ranking.method.colours[i, ])           
-                #legend.names = c(legend.names, paste('Smart Sampling method', rank.names[i]))
-                legend.names = c(legend.names, ss.method.names[i])
-                line.colours <- rbind(line.colours,  ranking.method.colours[i, ])            
-            }
-        }
-    }
-    
-    legend.cols <- apply(as.matrix(line.colours), 1, RgbCol)
-    
-    
-    lty <- c(rep('dashed', length(legend.cols) - length(rank.names) + 1) , rep('solid', length(rank.names)))
-    
-    legend("bottomright",  legend = legend.names, 
-           col = legend.cols, 
-           lty = lty, text.col = "black", lwd = 2)
     
 }
-
-PlotLine <- function (line, col.rgb, sd = NA, sd.col = NA, lty = 'solid') {
-
-    if (is.numeric(sd)) {
-        poly.y <- c(line + sd, rev(line - sd))
-        poly.x <- c(1:length(line), length(line):1)
-        fill.col <- rgb(col.rgb[1], col.rgb[2], col.rgb[3], 0.1)
-        polygon(poly.x, poly.y,  col = fill.col, border = fill.col)        
-    }
-    line.col <- rgb(col.rgb[1], col.rgb[2], col.rgb[3], 1)
-    par(col = line.col)
-    points(line, type='l', lty = lty, lwd = 3)
-}
-
-
-
 GraphProgressions3d.1 <- function (progressions, cutoff = 180) {
     
     num.clusters <- as.numeric(dimnames(progressions)$num.clusters)
@@ -978,7 +642,6 @@ GraphProgressions3d.1 <- function (progressions, cutoff = 180) {
           ticktype = "simple")
     
 }
-
 GraphProgressions3d <- function (progressions, cutoff = 120) {
     
     require('rgl')
@@ -1060,64 +723,6 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
     
 }
 
-GetProgression <- function (species.in.each.sample, ordered.min.list) {
-    # returns the count of new species given a list of species vectors
-    # 
-    # Args: 
-    #   species.in.each.sample: list
-    #   ordered.min.list: vector; the minute ids in the order they should appear in the progression
-    #
-    # Value:
-    #   list
-    #
-    # Details:
-    #   example input: list(c(1,2,3), c(3,4,5), c(4,5,7), c(5,7))
-    #   output: list containing a list for each sample
-    #           each of those lists contains a list or vector corresponding to the 
-    #           input list
-    #           - count: vector; the total number of species up until each of the samples
-    #           - new.count: vector; the number of new species for each sample
-    #           - species: list of vectors which contain the total species ids until each sample
-    #           - new.species: list of vectors which contain the new species found in each sample
-    
-    
-    
-    
-    found.species.count.progression <- rep(NA, length(ordered.min.list))
-    found.species.progression <- vector("list", length(ordered.min.list))
-    new.species.count.progression <- rep(0, length(ordered.min.list))
-    new.species.progression <- vector("list", length(ordered.min.list))
-    all.found.species <- numeric()
-    
-    
-    
-    if (is.numeric(ordered.min.list)) {
-        ordered.min.list <- as.character(ordered.min.list)
-    }
-    
-    
-    for (i in 1:length(ordered.min.list)) {
-        min.id <- ordered.min.list[i]
-        new.species <- setdiff(species.in.each.sample[[min.id]], all.found.species) 
-        all.found.species <- c(all.found.species, new.species)
-        found.species.count.progression[i] <- length(all.found.species)
-        new.species.count.progression[i] <- length(new.species)
-        found.species.progression[[i]] <- all.found.species
-        new.species.progression[[i]] <- new.species
-    }
-
-    # this might not be necessary now
-    found.species.count.progression <- found.species.count.progression[! is.na(found.species.count.progression)]
-    
-    return(list(count = found.species.count.progression, 
-                new.count = new.species.count.progression, 
-                species = found.species.progression, 
-                new.species = new.species.progression))
-    
-    
-}
-
-
 
 EvaluateSamples2d.old <- function (ranks, cutoff = NA) {
     # given a list of minutes
@@ -1174,3 +779,210 @@ EvaluateSamples2d.old <- function (ranks, cutoff = NA) {
     
 }
 
+EvaluateSamples.old <- function () {
+    
+    ranks <- ReadOutput('ranked.samples')
+    d.names <- dimnames(ranks$data)
+    num.clusters.options <- d.names$num.clusters
+    default <- ceiling(length(num.clusters.options) / 2)  # default is the middle num clust
+    num.clusters.choices <- GetMultiUserchoice(num.clusters.options, 'num clusters', default = default)
+    
+    
+    
+    # reduce the array down to the chosen num clusters
+    ranks$data <- ranks$data[,,num.clusters.choices]
+    heading <- GetHeading(ranks)
+    if (length(num.clusters.choices) > 1) {
+        # more than 2 dimensions to graph, so make 3d plot
+        EvaluateSamples3d(ranks$data)
+    } else {
+        # convert to data frame
+        
+        # TODO!!!! convert to data frame
+        
+        EvaluateSamples2d(ranks, heading = heading)  
+    }
+    
+}
+
+
+GraphProgressions.old <- function (progressions, 
+                                   cutoff = 150, 
+                                   ranked.legend = NA, 
+                                   heading = NA) {
+    
+    # graphs Species Accumulation Curves. A 'curve' is an integer vector, which is the total number of species found
+    #
+    # Args: 
+    #   progressions: list; in the form: name = list(line, legend, sd)
+    
+    
+    #   ranked.count.progressions: list; one memeber of the list for each ranking. 
+    #                                    Each memeber is an integer vector representing the total number of species at that sample
+    #   optimal: integer vector; 
+    #   random.at.dawn: list; 2 integer vectors: the mean and the standard deviation curves
+    #   random.all: list; see random.at.dawn
+    #   from.indicies; integer.vector; sampling from indicies
+    #   cutoff: integer; where to cut the graph off at (after how many samples)
+    #   ranked.legend: character vector; what to put for each of the 'ranked.count.progressions'
+    #   heading: string; title of the graph
+    
+    #ranked.count.progressions <- NA
+    
+    rank.names <- names(ranked.count.progressions);
+    #rank.names <- c()
+    
+    # truncate all output at cuttoff
+    if (is.numeric(cutoff)) {
+        optimal <- Truncate(optimal, cutoff)
+        if (!is.null(from.indices)) {
+            from.indices <- Truncate(from.indices, cutoff)
+        }
+        
+        if (is.list(random.at.dawn)) {
+            random.at.dawn$mean  <- Truncate(random.at.dawn$mean, cutoff)
+            random.at.dawn$sd  <- Truncate(random.at.dawn$sd, cutoff)         
+        } 
+        if (is.list(random.all)) {
+            random.all$mean  <- Truncate(random.all$mean, cutoff)
+            random.all$sd  <- Truncate(random.all$sd, cutoff)
+        } 
+        
+        if (length(rank.names) > 0) {
+            for (i in 1:length(rank.names)) {
+                if (is.list(ranked.count.progressions[[rank.names[i]]])) {
+                    ranked.count.progressions[[rank.names[i]]]$mean <- Truncate(ranked.count.progressions[[rank.names[i]]]$mean, cutoff)
+                    ranked.count.progressions[[rank.names[i]]]$sd <- Truncate(ranked.count.progressions[[rank.names[i]]]$sd, cutoff)
+                    plot.width <- length(ranked.count.progressions[[rank.names[i]]]$sd)
+                } else {
+                    ranked.count.progressions[[rank.names[i]]] <- Truncate(ranked.count.progressions[[rank.names[i]]], cutoff)
+                    plot.width <- length(ranked.count.progressions[[rank.names[i]]])
+                }
+                
+            }
+        } else {
+            plot.width <- cutoff
+        }
+    }
+    
+    # initialise a dataframe to hold all the info about each plot
+    num.plots <- length(ranked.count.progressions) + sum(!c(is.null(optimal), is.null(random.at.dawn), is.null(random.all), is.null(from.indices)))
+    col.names <- c('legend', 'r', 'g', 'b', 'line.style')
+    plots <- as.data.frame(matrix(NA, nrow = num.plots, ncol = length(col.names)))
+    colnames(plots) <- col.names
+    nextrow <- function () {
+        return(match(NA, plots$legend))
+    }
+    
+    par(col = 'black')
+    if (is.null(heading)) {
+        heading <- "Species accumulation curve"
+    }
+    
+    # setup using optimal for the y axis, since it will have all the species
+    setup.data <- rep(max(optimal), plot.width)
+    setup.data[1] <- 0
+    par(mar=c(5, 4, 4, 5) + 0.1)
+    plot(setup.data, main=heading, type = 'n', xlab="After this many minutes", ylab="Number of species found")
+    
+    percent.ticks.at <- (0:6)/6
+    axis(4, at=percent.ticks.at*60, labels=round(percent.ticks.at*100))
+    mtext("% of total", side=4, line=2.5)
+    # plot each of the ranking results
+    line.colours <- matrix(NA, ncol = 3, nrow = 0)
+    
+    
+    # plot random at dawn, with standard deviations
+    # colours : http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+    if (is.list(random.at.dawn) && length(random.at.dawn$mean) > 0) {
+        row <- nextrow()
+        col <- c(0.0,0.8,0.0)
+        plots[row, c('r', 'g', 'b')] <- col
+        plots$legend[row] <- "Random sampling at dawn"
+        plots$line.style <- 'dashed'
+        PlotLine(line = random.at.dawn$mean, col.rgb = col, sd = random.at.dawn$sd, lty = 'dashed')
+    }
+    
+    # plot random, with standard deviations
+    if (is.list(random.all) && length(random.all$mean) > 0) {
+        row <- nextrow()
+        col <- c(0.9,0.6,0.2)
+        plots[row, c('r', 'g', 'b')] <- col
+        plots$legend[row] <- "Random sampling"
+        plots$line.style <- 'dashed'
+        PlotLine(line = random.all$mean, col.rgb = col, sd = random.all$sd, lty = 'dashed')
+    }
+    
+    # plot optimal
+    if (!is.nul(optimal)) {
+        row <- nextrow()
+        col <- c(0.1,0.1,0.1)
+        plots[row, c('r', 'g', 'b')] <- col
+        plots$legend[row] <- "Optimal sampling"
+        plots$line.style <- 'dashed'
+        PlotLine(optimal, col.rgb = col, lty = 'dashed')  
+    }
+    
+    
+    # plot from indices
+    # !! if this is activated, colours will be wong
+    if (!is.null(from.indices)) {
+        row <- nextrow()
+        col <- c(.3, .6, .6)  # dark pink
+        plots[row, c('r', 'g', 'b')] <- col
+        plots$legend[row] <- "Indices"
+        plots$line.style <- 'dashed'
+        PlotLine(optimal, col.rgb = col, lty = 'dashed')
+    }
+    
+    #ranking.method.names <- c(
+    #    "Samples ranked by event count only",
+    #    "Samples ranked by number of clusters (A)",
+    #    "Samples ranked by number of clusters (B)"
+    #    )
+    
+    
+    #matrix: rows are colours, columns are channels 
+    ranking.method.colours <- matrix(c(1,0.3,0,
+                                       0,0.6,0.9,
+                                       0.7,0.1,0.9,
+                                       0.8,0.2,0.2), ncol = 3, byrow = TRUE)
+    
+    # give the ranking methods a name here to plot them on the graph
+    # leave the name blank to ommit from the graph
+    
+    if (is.null(ranked.legend)) {
+        ranked.legend <- c('Smart Sampling by Event Count', 
+                           "Smart Sampling by Event count with temporal dispersal")   
+    }
+    
+    
+    
+    if (length(rank.names) > 0) {
+        for (i in 1:length(rank.names)) {
+            if (ss.method.names[i] != "") {                
+                if (is.list(ranked.count.progressions[[i]])) {
+                    line <- ranked.count.progressions[[i]]$mean
+                    sd <-  ranked.count.progressions[[i]]$sd
+                } else {
+                    line <- ranked.count.progressions[[i]]
+                    sd <- NA
+                }             
+                PlotLine(line, ranking.method.colours[i, ])           
+                #legend.names = c(legend.names, paste('Smart Sampling method', rank.names[i]))
+                legend.names = c(legend.names, ss.method.names[i])
+                line.colours <- rbind(line.colours,  ranking.method.colours[i, ])            
+            }
+        }
+    }
+    
+    legend.cols <- apply(as.matrix(line.colours), 1, RgbCol)
+    
+    
+    lty <- c(rep('dashed', length(legend.cols) - length(rank.names) + 1) , rep('solid', length(rank.names)))
+    
+    legend("bottomright",  legend = legend.names, 
+           col = legend.cols, 
+           lty = lty, text.col = "black", lwd = 2)
+    
+}
