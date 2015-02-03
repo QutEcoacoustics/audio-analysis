@@ -2013,11 +2013,7 @@ namespace Dong.Felt.Representations
                 }
             }
             var proportionParameter = 0.15;
-            var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;
-            if (poiCountInMatrix >= poiCountThreshold)
-            {
-                POISelection.RecalculateRidgeDirection(m, out magnitude, out direction);
-            }
+            var poiCountThreshold = (int)neighbourhoodLength * neighbourhoodLength * proportionParameter;           
             this.magnitude = magnitude;
             this.orientation = direction;
             FrameIndex = col * timeScale;
