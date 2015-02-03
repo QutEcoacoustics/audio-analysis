@@ -59,12 +59,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double frameDurationInSeconds = config.FrameWidth / (double)config.SampleRate;
             TimeSpan frameScale = TimeSpan.FromTicks((long)Math.Round(frameDurationInSeconds * 10000000));
             int[] compressionFactor = { 1, 2, 5, 11, 22 };
+            int maxCompression = compressionFactor[compressionFactor.Length - 1];
+            TimeSpan maxDuration = TimeSpan.FromTicks(maxCompression * imageWidth * frameScale.Ticks);
+            fileStem =  "TEST_TUITCE_20091215_220004";
+
+            TimeSpan halfduration = TimeSpan.FromMilliseconds(maxDuration.TotalMilliseconds / 2);
+            TimeSpan starttime = focalTime - halfduration;
+
+            List<double[]> frameData = ReadFrameData(config, starttime, maxDuration, config.InputDirectoryInfo, fileStem);
 
             for (int i = 4; i >= 0; i--)
             {
                 int factor = compressionFactor[i];
-                TimeSpan imageScale = TimeSpan.FromSeconds(dataScale.TotalSeconds * factor);
-                Image image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, focalTime, frameScale, factor, imageWidth, spectra["ACI"]);
+                Image image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, starttime, focalTime, frameScale, factor, imageWidth, frameData);
                 if (image != null) imageList.Add(image);
             }
 
@@ -193,72 +200,48 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, FileInfo indicesConfigPath,
-                                    TimeSpan focalTime, TimeSpan frameScale, int compressionFactor, int imageWidth, double[,] matrix)
+        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, FileInfo indicesConfigPath, TimeSpan dataStartTime,
+                                    TimeSpan focalTime, TimeSpan frameScale, int compressionFactor, int imageWidth, List<double[]> frameData)
         {
-            if (matrix == null)
+            if ((frameData == null) || (frameData.Count == 0))
             {
                 LoggedConsole.WriteLine("WARNING: NO SPECTRAL SPECTROGRAM DATA SUPPLIED");
                 return null;
             }
 
-            int freqBinCount = 0;
-            DirectoryInfo dir = new DirectoryInfo(@"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.250msIndices");
-            string fileName = @"TEST_TUITCE_20091215_220004_16min.csv";
-            string path = Path.Combine(dir.FullName, fileName);
-            matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
-
-            //matrix = Csv.ReadMatrixFromCsv<double[,]>(new FileInfo(path));
-
-
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            //Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
+            //dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
             TimeSpan sourceMinuteOffset = config.MinuteOffset;   // default = zero minute of day i.e. midnight
 
             // calculate data duration from column count of abitrary matrix
-            TimeSpan dataDuration = TimeSpan.FromTicks((long)(matrix.GetLength(0) * frameScale.Ticks));
-
+            //TimeSpan dataDuration = TimeSpan.FromTicks((long)(matrix.GetLength(0) * frameScale.Ticks));
 
             TimeSpan imageScale = TimeSpan.FromTicks(frameScale.Ticks * compressionFactor);
 
-
-            TimeSpan offsetTime = TimeSpan.Zero;
             TimeSpan ImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
             TimeSpan halfImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks / 2);
             TimeSpan startTime = focalTime - halfImageDuration;
-            if (startTime < TimeSpan.Zero)
-            {
-                offsetTime = TimeSpan.Zero - startTime;
-                startTime = TimeSpan.Zero;
-            }
+            //if (startTime < TimeSpan.Zero)
+            //{
+            //    offsetTime = TimeSpan.Zero - startTime;
+            //    startTime = TimeSpan.Zero;
+            //}
+
             TimeSpan endTime = focalTime + halfImageDuration;
-            if (endTime > dataDuration) endTime = dataDuration;
-            TimeSpan spectrogramDuration = endTime - startTime;
-            int spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
+            //if (endTime > dataDuration) endTime = dataDuration;
+            //TimeSpan spectrogramDuration = endTime - startTime;
+            //int spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
 
             int startIndex = (int)(startTime.Ticks / frameScale.Ticks);
             int endIndex = (int)(endTime.Ticks / frameScale.Ticks);
-
-            // TEMPORARY HACK
-            startIndex = 0;
-            endIndex = imageWidth;
-
-
-
-            //var spectralSelection = new Dictionary<string, double[,]>();
-
-            //foreach (string key in spectra.Keys)
-            //{
-            //    matrix = spectra[key];
-            //    int rowCount = matrix.GetLength(0);
-            //    spectralSelection[key] = MatrixTools.Submatrix(matrix, 0, startIndex, rowCount - 1, endIndex - 1);
-            //}
-
+            int rowCount = endIndex - startIndex + 1;
+            List<double[]> frameSelection = frameData.GetRange(startIndex, rowCount);
+            double[,] spectralSelection = MatrixTools.ConvertList2Matrix(frameSelection); 
 
             // compress spectrograms to correct scale
-            //if (imageScale != frameScale)
-            //    spectralSelection = CompressIndexSpectrograms(spectralSelection, imageScale, frameScale);
+            if (compressionFactor > 1)
+                spectralSelection = CompressFrameSpectrograms(spectralSelection, compressionFactor);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             //string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
@@ -294,7 +277,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int nyquist = 22050 / 2;
             int herzInterval = 1000;
             string title = string.Format("ZOOM SCALE={0}ms/pixel   Image duration={1}    (colour:R-G-B={2})",
-                                                                       imageScale.TotalMilliseconds, spectrogramDuration, colorMap);
+                                                                       imageScale.TotalMilliseconds, ImageDuration, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spectrogram.Width);
             spectrogram = LDSpectrogramRGB.FrameLDSpectrogram(spectrogram, titleBar, startTime, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
 
@@ -314,7 +297,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Graphics g1 = Graphics.FromImage(image);
             g1.Clear(Color.DarkGray);
 
-            int Xoffset = (int)(offsetTime.Ticks / imageScale.Ticks);
+            int Xoffset = (int)(startTime.Ticks / imageScale.Ticks);
             g1.DrawImage(spectrogram, Xoffset, 0);
 
             return image;
@@ -410,6 +393,55 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             return compressedSpectra;
         }
+
+
+
+        public static double[,] CompressFrameSpectrograms(double[,] matrix, int compressionFactor)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            int compressedLength = (colCount / compressionFactor);
+            var newMatrix = new double[rowCount, compressedLength];
+            double[] tempArray = new double[compressionFactor];
+            int step = compressionFactor - 1;
+            for (int r = 0; r < rowCount; r++)
+            {
+                int colIndex = 0;
+                for (int c = 0; c < colCount - compressionFactor; c += step)
+                {
+                    colIndex = c / compressionFactor;
+                    for (int i = 0; i < compressionFactor; i++) tempArray[i] = matrix[r, c + i];
+                    newMatrix[r, colIndex] = tempArray.Average();
+                }
+            }
+            return newMatrix;
+        }
+
+
+        public static List<double[]> ReadFrameData(LdSpectrogramConfig config, TimeSpan starttime, TimeSpan maxDuration, DirectoryInfo dataDir, string fileStem)
+        {
+            TimeSpan endtime = starttime + maxDuration;
+            int startMinute = starttime.Minutes;
+            int endMinute = (int)Math.Ceiling(endtime.TotalMinutes);
+
+            string name = fileStem + "_" + startMinute + "min.csv";
+            string csvPath = Path.Combine(dataDir.FullName, name);
+            bool skipHeader = true;
+            bool skipFirstColumn = true;
+
+            List<double[]> frameData = CsvTools.ReadCSVFileOfDoubles(csvPath, skipHeader, skipFirstColumn);
+            for (int i = startMinute+1; i <= endMinute; i++)
+            {
+                name = fileStem + "_" + i + "min.csv";
+                csvPath = Path.Combine(dataDir.FullName, name);
+
+                List<double[]> data = CsvTools.ReadCSVFileOfDoubles(csvPath, skipHeader, skipFirstColumn);
+                frameData.AddRange(data);
+            }
+            return frameData;
+        }
+
+
 
         public static Dictionary<string, double[,]> CompressFrameSpectrogram(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan defaultTimeScale)
         {

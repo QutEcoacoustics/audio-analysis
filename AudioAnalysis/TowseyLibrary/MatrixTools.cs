@@ -6,12 +6,11 @@ using System.Linq;
 
 using System.Numerics;
 
-//using MathNet.Numerics;
-////using MathNet.Numerics.ComplexExtensions;
-//using MathNet.Numerics.LinearAlgebra;
-//using MathNet.Numerics.LinearAlgebra.Double;
-//using MathNet.Numerics.LinearAlgebra.Generic.Factorization;
-//using MathNet.Numerics.LinearAlgebra.Generic;
+using MathNet.Numerics;
+//using MathNet.Numerics.ComplexExtensions;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Generic;
 
 
 namespace TowseyLibrary
@@ -82,6 +81,15 @@ namespace TowseyLibrary
         //***************************************************************************
         //***************************************************************************
 
+
+
+        public static double[,] ConcatenateMatrixRows(double[,] M1, double[,] M2)
+        {
+            Matrix<double> MN1 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M1);
+            Matrix<double> MN2 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M2);
+            MN1.Append(MN2);
+            return MN1.ToArray();
+        }
 
 
         /// <summary>
