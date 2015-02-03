@@ -367,6 +367,33 @@ namespace TowseyLibrary
             return System.Tuple.Create(headers, values);
         }
 
+
+        public static List<double[]> ReadCSVFileOfDoubles(string csvFileName, bool skipHeader, bool skipFirstColumn)
+        {
+            var list = new List<double[]>();
+            using (TextReader reader = new StreamReader(csvFileName))
+            {
+                string line;
+                string[] words;
+                int firstIndex = 0;
+                if (skipFirstColumn) firstIndex = 1;
+                if (skipHeader) 
+                    line = reader.ReadLine(); // skip first header line
+                while ((line = reader.ReadLine()) != null)
+                {
+                    //read one line at a time in string array
+                    words = line.Split(',');
+                    var values = new double[words.Length - firstIndex];
+                    for (int c = firstIndex; c < words.Length; c++)
+                    {
+                        values[c - firstIndex] = Double.Parse(words[c]);
+                    }
+                    list.Add(values);
+                }//end while
+            }//end using
+            return list;
+        }
+
         /// <summary>
         /// returns a Dictionary of the column values in a csv file with column headings as keys
         /// ASSUMED to be doubles
