@@ -405,6 +405,20 @@ namespace TowseyLibrary
             return newM;
         }
 
+        public static double[,] SquareRootOfValues(double[,] M)
+        {
+            int rows = M.GetLength(0);
+            int cols = M.GetLength(1);
+            double[,] newM = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    newM[i, j] = Math.Sqrt(M[i, j]);
+                }
+            return newM;
+        }
+
         /// <summary>
         /// Filters background values by applying a polynomial that lies between y=x and y=x^2.
         /// That is, y=x represents the unfiltered matrix and y=x^2 represents the maximally filtered matrix.
@@ -691,6 +705,59 @@ namespace TowseyLibrary
       return newMatrix;
   }
 
+  /// <summary>
+  /// adds two matrices using weighted sum
+  /// Typically expected that that w1 + w2 = 0 and both matrices are normalised.
+  /// </summary>
+  /// <param name="m1"></param>
+  /// <param name="w1"></param>
+  /// <param name="m2"></param>
+  /// <param name="w2"></param>
+  /// <returns></returns>
+        public static double[,] AddMatricesWeightedSum(double[,] m1, double w1, double[,] m2, double w2)
+  {
+      if (m1 == null) return m2;
+      if (m2 == null) return m1;
+      int m1Rows = m1.GetLength(0);
+      int m1Cols = m1.GetLength(1);
+      int m2Rows = m2.GetLength(0);
+      int m2Cols = m2.GetLength(1);
+      if (!(m1Rows == m2Rows)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+      if (!(m1Cols == m2Cols)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+
+      double[,] newMatrix = new double[m1Rows, m1Cols];
+      for (int i = 0; i < m1Rows; i++)
+      {
+          for (int j = 0; j < m1Cols; j++)
+          {
+              newMatrix[i, j] = (w1 * m1[i, j]) + (w2 * m2[i, j]);
+          }
+      }
+      return newMatrix;
+  }
+
+  /// <summary>
+  /// DIVIDE matrix m1 by factor
+  /// </summary>
+  /// <param name="m1"></param>
+  /// <param name="m2"></param>
+  /// <returns></returns>
+  public static double[,] DivideMatrix(double[,] m1, double factor)
+  {
+      if (m1 == null) return m1;
+      int m1Rows = m1.GetLength(0);
+      int m1Cols = m1.GetLength(1);
+
+      double[,] newMatrix = (double[,])m1.Clone();
+      for (int i = 0; i < m1Rows; i++)
+      {
+          for (int j = 0; j < m1Cols; j++)
+          {
+              newMatrix[i, j] = m1[i, j] / factor;
+          }
+      }
+      return newMatrix;
+  }
 
   /// <summary>
   /// Subtract matrix m2 from matrix m1

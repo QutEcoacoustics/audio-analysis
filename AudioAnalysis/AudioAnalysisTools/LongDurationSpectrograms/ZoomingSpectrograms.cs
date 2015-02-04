@@ -35,7 +35,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string fileStem = config.FileName;
             //string[] keys = config.ColourMap2.Split('-');
-            string[] keys = {"ACI", "AVG", "ENT", "EVN"};
+            string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN" };
 
             Dictionary<string, double[,]> spectra = ReadCSVFiles(config.InputDirectoryInfo, fileStem, keys);
 
@@ -69,7 +69,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             List<double[]> frameData = ReadFrameData(config, startTimeOfMaxImage, maxImageDuration, config.InputDirectoryInfo, fileStem);
 
-            for (int i = 4; i >= 0; i--)
+            for (int i = 2; i >= 0; i--)
             {
                 int factor = compressionFactor[i];
                 Image image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, startTimeOfData, focalTime, frameScale, factor, imageWidth, frameData);
@@ -93,7 +93,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // check that scalingFactor >= 1.0
-            double scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
+            double scalingFactor = Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
             if (scalingFactor < 1.0)
             {
                 LoggedConsole.WriteLine("WARNING: Scaling Factor < 1.0");
@@ -139,15 +139,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (scalingFactor > 1)
                 spectralSelection = CompressIndexSpectrograms(spectralSelection, imageScale, dataScale);
 
+            // var mergedSpectra = CombineSpectrogramsForScale(spectralSelection, imageScale, dataScale);
+
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
-            string colorMap2 = config.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
-            string colorMap = colorMap2;
+            string colorMap1 = "ACI-ENT-EVN";
+            string colorMap2 = "BGN-AVG-CVR";
 
             double backgroundFilterCoeff = (double?)config.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
-            var cs1 = new LDSpectrogramRGB(config, colorMap);
+            var cs1 = new LDSpectrogramRGB(config, colorMap1);
             cs1.FileName = config.FileName;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
@@ -157,14 +158,31 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.LoadSpectrogramDictionary(spectralSelection);
 
 
-            Image LDSpectrogram = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-            //Image LDSpectrogram = new Bitmap(spectrogramWidth, 256);
+            int imageScaleInMsPerPixel = (int)imageScale.TotalMilliseconds;
+            double blendWt1 = 0.1;
+            double blendWt2 = 0.9;
+
+            if (imageScaleInMsPerPixel > 5000)
+            {
+                blendWt1 = 0.9;
+                blendWt2 = 0.1;
+            }
+            else
+            if (imageScaleInMsPerPixel > 1000)
+            {
+                blendWt1 = 0.7;
+                blendWt2 = 0.3;
+            } else
+            if (imageScaleInMsPerPixel > 500)
+            {
+                blendWt1 = 0.3;
+                blendWt2 = 0.7;
+            } 
+
+            Image LDSpectrogram = cs1.DrawBlendedFalseColourSpectrogram("NEGATIVE", colorMap1, colorMap2, blendWt1, blendWt2);
             Graphics g2 = Graphics.FromImage(LDSpectrogram);
 
-
-
-
-            // draw focus time
+            // draw focus time on image
             Pen pen = new Pen(Color.Red);
             TimeSpan focalOffset = focalTime - startTime;
             int x1 = (int)(focalOffset.Ticks / imageScale.Ticks);
@@ -214,12 +232,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
             TimeSpan sourceMinuteOffset = config.MinuteOffset;   // default = zero minute of day i.e. midnight
-
-            // calculate data duration from column count of abitrary matrix
-            //TimeSpan dataDuration = TimeSpan.FromTicks((long)(matrix.GetLength(0) * frameScale.Ticks));
-
             TimeSpan imageScale = TimeSpan.FromTicks(frameScale.Ticks * compressionFactor);
-
             TimeSpan imageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
             TimeSpan halfImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks / 2);
             TimeSpan startTime = focalTime - halfImageDuration - startTimeOfData;
@@ -245,27 +258,27 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             spectralSelection = MatrixTools.MatrixRotate90Anticlockwise(spectralSelection);
 
-            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            //string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
-            string colorMap2 = config.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
-            string colorMap = colorMap2;
+            // SOME EXPERIMENTS IN NORMALISATION
+            //double min; double max;
+            //DataTools.MinMax(spectralSelection, out min, out max);
+            //double range = max - min;
+            // readjust min and max to create the effect of contrast stretching. It enhances the spectrogram a bit
+            //double fractionalStretching = 0.2;
+            //min = min + (range * fractionalStretching);
+            //max = max - (range * fractionalStretching);
+            //range = max - min;
 
-            //double backgroundFilterCoeff = (double?)config.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
+            // this is a normalisastion hack to darken the frame derived spectrograms
+            double min = -110;
+            double max = -20;
+            spectralSelection = MatrixTools.boundMatrix(spectralSelection, min, max);
+            Image spectrogramImage = ImageTools.DrawNormalisedMatrix(spectralSelection);
 
-            //var cs1 = new LDSpectrogramRGB(config, colorMap);
-            //cs1.FileName = config.FileName;
-            //cs1.BackgroundFilter = backgroundFilterCoeff;
-            //cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
-
-            Image spectrogramImage = ImageTools.DrawReversedMatrix(spectralSelection);
             Graphics g2 = Graphics.FromImage(spectrogramImage);
 
 
             // draw focus time
             Pen pen = new Pen(Color.Red);
-            //TimeSpan startTime = focalTime - halfImageDuration - startTimeOfData;
-            //TimeSpan focalOffset = focalTime - startTime;
             int x1 = (int)(halfImageDuration.Ticks / imageScale.Ticks);
             g2.DrawLine(pen, x1, 0, x1, spectrogramImage.Height);
 
@@ -278,15 +291,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             spectrogramImage = FrameZoomSpectrogram(spectrogramImage, titleBar, startTimeOfImage, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
 
 
-
+            // MAY WANT THESE CLIPPING TRACKS AT SOME POINT
             // read high amplitude and clipping info into an image
             //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
             //string indicesFile = Path.Combine(config.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
             //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
-
             //Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
-            //if (null != imageX)
-            //    imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
+            //if (null != imageX) imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
+
 
             // create the base image
             Image image = new Bitmap(imageWidth, spectrogramImage.Height);
@@ -390,6 +402,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             return compressedSpectra;
         }
+
+
+        //public static Dictionary<string, double[,]> CombineSpectrogramsForScale(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan defaultTimeScale)                    
+        //{
+        //    int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / defaultTimeScale.TotalMilliseconds);
+        //    var mergedSpectra = new Dictionary<string, double[,]>();
+        //    return spectra;
+        //}
 
 
         /// <summary>
