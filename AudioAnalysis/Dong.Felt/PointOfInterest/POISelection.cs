@@ -4,6 +4,7 @@ namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools;
@@ -467,6 +468,62 @@ namespace Dong.Felt
             }  /// filter out some redundant ridges   
         }
 
+        static public List<PointOfInterest> RemoveFalseRidges(List<PointOfInterest> poiList, double[,] spectrogramData, 
+            int offset, double threshold)
+        {
+            var result = new List<PointOfInterest>();
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);          
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, spectrogramData, rows, cols);
+            var halfWidth = offset / 2;
+            for (var r = offset; r < rows - offset; r++)
+            {
+                for (var c = offset; c < cols - offset; c++) 
+                {
+                    var magnitude = 0.0;
+                    if (poiMatrix[r, c].OrientationCategory == 2 || poiMatrix[r, c].OrientationCategory == 6)
+                    {
+                        result.Add(poiMatrix[r, c]);
+                    }
+                    else
+                    {
+                        if (poiMatrix[r, c].OrientationCategory == 0)
+                        {
+                            // substract a submatrix from spectrogramData
+                            // 12 rows * 6 cols
+                            var subMatrix = MatrixTools.Submatrix(
+                                matrix,
+                                r - offset + 1,
+                                c - halfWidth + 1,
+                                r + offset,
+                                c + halfWidth);
+
+                            ImageAnalysisTools.ImprovedRidgeDetectionHDirection(subMatrix, out magnitude);
+                        }
+                        if (poiMatrix[r, c].OrientationCategory == 4)
+                        {
+                            // 6 rows * 12 cols
+                            var subMatrix = MatrixTools.Submatrix(
+                                matrix,
+                                r - halfWidth + 1,
+                                c - offset + 1,
+                                r + halfWidth,
+                                c + offset);
+                            ImageAnalysisTools.ImprovedRidgeDetectionVDirection(subMatrix, out magnitude);
+                        }
+
+                        if (magnitude > threshold)
+                        {
+                            result.Add(poiMatrix[r, c]);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+
         public void ConvertRidgeIndicatorToPOIList(byte[,] ridgeIndiMatrix, double[,] RidgeMagnitudematrix, SpectrogramStandard spectrogram)
         {
             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
@@ -495,17 +552,14 @@ namespace Dong.Felt
                         poi.TimeScale = timeScale;
                         poi.HerzScale = herzScale;
                         //ADD CONDITION CHECK-2015-01-28
-                        if (poi.Intensity > 9.0)
-                        {
-                            poiList.Add(poi);
-                        }
+                        //if (poi.Intensity > 9.0)
+                        //{
+                        poiList.Add(poi);
+                        //}
                     }
                 }
             }
-            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
-            //var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            //var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
-            //var filteredPoiList = ImageAnalysisTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);            
             poiList = prunedPoiList;
         }
 
@@ -635,10 +689,10 @@ namespace Dong.Felt
                             r + halfLength + offset, c + halfLength + offset);
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
-                        //double localThreshold = sd * 0.9; 
-                        //if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;
-                        double localThreshold = 1.5 * av;
-                        if (subM2[halfLength + offset, halfLength + offset] < localThreshold) continue;
+                        double localThreshold = sd * 0.9;
+                        if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;
+                        //double localThreshold = 1.5 * av;
+                        //if (subM2[halfLength + offset, halfLength + offset] < localThreshold) continue;
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation + 1);
                         newMatrix[r, c] = magnitude;
@@ -666,6 +720,10 @@ namespace Dong.Felt
                             newMatrix[r - 2, c] = magnitude;
                             hits[r + 2, c] = (byte)(orientation + 1);
                             newMatrix[r + 2, c] = magnitude;
+                            hits[r - 3, c] = (byte)(orientation + 1);
+                            newMatrix[r - 3, c] = magnitude;
+                            hits[r + 3, c] = (byte)(orientation + 1);
+                            newMatrix[r + 3, c] = magnitude;
                         }
                         else if (orientation == 0)
                         {
@@ -677,98 +735,17 @@ namespace Dong.Felt
                             newMatrix[r, c - 2] = magnitude;
                             hits[r, c + 2] = (byte)(orientation + 1);
                             newMatrix[r, c + 2] = magnitude;
+                            hits[r, c - 3] = (byte)(orientation + 1);
+                            newMatrix[r, c - 3] = magnitude;
+                            hits[r, c + 3] = (byte)(orientation + 1);
+                            newMatrix[r, c + 3] = magnitude;
                         }
                     }
                 }
             }  /// filter out some redundant ridges          
             return hits;
         }
-
-        /// <summary>
-        /// This version of ridge detection involves original ridge detection and removing ridges in shadow. 
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="newMatrix"></param>
-        /// <param name="ridgeConfiguration"></param>
-        /// <returns></returns>
-        public static byte[,] FourDirections3RidgeDetection(double[,] matrix, out double[,] newMatrix,
-        RidgeDetectionConfiguration ridgeConfiguration)
-        {
-            int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
-            double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            int halfLength = ridgeLength / 2;
-            var hits = new byte[rows, cols];
-            newMatrix = new double[rows, cols];
-            for (int r = halfLength + 1; r < rows - halfLength - 1; r++)
-            {
-                for (int c = halfLength + 1; c < cols - halfLength - 1; c++)
-                {
-                    if (hits[r, c] > 0) continue;
-                    var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                    double magnitude;
-                    double direction;
-                    bool isRidge = false;
-                    // magnitude is dB, direction is double value which is times of pi/4, from the start of 0. 
-                    ImageAnalysisTools.Sobel5X5RidgeDetection4Direction(subM, out isRidge, out magnitude, out direction);
-                    if (magnitude > magnitudeThreshold && isRidge == true)
-                    {
-                        var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1);
-                        double av, sd;
-                        NormalDist.AverageAndSD(subM2, out av, out sd);
-                        double localThreshold = sd * 1.3;
-                        if ((subM2[halfLength + 1, halfLength + 1] - av) < localThreshold) continue;
-                        var orientation = (int)Math.Round((direction * 8) / Math.PI);
-                        hits[r, c] = (byte)(orientation + 1);
-                        newMatrix[r, c] = magnitude;
-                        if (orientation == 2)
-                        {
-                            hits[r - 1, c + 1] = (byte)(orientation + 1);
-                            newMatrix[r - 1, c + 1] = magnitude;
-                            hits[r + 1, c - 1] = (byte)(orientation + 1);
-                            newMatrix[r + 1, c - 1] = magnitude;
-                            //hits[r - 2, c + 2] = (byte)(direction + 1);
-                            //hits[r + 2, c - 2] = (byte)(direction + 1);
-                        }
-                        else if (orientation == 6)
-                        {
-                            hits[r + 1, c + 1] = (byte)(orientation + 1);
-                            newMatrix[r + 1, c + 1] = magnitude;
-                            hits[r - 1, c - 1] = (byte)(orientation + 1);
-                            newMatrix[r - 1, c - 1] = magnitude;
-                            //hits[r + 2, c + 2] = (byte)(direction + 1);
-                            //hits[r - 2, c - 2] = (byte)(direction + 1);
-                        }
-                        else if (orientation == 4)
-                        {
-                            hits[r - 1, c] = (byte)(orientation + 1);
-                            newMatrix[r - 1, c] = magnitude;
-                            hits[r + 1, c] = (byte)(orientation + 1);
-                            newMatrix[r + 1, c] = magnitude;
-                            hits[r - 2, c] = (byte)(orientation + 1);
-                            newMatrix[r - 2, c] = magnitude;
-                            hits[r + 2, c] = (byte)(orientation + 1);
-                            newMatrix[r + 2, c] = magnitude;
-                        }
-                        else if (orientation == 0)
-                        {
-                            hits[r, c - 1] = (byte)(orientation + 1);
-                            newMatrix[r, c - 1] = magnitude;
-                            hits[r, c + 1] = (byte)(orientation + 1);
-                            newMatrix[r, c + 1] = magnitude;
-
-                            hits[r, c - 2] = (byte)(orientation + 1);
-                            newMatrix[r, c - 2] = magnitude;
-                            hits[r, c + 2] = (byte)(orientation + 1);
-                            newMatrix[r, c + 2] = magnitude;
-                        }
-                    }
-                }
-            }  /// filter out some redundant ridges          
-            return hits;
-        }
-
+      
         /// <summary>
         /// This version adds intensityThreshold
         /// </summary>
@@ -1041,6 +1018,7 @@ namespace Dong.Felt
             }
             return hits;
         }
+        
         public static List<double> intensityThresholdForSpectrogram(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
