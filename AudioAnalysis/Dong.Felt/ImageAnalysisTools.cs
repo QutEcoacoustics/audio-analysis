@@ -888,6 +888,57 @@ namespace Dong.Felt
             //direction = indexMax;
         }
 
+        public static void ImprovedRidgeDetectionHDirection(double[,] m, out double magnitude)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != 12) || (cols != 6)) // must be square 12X6 matrix 
+            {               
+                magnitude = 0.0;               
+                return;
+            }
+
+            double[,] ridgeHorizontalMask = { {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+                                              { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1},
+                                              {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1}
+                                            };
+
+           
+            var ridgeMagnitude = MatrixTools.DotProduct(ridgeHorizontalMask, m);
+            magnitude = ridgeMagnitude / 2;           
+        }
+
+        public static void ImprovedRidgeDetectionVDirection(double[,] m, out double magnitude)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != 6) || (cols != 12)) // must be square 6X12 matrix 
+            {               
+                magnitude = 0.0;
+                return;
+            }
+          
+            double[,] ridgeVerticalMask = { {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
+                                            {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
+                                            {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
+                                            {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
+                                            {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1},
+                                            {-0.1, -0.1,-0.1,-0.1,-0.1, 0.5, 0.5,-0.1,-0.1,-0.1,-0.1, -0.1}
+                                      };
+
+            var ridgeMagnitude = MatrixTools.DotProduct(ridgeVerticalMask, m);
+            magnitude = ridgeMagnitude / 2;
+        }
+
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.

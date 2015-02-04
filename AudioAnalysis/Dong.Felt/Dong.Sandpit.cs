@@ -155,14 +155,14 @@
                         featurePropertySet);
                     /// Jie request ridge detection
                     //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
-             
+
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
                     //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
                     //var outputFile = @"C:\XUEYAN\PHD research work\Second experiment\Output\MatchingResult.csv";
                     //OutputResults.MatchingSummary(inputDirectory, outputFile);
-                    
+
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
                     ///GaussianBlur
@@ -204,9 +204,9 @@
                     entry.RidgeDetectionMagnitudeThreshold,
                     entry.WindowSize,
                     entry.WindowOverlap);
-                    //entry.NeighbourhoodLength);
-                    //entry.TimeCompressRate,
-                    //entry.FreqCompressRate);
+                //entry.NeighbourhoodLength);
+                //entry.TimeCompressRate,
+                //entry.FreqCompressRate);
 
                 var fullPath = Path.Combine(outputDirectory.FullName, folderName);
 
@@ -276,30 +276,19 @@
                     var cols = spectrogram.Data.GetLength(0);
 
                     var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                    var filterVerticalRidges = PointOfInterestAnalysis.FilterSpikePointOfInterests(
-                        originalRidges,
-                        spectrogram.Data,
-                        rows,
-                        cols,
-                        9,
-                        4.0);
-                    var filterLowIntensityRidges = PointOfInterestAnalysis.FilterPointOfInterests(
-                        filterVerticalRidges,
-                        rows,
-                        cols,
-                        10);
-                    var filterNoiseRidges = PointOfInterestAnalysis.FilterNoisePointOfInterests(
-                        filterLowIntensityRidges,
-                        spectrogram.Data,
-                        rows,
-                        cols,
-                        3,
-                        3,
-                        7.0);
-                    //ClusterAnalysis.RidgeListToEvent(spectrogram, originalRidges, rows, cols, out acousticEventlist);
+                    //var filterVerticalRidges = PointOfInterestAnalysis.FilterSpikePointOfInterests(
+                    //    originalRidges,
+                    //    spectrogram.Data,
+                    //    rows,
+                    //    cols,
+                    //    9,
+                    //    4.0);
+                    var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+                    //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, filterRidges, rows, cols, out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in filterNoiseRidges)
+                    foreach (PointOfInterest poi in filterRidges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     }
@@ -311,31 +300,31 @@
                 }
             }
         }
-        
-        public static void RidgeDetectionForJie(string audioFileDirectory, 
+
+        public static void RidgeDetectionForJie(string audioFileDirectory,
             RidgeDetectionConfiguration ridgeConfig)
         {
             var csvFiles = Directory.GetFiles(audioFileDirectory, @"*.csv", SearchOption.TopDirectoryOnly);
             var csvFilesCount = csvFiles.Count();
             for (int i = 0; i < csvFilesCount; i++)
-                {
-                    var csvFileInfo = new FileInfo(csvFiles[i]);
-                    var spectrogramData = CSVResults.CSVToSpectrogramData(csvFileInfo);   
-                    var maxRow = 128;
-                    var maxCol = spectrogramData.Count();
-                    var matrix = StatisticalAnalysis.DoubleListToArray(spectrogramData, 128, maxCol / maxRow);
-                    var rows = matrix.GetLength(0);
-                    var cols = matrix.GetLength(1);
-                    var ridgeMagnitudeMatrix = new double[rows, cols];
-                    var byteMatrix = POISelection.FourDirectionsRidgeDetection(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
-                    var poiList = POISelection.SConvertRidgeIndicatorToPOIList(byteMatrix, ridgeMagnitudeMatrix);                    
-                    var outputRidgeList = Ridge.FromPointOfInterest(poiList);
-                    var FileName = new FileInfo(csvFiles[i]);
-                    string outputFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.csv");
-                    string outputFilePath = Path.Combine(audioFileDirectory, outputFileName);
-                    var outputFile = new FileInfo(outputFilePath);
-                    CSVResults.RidgeListToCSV(outputFile, outputRidgeList);
-                }
+            {
+                var csvFileInfo = new FileInfo(csvFiles[i]);
+                var spectrogramData = CSVResults.CSVToSpectrogramData(csvFileInfo);
+                var maxRow = 128;
+                var maxCol = spectrogramData.Count();
+                var matrix = StatisticalAnalysis.DoubleListToArray(spectrogramData, 128, maxCol / maxRow);
+                var rows = matrix.GetLength(0);
+                var cols = matrix.GetLength(1);
+                var ridgeMagnitudeMatrix = new double[rows, cols];
+                var byteMatrix = POISelection.FourDirectionsRidgeDetection(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
+                var poiList = POISelection.SConvertRidgeIndicatorToPOIList(byteMatrix, ridgeMagnitudeMatrix);
+                var outputRidgeList = Ridge.FromPointOfInterest(poiList);
+                var FileName = new FileInfo(csvFiles[i]);
+                string outputFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.csv");
+                string outputFilePath = Path.Combine(audioFileDirectory, outputFileName);
+                var outputFile = new FileInfo(outputFilePath);
+                CSVResults.RidgeListToCSV(outputFile, outputRidgeList);
+            }
         }
 
         /// <summary>
@@ -594,7 +583,7 @@
                 var copyFSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
                 copyTSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyTSpectrogram.Data, compressConfig.TimeCompressRate);
                 copyFSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copyFSpectrogram.Data, compressConfig.FreqCompressRate);
-                
+
                 //var data = spectrogram.Data;
                 //var maxMagnitude = data.Cast<double>().Max();
                 //var minMagnitude = data.Cast<double>().Min();

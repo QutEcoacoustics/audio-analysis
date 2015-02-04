@@ -796,8 +796,11 @@
             for (int r = 0; r < rowsMax; r++)
             {
                 for (int c = 0; c < colsMax; c++)
-                {                  
-                     result.Add(matrix[r, c]);
+                {
+                    if (matrix[r, c].RidgeMagnitude != 0)
+                    {
+                        result.Add(matrix[r, c]);
+                    }
                 }
             }
             return result;
