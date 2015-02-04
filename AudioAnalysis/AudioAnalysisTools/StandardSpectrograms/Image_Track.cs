@@ -891,15 +891,25 @@
         /// It could be generalised for any time track.
         /// </summary>
         /// <param name="fullDuration">time span of entire time track to be drawn</param>
-        /// <param name="startOffset">time at start of track </param>
+        /// <param name="startTime">time at start of track </param>
         /// <param name="trackWidth">X pixel dimension</param>
         /// <param name="trackHeight">Y pixel dimension</param>
         /// <returns></returns>
-        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startOffset, int trackWidth, int trackHeight)
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startTime, int trackWidth, int trackHeight)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
+
+            int roundedStartSeconds = (int)Math.Ceiling(startTime.TotalSeconds);
+            while ((roundedStartSeconds % 5) != 0)
+            {
+                roundedStartSeconds++;
+            }
+            TimeSpan roundedStartTime = TimeSpan.FromSeconds(roundedStartSeconds);
+            TimeSpan offsetTime = roundedStartTime - startTime;
+            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)trackWidth;
+            int pixelStartOffset = (int)(offsetTime.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
 
             TimeSpan xAxisTicInterval = CalculateGridInterval(fullDuration, trackWidth);
 
@@ -911,26 +921,24 @@
             int cols = bmp.Width;
 
             // for columns, draw in X-axis lines
-            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
             int xPixelInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
-            for (int x = 1; x < cols; x++)
+            for (int x = pixelStartOffset; x < cols; x++)
             {
 
                 if (x % xPixelInterval == 0)
                 {
-                    g.DrawLine(whitePen, x, 0, x, trackHeight);
+                    int tickPosition = x + pixelStartOffset;
+                    g.DrawLine(whitePen, tickPosition, 0, tickPosition, trackHeight);
                     TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * x);
-                    TimeSpan absoluteTS = startOffset + elapsedTimeSpan;
-                    string time = String.Format("{0}", absoluteTS);
-                    g.DrawString(time, stringFont, Brushes.White, new PointF(x, 1)); //draw time
-                    //string time = String.Format("{0}h{1:d2}m{2:d2}s", absoluteTS.Hours, absoluteTS.Minutes, absoluteTS.Seconds);
-                    //g.DrawString(time, stringFont, Brushes.White, new PointF(x, 1)); //draw time
+
+                    TimeSpan absoluteTS = roundedStartTime + elapsedTimeSpan;
+                    TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(Math.Round(absoluteTS.TotalSeconds));
+                    string time = String.Format("{0}", roundedTimeSpan);
+                    g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 1)); //draw time
                 }
             }
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
-            //g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
-            //g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
             return bmp;
         }
 
@@ -983,7 +991,7 @@
         public static TimeSpan CalculateGridInterval(TimeSpan totalDuration, int width)
         {
             double pixelDuration = totalDuration.TotalMinutes / width;
-            double[] gridIntervals = { 0.5, 1.0, 2.0, 4.0, 8.0, 15.0, 30.0, 60.0 }; //minutes
+            double[] gridIntervals = { 0.08333333, 0.1666666, 0.333333, 0.5, 1.0, 2.0, 4.0, 8.0, 15.0, 30.0, 60.0 }; //minutes
 
             double pixelInterval = 0;
             foreach (double gridInterval in gridIntervals)
