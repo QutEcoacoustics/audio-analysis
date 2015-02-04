@@ -680,6 +680,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return bmp;
         }
 
+
+        public Image DrawBlendedFalseColourSpectrogram(string colorMODE, string colorMap1, string colorMap2, double blendWt1, double blendWt2)
+        {
+            if (!this.ContainsMatrixForKeys(colorMap1) || !this.ContainsMatrixForKeys(colorMap2))
+            {
+                return null;
+            }
+
+            string[] rgbMap1 = colorMap1.Split('-');
+            string[] rgbMap2 = colorMap2.Split('-');
+
+            var matrix1 = this.GetNormalisedSpectrogramMatrix(rgbMap1[0]);
+            var matrix2 = this.GetNormalisedSpectrogramMatrix(rgbMap2[0]);
+            var redMatrix = MatrixTools.AddMatricesWeightedSum(matrix1, blendWt1, matrix2, blendWt2);
+
+            matrix1 = this.GetNormalisedSpectrogramMatrix(rgbMap1[1]);
+            matrix2 = this.GetNormalisedSpectrogramMatrix(rgbMap2[1]);
+            var grnMatrix = MatrixTools.AddMatricesWeightedSum(matrix1, blendWt1, matrix2, blendWt2);
+
+            matrix1 = this.GetNormalisedSpectrogramMatrix(rgbMap1[2]);
+            matrix2 = this.GetNormalisedSpectrogramMatrix(rgbMap2[2]);
+            var bluMatrix = MatrixTools.AddMatricesWeightedSum(matrix1, blendWt1, matrix2, blendWt2);
+
+            bool doReverseColour = colorMODE.StartsWith("POS");
+
+            Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            int herzInterval = 1000;
+            int nyquist = this.SampleRate / 2;
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, this.XTicInterval, nyquist, herzInterval);
+            return bmp;
+        }
+
         public bool ContainsMatrixForKeys(string keys)
         {
             if (this.spectrogramMatrices.Count == 0)
