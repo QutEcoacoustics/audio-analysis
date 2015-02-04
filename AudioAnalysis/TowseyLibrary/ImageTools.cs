@@ -2193,7 +2193,10 @@ namespace TowseyLibrary
             return (Image)colorScale;
         }
 
-
+        /// <summary>
+        /// returns a colour array of 256 gray scale values
+        /// </summary>
+        /// <returns></returns>
         public static Color[] GrayScale()
         {
             int max = 256;
