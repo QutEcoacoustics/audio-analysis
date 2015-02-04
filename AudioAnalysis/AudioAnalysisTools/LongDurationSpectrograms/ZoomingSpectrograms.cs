@@ -269,10 +269,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //range = max - min;
 
             // this is a normalisastion hack to darken the frame derived spectrograms
-            double min = -110;
+            double min = -120;
             double max = -20;
             spectralSelection = MatrixTools.boundMatrix(spectralSelection, min, max);
-            Image spectrogramImage = ImageTools.DrawNormalisedMatrix(spectralSelection);
+            spectralSelection = DataTools.normalise(spectralSelection);
+            var cch = new ColourCubeHelix(ColourCubeHelix.GRAYSCALE);
+            Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(spectralSelection);
 
             Graphics g2 = Graphics.FromImage(spectrogramImage);
 

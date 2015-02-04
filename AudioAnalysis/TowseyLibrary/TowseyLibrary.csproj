@@ -242,6 +242,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoAndCrossCorrelation.cs" />
+    <Compile Include="ColourCubeHelix.cs" />
     <Compile Include="ConfigDict.cs" />
     <Compile Include="ConfigDictionary.cs" />
     <Compile Include="HoughTransform.cs" />
