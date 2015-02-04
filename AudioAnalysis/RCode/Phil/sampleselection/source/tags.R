@@ -158,7 +158,7 @@ WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time 
     }
     
     if (!is.null(end.date.time)) {
-        where.statement <- c(where.statement, paste0("end_date_time <= ", end.date.time))
+        where.statement <- c(where.statement, paste0("start_date_time <= ", end.date.time))
     }  
     
     if (no.duplicates) {
