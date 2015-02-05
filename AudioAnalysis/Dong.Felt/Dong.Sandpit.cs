@@ -283,15 +283,15 @@
                     //    cols,
                     //    9,
                     //    4.0);
-                    var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+                    //var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
                     //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, filterRidges, rows, cols, out acousticEventlist);
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, originalRidges, rows, cols, out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in filterRidges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in filterRidges)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
                     string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
