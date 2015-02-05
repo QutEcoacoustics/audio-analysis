@@ -286,6 +286,16 @@ MinToTime <- function (min, midnight.is.1st.min = FALSE) {
     return(paste(h, m, '00', sep = ':'))
 }
 
+TimeToMin <- function (time.string) {
+    # given a time string or a date time string, will extract the minute part
+    is.time <- nchar(time.string) == 8
+    is.datetime <- nchar(time.string) == 11+8
+    res <- rep(NA, length(time.string))
+    res[is.time] <- substr(time.string[is.time], 4, 5)
+    res[is.datetime] <- substr(time.string[is.datetime], 11+4, 11+5)
+    return(as.integer(res))  
+}
+
 
 FixDate <- function (date) {
     require('stringr')
