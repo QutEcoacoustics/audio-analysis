@@ -469,11 +469,14 @@ namespace Dong.Felt.Representations
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
                                  {
                                      IntensityThreshold = 0.5,
-                                     SmallAreaThreshold = 30,
+                                     SmallAreaThreshold = 10,
                                      BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
                                      DoNoiseRemoval = false,
-                                     LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
-                                     LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
+                                     //LargeAreaHorizontal = Default.SeparateStyle.Skip,
+                                     //LargeAreaVeritical = Default.SeparateStyle.Skip,
+                                     LargeAreaHorizontal = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(1000, 20, 10, false)),
+                                     LargeAreaVeritical = Default.SeparateStyle.Skip,
+                                     //LargeAreaVeritical = Default.SeparateStyle.NewVertial(new Default.SeparateParameters(2000, 20, 10, false))
                                  };
             var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);     
              //=> to call a anonymous method
@@ -487,9 +490,7 @@ namespace Dong.Felt.Representations
                         sonogram.FrameDuration,
                         sonogram.FrameStep,
                         sonogram.FrameCount);
-                                //{
-                                //    HitColour = Color.Black
-                                //};
+                    e.BorderColour = Color.FromArgb(128, Color.Blue);
                     return e;
                 }).ToList();           
             acousticEvents = events;          
