@@ -116,22 +116,27 @@ namespace TowseyLibrary
             double al = hslc1.Lit;
             double bl = hslc2.Lit - al;
 
-      if (Double.IsNaN(bs)) 
-      {
-          bs = 0; 
-          as_ = Double.IsNaN(as_) ? hslc2.Sat : as_;
-      }
+            if (Double.IsNaN(bs)) 
+            {
+                bs = 0; 
+                as_ = Double.IsNaN(as_) ? hslc2.Sat : as_;
+            }
 
-      if (Double.IsNaN(bh))
-      {
-          bh = 0;
-          ah = Double.IsNaN(ah) ? hslc2.Hue : ah;
-      }
+            if (Double.IsNaN(bh))
+            {
+                bh = 0;
+                ah = Double.IsNaN(ah) ? hslc2.Hue : ah;
+            }
 
+      //return function(double t) 
+      // {
+      //  var h = ah + bh * t,
+      //      l = Math.pow(al + bl * t, γ),
+      //      a = (as + bs * t) * l * (1 - l);
       int t = 1;
       double h = ah + bh * t,
-            l = Math.Pow(al + bl * t, gamma),
-            a = (as_ + bs * t) * l * (1 - l);
+            ll = Math.Pow(al + bl * t, gamma),
+            a = (as_ + bs * t) * ll * (1 - ll);
 
 
       //return "#"
