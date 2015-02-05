@@ -1272,18 +1272,22 @@ namespace Dong.Felt
 
             foreach (var p in poiList)
             {
+                // OrientationType = 4
                 if (p.OrientationCategory == (int)Direction.North)
                 {
                     poiVerticalGroup.Add(p);
                 }
+                // OrientationType = 0
                 if (p.OrientationCategory == (int)Direction.East)
                 {
                     poiHorizontalGroup.Add(p);
                 }
+                // OrientationType = 2
                 if (p.OrientationCategory == (int)Direction.NorthEast)
                 {
                     poiPDGroup.Add(p);
                 }
+                // OrientationType = 6
                 if (p.OrientationCategory == (int)Direction.NorthWest)
                 {
                     poiNDGroup.Add(p);
