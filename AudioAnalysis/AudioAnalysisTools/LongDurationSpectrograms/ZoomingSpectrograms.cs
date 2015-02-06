@@ -30,7 +30,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // THREE BASIC PARAMETERS
             TimeSpan focalTime = TimeSpan.FromMinutes(16);
-            int imageWidth = 1600;
+            int imageWidth = 1500;
             TimeSpan dataScale = config.IndexCalculationDuration;
 
             string fileStem = config.FileName;
@@ -40,7 +40,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, double[,]> spectra = ReadCSVFiles(config.InputDirectoryInfo, fileStem, keys);
 
             // standard scales in seconds per pixel.
-            double[] scales = {0.25, 0.5, 1, 2, 5, 10, 20, 60 };
+            double[] scales = {0.25, 0.5, 1, 2, 6, 12, 24, 60 };
             //double[] scales = { 0.25, 0.5, 1, 2, 4, 8, 16, 30, 60 };
 
             var imageList = new List<Image>();
@@ -269,11 +269,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //range = max - min;
 
             // this is a normalisastion hack to darken the frame derived spectrograms
-            double min = -120;
-            double max = -20;
+            double min = -100;
+            double max = -40;
             spectralSelection = MatrixTools.boundMatrix(spectralSelection, min, max);
             spectralSelection = DataTools.normalise(spectralSelection);
-            var cch = new ColourCubeHelix(ColourCubeHelix.GRAYSCALE);
+            //var cch = new CubeHelix(ColourCubeHelix.DEFAULT);
+            var cch = CubeHelix.GetCubeHelix();
             Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(spectralSelection);
 
             Graphics g2 = Graphics.FromImage(spectrogramImage);
@@ -537,10 +538,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
             AudioAnalysisTools.StandardSpectrograms.SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
-
-            int trackHeight = 20;
-            int imageHt = bmp1.Height + trackHeight + trackHeight;
+            int trackHeight = 22;
             Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startOffset, bmp1.Width, trackHeight);
+            int imageHt = bmp1.Height + titleBar.Height + trackHeight;
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);

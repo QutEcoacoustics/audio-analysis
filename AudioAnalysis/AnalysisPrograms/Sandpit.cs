@@ -41,7 +41,12 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            if (true)  // construct 3Dimage of audio
+            if (true)  // 
+            {
+                CubeHelix.DrawTestImage();
+                LoggedConsole.WriteLine("FINSIHED");
+            }
+            if (false)  // construct 3Dimage of audio
             {
                 //TowseyLibrary.Matrix3D.TestMatrix3dClass();
                 LDSpectrogram3D.Main(null);

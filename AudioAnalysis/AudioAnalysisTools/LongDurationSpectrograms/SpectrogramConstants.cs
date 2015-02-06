@@ -43,6 +43,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static TimeSpan MINUTE_OFFSET       = TimeSpan.Zero;    // assume recording starts at zero minute of day i.e. midnight
         public static int SAMPLE_RATE = AppConfigHelper.GetInt(AppConfigHelper.DefaultTargetSampleRateKey);  // default value - after resampling
         public const int FRAME_WIDTH = 512;    // default value - from which spectrogram was derived
-        public const int HEIGHT_OF_TITLE_BAR = 20;
+        public const int HEIGHT_OF_TITLE_BAR = 24;
     }
 }
