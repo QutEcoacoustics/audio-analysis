@@ -95,9 +95,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string FileName { get; set; }
 
         /// <summary>
-        ///  default value for frame width from which spectrogram was derived. Assume no frame overlap.
+        ///  default value for frame width from which spectrogram was derived.
         /// </summary>
         public int FrameWidth { get; set; }
+
+        /// <summary>
+        ///  default value for frame step from which spectrogram was derived. There may be overlap.
+        /// </summary>
+        public int FrameStep { get; set; }
 
         [YamlIgnore]
         public DirectoryInfo InputDirectoryInfo { get; set; }

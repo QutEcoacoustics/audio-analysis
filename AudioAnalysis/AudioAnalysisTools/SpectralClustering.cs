@@ -415,11 +415,12 @@ namespace AudioAnalysisTools
             string imageFname = "test3.png";
             string imagePath = Path.Combine(outputDir, imageFname);
             int frameSize = 512;
-            double _windowOverlap = 0.0;
+            int frameStep = 512;
+            double frameOverlap = 0.0; // alternative to step
 
             //NORMAL WAY TO DO THINGS
             var recording = new AudioRecording(wavFilePath); // get recording segment
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = _windowOverlap };
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = frameOverlap };
             config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             Plot scores = null;
@@ -431,7 +432,7 @@ namespace AudioAnalysisTools
             //#######################################################################################################################################
             // get amplitude spectrogram and remove the DC column ie column zero.
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, _windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
             double[,] spectrogramData = results2.amplitudeSpectrogram;
             double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
 
