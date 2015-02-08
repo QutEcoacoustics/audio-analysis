@@ -65,17 +65,17 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="signalEnvelope">envelope of the original signal</param>
         /// <param name="audioDuration"></param>
-        /// <param name="frameDuration"></param>
+        /// <param name="frameStepDuration"></param>
         /// <param name="spectrogram">the original amplitude spectrum BUT noise reduced</param>
         /// <param name="lowFreqBound"></param>
         /// <param name="midFreqBound"></param>
         /// <param name="binWidth">derived from original nyquist and window/2</param>
         /// <returns></returns>
-        public static Dictionary<string, double> GetIndices(double[] signalEnvelope, TimeSpan audioDuration, TimeSpan frameDuration, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
+        public static Dictionary<string, double> GetIndices(double[] signalEnvelope, TimeSpan audioDuration, TimeSpan frameStepDuration, double[,] spectrogram, int lowFreqBound, int midFreqBound, double binWidth)
         {
             int chunkDuration = 10; //seconds - assume that signal is not less than one minute duration            
  
-            double framesPerSecond = 1 / frameDuration.TotalSeconds;
+            double framesPerSecond = 1 / frameStepDuration.TotalSeconds;
             int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
             int framesPerChunk = (int)(chunkDuration * framesPerSecond);
             int nyquistBin = spectrogram.GetLength(1);
@@ -94,7 +94,7 @@ namespace AudioAnalysisTools.Indices
                 if (chunkSignal.Length < 50) continue;  //an arbitrary minimum length
                 double[,] chunkSpectro = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin - 1);
 
-                RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, frameDuration, binWidth);
+                RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, frameStepDuration, binWidth);
                 string classification = RainIndices.ConvertAcousticIndices2Classifcations(rainIndices);
                 classifications[i] = classification;
 

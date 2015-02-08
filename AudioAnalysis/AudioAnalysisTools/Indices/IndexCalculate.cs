@@ -113,9 +113,16 @@ namespace AudioAnalysisTools.Indices
 
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-            double windowOverlap = config[AnalysisKeys.FrameOverlap];
-            double frameDuration = frameSize * (1 - windowOverlap) / (double)sampleRate;
-            TimeSpan frameTimeSpan = TimeSpan.FromTicks((long)(frameDuration * TimeSpan.TicksPerSecond));
+            int frameStep = (int?)config[AnalysisKeys.FrameStep] ?? frameSize; // default = zero overlap
+
+            if (frameStep == frameSize) // i.e. overlap = zero
+            {
+                double windowOverlap = (double?)config[AnalysisKeys.FrameOverlap] ?? 0.0;
+                if (windowOverlap != 0.0) frameStep = (int)(frameSize * (1 - windowOverlap));
+            }
+
+            double frameStepDuration = frameStep / (double)sampleRate;
+            TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
             // get frequency parameters for the analysis
             int freqBinCount = frameSize / 2;
@@ -155,7 +162,7 @@ namespace AudioAnalysisTools.Indices
                 subsegmentRecording = new AudioRecording(wr);
             }
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, windowOverlap);
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
 
 
             // set the BACKGROUND NOISE SUBSEGMENT = total segment if its length >= 60 seconds
@@ -167,7 +174,7 @@ namespace AudioAnalysisTools.Indices
                 bgnSubsegmentRecording = new AudioRecording(wr);
             }
             // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
-            var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnSubsegmentRecording, frameSize, windowOverlap);
+            var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnSubsegmentRecording, frameSize, frameStep);
             // i. convert signal to dB and subtract background noise. Noise SDs to calculate threshold = ZERO by default
             double signalBGN = NoiseRemoval_Modal.CalculateBackgroundNoise(dspOutput2.Envelope);
             // ii.: calculate the noise profile from the amplitude sepctrogram
@@ -223,7 +230,7 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.Snr = dBArray.Max(); 
 
             // ii: ACTIVITY and EVENT STATISTICS for NOISE REDUCED ARRAY
-            var activity = ActivityAndCover.CalculateActivity(dBArray, frameTimeSpan);
+            var activity = ActivityAndCover.CalculateActivity(dBArray, frameStepTimeSpan);
 
             // fraction of frames having acoustic activity 
             summaryIndexValues.Activity = activity.fractionOfActiveFrames;
@@ -310,7 +317,7 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.EntropyPeaks = 1 - AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin);
 
             // vi: calculate RAIN and CICADA indices.
-            Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
+            Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
 
             summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
             summaryIndexValues.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
@@ -335,7 +342,7 @@ namespace AudioAnalysisTools.Indices
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
             double dBThreshold = 2.0; // dB THRESHOLD for calculating spectral coverage
-            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameTimeSpan, LowFreqBound, MidFreqBound, freqBinWidth);
+            var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, LowFreqBound, MidFreqBound, freqBinWidth);
 
             // TODO TODO TODO TODO TODO TODO  etc 
             // AT: what's all ^^^that^^^ about ??????
@@ -349,10 +356,10 @@ namespace AudioAnalysisTools.Indices
 
 
             // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
-            double framesPerSecond = 1 / frameTimeSpan.TotalSeconds;
+            double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
             dBThreshold = 3.0;
             // FreqBinWidth can be accessed, if required, through dspOutput.FreqBinWidth,
-            SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesPerSecond, dBThreshold);
+            SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesStepsPerSecond, dBThreshold);
             spectra.SPT = sptInfo.spSpectrum;
 
             summaryIndexValues.AvgSptDuration = sptInfo.avTrackDuration;

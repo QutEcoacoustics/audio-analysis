@@ -14,7 +14,8 @@ using log4net.Repository.Hierarchy;
 using TowseyLibrary;
 using Acoustics.Shared.Csv;
 
-
+//
+// Action code for this analysis = ZoomingSpectrograms
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     public static class ZoomingSpectrograms
@@ -40,25 +41,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, double[,]> spectra = ReadCSVFiles(config.InputDirectoryInfo, fileStem, keys);
 
             // standard scales in seconds per pixel.
-            double[] scales = {0.25, 0.5, 1, 2, 6, 12, 24, 60 };
-            //double[] scales = { 0.25, 0.5, 1, 2, 4, 8, 16, 30, 60 };
+            double[] imageScales = {0.2, 0.6, 1, 2, 6, 12, 24, 60 };
 
             var imageList = new List<Image>();
 
             for (int i = 7; i >= 0; i--)
             {
-                TimeSpan imageScale = TimeSpan.FromSeconds(scales[i]);
-                //double scale = scales[i];
-                //TimeSpan imageScale = TimeSpan.FromSeconds(dataScale.TotalSeconds * scale);
+                TimeSpan imageScale = TimeSpan.FromSeconds(imageScales[i]);
                 Image image = DrawIndexSpectrogramAtScale(config, indicesConfigPath, focalTime, dataScale, imageScale, imageWidth, spectra);
                 if (image != null) imageList.Add(image);
             }
 
 
             // derive spectrograms from standard spectral frames
-            double frameDurationInSeconds = config.FrameWidth / (double)config.SampleRate;
-            TimeSpan frameScale = TimeSpan.FromTicks((long)Math.Round(frameDurationInSeconds * 10000000));
-            int[] compressionFactor = { 1, 2, 5, 11, 22 };
+            //double frameDurationInSeconds = config.FrameWidth / (double)config.SampleRate;
+            double frameStepInSeconds     = config.FrameStep / (double)config.SampleRate;
+            TimeSpan frameScale = TimeSpan.FromTicks((long)Math.Round(frameStepInSeconds * 10000000));
+            //int[] compressionFactor = { 1, 2, 4, 11, 22 };
+            int[] compressionFactor = { 1, 2, 4 };
             int maxCompression = compressionFactor[compressionFactor.Length - 1];
             TimeSpan maxImageDuration = TimeSpan.FromTicks(maxCompression * imageWidth * frameScale.Ticks);
             fileStem =  "TEST_TUITCE_20091215_220004";
@@ -68,7 +68,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes)); 
 
             List<double[]> frameData = ReadFrameData(config, startTimeOfMaxImage, maxImageDuration, config.InputDirectoryInfo, fileStem);
-
             for (int i = 2; i >= 0; i--)
             {
                 int factor = compressionFactor[i];
@@ -141,7 +140,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // var mergedSpectra = CombineSpectrogramsForScale(spectralSelection, imageScale, dataScale);
 
-            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            // These parameters define the colour maps and appearance of the false-colour spectrogram
             string colorMap1 = "ACI-ENT-EVN";
             string colorMap2 = "BGN-AVG-CVR";
 

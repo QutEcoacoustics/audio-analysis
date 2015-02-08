@@ -62,17 +62,17 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// reutrns the number of active frames and acoustic events and their average duration in milliseconds
+        /// Returns the number of active frames and acoustic events and their average duration in milliseconds
         /// Only counts an event if it is LONGER than one frame. 
         /// Count events as number of transitions from active to non-active frame
         /// </summary>
         /// <param name="activeFrames"></param>
-        /// <param name="frameDuration">frame duration in seconds</param>
+        /// <param name="frameStepDuration">frame duration in seconds</param>
         /// <returns></returns>
-        public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameDuration)
+        public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration)
         {
             // minimum frame length for recognition of a valid event
-            int minFrameLength = (int)Math.Round(ActivityAndCover.DEFAULT_MinimumEventDuration.TotalMilliseconds / frameDuration.TotalMilliseconds);
+            int minFrameCount = (int)Math.Round(ActivityAndCover.DEFAULT_MinimumEventDuration.TotalMilliseconds / frameStepDuration.TotalMilliseconds);
 
             bool[] activeFrames = new bool[dBarray.Length];
             double activeAvDB = 0.0;
@@ -107,14 +107,14 @@ namespace AudioAnalysisTools
 
             //bool[] events2 = {false, false, true, true, true, false, true, true, false, false, true, true, true}; //3 events; lengths = 3, 2, 3
             List<int> eventList = DataTools.GetEventLengths(events);
-            var listOfFilteredEvents = eventList.Where(x => x >= minFrameLength);
+            var listOfFilteredEvents = eventList.Where(x => x >= minFrameCount);
             int eventCount = listOfFilteredEvents.Count();
             int eventSum   = listOfFilteredEvents.Sum();
 
             if (eventCount == 0)
                 return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, 0, TimeSpan.Zero);
 
-            TimeSpan avEventDuration = TimeSpan.FromSeconds((frameDuration.TotalSeconds * eventSum) / (double)eventCount);   //av segment duration in milliseconds
+            TimeSpan avEventDuration = TimeSpan.FromSeconds((frameStepDuration.TotalSeconds * eventSum) / (double)eventCount);   //av segment duration in milliseconds
 
             return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount, avEventDuration);
         }
@@ -131,7 +131,7 @@ namespace AudioAnalysisTools
         /// <param name="nyquist">Herz</param>
         /// <param name="binWidth">Herz per bin i.e. column in spectrogram - spectrogram rotated wrt to normal view.</param>
         /// <returns></returns>
-        public static SpectralActivity CalculateSpectralEvents(double[,] spectrogram, double bgThreshold, TimeSpan frameDuration, int lowFreqBound, int midFreqBound, double binWidth)
+        public static SpectralActivity CalculateSpectralEvents(double[,] spectrogram, double bgThreshold, TimeSpan frameStepDuration, int lowFreqBound, int midFreqBound, double binWidth)
         {
             //calculate boundaries between hi, mid and low frequency spectrum
             //int freqBinCount = spectrogram.GetLength(1);
@@ -140,7 +140,7 @@ namespace AudioAnalysisTools
             int highFreqBinIndex = spectrogram.GetLength(1) - 1; // avoid top row which can have edge effects
             int rows = spectrogram.GetLength(0); // frames
             int cols = spectrogram.GetLength(1); // # of freq bins
-            double recordingDurationInSeconds = rows * frameDuration.TotalSeconds;
+            double recordingDurationInSeconds = rows * frameStepDuration.TotalSeconds;
 
             SummaryActivity activity;
             double[] coverSpectrum = new double[cols];
@@ -149,7 +149,7 @@ namespace AudioAnalysisTools
             {
                 double[] bin = MatrixTools.GetColumn(spectrogram, c); // get the freq bin containing dB values
 
-                activity = ActivityAndCover.CalculateActivity(bin, frameDuration);
+                activity = ActivityAndCover.CalculateActivity(bin, frameStepDuration);
                 //bool[] a1 = activity.activeFrames;
                 //int a2 = activity.activeFrameCount;
                 coverSpectrum[c] = activity.fractionOfActiveFrames; 

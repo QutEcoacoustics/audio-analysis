@@ -25,6 +25,7 @@ namespace AudioAnalysisTools
         public const string DominantFrequency = "DominantFrequency";
         public const string DoSegmentation = "DoSegmentation";
         public const string FrameLength = "FrameLength";
+        public const string FrameStep = "FrameStep";
         public const string FrameOverlap = "FrameOverlap";
         public const string IndexCalculationDuration = "IndexCalculationDuration";
         public const string IntensityThreshold = "IntensityThreshold";
