@@ -300,7 +300,8 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(); // default values config
             sonoConfig.SourceFName = recording.FilePath;
             sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-            sonoConfig.WindowOverlap = (double?)analysisSettings.Configuration[AnalysisKeys.FrameOverlap] ?? 0.0; // the default
+            sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
+            sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
             //sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
             //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);

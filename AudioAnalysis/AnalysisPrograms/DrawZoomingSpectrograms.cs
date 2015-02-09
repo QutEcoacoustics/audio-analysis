@@ -92,9 +92,17 @@ namespace AnalysisPrograms
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
             var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
+            // need to set the data scale. THis info not available at present
+            config.FrameStep = 441;
+            config.IndexCalculationDuration = TimeSpan.FromSeconds(0.2);
+            //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
+
+
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(fiSpectrogramConfig);
 
+            // USE THE Towsey.Acoustic file that contains parameters for the analysis.
+            //FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "Towsey.Acoustic.yml"));
 
             return new Arguments
             {
@@ -123,13 +131,12 @@ namespace AnalysisPrograms
 
             }
 
+            string fileStem = "TEST_TUITCE_20091215_220004";
             var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
-            // need to set the data scale. THis info not available at present
-            config.FrameStep = 441;
-            config.IndexCalculationDuration = TimeSpan.FromSeconds(0.2);
-            //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
+            TimeSpan focalTime = TimeSpan.FromMinutes(16);
+            int imageWidth = 1500;
 
-            ZoomingSpectrograms.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig);
+            ZoomingSpectrograms.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig, focalTime, imageWidth);
         }
 
 

@@ -113,13 +113,11 @@ namespace AudioAnalysisTools.Indices
 
             // get frame parameters for the analysis
             int frameSize = (int?)config[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-            int frameStep = (int?)config[AnalysisKeys.FrameStep] ?? frameSize; // default = zero overlap
-
-            if (frameStep == frameSize) // i.e. overlap = zero
-            {
-                double windowOverlap = (double?)config[AnalysisKeys.FrameOverlap] ?? 0.0;
-                if (windowOverlap != 0.0) frameStep = (int)(frameSize * (1 - windowOverlap));
-            }
+            int frameStep = frameSize; // default = zero overlap
+            //WARNING: DO NOT USE Frame Overlap when calculating acoustic indices. 
+            //          It yields ACI, BGN, AVG and EVN results that are significantly different from the default.
+            //          I have not had time to check if the difference is meaningful. Best to avoid.
+            //double windowOverlap = 0.0;
 
             double frameStepDuration = frameStep / (double)sampleRate;
             TimeSpan frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
@@ -273,9 +271,7 @@ namespace AudioAnalysisTools.Indices
 
             // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             var spectra = result.SpectralIndexValues;
-            double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
-            
-            // store ACI spectrum
+            double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);           
             spectra.ACI = aciSpectrum;
 
             // remove low freq band of ACI spectrum and store average ACI value

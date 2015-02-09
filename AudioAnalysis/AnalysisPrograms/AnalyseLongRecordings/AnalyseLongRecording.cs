@@ -77,6 +77,12 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
 
+
+            // copy the config file to the output directory so user can later refer to the parameters.
+            var configDestination = new FileInfo(Path.Combine(outputDirectory.FullName, configFile.Name));
+            if (configDestination.Exists) configDestination.Delete();
+            File.Copy(configFile.FullName, configDestination.FullName);
+
             if (!sourceAudio.Exists)
             {
                 Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
