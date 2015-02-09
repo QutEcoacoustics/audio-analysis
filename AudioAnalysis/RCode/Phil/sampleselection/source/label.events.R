@@ -7,29 +7,163 @@ LabelEvents.2 <- function (events = NULL) {
     
     if (is.null(events)) {
         events <- ReadOutput('all.events')
+        events$data <- EventTimeBounds(events$data)
     }
-    # for debugging, to speed things up, limit the number of events
-    if (!is.null(limit) && nrow(events$data) > limit) {
-        events$data <- events$data[sample.int(nrow(events$data), limit),]
-    }   
     
-    event.time.bounds <- EventTimeBounds(events$data)
+    dependencies <- list(all.events = events$version)
+    events <- events$data
+
     fields <- c('id', 'species_id', 'site', 'start_date_time_char', 'end_date_time_char', 'start_frequency', 'end_frequency', 'start_date', 'start_time')
     
-    sites <- unique(events$data$site)
-    tags <- ReadTagsFromDb(fields, sites, min(event.time.bounds$start.date.time), max(event.time.bounds$end.date.time))
+
+    tags <- ReadTagsFromDb(fields, unique(events$site), min(events$start.date.time), max(events$end.date.time))
+
+    event.labels <- ReadOutput('event.labels', dependencies = dependencies, false.if.missing = TRUE)
+    if (!is.list(event.labels)) {
+        event.labels <- data.frame(event.id = events$event.id, species.id = rep(NA, nrow(events)), tag.id = rep(NA, nrow(events)))
+        WriteOutput(event.labels, 'event.labels', dependencies = dependencies)
+    } else {
+        event.labels <- event.labels$data
+    }
+    
     # add a 'min' column based on the 'time' column
     tags$min <- TimeToMin(tags$start_time)
-    
-    
-    species.ids <- unique(tags$species_id)
-    cur.species.count <- 0
-    cur.species.id <- 1 
+    # extend the bounds
+    tags <- ExtendTagBounds(tags)
     
 
     
+    enough = FALSE
+    
+    while (!enough) {
+        
+        # remove tags that have already been checked
+        tags <- tags[!tags$id %in% event.labels$tag.id, ]
+        
+        # species ids for annotations which are still available for checking
+        species.ids <- unique(tags$species_id)
+        
+        # choose an annotation for a random species 
+        sp.id <- sample(species.ids, 1)
+        species.tags <- tags[tags$species_id == sp.id,]
+        cur.tag <- species.tags[sample.int(nrow(species.tags),1),]
+        
+        nearby.event.selection <- GetNearbyEvents(events, cur.tag)
+        
+        nearby.events <- events[nearby.event.selection,]
+        
+        if (nrow(nearby.events) > 0) {
+            event.labels <- LabelEventsForTag(cur.tag, nearby.events)     
+        } else {
+            # most probably because we don't have AED results for this day
+            Report("0 events found")
+        }
+        
+
+        
+        
+    }
+    
+    
+    cur.species.count <- 0
+    cur.species.id <- 1 
+    
+   
+    
     
 }
+
+LabelEventsForTag <- function (tag, events) {
+    
+    margin <- 1
+    tag.start.datetime <- as.POSIXlt(tag$start_date_time_char)
+    tag.end.datetime <- as.POSIXlt(tag$end_date_time_char)
+    spectro.start <- tag.start.datetime - margin
+    tag.duration <- difftime(tag.end.datetime, 
+                             tag.end.datetime, 
+                             units = 'secs')
+    spectro.duration <- tag.duration + margin*2
+    
+    date <- strftime(tag.start.datetime, '%Y-%m-%d')
+    spectro.start.sec <- as.numeric(tag.start.datetime - as.POSIXlt(date)) # number of seconds from start of day
+    
+    events.start.datetime <- as.POSIXlt(events$start.date.time.exact)
+    events.start.offset <- difftime(events.start.datetime, spectro.start, units = 'secs') - margin
+    
+    event.col <- 'red'
+    tag.col <- 'white'
+    
+    # events rects
+    rects <- data.frame(start.sec = events.start.offset, duration = events$duration, top.f = as.numeric(events$top.f), bottom.f = as.numeric(events$bottom.f), rect.color = event.col)
+    tag.rect <- data.frame(start.sec = margin, duration = tag.duration, top.f = as.numeric(tag$end_frequency), bottom.f = as.numeric(tag$start_frequency), rect.color = tag.col)
+    
+    
+    rects <- rbind(rects, tag.rect)
+    
+    spectro <- Sp.CreateTargeted(site = tag$site, start.date = date, start.sec = spectro.start.sec, duration = spectro.duration, rects = rects)
+    Sp.Draw(spectro, scale = 1)
+    
+    
+    
+    
+    
+}
+
+
+GetNearbyEvents <- function (events, tag) {
+    
+    # extend the tag by this much for comparison
+    margin <- 0.5
+    
+     
+    # find all the events which fall within this annotation
+    # filters
+    f1 <- events$site == tag$site
+    f2 <- tag$start.date.time.extended < events$start.date.time.exact
+    f3 <- tag$end.date.time.extended > events$end.date.time.exact
+    f4 <- tag$bottom.f.extended > events$bottom.f
+    f5 <- tag$top.f.extended > events$top.f
+    
+    matching <- f1 & f2 & f3 & f4 & f5
+    
+    # maybe could be more efficient by filtering one at a time?
+    
+    return(matching)
+    
+}
+
+ExtendTagBounds <- function (tags, time.extension = 0.5, frequency.extension = 50) {
+    # when matching events which fit within an annotation, 
+    # extend the annotation a bit to capture ones which overlap a little
+    
+    tags$start.date.time.extended <- ExtendDateTime(tags$start_date_time_char, -time.extension)
+    tags$end.date.time.extended <- ExtendDateTime(tags$end_date_time_char, time.extension)
+    tags$bottom.f.extended <- as.numeric(tags$start_frequency) - frequency.extension
+    tags$top.f.extended <- as.numeric(tags$end_frequency) + frequency.extension
+    
+    return(tags)
+    
+    
+}
+
+ExtendDateTime <- function (date.times, change) {
+    # given date.times in the form eg 2010-10-13 12:13:14.123
+    # adds the given number of seconds
+    # minutes are not changed. if the new number of seconds goes above 60 it will be set to 60.000
+    # if it goes below 0 it will be set to 00.000
+    
+    seconds <- substr(date.times, 18, 23)
+    new.seconds <- as.numeric(seconds) + change
+    new.seconds[new.seconds > 60] <- 60
+    new.seconds[new.seconds < 0] <- 0
+    new.seconds <- sprintf('%06.3f', new.seconds)
+    substr(date.times, 18, 23) <- new.seconds
+    return(date.times)
+}
+
+
+
+
 
 ReadEventsForLabeling <- function () {
     events <- ReadOutput('all.events')
@@ -130,23 +264,24 @@ LabelEventsSubset <- function (events, tags) {
                 
                 # find all the events which fall within this annotation
                 # filters
-                f2 <- tag$start_date_time_char < min.events$start.date.time
-                f3 <- tag$end_date_time_char > min.events$end.date.time
+                f2 <- tag$start_date_time_char < min.events$start.date.time.exact
+                f3 <- tag$end_date_time_char > min.events$end.date.time.exact
                 f4 <- tag$start_frequency > min.events$bottom.f
                 f5 <- tag$end_frequency > min.events$top.f
                 
                 matching <- f2 & f3 & f4 & f5
                 
-                min.species.ids[matching] <- tag$species.id
+                min.species.ids[matching] <- tag$species_id
                 min.tag.ids[matching] <- tag$id
                 
             }
             
+            species.ids[min.selection] <- min.species.ids
+            tag.ids[min.selection] <- min.tag.ids 
             
         }  # if there are any tags in the min
         
-        species.ids[min.selection] <- min.species.ids
-        tag.ids[min.selection] <- min.tag.ids
+
         
     } # for each min
     

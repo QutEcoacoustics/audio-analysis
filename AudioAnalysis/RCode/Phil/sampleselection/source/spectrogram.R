@@ -428,7 +428,20 @@ Sp.Label <- function (spectro) {
     
 }
 
+Sp.AddRects <- function (spectro, start.sec, duration, top.f, bottom.f, col) { 
+    rects <- data.frame(start.sec = start.sec, duration = duration, top.f = top.f, bottom.f = bottom.f, col = col)
+    if (is.data.frame(spectro$rects) && nrow(spectro.rects) > 0) {
+        spectro$rects <- rbind(spectro$rects, rects)
+    } else {
+        spectro$rects <- rects
+    }
+    return(spectro)
+}
+
 Sp.Rect <- function (spectro, rect) {
+    # draws a rect associated with a spectrogram
+    # rect is a list with the properties
+    # start.sec, duration, top.f, bottom.f, col
     
     #  top.pix <- ft * spectro[['hz.per.bin']]
     #  bottom.pix <- fb * spectro[['hz.per.bin']]
