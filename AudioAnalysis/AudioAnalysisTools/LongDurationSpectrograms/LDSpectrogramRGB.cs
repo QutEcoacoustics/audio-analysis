@@ -337,7 +337,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
 
             // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 3); // -3 to avoid anomalies in top freq bin
+            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1); 
             return matrix;
         }
 

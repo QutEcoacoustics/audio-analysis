@@ -22,16 +22,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     {
 
 
-        public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath)
+        public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, TimeSpan focalTime, int imageWidth)
         {
             LdSpectrogramConfig config = longDurationSpectrogramConfig;
 
             //Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             //dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
-            // THREE BASIC PARAMETERS
-            TimeSpan focalTime = TimeSpan.FromMinutes(16);
-            int imageWidth = 1500;
             TimeSpan dataScale = config.IndexCalculationDuration;
 
             string fileStem = config.FileName;
@@ -537,7 +534,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
             AudioAnalysisTools.StandardSpectrograms.SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
-            int trackHeight = 22;
+            int trackHeight = 20;
             Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startOffset, bmp1.Width, trackHeight);
             int imageHt = bmp1.Height + titleBar.Height + trackHeight;
 

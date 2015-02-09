@@ -31,6 +31,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public TimeSpan Duration { get; set; }
 
         public int WindowSize { get; set; }
+        public int WindowStep { get; set; }       // Exact frame step in samples - an alternative to overlap
         public double WindowOverlap { get; set; } // Percent overlap of frames
         public double WindowPower   { get; set; } // Power of the Hamming Window
 
