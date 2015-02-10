@@ -743,7 +743,6 @@ namespace Dong.Felt.SpectrogramDrawing
                     foreach (PointOfInterest poi in ridges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)sonogram.Configuration.FreqBinCount);
-
                     }
                     var FileName = new FileInfo(audioFiles[i]);
                     string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Filtered Gaussian blur-improved.png");

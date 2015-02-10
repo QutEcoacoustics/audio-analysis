@@ -461,15 +461,15 @@ namespace Dong.Felt.Representations
         {
             var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             /////call AED to group ridges into event-based on ridge
-            //var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
-            //var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
+            var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
+            var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
 
             /// based on spectrogram intensity matrix directly
-            var rotateDoubleMatrix = sonogram.Data;
+            //var rotateDoubleMatrix = sonogram.Data;
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
                                  {
-                                     IntensityThreshold = 15,
-                                     SmallAreaThreshold = 5,
+                                     IntensityThreshold = 0.5,
+                                     SmallAreaThreshold = 20,
                                      BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
                                      DoNoiseRemoval = false,
                                      LargeAreaHorizontal = Default.SeparateStyle.Skip,
