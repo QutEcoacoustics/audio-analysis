@@ -264,7 +264,6 @@
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFiles[i]);
-                    //spectrogram.Data = ImageAnalysisTools.GaussianBlur(spectrogram.Data, 0.4, 3);
                     /// spectrogram drawing setting
                     var scores = new List<double>();
                     scores.Add(1.0);
@@ -275,25 +274,26 @@
                     var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
 
-                    var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                    //var filterVerticalRidges = PointOfInterestAnalysis.FilterSpikePointOfInterests(
-                    //    originalRidges,
-                    //    spectrogram.Data,
-                    //    rows,
-                    //    cols,
-                    //    9,
-                    //    4.0);
+                    var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);                  
                     //var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+                    var addCompressedRidges = POISelection.AddCompressedRidges(
+                        config,
+                        audioFiles[i],
+                        ridgeConfig,
+                        featurePropSet,
+                        compressConfig.TimeCompressRate,
+                        originalRidges);
+                    //var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
                     //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, originalRidges, rows, cols, out acousticEventlist);
+                    //ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], rows, cols, out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    //foreach (PointOfInterest poi in filterRidges)
-                    //{
-                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    //}
+                    foreach (PointOfInterest poi in addCompressedRidges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ridge detection.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ImprovedAddRidgeBack.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -577,13 +577,8 @@
             /// this loop is used for searching query folder.
             for (int i = 0; i < csvFilesCount; i++)
             {
-                /// to get the query's region representation
-                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                var copyTSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                var copyFSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
-                copyTSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyTSpectrogram.Data, compressConfig.TimeCompressRate);
-                copyFSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copyFSpectrogram.Data, compressConfig.FreqCompressRate);
-
+                /// to get the query's region representation based ridges
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);               
                 //var data = spectrogram.Data;
                 //var maxMagnitude = data.Cast<double>().Max();
                 //var minMagnitude = data.Cast<double>().Min();
@@ -594,26 +589,18 @@
                     TimeScale = (1 - config.WindowOverlap) * spectrogram.FrameDuration * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency,
                 };
-                var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                var queryRidges = POISelection.AddBackCompressedRidges(
+                    config,
+                    queryAduioFiles[i],
+                    ridgeConfig,
+                    compressConfig,
+                    featurePropSet);
                 var queryGradients = POISelection.GradientPoiSelection(spectrogram, gradientConfig, featurePropSet);
 
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                 var cols = spectrogram.Data.GetLength(0);
-                var timeCompressedRidges = new List<PointOfInterest>();
-                if (copyTSpectrogram.Data != null)
-                {
-                    timeCompressedRidges = POISelection.RidgePoiSelection(copyTSpectrogram, ridgeConfig, featurePropSet);
-                }
-                var freqCompressedRidges = new List<PointOfInterest>();
-                if (copyFSpectrogram.Data != null)
-                {
-                    freqCompressedRidges = POISelection.RidgePoiSelection(copyFSpectrogram, ridgeConfig, featurePropSet);
-                }
-                var improvedQueryridges = POISelection.AddResizeRidgesInTime(queryRidges, spectrogram,
-                    timeCompressedRidges, compressConfig.TimeCompressRate, rows, cols);
-                improvedQueryridges = POISelection.AddResizeRidgesInFreq(improvedQueryridges, spectrogram,
-                    freqCompressedRidges, compressConfig.FreqCompressRate, rows, cols);
-                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(improvedQueryridges,
+
+                var ridgeQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(queryRidges,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
                 var gradientQNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(queryGradients,
                     rows, cols, neighbourhoodLength, featurePropSet, spectrogramConfig);
