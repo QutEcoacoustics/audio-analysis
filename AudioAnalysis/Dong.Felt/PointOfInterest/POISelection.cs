@@ -583,6 +583,31 @@ namespace Dong.Felt
                             ImageAnalysisTools.ImprovedRidgeDetectionVDirection(subMatrix, out magnitude);
                         }
 
+                        //if (poiMatrix[r, c].OrientationCategory == 2)
+                        //{
+                        //    // 6 rows * 5 cols
+                        //    var pOffset = 2;
+                        //    var subMatrix = MatrixTools.Submatrix(
+                        //        matrix,
+                        //        r - halfWidth + 1,
+                        //        c - pOffset,
+                        //        r + halfWidth,
+                        //        c + pOffset);
+                        //    ImageAnalysisTools.ImprovedRidgeDetectionPDDirection(subMatrix, out magnitude);
+                        //}
+
+                        //if (poiMatrix[r, c].OrientationCategory == 6)
+                        //{
+                        //    // 6 rows * 5 cols
+                        //    var nOffset = 2;
+                        //    var subMatrix = MatrixTools.Submatrix(
+                        //        matrix,
+                        //        r - halfWidth + 1,
+                        //        c - nOffset,
+                        //        r + halfWidth,
+                        //        c + nOffset);
+                        //    ImageAnalysisTools.ImprovedRidgeDetectionNDDirection(subMatrix, out magnitude);
+                        //}
                         if (magnitude > threshold)
                         {
                             result.Add(poiMatrix[r, c]);

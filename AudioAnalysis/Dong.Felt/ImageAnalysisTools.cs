@@ -939,6 +939,50 @@ namespace Dong.Felt
             magnitude = ridgeMagnitude / 2;
         }
 
+        public static void ImprovedRidgeDetectionPDDirection(double[,] m, out double magnitude)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != 6) || (cols != 5)) // must be square 6X5 matrix 
+            {
+                magnitude = 0.0;
+                return;
+            }
+
+            double[,] ridgePositiveMask = { {-0.1,-0.1,-0.1,-0.1, 0.2},
+                                            {-0.1,-0.1,-0.1, 0.2, 0.2},
+                                            {-0.1,-0.1, 0.2, 0.2,-0.1},
+                                            {-0.1, 0.2, 0.2,-0.1,-0.1},
+                                            { 0.2, 0.2,-0.1,-0.1,-0.1},
+                                            { 0.2,-0.1,-0.1,-0.1,-0.1},
+                                      };
+
+            var ridgeMagnitude = MatrixTools.DotProduct(ridgePositiveMask, m);
+            magnitude = ridgeMagnitude / 2;
+        }
+
+        public static void ImprovedRidgeDetectionNDDirection(double[,] m, out double magnitude)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != 6) || (cols != 5)) // must be square 6X5 matrix 
+            {
+                magnitude = 0.0;
+                return;
+            }
+
+            double[,] ridgeNegativeDiagonalMask = { { 0.2,-0.1,-0.1,-0.1, -0.1},
+                                                    { 0.2, 0.2,-0.1,-0.1, -0.1},
+                                                    {-0.1, 0.2, 0.2,-0.1, -0.1},
+                                                    {-0.1,-0.1, 0.2, 0.2, -0.1},
+                                                    {-0.1,-0.1,-0.1, 0.2,  0.2},
+                                                    {-0.1,-0.1,-0.1,-0.1,  0.2},
+                                          };
+
+            var ridgeMagnitude = MatrixTools.DotProduct(ridgeNegativeDiagonalMask, m);
+            magnitude = ridgeMagnitude / 2;
+        }
+
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
