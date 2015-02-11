@@ -821,13 +821,6 @@
                 /// to get the query's region representation
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);               
                 var secondToMillionSecondUnit = 1000;
-                var spectrogramConfig = new SpectrogramConfiguration
-                {
-                    FrequencyScale = spectrogram.FBinWidth,
-                    TimeScale = (1 - config.WindowOverlap) * spectrogram.FrameDuration * secondToMillionSecondUnit,
-                    NyquistFrequency = spectrogram.NyquistFrequency,
-                };
-
                 var queryRidges = POISelection.ModifiedRidgeDetection(spectrogram,
                     config,                   
                     ridgeConfig,
@@ -861,6 +854,7 @@
                 }
                 Log.Info("# read all the training/test audio files");
                 var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
+               
                 var audioFilesCount = candidatesAudioFiles.Count();
                 /// to get candidate region Representation                      
                 var finalOutputCandidates = new List<Candidates>();
@@ -870,12 +864,20 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    candidateSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(candidateSpectrogram.Data, compressConfig.TimeCompressRate);
-                    var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
+                    var candidateRidges = POISelection.ModifiedRidgeDetection(spectrogram,
+                        config,
+                        ridgeConfig,
+                        compressConfig,
+                        queryAduioFiles[i],
+                        featurePropSet);
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
                     var cols1 = candidateSpectrogram.Data.GetLength(0);
-                    //var candidateEvents = EventBasedRepresentation.RidgesToAcousticEvents(candidateSpectrogram,
-                    //queryRidges, rows1, cols1);
+                    var candidateAElist = new List<AcousticEvent>();
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, candidateRidges[0], rows1, cols1, out candidateAElist);
+                    var candidatesEventsRepresentation =
+                        EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, candidateAElist);
+
+                    var candidatesRepresentation = queryRepresentation;
 
                 }// end of the loop for candidates
                 ///3. Ranking the candidates - calculate the distance and output the matched acoustic events.             
@@ -884,9 +886,7 @@
                 Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
                 Log.Info("# calculate the distance between a query and a candidate");
                 /// To calculate the distance 
-                //candidateDistanceList = Indexing.DistanceCalculation(queryRepresentation, candidatesList,
-                //        weight1, weight2, weight3, weight4, weight5, weight6, featurePropSet, compressConfig);
-
+                //candidateDistanceList = Indexing.EventBasedDistance(queryRepresentation, candidatesRepresentation);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 /// To save all matched acoustic events                        
                 if (candidateDistanceList.Count != 0)
