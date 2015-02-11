@@ -224,6 +224,13 @@
             return result;
         }
 
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile)
+        {
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd);
+            return result;
+        }
+
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, 
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
         {
