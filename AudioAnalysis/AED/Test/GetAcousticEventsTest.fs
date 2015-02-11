@@ -114,3 +114,4 @@ let ``spidering test - blank edge`` () =
     let results = spider testMatrix [(0,0)] Set.empty
 
     Assert.Equal<Set<_>>(expectedElements, results)
+
