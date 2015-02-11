@@ -18,11 +18,10 @@ using Acoustics.Shared.Csv;
 // Action code for this analysis = ZoomingSpectrograms
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
-    public static class ZoomingSpectrograms
+    public static class ZoomFocusedSpectrograms
     {
 
-
-        public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, TimeSpan focalTime, int imageWidth)
+        public static void DrawStackOfZoomedSpectrograms(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, TimeSpan focalTime, int imageWidth)
         {
             LdSpectrogramConfig config = longDurationSpectrogramConfig;
 
@@ -31,8 +30,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             TimeSpan dataScale = config.IndexCalculationDuration;
 
+            // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             string fileStem = config.FileName;
-            //string[] keys = config.ColourMap2.Split('-');
             string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN" };
 
             Dictionary<string, double[,]> spectra = ReadCSVFiles(config.InputDirectoryInfo, fileStem, keys);
@@ -41,36 +40,59 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double[] imageScales = {0.2, 0.6, 1, 2, 6, 12, 24, 60 };
 
             var imageList = new List<Image>();
-
+            Image image = null;
             for (int i = 7; i >= 0; i--)
             {
                 TimeSpan imageScale = TimeSpan.FromSeconds(imageScales[i]);
-                Image image = DrawIndexSpectrogramAtScale(config, indicesConfigPath, focalTime, dataScale, imageScale, imageWidth, spectra);
+                image = DrawIndexSpectrogramAtScale(config, indicesConfigPath, focalTime, dataScale, imageScale, imageWidth, spectra);
                 if (image != null) imageList.Add(image);
             }
 
-
-            // derive spectrograms from standard spectral frames
+            // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             //double frameDurationInSeconds = config.FrameWidth / (double)config.SampleRate;
             double frameStepInSeconds     = config.FrameStep / (double)config.SampleRate;
             TimeSpan frameScale = TimeSpan.FromTicks((long)Math.Round(frameStepInSeconds * 10000000));
             //int[] compressionFactor = { 1, 2, 4, 11, 22 };
-            int[] compressionFactor = { 1, 2, 4 };
+            int[] compressionFactor = { 1, 2, 5 };
             int maxCompression = compressionFactor[compressionFactor.Length - 1];
             TimeSpan maxImageDuration = TimeSpan.FromTicks(maxCompression * imageWidth * frameScale.Ticks);
-            fileStem =  "TEST_TUITCE_20091215_220004";
 
             TimeSpan halfMaxImageDuration = TimeSpan.FromMilliseconds(maxImageDuration.TotalMilliseconds / 2);
-            TimeSpan startTimeOfMaxImage = focalTime - halfMaxImageDuration;
-            TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes)); 
+            TimeSpan startTimeOfMaxImage = TimeSpan.Zero;
+            if (focalTime != TimeSpan.Zero) 
+                startTimeOfMaxImage = focalTime - halfMaxImageDuration;
+            TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes));
+
+            // get the data // #### TODO  #################################################################################
+            //TimeSpan imageScale1 = TimeSpan.FromMilliseconds(80);
+            //double[,] cvrMatrix = ExpandMatrixOfIndices(spectra["CVR"], focalTime, dataScale, imageScale1, imageWidth);
+            //double coverThreshold = 0.8;
+
+            // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
+            // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
+            int nameLength = fileStem.Length - 16;
+            fileStem = fileStem.Substring(0, nameLength);
 
             List<double[]> frameData = ReadFrameData(config, startTimeOfMaxImage, maxImageDuration, config.InputDirectoryInfo, fileStem);
-            for (int i = 2; i >= 0; i--)
-            {
-                int factor = compressionFactor[i];
-                Image image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, startTimeOfData, focalTime, frameScale, factor, imageWidth, frameData);
-                if (image != null) imageList.Add(image);
-            }
+            // make the images
+            //for (int i = 2; i >= 0; i--)
+            //{
+            //    int factor = compressionFactor[i];
+            //    Image image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, startTimeOfData, focalTime, frameScale, factor, imageWidth, frameData);
+            //    if (image != null) imageList.Add(image);
+            //}
+
+            int factor = 5;
+            image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, startTimeOfData, focalTime, frameScale, factor, imageWidth, frameData);
+            if (image != null) imageList.Add(image);
+
+            factor = 2;
+            image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, startTimeOfData, focalTime, frameScale, factor, imageWidth, frameData);
+            if (image != null) imageList.Add(image);
+
+            factor = 1;
+            image = DrawFrameSpectrogramAtScale(config, indicesConfigPath, startTimeOfData, focalTime, frameScale, factor, imageWidth, frameData);
+            if (image != null) imageList.Add(image);
 
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
             combinedImage.Save(Path.Combine(config.OutputDirectoryInfo.FullName, "ZOOM.png"));
@@ -110,13 +132,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan offsetTime = TimeSpan.Zero;
             TimeSpan ImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
             TimeSpan halfImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks / 2);
-            TimeSpan startTime = focalTime - halfImageDuration;
+            TimeSpan startTime = TimeSpan.Zero;
+            if (focalTime != TimeSpan.Zero) startTime = focalTime - halfImageDuration;
             if (startTime < TimeSpan.Zero)
             {
                 offsetTime = TimeSpan.Zero - startTime;
                 startTime  = TimeSpan.Zero;
             }
-            TimeSpan endTime = focalTime + halfImageDuration;
+            TimeSpan endTime = ImageDuration;
+            if (focalTime != TimeSpan.Zero) endTime = focalTime + halfImageDuration;
             if (endTime > dataDuration) endTime = dataDuration; 
             TimeSpan spectrogramDuration = endTime - startTime;
             int spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
@@ -179,10 +203,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Graphics g2 = Graphics.FromImage(LDSpectrogram);
 
             // draw focus time on image
-            Pen pen = new Pen(Color.Red);
-            TimeSpan focalOffset = focalTime - startTime;
-            int x1 = (int)(focalOffset.Ticks / imageScale.Ticks);
-            g2.DrawLine(pen, x1, 0, x1, LDSpectrogram.Height);
+            if (focalTime != TimeSpan.Zero)
+            {
+                Pen pen = new Pen(Color.Red);
+                TimeSpan focalOffset = focalTime - startTime;
+                int x1 = (int)(focalOffset.Ticks / imageScale.Ticks);
+                g2.DrawLine(pen, x1, 0, x1, LDSpectrogram.Height);
+            }
 
             int nyquist = 22050 / 2;
             int herzInterval = 1000;
@@ -215,8 +242,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, FileInfo indicesConfigPath, TimeSpan startTimeOfData,
-                                    TimeSpan focalTime, TimeSpan frameScale, int compressionFactor, int imageWidth, List<double[]> frameData)
+        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, FileInfo SpectrogramTilingConfig, TimeSpan startTimeOfData,
+                                    TimeSpan focalTime, TimeSpan frameScale, int compressionFactor, int imageWidth, List<double[]> frameData/*, double[,] indexData*/)
         {
             if ((frameData == null) || (frameData.Count == 0))
             {
@@ -232,11 +259,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan imageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
             TimeSpan halfImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks / 2);
             TimeSpan startTime = focalTime - halfImageDuration - startTimeOfData;
-            //if (startTime < TimeSpan.Zero)
-            //{
-            //    offsetTime = TimeSpan.Zero - startTime;
-            //    startTime = TimeSpan.Zero;
-            //}
+            if (startTime < TimeSpan.Zero)
+            {
+                startTime = TimeSpan.Zero;
+            }
 
             //TimeSpan endTime = focalTime + halfImageDuration;
             //if (endTime > dataDuration) endTime = dataDuration;
@@ -269,25 +295,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double max = -40;
             spectralSelection = MatrixTools.boundMatrix(spectralSelection, min, max);
             spectralSelection = DataTools.normalise(spectralSelection);
-            //var cch = new CubeHelix(ColourCubeHelix.DEFAULT);
             var cch = CubeHelix.GetCubeHelix();
             Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(spectralSelection);
 
             Graphics g2 = Graphics.FromImage(spectrogramImage);
 
-
-            // draw focus time
-            Pen pen = new Pen(Color.Red);
             int x1 = (int)(halfImageDuration.Ticks / imageScale.Ticks);
-            g2.DrawLine(pen, x1, 0, x1, spectrogramImage.Height);
+
+            // draw focus time on image
+            if (focalTime != TimeSpan.Zero)
+            {
+                Pen pen = new Pen(Color.Red);
+                g2.DrawLine(pen, x1, 0, x1, spectrogramImage.Height);
+            }
 
             int nyquist = 22050 / 2;
             int herzInterval = 1000;
             string title = string.Format("ZOOM SCALE={0}ms/pixel   Image duration={1} ", //   (colour:R-G-B={2})
-                                                                       imageScale.TotalMilliseconds, imageDuration);
+                                          imageScale.TotalMilliseconds, imageDuration);
             Image titleBar = DrawTitleBarOfZoomSpectrogram(title, spectrogramImage.Width);
-            TimeSpan startTimeOfImage = focalTime - halfImageDuration;
-            spectrogramImage = FrameZoomSpectrogram(spectrogramImage, titleBar, startTimeOfImage, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
+            spectrogramImage = FrameZoomSpectrogram(spectrogramImage, titleBar, startTime, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
 
 
             // MAY WANT THESE CLIPPING TRACKS AT SOME POINT
@@ -311,6 +338,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return image;
         }
 
+        public static double[,] ExpandMatrixOfIndices(double[,] matrix, TimeSpan focalTime, TimeSpan dataScale, TimeSpan opScale, int opColumns)
+        {
+            double scalingFactor = Math.Round(dataScale.TotalMilliseconds / opScale.TotalMilliseconds);
+            if(scalingFactor <= 1.0) return null;
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            var newMatrix = new double[rowCount, opColumns];
+            //double[] tempArray = new double[scalingFactor];
+
+            return newMatrix;
+        }
 
 
         public static Dictionary<string, double[,]> ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
@@ -401,14 +439,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             return compressedSpectra;
         }
-
-
-        //public static Dictionary<string, double[,]> CombineSpectrogramsForScale(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan defaultTimeScale)                    
-        //{
-        //    int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / defaultTimeScale.TotalMilliseconds);
-        //    var mergedSpectra = new Dictionary<string, double[,]>();
-        //    return spectra;
-        //}
 
 
         /// <summary>

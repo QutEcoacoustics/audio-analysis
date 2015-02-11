@@ -257,6 +257,7 @@
     <Compile Include="Indices\SummaryIndexValues.cs" />
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />
+    <Compile Include="LongDurationSpectrograms\ZoomTiledSpectrograms.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogram3D.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramDiscreteColour.cs" />
@@ -269,7 +270,7 @@
     <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="DSP\AudioSegmentation.cs" />
     <Compile Include="AnalysisKeys.cs" />
-    <Compile Include="LongDurationSpectrograms\ZoomingSpectrograms.cs" />
+    <Compile Include="LongDurationSpectrograms\ZoomFocusedSpectrograms.cs" />
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SURFFeatures.cs" />

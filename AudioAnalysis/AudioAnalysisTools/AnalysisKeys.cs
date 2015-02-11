@@ -61,7 +61,8 @@ namespace AudioAnalysisTools
         public const string MidFreqBound = "MidFreqBound";
 
         // KEYS to SONOGRAMS
-        public const string SaveSonograms = "SaveSonogramFiles";
+        public const string SaveSonogramData    = "SaveSonogramData";
+        public const string SaveSonogramImages  = "SaveSonogramImages";
         public const string TimeReductionFactor = "TimeReductionFactor";
         public const string FreqReductionFactor = "FreqReductionFactor";
         public const string AddAxes = "AddAxes";

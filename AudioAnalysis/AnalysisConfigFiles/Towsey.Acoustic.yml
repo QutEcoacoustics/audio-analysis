@@ -21,10 +21,13 @@ MidFreqBound: 4000
 #indices NOT displayed:avAmp-dB,activeSnr-dB,avSegDur,H[spectralMax],H[spectralVar],avClustDur,3gramCount,av3gramRepetition,SpPkTracks%Dur
 DisplayWeightedIndices: false
 
+#SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
+SaveSonogramData: true
+
 #SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 DisplayCsvImage: true
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0

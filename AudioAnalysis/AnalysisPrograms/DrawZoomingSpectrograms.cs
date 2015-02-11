@@ -16,6 +16,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     using PowerArgs;
+    using Acoustics.Shared;
 
 
     /// <summary>
@@ -31,6 +32,12 @@ namespace AnalysisPrograms
             //[ArgPosition(1)]
             public FileInfo IndexPropertiesConfig { get; set; }
 
+
+             [ArgDescription("User specified file defining valid spectrogram scales.")]
+            [Production.ArgExistingFile(Extension = ".yml")]
+            //[ArgPosition(1)]
+            public FileInfo SpectrogramTilingConfig { get; set; }
+           
 
             [ArgDescription("Config file specifing directory containing indices.csv files and other parameters.")]
             [Production.ArgExistingFile(Extension = ".yml")]
@@ -85,7 +92,8 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndices";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
 
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             DirectoryInfo opDir = new DirectoryInfo(opdir);
@@ -108,6 +116,7 @@ namespace AnalysisPrograms
             {
                 // use the default set of index properties in the AnalysisConfig directory.
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                SpectrogramTilingConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig
             };
             throw new NoDeveloperMethodException();
@@ -131,12 +140,17 @@ namespace AnalysisPrograms
 
             }
 
-            string fileStem = "TEST_TUITCE_20091215_220004";
-            var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
-            TimeSpan focalTime = TimeSpan.FromMinutes(16);
-            int imageWidth = 1500;
+            var longDurConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+            var tilingConfig  = Json.Deserialise<SpectrogramScalingConfig>(arguments.SpectrogramTilingConfig);
 
-            ZoomingSpectrograms.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig, focalTime, imageWidth);
+            //TimeSpan focalTime = TimeSpan.Zero;
+            //TimeSpan focalTime = TimeSpan.FromMinutes(16);
+            //int imageWidth = 1500;
+            //ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(config, arguments.IndexPropertiesConfig, focalTime, imageWidth);
+
+            
+            int tileWidth = 300;
+            //ZoomTiledSpectrograms.DrawSuperTiles(longDurConfig, tilingConfig, tileWidth);
         }
 
 

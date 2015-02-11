@@ -78,11 +78,6 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
 
 
-            // copy the config file to the output directory so user can later refer to the parameters.
-            var configDestination = new FileInfo(Path.Combine(outputDirectory.FullName, configFile.Name));
-            if (configDestination.Exists) configDestination.Delete();
-            File.Copy(configFile.FullName, configDestination.FullName);
-
             if (!sourceAudio.Exists)
             {
                 Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
@@ -93,7 +88,7 @@ Output  to  directory: {1}
 
             bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
-            bool saveSonograms = (bool?)configuration[AnalysisKeys.SaveSonograms] ?? false;
+            bool saveSonogramsImages      = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
             
             // There's no reason for this to be here
             ////bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
@@ -120,7 +115,7 @@ Output  to  directory: {1}
             }
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, saveIntermediateCsvFiles)
+            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles)
             {
                 // create and delete directories
                 DeleteFinished = !saveIntermediateWavFiles,  
