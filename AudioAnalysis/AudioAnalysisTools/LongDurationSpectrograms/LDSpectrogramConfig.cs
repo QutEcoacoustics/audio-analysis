@@ -68,6 +68,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         #region Public Properties
 
+        public string COMMENT1 = "THE BELOW ARE RELEVANT PARAMETER SETTINGS FOR THE ANALYSIS OF LONG DURATION RECORDING";
+
         /// <summary>
         /// Name of the analysis type used in file name extentions etc.
         /// </summary>
@@ -94,11 +96,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public string FileName { get; set; }
 
+        public string COMMENT2 = "FRAME WIDTH is used without overlap to calculate spectral indices";
         /// <summary>
         ///  default value for frame width from which spectrogram was derived.
         /// </summary>
         public int FrameWidth { get; set; }
 
+        public string COMMENT3 = "FRAME STEP (in samples) is only used for saving spectrogram data. Not used when calculating indices";
         /// <summary>
         ///  default value for frame step from which spectrogram was derived. There may be overlap.
         /// </summary>
@@ -151,12 +155,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
+        public string COMMENT4 = "IndexCalculationDuration (TimeSpan in seconds) is used to calculate summary and spectral indices";
         /// <summary>
         /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed. 
         /// User must enter the time span over which indices are calculated.
         /// This TimeSpan is used to calculate a tic interval that is appropriate to the time scale of the spectrogram.
         /// </summary>
         public TimeSpan IndexCalculationDuration { get; set; }
+
+        /// <summary>
+        /// The default is the entire segment i.e. typically of one minute duration.  However, as of January 2015, this is not fixed. 
+        /// User must enter the time span over which indices are calculated.
+        /// If IndexCalculationDuration is set to a brief duration such as 0.2 seconds, then
+        /// the backgroundnoise will be calculated from N seconds before the current subsegment to N seconds after => N secs + subseg duration + N secs
+        /// </summary>
+        public TimeSpan BGNoiseNeighbourhood { get; set; }
+
+
+
 
         /// <summary>
         /// The default is one minute spectra i.e. 60 per hour

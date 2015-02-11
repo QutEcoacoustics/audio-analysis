@@ -296,22 +296,23 @@ namespace AnalysisPrograms
                 analysisResults.SpectraIndicesFiles = spectralIndexFiles;
             }
 
-            // write the one minute spectrogram to CSV
-            SonogramConfig sonoConfig = new SonogramConfig(); // default values config
-            sonoConfig.SourceFName = recording.FilePath;
-            sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-            sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
-            sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
-            //sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
-            //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            // remove the DC row of the spectrogram
-            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-            string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
-            Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
-
-
-
+            // write the segment spectrogram (typically of one minute duration) to CSV
+            bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
+            if (saveSonogramData) 
+            {
+                SonogramConfig sonoConfig = new SonogramConfig(); // default values config
+                sonoConfig.SourceFName = recording.FilePath;
+                sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
+                sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
+                sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
+                //sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
+                //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+                var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                // remove the DC row of the spectrogram
+                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
+                string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
+            }
 
 
             //if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
@@ -365,51 +366,52 @@ namespace AnalysisPrograms
         {
             var sourceAudio = inputFileSegment.OriginalFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
-
-
-            string fileName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
-
+            var configFile = settings.ConfigFile;
 
             int frameWidth = 512;
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
             int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
 
-            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
-            // this is the most effcient way to do this
-            // gather up numbers and strings store in memory, write to disk one time
-            // this method also AUTOMATICALLY SORTS because it uses array indexing
-            var startMinute = (int)(inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
-
-            var config = new LdSpectrogramConfig
+           
+            // copy relevant config settings to the output directory so user can later refer to the parameters.
+            string fileName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
+            var configInfo = new LdSpectrogramConfig
                              {
+                                 AnalysisType = settings.Configuration[AnalysisKeys.AnalysisName],
                                  FileName = fileName,
                                  OutputDirectoryInfo = resultsDirectory,
                                  InputDirectoryInfo = resultsDirectory,
                                  SampleRate = sampleRate,
                                  FrameWidth = frameWidth,
+                                 FrameStep  = settings.Configuration[AnalysisKeys.FrameStep],
 
                                  IndexCalculationDuration = settings.IndexCalculationDuration.Value,
+                                 BGNoiseNeighbourhood     = settings.BGNoiseNeighbourhood.Value,
                                  XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
 
-                                 MinuteOffset = SpectrogramConstants.MINUTE_OFFSET,
-                                 ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                                 ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR,
+                                 // this next line is probably wrong - does not give start of the source recording only a segment of it.
+                                 MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                                 ColourMap2   = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                                 ColourMap1   = SpectrogramConstants.RGBMap_BGN_AVG_CVR,
                                  BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF       
                              };
 
-            // THIS iS A TEMPORARY HACK - IT FORCES GRID LINES TO BE 60 pixels apart.
-            if (config.IndexCalculationDuration != null)
-            {
-                double interval = config.IndexCalculationDuration.TotalSeconds * 60;
-                config.XAxisTicInterval = TimeSpan.FromSeconds(interval);
-            }
+            var configFileDestination = new FileInfo(Path.Combine(resultsDirectory.FullName, fileName + ".config.yml"));
+            if (configFileDestination.Exists) configFileDestination.Delete();
+            Json.Serialise(configFileDestination, configInfo);
+
+
+            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
+            // this is the most effcient way to do this
+            // gather up numbers and strings store in memory, write to disk one time
+            // this method also AUTOMATICALLY SORTS because it uses array indexing
 
             FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
 
             var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, indicesPropertiesConfig, dictionaryOfSpectra);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(configInfo, indicesPropertiesConfig, dictionaryOfSpectra);
 
         }
 
@@ -443,76 +445,6 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-
-
-        /* // deprecated
-        public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
-        {
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
-            if ((dt == null) || (dt.Rows.Count == 0))
-            {
-                return null;
-            }
-            //get its column headers
-            var dtHeaders = new List<string>();
-            var dtTypes = new List<Type>();
-            foreach (DataColumn col in dt.Columns)
-            {
-                dtHeaders.Add(col.ColumnName);
-                dtTypes.Add(col.DataType);
-            }
-
-            List<string> displayHeaders = null;
-            bool addColumnOfweightedIndices = true;
-            //check if config file contains list of display headers
-            if (fiConfigFile != null)
-            {
-                var configuration = new ConfigDictionary(fiConfigFile.FullName);
-                Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
-                {
-                    displayHeaders = configDict[AudioAnalysisTools.AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
-                    for (int i = 0; i < displayHeaders.Count; i++)
-                    {
-                        displayHeaders[i] = displayHeaders[i].Trim();
-                    }
-                }
-
-            }
-            //if config file does not exist or does not contain display headers then use the original headers
-            if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
-
-            //now determine how to display tracks in display datatable
-            Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay = new bool[displayHeaders.Count];
-            for (int i = 0; i < displayTypes.Length; i++)
-            {
-                displayTypes[i] = typeof(double);
-                canDisplay[i] = false;
-                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
-            }
-
-            //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_RankOrder + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_StartMinute))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_StartMinute + " ASC");
-            }
-
-            DataTable table2Display = null;
-            return System.Tuple.Create(dt, table2Display);
-        } // ProcessCsvFile()*/
 
 
         public AnalysisSettings DefaultSettings
@@ -575,4 +507,5 @@ namespace AnalysisPrograms
 
 
     }
+
 }
