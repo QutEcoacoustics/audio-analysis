@@ -68,7 +68,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         #region Public Properties
 
-        public string COMMENT1 = "THE BELOW ARE RELEVANT PARAMETER SETTINGS FOR THE ANALYSIS OF LONG DURATION RECORDING";
+        public string COMMENT1 = "LIST OF PARAMETER SETTINGS USED TO OBTAIN THE SUMMARY AND SPECTRAL INDICES IN THIS DIRECTORY.";
+        public string COMMENT2 = "RESULTS OBTAINED WITH CLASS: AnalyseLongRecording.         ACTIVITY: audio2csv";
+        public string COMMENT3 = "THE BELOW PARAMETER VALUES ARE RELEVANT FOR CONSTRUCTING THE TILES OF A ZOOMING SPECTROGRAM.";
 
         /// <summary>
         /// Name of the analysis type used in file name extentions etc.
@@ -96,13 +98,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public string FileName { get; set; }
 
-        public string COMMENT2 = "FRAME WIDTH is used without overlap to calculate spectral indices";
+        public string COMMENT4 = "FRAME WIDTH is used without overlap to calculate spectral indices";
         /// <summary>
         ///  default value for frame width from which spectrogram was derived.
         /// </summary>
         public int FrameWidth { get; set; }
 
-        public string COMMENT3 = "FRAME STEP (in samples) is only used for saving spectrogram data. Not used when calculating indices";
+        public string COMMENT5 = "FRAME STEP (in samples) is only used for saving spectrogram data. Not used when calculating indices";
         /// <summary>
         ///  default value for frame step from which spectrogram was derived. There may be overlap.
         /// </summary>
@@ -155,7 +157,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public string COMMENT4 = "IndexCalculationDuration (TimeSpan in seconds) is used to calculate summary and spectral indices";
+        public string COMMENT6 = "IndexCalculationDuration (TimeSpan in seconds) is used to calculate summary and spectral indices";
         /// <summary>
         /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed. 
         /// User must enter the time span over which indices are calculated.
