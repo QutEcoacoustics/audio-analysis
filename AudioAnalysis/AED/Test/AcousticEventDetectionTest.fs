@@ -116,6 +116,26 @@ let testFilterOutSmallEvents () =
         Assert.Equal<seq<_>>(Seq.sort ae3m, Seq.sort ae3)
     testAll f
 
+let smallEventThreshold = 20
+[<Fact>]
+let ``filter out small events`` () = 
+    let acousticEvents = 
+        [
+            {Bounds=lengthsToRect 1 1 4 5; Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 2 1;  Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 2 1; Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 2 1; Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 3 1;  Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 3 1; Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 1 3; Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 5 1;  Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 10 1; Elements=Set.empty};
+            {Bounds=lengthsToRect 1 1 5 2; Elements=Set.empty};
+        ] :> seq<AcousticEvent>   
+         
+    let results = acousticEvents |> filterOutSmallEvents smallEventThreshold |> Array.ofSeq
+    Assert.Equal(3, results.Length)  
+
 
 module AcousticEventDetectionTestsForSeperateLargeEvents =
     let testMatrix = parseStringAsMatrix @"
@@ -384,3 +404,7 @@ module AcousticEventDetectionTestsForVerticalSeperateLargeEvents =
         let absoluteHits = Set.map (fun (y, x) -> (y + 9, x + 43)) expectedEvent3Alternate
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
+
+
+  
+  
