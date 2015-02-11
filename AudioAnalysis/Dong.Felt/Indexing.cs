@@ -1030,5 +1030,11 @@ namespace Dong.Felt
             return result;
         }
 
+
+        public static List<Candidates> EventBasedDistance(List<EventBasedRepresentation> queryRepresentations, List<EventBasedRepresentation> canditeList)
+        {
+            var result = new List<Candidates>();
+            return result;
+        }
     }
 }

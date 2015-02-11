@@ -165,7 +165,33 @@ namespace Dong.Felt.Representations
             }
             return result;
         }
- 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queryRepresentations"></param>
+        /// <param name="candidateEventList"></param>
+        /// <param name="centroidFreqOffset"> 
+        /// </param>
+        /// <returns></returns>
+        public static void FormCandidateAsAcousticEventList(SonogramConfig config,
+            List<EventBasedRepresentation> queryRepresentations,
+            List<EventBasedRepresentation> candidateEventList, int centroidFreqOffset)
+        {
+            queryRepresentations.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+            queryRepresentations.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
+            var bottomLeftEvent = queryRepresentations[0];
+            var allignCentriod = bottomLeftEvent.Centroid;
+            var minFreq = 0;
+            var maxFreq = 256;
+            if (minFreq > 0)
+            {
+                minFreq = allignCentriod.Y - centroidFreqOffset;
+                maxFreq = allignCentriod.Y + centroidFreqOffset; //the unit should be pixels.
+            }
+           
+        }
+
         #endregion
     }
 }
