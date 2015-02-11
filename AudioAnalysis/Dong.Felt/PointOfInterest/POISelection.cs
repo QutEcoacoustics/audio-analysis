@@ -92,6 +92,23 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
+        public static List<List<PointOfInterest>> ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,
+            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, string audioFilePath,
+            string featurePropSet)
+        {
+            var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+            var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+            var addCompressedRidges = POISelection.AddCompressedRidges(
+                config,
+                audioFilePath,
+                ridgeConfig,
+                featurePropSet,
+                compressConfig.TimeCompressRate,
+                filterRidges);
+            var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
+            return dividedRidges;
+        }
+
         public static List<PointOfInterest> RidgePoiSelection(SpectrogramStandard spectrogram,
             RidgeDetectionConfiguration ridgeConfig, string featurePropSet)
         {
