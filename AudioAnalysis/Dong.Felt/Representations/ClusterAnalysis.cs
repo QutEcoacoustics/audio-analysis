@@ -353,10 +353,10 @@ namespace Dong.Felt.Representations
             out List<AcousticEvent> posAcousticEvents, out List<AcousticEvent> negAcousticEvents)
         {
 
-            RidgeListToEvent(sonogram, verPoiList, rowsCount, colsCount, out verAcousticEvents);
-            RidgeListToEvent(sonogram, horPoiList, rowsCount, colsCount, out horAcousticEvents);
-            RidgeListToEvent(sonogram, posDiaPoiList, rowsCount, colsCount, out posAcousticEvents);
-            RidgeListToEvent(sonogram, negDiaPoiList, rowsCount, colsCount, out negAcousticEvents);
+            RidgeListToEvent(sonogram, verPoiList, out verAcousticEvents);
+            RidgeListToEvent(sonogram, horPoiList, out horAcousticEvents);
+            RidgeListToEvent(sonogram, posDiaPoiList, out posAcousticEvents);
+            RidgeListToEvent(sonogram, negDiaPoiList, out negAcousticEvents);
             
         }
        
@@ -455,15 +455,15 @@ namespace Dong.Felt.Representations
         //}
         
         public static void RidgeListToEvent(SpectrogramStandard sonogram,
-            List<PointOfInterest> poiList,
-            int rowsCount, int colsCount,
+            List<PointOfInterest> poiList,            
             out List<AcousticEvent> acousticEvents)
         {
+            var rowsCount = sonogram.Data.GetLength(1) - 1;
+            var colsCount = sonogram.Data.GetLength(0);
             var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rowsCount, colsCount);
             /////call AED to group ridges into event-based on ridge
             var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
             var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
-
             /// based on spectrogram intensity matrix directly
             //var rotateDoubleMatrix = sonogram.Data;
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
