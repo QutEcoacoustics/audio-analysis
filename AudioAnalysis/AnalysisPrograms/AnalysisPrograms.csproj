@@ -21,7 +21,6 @@
     <UpgradeBackupLocation />
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetFrameworkProfile />
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EcoSounds\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
     <PublishUrl>publish\</PublishUrl>
@@ -332,6 +331,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
+    <None Include="Properties\AssemblyInfo.cs.template" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -360,7 +360,8 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>IF EXIST "$(SolutionDir)WebFrontend\Processor\" (copy "$(SolutionDir)AudioAnalysis\RecogniserParamFiles\*.*"  "$(SolutionDir)WebFrontend\Processor\ParameterFiles\")</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
@@ -379,21 +380,60 @@
     <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
   <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
-  <Target Name="BeforeBuild">
+  <!--  <Target Name="BeforeBuild">-->
+  <!--    <PropertyGroup>-->
+  <!--      <File>$([System.IO.File]::ReadAllText("Properties\AssemblyInfo.cs"))</File>-->
+  <!--      <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.[\*\d]+\.[\*\d]+)\x22</Expr>-->
+  <!--      <reg>-->
+  <!--			$([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)-->
+  <!--			</reg>-->
+  <!--      <maj>$(reg.Split(".")[0])</maj>-->
+  <!--      <min>$(reg.Split(".")[1])</min>-->
+  <!--      <bld>$(reg.Split(".")[2])</bld>-->
+  <!--      <rev>$(reg.Split(".")[3].Trim())</rev>-->
+  <!--      <year>$([System.DateTime]::Now.ToString("yy"))</year>-->
+  <!--      <month>$([System.DateTime]::Now.ToString("MM"))</month>-->
+  <!--    </PropertyGroup>-->
+  <!--    <Message Text="Found assembly version: $(maj).$(min).$(bld).$(rev). Replacing with: $(year).$(month).$(bld).$(rev)!" Importance="High" />-->
+  <!--    <FileUpdate Files="Properties\AssemblyInfo.cs" Regex="&quot;(\d+)\.(\d+)\.([\*\d+])\.([\*\d]+)&quot;" ReplacementText="&quot;$(year).$(month).$(bld).$(rev)&quot;" />-->
+  <!--  </Target>-->
+  <UsingTask AssemblyFile="$(MSBuildCommunityTasksLib)" TaskName="MSBuild.Community.Tasks.Git.GitCommits" />
+  <Target Name="BeforeBuild" Condition="'$(Configuration)' == 'Release' Or !Exists('Properties\AssemblyInfo.cs')">
+    <GitVersion Short="false">
+      <Output TaskParameter="CommitHash" PropertyName="GitCommitHash" />
+    </GitVersion>
+    <GitBranch>
+      <Output TaskParameter="Branch" PropertyName="GitBranch" />
+    </GitBranch>
+    <GitCommits>
+      <Output TaskParameter="CommitsCount" PropertyName="GitCommitsCount" />
+    </GitCommits>
+    <GitPendingChanges>
+      <Output TaskParameter="HasPendingChanges" PropertyName="GitHasPendingChanges" />
+    </GitPendingChanges>
     <PropertyGroup>
-      <File>$([System.IO.File]::ReadAllText("Properties\AssemblyInfo.cs"))</File>
+      <File Condition="Exists('Properties\AssemblyInfo.cs')">$([System.IO.File]::ReadAllText("Properties\AssemblyInfo.cs"))</File>
       <Expr>AssemblyVersion\x28\x22(\d+\.\d+\.[\*\d]+\.[\*\d]+)\x22</Expr>
       <reg>
-			$([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)
-			</reg>
-      <maj>$(reg.Split(".")[0])</maj>
-      <min>$(reg.Split(".")[1])</min>
-      <bld>$(reg.Split(".")[2])</bld>
-      <rev>$(reg.Split(".")[3].Trim())</rev>
+      $([System.Text.RegularExpressions.Regex]::Match($(File), $(Expr) ).Groups[1].Value)
+      </reg>
+      <oldVersion>$(reg)</oldVersion>
       <year>$([System.DateTime]::Now.ToString("yy"))</year>
       <month>$([System.DateTime]::Now.ToString("MM"))</month>
+      <version>$(year).$(month).$(GitCommitsCount).0</version>
+      <isDirty Condition="$(GitHasPendingChanges)">-DIRTY</isDirty>
+      <gitVersion>$(GitBranch)-$(GitCommitHash)$(isDirty)</gitVersion>
     </PropertyGroup>
-    <Message Text="Found assembly version: $(maj).$(min).$(bld).$(rev). Replacing with: $(year).$(month).$(bld).$(rev)!" Importance="High" />
-    <FileUpdate Files="Properties\AssemblyInfo.cs" Regex="&quot;(\d+)\.(\d+)\.([\*\d+])\.([\*\d]+)&quot;" ReplacementText="&quot;$(year).$(month).$(bld).$(rev)&quot;" />
+    <ItemGroup>
+      <Tokens Include="Version">
+        <ReplacementValue>$(version)</ReplacementValue>
+      </Tokens>
+      <Tokens Include="GitVersion">
+        <ReplacementValue>$(gitVersion)</ReplacementValue>
+      </Tokens>
+    </ItemGroup>
+    <Message Text="Old assembly version: $(oldVersion). Replacing with: $(version)!" Importance="High" />
+    <Message Text="Git version: $(gitVersion)" Importance="High" />
+    <TemplateFile Tokens="@(Tokens)" Template=".\Properties\AssemblyInfo.cs.template" OutputFilename="AssemblyInfo.cs" />
   </Target>
 </Project>
