@@ -242,6 +242,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
+
         public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, FileInfo SpectrogramTilingConfig, TimeSpan startTimeOfData,
                                     TimeSpan focalTime, TimeSpan frameScale, int compressionFactor, int imageWidth, List<double[]> frameData/*, double[,] indexData*/)
         {
