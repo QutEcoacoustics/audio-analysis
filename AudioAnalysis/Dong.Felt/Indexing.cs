@@ -867,8 +867,7 @@ namespace Dong.Felt
             }
             return result;
         }
-        
-       
+              
         public static List<double> DistanceScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
         {
             // to get the distance and frequency band index
@@ -1030,10 +1029,22 @@ namespace Dong.Felt
             return result;
         }
 
-
-        public static List<Candidates> EventBasedDistance(List<EventBasedRepresentation> queryRepresentations, List<EventBasedRepresentation> canditeList)
+        public static List<Candidates> EventBasedDistance(List<EventBasedRepresentation> queryRepresentations, List<List<EventBasedRepresentation>> candidateList)
         {
             var result = new List<Candidates>();
+            var queryEventLength = queryRepresentations.Count();
+            foreach (var c in candidateList)
+            {
+                var candidateEventLength = c.Count();
+                if (queryEventLength == c.Count)
+                {
+                    
+                }
+                else
+                {
+                    
+                }
+            }
             return result;
         }
     }

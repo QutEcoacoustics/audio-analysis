@@ -11,7 +11,7 @@ namespace Dong.Felt.Representations
 {
     using System.Runtime.InteropServices;
 
-    public class EventBasedRepresentation:AcousticEvent
+    public class EventBasedRepresentation : AcousticEvent
     {
         #region Public Properties
         public static Color DEGAULT_BORDER_COLOR = Color.Crimson;
@@ -55,19 +55,19 @@ namespace Dong.Felt.Representations
 
         #region Public Methods
 
-        public EventBasedRepresentation(double timeScale, double freqScale,double nyquistFreq,
+        public EventBasedRepresentation(double timeScale, double freqScale, double nyquistFreq,
             double maxFrequency, double minFrequency, double startTime, double endTime)
         {
             this.MaxFreq = maxFrequency;
             this.MinFreq = minFrequency;
             this.TimeStart = startTime;
-            this.Duration = endTime - startTime;           
+            this.Duration = endTime - startTime;
             this.Bottom = (int)(minFrequency / freqScale) + 1;
             this.Left = (int)(startTime / timeScale) + 1;
 
             this.Width = (int)(this.Duration / timeScale) + 1;
             this.Height = (int)(this.FreqRange / freqScale) + 1 + 1;
-            this.Centroid = new Point(this.Left + this.Width / 2,this.Bottom + this.Height / 2);
+            this.Centroid = new Point(this.Left + this.Width / 2, this.Bottom + this.Height / 2);
             this.Area = this.Width * this.Height;
         }
 
@@ -128,26 +128,26 @@ namespace Dong.Felt.Representations
         public static List<EventBasedRepresentation> AcousticEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
             List<AcousticEvent> ae)
         {
-            var result = new List<EventBasedRepresentation>();            
+            var result = new List<EventBasedRepresentation>();
             var timeScale = sonogram.FrameDuration - sonogram.Configuration.GetFrameOffset();
             var freqScale = sonogram.FBinWidth;
             foreach (var e in ae)
             {
-                var ep = new EventBasedRepresentation(timeScale, freqScale,sonogram.NyquistFrequency,
+                var ep = new EventBasedRepresentation(timeScale, freqScale, sonogram.NyquistFrequency,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                 ep.TimeScale = timeScale;
                 ep.FreqScale = freqScale;
                 result.Add(ep);
             }
-            return result; 
-        }      
+            return result;
+        }
 
         // users might provide the rectangle boundary information of query, so this method aims to detect query 
-        public static List<EventBasedRepresentation> ReadQueryAsAcousticEventList(List<EventBasedRepresentation> events, 
+        public static List<EventBasedRepresentation> ReadQueryAsAcousticEventList(List<EventBasedRepresentation> events,
             double timeStart, double timeEnd, double maxFreq, double minFreq)
         {
             var result = new List<EventBasedRepresentation>();
-            
+
             foreach (var e in events)
             {
                 var maxFreqPixelIndex = (int)(maxFreq / e.FreqScale) + 1;
@@ -174,22 +174,56 @@ namespace Dong.Felt.Representations
         /// <param name="centroidFreqOffset"> 
         /// </param>
         /// <returns></returns>
-        public static void FormCandidateAsAcousticEventList(SonogramConfig config,
+        public static List<List<EventBasedRepresentation>> FormCandidateAsAcousticEventList(SpectrogramStandard spectrogram,
             List<EventBasedRepresentation> queryRepresentations,
-            List<EventBasedRepresentation> candidateEventList, int centroidFreqOffset)
+            List<EventBasedRepresentation> candidateEventList,
+            int centroidFreqOffset,
+            Query query)
         {
+            var result = new List<List<EventBasedRepresentation>>();
+
             queryRepresentations.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
             queryRepresentations.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
+
             var bottomLeftEvent = queryRepresentations[0];
+            var queryDurationInPixel = (int)(query.duration / 1000 / bottomLeftEvent.TimeScale);
+            var queryFreqRangeInPixel = (int)((query.maxFrequency - query.minFrequency) / bottomLeftEvent.FreqScale);
             var allignCentriod = bottomLeftEvent.Centroid;
-            var minFreq = 0;
-            var maxFreq = 256;
-            if (minFreq > 0)
+            var maxFrame = spectrogram.FrameCount;
+            var maxFreq = spectrogram.Configuration.FreqBinCount;            
+            var potentialCandidateStart = new List<EventBasedRepresentation>();
+            foreach (var c in candidateEventList)
             {
-                minFreq = allignCentriod.Y - centroidFreqOffset;
-                maxFreq = allignCentriod.Y + centroidFreqOffset; //the unit should be pixels.
+                if (Math.Abs(c.Centroid.Y - allignCentriod.Y) <= centroidFreqOffset)
+                {
+                    potentialCandidateStart.Add(c);
+                }
             }
-           
+
+            foreach (var pc in potentialCandidateStart)
+            {
+                var realCandidate = new List<EventBasedRepresentation>();
+                var maxFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 + queryFreqRangeInPixel + 1;
+                var minFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 - 1;
+                var startTimePixelIndex = pc.Centroid.X - pc.Width / 2 - 1;
+                var endTimePixelIndex = pc.Centroid.X - pc.Width / 2 + queryDurationInPixel + 1;
+                if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
+                    && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
+                {
+                    foreach (var c in candidateEventList)
+                    {
+                        if (c.Centroid.X > startTimePixelIndex && c.Centroid.X < endTimePixelIndex)
+                        {
+                            if (c.Centroid.Y > minFreqPixelIndex && c.Centroid.Y < maxFreqPixelIndex)
+                            {
+                                realCandidate.Add(c);
+                            }
+                        }
+                    }
+                }
+                result.Add(realCandidate);
+            }
+            return result;
         }
 
         #endregion
