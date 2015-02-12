@@ -122,7 +122,7 @@
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
                     MatchingBatchProcess3(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                   ridgeConfig, compressConfig,
-                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
+                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
                 }
                 else if (action == "processOne")
                 {
@@ -794,7 +794,7 @@
             RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,
             GradientConfiguration gradientConfig,
             SonogramConfig config, int rank, string featurePropSet,
-            string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
+            string outputPath, DirectoryInfo tempDirectory)
         {
             /// To read the query file
             var constructed = Path.GetFullPath(inputFileDirectory + queryFilePath);
@@ -1103,6 +1103,5 @@
             var improvedOutputPath = outputPath.ToString() + featurePropertySet + ".csv";
             CSVResults.MatchingStatResultsToCSV(new FileInfo(improvedOutputPath), matchedResults);
         }
-
     } // class dong.sandpit
 }

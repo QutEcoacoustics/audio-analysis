@@ -99,6 +99,15 @@
             return zero;
         }
 
+        public static int EventOverlapInPixel(int ae1Left, int ae1Bottom, int ae1Right, int ae1Top,
+                                              int ae2Left, int ae2Bottom, int ae2Right, int ae2Top)
+        {
+            var xOverlap = Math.Max(0,Math.Min(ae1Right, ae2Right) - Math.Max(ae1Left, ae2Left));
+            var yOverlap = Math.Max(0, Math.Min(ae1Top, ae2Top) - Math.Max(ae1Bottom, ae2Bottom));           
+            var overlap = xOverlap * yOverlap;
+            return overlap;
+        }
+
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
