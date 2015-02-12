@@ -290,15 +290,23 @@ Output  to  directory: {1}
                     throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
                 }
 
-                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-                string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                Bitmap tracksImage =
-                    DrawSummaryIndices.DrawImageOfSummaryIndices(
-                        IndexProperties.GetIndexProperties(indicesPropertiesConfig),
-                        indicesFile,
-                        imageTitle);
-                var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
-                tracksImage.Save(imagePath);
+                // this arbitary amount - a sheer guess... who knows if it will work.
+                if (mergedIndicesResults.Length > 5000)
+                {
+                    Log.Warn("Summary Indices Image not able to be drawn - there are too many indices to render");
+                }
+                else
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                    string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                    Bitmap tracksImage =
+                        DrawSummaryIndices.DrawImageOfSummaryIndices(
+                            IndexProperties.GetIndexProperties(indicesPropertiesConfig),
+                            indicesFile,
+                            imageTitle);
+                    var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
+                    tracksImage.Save(imagePath);
+                }
             }
 
             // 13. wrap up, write stats

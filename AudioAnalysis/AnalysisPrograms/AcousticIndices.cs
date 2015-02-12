@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
 
     using Acoustics.Shared;
@@ -34,12 +35,14 @@ namespace AnalysisPrograms
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+
+    using log4net;
 
     using PowerArgs;
 
     using TowseyLibrary;
-    using AudioAnalysisTools.StandardSpectrograms;
 
     public class Acoustic : IAnalyser2
     {
@@ -144,6 +147,8 @@ namespace AnalysisPrograms
         public const string TaskAnalyse = AnalysisName;
         public const string TaskLoadCsv = "loadCsv";
 
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public string DisplayName
         {
             get { return "Acoustic Indices"; }
@@ -186,7 +191,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
                 var diOutputDir = new DirectoryInfo(outputDir);
 
-                Log.Verbosity = 1;
                 int startMinute = 0;
                 int durationSeconds = 0; //set zero to get entire recording
                 var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
@@ -229,8 +233,8 @@ namespace AnalysisPrograms
                 FileInfo fiCsvIndices = new FileInfo(indicesPath);
                 if (!fiCsvIndices.Exists)
                 {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                    Log.InfoFormat(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{1}>.",
                         arguments.Start,
                         arguments.Source.FullName);
                 }
@@ -266,8 +270,8 @@ namespace AnalysisPrograms
             analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
             analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
 
-            
-            for (int i = 0; i < subsegmentCount; i++ )
+            // calculate indices for each subsegment
+            for (int i = 0; i < subsegmentCount; i++)
             {
 
                 analysisSettings.SubsegmentOffset = analysisSettings.SegmentStartOffset  + TimeSpan.FromSeconds(i * subsegmentDuration);
@@ -279,8 +283,7 @@ namespace AnalysisPrograms
 
                 analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
-
-            } // subSegment loop
+            }
 
             if (analysisSettings.SummaryIndicesFile != null)
             {
@@ -372,9 +375,8 @@ namespace AnalysisPrograms
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
             int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
-
-           
-            // copy relevant config settings to the output directory so user can later refer to the parameters.
+     
+            // gather settings for rendering false color spectrograms
             string fileName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
             var configInfo = new LdSpectrogramConfig
                              {
@@ -397,22 +399,36 @@ namespace AnalysisPrograms
                                  BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF       
                              };
 
+            // copy relevant config settings to the output directory so user can later refer to the parameters.
             var configFileDestination = new FileInfo(Path.Combine(resultsDirectory.FullName, fileName + ".config.yml"));
-            if (configFileDestination.Exists) configFileDestination.Delete();
+            if (configFileDestination.Exists)
+            {
+#if DEBUG
+                configFileDestination.Delete();
+#else
+                throw new InvalidOperationException("The given file should not exist: " + configFileDestination.FullName);
+#endif
+            }
+
             Json.Serialise(configFileDestination, configInfo);
 
+            // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
+            if (settings.IndexCalculationDuration.Value != TimeSpan.FromSeconds(60.0))
+            {
+                Log.Warn("False color spectrograms were not rendered!");
+            }
+            else
+            {
+                FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
 
-            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
-            // this is the most effcient way to do this
-            // gather up numbers and strings store in memory, write to disk one time
-            // this method also AUTOMATICALLY SORTS because it uses array indexing
+                // gather spectra to form spectrograms.  Assume same spectra in all analyser results
+                // this is the most effcient way to do this
+                // gather up numbers and strings store in memory, write to disk one time
+                // this method also AUTOMATICALLY SORTS because it uses array indexing
+                var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
-
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
-
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(configInfo, indicesPropertiesConfig, dictionaryOfSpectra);
-
+                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(configInfo, indicesPropertiesConfig, dictionaryOfSpectra);
+            }
         }
 
 
