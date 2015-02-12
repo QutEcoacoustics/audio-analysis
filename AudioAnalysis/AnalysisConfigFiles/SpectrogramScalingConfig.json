@@ -1,51 +1,10 @@
 {
+  "UnitsOfTime": "second",
   "IndexCalculationDuration": 0.2,
-  "FrameDurationInSeconds": 0.02,
+  "SpectralFrameDuration": 0.02,
   "TileWidth": 300,
-  
-  "SCALE 1": {
-    "SecondsPerPixel": 60.0,
-    "FramesPerPixel": 2584,
-  },
-  "SCALE 2": {
-    "SecondsPerPixel": 24.0,
-    "FramesPerPixel": 1033.6,
-  },
-  "SCALE 3": {
-    "SecondsPerPixel": 12.0,
-    "FramesPerPixel": 516.8,
-  },
-  "SCALE 4": {
-    "SecondsPerPixel": 6.0,
-    "FramesPerPixel": 258.4,
-  },
-  "SCALE 5": {
-    "SecondsPerPixel": 2.0,
-    "FramesPerPixel": 86.13,
-  },
-  "SCALE 6": {
-    "SecondsPerPixel": 1.0,
-    "FramesPerPixel": 43.066,
-  },
-  "SCALE 7": {
-    "SecondsPerPixel": 0.60,
-    "FramesPerPixel": 25.84,
-  },
-  "SCALE 8": {
-    "Minimum": 0.20,
-    "Maximum": 8.61,
-  },
-  "SCALE 9": {
-    "SecondsPerPixel": 0.10,
-    "FramesPerPixel": 5.0,
-  },
-  "SCALE 10": {
-    "SecondsPerPixel": 0.04,
-    "FramesPerPixel": 2.0,
-  },
-  },
-  "SCALE 11": {
-    "SecondsPerPixel": 0.02,
-    "FramesPerPixel": 1.0,
-  },
+  "ScaleUnits": "SecondsPerPixel",
+  "SpectralIndexScale": [60.0, 24.0, 12.0, 6.0, 2.0, 1.0, 0.6, 0.2],
+  "SpectralFrameScale": [0.1, 0.04, 0.02],
+  "MaxTilesPerSuperTile": 12,
 }

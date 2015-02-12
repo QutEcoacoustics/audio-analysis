@@ -140,17 +140,16 @@ namespace AnalysisPrograms
 
             }
 
-            var longDurConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
-            var tilingConfig  = Json.Deserialise<SpectrogramScalingConfig>(arguments.SpectrogramTilingConfig);
+            //var longDurConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+            //var tilingConfig  = Json.Deserialise<SpectrogramScalingConfig>(arguments.SpectrogramTilingConfig);
 
             //TimeSpan focalTime = TimeSpan.Zero;
             //TimeSpan focalTime = TimeSpan.FromMinutes(16);
             //int imageWidth = 1500;
-            //ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(config, arguments.IndexPropertiesConfig, focalTime, imageWidth);
+            //ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(longDurConfig, arguments.IndexPropertiesConfig, focalTime, imageWidth);
 
-            
-            int tileWidth = 300;
-            //ZoomTiledSpectrograms.DrawSuperTiles(longDurConfig, tilingConfig, tileWidth);
+
+            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig);
         }
 
 
