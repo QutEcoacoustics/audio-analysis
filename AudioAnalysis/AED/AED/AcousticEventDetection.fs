@@ -76,8 +76,8 @@ let separateLargeEvents serparateStyle aes =
             let sectionAHits = Set.filter (f sectionA) originalAe.Elements
             let sectionBHits = Set.filter (f sectionB) originalAe.Elements
 
-            let hits = sectionAHits + absElements + sectionBHits
-            {Bounds = extendedBounds; Elements = hits}
+            let hits = sectionAHits + absElements + sectionBHits            
+            elementsToAcousticEvent hits         
         else
             {Bounds = absBounds; Elements = absElements}
     let blackoutNarrowSections summer getMax threshold indexChooser m =
