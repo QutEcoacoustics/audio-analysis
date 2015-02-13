@@ -18,7 +18,7 @@ namespace Dong.Felt.Representations
         /// gets or sets the fft features for a region. This is based on Bardeli's algorithm.
         /// </summary>
         public PointOfInterest[,] fftFeatures { get; set; }
-
+   
         /// <summary>
         /// Index (0-based) for this region's highest frequency in the source audio file, its unit is hz.
         /// </summary>
@@ -99,6 +99,31 @@ namespace Dong.Felt.Representations
 
 
         public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods { get; set; }
+
+        /// <summary>
+        /// In a query region, this is a distance between the region left  and the bottom left vetex in the event list.
+        /// </summary>
+        public int leftToBottomLeftVertex { get; set; }
+
+        /// <summary>
+        /// In a query region, this is a distance between the region right and the bottom left vetex in the event list.
+        /// </summary>
+        public int rightToBottomLeftVertex { get; set; }
+
+        /// <summary>
+        /// In a query region, this is a distance between the region top and the bottom left vetex in the event list.
+        /// </summary>
+        public int topToBottomLeftVertex { get; set; }
+
+        /// <summary>
+        /// In a query region, this is a distance between the region bottom and the bottom left vetex in the event list.
+        /// </summary>
+        public int bottomToBottomLeftVertex { get; set; }
+
+        public EventBasedRepresentation bottomLeftEvent { get; set; }
+      
+
+        public List<EventBasedRepresentation> EventList { get; set; }
 
         //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
         //{
@@ -217,7 +242,29 @@ namespace Dong.Felt.Representations
             this.SourceAudioFile = audioFile;
         }
 
-        
+        public RegionRerepresentation(List<EventBasedRepresentation> eventRepresentations, string file, Query query)
+        {            
+            var queryEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(
+                    eventRepresentations,
+                    query);
+            this.EventList = new List<EventBasedRepresentation>();
+            foreach (var e in queryEventList)
+            {
+                this.EventList.Add(e);
+            }
+            if (queryEventList.Count > 0)
+            {
+                queryEventList.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+                queryEventList.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
+                this.bottomLeftEvent = queryEventList[0];                
+                // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top
+                this.topToBottomLeftVertex = query.TopInPixel - this.bottomLeftEvent.Bottom;
+                this.leftToBottomLeftVertex = this.bottomLeftEvent.Left - query.LeftInPixel;
+                this.rightToBottomLeftVertex = query.RightInPixel - this.bottomLeftEvent.Left;
+                this.bottomToBottomLeftVertex = this.bottomLeftEvent.Bottom - query.BottomInPixel;
+            }           
+            this.SourceAudioFile = file;
+        }
         #endregion
     }
 }
