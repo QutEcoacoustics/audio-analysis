@@ -618,7 +618,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int rows = bmp.Height;
             int cols = bmp.Width;
 
-            Graphics g = Graphics.FromImage(bmp);
+            //Graphics g = Graphics.FromImage(bmp);
 
             // for rows draw in Y-axis line
             // number of horizontal grid lines
@@ -629,14 +629,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 int row = (int)(i * Y_interval);
                 int rowFromBottom = rows - row;
-                for (int column = 30; column < cols - 1; column++) // skip first 10 pixels because writing scale value
+                for (int column = 0; column < cols - 2; column++) 
                 {
                     bmp.SetPixel(column, rowFromBottom, Color.Black);
-                    bmp.SetPixel(column + 1, rowFromBottom, Color.White);
+                    column += 3;
+                    bmp.SetPixel(column, rowFromBottom, Color.White);
                     column += 2;
                 }
                 int band = (int)(rowFromBottom / Y_interval);
-                g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Gray, 2, row - 5);
+                //g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Gray, 2, row - 5);
             }
 
             // for columns, draw in X-axis lines
