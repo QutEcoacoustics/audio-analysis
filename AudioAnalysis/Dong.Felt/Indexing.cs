@@ -1036,7 +1036,7 @@ namespace Dong.Felt
             foreach (var c in candidateList)
             {
                 var candidateEventLength = c.Count();
-                if (queryEventLength == c.Count)
+                if (queryEventLength == candidateEventLength)
                 {
                     
                 }
