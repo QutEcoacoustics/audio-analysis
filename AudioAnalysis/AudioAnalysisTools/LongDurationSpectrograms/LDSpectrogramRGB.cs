@@ -706,12 +706,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool doReverseColour = colorMODE.StartsWith("POS");
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
-            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
-            int herzInterval = 1000;
-            int nyquist = this.SampleRate / 2;
-            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
-            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, this.XTicInterval, nyquist, herzInterval);
+            //bmp.Save(@"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages\TESTIMAGE.png");
+
+            //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            //int herzInterval = 1000;
+            //int nyquist = this.SampleRate / 2;
+            //double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
+            //TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            //SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, this.XTicInterval, nyquist, herzInterval);
             return bmp;
         }
 
@@ -1155,7 +1157,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static Image DrawRGBColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
         {
-            // assume all amtricies are normalised and of the same dimensions
+            // assume all matricies are normalised and of the same dimensions
             int rows = redM.GetLength(0); //number of rows
             int cols = redM.GetLength(1); //number
 
