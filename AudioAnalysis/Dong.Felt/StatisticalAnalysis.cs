@@ -152,7 +152,7 @@
         /// </summary>
         /// <param name="acousticEvent"></param>
         /// <returns></returns>
-        public static int CountPOIInEvent(List<RegionRerepresentation> acousticEvent)
+        public static int CountPOIInEvent(List<RegionRepresentation> acousticEvent)
         {
             var result = 0;
             foreach (var e in acousticEvent)
@@ -170,7 +170,7 @@
         /// </summary>
         /// <param name="acousticEvent"></param>
         /// <returns></returns>
-        public static int CountNhInEvent(List<RegionRerepresentation> acousticEvent)
+        public static int CountNhInEvent(List<RegionRepresentation> acousticEvent)
         {
             var result = 0;
             foreach (var e in acousticEvent)
@@ -187,9 +187,9 @@
             return result;
         }
 
-        public static List<List<RegionRerepresentation>> SplitRegionRepresentationListToBlock(List<RegionRerepresentation> regionRepresentationList)
+        public static List<List<RegionRepresentation>> SplitRegionRepresentationListToBlock(List<RegionRepresentation> regionRepresentationList)
         {
-            var result = new List<List<RegionRerepresentation>>();
+            var result = new List<List<RegionRepresentation>>();
             var regionCountInBlock = 0;
             var blockCount = 0;
             if (regionRepresentationList != null)
@@ -200,7 +200,7 @@
             for (int i = 0; i < regionRepresentationList.Count; i += regionCountInBlock)
             {
                 var tempResult = StatisticalAnalysis.SubRegionFromRegionList(regionRepresentationList, i, regionCountInBlock);
-                var temp = new List<RegionRerepresentation>();
+                var temp = new List<RegionRepresentation>();
                 foreach (var t in tempResult)
                 {
                     temp.Add(t);
@@ -210,11 +210,11 @@
             return result;
         }
         
-        public static RegionRerepresentation[,] RegionRepreListToMatrix(List<RegionRerepresentation> region)
+        public static RegionRepresentation[,] RegionRepreListToMatrix(List<RegionRepresentation> region)
         {
             var rowsCount = region[0].NhCountInRow;
             var colsCount = region[0].NhCountInCol;
-            var result = new RegionRerepresentation[rowsCount, colsCount];
+            var result = new RegionRepresentation[rowsCount, colsCount];
 
             for (int i = 0; i < rowsCount; i++)
             {
@@ -242,9 +242,9 @@
             return candidates;
         }
 
-        public static List<RegionRerepresentation> SubRegionFromRegionList(List<RegionRerepresentation> regionList, int startIndex, int count)
+        public static List<RegionRepresentation> SubRegionFromRegionList(List<RegionRepresentation> regionList, int startIndex, int count)
         {
-            var result = new List<RegionRerepresentation>();
+            var result = new List<RegionRepresentation>();
             var endIndex = startIndex + count;
             for (int i = startIndex; i < endIndex; i++)
             {
@@ -1262,9 +1262,9 @@
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
         /// <returns></returns>
-        public static RegionRerepresentation[,] RegionRepresentationListToArray(List<RegionRerepresentation> candidatesList, int rowsCount, int colsCount)
+        public static RegionRepresentation[,] RegionRepresentationListToArray(List<RegionRepresentation> candidatesList, int rowsCount, int colsCount)
         {
-            var result = new RegionRerepresentation[rowsCount, colsCount];
+            var result = new RegionRepresentation[rowsCount, colsCount];
             var listCount = candidatesList.Count;
             for (int i = 0; i < listCount; i++)
             {
@@ -1278,7 +1278,7 @@
         /// </summary>
         /// <param name="scoreVectorList"></param>
         /// <returns></returns>
-        public static double ScoreVectorStatisticalAnalysis(List<List<RegionRerepresentation>> scoreVectorList)
+        public static double ScoreVectorStatisticalAnalysis(List<List<RegionRepresentation>> scoreVectorList)
         {
             var frequencyBandCount = scoreVectorList.Count;
             var frameCount = 0;
@@ -1345,7 +1345,7 @@
             return result;
         }
 
-        public static List<Candidates> ConvertCombinedDistanceToSimilarityScore(List<Candidates> candidates, List<RegionRerepresentation> candidatesList,
+        public static List<Candidates> ConvertCombinedDistanceToSimilarityScore(List<Candidates> candidates, List<RegionRepresentation> candidatesList,
             double weight1, double weight2)
         {
             var result = new List<Candidates>();

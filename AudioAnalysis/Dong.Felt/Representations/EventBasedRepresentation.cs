@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Dong.Felt.Representations;
 using Dong.Felt.Configuration;
 
 namespace Dong.Felt.Representations
@@ -179,61 +180,61 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="queryRepresentations"></param>
-        ///// <param name="candidateEventList"></param>
-        ///// <param name="centroidFreqOffset"> 
-        ///// </param>
-        ///// <returns></returns>
-        //public static List<List<EventBasedRepresentation>> extractAcousticEventList(SpectrogramStandard spectrogram,
-        //    List<EventBasedRepresentation> queryRepresentations,
-        //    List<EventBasedRepresentation> candidateEventList,
-        //    int centroidFreqOffset,
-        //    Query query)
-        //{
-        //    var result = new List<List<EventBasedRepresentation>>();
-        //    var queryDurationInPixel = (int)(query.duration / 1000 / query.bottomLeftEvent.TimeScale);
-        //    var queryFreqRangeInPixel = (int)((query.maxFrequency - query.minFrequency) / query.bottomLeftEvent.FreqScale);
-        //    var startCentriod = query.bottomLeftEvent.Centroid;
-            
-        //    var maxFrame = spectrogram.FrameCount;
-        //    var maxFreq = spectrogram.Configuration.FreqBinCount;            
-        //    var potentialCandidateStart = new List<EventBasedRepresentation>();
-        //    foreach (var c in candidateEventList)
-        //    {
-        //        if (Math.Abs(c.Centroid.Y - startCentriod.Y) <= centroidFreqOffset)
-        //        {
-        //            potentialCandidateStart.Add(c);
-        //        }
-        //    }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queryRepresentations"></param>
+        /// <param name="candidateEventList"></param>
+        /// <param name="centroidFreqOffset"> 
+        /// </param>
+        /// <returns></returns>
+        public static List<List<EventBasedRepresentation>> extractAcousticEventList(SpectrogramStandard spectrogram,
+            RegionRepresentation queryRepresentations,
+            List<EventBasedRepresentation> candidateEventList,
+            int centroidFreqOffset,
+            Query query)
+        {
+            var result = new List<List<EventBasedRepresentation>>();
+            var queryDurationInPixel = (int)(query.duration / 1000 / queryRepresentations.bottomLeftEvent.TimeScale);
+            var queryFreqRangeInPixel = (int)((query.maxFrequency - query.minFrequency) / queryRepresentations.bottomLeftEvent.FreqScale);
+            var startCentriod = queryRepresentations.bottomLeftEvent.Centroid;
 
-        //    foreach (var pc in potentialCandidateStart)
-        //    {
-        //        var realCandidate = new List<EventBasedRepresentation>();
-        //        var maxFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 + queryFreqRangeInPixel + 1;
-        //        var minFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 - 1;
-        //        var startTimePixelIndex = pc.Centroid.X - pc.Width / 2 - 1;
-        //        var endTimePixelIndex = pc.Centroid.X - pc.Width / 2 + queryDurationInPixel + 1;
-        //        if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
-        //            && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
-        //        {
-        //            foreach (var c in candidateEventList)
-        //            {
-        //                if (c.Centroid.X > startTimePixelIndex && c.Centroid.X < endTimePixelIndex)
-        //                {
-        //                    if (c.Centroid.Y > minFreqPixelIndex && c.Centroid.Y < maxFreqPixelIndex)
-        //                    {
-        //                        realCandidate.Add(c);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        result.Add(realCandidate);
-        //    }
-        //    return result;
-        //}
+            var maxFrame = spectrogram.FrameCount;
+            var maxFreq = spectrogram.Configuration.FreqBinCount;
+            var potentialCandidateStart = new List<EventBasedRepresentation>();
+            foreach (var c in candidateEventList)
+            {
+                if (Math.Abs(c.Centroid.Y - startCentriod.Y) <= centroidFreqOffset)
+                {
+                    potentialCandidateStart.Add(c);
+                }
+            }
+
+            foreach (var pc in potentialCandidateStart)
+            {
+                var realCandidate = new List<EventBasedRepresentation>();
+                var maxFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 + queryFreqRangeInPixel + 1;
+                var minFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 - 1;
+                var startTimePixelIndex = pc.Centroid.X - pc.Width / 2 - 1;
+                var endTimePixelIndex = pc.Centroid.X - pc.Width / 2 + queryDurationInPixel + 1;
+                if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
+                    && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
+                {
+                    foreach (var c in candidateEventList)
+                    {
+                        if (c.Centroid.X > startTimePixelIndex && c.Centroid.X < endTimePixelIndex)
+                        {
+                            if (c.Centroid.Y > minFreqPixelIndex && c.Centroid.Y < maxFreqPixelIndex)
+                            {
+                                realCandidate.Add(c);
+                            }
+                        }
+                    }
+                }
+                result.Add(realCandidate);
+            }
+            return result;
+        }
 
         #endregion
     }

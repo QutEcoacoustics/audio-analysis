@@ -152,8 +152,8 @@
                     //featurePropertySet, outputDirectory.FullName);
 
                     /// Ridge detection analysis
-                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                        featurePropertySet);
+                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                    //    featurePropertySet);
                     /// Jie request ridge detection
                     //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
 
@@ -392,7 +392,7 @@
                 queryNhRepresentationList, queryAduioFiles[i], spectrogram);
 
                 /// To get all the candidates  
-                var candidatesList = new List<RegionRerepresentation>();
+                var candidatesList = new List<RegionRepresentation>();
                 var seperateCandidatesList = new List<List<Candidates>>();
                 if (!Directory.Exists(inputFileDirectory))
                 {
@@ -619,7 +619,7 @@
                 //    query.minFrequency, queryAduioFiles[i]);
                 //result.Add(candidateItem);
                 /// To get all the candidates  
-                var candidatesList = new List<RegionRerepresentation>();
+                var candidatesList = new List<RegionRepresentation>();
                 var seperateCandidatesList = new List<List<Candidates>>();
                 if (!Directory.Exists(inputFileDirectory))
                 {
@@ -827,7 +827,7 @@
                 var eventsRepresentation =
                     EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, acousticEventlist);
                 
-                var queryRepresentation = new RegionRerepresentation(eventsRepresentation, queryAduioFiles[i], query);               
+                var queryRepresentation = new RegionRepresentation(eventsRepresentation, queryAduioFiles[i], query);               
                 // 2. search through training or testing audio files
                 if (!Directory.Exists(inputFileDirectory))
                 {
@@ -836,7 +836,7 @@
                 Log.Info("# read all the training/test audio files");
                 var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);               
                 var audioFilesCount = candidatesAudioFiles.Count();
-                var allCandidateList = new List<RegionRerepresentation>();                                  
+                var allCandidateList = new List<RegionRepresentation>();                                  
                 for (int j = 0; j < audioFilesCount; j++)
                 {
                     Log.Info("# read each training/test audio file");                    
@@ -852,11 +852,11 @@
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
                         EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, candidateAElist);
-                    //var candidatesEventList = EventBasedRepresentation.extractAcousticEventList(candidateSpectrogram,
-                    //    queryRepresentation.EventList, candidatesEventsRepresentation, 12, query);
+                    var candidatesEventList = EventBasedRepresentation.extractAcousticEventList(candidateSpectrogram,
+                        queryRepresentation, candidatesEventsRepresentation, 12, query);
                     //foreach (var c in candidatesEventList)
                     //{
-                    //    var candidate = new RegionRerepresentation(
+                    //    var candidate = new RegionRepresentation(
                     //    c,
                     //    0,
                     //    0,
@@ -992,7 +992,7 @@
                 //    0.0, queryAduioFiles[i]);
                 //result.Add(candidateItem);
                 /// To get all the candidates  
-                var candidatesList = new List<RegionRerepresentation>();
+                var candidatesList = new List<RegionRepresentation>();
                 var seperateCandidatesList = new List<List<Candidates>>();
                 if (!Directory.Exists(inputFileDirectory))
                 {
