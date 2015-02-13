@@ -112,7 +112,7 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="file"></param>
         /// <param name="ridgeRegion"></param>
-        public static void RegionRepresentationListToCSV(FileInfo file, List<RegionRerepresentation> ridgeRegion)
+        public static void RegionRepresentationListToCSV(FileInfo file, List<RegionRepresentation> ridgeRegion)
         {
             Csv.WriteToCsv(file, ridgeRegion);
         }

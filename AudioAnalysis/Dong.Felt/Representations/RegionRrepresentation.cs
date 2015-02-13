@@ -10,7 +10,7 @@ namespace Dong.Felt.Representations
     using System.Linq;
     using System.Text;
 
-    public class RegionRerepresentation : RidgeDescriptionNeighbourhoodRepresentation
+    public class RegionRepresentation : RidgeDescriptionNeighbourhoodRepresentation
     {
         #region public properties.
 
@@ -140,7 +140,7 @@ namespace Dong.Felt.Representations
         /// <summary>
         /// Default constructor
         /// </summary>
-        public RegionRerepresentation()
+        public RegionRepresentation()
         {
         }
 
@@ -154,7 +154,7 @@ namespace Dong.Felt.Representations
         /// <param name="nhCountInCol"></param>
         /// <param name="rowIndex"></param>
         /// <param name="colIndex"></param>
-        public RegionRerepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, 
+        public RegionRepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, 
             int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex, string file)
         {
             this.MaxFrequencyIndex = frequencyIndex;
@@ -199,7 +199,7 @@ namespace Dong.Felt.Representations
             
         }
 
-        public RegionRerepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
+        public RegionRepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
             int nhCountInRow, int nhCountInCol, double frequencyIndex, double frameIndex,
             int rowIndex, int colIndex, string audioFile)
         {
@@ -242,7 +242,7 @@ namespace Dong.Felt.Representations
             this.SourceAudioFile = audioFile;
         }
 
-        public RegionRerepresentation(List<EventBasedRepresentation> eventRepresentations, string file, Query query)
+        public RegionRepresentation(List<EventBasedRepresentation> eventRepresentations, string file, Query query)
         {            
             var queryEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(
                     eventRepresentations,
