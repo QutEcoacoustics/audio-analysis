@@ -25,11 +25,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             LdSpectrogramConfig ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(longDurationSpectrogramConfigFile);
             string fileStem = ldSpConfig.FileName;
+            string analysisType = ldSpConfig.AnalysisType;
             TimeSpan dataScale = ldSpConfig.IndexCalculationDuration;
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN" };
             Dictionary<string, double[,]> spectra = ReadCSVFiles(ldSpConfig.InputDirectoryInfo, fileStem, keys);
+            // the spectra are in standard visual orientation
+            // get the number of columns
 
             // standard scales in seconds per pixel.
             double[] imageScales = {0.2, 0.6, 1, 2, 6, 12, 24, 60 };
@@ -58,7 +61,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
             // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
-            int nameLength = fileStem.Length - 16;
+            int nameLength = fileStem.Length - analysisType.Length - 1;
             fileStem = fileStem.Substring(0, nameLength);
 
             List<double[]> frameData = ReadFrameData(ldSpConfig, startTimeOfMaxImage, maxImageDuration, fileStem);
@@ -72,7 +75,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // get the data // #### TODO  #################################################################################
             TimeSpan imageScale1 = TimeSpan.FromSeconds(0.1);
-            double[,] cvrMatrix = ExpandMatrixOfIndices(spectra["CVR"], focalTime, dataScale, imageScale1, imageWidth);
+            double[,] cvrMatrix = spectra["CVR"];
+            //double[,] cvrMatrix = ExpandMatrixOfIndices(spectra["CVR"], focalTime, dataScale, imageScale1, imageWidth);
             //double coverThreshold = 0.8;
 
             int factor = 5;
@@ -269,7 +273,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // compress spectrograms to correct scale
             if (compressionFactor > 1)
-                spectralSelection = CompressFrameSpectrograms(spectralSelection, compressionFactor);
+                spectralSelection = TemporalMatrix.CompressFrameSpectrograms(spectralSelection, compressionFactor);
 
             spectralSelection = MatrixTools.MatrixRotate90Anticlockwise(spectralSelection);
 
@@ -329,18 +333,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             g1.DrawImage(spectrogramImage, Xoffset, 0);
 
             return image;
-        }
-
-        public static double[,] ExpandMatrixOfIndices(double[,] matrix, TimeSpan focalTime, TimeSpan dataScale, TimeSpan opScale, int opColumns)
-        {
-            double scalingFactor = Math.Round(dataScale.TotalMilliseconds / opScale.TotalMilliseconds);
-            if(scalingFactor <= 1.0) return null;
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            var newMatrix = new double[rowCount, opColumns];
-            //double[] tempArray = new double[scalingFactor];
-
-            return newMatrix;
         }
 
 
@@ -434,36 +426,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        /// <summary>
-        /// This method assumes that the matrix spectrograms are oriented so that the rows = spectra
-        /// and the columns = freq bins, i.e. rotated 90 degrees from normal orientation.
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="compressionFactor"></param>
-        /// <returns></returns>
-        public static double[,] CompressFrameSpectrograms(double[,] matrix, int compressionFactor)
-        {
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            int compressedLength = (rowCount / compressionFactor);
-            var newMatrix = new double[compressedLength, colCount];
-            double[] tempArray = new double[compressionFactor];
-            int step = compressionFactor - 1;
-            for (int c = 0; c < colCount; c++)
-            {
-                int rowIndex = 0;
-                for (int r = 0; r < rowCount - compressionFactor; r += step)
-                {
-                    rowIndex = r / compressionFactor;
-                    for (int i = 0; i < compressionFactor; i++) 
-                        tempArray[i] = matrix[r + i, c];
-                    newMatrix[rowIndex, c] = tempArray.Average();
-                }
-            }
-            return newMatrix;
-        }
-
-
         public static List<double[]> ReadFrameData(LdSpectrogramConfig config, TimeSpan starttime, TimeSpan maxDuration, string fileStem)
         {
             DirectoryInfo dataDir = config.InputDirectoryInfo;
@@ -523,8 +485,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image DrawTitleBarOfZoomSpectrogram(string title, int width)
         {
             //Image colourChart = LDSpectrogramRGB.DrawColourScale(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 2);
-
-            Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
+            int height = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
+            Bitmap bmp = new Bitmap(width, height);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
             Pen pen = new Pen(Color.White);
@@ -550,8 +512,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             g.DrawLine(new Pen(Color.LightGray), 0, 0, width, 0);//draw upper boundary
             g.DrawLine(new Pen(Color.LightGray), 0, 1, width, 1);//draw upper boundary
-            g.DrawLine(new Pen(Color.Red),  0, 2, 0, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 1);                //draw start boundary
-            g.DrawLine(new Pen(Color.Pink),  width - 1, 2, width - 1, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 1);//draw end boundary
+            g.DrawLine(new Pen(Color.LightGray), 0, height - 1, width, height - 1); //draw lower boundary
+            g.DrawLine(new Pen(Color.Red), 0, 2, 0, height - 1);                    //draw start boundary
+            g.DrawLine(new Pen(Color.Pink), width - 1, 2, width - 1, height - 1);   //draw end boundary
             return bmp;
         }
 
