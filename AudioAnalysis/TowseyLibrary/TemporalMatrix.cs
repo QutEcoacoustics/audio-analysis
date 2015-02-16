@@ -48,6 +48,25 @@ namespace TowseyLibrary
             return TimeSpan.Zero;
         }
 
+        /// <summary>
+        /// changes temporal dimension from rows to columns or vice-versa
+        /// </summary>
+        public void SwapTemporalDimension()
+        {
+            if (this.TemporalDirection.Equals("rows")) // orientation is 90 degrees clockwise from standard visual orientation
+            {
+                this.TemporalDirection = "columns";
+                this.Matrix = MatrixTools.MatrixRotate90Anticlockwise(this.Matrix);
+            }
+            else if (this.TemporalDirection.Equals("columns")) // orientation is standard visual orientation
+            {
+                this.TemporalDirection = "rows";
+                this.Matrix = MatrixTools.MatrixRotate90Clockwise(this.Matrix);
+            }
+
+        }
+
+
         public double[,] GetDataBlock(TimeSpan startTime, TimeSpan blockDuration)
         {
             int frameCount = (int)(blockDuration.Ticks / this.DataScale.Ticks);
@@ -90,7 +109,7 @@ namespace TowseyLibrary
         {
             double[,] subMatrix = this.GetDataBlock(startTime, blockDuration);
 
-            int scalingFactor = (int)Math.Round(newScale.TotalMilliseconds / this.DataScale.TotalMilliseconds);
+            int scalingFactor = (int)Math.Round(this.DataScale.TotalMilliseconds / newScale.TotalMilliseconds);
             if (scalingFactor <= 1) return subMatrix;
 
             //int step = scalingFactor - 1;
