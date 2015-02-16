@@ -87,11 +87,14 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
             // zoomable spectrograms
-            string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
+            string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST_Towsey.Acoustic";
+            //string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
+
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndices";
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.EclipseFarmstay";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
             string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
 
@@ -143,7 +146,8 @@ namespace AnalysisPrograms
             //TimeSpan focalTime = TimeSpan.Zero;
             TimeSpan focalTime = TimeSpan.FromMinutes(16);
             int imageWidth = 1500;
-            //ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig, focalTime, imageWidth);
+            //ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig, 
+            //                                                      focalTime, imageWidth);
 
 
             ZoomTiledSpectrograms.DrawSuperTiles(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig);
