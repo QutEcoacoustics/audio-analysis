@@ -32,7 +32,6 @@ namespace AnalysisPrograms.Production
         {
             this.DebugOption = DebugOptions.Prompt;
         }
-
            
         [ArgRequired]
         [ArgPosition(0)]
@@ -87,7 +86,6 @@ namespace AnalysisPrograms.Production
         [ArgPosition(1)]
         public string ActionName { get; set; }
     }
-
     
     public class SourceArguments
     {
