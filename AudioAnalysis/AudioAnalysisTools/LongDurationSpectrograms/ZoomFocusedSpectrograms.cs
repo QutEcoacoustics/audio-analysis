@@ -178,6 +178,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double blendWt1 = 0.1;
             double blendWt2 = 0.9;
 
+            if (imageScaleInMsPerPixel > 15000)
+            {
+                blendWt1 = 1.0;
+                blendWt2 = 0.0;
+            }
+            else
             if (imageScaleInMsPerPixel > 5000)
             {
                 blendWt1 = 0.9;
@@ -369,9 +375,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return spectrogramMatrices;
         }
 
-        public static Dictionary<string, double[,]> CompressIndexSpectrograms(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan defaultTimeScale)
+        /// <summary>
+        /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and required image scale.
+        /// In all cases, the compression is done by taking the average
+        /// </summary>
+        /// <param name="spectra"></param>
+        /// <param name="imageScale"></param>
+        /// <param name="dataScale"></param>
+        /// <returns></returns>
+        public static Dictionary<string, double[,]> CompressIndexSpectrograms(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan dataScale)
         {
-            int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / defaultTimeScale.TotalMilliseconds);
+            int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
             var compressedSpectra = new Dictionary<string, double[,]>();
             int step = scalingFactor - 1;
             foreach (string key in spectra.Keys)
@@ -392,9 +406,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         for (int c = 0; c <= colCount - scalingFactor; c += step)
                         {
                             colIndex = c / scalingFactor;
-                            for (int i = 0; i < scalingFactor; i++) tempArray[i] = matrix[r, c + i];
+                            for (int i = 0; i < scalingFactor; i++) 
+                                tempArray[i] = matrix[r, c + i];
                             double entropy = DataTools.Entropy_normalised(tempArray);
                             if (Double.IsNaN(entropy)) entropy = 1.0;
+                            //entropy = 1 - entropy - 0.4;
+                            //if (entropy < 0.0) entropy = 0.0;
                             newMatrix[r, colIndex] = 1 - entropy;
                         }
                     }

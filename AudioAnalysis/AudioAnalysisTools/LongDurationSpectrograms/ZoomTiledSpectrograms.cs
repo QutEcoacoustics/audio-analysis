@@ -267,6 +267,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double blendWt1 = 0.1;
             double blendWt2 = 0.9;
 
+            if (imageScaleInMsPerPixel > 15000)
+            {
+                blendWt1 = 1.0;
+                blendWt2 = 0.0;
+            }
+            else
             if (imageScaleInMsPerPixel > 5000)
             {
                 blendWt1 = 0.9;
@@ -487,7 +493,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double[] SpectralFrameScale { get; set; }
         public double lowerNormalisationBoundForDecibelSpectrograms = -100;
         public double LowerNormalisationBoundForDecibelSpectrograms { get; set; }
-        public double upperNormalisationBoundForDecibelSpectrograms = -40;
+        public double upperNormalisationBoundForDecibelSpectrograms = -20;
         public double UpperNormalisationBoundForDecibelSpectrograms { get; set; }
 
 
