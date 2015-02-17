@@ -248,9 +248,14 @@ namespace AudioAnalysisTools.Indices
 
 
             // (B) ################################## EXTRACT INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
+            var spectra = result.SpectralIndexValues;
+
             // Note that the spectrogram has had the DC bin removed. i.e. has only 256 columns.
             double[,] amplitudeSpectrogram = dspOutput1.amplitudeSpectrogram; // get amplitude spectrogram.
             int nyquistBin = dspOutput1.NyquistBin;
+
+            // i: CALCULATE THE AVERAGE AMPLITUDE SPECTRUM
+            spectra.FFT = MatrixTools.GetColumnsAverages(amplitudeSpectrogram);
 
             // calculate the bin id of boundary between low & mid frequency bins. This is to avoid low freq bins that contain anthrophony.
             int lowerBinBound = (int)Math.Ceiling(LowFreqBound / dspOutput1.FreqBinWidth);
@@ -269,8 +274,7 @@ namespace AudioAnalysisTools.Indices
                 dspOutput1.NyquistBin  = (int)Math.Floor(originalNyquistFreq / dspOutput1.FreqBinWidth); // note that binwidth does not change
             }
 
-            // i: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
-            var spectra = result.SpectralIndexValues;
+            // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);           
             spectra.ACI = aciSpectrum;
 
@@ -278,7 +282,7 @@ namespace AudioAnalysisTools.Indices
             double[] reducedAciSpectrum = DataTools.Subarray(aciSpectrum, lowerBinBound, reducedFreqBinCount);
             summaryIndexValues.AcousticComplexity = reducedAciSpectrum.Average();
 
-            // ii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
+            // iii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
             double[] temporalEntropySpectrum = AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram);
             for (int i = 0; i < temporalEntropySpectrum.Length; i++)
             {
@@ -288,7 +292,7 @@ namespace AudioAnalysisTools.Indices
             spectra.ENT = temporalEntropySpectrum;
 
 
-            // iii: remove background noise from the amplitude spectrogram
+            // iv: remove background noise from the amplitude spectrogram
             amplitudeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(amplitudeSpectrogram, spectralAmplitudeBGN);
             double nhThreshold = 0.015; // AMPLITUDE THRESHOLD for smoothing background
             amplitudeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(amplitudeSpectrogram, nhThreshold);
@@ -296,7 +300,7 @@ namespace AudioAnalysisTools.Indices
             ////DataTools.writeBarGraph(modalValues);
 
 
-            // iv: ENTROPY OF AVERAGE & VARIANCE SPECTRA - at this point the spectrogram is a noise reduced amplitude spectrogram
+            // v: ENTROPY OF AVERAGE & VARIANCE SPECTRA - at this point the spectrogram is a noise reduced amplitude spectrogram
             //     Then reverse the values i.e. calculate 1-Hs and 1-Hv and 1- Hp for energy concentration
             var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, reducedFreqBinCount);
 
@@ -308,11 +312,11 @@ namespace AudioAnalysisTools.Indices
    
 
 
-            // v: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
+            // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
             summaryIndexValues.EntropyPeaks = 1 - AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin);
 
-            // vi: calculate RAIN and CICADA indices.
+            // vii: calculate RAIN and CICADA indices.
             Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
 
             summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
@@ -415,6 +419,7 @@ namespace AudioAnalysisTools.Indices
                 return result;
             }
 
+            /*
             // #######################################################################################################################################################
             // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
 
@@ -469,6 +474,8 @@ namespace AudioAnalysisTools.Indices
 
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0)); // location of cluster hits
             }
+            */
+
 
             result.Sg = sonogram;
             result.Hits = hits;
@@ -486,78 +493,6 @@ namespace AudioAnalysisTools.Indices
         //  OTHER METHODS
         // ########################################################################################################################################################################
 
-
-        /// <summary>
-        /// This methods adds a colour code at the top of spectra where the high amplitude and clipping indices exceed an arbitrary threshold value.
-        /// IMPORTANT: IT ASSUMES THE ultimate COLOUR MAPS for the LDSPectrograms are BGN-AVG-CVR and ACI-ENT-EVN.
-        /// This is a quick and dirty solution. Could be done better one day!
-        /// </summary>
-        /// <param name="spectra"></param>
-        /// <param name="highAmplCountsPerSecond"></param>
-        /// <param name="clipCountsPerSecond"></param>
-        //public static void MarkClippedSpectra(SpectralIndexValues spectra, double highAmplCountsPerSecond, double clipCountsPerSecond)
-        //{
-        //    // Ignore when index values are small
-        //    if (highAmplCountsPerSecond <= 0.02)
-        //    {
-        //        return; 
-        //    }
-
-        //    int freqBinCount = spectra.BGN.Length;
-        //    for (int i = freqBinCount - 20; i < freqBinCount; i++)
-        //    {
-        //        // this will paint top of each spectrum a red colour.
-        //        spectra.BGN[i] = 0.0; // red 0.0 = the maximum possible value
-        //        spectra.AVG[i] = 0.0; // green
-        //        spectra.CVR[i] = 0.0; // blue
-
-        //        spectra.ACI[i] = 1.0;
-        //        spectra.ENT[i] = 0.0;
-        //        spectra.SPT[i] = 0.0;
-        //        spectra.EVN[i] = 0.0;
-        //    }
-
-        //    // Ignore when index values are very small
-        //    if (clipCountsPerSecond <= 0.05)
-        //    {
-        //        return;
-        //    }
-
-        //    // Setting these values above the normalisation MAX will turn bin N-5 white
-        //    spectra.BGN[freqBinCount - 5] = 0.0; // red
-        //    spectra.AVG[freqBinCount - 5] = 100.0; // dB
-        //    spectra.CVR[freqBinCount - 5] = 100.0;
-        //    spectra.ENT[freqBinCount - 5] = 2.0;
-        //    spectra.SPT[freqBinCount - 5] = 100.0;
-        //    spectra.EVN[freqBinCount - 5] = 100.0;
-
-        //    // Ignore when index values are small
-        //    if (clipCountsPerSecond <= 0.5)
-        //    {
-        //        return;
-        //    }
-
-        //    // Setting these values above the normalisation MAX will turn bin N-7 white
-        //    spectra.AVG[freqBinCount - 7] = 100.0;
-        //    spectra.CVR[freqBinCount - 7] = 100.0;
-        //    spectra.ENT[freqBinCount - 7] = 2.0;
-        //    spectra.SPT[freqBinCount - 7] = 100.0;
-        //    spectra.EVN[freqBinCount - 7] = 100.0;
-
-        //    // Ignore when index values are small
-        //    if (clipCountsPerSecond <= 1.0)
-        //    {
-        //        return;
-        //    }
-
-        //    // Setting these values above the normalisation MAX will turn bin N-9 white
-        //    spectra.AVG[freqBinCount - 9] = 100.0;
-        //    spectra.CVR[freqBinCount - 9] = 100.0;
-        //    spectra.ENT[freqBinCount - 9] = 2.0;
-        //    spectra.SPT[freqBinCount - 9] = 100.0;
-        //    spectra.EVN[freqBinCount - 9] = 100.0;
-
-        //}
 
 
 
