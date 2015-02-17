@@ -3,6 +3,7 @@ namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
     using System.Linq;
     using System.Text;
     using Representations;
@@ -13,6 +14,8 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using TowseyLibrary;
     using System.Globalization;
+    using System.Runtime.InteropServices;
+
     public class Indexing
     {
 
@@ -430,6 +433,13 @@ namespace Dong.Felt
                 result = Indexing.Feature5EuclideanDist2(query, candidates,
                     weight1, weight2, featurePropSet);
             }
+            return result;
+        }
+
+        public static List<Candidates> DistanceCompute(RegionRepresentation query, List<RegionRepresentation> candidates)
+        {
+            var result = new List<Candidates>();
+
             return result;
         }
 
@@ -1029,25 +1039,92 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<Candidates> EventBasedDistance(List<EventBasedRepresentation> queryRepresentations, List<List<EventBasedRepresentation>> candidateList)
+        /// <summary>
+        /// This distance calculation will be done between a query and a candidate.
+        /// It is obtainted by computing the overlap between the query events and candidate events.
+        /// </summary>
+        /// <param name="queryRepresentation"></param>
+        /// <param name="candidateList"></param>
+        /// <returns></returns>
+        public static List<Candidates> EventBasedDistance(RegionRepresentation queryRepresentation, 
+            List<RegionRepresentation> candidateList)
         {
             var result = new List<Candidates>();
-            var queryEventLength = queryRepresentations.Count();
+            // get the relevant index inside the region
+            var relevantQueryRepresentation = GetRelevantIndexInRegion(queryRepresentation);
+            var eventCount = relevantQueryRepresentation.EventList.Count();
+
             foreach (var c in candidateList)
             {
-                var candidateEventLength = c.Count();
-                if (queryEventLength == candidateEventLength)
+                var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
+                var eventList = relevantCandidateRepresentation.EventList;
+                // find the cloest event to compare
+                var overalScore = 0.0;
+                foreach (var q in relevantQueryRepresentation.EventList)
                 {
-                    
+                    var index = FindCloestEvent(eventList, q);
+                    var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                            q.Left,
+                            q.Bottom,
+                            q.Left + q.Width,
+                            q.Bottom + q.Height,
+                            eventList[index].Left,
+                            eventList[index].Bottom,
+                            eventList[index].Left + eventList[index].Width,
+                            eventList[index].Bottom + eventList[index].Height);
+                    overalScore += (double)overlap / q.Area;                    
                 }
-                else
-                {
-                    
-                }
-            }
+                var score = overalScore / eventCount;
+                var timeScale = c.EventList[0].TimeScale;
+                var freqScale = c.EventList[0].FreqScale;
+                var candidate = new Candidates(
+                    score,
+                    c.LeftInPixel * timeScale,
+                    (c.RightInPixel - c.LeftInPixel) * timeScale,
+                    c.TopInPixel * freqScale,
+                    c.BottomInPixel * freqScale,
+                    c.SourceAudioFile);
+                result.Add(candidate);
+            }                   
             return result;
         }
-    
-        
+
+        public static RegionRepresentation GetRelevantIndexInRegion(RegionRepresentation events)
+        {          
+            var eventList = events.EventList;
+            var regionBottom = events.BottomInPixel;
+            var regionLeft = events.RightInPixel;
+            foreach (var e in eventList)
+            {
+                e.Bottom = e.Bottom - regionBottom;
+                e.Left = e.Left - regionLeft;
+                e.Centroid = new Point((e.Centroid.X - regionLeft), (e.Centroid.Y - regionBottom));              
+            }
+            var result = new RegionRepresentation(eventList, events.SourceAudioFile);
+            return result;
+        }
+
+        public static int FindCloestEvent(List<EventBasedRepresentation> es, EventBasedRepresentation modal)
+        {
+            var distances = new List<double>(); 
+            foreach (var e in es)
+            {
+                var distance = Distance.EuclideanDistanceForPoint(e.Centroid, modal.Centroid);
+                distances.Add(distance);
+            }
+
+            var distanceArray = distances.ToArray();
+            var min = 10000.0;
+            var index = 0; 
+            for (var i = 0; i < distanceArray.GetLength(0); i++)
+            {                
+                if (distanceArray[i] < min)
+                {
+                    min = distanceArray[i];
+                    index = i;
+                }
+            }
+            return index;
+        }
     }
 }

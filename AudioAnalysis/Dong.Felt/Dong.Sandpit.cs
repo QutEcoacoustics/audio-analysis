@@ -857,8 +857,12 @@
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
                         EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, candidateAElist);
-                    var candidatesEventList = EventBasedRepresentation.extractAcousticEventList(candidateSpectrogram,
-                        queryRepresentation, candidatesEventsRepresentation, 12, query);
+                    var candidatesRepresentationList = EventBasedRepresentation.ExtractAcousticEventList(candidateSpectrogram,
+                        queryRepresentation, candidatesEventsRepresentation, candidatesAudioFiles[j], 12);
+                    foreach (var c in candidatesRepresentationList)
+                    {
+                        allCandidateList.Add(c);
+                    }
                     //foreach (var c in candidatesEventList)
                     //{
                     //    var candidate = new RegionRepresentation(
@@ -874,11 +878,11 @@
                 // 3. Rank the candidates - calculate the distance and output the matched acoustic events.             
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);                                             
                 var candidateDistanceList = new List<Candidates>();                
-                Log.Info("# calculate the distance between a query and a candidate");              
-                //candidateDistanceList = Indexing.EventBasedDistance(queryRepresentation.EventList, allCandidateList);
+                Log.Info("# calculate the distance between a query and a candidate");
+                candidateDistanceList = Indexing.EventBasedDistance(queryRepresentation, allCandidateList);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 // To save all matched acoustic events separately                         
-                var seperateCandidatesList = new List<List<Candidates>>();
+                var separateCandidatesList = new List<List<Candidates>>();
                 if (candidateDistanceList.Count != 0)
                 {
                     for (int l = 0; l < audioFilesCount; l++)
@@ -891,20 +895,20 @@
                                 temp.Add(s);
                             }
                         }
-                        seperateCandidatesList.Add(temp);
+                        separateCandidatesList.Add(temp);
                     }
                 }
-                Log.InfoFormat("All seperated candidates: {0}", seperateCandidatesList.Count);
+                Log.InfoFormat("All separated candidates: {0}", separateCandidatesList.Count);
                 var defaultCandidate = new Candidates(0.0, 0.0, 0.0, 0.0, 0.0, candidatesAudioFiles[0]);
                 var finalOutputCandidates = new List<Candidates>();
-                if (seperateCandidatesList.Count != 0)
+                if (separateCandidatesList.Count != 0)
                 {
-                    for (int index = 0; index < seperateCandidatesList.Count; index++)
+                    for (int index = 0; index < separateCandidatesList.Count; index++)
                     {
-                        seperateCandidatesList[index] = seperateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
-                        if (seperateCandidatesList[index].Count != 0)
+                        separateCandidatesList[index] = separateCandidatesList[index].OrderByDescending(x => x.Score).ToList();
+                        if (separateCandidatesList[index].Count != 0)
                         {
-                            var top1 = seperateCandidatesList[index][0];
+                            var top1 = separateCandidatesList[index][0];
                             finalOutputCandidates.Add(top1);
                         }
                         else
@@ -1006,7 +1010,8 @@
                 Log.Info("# read all the training/test audio files");
                 var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
                 var audioFilesCount = candidatesAudioFiles.Count();
-                /// to get candidate region Representation                      
+                /// to get candidate region Representation 
+                
                 var finalOutputCandidates = new List<Candidates>();
 
                 for (int j = 0; j < audioFilesCount; j++)
