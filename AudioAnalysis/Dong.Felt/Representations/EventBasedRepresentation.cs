@@ -58,7 +58,7 @@ namespace Dong.Felt.Representations
 
         #region Public Methods
 
-        public EventBasedRepresentation(double timeScale, double freqScale, double nyquistFreq,
+        public EventBasedRepresentation(double timeScale, double freqScale,
             double maxFrequency, double minFrequency, double startTime, double endTime)
         {
             this.MaxFreq = maxFrequency;
@@ -136,7 +136,7 @@ namespace Dong.Felt.Representations
             var freqScale = sonogram.FBinWidth;
             foreach (var e in ae)
             {
-                var ep = new EventBasedRepresentation(timeScale, freqScale, sonogram.NyquistFrequency,
+                var ep = new EventBasedRepresentation(timeScale, freqScale, 
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                 ep.TimeScale = timeScale;
                 ep.FreqScale = freqScale;
@@ -188,15 +188,11 @@ namespace Dong.Felt.Representations
         /// <param name="centroidFreqOffset"> 
         /// </param>
         /// <returns></returns>
-        public static List<List<EventBasedRepresentation>> extractAcousticEventList(SpectrogramStandard spectrogram,
+        public static List<RegionRepresentation> ExtractAcousticEventList(SpectrogramStandard spectrogram,
             RegionRepresentation queryRepresentations,
-            List<EventBasedRepresentation> candidateEventList,
-            int centroidFreqOffset,
-            Query query)
+            List<EventBasedRepresentation> candidateEventList, string file, int centroidFreqOffset)
         {
-            var result = new List<List<EventBasedRepresentation>>();
-            var queryDurationInPixel = (int)(query.duration / 1000 / queryRepresentations.bottomLeftEvent.TimeScale);
-            var queryFreqRangeInPixel = (int)((query.maxFrequency - query.minFrequency) / queryRepresentations.bottomLeftEvent.FreqScale);
+            var result = new List<RegionRepresentation>();
             var startCentriod = queryRepresentations.bottomLeftEvent.Centroid;
 
             var maxFrame = spectrogram.FrameCount;
@@ -211,12 +207,13 @@ namespace Dong.Felt.Representations
             }
 
             foreach (var pc in potentialCandidateStart)
-            {
+            {                                        
                 var realCandidate = new List<EventBasedRepresentation>();
-                var maxFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 + queryFreqRangeInPixel + 1;
-                var minFreqPixelIndex = pc.Centroid.Y - pc.Width / 2 - 1;
-                var startTimePixelIndex = pc.Centroid.X - pc.Width / 2 - 1;
-                var endTimePixelIndex = pc.Centroid.X - pc.Width / 2 + queryDurationInPixel + 1;
+                var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
+                var minFreqPixelIndex =  pc.Bottom - queryRepresentations.bottomToBottomLeftVertex;
+                var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
+                var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
+
                 if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
                     && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
                 {
@@ -226,12 +223,37 @@ namespace Dong.Felt.Representations
                         {
                             if (c.Centroid.Y > minFreqPixelIndex && c.Centroid.Y < maxFreqPixelIndex)
                             {
+                                if (c.Bottom < minFreqPixelIndex)
+                                {
+                                    c.Bottom = minFreqPixelIndex;
+                                }
+                                if (c.Bottom + c.Height > maxFreqPixelIndex)
+                                {
+                                    c.Height = maxFreqPixelIndex - c.Height;
+                                }
+                                if (c.Left < startTimePixelIndex)
+                                {
+                                    c.Left = startTimePixelIndex;
+                                }
+                                if (c.Left + c.Width > endTimePixelIndex)
+                                {
+                                    c.Width = endTimePixelIndex - c.Left;
+                                }
                                 realCandidate.Add(c);
                             }
                         }
                     }
-                }
-                result.Add(realCandidate);
+                }                 
+                var candidateRegionRepre = new RegionRepresentation(realCandidate, file);
+                candidateRegionRepre.bottomToBottomLeftVertex = minFreqPixelIndex;
+                candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex;
+                candidateRegionRepre.rightToBottomLeftVertex = startTimePixelIndex;
+                candidateRegionRepre.leftToBottomLeftVertex = endTimePixelIndex;
+                candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
+                candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
+                candidateRegionRepre.LeftInPixel = startTimePixelIndex;
+                candidateRegionRepre.RightInPixel = endTimePixelIndex; 
+                result.Add(candidateRegionRepre);
             }
             return result;
         }

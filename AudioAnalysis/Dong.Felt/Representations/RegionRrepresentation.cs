@@ -120,6 +120,14 @@ namespace Dong.Felt.Representations
         /// </summary>
         public int bottomToBottomLeftVertex { get; set; }
 
+        public int TopInPixel { get; set; }
+
+        public int BottomInPixel { get; set; }
+
+        public int LeftInPixel { get; set; }
+
+        public int RightInPixel { get; set; }
+
         public EventBasedRepresentation bottomLeftEvent { get; set; }
       
 
@@ -262,9 +270,31 @@ namespace Dong.Felt.Representations
                 this.leftToBottomLeftVertex = this.bottomLeftEvent.Left - query.LeftInPixel;
                 this.rightToBottomLeftVertex = query.RightInPixel - this.bottomLeftEvent.Left;
                 this.bottomToBottomLeftVertex = this.bottomLeftEvent.Bottom - query.BottomInPixel;
+                this.TopInPixel = query.TopInPixel;
+                this.BottomInPixel = query.BottomInPixel;
+                this.LeftInPixel = query.LeftInPixel;
+                this.RightInPixel = query.RightInPixel; 
             }           
             this.SourceAudioFile = file;
         }
+
+        public RegionRepresentation(List<EventBasedRepresentation> eventRepresentations, string file)
+        {
+           this.EventList = new List<EventBasedRepresentation>();
+           foreach (var e in eventRepresentations)
+           {
+               this.EventList.Add(e);
+           }
+           if (eventRepresentations.Count > 0)
+           {
+               eventRepresentations.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+               eventRepresentations.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
+               this.bottomLeftEvent = eventRepresentations[0];
+               // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top             
+           }
+           this.SourceAudioFile = file;
+        }
+
         #endregion
     }
 }
