@@ -74,6 +74,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine(
                 "QUT Bioacoustic Analysis Program - version " + fvi.FileVersion + " (" + (InDEBUG ? "DEBUG" : "RELEASE")
                 + " build, " + RetrieveLinkerTimestamp().ToString("g") + ") \n"
+                + "Git branch-version: " + fvi.ProductVersion + "\n"
                 + "Copyright QUT " + DateTime.Now.Year.ToString("0000"));
         }
 

@@ -16,7 +16,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\Second experiment\Output
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [processOne]  
+Actions: [batch]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -29,7 +29,7 @@ WindowOverlap: 0.5
 NoiseReductionParameter: 0.0
 
 # CompressSpectrogram
-TimeCompressRate: 1.0
+TimeCompressRate: 0.25
 FreqCompressRate: 1.0
 
 # RidgeDetection Config 
