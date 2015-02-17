@@ -24,29 +24,64 @@ namespace AnalysisPrograms
     /// </summary>
     public static class DrawZoomingSpectrograms
     {
+        /*
+         *     public class SourceArguments
+    {
+        
+       
+    }
+
+    public class SourceAndConfigArguments : SourceArguments
+    {
+        [ArgDescription("The path to the config file")]
+        [Production.ArgExistingFile()]
+        [ArgRequired]
+        [ArgPosition(2)]
+        public FileInfo Config { get; set; }
+    }
+
+    public class SourceConfigOutputDirArguments : SourceAndConfigArguments
+    {
+        [ArgDescription("A directory to write output to")]
+        [Production.ArgExistingDirectory(createIfNotExists: true)]
+        [ArgRequired]
+        [ArgPosition(3)]
+        public virtual DirectoryInfo Output { get; set; }
+    }*/
 
         public class Arguments
         {
+            [ArgDescription("The source directory of files ouput from Towsey.Acoustic (the Index analysis) to operate on")]
+            [Production.ArgExistingDirectory]
+            [ArgPosition(1)]
+            [ArgRequired]
+            public DirectoryInfo SourceDirectory { get; set; }
+
+            [ArgDescription("A directory to write output to")]
+            [Production.ArgExistingDirectory(createIfNotExists: true)]
+            [ArgRequired]
+            [ArgPosition(2)]
+            public virtual DirectoryInfo Output { get; set; }
+
             [ArgDescription("User specified file containing a list of indices and their properties.")]
             [Production.ArgExistingFile(Extension = ".yml")]
-            //[ArgPosition(1)]
             public FileInfo IndexPropertiesConfig { get; set; }
 
 
-             [ArgDescription("User specified file defining valid spectrogram scales.")]
+            [ArgDescription("User specified file defining valid spectrogram scales.")]
             [Production.ArgExistingFile(Extension = ".yml")]
-            //[ArgPosition(1)]
+            [ArgRequired]
             public FileInfo SpectrogramTilingConfig { get; set; }
            
 
             [ArgDescription("Config file specifing directory containing indices.csv files and other parameters.")]
             [Production.ArgExistingFile(Extension = ".yml")]
-            //[ArgPosition(1)]
+            [ArgRequired]
             public FileInfo SpectrogramConfigPath { get; set; }
         }
 
         /// <summary>
-        /// To get to this DEV method, the FIRST AND ONLY command line argument must be "colourspectrogram"
+        /// To get to this DEV method, the FIRST AND ONLY command line argument must be "zoomingSpectrograms"
         /// </summary>
         /// <param name="arguments"></param>
         public static Arguments Dev()
@@ -102,7 +137,7 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
+            var config = new LdSpectrogramConfig(ipFileName, null, null); // default values have been set
             // need to set the data scale. THis info not available at present
             config.FrameStep = 441;
             config.IndexCalculationDuration = TimeSpan.FromSeconds(0.2);
@@ -118,6 +153,8 @@ namespace AnalysisPrograms
             return new Arguments
             {
                 // use the default set of index properties in the AnalysisConfig directory.
+                SourceDirectory = ipDir,
+                Output = opDir,
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
                 SpectrogramTilingConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig
@@ -138,19 +175,24 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine(date);
                     LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
                     LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
-                    LoggedConsole.WriteLine("");
+                    LoggedConsole.WriteLine();
                 }
 
             }
 
-            //TimeSpan focalTime = TimeSpan.Zero;
+            // draw a focused multi-resolution pyramid of images
+            /*
+            TimeSpan focalTime = TimeSpan.Zero;
             TimeSpan focalTime = TimeSpan.FromMinutes(16);
             int imageWidth = 1500;
-            //ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig, 
-            //                                                      focalTime, imageWidth);
+            ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig, 
+                                                                  focalTime, imageWidth);
+            */
 
+            // XOR
 
-            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig);
+            // Create the super tiles for a full set of recordings
+            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory, arguments.Output, arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig);
         }
 
 
