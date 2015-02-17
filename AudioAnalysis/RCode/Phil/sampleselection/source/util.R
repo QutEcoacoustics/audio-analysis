@@ -286,6 +286,25 @@ MinToTime <- function (min, midnight.is.1st.min = FALSE) {
     return(paste(h, m, '00', sep = ':'))
 }
 
+TimeToMin <- function (time.string) {
+    # given a time string or a date time string,
+    # will return the minute of the day
+    # probably a faster way with built in time functions
+    # will only work for the formast yyyy-MM-dd hh:mm:ss
+    
+    date.width <- 11
+    is.time <- nchar(time.string) == 8
+    is.datetime <- nchar(time.string) == date.width+8
+    m <- h <- rep(NA, length(time.string))
+    m[is.time] <- substr(time.string[is.time], 4, 5)
+    m[is.datetime] <- substr(time.string[is.datetime], date.width+4, date.width+5)
+    h[is.time] <- substr(time.string[is.time], 1, 2)
+    h[is.datetime] <- substr(time.string[is.datetime], date.width+1, date.width+2)
+    return(as.integer(h)  * 60 + as.integer(m))  
+}
+
+
+
 
 FixDate <- function (date) {
     require('stringr')

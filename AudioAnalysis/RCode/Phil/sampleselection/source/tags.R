@@ -121,7 +121,7 @@ ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.da
     # does a database query with the supplied constraints
     require('RMySQL')
     sites <- MapSites(sites)    
-    where.statement <- WhereStatement(sites, start.date.time, end.date.time, no.duplicates) 
+    where.statement <- WhereStatement(sites, start.date.time, end.date.time, no.duplicates)
     # construct SQL statement
     sql.statement <- paste(
         "SELECT",
@@ -130,13 +130,13 @@ ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.da
         where.statement,
         "ORDER BY site, start_date, start_time"
     )
-#    Report(5, sql.statement)
+    Report(5, sql.statement)
     con <- ConnectToDb()
     res <- dbSendQuery(con, statement = sql.statement)
     data <- fetch(res, n = - 1)
     dbClearResult(res)
     dbDisconnect(con)
-#    Report(5, 'query complete')
+    Report(5, 'query complete')
     data$site <- MapSites(data$site, FALSE) 
     return(data) 
     
@@ -145,6 +145,13 @@ ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.da
 WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE) {
     
     where.statement <- "WHERE species_id > 0"
+    quote = "'"
+    if (!substr(start.date.time, 1, 1) == "'" || substr(start.date.time, 1, 1) == "'") {
+        start.date.time <- paste0(quote, start.date.time, quote)
+    }
+    if (!substr(end.date.time, 1, 1) == "'" || substr(end.date.time, 1, 1) == "'") {
+        end.date.time <- paste0(quote, end.date.time, quote)
+    }
     
     if (!is.null(sites)) {
         # convert vector of sites to comma separated list of 
