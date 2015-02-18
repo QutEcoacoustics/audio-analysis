@@ -52,7 +52,7 @@ namespace Dong.Felt.Features
         }
 
         
-        public Feature(List<RegionRerepresentation> region)
+        public Feature(List<RegionRepresentation> region)
         {
             var histogram = new int[8];
             foreach (var r in region)
@@ -103,7 +103,7 @@ namespace Dong.Felt.Features
             this.orientationHistogram = histogramList;
         }
 
-        public Feature(List<RegionRerepresentation> region, List<RegionRerepresentation> secondRegion)
+        public Feature(List<RegionRepresentation> region, List<RegionRepresentation> secondRegion)
         {
             var regionFeatureBlockIndicator = new List<int>();
             var secondRegionFeatureBlockIndicator = new List<int>();
