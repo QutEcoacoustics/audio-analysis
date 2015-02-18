@@ -85,7 +85,7 @@ Sp.CreateFromFile <- function (path, draw = FALSE) {
 
 
 
-Sp.Create <- function(wav, frame.width = 512, draw = FALSE, 
+Sp.Create <- function(wav, frame.width = 256, draw = FALSE, 
                       smooth = TRUE, db = TRUE, filename = FALSE) {
     # performs a stft on a mono wave file (no overlap)
     #  
@@ -438,7 +438,7 @@ Sp.AddRects <- function (spectro, start.sec, duration, top.f, bottom.f, col) {
     return(spectro)
 }
 
-Sp.Rect <- function (spectro, rect) {
+Sp.Rect <- function (spectro, rect = NULL, rect.num = NULL, fill.alpha = 0.0, line.alpha = 0.9, text.alpha = 0.7) {
     # draws a rect associated with a spectrogram
     # rect is a list with the properties
     # start.sec, duration, top.f, bottom.f, col
@@ -455,6 +455,10 @@ Sp.Rect <- function (spectro, rect) {
     #    hz.per.bin = (samp.rate/(2 * nrow(amp))), 
     #    frames.per.sec = (ncol(amp))/(len/samp.rate))
     
+    if (is.null(rect)) {
+        rect <- spectro$rects[rect.num,]
+    }
+    
     x <-  unit(rect$start.sec / spectro$duration, "npc")
     width <- unit(rect$duration / spectro$duration, "npc")
     y <- unit(rect$top.f / spectro$frequency.range, "npc")
@@ -466,10 +470,6 @@ Sp.Rect <- function (spectro, rect) {
     } else {
         rect.col <- 'green'  # default
     }
-    
-    fill.alpha <- 0.1
-    line.alpha <- 0.9
-    text.alpha <- 0.7
     
     if (!is.null(rect$label.tl)) {
         name <- rect$label.tl 

@@ -13,11 +13,13 @@ LabelEvents.2 <- function (events = NULL) {
     dependencies <- list(all.events = events$version)
     events <- events$data
 
-    fields <- c('id', 'species_id', 'site', 'start_date_time_char', 'end_date_time_char', 'start_frequency', 'end_frequency', 'start_date', 'start_time')
-    
+    fields <- c('id', 'species_id', 'site', 'start_date_time_char', 'end_date_time_char', 'start_frequency', 'end_frequency', 'start_date', 'start_time') 
 
     tags <- ReadTagsFromDb(fields, unique(events$site), min(events$start.date.time), max(events$end.date.time))
 
+    tags <- RemoveTagsForMissingAudio(events, tags)
+    
+    
     event.labels <- ReadOutput('event.labels', dependencies = dependencies, false.if.missing = TRUE)
     if (!is.list(event.labels)) {
         event.labels <- data.frame(event.id = events$event.id, species.id = rep(NA, nrow(events)), tag.id = rep(NA, nrow(events)))
@@ -31,7 +33,7 @@ LabelEvents.2 <- function (events = NULL) {
     # extend the bounds
     tags <- ExtendTagBounds(tags)
     
-
+    # remove tags for audio that we don't have
     
     enough = FALSE
     
@@ -53,10 +55,20 @@ LabelEvents.2 <- function (events = NULL) {
         nearby.events <- events[nearby.event.selection,]
         
         if (nrow(nearby.events) > 0) {
-            event.labels <- LabelEventsForTag(cur.tag, nearby.events)     
+            cur.event.labels <- LabelEventsForTag(cur.tag, nearby.events)
+            
+            #todo: update event.labels
+            res <- cur.event.labels
+            event.labels[nearby.event.selection,c('species.id', 'tag.id')] <- res
+            
+            if (!is.data.frame(cur.event.labels)) {
+                # if Q was pressed in the labling user input
+                enough <- TRUE
+            }    
+            
         } else {
             # most probably because we don't have AED results for this day
-            Report("0 events found")
+            Report(5, "0 events found")
         }
         
 
@@ -65,43 +77,95 @@ LabelEvents.2 <- function (events = NULL) {
     }
     
     
-    cur.species.count <- 0
-    cur.species.id <- 1 
-    
-   
-    
-    
 }
 
 LabelEventsForTag <- function (tag, events) {
     
-    margin <- 1
+    margin <- 2
     tag.start.datetime <- as.POSIXlt(tag$start_date_time_char)
     tag.end.datetime <- as.POSIXlt(tag$end_date_time_char)
-    spectro.start <- tag.start.datetime - margin
     tag.duration <- difftime(tag.end.datetime, 
-                             tag.end.datetime, 
+                             tag.start.datetime, 
                              units = 'secs')
-    spectro.duration <- tag.duration + margin*2
     
-    date <- strftime(tag.start.datetime, '%Y-%m-%d')
-    spectro.start.sec <- as.numeric(tag.start.datetime - as.POSIXlt(date)) # number of seconds from start of day
+    date <- strftime(tag.start.datetime, '%Y-%m-%d')    
+
+    spectro.start <- tag.start.datetime - margin
+    spectro.duration <- tag.duration + margin*2
+    spectro.start.sec <- as.numeric(difftime(spectro.start, as.POSIXlt(date), units = 'secs')) # number of seconds from start of day
+    
+
     
     events.start.datetime <- as.POSIXlt(events$start.date.time.exact)
-    events.start.offset <- difftime(events.start.datetime, spectro.start, units = 'secs') - margin
+    events.start.offset <- as.numeric(difftime(events.start.datetime, spectro.start, units = 'secs'))
     
-    event.col <- 'red'
+    event.todo <- 'orange'
+    event.done <- 'red'
+    event.col.selected <- 'green'
     tag.col <- 'white'
     
     # events rects
-    rects <- data.frame(start.sec = events.start.offset, duration = events$duration, top.f = as.numeric(events$top.f), bottom.f = as.numeric(events$bottom.f), rect.color = event.col)
-    tag.rect <- data.frame(start.sec = margin, duration = tag.duration, top.f = as.numeric(tag$end_frequency), bottom.f = as.numeric(tag$start_frequency), rect.color = tag.col)
+    rects <- data.frame(start.sec = events.start.offset, duration = events$duration, top.f = as.numeric(events$top.f), bottom.f = as.numeric(events$bottom.f), rect.color = event.todo, stringsAsFactors = FALSE)
+    tag.rect <- data.frame(start.sec = margin, duration = tag.duration, top.f = as.numeric(tag$end_frequency), bottom.f = as.numeric(tag$start_frequency), rect.color = tag.col, stringsAsFactors = FALSE)
     
     
     rects <- rbind(rects, tag.rect)
     
     spectro <- Sp.CreateTargeted(site = tag$site, start.date = date, start.sec = spectro.start.sec, duration = spectro.duration, rects = rects)
-    Sp.Draw(spectro, scale = 1)
+    
+    species.ids <- tag.ids <- rep(NA, nrow(events))
+    
+    codes.msg <- c('same species as annotation', 'bird but unsure about species', 'not bird', 'all are from annotation')
+    codes.char <- c('1', '2', '3', '4')
+    msg <- paste(paste0(codes.char, ") ", codes.msg), collapse = " ")
+    
+    # -1 bird but unsure about species
+    # -2 not bird
+    # NA not checked
+
+    spectro$rects <- rects
+    Sp.Draw(spectro, scale = 2)
+    
+    print(msg)
+
+    cur.e <- 1
+    # while there are still unprocessed events
+    while(sum(is.na(species.ids)) > 0) {
+        spectro$rects$rect.color[cur.e] <- event.col.selected   
+        Sp.Rect(spectro, rect.num = cur.e, fill.alpha = 0)
+
+        valid <- FALSE
+        while(!valid) {
+            valid <- TRUE
+            input <- readline(paste("tag event?  : "))
+            if (input == '4') {
+                # all
+                species.ids <- tag$species_id
+            } else if (input == '1') {
+                species.ids[cur.e] <- tag$species_id
+            } else if (input == '2') {
+                species.ids[cur.e] <- -1
+            } else if (input == '3') {
+                species.ids[cur.e] <- -2 
+            } else if (input == 'Q') {
+                return(FALSE)
+            } else {
+                valid <- FALSE
+            }
+        }
+        
+        spectro$rects$rect.color[cur.e] <- event.done
+        Sp.Rect(spectro, rect.num = cur.e, fill.alpha = 0)
+        cur.e <- cur.e + 1
+        
+    }
+    
+    # record this tag as belonging to any event we have labled
+    tag.ids[species.ids == tag$species_id] <- as.integer(tag$id)
+    
+    
+    
+    return(data.frame(species.id = species.ids, tag.id = tag.ids))
     
     
     
@@ -110,27 +174,113 @@ LabelEventsForTag <- function (tag, events) {
 }
 
 
-GetNearbyEvents <- function (events, tag) {
+
+GetNearbyEvents <- function (events, tag, amount.inside.tag = 0.5) {
+    # given a df of events and a tag from the database, 
+    # finds any events that are amount.inside.tag overlapping with the tag
+    # eg if amount.inside.tag == 0.5 then it will find events that are more then half inside the tag
     
-    # extend the tag by this much for comparison
-    margin <- 0.5
-    
+    #shortcuts
+    t.l <- tag$start.date.time.extended
+    t.r <- tag$end.date.time.extended
+    t.t <- tag$top.f.extended
+    t.b <- tag$bottom.f.extended
+    e.l <- events$start.date.time.exact
+    e.r <- events$end.date.time.exact
+    e.t <- events$top.f
+    e.b <- events$bottom.f
      
     # find all the events which fall within this annotation
     # filters
     f1 <- events$site == tag$site
-    f2 <- tag$start.date.time.extended < events$start.date.time.exact
-    f3 <- tag$end.date.time.extended > events$end.date.time.exact
-    f4 <- tag$bottom.f.extended > events$bottom.f
-    f5 <- tag$top.f.extended > events$top.f
     
-    matching <- f1 & f2 & f3 & f4 & f5
-    
-    # maybe could be more efficient by filtering one at a time?
+    if (amount.inside.tag >= 1) {
+        
+        # this could be done the same as the other cases,
+        # but it might be faster so I separated it out
+        f2 <- t.l < e.l
+        f3 <- t.r > e.r
+        f4 <- t.b < e.b
+        f5 <- t.t > e.t
+        
+        matching <- f1 & f2 & f3 & f4 & f5    
+        
+    } else {
+        
+        time.overlap <- as.numeric(RangeIntersection(e.l, e.r, t.l, t.r))
+        time.overlap <- time.overlap / events$duration
+        frequency.overlap <- RangeIntersection(e.b, e.t, t.b, t.t)
+        frequency.overlap <- frequency.overlap / (events$top.f - events$bottom.f)
+        overlap <- frequency.overlap * time.overlap
+        matching <- overlap >= amount.inside.tag & f1
+        
+    }
     
     return(matching)
     
 }
+
+
+RangeIntersection <- function (from.1, to.1, from.2, to.2) {
+    # give 2 ranges, (from.1, to.1) and (from.2, to.2)
+    # gives the size of the intersection of the ranges
+    # works on vectors as well. length(from) must equal 
+    # length(to) and length(1) must equal length(2) or
+    # one of them must be length 1
+
+    l.max <- pmax(from.1, from.2)
+    r.min <- pmin(to.1, to.2)
+    intersection <- r.min - l.max
+    intersection[intersection < 0] <- 0
+    return(intersection)  
+    
+}
+
+test.RangeIntersection <- function () { 
+    from.2 <- 5
+    to.2 <- 10
+    from.1 <- c(1,1,7,11)
+    to.1 <- c(8,12,14,15)
+    expected <- c(3, 5, 3, 0)
+    res <- RangeIntersection(from.1, to.1, from.2, to.2)
+    error <- abs(res - expected)
+    print(error)
+}
+
+
+
+
+RemoveTagsForMissingAudio <- function (events, tags) {
+    # given a list of events and tags
+    # removes the tags for days/sites that have no events
+    
+    event.counts <- as.data.frame(table(events[,c('site', 'date')]), stringsAsFactors = FALSE)
+    
+    
+    tag.sites <- unique(tags$site)
+    tag.dates <- unique(tags$start_date)
+    
+    include <- rep(FALSE, nrow(tags))
+    
+    for (s in tag.sites) {
+        for (d in tag.dates) {
+            event.count.selection <- event.counts$site == s & event.counts$date == d
+            # if one site or date is completely missing from events, then the event count
+            # won't have it in the count table. The site or the date is in the events but no
+            # events from that site and date, the count will be present and zero
+            if (sum(event.count.selection) > 0 && event.counts$Freq[event.count.selection] > 0) {     
+                include[tags$site == s & tags$start_date == d] <- TRUE
+            }
+        }
+    }
+    
+    tags <- tags[include,]
+    
+    return(tags)
+    
+    
+}
+
 
 ExtendTagBounds <- function (tags, time.extension = 0.5, frequency.extension = 50) {
     # when matching events which fit within an annotation, 
@@ -146,7 +296,7 @@ ExtendTagBounds <- function (tags, time.extension = 0.5, frequency.extension = 5
     
 }
 
-ExtendDateTime <- function (date.times, change) {
+ExtendDateTimeTxt <- function (date.times, change) {
     # given date.times in the form eg 2010-10-13 12:13:14.123
     # adds the given number of seconds
     # minutes are not changed. if the new number of seconds goes above 60 it will be set to 60.000
@@ -158,6 +308,16 @@ ExtendDateTime <- function (date.times, change) {
     new.seconds[new.seconds < 0] <- 0
     new.seconds <- sprintf('%06.3f', new.seconds)
     substr(date.times, 18, 23) <- new.seconds
+    return(date.times)
+}
+
+ExtendDateTime <- function (date.times, change) {
+    # given date.times in the form eg 2010-10-13 12:13:14.123
+    # adds the given number of seconds
+    # minutes are not changed. if the new number of seconds goes above 60 it will be set to 60.000
+    # if it goes below 0 it will be set to 00.000
+    date.times <- as.POSIXlt(date.times)
+    date.times <- date.times + change
     return(date.times)
 }
 
@@ -316,6 +476,9 @@ EventTimeBounds <- function (events, append = TRUE) {
     
     start.date.time.exact <- paste(events$date, start.time.exact) 
     end.date.time.exact <- paste(events$date, end.time.exact) 
+    
+    start.date.time.exact <- as.POSIXlt(start.date.time.exact)
+    end.date.time.exact <- as.POSIXlt(end.date.time.exact)
     
     # new data frame of event bounds matching the events data frame
     event.bounds <- data.frame(start.date.time = start.date.time, 

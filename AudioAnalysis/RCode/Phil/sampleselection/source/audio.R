@@ -34,8 +34,8 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
     
     require('tuneR')
     
-    start <- as.POSIXlt(start.date, tz = "GMT") + start.sec
-    end <- as.POSIXlt(start + duration, tz = "GMT")
+    start <- as.POSIXlt(start.date) + start.sec
+    end <- as.POSIXlt(start + duration)
     file.positions <- DateTimeToFn(site, start, end, ext = 'wav')
     wav.samples <- numeric()
     samp.rate <- NA
