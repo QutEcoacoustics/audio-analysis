@@ -20,13 +20,15 @@ namespace AudioAnalysisTools.TileImage
 
     using AudioAnalysisTools.LongDurationSpectrograms;
 
+    using MathNet.Numerics.NumberTheory;
+
     public class Tiler
     {
         private readonly DirectoryInfo outputDirectory;
         private readonly TilingProfile profile;
         private readonly SortedSet<Layer> calculatedLayers;
 
-        public Tiler(DirectoryInfo outputDirectory, TilingProfile profile, SortedSet<decimal> scales, decimal unitScale, int unitWidth, int unitHeight)
+        public Tiler(DirectoryInfo outputDirectory, TilingProfile profile, SortedSet<double> scales, double unitScale, int unitWidth, int unitHeight)
         {
             this.outputDirectory = outputDirectory;
             this.profile = profile;
@@ -34,12 +36,11 @@ namespace AudioAnalysisTools.TileImage
             this.calculatedLayers = this.CalculateLayers(scales, unitScale, unitWidth, unitHeight);
         }
 
-        public void TileMany(IEnumerable<SuperTile> allSuperTiles)
+        public void TileMany(IEnumerable<ISuperTile> allSuperTiles)
         {
             foreach (var superTile in allSuperTiles)
             {
-
-                this.Tile(superTile.Image, (decimal)superTile.Scale.TotalSeconds, new Point(0, 0) /*offset*/);
+                this.Tile(superTile.Image, superTile.Scale, new Point(superTile.OffsetX, superTile.OffsetY));
             }
         }
 
@@ -49,7 +50,7 @@ namespace AudioAnalysisTools.TileImage
         /// <param name="image"></param>
         /// <param name="scale"></param>
         /// <param name="offsets">The (top, left) point of the tile within the full space of the layer</param>
-        public void Tile(Image image, decimal scale, Point offsets)
+        public void Tile(Image image, double scale, Point offsets)
         {
             Contract.Ensures(image != null);
 
@@ -61,10 +62,11 @@ namespace AudioAnalysisTools.TileImage
             yOffset = offsets.Y;
 
             // align super tile within layer
+            
             int numtilesX;
 
             // either positive or negative
-            decimal paddingX = (decimal)xOffset / this.profile.TileWidth;
+            double paddingX = (double)xOffset / this.profile.TileWidth;
 
 
             bool isSuperTileWidthFactorOfLayerWidth = layer.Width / (double)width == 0;
@@ -90,14 +92,44 @@ namespace AudioAnalysisTools.TileImage
 
 
                     // write tile to disk
-                    var name = this.profile.GetFileBaseName();
+                    var name = this.profile.GetFileBaseName(layer, new Point());
                     var outputTilePath = this.outputDirectory.CombineFile(name + ".png").FullName;
                     tileImage.Save(outputTilePath);
                 }
             }
         }
 
-        private SortedSet<Layer> CalculateLayers(SortedSet<decimal> scales, decimal unitScale, int unitWidth, int unitHeight)
+        /// <summary>
+        /// Aligns a supertile into a layer for one dimension only
+        /// </summary>
+        /// <param name="numberOfTilesNeededForLayer"></param>
+        /// <param name="tileSize"></param>
+        private void AlignSuperTileInLayer(int numberOfTilesNeededForLayer, int tileSize, int superTileOffset)
+        {
+            // tiles are aligned to the center of the layer
+            // if odd number of tiles required, then middle tile is offset by half tile size
+            //
+            //     |----------------|====‖========|--------------|
+            //     l1               s1   ‖        s2             l2
+            //     |_|_|_|_|_|_|_|_|_|_|_‖_|_|_|_|_|_|_|_|_|_|_|_|        <- even
+            //    |_|_|_|_|_|_|_|_|_|_|_|‖|_|_|_|_|_|_|_|_|_|_|_|_|       <- odd
+            //    tmin                   ‖                        tmax
+            //                           middle              
+            // tileSize = 2 characters
+
+            var minimum = 0.0;
+            if (numberOfTilesNeededForLayer.IsOdd())
+            {
+                minimum = -(tileSize / 2.0);
+            }
+
+            // does the provided supertile align to a tile?
+            // i.e. how many tiles away before the super tile starts
+
+
+        }
+
+        private SortedSet<Layer> CalculateLayers(SortedSet<double> scales, double unitScale, int unitWidth, int unitHeight)
         {
             var results = new SortedSet<Layer>();
             int scaleIndex = 0;
@@ -107,8 +139,8 @@ namespace AudioAnalysisTools.TileImage
                 int layerWidth = (int)(unitWidth * normalizedScale), 
                     layerHeight = (int)(unitHeight * normalizedScale);
 
-                decimal tilesForWidth = (decimal)layerWidth / this.profile.TileWidth,
-                        tilesForHeight = (decimal)layerHeight / this.profile.TileHeight;
+                double tilesForWidth = (double)layerWidth / this.profile.TileWidth,
+                        tilesForHeight = (double)layerHeight / this.profile.TileHeight;
 
                 int tileCountX = (int)Math.Ceiling(tilesForWidth), tileCountY = (int)Math.Ceiling(tilesForHeight);
 

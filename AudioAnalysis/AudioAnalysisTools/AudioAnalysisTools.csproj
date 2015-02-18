@@ -274,6 +274,7 @@
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SURFFeatures.cs" />
+    <Compile Include="TileImage\ISuperTile.cs" />
     <Compile Include="TileImage\Layer.cs" />
     <Compile Include="TileImage\PanoJsNamingPattern.cs" />
     <Compile Include="TileImage\TilingProfile.cs" />
