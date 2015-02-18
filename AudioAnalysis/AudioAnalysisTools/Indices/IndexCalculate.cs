@@ -356,19 +356,20 @@ namespace AudioAnalysisTools.Indices
 
 
             // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
+            // FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
             double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
             dBThreshold = 3.0;
-            // FreqBinWidth can be accessed, if required, through dspOutput.FreqBinWidth,
-            SPTrackInfo sptInfo = SpectralPeakTracks.GetSpectralPeakIndices(deciBelSpectrogram, framesStepsPerSecond, dBThreshold);
-            spectra.SPT = sptInfo.spSpectrum;
+            var sptInfo = new SpectralPeakTracks(deciBelSpectrogram, framesStepsPerSecond, dBThreshold);
+            spectra.SPT = sptInfo.SptSpectrum;
 
-            summaryIndexValues.AvgSptDuration = sptInfo.avTrackDuration;
-            summaryIndexValues.SptPerSecond = sptInfo.trackCount / subsegmentSecondsDuration;
+            summaryIndexValues.SptDensity = sptInfo.TrackDensity;
+            //summaryIndexValues.AvgSptDuration = sptInfo.AvTrackDuration;
+            //summaryIndexValues.SptPerSecond = sptInfo.TotalTrackCount / subsegmentSecondsDuration;
 
             // #V#####################################################################################################################################################
             // iv:  set up other info to return
             BaseSonogram sonogram = null;
-            double[,] hits = sptInfo.peaks;
+            double[,] hits = sptInfo.Peaks;
             var scores = new List<Plot>();
 
             bool returnSonogramInfo = analysisSettings.ImageFile != null;
@@ -480,7 +481,7 @@ namespace AudioAnalysisTools.Indices
             result.Sg = sonogram;
             result.Hits = hits;
             result.TrackScores = scores;
-            result.Tracks = sptInfo.listOfSPTracks;
+            //result.Tracks = sptInfo.listOfSPTracks; // not calculated but could be 
             return result;
         } // end of method Analysis()
 

@@ -123,9 +123,11 @@ namespace AudioAnalysisTools.Indices
 
         //public int ThreeGramCount { get; set; }
 
-        public double SptPerSecond { get; set; }
+        //public double SptPerSecond { get; set; }
 
-        public TimeSpan AvgSptDuration { get; set; }
+        //public TimeSpan AvgSptDuration { get; set; }
+        
+        public double SptDensity { get; set; }
 
         public double RainIndex { get; set; }
 
