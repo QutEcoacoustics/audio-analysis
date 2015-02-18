@@ -798,14 +798,14 @@
             }
             Log.Info("# read the query csv files and audio files");
             var queryCsvFiles = Directory.GetFiles(constructed, "*.csv", SearchOption.AllDirectories);
-            var queryAduioFiles = Directory.GetFiles(constructed, "*.wav", SearchOption.AllDirectories);
+            var queryAudioFiles = Directory.GetFiles(constructed, "*.wav", SearchOption.AllDirectories);
             var csvFilesCount = queryCsvFiles.Count();
 
             // this loop is used for searching query folder.
             for (int i = 0; i < csvFilesCount; i++)
             {
                 // 1. calculate query event representation
-                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAudioFiles[i]);
                 // Read the query csv file
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, spectrogram);
@@ -813,15 +813,15 @@
                     config,                   
                     ridgeConfig,
                     compressConfig,
-                    queryAduioFiles[i],
+                    queryAudioFiles[i],
                     featurePropSet);              
                 var acousticEventlist = new List<AcousticEvent>();
                 ClusterAnalysis.RidgeListToEvent(spectrogram, queryRidges[0], out acousticEventlist);
                 // event representation for the whole recording
                 var eventsRepresentation =
                     EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, acousticEventlist);
-                
-                var queryRepresentation = new RegionRepresentation(eventsRepresentation, queryAduioFiles[i], query);               
+
+                var queryRepresentation = new RegionRepresentation(eventsRepresentation, queryAudioFiles[i], query);               
                 // 2. search through training or testing audio files
                 if (!Directory.Exists(inputFileDirectory))
                 {
@@ -835,7 +835,7 @@
                 {
                     Log.Info("# read each training/test audio file");                    
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    var candidateRidges = POISelection.ModifiedRidgeDetection(spectrogram,
+                    var candidateRidges = POISelection.ModifiedRidgeDetection(candidateSpectrogram,
                         config,
                         ridgeConfig,
                         compressConfig,
@@ -845,7 +845,7 @@
                     ClusterAnalysis.RidgeListToEvent(candidateSpectrogram, candidateRidges[0], out candidateAElist);
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
-                        EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, candidateAElist);
+                        EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist);
                     var candidatesRepresentationList = EventBasedRepresentation.ExtractAcousticEventList(candidateSpectrogram,
                         queryRepresentation, candidatesEventsRepresentation, candidatesAudioFiles[j], 12);
                     foreach (var c in candidatesRepresentationList)
@@ -923,7 +923,7 @@
                 }
                 if (matchedCandidateFile != null)
                 {
-                    DrawSpectrogram.DrawingOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                    DrawSpectrogram.DrawingOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAudioFiles[i],
                         outputPath,
                         rank, ridgeConfig, config, compressConfig,
                         featurePropSet, tempDirectory);

@@ -181,7 +181,8 @@ namespace Dong.Felt.Representations
         }
 
         /// <summary>
-        /// 
+        /// This method aims to extract candidate region representation according to the provided
+        /// marquee of the queryRepresentation.
         /// </summary>
         /// <param name="queryRepresentations"></param>
         /// <param name="candidateEventList"></param>
@@ -255,6 +256,16 @@ namespace Dong.Felt.Representations
                 candidateRegionRepre.RightInPixel = endTimePixelIndex; 
                 result.Add(candidateRegionRepre);
             }
+            return result;
+        }
+
+        public static List<EventBasedRepresentation> ExtractAcousticEventList(
+            SpectrogramStandard spectrogram,
+            List<EventBasedRepresentation> queryRepresentations,
+            string file,
+            int centroidFreqOffset)
+        {
+            var result = new List<EventBasedRepresentation>();
             return result;
         }
 

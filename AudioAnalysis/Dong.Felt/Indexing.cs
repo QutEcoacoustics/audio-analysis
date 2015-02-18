@@ -1060,31 +1060,34 @@ namespace Dong.Felt
                 var eventList = relevantCandidateRepresentation.EventList;
                 // find the cloest event to compare
                 var overalScore = 0.0;
-                foreach (var q in relevantQueryRepresentation.EventList)
+                if (relevantCandidateRepresentation.EventList.Count > 0)
                 {
-                    var index = FindCloestEvent(eventList, q);
-                    var overlap = StatisticalAnalysis.EventOverlapInPixel(
-                            q.Left,
-                            q.Bottom,
-                            q.Left + q.Width,
-                            q.Bottom + q.Height,
-                            eventList[index].Left,
-                            eventList[index].Bottom,
-                            eventList[index].Left + eventList[index].Width,
-                            eventList[index].Bottom + eventList[index].Height);
-                    overalScore += (double)overlap / q.Area;                    
-                }
-                var score = overalScore / eventCount;
-                var timeScale = c.EventList[0].TimeScale;
-                var freqScale = c.EventList[0].FreqScale;
-                var candidate = new Candidates(
-                    score,
-                    c.LeftInPixel * timeScale*1000,
-                    (c.RightInPixel - c.LeftInPixel) * timeScale*1000,
-                    c.TopInPixel * freqScale,
-                    c.BottomInPixel * freqScale,
-                    c.SourceAudioFile);
-                result.Add(candidate);
+                    foreach (var q in relevantQueryRepresentation.EventList)
+                    {
+                        var index = FindCloestEvent(eventList, q);
+                        var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                                q.Left,
+                                q.Bottom,
+                                q.Left + q.Width,
+                                q.Bottom + q.Height,
+                                eventList[index].Left,
+                                eventList[index].Bottom,
+                                eventList[index].Left + eventList[index].Width,
+                                eventList[index].Bottom + eventList[index].Height);
+                        overalScore += (double)overlap / q.Area;
+                    }
+                    var score = overalScore / eventCount;
+                    var timeScale = c.EventList[0].TimeScale;
+                    var freqScale = c.EventList[0].FreqScale;
+                    var candidate = new Candidates(
+                        score,
+                        c.LeftInPixel * timeScale * 1000,
+                        (c.RightInPixel - c.LeftInPixel) * timeScale * 1000,
+                        c.TopInPixel * freqScale,
+                        c.BottomInPixel * freqScale,
+                        c.SourceAudioFile);
+                    result.Add(candidate);
+                }               
             }                   
             return result;
         }
@@ -1093,7 +1096,7 @@ namespace Dong.Felt
         {          
             var eventList = events.EventList;
             var regionBottom = events.BottomInPixel;
-            var regionLeft = events.RightInPixel;
+            var regionLeft = events.LeftInPixel;
             foreach (var e in eventList)
             {
                 e.Bottom = e.Bottom - regionBottom;
