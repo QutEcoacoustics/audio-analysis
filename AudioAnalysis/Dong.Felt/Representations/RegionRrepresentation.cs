@@ -263,7 +263,7 @@ namespace Dong.Felt.Representations
             if (queryEventList.Count > 0)
             {
                 queryEventList.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
-                queryEventList.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
+                //queryEventList.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
                 this.bottomLeftEvent = queryEventList[0];                
                 // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top
                 this.topToBottomLeftVertex = query.TopInPixel - this.bottomLeftEvent.Bottom;

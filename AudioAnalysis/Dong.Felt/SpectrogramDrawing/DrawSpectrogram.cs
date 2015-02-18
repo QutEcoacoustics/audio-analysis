@@ -490,8 +490,6 @@ namespace Dong.Felt.SpectrogramDrawing
             query.MinFrequency = queryInfo.MinFreq;
             query.SourceFilePath = queryAudioFilePath;
             candidates.Insert(0, query);
-            var querycsvFilePath = new FileInfo(queryCsvFilePath);
-            var queryFileDirectory = querycsvFilePath.DirectoryName;
             var pathString = Path.Combine(tempDirectory.FullName, Path.GetFileName(queryAudioFilePath), featurePropSet);
             var outPutFileDirectory = Directory.CreateDirectory(pathString);
             if (candidates != null)
@@ -656,8 +654,8 @@ namespace Dong.Felt.SpectrogramDrawing
             for (int i = 0; i < rank + 1; i++)
             {
                 /// because the query always come from first place.                   
-                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);                
-                var ridges = POISelection.ModifiedRidgeDetection(spectrogram, config, ridgeConfig, compressConfig, audioFiles[i],
+                var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
+                var ridges = POISelection.ModifiedRidgeDetection(spectrogram, config, ridgeConfig, compressConfig, improvedAudioFiles[i],
                    featurePropSet);
                 /// To show the ridges on the spectrogram. 
                 var scores = new List<double>();
