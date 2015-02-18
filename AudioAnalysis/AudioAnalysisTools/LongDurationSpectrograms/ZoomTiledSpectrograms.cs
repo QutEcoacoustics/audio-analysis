@@ -33,7 +33,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string fileStem    = analysisConfig.FileName;
             var namingPattern = new PanoJsTilingProfile();
-            var tiler = new Tiler(outputDirectory, namingPattern, new SortedSet<decimal>(), 60.0m, 1440, 300);
+            var tiler = new Tiler(outputDirectory, namingPattern, new SortedSet<double>(), 60.0, 1440, 300);
             
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
@@ -551,13 +551,40 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         Index
     }
 
-    public class SuperTile
+    public class SuperTile : ISuperTile
     {
+        public TimeSpan TimeOffset { get; set; }
+
         public TimeSpan Scale { get; set; }
+
+        public int OffsetX 
+        {
+            get
+            {
+                // TODO: this needs to be in units of the layer... need to normalise and multiply by scale
+                return (int)this.TimeOffset.TotalSeconds;
+            }
+        }
+
+        public int OffsetY 
+        {
+            get
+            {
+                return 0;
+            }
+        }
 
         public SpectrogramType SpectrogramType { get; set; }
 
         public Image Image { get; set; }
+
+        double ISuperTile.Scale
+        {
+            get
+            {
+                return this.Scale.TotalSeconds;
+            }
+        }
     }
 
 //    public class SuperTilingResults

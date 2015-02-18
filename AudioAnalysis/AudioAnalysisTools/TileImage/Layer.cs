@@ -22,11 +22,11 @@ namespace AudioAnalysisTools.TileImage
 
         public int YTiles { get; set; }
 
-        public decimal Scale { get; set; }
+        public double Scale { get; set; }
 
         public int ScaleIndex { get; set; }
 
-        public decimal NormalisedScale { get; set; }
+        public double NormalisedScale { get; set; }
 
         public int Compare(Layer x, Layer y)
         {

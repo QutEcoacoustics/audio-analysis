@@ -15,13 +15,16 @@ namespace AudioAnalysisTools.TileImage
     using System.Linq;
     using System.Text;
 
-    public class Tile
-    {
-        
-    }
-
     public abstract class TilingProfile
     {
+        public virtual Color PaddingColor
+        {
+            get
+            {
+                return Color.Transparent;
+            }
+        }
+
         public abstract int TileWidth { get; }
 
         public abstract int TileHeight { get; }
@@ -38,12 +41,11 @@ namespace AudioAnalysisTools.TileImage
 
         public abstract Point GetTileIndexes(Layer selectedLayer, Point offsets);
 
-        public virtual string GetFileBaseName()
+        public virtual string GetFileBaseName(Layer selectedLayer, Point offsets)
         {
 
-            //var coordinates = this.GetTileIndexes();
-            //return string.Format("{0}-{1}_{2}_{3}", "stub", this.GetZoomIndex(), coordinates.X, coordinates.Y);
-            throw new NotImplementedException();
+            var coordinates = this.GetTileIndexes(selectedLayer, offsets);
+            return string.Format("{0}-{1}_{2}_{3}", "stub", this.GetZoomIndex(selectedLayer), coordinates.X, coordinates.Y);
         }
     }
 }
