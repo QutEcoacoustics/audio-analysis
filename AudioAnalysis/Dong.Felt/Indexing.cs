@@ -3,6 +3,7 @@ namespace Dong.Felt
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
     using System.Linq;
     using System.Text;
     using Representations;
@@ -13,14 +14,16 @@ namespace Dong.Felt
     using AudioAnalysisTools;
     using TowseyLibrary;
     using System.Globalization;
+    using System.Runtime.InteropServices;
+
     public class Indexing
     {
 
         // Todo: extract query region representaiton by providing the boundary information of the query. 
-        public static List<RegionRerepresentation> ExtractQueryRegionRepresentation(Query query, int neighbourhoodLength,
+        public static List<RegionRepresentation> ExtractQueryRegionRepresentation(Query query, int neighbourhoodLength,
            string audioFileName, SpectrogramStandard spectrogram)
         {
-            var results = new List<RegionRerepresentation>();
+            var results = new List<RegionRepresentation>();
             
             var frequencyRange = query.frequencyRange;
             var duration = query.duration;
@@ -57,14 +60,14 @@ namespace Dong.Felt
         /// <returns>
         /// returns a list of region representation, each region represtation contains a ridge nh representation and some derived property. 
         /// </returns>
-        public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
+        public static List<RegionRepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName, 
             SpectrogramStandard spectrogram)
         {
             var nhCountInRow = query.maxNhRowIndex;
             var nhCountInColumn = query.maxNhColIndex;
             var ridgeNeighbourhood = StatisticalAnalysis.NhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
-            var results = new List<RegionRerepresentation>();
+            var results = new List<RegionRepresentation>();
             var nhRowsCount = query.nhCountInRow;
             var nhColsCount = query.nhCountInColumn;
             var nhStartRowIndex = query.nhStartRowIndex;
@@ -107,21 +110,21 @@ namespace Dong.Felt
                 var frameIndex = tempResult[0].FrameIndex;
                 var rowIndexInRegion = i / nhColsCount;
                 var colIndexInRegion = i % nhColsCount;
-                var regionItem = new RegionRerepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount,
+                var regionItem = new RegionRepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount,
                     rowIndexInRegion, colIndexInRegion, audioFileName);
                 results.Add(regionItem);
             }
             return results;
         }
 
-        public static List<RegionRerepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
+        public static List<RegionRepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
             SpectrogramStandard spectrogram, CompressSpectrogramConfig compressConfig)
         {
             var nhCountInRow = query.maxNhRowIndex;
             var nhCountInColumn = query.maxNhColIndex;
             var ridgeNeighbourhood = StatisticalAnalysis.NhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
-            var results = new List<RegionRerepresentation>();
+            var results = new List<RegionRepresentation>();
             var nhRowsCount = query.nhCountInRow;
             var nhColsCount = query.nhCountInColumn;
             var nhStartRowIndex = query.nhStartRowIndex;
@@ -164,7 +167,7 @@ namespace Dong.Felt
                 var frameIndex = tempResult[0].FrameIndex;
                 var rowIndexInRegion = i / nhColsCount;
                 var colIndexInRegion = i % nhColsCount;
-                var regionItem = new RegionRerepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount,
+                var regionItem = new RegionRepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount,
                     rowIndexInRegion, colIndexInRegion, audioFileName);
                 results.Add(regionItem);
             }
@@ -208,7 +211,7 @@ namespace Dong.Felt
             return results;
         }
 
-        public static RegionRerepresentation ExtractQRepreFromAudioStRepr(Query query,
+        public static RegionRepresentation ExtractQRepreFromAudioStRepr(Query query,
             List<PointOfInterest> stList, string audioFileName, SpectrogramStandard spectrogram)
         {
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
@@ -224,7 +227,7 @@ namespace Dong.Felt
             var colEnd = (int)(query.endTime / 1000 / timeScale);
 
             var regionMatrix = StatisticalAnalysis.Submatrix(stMatrix, rowStart, colStart, rowEnd, colEnd);
-            var result = new RegionRerepresentation();
+            var result = new RegionRepresentation();
             result.POICount = StructureTensorAnalysis.StructureTensorCountInEvent(regionMatrix);
             result.StartRowIndex = rowStart;
             result.EndRowIndex = rowEnd;
@@ -239,13 +242,13 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<RegionRerepresentation> ExtractCandidateRegionRepresentationFromAudioNhRepresentations(Query query, 
+        public static List<RegionRepresentation> ExtractCandidateRegionRepresentationFromAudioNhRepresentations(Query query, 
             int neighbourhoodLength,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, 
             string audioFileName, 
             SpectrogramStandard spectrogram)
         {
-            var results = new List<RegionRerepresentation>();
+            var results = new List<RegionRepresentation>();
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
             var maxNhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
             var maxNhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;            
@@ -277,7 +280,7 @@ namespace Dong.Felt
                         var frameIndex = nhList[0].FrameIndex;
                         var rowIndexInRegion = (int)(i / nhColsCount);
                         var colIndexInRegion = i % nhColsCount;
-                        var regionItem = new RegionRerepresentation(nhList[i], frequencyIndex, frameIndex, nhRowsCount,
+                        var regionItem = new RegionRepresentation(nhList[i], frequencyIndex, frameIndex, nhRowsCount,
                             nhColsCount, rowIndexInRegion, colIndexInRegion, audioFileName);
                         results.Add(regionItem);
                     }
@@ -287,10 +290,10 @@ namespace Dong.Felt
             return results;
         }        
 
-        public static List<RegionRerepresentation> ExtractCandiRegionRepreFromAudioStList(SpectrogramStandard spectrogram,
-            string audioFileName, List<PointOfInterest> stList, RegionRerepresentation queryRepresentation)
+        public static List<RegionRepresentation> ExtractCandiRegionRepreFromAudioStList(SpectrogramStandard spectrogram,
+            string audioFileName, List<PointOfInterest> stList, RegionRepresentation queryRepresentation)
         {
-            var result = new List<RegionRerepresentation>();
+            var result = new List<RegionRepresentation>();
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             var rowsCount = matrix.GetLength(0) - 1;
             var colsCount = matrix.GetLength(1);
@@ -313,7 +316,7 @@ namespace Dong.Felt
                     var subRegionMatrix = StatisticalAnalysis.Submatrix(stMatrix, startRowIndex, colIndex, 
                                                                     endRowIndex, colIndex + colRange);
                     // check whether the region is null
-                    var regionItem = new RegionRerepresentation();
+                    var regionItem = new RegionRepresentation();
                     //if (!StatisticalAnalysis.checkNullRegion(subRegionMatrix))
                     //{                      
                         regionItem.fftFeatures = subRegionMatrix;                      
@@ -338,10 +341,10 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<RegionRerepresentation> ExtractCandidatesRegionRepresentationFromRegionRepresntations(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> regionList)
+        public static List<RegionRepresentation> ExtractCandidatesRegionRepresentationFromRegionRepresntations(List<RegionRepresentation> query, 
+            List<RegionRepresentation> regionList)
         {
-            var result = new List<RegionRerepresentation>();
+            var result = new List<RegionRepresentation>();
             for (int i = 0; i < regionList.Count; i++)
             {
                 var freDifferenceThreshold = 1;
@@ -353,8 +356,8 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<Candidates> DistanceCalculation(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidates, double weight1, double weight2, double weight3, double weight4,
+        public static List<Candidates> DistanceCalculation(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidates, double weight1, double weight2, double weight3, double weight4,
             double weight5, double weight6, string featurePropSet, CompressSpectrogramConfig compressConfig)
         {
             var result = new List<Candidates>();
@@ -393,8 +396,8 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<Candidates> DistanceCalculation(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidates, double weight1, double weight2, double weight3, double weight4,
+        public static List<Candidates> DistanceCalculation(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidates, double weight1, double weight2, double weight3, double weight4,
             double weight5, double weight6, string featurePropSet)
         {
             var result = new List<Candidates>();
@@ -433,8 +436,15 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<Candidates> WeightedEuclideanDistance(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidates, double weight1, double weight2)
+        public static List<Candidates> DistanceCompute(RegionRepresentation query, List<RegionRepresentation> candidates)
+        {
+            var result = new List<Candidates>();
+
+            return result;
+        }
+
+        public static List<Candidates> WeightedEuclideanDistance(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidates, double weight1, double weight2)
         {
             var result = new List<Candidates>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
@@ -453,7 +463,7 @@ namespace Dong.Felt
         }
 
         // Need to be changed. 
-        public static List<Candidates> EuclideanDistanceOnFFTMatrix(RegionRerepresentation query, List<RegionRerepresentation> candidates,
+        public static List<Candidates> EuclideanDistanceOnFFTMatrix(RegionRepresentation query, List<RegionRepresentation> candidates,
             double matchedThreshold, double weight)
         {
             var result = new List<Candidates>();
@@ -478,10 +488,10 @@ namespace Dong.Felt
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static List<Candidates> WeightedEuclideanDistCalculation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates, double weight1, double weight2)
+        public static List<Candidates> WeightedEuclideanDistCalculation(List<RegionRepresentation> query, List<RegionRepresentation> candidates, double weight1, double weight2)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -508,11 +518,11 @@ namespace Dong.Felt
         /// <param name="weight3"></param>
         /// <param name="weight4"></param>
         /// <returns></returns>
-        public static List<Candidates> WeightedEuclideanDistCalculation2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates,
+        public static List<Candidates> WeightedEuclideanDistCalculation2(List<RegionRepresentation> query, List<RegionRepresentation> candidates,
             double weight1, double weight2, double weight3, double weight4)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -540,11 +550,11 @@ namespace Dong.Felt
         /// <param name="weight3"></param>
         /// <param name="weight4"></param>
         /// <returns></returns>
-        public static List<Candidates> WeightedEuclideanDistCalculation3(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates,
+        public static List<Candidates> WeightedEuclideanDistCalculation3(List<RegionRepresentation> query, List<RegionRepresentation> candidates,
             double weight1, double weight2, double weight3, double weight4, double weight5, double weight6)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -563,10 +573,10 @@ namespace Dong.Felt
         }
 
         // this function is used for calculating the distance based on HOG features. 
-        public static List<Candidates> HoGEuclideanDist(List<RegionRerepresentation> query, List<RegionRerepresentation> candidates)
+        public static List<Candidates> HoGEuclideanDist(List<RegionRepresentation> query, List<RegionRepresentation> candidates)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -590,11 +600,11 @@ namespace Dong.Felt
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Candidates> Feature5EuclideanDist(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidates, double weight1, double weight2)
+        public static List<Candidates> Feature5EuclideanDist(List<RegionRepresentation> query, 
+            List<RegionRepresentation> candidates, double weight1, double weight2)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -632,12 +642,12 @@ namespace Dong.Felt
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Candidates> Feature5EuclideanDist2(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidates, double weight1, double weight2, string featurePropSet, 
+        public static List<Candidates> Feature5EuclideanDist2(List<RegionRepresentation> query, 
+            List<RegionRepresentation> candidates, double weight1, double weight2, string featurePropSet, 
             CompressSpectrogramConfig compressConfig)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -733,11 +743,11 @@ namespace Dong.Felt
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Candidates> Feature5EuclideanDist2(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidates, double weight1, double weight2, string featurePropSet)
+        public static List<Candidates> Feature5EuclideanDist2(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidates, double weight1, double weight2, string featurePropSet)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -827,11 +837,11 @@ namespace Dong.Felt
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Candidates> Feature10HausdorffDist(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidates)
+        public static List<Candidates> Feature10HausdorffDist(List<RegionRepresentation> query, 
+            List<RegionRepresentation> candidates)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRerepresentation>();
+            var tempRegionList = new List<RegionRepresentation>();
             var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
             var candidatesCount = candidates.Count;
             for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
@@ -867,9 +877,8 @@ namespace Dong.Felt
             }
             return result;
         }
-        
-       
-        public static List<double> DistanceScoreFromAudioRegionVectorRepresentation(RegionRerepresentation query, List<List<RegionRerepresentation>> candidates)
+              
+        public static List<double> DistanceScoreFromAudioRegionVectorRepresentation(RegionRepresentation query, List<List<RegionRepresentation>> candidates)
         {
             // to get the distance and frequency band index
             var result = new List<double>();
@@ -925,11 +934,11 @@ namespace Dong.Felt
         /// <param name="queryRepresentation"></param>
         /// <param name="ridgeNeighbourhood"></param>
         /// <returns></returns>
-        public static List<RegionRerepresentation> RegionRepresentationFromAudioNhRepresentations(List<RegionRerepresentation> queryRepresentation,
+        public static List<RegionRepresentation> RegionRepresentationFromAudioNhRepresentations(List<RegionRepresentation> queryRepresentation,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
             int neighbourhoodLength, SpectrogramConfiguration spectrogramConfig, SpectrogramStandard spectrogram)
         {
-            var result = new List<RegionRerepresentation>();
+            var result = new List<RegionRepresentation>();
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
             var maxNhCountInRow = (int)(spectrogram.NyquistFrequency / nhFrequencyRange);
             if (spectrogram.NyquistFrequency % nhFrequencyRange == 0)
@@ -972,7 +981,7 @@ namespace Dong.Felt
                             var frameIndex = nhList[0].FrameIndex;
                             var rowIndexInRegion = (int)(i / nhCountInColForQuery);
                             var colIndexInRegion = i % nhCountInColForQuery;
-                            var regionItem = new RegionRerepresentation(nhList[i], frequencyIndex, frameIndex, nhCountInRowForQuery,
+                            var regionItem = new RegionRepresentation(nhList[i], frequencyIndex, frameIndex, nhCountInRowForQuery,
                                 nhCountInColForQuery, rowIndexInRegion, colIndexInRegion, audioFileName);
                             result.Add(regionItem);
                         }
@@ -982,9 +991,9 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<RegionRerepresentation> FixedFrequencyRegionRepresentationList2(List<RegionRerepresentation> candidatesList, int rowsCount1, int colsCount1)
+        public static List<RegionRepresentation> FixedFrequencyRegionRepresentationList2(List<RegionRepresentation> candidatesList, int rowsCount1, int colsCount1)
         {
-            var result = new List<RegionRerepresentation>();
+            var result = new List<RegionRepresentation>();
             var listCount = candidatesList.Count;
             var nhCountInRow = candidatesList[0].NhCountInRow;
             var nhCountInCol = candidatesList[0].NhCountInCol;
@@ -1007,9 +1016,9 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="candidatesList"></param>
         /// <returns></returns>
-        public static List<List<RegionRerepresentation>> RegionRepresentationListToVectors(List<RegionRerepresentation> candidatesList, int rowsCount1, int colsCount1)
+        public static List<List<RegionRepresentation>> RegionRepresentationListToVectors(List<RegionRepresentation> candidatesList, int rowsCount1, int colsCount1)
         {
-            var result = new List<List<RegionRerepresentation>>();
+            var result = new List<List<RegionRepresentation>>();
             var listCount = candidatesList.Count;
 
             var nhCountInRow = candidatesList[0].NhCountInRow;
@@ -1020,7 +1029,7 @@ namespace Dong.Felt
             var count = candidatesArray.GetLength(0) * candidatesArray.GetLength(1);
             for (int colIndex = 0; colIndex < colsCount; colIndex++)
             {
-                var tempList = new List<RegionRerepresentation>();
+                var tempList = new List<RegionRepresentation>();
                 for (int rowIndex = 0; rowIndex < rowsCount; rowIndex++)
                 {
                     tempList.Add(candidatesArray[rowIndex, colIndex]);
@@ -1030,5 +1039,92 @@ namespace Dong.Felt
             return result;
         }
 
+        /// <summary>
+        /// This distance calculation will be done between a query and a candidate.
+        /// It is obtainted by computing the overlap between the query events and candidate events.
+        /// </summary>
+        /// <param name="queryRepresentation"></param>
+        /// <param name="candidateList"></param>
+        /// <returns></returns>
+        public static List<Candidates> EventBasedDistance(RegionRepresentation queryRepresentation, 
+            List<RegionRepresentation> candidateList)
+        {
+            var result = new List<Candidates>();
+            // get the relevant index inside the region
+            var relevantQueryRepresentation = GetRelevantIndexInRegion(queryRepresentation);
+            var eventCount = relevantQueryRepresentation.EventList.Count();
+
+            foreach (var c in candidateList)
+            {
+                var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
+                var eventList = relevantCandidateRepresentation.EventList;
+                // find the cloest event to compare
+                var overalScore = 0.0;
+                foreach (var q in relevantQueryRepresentation.EventList)
+                {
+                    var index = FindCloestEvent(eventList, q);
+                    var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                            q.Left,
+                            q.Bottom,
+                            q.Left + q.Width,
+                            q.Bottom + q.Height,
+                            eventList[index].Left,
+                            eventList[index].Bottom,
+                            eventList[index].Left + eventList[index].Width,
+                            eventList[index].Bottom + eventList[index].Height);
+                    overalScore += (double)overlap / q.Area;                    
+                }
+                var score = overalScore / eventCount;
+                var timeScale = c.EventList[0].TimeScale;
+                var freqScale = c.EventList[0].FreqScale;
+                var candidate = new Candidates(
+                    score,
+                    c.LeftInPixel * timeScale,
+                    (c.RightInPixel - c.LeftInPixel) * timeScale,
+                    c.TopInPixel * freqScale,
+                    c.BottomInPixel * freqScale,
+                    c.SourceAudioFile);
+                result.Add(candidate);
+            }                   
+            return result;
+        }
+
+        public static RegionRepresentation GetRelevantIndexInRegion(RegionRepresentation events)
+        {          
+            var eventList = events.EventList;
+            var regionBottom = events.BottomInPixel;
+            var regionLeft = events.RightInPixel;
+            foreach (var e in eventList)
+            {
+                e.Bottom = e.Bottom - regionBottom;
+                e.Left = e.Left - regionLeft;
+                e.Centroid = new Point((e.Centroid.X - regionLeft), (e.Centroid.Y - regionBottom));              
+            }
+            var result = new RegionRepresentation(eventList, events.SourceAudioFile);
+            return result;
+        }
+
+        public static int FindCloestEvent(List<EventBasedRepresentation> es, EventBasedRepresentation modal)
+        {
+            var distances = new List<double>(); 
+            foreach (var e in es)
+            {
+                var distance = Distance.EuclideanDistanceForPoint(e.Centroid, modal.Centroid);
+                distances.Add(distance);
+            }
+
+            var distanceArray = distances.ToArray();
+            var min = 10000.0;
+            var index = 0; 
+            for (var i = 0; i < distanceArray.GetLength(0); i++)
+            {                
+                if (distanceArray[i] < min)
+                {
+                    min = distanceArray[i];
+                    index = i;
+                }
+            }
+            return index;
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace Dong.Felt.Representations
     using System.Linq;
     using System.Text;
 
-    public class RegionRerepresentation : RidgeDescriptionNeighbourhoodRepresentation
+    public class RegionRepresentation : RidgeDescriptionNeighbourhoodRepresentation
     {
         #region public properties.
 
@@ -18,7 +18,7 @@ namespace Dong.Felt.Representations
         /// gets or sets the fft features for a region. This is based on Bardeli's algorithm.
         /// </summary>
         public PointOfInterest[,] fftFeatures { get; set; }
-
+   
         /// <summary>
         /// Index (0-based) for this region's highest frequency in the source audio file, its unit is hz.
         /// </summary>
@@ -100,6 +100,39 @@ namespace Dong.Felt.Representations
 
         public List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods { get; set; }
 
+        /// <summary>
+        /// In a query region, this is a distance between the region left  and the bottom left vetex in the event list.
+        /// </summary>
+        public int leftToBottomLeftVertex { get; set; }
+
+        /// <summary>
+        /// In a query region, this is a distance between the region right and the bottom left vetex in the event list.
+        /// </summary>
+        public int rightToBottomLeftVertex { get; set; }
+
+        /// <summary>
+        /// In a query region, this is a distance between the region top and the bottom left vetex in the event list.
+        /// </summary>
+        public int topToBottomLeftVertex { get; set; }
+
+        /// <summary>
+        /// In a query region, this is a distance between the region bottom and the bottom left vetex in the event list.
+        /// </summary>
+        public int bottomToBottomLeftVertex { get; set; }
+
+        public int TopInPixel { get; set; }
+
+        public int BottomInPixel { get; set; }
+
+        public int LeftInPixel { get; set; }
+
+        public int RightInPixel { get; set; }
+
+        public EventBasedRepresentation bottomLeftEvent { get; set; }
+      
+
+        public List<EventBasedRepresentation> EventList { get; set; }
+
         //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
         //{
         //    get
@@ -115,7 +148,7 @@ namespace Dong.Felt.Representations
         /// <summary>
         /// Default constructor
         /// </summary>
-        public RegionRerepresentation()
+        public RegionRepresentation()
         {
         }
 
@@ -129,7 +162,7 @@ namespace Dong.Felt.Representations
         /// <param name="nhCountInCol"></param>
         /// <param name="rowIndex"></param>
         /// <param name="colIndex"></param>
-        public RegionRerepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, 
+        public RegionRepresentation(RidgeDescriptionNeighbourhoodRepresentation nh, double frequencyIndex, double frameIndex, 
             int nhCountInRow, int nhCountInCol, int rowIndex, int colIndex, string file)
         {
             this.MaxFrequencyIndex = frequencyIndex;
@@ -174,7 +207,7 @@ namespace Dong.Felt.Representations
             
         }
 
-        public RegionRerepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
+        public RegionRepresentation(List<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhoods,
             int nhCountInRow, int nhCountInCol, double frequencyIndex, double frameIndex,
             int rowIndex, int colIndex, string audioFile)
         {
@@ -217,7 +250,51 @@ namespace Dong.Felt.Representations
             this.SourceAudioFile = audioFile;
         }
 
-        
+        public RegionRepresentation(List<EventBasedRepresentation> eventRepresentations, string file, Query query)
+        {            
+            var queryEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(
+                    eventRepresentations,
+                    query);
+            this.EventList = new List<EventBasedRepresentation>();
+            foreach (var e in queryEventList)
+            {
+                this.EventList.Add(e);
+            }
+            if (queryEventList.Count > 0)
+            {
+                queryEventList.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+                queryEventList.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
+                this.bottomLeftEvent = queryEventList[0];                
+                // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top
+                this.topToBottomLeftVertex = query.TopInPixel - this.bottomLeftEvent.Bottom;
+                this.leftToBottomLeftVertex = this.bottomLeftEvent.Left - query.LeftInPixel;
+                this.rightToBottomLeftVertex = query.RightInPixel - this.bottomLeftEvent.Left;
+                this.bottomToBottomLeftVertex = this.bottomLeftEvent.Bottom - query.BottomInPixel;
+                this.TopInPixel = query.TopInPixel;
+                this.BottomInPixel = query.BottomInPixel;
+                this.LeftInPixel = query.LeftInPixel;
+                this.RightInPixel = query.RightInPixel; 
+            }           
+            this.SourceAudioFile = file;
+        }
+
+        public RegionRepresentation(List<EventBasedRepresentation> eventRepresentations, string file)
+        {
+           this.EventList = new List<EventBasedRepresentation>();
+           foreach (var e in eventRepresentations)
+           {
+               this.EventList.Add(e);
+           }
+           if (eventRepresentations.Count > 0)
+           {
+               eventRepresentations.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+               eventRepresentations.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
+               this.bottomLeftEvent = eventRepresentations[0];
+               // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top             
+           }
+           this.SourceAudioFile = file;
+        }
+
         #endregion
     }
 }

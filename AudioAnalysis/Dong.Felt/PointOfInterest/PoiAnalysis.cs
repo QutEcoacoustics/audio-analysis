@@ -484,6 +484,7 @@ namespace Dong.Felt
 
         /// <summary>
         /// This method aims to filter out point of interest which has spikes characteristics, these poi are possibly MP3 artefact. 
+        /// length can be 9, stdThreshold 4.0.
         /// </summary>
         /// <param name="poiList"></param>
         /// <param name="spectrogramData"></param>
@@ -616,7 +617,7 @@ namespace Dong.Felt
             return result;
         }
 
-    public static double MeasureLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
+        public static double MeasureLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
         {
             var r = 0.0;
             var sreg = 0.0;
@@ -664,5 +665,6 @@ namespace Dong.Felt
             }
             return r;
         }
+       
     }
 }
