@@ -764,17 +764,6 @@
                 }
                 Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
             } // end of for searching the query folder
-            //string outputFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\POIStatisticalAnalysis.csv";
-            //var outputFileInfo = new FileInfo(outputFile);
-            //CSVResults.CandidateListToCSV(outputFileInfo, result);
-            //foreach (var c in result)
-            //{
-            //    var outPutFilePath = c.SourceFilePath.ToFileInfo();
-            //    var outPutFileName = outPutFilePath.Name;
-            //    var outPutDirectory = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\Output\temp";
-            //    var outPutPath = Path.Combine(outPutDirectory, outPutFileName);
-            //    OutputResults.AudioSegmentBasedCandidates(c, outPutPath.ToFileInfo());    
-            //}
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
 
@@ -819,7 +808,7 @@
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);
                 // Read the query csv file
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
-                var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile);
+                var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, spectrogram);
                 var queryRidges = POISelection.ModifiedRidgeDetection(spectrogram,
                     config,                   
                     ridgeConfig,
@@ -850,7 +839,7 @@
                         config,
                         ridgeConfig,
                         compressConfig,
-                        queryAduioFiles[i],
+                        candidatesAudioFiles[j],
                         featurePropSet);                   
                     var candidateAElist = new List<AcousticEvent>();
                     ClusterAnalysis.RidgeListToEvent(candidateSpectrogram, candidateRidges[0], out candidateAElist);
@@ -863,17 +852,6 @@
                     {
                         allCandidateList.Add(c);
                     }
-                    //foreach (var c in candidatesEventList)
-                    //{
-                    //    var candidate = new RegionRepresentation(
-                    //    c,
-                    //    0,
-                    //    0,
-                    //    0.0,
-                    //    0.0,
-                    //    candidatesAudioFiles[j]);
-                    //    allCandidateList.Add(candidate);
-                    //}
                 }// end of the loop for candidates audio files               
                 // 3. Rank the candidates - calculate the distance and output the matched acoustic events.             
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);                                             
@@ -945,7 +923,7 @@
                 }
                 if (matchedCandidateFile != null)
                 {
-                    DrawSpectrogram.DrawingCandiOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
+                    DrawSpectrogram.DrawingOutputSpectrogram(matchedCandidateCsvFileName, queryCsvFiles[i], queryAduioFiles[i],
                         outputPath,
                         rank, ridgeConfig, config, compressConfig,
                         featurePropSet, tempDirectory);

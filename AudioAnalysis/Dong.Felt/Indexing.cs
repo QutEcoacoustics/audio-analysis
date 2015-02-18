@@ -1079,8 +1079,8 @@ namespace Dong.Felt
                 var freqScale = c.EventList[0].FreqScale;
                 var candidate = new Candidates(
                     score,
-                    c.LeftInPixel * timeScale,
-                    (c.RightInPixel - c.LeftInPixel) * timeScale,
+                    c.LeftInPixel * timeScale*1000,
+                    (c.RightInPixel - c.LeftInPixel) * timeScale*1000,
                     c.TopInPixel * freqScale,
                     c.BottomInPixel * freqScale,
                     c.SourceAudioFile);

@@ -282,7 +282,7 @@
 
             result.BottomInPixel = (int)(result.minFrequency / freqScale);
             result.LeftInPixel = (int)(result.startTime / 1000 / timeScale);
-            result.TopInPixel = (int)(result.maxFrequency / 1000 / freqScale);
+            result.TopInPixel = (int)(result.maxFrequency / freqScale);
             result.RightInPixel = (int)(result.endTime / 1000 / timeScale);
 
             return result;
