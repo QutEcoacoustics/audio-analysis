@@ -246,66 +246,78 @@ EntropyPeaks:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-ClusterCount:
-  Name: Cluster Count
-  Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
-  DataType: int
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 50
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: true
-  ComboWeight: 0.3
-AvgClusterDuration:
-  Name: av Cluster Duration
-  Comment: "Average duration in ms of the spectrum cluster sequences."
-  DataType: TimeSpan
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 250
-  ProjectID: Acoustic Indices
-  Units: "ms"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-ThreeGramCount:
-  Name: 3-gram Count
-  Comment: "Number of different tri-gram cluster sequences."
-  DataType: int
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 1000
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-SptPerSecond:
-  Name: av Tracks/Sec
-  Comment: "Average number of spectral tracks per second."
+#ClusterCount:
+#  Name: Cluster Count
+#  Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
+#  DataType: int
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 50
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: true
+#  ComboWeight: 0.3
+#AvgClusterDuration:
+#  Name: av Cluster Duration
+#  Comment: "Average duration in ms of the spectrum cluster sequences."
+#  DataType: TimeSpan
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 250
+#  ProjectID: Acoustic Indices
+#  Units: "ms"
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+#ThreeGramCount:
+#  Name: 3-gram Count
+#  Comment: "Number of different tri-gram cluster sequences."
+#  DataType: int
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 1000
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+SptDensity:
+  Name: SPT density
+  Comment: "Average number of spectral peaks tracks traversing a frame."
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0
-  NormMax: 50
+  NormMin: 0.0
+  NormMax: 2.0
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-AvgSptDuration:
-  Name: av Track Duration
-  Comment: "Average duration of a spectral track."
-  DataType: TimeSpan
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.25
-  NormMax: 2.0
-  ProjectID: Acoustic Indices
-  Units: "s"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+#SptPerSecond:
+#  Name: av Tracks/Sec
+#  Comment: "Average number of spectral tracks per second."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 50
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+#AvgSptDuration:
+#  Name: av Track Duration
+#  Comment: "Average duration of a spectral track."
+#  DataType: TimeSpan
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0.25
+#  NormMax: 2.0
+#  ProjectID: Acoustic Indices
+#  Units: "s"
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
 RainIndex:
   Name: Rain Index
   Comment: "Rain score calculated every 10 sec and 6 values averaged over the minute."

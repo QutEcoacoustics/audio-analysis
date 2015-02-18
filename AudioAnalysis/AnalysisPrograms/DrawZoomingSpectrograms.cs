@@ -113,7 +113,7 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfig(ipFileName, null, null); // default values have been set
+            var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
             // need to set the data scale. THis info not available at present
             config.FrameStep = 441;
             config.IndexCalculationDuration = TimeSpan.FromSeconds(0.2);

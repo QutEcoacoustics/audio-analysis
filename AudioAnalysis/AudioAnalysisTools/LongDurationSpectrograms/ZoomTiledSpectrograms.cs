@@ -38,7 +38,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             DateTime now1 = DateTime.Now;
-            string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN" };
+            string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN", "FFT" };
             Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(analysisConfig.InputDirectoryInfo, fileStem, keys);
             DateTime now2 = DateTime.Now;
             TimeSpan et = now2 - now1;
@@ -58,6 +58,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
             // TOP MOST ZOOMED OUT IMAGES 
+            LoggedConsole.WriteLine("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
             foreach (double scale in imageScales)
             {
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
@@ -491,7 +492,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double[] SpectralFrameScale { get; set; }
         public double lowerNormalisationBoundForDecibelSpectrograms = -100;
         public double LowerNormalisationBoundForDecibelSpectrograms { get; set; }
-        public double upperNormalisationBoundForDecibelSpectrograms = -20;
+        public double upperNormalisationBoundForDecibelSpectrograms = -30;
         public double UpperNormalisationBoundForDecibelSpectrograms { get; set; }
 
 

@@ -399,15 +399,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 if ((key == "ENT") && (scalingFactor > 1))
                 {
-                    //matrix = spectra["AVG"];
+                    matrix = spectra["FFT"];
                     for (int r = 0; r < rowCount; r++)
                     {
                         int colIndex = 0;
                         for (int c = 0; c <= colCount - scalingFactor; c += step)
                         {
                             colIndex = c / scalingFactor;
-                            for (int i = 0; i < scalingFactor; i++) 
-                                tempArray[i] = matrix[r, c + i];
+                            for (int i = 0; i < scalingFactor; i++)
+                            {
+                                // square the amplitude to give energy
+                                tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
+                            }
                             double entropy = DataTools.Entropy_normalised(tempArray);
                             if (Double.IsNaN(entropy)) entropy = 1.0;
                             //entropy = 1 - entropy - 0.4;
