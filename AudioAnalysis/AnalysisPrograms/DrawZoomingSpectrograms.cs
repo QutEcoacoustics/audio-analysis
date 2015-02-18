@@ -24,31 +24,7 @@ namespace AnalysisPrograms
     /// </summary>
     public static class DrawZoomingSpectrograms
     {
-        /*
-         *     public class SourceArguments
-    {
         
-       
-    }
-
-    public class SourceAndConfigArguments : SourceArguments
-    {
-        [ArgDescription("The path to the config file")]
-        [Production.ArgExistingFile()]
-        [ArgRequired]
-        [ArgPosition(2)]
-        public FileInfo Config { get; set; }
-    }
-
-    public class SourceConfigOutputDirArguments : SourceAndConfigArguments
-    {
-        [ArgDescription("A directory to write output to")]
-        [Production.ArgExistingDirectory(createIfNotExists: true)]
-        [ArgRequired]
-        [ArgPosition(3)]
-        public virtual DirectoryInfo Output { get; set; }
-    }*/
-
         public class Arguments
         {
             [ArgDescription("The source directory of files ouput from Towsey.Acoustic (the Index analysis) to operate on")]

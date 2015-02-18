@@ -32,8 +32,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var tilingConfig   = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
 
             string fileStem    = analysisConfig.FileName;
-            var namingPattern = new TileNamingPattern();
-            var tiler = new Tiler(outputDirectory, namingPattern);
+            var namingPattern = new PanoJsTilingProfile();
+            var tiler = new Tiler(outputDirectory, namingPattern, new SortedSet<decimal>(), 60.0m, 1440, 300);
             
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
@@ -50,8 +50,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 imageScales = tilingConfig.SpectralIndexScale;
             }
-
-            var allSuperTiles = new List<SuperTile>(imageScales.Length);
 
             // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
             // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
@@ -90,8 +88,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
                 }
 
-                // save supetile results for tiling later
-                allSuperTiles.AddRange(superTiles);
+                // tile images as we go
+                LoggedConsole.WriteLine("Writing index tiles for " + scale);
+                tiler.TileMany(superTiles);
             }
 
 
@@ -136,13 +135,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
                 }
 
-                // save supetile results for tiling later
-                allSuperTiles.AddRange(superTilingResults);
+                // finaly tile the output
+                LoggedConsole.WriteLine("Begin tile production");
+                tiler.TileMany(superTilingResults);
             }
 
-            // finaly tile the output
-            LoggedConsole.WriteLine("Begin tile production");
-            tiler.Tile(allSuperTiles);
+            LoggedConsole.WriteLine("Tiling complete");
         }
 
 
