@@ -194,7 +194,7 @@ namespace Dong.Felt.Representations
             List<EventBasedRepresentation> candidateEventList, string file, int centroidFreqOffset)
         {
             var result = new List<RegionRepresentation>();
-            var startCentriod = queryRepresentations.bottomLeftEvent.Centroid;
+            var startCentriod = queryRepresentations.MajorEvent.Centroid;
 
             var maxFrame = spectrogram.FrameCount;
             var maxFreq = spectrogram.Configuration.FreqBinCount;
@@ -259,14 +259,23 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        public static List<EventBasedRepresentation> ExtractAcousticEventList(
-            SpectrogramStandard spectrogram,
-            List<EventBasedRepresentation> queryRepresentations,
-            string file,
-            int centroidFreqOffset)
-        {
-            var result = new List<EventBasedRepresentation>();
-            return result;
+        public static List<EventBasedRepresentation> ExtractPotentialCandidateEvents(           
+            List<EventBasedRepresentation> queryRepresentations, List<EventBasedRepresentation> candidateEventList, int centroidFreqOffset)
+        {           
+            if (queryRepresentations.Count > 0)
+            {
+                queryRepresentations.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));                 
+            }
+            var BottomLeftEventInQuery = queryRepresentations[0];           
+            var potentialCandidateLocation = new List<EventBasedRepresentation>();
+            foreach (var c in candidateEventList)
+            {
+                if (Math.Abs(c.Centroid.Y - BottomLeftEventInQuery.Centroid.Y) <= centroidFreqOffset)
+                {
+                    potentialCandidateLocation.Add(c);
+                }
+            }
+            return potentialCandidateLocation;
         }
 
         #endregion

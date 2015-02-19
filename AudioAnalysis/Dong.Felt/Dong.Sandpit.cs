@@ -152,8 +152,8 @@
                     //featurePropertySet, outputDirectory.FullName);
 
                     /// Ridge detection analysis
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                    //    featurePropertySet);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                        featurePropertySet);
                     /// Jie request ridge detection
                     //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
 
@@ -286,6 +286,8 @@
                         compressConfig.TimeCompressRate,
                         filterRidges);
                     var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
+                    //var connectBrokenRidges = ClusterAnalysis.SmoothRidges(dividedRidges[0], rows, cols, 5, 3, 1.0, 3);
+                    //var connectRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(connectBrokenRidges);
                     //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
                     ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
@@ -818,10 +820,9 @@
                 var acousticEventlist = new List<AcousticEvent>();
                 ClusterAnalysis.RidgeListToEvent(spectrogram, queryRidges[0], out acousticEventlist);
                 // event representation for the whole recording
-                var eventsRepresentation =
+                var queryEventRepresentation =
                     EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, acousticEventlist);
-
-                var queryRepresentation = new RegionRepresentation(eventsRepresentation, queryAudioFiles[i], query);               
+                var queryRepresentation = new RegionRepresentation(queryEventRepresentation, queryAudioFiles[i], query);
                 // 2. search through training or testing audio files
                 if (!Directory.Exists(inputFileDirectory))
                 {
@@ -846,9 +847,12 @@
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
                         EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist);
-                    var candidatesRepresentationList = EventBasedRepresentation.ExtractAcousticEventList(candidateSpectrogram,
-                        queryRepresentation, candidatesEventsRepresentation, candidatesAudioFiles[j], 12);
-                    foreach (var c in candidatesRepresentationList)
+                    var candidatesRepresentation = EventBasedRepresentation.ExtractAcousticEventList(candidateSpectrogram,
+                        queryRepresentation,
+                        candidatesEventsRepresentation,
+                        candidatesAudioFiles[j],
+                        12);
+                    foreach (var c in candidatesRepresentation)
                     {
                         allCandidateList.Add(c);
                     }
@@ -857,7 +861,7 @@
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);                                             
                 var candidateDistanceList = new List<Candidates>();                
                 Log.Info("# calculate the distance between a query and a candidate");
-                candidateDistanceList = Indexing.EventBasedDistance(queryRepresentation, allCandidateList);
+                candidateDistanceList = Indexing.EventRegionBasedDistance(queryRepresentation, allCandidateList);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 // To save all matched acoustic events separately                         
                 var separateCandidatesList = new List<List<Candidates>>();

@@ -129,7 +129,8 @@ namespace Dong.Felt.Representations
         public int RightInPixel { get; set; }
 
         public EventBasedRepresentation bottomLeftEvent { get; set; }
-      
+
+        public EventBasedRepresentation MajorEvent { get; set; }
 
         public List<EventBasedRepresentation> EventList { get; set; }
 
@@ -250,6 +251,12 @@ namespace Dong.Felt.Representations
             this.SourceAudioFile = audioFile;
         }
 
+        /// <summary>
+        /// This representation is derived on eventRepresentations. 
+        /// </summary>
+        /// <param name="eventRepresentations"></param>
+        /// <param name="file"></param>
+        /// <param name="query"></param>
         public RegionRepresentation(List<EventBasedRepresentation> eventRepresentations, string file, Query query)
         {            
             var queryEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(
@@ -262,14 +269,15 @@ namespace Dong.Felt.Representations
             }
             if (queryEventList.Count > 0)
             {
-                queryEventList.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
-                //queryEventList.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
-                this.bottomLeftEvent = queryEventList[0];                
+                //queryEventList.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));               
+                //this.bottomLeftEvent = queryEventList[0]; 
+                queryEventList.Sort((ae1, ae2) => ae1.Area.CompareTo(ae2.Area));
+                this.MajorEvent = queryEventList[queryEventList.Count - 1];
                 // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top
-                this.topToBottomLeftVertex = query.TopInPixel - this.bottomLeftEvent.Bottom;
-                this.leftToBottomLeftVertex = this.bottomLeftEvent.Left - query.LeftInPixel;
-                this.rightToBottomLeftVertex = query.RightInPixel - this.bottomLeftEvent.Left;
-                this.bottomToBottomLeftVertex = this.bottomLeftEvent.Bottom - query.BottomInPixel;
+                this.topToBottomLeftVertex = query.TopInPixel - this.MajorEvent.Bottom;
+                this.leftToBottomLeftVertex = this.MajorEvent.Left - query.LeftInPixel;
+                this.rightToBottomLeftVertex = query.RightInPixel - this.MajorEvent.Left;
+                this.bottomToBottomLeftVertex = this.MajorEvent.Bottom - query.BottomInPixel;
                 this.TopInPixel = query.TopInPixel;
                 this.BottomInPixel = query.BottomInPixel;
                 this.LeftInPixel = query.LeftInPixel;
