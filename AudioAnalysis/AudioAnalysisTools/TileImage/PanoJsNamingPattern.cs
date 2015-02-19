@@ -37,7 +37,7 @@
             return selectedLayer.ScaleIndex;
         }
 
-        public override Point GetTileIndexes(Layer selectedLayer, Point offsets)
+        public override Point GetTileIndexes(Layer selectedLayer, Point tileOffsets)
         {
             throw new NotImplementedException();
         }
