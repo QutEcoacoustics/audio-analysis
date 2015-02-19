@@ -39,13 +39,13 @@ namespace AudioAnalysisTools.TileImage
 
         public abstract int GetZoomIndex(Layer selectedLayer);
 
-        public abstract Point GetTileIndexes(Layer selectedLayer, Point offsets);
+        public abstract Point GetTileIndexes(Layer selectedLayer, Point tileOffsets);
 
-        public virtual string GetFileBaseName(Layer selectedLayer, Point offsets)
+        public virtual string GetFileBaseName(Layer selectedLayer, Point tileOffsets)
         {
 
-            var coordinates = this.GetTileIndexes(selectedLayer, offsets);
-            return string.Format("{0}-{1}_{2}_{3}", "stub", this.GetZoomIndex(selectedLayer), coordinates.X, coordinates.Y);
+            var coordinates = this.GetTileIndexes(selectedLayer, tileOffsets);
+            return string.Format("{0}-{1}_{2}_{3}", "tile", this.GetZoomIndex(selectedLayer), coordinates.X, coordinates.Y);
         }
     }
 }

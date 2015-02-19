@@ -66,7 +66,8 @@ namespace AudioAnalysisTools.TileImage
             int numtilesX;
 
             // either positive or negative
-            double paddingX = (double)xOffset / this.profile.TileWidth;
+            double paddingX = 0; // TODO: call AlignSuperTileInLayer
+            double paddingY = 0; // TODO: call AlignSuperTileInLayer
 
 
             bool isSuperTileWidthFactorOfLayerWidth = layer.Width / (double)width == 0;
@@ -85,14 +86,34 @@ namespace AudioAnalysisTools.TileImage
             {
                 for (var j = 0; j < numtilesY; j++)
                 {
-                    var subsection = new Rectangle();
-                    var tileImage = (Bitmap)((Bitmap)image).Clone(subsection, image.PixelFormat);
+                    // clone a segment of the super tile
+                    // NOTE: At the moment it may sometimes pull regions outside of the original image
+                    //       unclear what beaviour will occur, either:
+                    //      a) excpetion - :-(
+                    //      b) trimmed segment - not ideal, add empty space manually
+                    //      c) full segment, with empty space - ideal! do nothing
+
+                    // supertile relative
+                    var top = (int)((j * this.profile.TileHeight) - paddingX);
+
+                    // supertile relative
+                    var left = (int)((i * this.profile.TileWidth) - paddingY);
+                    var subsection = new Rectangle()
+                                         {
+                                             X = top,
+                                             Y = left,
+                                             Width = this.profile.TileWidth,
+                                             Height = this.profile.TileHeight
+                                         };
+                    var tileImage = ((Bitmap)image).Clone(subsection, image.PixelFormat);
 
 
-
+                    // convert co-ordinates to layer relative
+                    var layerTop = 0;
+                    var layerLeft = 0;
 
                     // write tile to disk
-                    var name = this.profile.GetFileBaseName(layer, new Point());
+                    var name = this.profile.GetFileBaseName(layer, new Point(layerTop, layerLeft));
                     var outputTilePath = this.outputDirectory.CombineFile(name + ".png").FullName;
                     tileImage.Save(outputTilePath);
                 }
@@ -101,32 +122,62 @@ namespace AudioAnalysisTools.TileImage
 
         /// <summary>
         /// Aligns a supertile into a layer for one dimension only
+        /// 
+        /// tiles are aligned to the center of the layer
+        /// if odd number of tiles required, then middle tile is offset by half tile size
+        /// <para>
+        /// <![CDATA[ 
+        ///    |-----------------|====‖========|---------------|
+        ///    l1                s1   ‖        s2              l2
+        ///    |_|_|_|_|_|_|_|_|_|_|_|‖|_|_|_|_|_|_|_|_|_|_|_|_|       <- odd
+        ///    tmin                   ‖                        tmax
+        ///                           middle     
+        ///                           ‖  
+        ///     |----------------|====‖========|--------------|
+        ///     l1               s1   ‖        s2             l2
+        ///     |_|_|_|_|_|_|_|_|_|_|_‖_|_|_|_|_|_|_|_|_|_|_|_|        <- even
+        ///     tmin                  ‖                       tmax
+        ///                           middle      
+        /// tileSize = 2 characters
+        /// ]]>
+        /// </para>
         /// </summary>
         /// <param name="numberOfTilesNeededForLayer"></param>
         /// <param name="tileSize"></param>
-        private void AlignSuperTileInLayer(int numberOfTilesNeededForLayer, int tileSize, int superTileOffset)
+        private int AlignSuperTileInLayer(int layerWidth, int numberOfTilesNeededForLayer, int tileSize, int superTileOffset, int superTileWidth)
         {
-            // tiles are aligned to the center of the layer
-            // if odd number of tiles required, then middle tile is offset by half tile size
-            //
-            //     |----------------|====‖========|--------------|
-            //     l1               s1   ‖        s2             l2
-            //     |_|_|_|_|_|_|_|_|_|_|_‖_|_|_|_|_|_|_|_|_|_|_|_|        <- even
-            //    |_|_|_|_|_|_|_|_|_|_|_|‖|_|_|_|_|_|_|_|_|_|_|_|_|       <- odd
-            //    tmin                   ‖                        tmax
-            //                           middle              
-            // tileSize = 2 characters
+            Contract.Assert(layerWidth / (double)tileSize == numberOfTilesNeededForLayer);
 
-            var minimum = 0.0;
+            var middleOffset = layerWidth / 2.0;
             if (numberOfTilesNeededForLayer.IsOdd())
             {
-                minimum = -(tileSize / 2.0);
+                middleOffset = layerWidth - (tileSize / 2.0);
             }
 
             // does the provided supertile align to a tile?
             // i.e. how many tiles away before the super tile starts
+            var gapInTiles = superTileOffset / (double)tileSize;
+            if (gapInTiles == 0.0)
+            {
+                // then super tile is aligned
+                return 0;
+            }
+            else
+            {
+                // super tile is not aligned
 
+                // support cases where there is only one super tile per layer
+                var tilesInSuperTile = Double.NaN; // TODO:
+                if (false) // TODO;
+                {
 
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        "The super tile is not aligned to a a tile boundrary, don't know how to proceed");
+                }
+            }
         }
 
         private SortedSet<Layer> CalculateLayers(SortedSet<double> scales, double unitScale, int unitWidth, int unitHeight)
