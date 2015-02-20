@@ -300,6 +300,7 @@ namespace AnalysisPrograms
             }
 
             // write the segment spectrogram (typically of one minute duration) to CSV
+            // this is required if you want to produced zoomed spectrograms at a resolution greater than 0.2 seconds/pixel 
             bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
             if (saveSonogramData) 
             {
@@ -427,7 +428,7 @@ namespace AnalysisPrograms
                 // this method also AUTOMATICALLY SORTS because it uses array indexing
                 var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(configInfo, indicesPropertiesConfig, dictionaryOfSpectra);
+                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(configFileDestination, indicesPropertiesConfig, dictionaryOfSpectra);
             }
         }
 

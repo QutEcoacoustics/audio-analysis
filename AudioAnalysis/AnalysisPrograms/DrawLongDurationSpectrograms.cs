@@ -121,14 +121,13 @@ namespace AnalysisPrograms
 
             }
 
-            var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
-
+            //var config = LdSpectrogramConfig.ReadYamlToConfig();
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
-            config.IndexCalculationDuration = TimeSpan.FromSeconds(60.0);
-            config.XAxisTicInterval = TimeSpan.FromSeconds(3600.0);
+            //config.IndexCalculationDuration = TimeSpan.FromSeconds(60.0);
+            //config.XAxisTicInterval = TimeSpan.FromSeconds(3600.0);
 
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, arguments.IndexPropertiesConfig);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
         }
 
 

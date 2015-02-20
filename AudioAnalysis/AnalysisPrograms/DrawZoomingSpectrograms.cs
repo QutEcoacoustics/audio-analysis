@@ -117,8 +117,6 @@ namespace AnalysisPrograms
             // need to set the data scale. THis info not available at present
             config.FrameStep = 441;
             config.IndexCalculationDuration = TimeSpan.FromSeconds(0.2);
-            //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
-
 
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(fiSpectrogramConfig);
@@ -131,7 +129,7 @@ namespace AnalysisPrograms
                 // use the default set of index properties in the AnalysisConfig directory.
                 SourceDirectory = ipDir,
                 Output = opDir,
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigForTiling.yml".ToFileInfo(),
                 SpectrogramTilingConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig
             };
@@ -156,19 +154,42 @@ namespace AnalysisPrograms
 
             }
 
-            // draw a focused multi-resolution pyramid of images
-            /*
-            TimeSpan focalTime = TimeSpan.Zero;
-            TimeSpan focalTime = TimeSpan.FromMinutes(16);
-            int imageWidth = 1500;
-            ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig, 
-                                                                  focalTime, imageWidth);
-            */
-
-            // XOR
-
             // Create the super tiles for a full set of recordings
             ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory, arguments.Output, arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig);
+
+
+            // ######################################################################################################################################################
+            bool debug = true;
+            if (debug)
+            {
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine("# DRAW STACK OF FOCUSED MULTI-SCALE LONG DURATION SPECTROGRAMS DERIVED FROM SPECTRAL INDICES.");
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+                LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+                LoggedConsole.WriteLine("");
+                // draw a focused multi-resolution pyramid of images
+                //TimeSpan focalTime = TimeSpan.Zero;
+                //TimeSpan focalTime = TimeSpan.FromMinutes(16);
+                TimeSpan focalTime = TimeSpan.FromMinutes(30);
+                int imageWidth = 1500;
+                ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig,
+                                                                      arguments.IndexPropertiesConfig, focalTime, imageWidth);
+            }
+
+            if (debug)
+            {
+                // draw standard false colour spectrograms - useful to check what spectrograms of the indiviual indices are like. 
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine("# DRAW LONG DURATION SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES.");
+                LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+                LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+                LoggedConsole.WriteLine("");
+                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
+            }
+
+
         }
 
 

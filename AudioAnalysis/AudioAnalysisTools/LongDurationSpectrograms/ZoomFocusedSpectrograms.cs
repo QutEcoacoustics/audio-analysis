@@ -35,7 +35,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             DateTime now1 = DateTime.Now;
-            string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN" };
+            string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN", "FFT", "SPT" };
             Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(ldSpConfig.InputDirectoryInfo, fileStem, keys);
             DateTime now2 = DateTime.Now;
             TimeSpan et = now2 - now1;
@@ -92,7 +92,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // combine the images into a stack  
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
-            combinedImage.Save(Path.Combine(ldSpConfig.OutputDirectoryInfo.FullName, "ZOOM.png"));
+            string fileName = String.Format("ZOOMFocal_min{0:f1}.png", focalTime.TotalMinutes);
+            combinedImage.Save(Path.Combine(ldSpConfig.OutputDirectoryInfo.FullName, fileName));
         }
 
 

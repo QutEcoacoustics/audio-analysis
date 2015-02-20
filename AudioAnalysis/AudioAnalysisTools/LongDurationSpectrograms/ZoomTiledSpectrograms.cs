@@ -91,7 +91,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 // tile images as we go
                 LoggedConsole.WriteLine("Writing index tiles for " + scale);
-                tiler.TileMany(superTiles);
+                //tiler.TileMany(superTiles);
             }
 
 
@@ -137,8 +137,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
 
                 // finaly tile the output
-                LoggedConsole.WriteLine("Begin tile production");
-                tiler.TileMany(superTilingResults);
+                LoggedConsole.WriteLine("Begin tile production for minute: " + min);
+                //tiler.TileMany(superTilingResults);
             }
 
             LoggedConsole.WriteLine("Tiling complete");
@@ -263,8 +263,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
             int imageScaleInMsPerPixel = (int)imageScale.TotalMilliseconds;
-            double blendWt1 = 0.1;
-            double blendWt2 = 0.9;
+            double blendWt1 = 0.0;
+            double blendWt2 = 1.0;
 
             if (imageScaleInMsPerPixel > 15000)
             {
@@ -278,10 +278,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 blendWt2 = 0.1;
             }
             else
-                if (imageScaleInMsPerPixel > 1000)
+                if (imageScaleInMsPerPixel >= 2000)
                 {
                     blendWt1 = 0.7;
                     blendWt2 = 0.3;
+                }
+                else
+                if (imageScaleInMsPerPixel >= 1000)
+                {
+                    blendWt1 = 0.5;
+                    blendWt2 = 0.5;
                 }
                 else
                     if (imageScaleInMsPerPixel > 500)
@@ -399,14 +405,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                  SpectrogramType = SpectrogramType.Frame,
                                  Image = spectrogramImage
                              };
-//                if (spectrogramImage != null)
-//                {
-//                    if (compressionFactor == 1) str.SuperTileScale1 = spectrogramImage;
-//                    else
-//                    if (compressionFactor == 2) str.SuperTileScale2 = spectrogramImage;
-//                    else
-//                    if (compressionFactor == 5) str.SuperTileScale5 = spectrogramImage;
-//                }
             }
 
             return str;
@@ -435,6 +433,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             frameData = DataTools.normalise(frameData);
 
             // at this point moderate the frame data using the index data
+            // threshold determines degree of moderation.
             double threshold = 0.5;
             ModerateFrameDataUsingIndexData(frameData, indexData, threshold);
 
@@ -453,7 +452,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// THis method is a way of getting the acoustic index data at 0.2 second resolution to have some influence on the frame spectrograms at 0.02s resolution.
         /// We cannot assume that the two matrices will have the same number of columns i.e. same temporal duration.
-        /// The frame data has been padded to one minute duration. But the last index matrix will unlikely  be the full one minute duration.
+        /// The frame data has been padded to one minute duration. But the last index matrix will probably NOT be the full one minute duration.
         /// Therefore assume that indexData matrix will be shorter and take its column count.
         /// </summary>
         /// <param name="frameData"></param>
@@ -463,12 +462,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             int rowCount = frameData.GetLength(0); //number of rows should be same in both matrices
             int colCount = indexData.GetLength(1); //number of column will possibly be fewer in the indexData matrix.
-            for (int r = 0; r < rowCount; r++)
+            double moderation = threshold + 0.1;       // makes moderationless severe
+            for (int c = 0; c < colCount; c++)
             {
-                for (int c = 0; c < colCount; c++)
+                //double[] vector = MatrixTools.GetColumn(indexData, c);
+                //vector = DataTools.filterMovingAverage(vector, 3);
+                for (int r = 0; r < rowCount; r++)
                 {
-                    if(indexData[r, c] < threshold)
-                        frameData[r, c] *= threshold;
+                    //if(indexData[r, c] < threshold)
+                    //    frameData[r, c] *= (vector[r] / threshold);
+                    if (indexData[r, c] < threshold)
+                        frameData[r, c] *= moderation;
                         //frameData[r, c] *= indexData[r, c];
                 }//end all columns
             }//end all rows

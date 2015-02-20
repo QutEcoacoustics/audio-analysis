@@ -569,13 +569,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             Image bmp = ImageTools.DrawReversedMatrixWithoutNormalisation(matrix);
-            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            TimeSpan xAxisPixelDuration = this.IndexCalculationDuration;
+            TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp.Width);
             int nyquist = this.SampleRate / 2; 
             int herzInterval = 1000;
-            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
-            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            //double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
+            //TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, nyquist, herzInterval);
-            return bmp;
+            const int trackHeight = 20;
+            TimeSpan timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.StartOffset, bmp.Width, trackHeight);
+            var array = new Image[2];
+            array[0] = bmp;
+            array[1] = timeBmp;
+            var returnImage = ImageTools.CombineImagesVertically(array);
+            return returnImage;
         }
 
         public void DrawFalseColourSpectrograms(DirectoryInfo outputDirectory, string outputFileName)
@@ -1317,6 +1325,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //========= IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. ===============================================================
         //========================================================================================================================================================
 
+
+
         /// <summary>
         /// This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS 
         ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
@@ -1331,9 +1341,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="spectra">
         /// Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
-        public static void DrawSpectrogramsFromSpectralIndices(LdSpectrogramConfig longDurationSpectrogramConfig, FileInfo indicesConfigPath, Dictionary<string, double[,]> spectra = null)
+        public static void DrawSpectrogramsFromSpectralIndices(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath, Dictionary<string, double[,]> spectra = null)
         {
-            LdSpectrogramConfig config = longDurationSpectrogramConfig;
+            LdSpectrogramConfig config = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
@@ -1390,7 +1400,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int herzInterval = 1000;
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
 
-            //colorMap = SpectrogramConstants.RGBMap_ACI_ENT_SPT; //this has also been good
             colorMap = colorMap2;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
