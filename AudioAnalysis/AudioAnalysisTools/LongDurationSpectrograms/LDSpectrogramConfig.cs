@@ -59,8 +59,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
             this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
-            this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            this.ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
+            this.ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_EVN;
+            this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
             this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;        
         }
 
@@ -68,9 +68,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         #region Public Properties
 
-        public string COMMENT1 = "LIST OF PARAMETER SETTINGS USED TO OBTAIN THE SUMMARY AND SPECTRAL INDICES IN THIS DIRECTORY.";
-        public string COMMENT2 = "RESULTS OBTAINED WITH CLASS: AnalyseLongRecording.         ACTIVITY: audio2csv";
-        public string COMMENT3 = "THE BELOW PARAMETER VALUES ARE RELEVANT FOR CONSTRUCTING THE TILES OF A ZOOMING SPECTROGRAM.";
+        private string comment1 = "LIST OF PARAMETER SETTINGS USED TO OBTAIN THE SUMMARY AND SPECTRAL INDICES IN THIS DIRECTORY.";
+        public  string COMMENT1 { get { return this.comment1; } set { this.comment1 = value; } }
+        private string comment2 = "RESULTS OBTAINED WITH CLASS: AnalyseLongRecording.         ACTIVITY: audio2csv";
+        public  string COMMENT2 { get { return this.comment2; } set { this.comment2 = value; } }
+        private string comment3 = "THE BELOW PARAMETER VALUES ARE RELEVANT FOR CONSTRUCTING THE TILES OF A ZOOMING SPECTROGRAM.";
+        public  string COMMENT3 { get { return this.comment3; } set { this.comment3 = value; } }
 
         /// <summary>
         /// Name of the analysis type used in file name extentions etc.
@@ -98,13 +101,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public string FileName { get; set; }
 
-        public string COMMENT4 = "FRAME WIDTH is used without overlap to calculate spectral indices";
+        private string comment4 = "FRAME WIDTH is used without overlap to calculate spectral indices";
+        public  string COMMENT4 { get { return this.comment4; } set { this.comment4 = value; } }
         /// <summary>
         ///  default value for frame width from which spectrogram was derived.
         /// </summary>
         public int FrameWidth { get; set; }
 
-        public string COMMENT5 = "FRAME STEP (in samples) is only used for saving spectrogram data. Not used when calculating indices";
+        private string comment5 = "FRAME STEP (in samples) is only used for saving spectrogram data. Not used when calculating indices";
+        public  string COMMENT5 { get { return this.comment5; } set { this.comment5 = value; } }
         /// <summary>
         ///  default value for frame step from which spectrogram was derived. There may be overlap.
         /// </summary>
@@ -157,7 +162,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public string COMMENT6 = "IndexCalculationDuration (TimeSpan in seconds) is used to calculate summary and spectral indices";
+        private string comment6 = "IndexCalculationDuration (TimeSpan in seconds) is used to calculate summary and spectral indices";
+        public  string COMMENT6 { get { return this.comment6; } set { this.comment6 = value; } }
         /// <summary>
         /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed. 
         /// User must enter the time span over which indices are calculated.
@@ -213,74 +219,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static LdSpectrogramConfig ReadYamlToConfig(FileInfo path)
         {
             return Yaml.Deserialise<LdSpectrogramConfig>(path);
-
-            // load YAML configuration
-            ////dynamic configuration = Yaml.Deserialise(path);
-
-            /*
-             * Warning! The `configuration` variable is dynamic.
-             * Do not use it outside this method. 
-             * Extract all params below.
-             */ /*
-            var inputDirectory = new DirectoryInfo((string)configuration.InputDirectory);
-            var OutputDirectoryInfo = new DirectoryInfo((string)configuration.OutputDirectoryInfo);
-
-            var config = new LdSpectrogramConfig((string)configuration.FileName, inputDirectory, OutputDirectoryInfo);
-
-            // these parameters manipulate the colour map and appearance of the false-colour spectrogram
-            config.ColourMap1 = (string)configuration.ColourMap1;
-            config.ColourMap2 = (string)configuration.ColourMap2;
-            config.BackgroundFilterCoeff = (double)configuration.BackgroundFilterCoeff; // must be value <=1.0
-
-            // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
-            config.SampleRate = (int)configuration.SampleRate;
-            config.FrameWidth = (int)configuration.FrameWidth;
-                
-                // frame width from which spectrogram was derived. Assume no frame overlap.
-            config.MinuteOffset = TimeSpan.FromMinutes((double)configuration.MinuteOffset);
-                
-                // default is recording starts at the zero-eth minute of the day i.e. midnight
-            config.XAxisTicInterval = TimeSpan.FromMinutes((double)configuration.XaxisTicInterval);
-                
-                // default is one minute spectra and hourly time lines
-            config.YAxisTicInterval = (int)configuration.YaxisTicInterval; // default is 1000 Herz
-
-            return config;*/
         }
 
         public void WriteConfigToYaml(FileInfo path)
         {
             Yaml.Serialise(path, this);
-
-            /*
-            // WRITE THE YAML CONFIG FILE
-            Yaml.Serialise(
-                path, 
-                new
-                    {
-                        // paths to required directories and files
-                        this.FileName, 
-                        InputDirectory = this.InputDirectory.FullName, 
-                        OutputDirectoryInfo = this.OutputDirectoryInfo.FullName, 
-
-                        // these parameters manipulate the colour map and appearance of the false-colour spectrogram
-                        this.ColourMap1, 
-                        this.ColourMap2, 
-                        this.BackgroundFilterCoeff, // must be value <=1.0
-
-                        // These parameters describe the frequency and times scales for drawing X and Y axes on the spectrograms
-                        this.SampleRate, 
-                        this.FrameWidth, // frame width from which spectrogram was derived. Assume no frame overlap.
-                        MinuteOffset = this.MinuteOffset.TotalMinutes, 
-                        
-                        // default is recording starts at zero minute of day i.e. midnight
-                        XaxisTicInterval = this.XAxisTicInterval.TotalMinutes, 
-                        
-                        // default is one minute spectra and hourly time lines
-                        YaxisTicInterval = this.YAxisTicInterval // default is 1000 Herz
-                    });
-            */
-        
         }
         #endregion
     }

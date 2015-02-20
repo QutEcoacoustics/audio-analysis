@@ -5,9 +5,9 @@ SegmentDuration: 1
 SegmentOverlap: 0
 
 # IndexCalculationDuration: units=seconds (default=60 seconds)
-IndexCalculationDuration: 0.2
+#IndexCalculationDuration: 0.2
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
-BGNoiseNeighbourhood: 5
+#BGNoiseNeighbourhood: 5
 
 #FRAME LENGTH and FRAME STEP in samples. Frame step only used for frame spectrograms - not indices 
 FrameLength: 512
