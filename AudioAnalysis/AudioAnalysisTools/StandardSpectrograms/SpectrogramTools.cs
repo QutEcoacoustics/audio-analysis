@@ -629,7 +629,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 int row = (int)(i * Y_interval);
                 int rowFromBottom = rows - row;
-                for (int column = 0; column < cols - 2; column++) 
+                for (int column = 0; column < cols - 3; column++) 
                 {
                     bmp.SetPixel(column, rowFromBottom, Color.Black);
                     column += 3;

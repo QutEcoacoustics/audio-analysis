@@ -188,7 +188,7 @@ namespace QutBioacosutics.Xie
         }
 
 
-        public static void DrawFalseColourSpectrograms(LdSpectrogramConfig configuration)
+        public static void DrawFalseColourSpectrograms(LdSpectrogramConfigOfJie configuration)
         {
             string ipdir = configuration.InputDirectoryInfo.FullName;
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);

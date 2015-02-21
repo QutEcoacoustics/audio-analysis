@@ -27,11 +27,16 @@ namespace AnalysisPrograms
 
         public class Arguments
         {
+            [ArgDescription("Directory where the input data is located.")]
+            public DirectoryInfo InputDataDirectory { get; set; }
+
+            [ArgDescription("Directory where the output is to go.")]
+            public DirectoryInfo OutputDirectory { get; set; }
+
             [ArgDescription("User specified file containing a list of indices and their properties.")]
             [Production.ArgExistingFile(Extension = ".yml")]
             //[ArgPosition(1)]
             public FileInfo IndexPropertiesConfig { get; set; }
-
 
             [ArgDescription("Config file specifing directory containing indices.csv files and other parameters.")]
             [Production.ArgExistingFile(Extension = ".yml")]
@@ -89,13 +94,15 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
+            var config = new LdSpectrogramConfig(ipFileName); // default values have been set
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(fiSpectrogramConfig);
 
 
             return new Arguments
             {
+                InputDataDirectory = ipDir,
+                OutputDirectory = opDir,
                 // use the default set of index properties in the AnalysisConfig directory.
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig
@@ -127,7 +134,10 @@ namespace AnalysisPrograms
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(60.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(3600.0);
 
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.InputDataDirectory, 
+                                                                 arguments.OutputDirectory, 
+                                                                 arguments.SpectrogramConfigPath, 
+                                                                 arguments.IndexPropertiesConfig);
         }
 
 

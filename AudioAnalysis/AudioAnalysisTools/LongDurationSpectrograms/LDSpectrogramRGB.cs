@@ -1341,15 +1341,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="spectra">
         /// Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
-        public static void DrawSpectrogramsFromSpectralIndices(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath, Dictionary<string, double[,]> spectra = null)
+        public static void DrawSpectrogramsFromSpectralIndices(DirectoryInfo ipDir, DirectoryInfo opDir, 
+                                                               FileInfo spectrogramConfigPath, FileInfo indicesConfigPath, 
+                                                               Dictionary<string, double[,]> spectra = null)
         {
             LdSpectrogramConfig config = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
-
-            string fileStem = config.FileName;
-            DirectoryInfo outputDirectory = config.OutputDirectoryInfo;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
@@ -1359,6 +1358,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             var cs1 = new LDSpectrogramRGB(config, colorMap1);
+            string fileStem = config.FileName;
+            string analysisType = config.AnalysisType;
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
@@ -1367,7 +1368,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // reads all known files spectral indices
                 Logger.Info("Reading spectra files from disk");
-                cs1.ReadCSVFiles(config.InputDirectoryInfo, fileStem);
+                cs1.ReadCSVFiles(ipDir, fileStem + "_" + analysisType);
             }
             else
             {
@@ -1382,13 +1383,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return;
             }
 
-            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
+            cs1.DrawGreyScaleSpectrograms(opDir, fileStem);
 
             cs1.CalculateStatisticsForAllIndices();
-            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.indexStats);
+            Json.Serialise(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.indexStats);
 
 
-            cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
+            cs1.DrawIndexDistributionsAndSave(Path.Combine(opDir.FullName, fileStem + ".IndexDistributions.png"));
 
             string colorMap = colorMap1;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
@@ -1405,36 +1406,36 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
             image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-            image2.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap + ".png"));
+            image2.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
             // read high amplitude and clipping info into an image
             //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
-            string indicesFile = Path.Combine(config.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
+            string indicesFile = Path.Combine(ipDir.FullName, fileStem + ".Indices.csv");
             //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
 
             Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
             if (null != imageX) 
-                imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
+                imageX.Save(Path.Combine(opDir.FullName, fileStem + ".ClipHiAmpl.png"));
 
             var imageList = new List<Image>();
             imageList.Add(image1);
             imageList.Add(imageX);
             imageList.Add(image2);
             Image image3 = ImageTools.CombineImagesVertically(imageList);
-            image3.Save(Path.Combine(outputDirectory.FullName, fileStem + ".2MAPS.png"));
+            image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
 
             Image ribbon;
             // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
+            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
             // ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
+            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
 
             ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
+            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
+            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
         }
     }
 }

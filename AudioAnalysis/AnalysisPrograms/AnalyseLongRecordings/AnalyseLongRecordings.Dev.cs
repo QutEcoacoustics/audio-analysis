@@ -61,6 +61,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Human.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Crow.cfg";
+
+
+
             return new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath.ToFileInfo(),

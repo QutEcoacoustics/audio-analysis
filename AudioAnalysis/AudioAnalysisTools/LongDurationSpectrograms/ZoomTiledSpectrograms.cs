@@ -24,22 +24,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     public static class ZoomTiledSpectrograms
     {
 
-        public static void DrawSuperTiles(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, FileInfo analysisConfigFile, FileInfo tilingConfigFile, FileInfo indexPropertiesConfigFile)
+        public static void DrawSuperTiles(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, FileInfo ldSpConfigFile, FileInfo tilingConfigFile, FileInfo indexPropertiesConfigFile)
         {
             const bool saveSuperTiles = true;
 
-            var analysisConfig = LdSpectrogramConfig.ReadYamlToConfig(analysisConfigFile);
-            var tilingConfig   = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
+            var ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(ldSpConfigFile);
+            var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
 
-            string fileStem    = analysisConfig.FileName;
+            string fileStem     = ldSpConfig.FileName;
+            string analysisType = ldSpConfig.AnalysisType;
             var namingPattern = new PanoJsTilingProfile();
             var tiler = new Tiler(outputDirectory, namingPattern, new SortedSet<double>(), 60.0, 1440, 300);
             
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             DateTime now1 = DateTime.Now;
-            string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN", "FFT" };
-            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(analysisConfig.InputDirectoryInfo, fileStem, keys);
+            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigFile);
+            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            string[] keys = dictIP.Keys.ToList<string>().ToArray(); 
+
+            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(inputDirectory, fileStem + "_" + analysisType, keys);
             DateTime now2 = DateTime.Now;
             TimeSpan et = now2 - now1;
             LoggedConsole.WriteLine("Time to read spectral index files = " + et.TotalSeconds + " seconds");
@@ -62,7 +66,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             foreach (double scale in imageScales)
             {
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
-                var superTiles = DrawSuperTilesFromIndexSpectrograms(analysisConfig, indexPropertiesConfigFile, tilingConfig, imageScale, spectra);
+                var superTiles = DrawSuperTilesFromIndexSpectrograms(ldSpConfig, dictIP, tilingConfig, imageScale, spectra);
 
                 // below saving of images is for debugging.
                 if (saveSuperTiles)
@@ -109,7 +113,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
              * RESEARCH QUESTION:   Which is the better index to use? CVR or AVG. 
              *                      Decide on CVR. It give better contrast and a less cluttered spgram.
              */
-            TemporalMatrix cvrMatrix = new TemporalMatrix("columns", spectra["CVR"], analysisConfig.IndexCalculationDuration);
+            TemporalMatrix cvrMatrix = new TemporalMatrix("columns", spectra["CVR"], ldSpConfig.IndexCalculationDuration);
             TimeSpan dataDuration = cvrMatrix.DataDuration(); 
             int segmentDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
 
@@ -119,7 +123,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 double[,] indexMatrix = cvrMatrix.GetDataBlock(TimeSpan.FromMinutes(min), TimeSpan.FromSeconds(segmentDurationInSeconds));
 
                 var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
-                    analysisConfig,
+                    inputDirectory,
+                    ldSpConfig,
                     indexPropertiesConfigFile,
                     tilingConfig,
                     min,
@@ -147,10 +152,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static SuperTile[] DrawSuperTilesFromIndexSpectrograms(LdSpectrogramConfig analysisConfig, FileInfo indicesConfigFile, SuperTilingConfig tilingConfig, 
+        public static SuperTile[] DrawSuperTilesFromIndexSpectrograms(LdSpectrogramConfig analysisConfig, Dictionary<string, IndexProperties> dictIP, SuperTilingConfig tilingConfig, 
                                     TimeSpan imageScale, Dictionary<string, double[,]> spectra)
         {
-            if (spectra == null)
+            if ((spectra == null) || (spectra.Count == 0))
             {
                 LoggedConsole.WriteLine("WARNING: NO SPECTRAL DATA SUPPLIED");
                 return null;
@@ -169,9 +174,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var matrix = spectra["ACI"]; // assume this key will always be present!!
             TimeSpan sourceDataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
 
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigFile);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
-
             int tileWidth = tilingConfig.TileWidth;
             int superTileWidth = tilingConfig.SuperTileWidthDefault();
             int superTileCount = (int)Math.Ceiling(tilingConfig.SuperTileCount(sourceDataDuration, imageScale.TotalSeconds));
@@ -185,7 +187,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // start the loop
             for (int t = 0; t < superTileCount; t++)
             {
-                Image image = ZoomTiledSpectrograms.DrawIndexSpectrogramAtScale(analysisConfig, indicesConfigFile, startTime, dataScale, imageScale, superTileWidth, spectra);
+                Image image = ZoomTiledSpectrograms.DrawIndexSpectrogramAtScale(analysisConfig, dictIP, startTime, dataScale, imageScale, superTileWidth, spectra);
                 imageArray[t] = new SuperTile()
                                     {
                                         Scale = imageScale,
@@ -204,13 +206,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static Image DrawIndexSpectrogramAtScale(LdSpectrogramConfig config, FileInfo indicesConfigPath,
+        public static Image DrawIndexSpectrogramAtScale(LdSpectrogramConfig config, Dictionary<string, IndexProperties> dictIP,
                                     TimeSpan startTime, TimeSpan dataScale, TimeSpan imageScale, int imageWidth, Dictionary<string, double[,]> spectra)
         {
             double scalingFactor = Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
-
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
             TimeSpan sourceMinuteOffset = config.MinuteOffset;
 
@@ -333,22 +332,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="minute"></param>
         /// <param name="imageScales"></param>
         /// <returns></returns>
-        public static SuperTile[] DrawSuperTilesFromSingleFrameSpectrogram(LdSpectrogramConfig analysisConfig, FileInfo indexPropertiesConfigFile,
+        public static SuperTile[] DrawSuperTilesFromSingleFrameSpectrogram(DirectoryInfo dataDir, LdSpectrogramConfig analysisConfig, FileInfo indexPropertiesConfigFile,
                                               SuperTilingConfig tilingConfig, int minute, double[] imageScales, double[,] indexMatrix)
         {
-            //string analysisType   = analysisConfig.AnalysisType;
-            string analysisType = "Towsey.Acoustic";
-            string fileStem       = analysisConfig.FileName;
-            DirectoryInfo dataDir = analysisConfig.InputDirectoryInfo;
+            string fileStem = analysisConfig.FileName;
+            //string analysisType = analysisConfig.AnalysisType;
             TimeSpan indexScale   = analysisConfig.IndexCalculationDuration;
             TimeSpan frameScale   = TimeSpan.FromSeconds(tilingConfig.SpectralFrameDuration);
             int expectedDataDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
             int expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / tilingConfig.SpectralFrameDuration);
 
-            // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
-            // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
-            int nameLength = fileStem.Length - analysisType.Length - 1;
-            fileStem = fileStem.Substring(0, nameLength);
             string fileName = fileStem + "_" + minute + "min.csv";
             string csvPath = Path.Combine(dataDir.FullName, fileName);
             bool skipHeader = true;

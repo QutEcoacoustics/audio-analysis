@@ -71,7 +71,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir)
+            var config = new LdSpectrogramConfigOfJie(ipFileName, ipDir, opDir)
                              {
                                  ColourMap1 = "ACI-ENT-CVR",
                                  ColourMap2 = "OSC-ENG-TRK",
@@ -130,8 +130,8 @@ namespace QutBioacosutics.Xie.LDSpectrograms
         /// <param name="configuration"></param>
         public static void DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath)
         {
-            //LDSpectrogramConfig configuration = Yaml.Deserialise<LDSpectrogramConfig>(configPath);
-            LdSpectrogramConfig configuration = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
+            //var configuration = Yaml.Deserialise<LDSpectrogramConfig>(configPath);
+            var configuration = LdSpectrogramConfigOfJie.ReadYamlToConfig(spectrogramConfigPath);
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
@@ -219,7 +219,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
         public static void GetJiesLDSpectrogramConfig(string fileName, DirectoryInfo ipDir, DirectoryInfo opDir)
         {
-            LdSpectrogramConfig spgConfig = new LdSpectrogramConfig(fileName, ipDir, opDir);
+            LdSpectrogramConfigOfJie spgConfig = new LdSpectrogramConfigOfJie(fileName, ipDir, opDir);
             //spgConfig.ColourMap = "TRK-OSC-HAR";
             spgConfig.ColourMap1 = "OSC-HAR-TRK";
             //spgConfig.ColourMap2 = "OSC-HAR-TRK";

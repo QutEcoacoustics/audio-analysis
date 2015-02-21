@@ -383,8 +383,6 @@ namespace AnalysisPrograms
                              {
                                  AnalysisType = settings.Configuration[AnalysisKeys.AnalysisName],
                                  FileName = fileName,
-                                 OutputDirectoryInfo = resultsDirectory,
-                                 InputDirectoryInfo = resultsDirectory,
                                  SampleRate = sampleRate,
                                  FrameWidth = frameWidth,
                                  FrameStep  = settings.Configuration[AnalysisKeys.FrameStep],
@@ -428,7 +426,8 @@ namespace AnalysisPrograms
                 // this method also AUTOMATICALLY SORTS because it uses array indexing
                 var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(configFileDestination, indicesPropertiesConfig, dictionaryOfSpectra);
+                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(resultsDirectory, resultsDirectory,
+                                                                     configFileDestination, indicesPropertiesConfig, dictionaryOfSpectra);
             }
         }
 
