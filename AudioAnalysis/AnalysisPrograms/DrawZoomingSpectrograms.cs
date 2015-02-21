@@ -43,18 +43,17 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".yml")]
             public FileInfo IndexPropertiesConfig { get; set; }
 
-
             [ArgDescription("User specified file defining valid spectrogram scales.")]
             [Production.ArgExistingFile(Extension = ".yml")]
             [ArgRequired]
             public FileInfo SpectrogramTilingConfig { get; set; }
            
-
             [ArgDescription("Config file specifing directory containing indices.csv files and other parameters.")]
             [Production.ArgExistingFile(Extension = ".yml")]
             [ArgRequired]
             public FileInfo SpectrogramConfigPath { get; set; }
         }
+
 
         /// <summary>
         /// To get to this DEV method, the FIRST AND ONLY command line argument must be "zoomingSpectrograms"
@@ -98,14 +97,14 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
             // zoomable spectrograms
-            string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST_Towsey.Acoustic";
+            string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST";
             //string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
 
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.EclipseFarmstay";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200ms.EclipseFarmstay";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
             string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
 
@@ -113,7 +112,7 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfig(ipFileName, ipDir, opDir); // default values have been set
+            var config = new LdSpectrogramConfig(ipFileName); // default values have been set
             // need to set the data scale. THis info not available at present
             config.FrameStep = 441;
             config.IndexCalculationDuration = TimeSpan.FromSeconds(0.2);
@@ -121,20 +120,19 @@ namespace AnalysisPrograms
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(fiSpectrogramConfig);
 
-            // USE THE Towsey.Acoustic file that contains parameters for the analysis.
-            //FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "Towsey.Acoustic.yml"));
-
             return new Arguments
             {
                 // use the default set of index properties in the AnalysisConfig directory.
                 SourceDirectory = ipDir,
                 Output = opDir,
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigForTiling.yml".ToFileInfo(),
+                IndexPropertiesConfig   = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
                 SpectrogramTilingConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig
             };
             throw new NoDeveloperMethodException();
-    }
+        }
+
+
 
         public static void Execute(Arguments arguments)
         {
@@ -155,7 +153,11 @@ namespace AnalysisPrograms
             }
 
             // Create the super tiles for a full set of recordings
-            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory, arguments.Output, arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig, arguments.IndexPropertiesConfig);
+            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
+                                                 arguments.Output,
+                                                 arguments.SpectrogramConfigPath,
+                                                 arguments.SpectrogramTilingConfig,
+                                                 arguments.IndexPropertiesConfig);
 
 
             // ######################################################################################################################################################
@@ -165,6 +167,9 @@ namespace AnalysisPrograms
                 string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine("# DRAW STACK OF FOCUSED MULTI-SCALE LONG DURATION SPECTROGRAMS DERIVED FROM SPECTRAL INDICES.");
                 LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
+                LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
+                LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
                 LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
                 LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
                 LoggedConsole.WriteLine("");
@@ -173,7 +178,10 @@ namespace AnalysisPrograms
                 //TimeSpan focalTime = TimeSpan.FromMinutes(16);
                 TimeSpan focalTime = TimeSpan.FromMinutes(30);
                 int imageWidth = 1500;
-                ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SpectrogramConfigPath, arguments.SpectrogramTilingConfig,
+                ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SourceDirectory,
+                                                                      arguments.Output,
+                                                                      arguments.SpectrogramConfigPath,
+                                                                      arguments.SpectrogramTilingConfig,
                                                                       arguments.IndexPropertiesConfig, focalTime, imageWidth);
             }
 
@@ -183,17 +191,17 @@ namespace AnalysisPrograms
                 string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine("# DRAW LONG DURATION SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES.");
                 LoggedConsole.WriteLine(date);
+                LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
+                LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
                 LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
                 LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
                 LoggedConsole.WriteLine("");
-                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
+                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.SourceDirectory, arguments.Output,
+                                                                     arguments.SpectrogramConfigPath, arguments.IndexPropertiesConfig);
             }
 
+        } // Execute()
 
-        }
+    } // class DrawZoomingSpectrograms
 
-
-
-
-    }
 }

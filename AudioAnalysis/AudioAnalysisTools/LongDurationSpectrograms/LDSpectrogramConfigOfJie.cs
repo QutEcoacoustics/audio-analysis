@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// <summary>
     ///     CONFIG CLASS FOR the class LDSpectrogramRGB
     /// </summary>
-    public class LdSpectrogramConfig
+    public class LdSpectrogramConfigOfJie
     {
         #region Fields
         /// <summary>
@@ -38,19 +38,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </param>
         /// <param name="outputDirectory">
         /// </param>
-        public LdSpectrogramConfig(string fileName)
+        public LdSpectrogramConfigOfJie(string fileName, DirectoryInfo inputDirectory, DirectoryInfo outputDirectory)
             : this()
         {
             this.FileName = fileName;
-            //this.InputDirectoryInfo = inputDirectory;
-            //this.OutputDirectoryInfo = outputDirectory;
+            this.InputDirectoryInfo = inputDirectory;
+            this.OutputDirectoryInfo = outputDirectory;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class. 
         /// CONSTRUCTOR
         /// </summary>
-        public LdSpectrogramConfig()
+        public LdSpectrogramConfigOfJie()
         {
             // default values
             this.AnalysisType = SpectrogramConstants.DefaultAnalysisType;
@@ -115,21 +115,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public int FrameStep { get; set; }
 
-        //[YamlIgnore]
-        //public DirectoryInfo InputDirectoryInfo { get; set; }
+        [YamlIgnore]
+        public DirectoryInfo InputDirectoryInfo { get; set; }
 
-        //public string InputDirectory
-        //{
-        //    get
-        //    {
-        //        return this.InputDirectoryInfo.FullName;
-        //    }
+        public string InputDirectory
+        {
+            get
+            {
+                return this.InputDirectoryInfo.FullName;
+            }
 
-        //    set
-        //    {
-        //        this.InputDirectoryInfo = value.ToDirectoryInfo();
-        //    }
-        //}
+            set
+            {
+                this.InputDirectoryInfo = value.ToDirectoryInfo();
+            }
+        }
 
         /// <summary>
         /// default recording starts at zero minute of day i.e. midnight
@@ -139,21 +139,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// 
         /// </summary>
-        //[YamlIgnore]
-        //public DirectoryInfo OutputDirectoryInfo { get; set; }
+        [YamlIgnore]
+        public DirectoryInfo OutputDirectoryInfo { get; set; }
 
-        //public string OutputDirectory
-        //{
-        //    get
-        //    {
-        //        return this.OutputDirectoryInfo.FullName;
-        //    }
+        public string OutputDirectory
+        {
+            get
+            {
+                return this.OutputDirectoryInfo.FullName;
+            }
 
-        //    set
-        //    {
-        //        this.OutputDirectoryInfo = value.ToDirectoryInfo();
-        //    }
-        //}
+            set
+            {
+                this.OutputDirectoryInfo = value.ToDirectoryInfo();
+            }
+        }
 
         /// <summary>
         /// 
@@ -216,9 +216,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <returns>
         /// The <see cref="LdSpectrogramConfig"/>.
         /// </returns>
-        public static LdSpectrogramConfig ReadYamlToConfig(FileInfo path)
+        public static LdSpectrogramConfigOfJie ReadYamlToConfig(FileInfo path)
         {
-            return Yaml.Deserialise<LdSpectrogramConfig>(path);
+            return Yaml.Deserialise<LdSpectrogramConfigOfJie>(path);
         }
 
         public void WriteConfigToYaml(FileInfo path)

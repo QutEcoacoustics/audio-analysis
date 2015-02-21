@@ -21,22 +21,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     public static class ZoomFocusedSpectrograms
     {
 
-        public static void DrawStackOfZoomedSpectrograms(FileInfo longDurationSpectrogramConfigFile, FileInfo tilingConfigFile, FileInfo indexPropertiesFile, 
-                                                          TimeSpan focalTime, int imageWidth)
+        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, 
+                                                         FileInfo longDurationSpectrogramConfigFile, FileInfo tilingConfigFile, FileInfo indexPropertiesFile, 
+                                                         TimeSpan focalTime, int imageWidth)
         {
             LdSpectrogramConfig ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(longDurationSpectrogramConfigFile);
-            var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
+            //var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
 
-            string fileStem = ldSpConfig.FileName;
-            //string analysisType = ldSpConfig.AnalysisType; // this does not work - it has ".Indices" added.
-            string analysisType = "Towsey.Acoustic";
-
-            TimeSpan dataScale = ldSpConfig.IndexCalculationDuration;
+            string fileStem     = ldSpConfig.FileName;
+            string analysisType = ldSpConfig.AnalysisType;
+            TimeSpan dataScale  = ldSpConfig.IndexCalculationDuration;
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             DateTime now1 = DateTime.Now;
             string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN", "FFT", "SPT" };
-            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(ldSpConfig.InputDirectoryInfo, fileStem, keys);
+            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(inputDirectory, fileStem + "_" + analysisType, keys);
             DateTime now2 = DateTime.Now;
             TimeSpan et = now2 - now1;
             LoggedConsole.WriteLine("Time to read spectral index files = " + et.TotalSeconds + " seconds");
@@ -67,33 +66,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 startTimeOfMaxImage = focalTime - halfMaxImageDuration;
             TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes));
 
-            // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
-            // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
-            int nameLength = fileStem.Length - analysisType.Length - 1;
-            fileStem = fileStem.Substring(0, nameLength);
+            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration);
 
-            List<double[]> frameData = ReadFrameData(ldSpConfig, startTimeOfMaxImage, maxImageDuration, fileStem);
-
-            // get the data // #### TODO  #################################################################################
+            // get the index data to add into the  
             TimeSpan imageScale1 = TimeSpan.FromSeconds(0.1);
             double[,] indexData = spectra["CVR"];
-            //double[,] cvrMatrix = ExpandMatrixOfIndices(spectra["CVR"], focalTime, dataScale, imageScale1, imageWidth);
-            //double coverThreshold = 0.8;
-
             
             // make the images
             for (int i = 2; i >= 0; i--)
             {
                 int factor = compressionFactor[i];
                 image = ZoomFocusedSpectrograms.DrawFrameSpectrogramAtScale(ldSpConfig, startTimeOfData, frameScale, factor, frameData, indexData, focalTime, imageWidth);
-                //image = ZoomTiledSpectrograms.DrawFrameSpectrogramAtScale(ldSpConfig, tilingConfig, startTimeOfData, frameScale, frameData, indexData);
                 if (image != null) imageList.Add(image);
             }
 
             // combine the images into a stack  
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
-            string fileName = String.Format("ZOOMFocal_min{0:f1}.png", focalTime.TotalMinutes);
-            combinedImage.Save(Path.Combine(ldSpConfig.OutputDirectoryInfo.FullName, fileName));
+            string fileName = String.Format("{0}_FocalZOOM_min{1:f1}.png", fileStem, focalTime.TotalMinutes);
+            combinedImage.Save(Path.Combine(outputDirectory.FullName, fileName));
         }
 
 
@@ -155,8 +145,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // compress spectrograms to correct scale
             if (scalingFactor > 1)
                 spectralSelection = CompressIndexSpectrograms(spectralSelection, imageScale, dataScale);
-
-            // var mergedSpectra = CombineSpectrogramsForScale(spectralSelection, imageScale, dataScale);
 
             // These parameters define the colour maps and appearance of the false-colour spectrogram
             string colorMap1 = "ACI-ENT-EVN";
@@ -220,17 +208,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                                        imageScale.TotalSeconds, spectrogramDuration);
             Image titleBar = DrawTitleBarOfZoomSpectrogram(title, LDSpectrogram.Width);
             LDSpectrogram = FrameZoomSpectrogram(LDSpectrogram, titleBar, startTime, imageScale, analysisConfig.XAxisTicInterval, nyquist, herzInterval);
-
-
-
-            // read high amplitude and clipping info into an image
-            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
-            //string indicesFile = Path.Combine(config.InputDirectoryInfo.FullName, fileStem + ".Indices.csv");
-            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
-
-            //Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
-            //if (null != imageX)
-            //    imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
 
             // create the base image
             Image image = new Bitmap(imageWidth, LDSpectrogram.Height);
@@ -439,9 +416,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static List<double[]> ReadFrameData(LdSpectrogramConfig config, TimeSpan starttime, TimeSpan maxDuration, string fileStem)
+        public static List<double[]> ReadFrameData(DirectoryInfo dataDir, string fileStem, TimeSpan starttime, TimeSpan maxDuration)
         {
-            DirectoryInfo dataDir = config.InputDirectoryInfo;
             TimeSpan endtime = starttime + maxDuration;
             int startMinute = (int)Math.Floor(starttime.TotalMinutes); 
             int endMinute   = (int)Math.Ceiling(endtime.TotalMinutes);

@@ -17,7 +17,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public static class SpectrogramConstants
     {
-        public const string DefaultAnalysisType = "Towsey.Acoustic.Indices";
+        public const string DefaultAnalysisType = "Towsey.Acoustic";
 
         public const string RGBMap_DEFAULT     = "ACI-ENT-CVR"; //R-G-B
 
