@@ -194,19 +194,33 @@ namespace Dong.Felt.Representations
             List<EventBasedRepresentation> candidateEventList, string file, int centroidFreqOffset)
         {
             var result = new List<RegionRepresentation>();
-            var startCentriod = queryRepresentations.MajorEvent.Centroid;
-
-            var maxFrame = spectrogram.FrameCount;
+            // var centroid = (queryRepresentations.TopInPixel - queryRepresentations.BottomInPixel) / 2;
+            var anchorCentroid = queryRepresentations.MajorEvent.Centroid;
+            var MaxFreq = queryRepresentations.TopInPixel + centroidFreqOffset;
+            var MinFreq = queryRepresentations.BottomInPixel - centroidFreqOffset;
             var maxFreq = spectrogram.Configuration.FreqBinCount;
+            if (MaxFreq > maxFreq)
+            {
+                MaxFreq = maxFreq;
+            }
+            if (MinFreq < 0)
+            {
+                MinFreq = 0;
+            }
+            var maxFrame = spectrogram.FrameCount;           
             var potentialCandidateStart = new List<EventBasedRepresentation>();
             foreach (var c in candidateEventList)
             {
-                if (Math.Abs(c.Centroid.Y - startCentriod.Y) <= centroidFreqOffset)
+                //if (c.Centroid.Y < MaxFreq && c.Centroid.Y > MinFreq)
+                //{
+                //    potentialCandidateStart.Add(c);
+                //}
+                if (Math.Abs(c.Centroid.Y - anchorCentroid.Y) < centroidFreqOffset)
                 {
                     potentialCandidateStart.Add(c);
                 }
-            }
 
+            }
             foreach (var pc in potentialCandidateStart)
             {                                        
                 var realCandidate = new List<EventBasedRepresentation>();
@@ -240,6 +254,7 @@ namespace Dong.Felt.Representations
                                 {
                                     c.Width = endTimePixelIndex - c.Left;
                                 }
+                                c.Area = c.Width * c.Height;
                                 realCandidate.Add(c);
                             }
                         }
@@ -259,6 +274,84 @@ namespace Dong.Felt.Representations
             return result;
         }
 
+        /// <summary>
+        /// This method aims to extract candidate region representation according to the provided
+        /// marquee of the queryRepresentation, the frequencyBound are exactly the same as query.
+        /// </summary>
+        /// <param name="queryRepresentations"></param>
+        /// <param name="candidateEventList"></param>
+        /// <param name="centroidFreqOffset"> 
+        /// </param>
+        /// <returns></returns>
+        public static List<RegionRepresentation> ExtractFixedAcousticEventList(SpectrogramStandard spectrogram,
+            RegionRepresentation queryRepresentations,
+            List<EventBasedRepresentation> candidateEventList, string file)
+        {
+            var result = new List<RegionRepresentation>();
+            var startCentriod = queryRepresentations.MajorEvent.Centroid;
+
+            var maxFrame = spectrogram.FrameCount;
+            var maxFreq = spectrogram.Configuration.FreqBinCount;
+            var potentialCandidateStart = new List<EventBasedRepresentation>();
+            foreach (var c in candidateEventList)
+            {
+                if (c.Centroid.Y <= queryRepresentations.TopInPixel && c.Centroid.Y >= queryRepresentations.BottomInPixel)
+                {
+                    potentialCandidateStart.Add(c);
+                }
+            }
+            foreach (var pc in potentialCandidateStart)
+            {
+                var realCandidate = new List<EventBasedRepresentation>();
+                var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
+                var minFreqPixelIndex = pc.Bottom - queryRepresentations.bottomToBottomLeftVertex;
+                var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
+                var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
+
+                if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
+                    && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
+                {
+                    foreach (var c in candidateEventList)
+                    {
+                        if (c.Centroid.X > startTimePixelIndex && c.Centroid.X < endTimePixelIndex)
+                        {
+                            if (c.Centroid.Y > minFreqPixelIndex && c.Centroid.Y < maxFreqPixelIndex)
+                            {
+                                if (c.Bottom < minFreqPixelIndex)
+                                {
+                                    c.Bottom = minFreqPixelIndex;
+                                }
+                                if (c.Bottom + c.Height > maxFreqPixelIndex)
+                                {
+                                    c.Height = maxFreqPixelIndex - c.Height;
+                                }
+                                if (c.Left < startTimePixelIndex)
+                                {
+                                    c.Left = startTimePixelIndex;
+                                }
+                                if (c.Left + c.Width > endTimePixelIndex)
+                                {
+                                    c.Width = endTimePixelIndex - c.Left;
+                                }
+                                realCandidate.Add(c);
+                            }
+                        }
+                    }
+                }
+                var candidateRegionRepre = new RegionRepresentation(realCandidate, file);
+                candidateRegionRepre.bottomToBottomLeftVertex = minFreqPixelIndex;
+                candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex;
+                candidateRegionRepre.rightToBottomLeftVertex = startTimePixelIndex;
+                candidateRegionRepre.leftToBottomLeftVertex = endTimePixelIndex;
+                candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
+                candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
+                candidateRegionRepre.LeftInPixel = startTimePixelIndex;
+                candidateRegionRepre.RightInPixel = endTimePixelIndex;
+                result.Add(candidateRegionRepre);
+            }
+            return result;
+        }
+        
         public static List<EventBasedRepresentation> ExtractPotentialCandidateEvents(           
             List<EventBasedRepresentation> queryRepresentations, List<EventBasedRepresentation> candidateEventList, int centroidFreqOffset)
         {           

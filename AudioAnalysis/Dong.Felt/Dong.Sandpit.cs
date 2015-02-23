@@ -271,24 +271,19 @@
                     var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
 
-                    var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);                  
+                    var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
-                    
+                    //var addCompressedRidges = POISelection.AddCompressedRidges(
+                    //    config,
+                    //    audioFiles[i],
+                    //    ridgeConfig,
+                    //    featurePropSet,
+                    //    compressConfig.TimeCompressRate,
+                    //    filterRidges);
                     //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
-                    //var dividedRidges = POISelection.POIListDivision(filteredRidges);
-                    //ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], rows, cols, out acousticEventlist);
-                    
-                    var addCompressedRidges = POISelection.AddCompressedRidges(
-                        config,
-                        audioFiles[i],
-                        ridgeConfig,
-                        featurePropSet,
-                        compressConfig.TimeCompressRate,
-                        filterRidges);
-                    var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
+                    var dividedRidges = POISelection.POIListDivision(filterRidges);
                     //var connectBrokenRidges = ClusterAnalysis.SmoothRidges(dividedRidges[0], rows, cols, 5, 3, 1.0, 3);
-                    //var connectRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(connectBrokenRidges);
-                    //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
+                    //var connectRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(connectBrokenRidges);                 
                     ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
@@ -297,7 +292,7 @@
                     //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     //}
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- BeforeImprovedRemoveFalseRidges.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- AEDonRidges-RemoveFalseOnly-0.0.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -850,8 +845,7 @@
                     var candidatesRepresentation = EventBasedRepresentation.ExtractAcousticEventList(candidateSpectrogram,
                         queryRepresentation,
                         candidatesEventsRepresentation,
-                        candidatesAudioFiles[j],
-                        12);
+                        candidatesAudioFiles[j], 12);
                     foreach (var c in candidatesRepresentation)
                     {
                         allCandidateList.Add(c);
@@ -861,7 +855,7 @@
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);                                             
                 var candidateDistanceList = new List<Candidates>();                
                 Log.Info("# calculate the distance between a query and a candidate");
-                candidateDistanceList = Indexing.EventRegionBasedDistance(queryRepresentation, allCandidateList);
+                candidateDistanceList = Indexing.EventRegionBasedDistance(queryRepresentation, allCandidateList, 5);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 // To save all matched acoustic events separately                         
                 var separateCandidatesList = new List<List<Candidates>>();
