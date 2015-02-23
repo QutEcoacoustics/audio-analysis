@@ -275,9 +275,9 @@ namespace Dong.Felt.Representations
                 this.MajorEvent = queryEventList[queryEventList.Count - 1];
                 // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top
                 this.topToBottomLeftVertex = query.TopInPixel - this.MajorEvent.Bottom;
-                this.leftToBottomLeftVertex = this.MajorEvent.Left - query.LeftInPixel;
-                this.rightToBottomLeftVertex = query.RightInPixel - this.MajorEvent.Left;
                 this.bottomToBottomLeftVertex = this.MajorEvent.Bottom - query.BottomInPixel;
+                this.leftToBottomLeftVertex = this.MajorEvent.Left - query.LeftInPixel;
+                this.rightToBottomLeftVertex = query.RightInPixel - this.MajorEvent.Left;               
                 this.TopInPixel = query.TopInPixel;
                 this.BottomInPixel = query.BottomInPixel;
                 this.LeftInPixel = query.LeftInPixel;

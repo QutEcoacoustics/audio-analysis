@@ -23,7 +23,7 @@ namespace Dong.Felt
            string audioFileName, SpectrogramStandard spectrogram)
         {
             var results = new List<RegionRepresentation>();
-            
+
             var frequencyRange = query.frequencyRange;
             var duration = query.duration;
             var maxFreq = query.maxFrequency;
@@ -37,19 +37,19 @@ namespace Dong.Felt
             var nhframeUnit = neighbourhoodLength * spectrogram.FrameDuration;
 
             var nhCountInRow = (int)(frequencyRange / nhfrequencyUnit);
-            var nhCountInColumn = (int)(duration / nhframeUnit); 
+            var nhCountInColumn = (int)(duration / nhframeUnit);
 
             if (nhCountInRow * nhfrequencyUnit > frequencyRange)
             {
                 nhCountInRow++;
             }
-            if (nhCountInColumn  * nhframeUnit > duration)
+            if (nhCountInColumn * nhframeUnit > duration)
             {
-                nhCountInColumn++; 
+                nhCountInColumn++;
             }
             return results;
         }
-        
+
         /// <summary>
         /// To extract query region representation from an audio file which contains the query. 
         /// </summary>
@@ -60,7 +60,7 @@ namespace Dong.Felt
         /// returns a list of region representation, each region represtation contains a ridge nh representation and some derived property. 
         /// </returns>
         public static List<RegionRepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
-            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName, 
+            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
             SpectrogramStandard spectrogram)
         {
             var nhCountInRow = query.maxNhRowIndex;
@@ -183,7 +183,7 @@ namespace Dong.Felt
         /// returns a list of acoustic event representation, each region represtation contains a ridge nh representation and some derived property. 
         /// </returns>
         public static List<EventBasedRepresentation> QueryRepresentationFromEventRepresentations(Query query, int neighbourhoodLength,
-            List<EventBasedRepresentation> eventRepresentationList, string audioFileName, 
+            List<EventBasedRepresentation> eventRepresentationList, string audioFileName,
             SpectrogramStandard spectrogram, CompressSpectrogramConfig compressConfig)
         {
             var results = new List<EventBasedRepresentation>();
@@ -194,7 +194,7 @@ namespace Dong.Felt
             var frameEnd = (int)(query.endTime * framePerSecond);
             var highFrequency = (int)(query.maxFrequency * frequencyBinWidth);
             var lowFrequency = (int)(query.minFrequency * frequencyBinWidth);
-           
+
             // Have to add in the boundary information of the query
             // and to chech centroid of the events to see whether it is inside the bounday.
             foreach (var e in eventRepresentationList)
@@ -221,7 +221,7 @@ namespace Dong.Felt
             var timeScale = spectrogram.FrameDuration / 2;
             // be careful about the index here.
             var rowStart = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.maxFrequency / frequencyScale);
-            var rowEnd = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency / frequencyScale); 
+            var rowEnd = spectrogram.Configuration.FreqBinCount - (int)Math.Ceiling(query.minFrequency / frequencyScale);
             var colStart = (int)(query.startTime / 1000 / timeScale);
             var colEnd = (int)(query.endTime / 1000 / timeScale);
 
@@ -241,16 +241,16 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<RegionRepresentation> ExtractCandidateRegionRepresentationFromAudioNhRepresentations(Query query, 
+        public static List<RegionRepresentation> ExtractCandidateRegionRepresentationFromAudioNhRepresentations(Query query,
             int neighbourhoodLength,
-            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, 
-            string audioFileName, 
+            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList,
+            string audioFileName,
             SpectrogramStandard spectrogram)
         {
             var results = new List<RegionRepresentation>();
             var nhFrequencyRange = neighbourhoodLength * spectrogram.FBinWidth;
             var maxNhCountInRow = spectrogram.Data.GetLength(1) / neighbourhoodLength;
-            var maxNhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;            
+            var maxNhCountInColumn = spectrogram.Data.GetLength(0) / neighbourhoodLength;
             var ridgeNeighbourhood = StatisticalAnalysis.NhListToArray(nhRepresentationList, maxNhCountInRow,
                 maxNhCountInColumn);
             var rowsCount = ridgeNeighbourhood.GetLength(0);
@@ -286,7 +286,7 @@ namespace Dong.Felt
                 }
             }
             return results;
-        }        
+        }
 
         public static List<RegionRepresentation> ExtractCandiRegionRepreFromAudioStList(SpectrogramStandard spectrogram,
             string audioFileName, List<PointOfInterest> stList, RegionRepresentation queryRepresentation)
@@ -295,34 +295,34 @@ namespace Dong.Felt
             double[,] matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             var rowsCount = matrix.GetLength(0) - 1;
             var colsCount = matrix.GetLength(1);
-             
+
             var freqScale = spectrogram.FBinWidth;
             var timeScale = spectrogram.FrameDuration / 2.0;
             var startRowIndex = queryRepresentation.StartRowIndex;
-            var endRowIndex = queryRepresentation.EndRowIndex;         
+            var endRowIndex = queryRepresentation.EndRowIndex;
             var colRange = queryRepresentation.fftFeatures.GetLength(1) - 1;
             // The one sets the none structure tensor point to null features. 
             var stMatrix = StatisticalAnalysis.TransposeStPOIsToMatrix(stList, rowsCount, colsCount);
             // The one sets all the features in the region to 0,  this one is useful to calculate the distance based on purely Euclidean
             //var stMatrix = StatisticalAnalysis.TransposePOIsToMatrix2(stList, rowsCount, colsCount);
-            
+
             var searchStep = 5;
             for (int colIndex = 0; colIndex < colsCount; colIndex += searchStep)
             {
                 if (StatisticalAnalysis.checkBoundary(startRowIndex, colIndex, endRowIndex, colsCount))
                 {
-                    var subRegionMatrix = StatisticalAnalysis.Submatrix(stMatrix, startRowIndex, colIndex, 
+                    var subRegionMatrix = StatisticalAnalysis.Submatrix(stMatrix, startRowIndex, colIndex,
                                                                     endRowIndex, colIndex + colRange);
                     // check whether the region is null
                     var regionItem = new RegionRepresentation();
                     //if (!StatisticalAnalysis.checkNullRegion(subRegionMatrix))
                     //{                      
-                        regionItem.fftFeatures = subRegionMatrix;                      
+                    regionItem.fftFeatures = subRegionMatrix;
                     //}
                     //else
                     //{                        
                     //    regionItem.fftFeatures = null;
-                       
+
                     //}
                     regionItem.StartRowIndex = startRowIndex;
                     regionItem.EndRowIndex = endRowIndex;
@@ -339,7 +339,7 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<RegionRepresentation> ExtractCandidatesRegionRepresentationFromRegionRepresntations(List<RegionRepresentation> query, 
+        public static List<RegionRepresentation> ExtractCandidatesRegionRepresentationFromRegionRepresntations(List<RegionRepresentation> query,
             List<RegionRepresentation> regionList)
         {
             var result = new List<RegionRepresentation>();
@@ -386,7 +386,7 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
-            {               
+            {
                 //candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
                 result = Indexing.Feature5EuclideanDist2(query, candidates,
                     weight1, weight2, featurePropSet, compressConfig);
@@ -591,7 +591,7 @@ namespace Dong.Felt
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Candidates> Feature5EuclideanDist(List<RegionRepresentation> query, 
+        public static List<Candidates> Feature5EuclideanDist(List<RegionRepresentation> query,
             List<RegionRepresentation> candidates, double weight1, double weight2)
         {
             var result = new List<Candidates>();
@@ -608,13 +608,13 @@ namespace Dong.Felt
                 {
                     if (tempRegionList[index].POICount != 0)
                     {
-                       notNullNhCount++;
-                    }                        
+                        notNullNhCount++;
+                    }
                 }
                 if (notNullNhCount >= 0.1 * nhCountInRegion)
                 {
                     var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature4RidgeBased(query, tempRegionList, 2, weight1, 
+                    var distance = SimilarityMatching.DistanceFeature4RidgeBased(query, tempRegionList, 2, weight1,
                         weight2);
                     var item = new Candidates(distance, tempRegionList[0].FrameIndex,
                             duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
@@ -633,8 +633,8 @@ namespace Dong.Felt
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Candidates> Feature5EuclideanDist2(List<RegionRepresentation> query, 
-            List<RegionRepresentation> candidates, double weight1, double weight2, string featurePropSet, 
+        public static List<Candidates> Feature5EuclideanDist2(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidates, double weight1, double weight2, string featurePropSet,
             CompressSpectrogramConfig compressConfig)
         {
             var result = new List<Candidates>();
@@ -659,11 +659,11 @@ namespace Dong.Felt
                             {
                                 matchedNotNullNhCount++;
                             }
-                        }                       
+                        }
                     }
                 }
                 //if (matchedNotNullNhCount > 0.3 * notNullNhCountInQ)
-                if (matchedNotNullNhCount > 0.5*notNullNhCountInQ)
+                if (matchedNotNullNhCount > 0.5 * notNullNhCountInQ)
                 {
                     var duration = tempRegionList[0].Duration.TotalMilliseconds;
                     var distance = 100.0;
@@ -821,14 +821,14 @@ namespace Dong.Felt
             }
             return result;
         }
-        
+
         /// <summary>
         /// Euclidean Distance calculation Hausdorff distance for feature set 10.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
-        public static List<Candidates> Feature10HausdorffDist(List<RegionRepresentation> query, 
+        public static List<Candidates> Feature10HausdorffDist(List<RegionRepresentation> query,
             List<RegionRepresentation> candidates)
         {
             var result = new List<Candidates>();
@@ -868,7 +868,7 @@ namespace Dong.Felt
             }
             return result;
         }
-              
+
         public static List<double> DistanceScoreFromAudioRegionVectorRepresentation(RegionRepresentation query, List<List<RegionRepresentation>> candidates)
         {
             // to get the distance and frequency band index
@@ -1038,7 +1038,7 @@ namespace Dong.Felt
         /// <param name="queryRepresentation"></param>
         /// <param name="candidateList"></param>
         /// <returns></returns>
-        public static List<Candidates> EventRegionBasedDistance(RegionRepresentation queryRepresentation, 
+        public static List<Candidates> EventRegionBasedDistance(RegionRepresentation queryRepresentation,
             List<RegionRepresentation> candidateList)
         {
             var result = new List<Candidates>();
@@ -1079,8 +1079,8 @@ namespace Dong.Felt
                         c.BottomInPixel * freqScale,
                         c.SourceAudioFile);
                     result.Add(candidate);
-                }               
-            }                   
+                }
+            }
             return result;
         }
 
@@ -1090,8 +1090,8 @@ namespace Dong.Felt
         /// <param name="queryRepresentation"></param>
         /// <param name="candidateList"></param>
         /// <returns></returns>
-        public static List<Candidates> EventRegionBasedDistance2(RegionRepresentation queryRepresentation,
-            List<RegionRepresentation> candidateList)
+        public static List<Candidates> EventRegionBasedDistance(RegionRepresentation queryRepresentation,
+            List<RegionRepresentation> candidateList, int n)
         {
             var result = new List<Candidates>();
             // get the relevant index inside the region
@@ -1101,17 +1101,17 @@ namespace Dong.Felt
             foreach (var c in candidateList)
             {
                 var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
-                var eventList = relevantCandidateRepresentation.EventList;              
-                
+                var eventList = relevantCandidateRepresentation.EventList;
+
                 var overalScore = 0.0;
                 if (relevantCandidateRepresentation.EventList.Count > 0)
                 {
                     foreach (var q in relevantQueryRepresentation.EventList)
                     {
                         // find the N cloest event to compare
-                        var nClosestEventList = FindNCloestEvents(eventList, q, 3);
+                        var nClosestEventList = FindNCloestEvents(eventList, q, n);
                         var index = FindMaximumScoreEvent(nClosestEventList, q);
-                        nClosestEventList[index].Left = q.Left;
+                        q.Left = nClosestEventList[index].Left;
                         var overlap = StatisticalAnalysis.EventOverlapInPixel(
                                 q.Left,
                                 q.Bottom,
@@ -1121,7 +1121,15 @@ namespace Dong.Felt
                                 nClosestEventList[index].Bottom,
                                 nClosestEventList[index].Left + nClosestEventList[index].Width,
                                 nClosestEventList[index].Bottom + nClosestEventList[index].Height);
-                        overalScore += ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2;
+                        if (overlap > q.Area)
+                        {
+                            var cnn = 1;
+                        }
+                        if (overlap > nClosestEventList[index].Area)
+                        {
+                            var cnn2 = 1;
+                        }
+                        overalScore += ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
                     }
                     var score = overalScore / eventCount;
                     var timeScale = c.EventList[0].TimeScale;
@@ -1193,7 +1201,7 @@ namespace Dong.Felt
         //    return result;
         //}
         public static RegionRepresentation GetRelevantIndexInRegion(RegionRepresentation events)
-        {          
+        {
             var eventList = events.EventList;
             var regionBottom = events.BottomInPixel;
             var regionLeft = events.LeftInPixel;
@@ -1201,7 +1209,7 @@ namespace Dong.Felt
             {
                 e.Bottom = e.Bottom - regionBottom;
                 e.Left = e.Left - regionLeft;
-                e.Centroid = new Point((e.Centroid.X - regionLeft), (e.Centroid.Y - regionBottom));              
+                e.Centroid = new Point((e.Centroid.X - regionLeft), (e.Centroid.Y - regionBottom));
             }
             var result = new RegionRepresentation(eventList, events.SourceAudioFile);
             return result;
@@ -1221,7 +1229,7 @@ namespace Dong.Felt
 
         public static int FindCloestEvent(List<EventBasedRepresentation> es, EventBasedRepresentation modal)
         {
-            var distances = new List<double>(); 
+            var distances = new List<double>();
             foreach (var e in es)
             {
                 var distance = Distance.EuclideanDistanceForPoint(e.Centroid, modal.Centroid);
@@ -1230,9 +1238,9 @@ namespace Dong.Felt
 
             var distanceArray = distances.ToArray();
             var min = 10000.0;
-            var index = 0; 
+            var index = 0;
             for (var i = 0; i < distanceArray.GetLength(0); i++)
-            {                
+            {
                 if (distanceArray[i] < min)
                 {
                     min = distanceArray[i];
@@ -1244,10 +1252,10 @@ namespace Dong.Felt
 
         public static int FindMaximumScoreEvent(List<EventBasedRepresentation> es, EventBasedRepresentation modal)
         {
-            var scores = new List<double>(); 
+            var scores = new List<double>();
             foreach (var e in es)
             {
-                e.Left = modal.Left;
+                modal.Left = e.Left;
                 var score = StatisticalAnalysis.EventOverlapInPixel(
                                 modal.Left,
                                 modal.Bottom,
@@ -1296,15 +1304,12 @@ namespace Dong.Felt
             {
                 n = es.Count;
             }
-            else
+            for (var i = 0; i < n; i++)
             {
-                for (var i = 0; i < n; i++)
-                {
-                    result.Add(eventsDistance[i].Item1);
-                }        
-            }          
+                result.Add(eventsDistance[i].Item1);
+            }
             return result;
         }
-        
+
     }
 }
