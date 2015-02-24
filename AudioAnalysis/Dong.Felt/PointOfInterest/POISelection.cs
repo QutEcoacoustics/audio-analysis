@@ -645,7 +645,9 @@ namespace Dong.Felt
             int rows = ridgeIndiMatrix.GetLength(0);
             int cols = ridgeIndiMatrix.GetLength(1);
             var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            for (int r = 0; r < rows; r++)
+            // TO FILTER OUT LOW AND HIGH frequency band, spicify the col index 
+            // r = rows - 8500 / herzScale; r max = rows - 500 / herzScale 
+            for (int r = 47; r < 242; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
