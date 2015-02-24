@@ -345,22 +345,33 @@ namespace Dong.Felt.Representations
         /// <param name="horAcousticEvents"></param>
         /// <param name="posAcousticEvents"></param>
         /// <param name="negAcousticEvents"></param>
-        public static void SeperateRidgeListToEvent(SpectrogramStandard sonogram, 
-            List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
-            List<PointOfInterest> posDiaPoiList, List<PointOfInterest> negDiaPoiList, 
-            int rowsCount, int colsCount, 
-            out List<AcousticEvent> verAcousticEvents, out List<AcousticEvent> horAcousticEvents,
-            out List<AcousticEvent> posAcousticEvents, out List<AcousticEvent> negAcousticEvents)
+        public static List<List<AcousticEvent>> SeparateRidgeListToEvents(SpectrogramStandard sonogram, 
+            List<PointOfInterest> poiList)
         {
-
+            var dividedRidges = POISelection.POIListDivision(poiList);
+            var verPoiList = dividedRidges[0];
+            var horPoiList = dividedRidges[1];
+            var posDiaPoiList = dividedRidges[2];
+            var negDiaPoiList = dividedRidges[3];
+            var verAcousticEvents =  new List<AcousticEvent>();
+            var horAcousticEvents = new List<AcousticEvent>();            
+            var posAcousticEvents = new List<AcousticEvent>();          
+            var negAcousticEvents = new List<AcousticEvent>();
+            
             RidgeListToEvent(sonogram, verPoiList, out verAcousticEvents);
             RidgeListToEvent(sonogram, horPoiList, out horAcousticEvents);
             RidgeListToEvent(sonogram, posDiaPoiList, out posAcousticEvents);
             RidgeListToEvent(sonogram, negDiaPoiList, out negAcousticEvents);
-            
+
+            var acousticEvents = new List<List<AcousticEvent>>();
+            acousticEvents.Add(verAcousticEvents);
+            acousticEvents.Add(horAcousticEvents);
+            acousticEvents.Add(posAcousticEvents);
+            acousticEvents.Add(negAcousticEvents);
+
+            return acousticEvents;
         }
-       
-        
+               
         /// Xueyan's method not using AED       
         // public static void SeperateRidgeListToEvent(SpectrogramStandard sonogram, 
         //    List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,
@@ -454,6 +465,7 @@ namespace Dong.Felt.Representations
         ////    }
         //}
         
+        // aed on provided ridges
         public static void RidgeListToEvent(SpectrogramStandard sonogram,
             List<PointOfInterest> poiList,            
             out List<AcousticEvent> acousticEvents)
@@ -494,7 +506,7 @@ namespace Dong.Felt.Representations
                 }).ToList();           
             acousticEvents = events;          
         }
-        
+
         public static List<AcousticEvent> SplitAcousticEvent(List<AcousticEvent> acousticEvent)
         {
             var result = new List<AcousticEvent>();

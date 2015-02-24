@@ -320,35 +320,20 @@ namespace Dong.Felt
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                     var smoothedRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5, 3, 1.0, 3);
-                    var smoothedRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedRidges);
-                    var verSegmentList = new List<AcousticEvent>();
-                    var horSegmentList = new List<AcousticEvent>();
-                    var posDiSegmentList = new List<AcousticEvent>();
-                    var negDiSegmentList = new List<AcousticEvent>();
-                    var dividedPOIList = POISelection.POIListDivision(smoothedRidgesList);
-
-                    ClusterAnalysis.SeperateRidgeListToEvent(
+                    var smoothedRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedRidges);                   
+                    var ridgeSegmentList = ClusterAnalysis.SeparateRidgeListToEvents(
                         spectrogram,
-                        dividedPOIList[0],
-                        dividedPOIList[1],
-                        dividedPOIList[2],
-                        dividedPOIList[3],
-                        rows,
-                        cols,
-                        out verSegmentList,
-                        out horSegmentList,
-                        out posDiSegmentList,
-                        out negDiSegmentList);
+                        smoothedRidgesList);
                     //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     Image image = DrawSpectrogram.DrawSonogram(
                         spectrogram,
                         scores,
-                        verSegmentList,
+                        ridgeSegmentList[0],
                         eventThreshold,
                         null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in dividedPOIList[0])
+                    foreach (PointOfInterest poi in smoothedRidgesList)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         Point point = new Point(poi.Point.Y, poi.Point.X);

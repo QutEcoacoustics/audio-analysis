@@ -92,7 +92,7 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
-        public static List<List<PointOfInterest>> ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,
+        public static List<PointOfInterest> ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,
             RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, string audioFilePath,
             string featurePropSet)
         {
@@ -105,8 +105,7 @@ namespace Dong.Felt
                 featurePropSet,
                 compressConfig.TimeCompressRate,
                 filterRidges);
-            var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
-            return dividedRidges;
+            return addCompressedRidges;
         }
 
         public static List<PointOfInterest> RidgePoiSelection(SpectrogramStandard spectrogram,
