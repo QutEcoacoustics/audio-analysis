@@ -8,7 +8,12 @@ namespace Dong.Felt.Representations
     using Dong.Felt.Features;
     using System.IO;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Text;
+
+    using Acoustics.Shared;
+
+    using AudioAnalysisTools.StandardSpectrograms;
 
     public class RegionRepresentation : RidgeDescriptionNeighbourhoodRepresentation
     {
@@ -128,11 +133,15 @@ namespace Dong.Felt.Representations
 
         public int RightInPixel { get; set; }
 
-        public EventBasedRepresentation bottomLeftEvent { get; set; }
-
         public EventBasedRepresentation MajorEvent { get; set; }
 
-        public List<EventBasedRepresentation> EventList { get; set; }
+        public List<EventBasedRepresentation> vEventList { get; set; }
+
+        public List<EventBasedRepresentation> hEventList { get; set; }
+
+        public List<EventBasedRepresentation> pEventList { get; set; }
+
+        public List<EventBasedRepresentation> nEventList { get; set; }
 
         //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
         //{
@@ -251,6 +260,140 @@ namespace Dong.Felt.Representations
             this.SourceAudioFile = audioFile;
         }
 
+        public RegionRepresentation(List<EventBasedRepresentation> eventList, string file)
+        {
+            this.vEventList = eventList;            
+            var allEventsInRegion = GroupEventBasedRepresentations(
+               this.vEventList, this.hEventList, this.pEventList, this.nEventList);
+            this.MajorEvent = FindLargestEvent(allEventsInRegion);
+            this.SourceAudioFile = file;
+        }
+
+        public RegionRepresentation(List<List<EventBasedRepresentation>> eventList, string file, Query query)
+        {
+            var result = new List<RegionRepresentation>();
+
+            // step 1 select events from specific boundary
+            this.vEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[0], query);
+            this.hEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[1], query);
+            this.pEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[1], query);
+            this.nEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[1], query);
+
+            var allEventsInRegion = GroupEventBasedRepresentations(
+                this.vEventList, this.hEventList, this.pEventList, this.nEventList);
+            // step 2 find the largest area of event in a specific region
+            this.MajorEvent = FindLargestEvent(allEventsInRegion);
+
+            // step 3 specify the boundary of the region 
+            if (allEventsInRegion.Count > 0)
+            {               
+                this.topToBottomLeftVertex = query.TopInPixel - this.MajorEvent.Bottom;
+                this.bottomToBottomLeftVertex = this.MajorEvent.Bottom - query.BottomInPixel;
+                this.leftToBottomLeftVertex = this.MajorEvent.Left - query.LeftInPixel;
+                this.rightToBottomLeftVertex = query.RightInPixel - this.MajorEvent.Left;
+                this.TopInPixel = query.TopInPixel;
+                this.BottomInPixel = query.BottomInPixel;
+                this.LeftInPixel = query.LeftInPixel;
+                this.RightInPixel = query.RightInPixel;
+            }
+            this.SourceAudioFile = file;
+        }
+
+        public RegionRepresentation(List<List<EventBasedRepresentation>> eventList, string file)
+        {           
+            this.vEventList = eventList[0];
+            this.hEventList = eventList[1];
+            this.pEventList = eventList[2];
+            this.nEventList = eventList[3];
+
+            var allEventsInRegion = GroupEventBasedRepresentations(
+               this.vEventList, this.hEventList, this.pEventList, this.nEventList);            
+            this.MajorEvent = FindLargestEvent(allEventsInRegion);
+            this.SourceAudioFile = file;
+        }
+        
+        public static List<EventBasedRepresentation> GroupEventBasedRepresentations(List<EventBasedRepresentation> vEvents, List<EventBasedRepresentation> hEvents,
+            List<EventBasedRepresentation> pEvents, List<EventBasedRepresentation> nEvents)
+        {
+            var overallRegionRepresentation = new List<EventBasedRepresentation>();
+            foreach (var v in vEvents)
+            {
+                overallRegionRepresentation.Add(v);
+            }
+            foreach (var h in hEvents)
+            {
+                overallRegionRepresentation.Add(h);
+            }
+            foreach (var p in pEvents)
+            {
+                overallRegionRepresentation.Add(p);
+            }
+            foreach (var n in nEvents)
+            {
+                overallRegionRepresentation.Add(n);
+            }
+            return overallRegionRepresentation;
+        }
+
+        public static EventBasedRepresentation FindLargestEvent(List<EventBasedRepresentation> events)
+        {
+            events.Sort((ae1, ae2) => ae1.Area.CompareTo(ae2.Area));
+            var majorEvent = events[events.Count - 1];
+            return majorEvent;
+        }
+
+        /// <summary>
+        /// This method aims to extract candidate region representation according to the provided
+        /// marquee of the queryRepresentation.
+        /// </summary>
+        /// <param name="queryRepresentations"></param>
+        /// <param name="candidateEventList"></param>
+        /// <param name="centroidFreqOffset"> 
+        /// </param>
+        /// <returns></returns>
+        public static List<RegionRepresentation> ExtractAcousticEventList(SpectrogramStandard spectrogram,
+            RegionRepresentation queryRepresentations,
+            List<List<EventBasedRepresentation>> candidateEventList, string file, int centroidFreqOffset)
+        {
+            var result = new List<RegionRepresentation>();
+
+            var anchorCentroid = queryRepresentations.MajorEvent.Centroid;
+            var orientationType = queryRepresentations.MajorEvent.InsideRidgeOrientation;
+            var maxFreq = spectrogram.Configuration.FreqBinCount;
+            var maxFrame = spectrogram.FrameCount;
+
+            var potentialCandidatesStart = new List<EventBasedRepresentation>();
+            foreach (var c in candidateEventList[orientationType])
+            {
+                if (Math.Abs(c.Centroid.Y - anchorCentroid.Y) < centroidFreqOffset)
+                {
+                    potentialCandidatesStart.Add(c);
+                }
+            }
+            foreach (var pc in potentialCandidatesStart)
+            {
+                var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
+                var minFreqPixelIndex = pc.Bottom - queryRepresentations.bottomToBottomLeftVertex;
+                var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
+                var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
+
+                var allEvents = EventBasedRepresentation.AddSelectedEventLists(candidateEventList, minFreqPixelIndex, maxFreqPixelIndex, startTimePixelIndex, 
+                    endTimePixelIndex, maxFreq, maxFrame);
+                var candidateRegionRepre = new RegionRepresentation(allEvents, file);
+                candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex - candidateRegionRepre.MajorEvent.Bottom;
+                candidateRegionRepre.bottomToBottomLeftVertex = candidateRegionRepre.MajorEvent.Bottom - minFreqPixelIndex;
+                candidateRegionRepre.leftToBottomLeftVertex = candidateRegionRepre.MajorEvent.Left - startTimePixelIndex;
+                candidateRegionRepre.rightToBottomLeftVertex = endTimePixelIndex - candidateRegionRepre.MajorEvent.Left;                
+                candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
+                candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
+                candidateRegionRepre.LeftInPixel = startTimePixelIndex;
+                candidateRegionRepre.RightInPixel = endTimePixelIndex;         
+                result.Add(candidateRegionRepre);
+            }
+            return result;
+        }
+
+        
         /// <summary>
         /// This representation is derived on eventRepresentations. 
         /// </summary>
@@ -262,10 +405,11 @@ namespace Dong.Felt.Representations
             var queryEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(
                     eventRepresentations,
                     query);
-            this.EventList = new List<EventBasedRepresentation>();
+
+            this.vEventList = new List<EventBasedRepresentation>();
             foreach (var e in queryEventList)
             {
-                this.EventList.Add(e);
+                this.vEventList.Add(e);
             }
             if (queryEventList.Count > 0)
             {
@@ -284,24 +428,7 @@ namespace Dong.Felt.Representations
                 this.RightInPixel = query.RightInPixel; 
             }           
             this.SourceAudioFile = file;
-        }
-
-        public RegionRepresentation(List<EventBasedRepresentation> eventRepresentations, string file)
-        {
-           this.EventList = new List<EventBasedRepresentation>();
-           foreach (var e in eventRepresentations)
-           {
-               this.EventList.Add(e);
-           }
-           if (eventRepresentations.Count > 0)
-           {
-               eventRepresentations.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
-               eventRepresentations.Sort((ae1, ae2) => ae1.MinFreq.CompareTo(ae2.MinFreq));
-               this.bottomLeftEvent = eventRepresentations[0];
-               // get the distance difference between four sides and vertex of the bottomLeftEvent: left, bottom, right, top             
-           }
-           this.SourceAudioFile = file;
-        }
+        }      
 
         #endregion
     }

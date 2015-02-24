@@ -10,6 +10,7 @@ using Dong.Felt.Configuration;
 
 namespace Dong.Felt.Representations
 {
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
     using Acoustics.Shared.Extensions;
@@ -46,6 +47,8 @@ namespace Dong.Felt.Representations
         /// The unit of Area is pixel.
         /// </summary>
         public int Area { get; set; }
+
+        public int InsideRidgeOrientation { get; set; }
 
         public double TimeScale { get; set; }
 
@@ -129,7 +132,7 @@ namespace Dong.Felt.Representations
         //}
 
         public static List<EventBasedRepresentation> AcousticEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
-            List<AcousticEvent> ae)
+            List<AcousticEvent> ae, int orientationType)
         {
             var result = new List<EventBasedRepresentation>();
             var timeScale = sonogram.FrameDuration - sonogram.Configuration.GetFrameOffset();
@@ -138,12 +141,70 @@ namespace Dong.Felt.Representations
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale, 
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                ep.InsideRidgeOrientation = orientationType;
                 ep.TimeScale = timeScale;
                 ep.FreqScale = freqScale;
                 result.Add(ep);
             }
             return result;
         }
+
+        public static List<List<EventBasedRepresentation>> AcousticEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
+           List<List<AcousticEvent>> ae)
+        {
+            var result = new List<List<EventBasedRepresentation>>();
+            var timeScale = sonogram.FrameDuration - sonogram.Configuration.GetFrameOffset();
+            var freqScale = sonogram.FBinWidth;
+            var vAcousticEventList = ae[0];
+            var hAcousticEventList = ae[1];
+            var pAcousticEventList = ae[2];
+            var nAcousticEventList = ae[3];
+            var vResult = new List<EventBasedRepresentation>();
+            foreach (var e in vAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                ep.InsideRidgeOrientation = 0;
+                ep.TimeScale = timeScale;
+                ep.FreqScale = freqScale;
+                vResult.Add(ep);
+            }
+            var hResult = new List<EventBasedRepresentation>();
+            foreach (var e in hAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                ep.InsideRidgeOrientation = 1;
+                ep.TimeScale = timeScale;
+                ep.FreqScale = freqScale;
+                hResult.Add(ep);
+            }
+            var pResult = new List<EventBasedRepresentation>();
+            foreach (var e in pAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                ep.InsideRidgeOrientation = 2;
+                ep.TimeScale = timeScale;
+                ep.FreqScale = freqScale;
+                pResult.Add(ep);
+            }
+            var nResult = new List<EventBasedRepresentation>();
+            foreach (var e in nAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                ep.InsideRidgeOrientation = 3;
+                ep.TimeScale = timeScale;
+                ep.FreqScale = freqScale;
+                nResult.Add(ep);
+            }
+            result.Add(hResult);
+            result.Add(vResult);
+            result.Add(pResult);
+            result.Add(nResult);
+            return result;
+        }  
 
         // users might provide the rectangle boundary information of query, so this method aims to detect query 
         public static List<EventBasedRepresentation> ReadQueryAsAcousticEventList(List<EventBasedRepresentation> events,
@@ -172,105 +233,76 @@ namespace Dong.Felt.Representations
                         if (e.Left + e.Width > query.RightInPixel)
                         {
                             e.Width = query.RightInPixel - e.Left;
-                        }
+                        }                       
                         result.Add(e);
                     }
                 }
             }
             return result;
         }
-
-        /// <summary>
-        /// This method aims to extract candidate region representation according to the provided
-        /// marquee of the queryRepresentation.
-        /// </summary>
-        /// <param name="queryRepresentations"></param>
-        /// <param name="candidateEventList"></param>
-        /// <param name="centroidFreqOffset"> 
-        /// </param>
-        /// <returns></returns>
-        public static List<RegionRepresentation> ExtractAcousticEventList(SpectrogramStandard spectrogram,
-            RegionRepresentation queryRepresentations,
-            List<EventBasedRepresentation> candidateEventList, string file, int centroidFreqOffset)
+        
+        
+        public static List<EventBasedRepresentation> SelectEvents(
+            List<EventBasedRepresentation> eventList,
+            int minFreq,
+            int maxFreq,
+            int startTime,
+            int endTime,
+            int maxFrequency,
+            int maxFrame)
         {
-            var result = new List<RegionRepresentation>();
-            // var centroid = (queryRepresentations.TopInPixel - queryRepresentations.BottomInPixel) / 2;
-            var anchorCentroid = queryRepresentations.MajorEvent.Centroid;
-            var MaxFreq = queryRepresentations.TopInPixel + centroidFreqOffset;
-            var MinFreq = queryRepresentations.BottomInPixel - centroidFreqOffset;
-            var maxFreq = spectrogram.Configuration.FreqBinCount;
-            if (MaxFreq > maxFreq)
+            var result = new List<EventBasedRepresentation>();            
+            if (StatisticalAnalysis.checkBoundary(minFreq, startTime, maxFrequency, maxFrame)
+                && StatisticalAnalysis.checkBoundary(maxFreq, endTime, maxFrequency, maxFrame))
             {
-                MaxFreq = maxFreq;
-            }
-            if (MinFreq < 0)
-            {
-                MinFreq = 0;
-            }
-            var maxFrame = spectrogram.FrameCount;           
-            var potentialCandidateStart = new List<EventBasedRepresentation>();
-            foreach (var c in candidateEventList)
-            {
-                //if (c.Centroid.Y < MaxFreq && c.Centroid.Y > MinFreq)
-                //{
-                //    potentialCandidateStart.Add(c);
-                //}
-                if (Math.Abs(c.Centroid.Y - anchorCentroid.Y) < centroidFreqOffset)
+                foreach (var c in eventList)
                 {
-                    potentialCandidateStart.Add(c);
-                }
-
-            }
-            foreach (var pc in potentialCandidateStart)
-            {                                        
-                var realCandidate = new List<EventBasedRepresentation>();
-                var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
-                var minFreqPixelIndex =  pc.Bottom - queryRepresentations.bottomToBottomLeftVertex;
-                var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
-                var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
-
-                if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
-                    && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
-                {
-                    foreach (var c in candidateEventList)
+                    if (c.Centroid.X > startTime && c.Centroid.X < endTime)
                     {
-                        if (c.Centroid.X > startTimePixelIndex && c.Centroid.X < endTimePixelIndex)
+                        if (c.Centroid.Y > minFreq && c.Centroid.Y < maxFreq)
                         {
-                            if (c.Centroid.Y > minFreqPixelIndex && c.Centroid.Y < maxFreqPixelIndex)
+                            if (c.Bottom < minFreq)
                             {
-                                if (c.Bottom < minFreqPixelIndex)
-                                {
-                                    c.Bottom = minFreqPixelIndex;
-                                }
-                                if (c.Bottom + c.Height > maxFreqPixelIndex)
-                                {
-                                    c.Height = maxFreqPixelIndex - c.Height;
-                                }
-                                if (c.Left < startTimePixelIndex)
-                                {
-                                    c.Left = startTimePixelIndex;
-                                }
-                                if (c.Left + c.Width > endTimePixelIndex)
-                                {
-                                    c.Width = endTimePixelIndex - c.Left;
-                                }
-                                c.Area = c.Width * c.Height;
-                                realCandidate.Add(c);
+                                c.Bottom = minFreq;
                             }
+                            if (c.Bottom + c.Height > maxFreq)
+                            {
+                                c.Height = maxFreq - c.Height;
+                            }
+                            if (c.Left < startTime)
+                            {
+                                c.Left = startTime;
+                            }
+                            if (c.Left + c.Width > endTime)
+                            {
+                                c.Width = endTime - c.Left;
+                            }
+                            c.Area = c.Width * c.Height;
+                            result.Add(c);
                         }
                     }
-                }                 
-                var candidateRegionRepre = new RegionRepresentation(realCandidate, file);
-                candidateRegionRepre.bottomToBottomLeftVertex = minFreqPixelIndex;
-                candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex;
-                candidateRegionRepre.rightToBottomLeftVertex = startTimePixelIndex;
-                candidateRegionRepre.leftToBottomLeftVertex = endTimePixelIndex;
-                candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
-                candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
-                candidateRegionRepre.LeftInPixel = startTimePixelIndex;
-                candidateRegionRepre.RightInPixel = endTimePixelIndex; 
-                result.Add(candidateRegionRepre);
+                }
             }
+            return result;
+        }
+
+        public static List<List<EventBasedRepresentation>> AddSelectedEventLists(List<List<EventBasedRepresentation>> eventList,
+            int minFreq,
+            int maxFreq,
+            int startTime,
+            int endTime,
+            int maxFrequency,
+            int maxFrame)
+        {
+            var result = new List<List<EventBasedRepresentation>>();
+            var vEvents = SelectEvents(eventList[0], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame);
+            var hEvents = SelectEvents(eventList[1], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame);
+            var pEvents = SelectEvents(eventList[2], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame);
+            var nEvents = SelectEvents(eventList[3], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame); 
+            result.Add(vEvents);
+            result.Add(hEvents);
+            result.Add(pEvents);
+            result.Add(nEvents);
             return result;
         }
 
@@ -285,7 +317,7 @@ namespace Dong.Felt.Representations
         /// <returns></returns>
         public static List<RegionRepresentation> ExtractFixedAcousticEventList(SpectrogramStandard spectrogram,
             RegionRepresentation queryRepresentations,
-            List<EventBasedRepresentation> candidateEventList, string file)
+            List<EventBasedRepresentation> candidateEventList, string file, Query query)
         {
             var result = new List<RegionRepresentation>();
             var startCentriod = queryRepresentations.MajorEvent.Centroid;
@@ -338,7 +370,7 @@ namespace Dong.Felt.Representations
                         }
                     }
                 }
-                var candidateRegionRepre = new RegionRepresentation(realCandidate, file);
+                var candidateRegionRepre = new RegionRepresentation(realCandidate, file, query);
                 candidateRegionRepre.bottomToBottomLeftVertex = minFreqPixelIndex;
                 candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex;
                 candidateRegionRepre.rightToBottomLeftVertex = startTimePixelIndex;
@@ -370,7 +402,7 @@ namespace Dong.Felt.Representations
             }
             return potentialCandidateLocation;
         }
-
+       
         #endregion
     }
 }

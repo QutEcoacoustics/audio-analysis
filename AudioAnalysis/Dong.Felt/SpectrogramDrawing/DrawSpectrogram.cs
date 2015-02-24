@@ -687,7 +687,7 @@ namespace Dong.Felt.SpectrogramDrawing
                     Image image = DrawSonogram(spectrogram, scores, acousticEventlistForQuery,
                         eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in ridges[0])
+                    foreach (PointOfInterest poi in ridges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     }
@@ -708,7 +708,7 @@ namespace Dong.Felt.SpectrogramDrawing
                     Image image = DrawSonogram(spectrogram, scores, acousticEventlistForCandidate,
                         eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in ridges[0])
+                    foreach (PointOfInterest poi in ridges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     }

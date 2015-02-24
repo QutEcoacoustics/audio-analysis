@@ -1044,17 +1044,17 @@ namespace Dong.Felt
             var result = new List<Candidates>();
             // get the relevant index inside the region
             var relevantQueryRepresentation = GetRelevantIndexInRegion(queryRepresentation);
-            var eventCount = relevantQueryRepresentation.EventList.Count();
+            var eventCount = relevantQueryRepresentation.vEventList.Count();
 
             foreach (var c in candidateList)
             {
                 var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
-                var eventList = relevantCandidateRepresentation.EventList;
+                var eventList = relevantCandidateRepresentation.vEventList;
                 // find the cloest event to compare
                 var overalScore = 0.0;
-                if (relevantCandidateRepresentation.EventList.Count > 0)
+                if (relevantCandidateRepresentation.vEventList.Count > 0)
                 {
-                    foreach (var q in relevantQueryRepresentation.EventList)
+                    foreach (var q in relevantQueryRepresentation.vEventList)
                     {
                         var index = FindCloestEvent(eventList, q);
                         var overlap = StatisticalAnalysis.EventOverlapInPixel(
@@ -1069,8 +1069,8 @@ namespace Dong.Felt
                         overalScore += ((double)overlap / q.Area + (double)overlap / eventList[index].Area) / 2.0;
                     }
                     var score = overalScore / eventCount;
-                    var timeScale = c.EventList[0].TimeScale;
-                    var freqScale = c.EventList[0].FreqScale;
+                    var timeScale = c.vEventList[0].TimeScale;
+                    var freqScale = c.vEventList[0].FreqScale;
                     var candidate = new Candidates(
                         score,
                         c.LeftInPixel * timeScale * 1000,
@@ -1096,17 +1096,17 @@ namespace Dong.Felt
             var result = new List<Candidates>();
             // get the relevant index inside the region
             var relevantQueryRepresentation = GetRelevantIndexInRegion(queryRepresentation);
-            var eventCount = relevantQueryRepresentation.EventList.Count();
+            var eventCount = relevantQueryRepresentation.vEventList.Count();
 
             foreach (var c in candidateList)
             {
                 var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
-                var eventList = relevantCandidateRepresentation.EventList;
+                var eventList = relevantCandidateRepresentation.vEventList;
 
                 var overalScore = 0.0;
-                if (relevantCandidateRepresentation.EventList.Count > 0)
+                if (relevantCandidateRepresentation.vEventList.Count > 0)
                 {
-                    foreach (var q in relevantQueryRepresentation.EventList)
+                    foreach (var q in relevantQueryRepresentation.vEventList)
                     {
                         // find the N cloest event to compare
                         var nClosestEventList = FindNCloestEvents(eventList, q, n);
@@ -1124,8 +1124,8 @@ namespace Dong.Felt
                         overalScore += ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
                     }
                     var score = overalScore / eventCount;
-                    var timeScale = c.EventList[0].TimeScale;
-                    var freqScale = c.EventList[0].FreqScale;
+                    var timeScale = c.vEventList[0].TimeScale;
+                    var freqScale = c.vEventList[0].FreqScale;
                     var candidate = new Candidates(
                         score,
                         c.LeftInPixel * timeScale * 1000,
@@ -1193,7 +1193,7 @@ namespace Dong.Felt
         //}
         public static RegionRepresentation GetRelevantIndexInRegion(RegionRepresentation events)
         {
-            var eventList = events.EventList;
+            var eventList = events.vEventList;
             var regionBottom = events.BottomInPixel;
             var regionLeft = events.LeftInPixel;
             foreach (var e in eventList)
