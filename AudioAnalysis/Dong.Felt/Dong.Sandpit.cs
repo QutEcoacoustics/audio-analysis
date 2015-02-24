@@ -273,17 +273,15 @@
 
                     var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
-                    //var addCompressedRidges = POISelection.AddCompressedRidges(
-                    //    config,
-                    //    audioFiles[i],
-                    //    ridgeConfig,
-                    //    featurePropSet,
-                    //    compressConfig.TimeCompressRate,
-                    //    filterRidges);
+                    var addCompressedRidges = POISelection.AddCompressedRidges(
+                        config,
+                        audioFiles[i],
+                        ridgeConfig,
+                        featurePropSet,
+                        compressConfig.TimeCompressRate,
+                        filterRidges);
                     //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
-                    var dividedRidges = POISelection.POIListDivision(filterRidges);
-                    //var connectBrokenRidges = ClusterAnalysis.SmoothRidges(dividedRidges[0], rows, cols, 5, 3, 1.0, 3);
-                    //var connectRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(connectBrokenRidges);                 
+                    var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
                     ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;

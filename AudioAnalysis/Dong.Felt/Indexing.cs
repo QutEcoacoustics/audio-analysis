@@ -1066,7 +1066,7 @@ namespace Dong.Felt
                                 eventList[index].Bottom,
                                 eventList[index].Left + eventList[index].Width,
                                 eventList[index].Bottom + eventList[index].Height);
-                        overalScore += (double)overlap / q.Area;
+                        overalScore += ((double)overlap / q.Area + (double)overlap / eventList[index].Area) / 2.0;
                     }
                     var score = overalScore / eventCount;
                     var timeScale = c.EventList[0].TimeScale;
@@ -1120,15 +1120,7 @@ namespace Dong.Felt
                                 nClosestEventList[index].Left,
                                 nClosestEventList[index].Bottom,
                                 nClosestEventList[index].Left + nClosestEventList[index].Width,
-                                nClosestEventList[index].Bottom + nClosestEventList[index].Height);
-                        if (overlap > q.Area)
-                        {
-                            var cnn = 1;
-                        }
-                        if (overlap > nClosestEventList[index].Area)
-                        {
-                            var cnn2 = 1;
-                        }
+                                nClosestEventList[index].Bottom + nClosestEventList[index].Height);                       
                         overalScore += ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
                     }
                     var score = overalScore / eventCount;
@@ -1146,8 +1138,7 @@ namespace Dong.Felt
             }
             return result;
         }
-
-        // Todo:
+        
         /// <summary>
         /// This distance calculation will be done between a query and a candidate.
         /// It is obtainted by computing the overlap between the query events and candidate events.
@@ -1282,8 +1273,7 @@ namespace Dong.Felt
             }
             return index;
         }
-
-        // Todo: 
+        
         /// <summary>
         /// Find N nearest events
         /// </summary>
