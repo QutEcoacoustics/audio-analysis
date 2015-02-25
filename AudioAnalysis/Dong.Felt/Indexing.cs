@@ -1196,23 +1196,43 @@ namespace Dong.Felt
                 {
                     // find the N cloest event to compare
                     var nClosestEventList = FindNCloestEvents(events2, q, n);
+                    
                     var index = FindMaximumScoreEvent(nClosestEventList, q);
-                    var leftAnchor = nClosestEventList[index].Left;
-                    q.Left = leftAnchor;                    
-                    var overlap = StatisticalAnalysis.EventOverlapInPixel(
-                        q.Left,
-                        q.Bottom,
-                        q.Left + q.Width,
-                        q.Bottom + q.Height,
-                        nClosestEventList[index].Left,
-                        nClosestEventList[index].Bottom,
-                        nClosestEventList[index].Left + nClosestEventList[index].Width,
-                        nClosestEventList[index].Bottom + nClosestEventList[index].Height);
-                    overalScore += ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
+                    // Another check 
+                    var frameCheck = OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
+                    var subScore = 0.0;
+                    if (frameCheck)
+                    {
+                        var leftAnchor = nClosestEventList[index].Left;
+                        q.Left = leftAnchor;
+                        var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                            q.Left,
+                            q.Bottom,
+                            q.Left + q.Width,
+                            q.Bottom + q.Height,
+                            nClosestEventList[index].Left,
+                            nClosestEventList[index].Bottom,
+                            nClosestEventList[index].Left + nClosestEventList[index].Width,
+                            nClosestEventList[index].Bottom + nClosestEventList[index].Height);
+                        subScore = ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
+                    }
+                    overalScore += subScore;
                 }
                 overalScore /= events1.Count;
             }          
             return overalScore;
+        }
+
+        public static bool OverFrameOffset(int baseFrame, int startFrame, int halfCentroidX, int frameThreshold)
+        {
+            var result = true;
+            var difference = Math.Abs(baseFrame - startFrame);
+            var threshold = halfCentroidX + frameThreshold;
+            if (difference > threshold)
+            {
+                result = false;
+            }
+            return result;
         }
 
         public static List<EventBasedRepresentation> GetRelevantIndexInEvents(RegionRepresentation region, 
