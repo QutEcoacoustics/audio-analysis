@@ -143,6 +143,8 @@ namespace Dong.Felt.Representations
 
         public List<EventBasedRepresentation> nEventList { get; set; }
 
+        public int NotNullEventListCount { get; set; }
+
         //public ICollection<RidgeDescriptionNeighbourhoodRepresentation> ridgeNeighbourhood
         //{
         //    get
@@ -270,14 +272,12 @@ namespace Dong.Felt.Representations
         }
 
         public RegionRepresentation(List<List<EventBasedRepresentation>> eventList, string file, Query query)
-        {
-            var result = new List<RegionRepresentation>();
-
+        {           
             // step 1 select events from specific boundary
             this.vEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[0], query);
             this.hEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[1], query);
-            this.pEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[1], query);
-            this.nEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[1], query);
+            this.pEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[2], query);
+            this.nEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[3], query);
 
             var allEventsInRegion = GroupEventBasedRepresentations(
                 this.vEventList, this.hEventList, this.pEventList, this.nEventList);
@@ -285,7 +285,7 @@ namespace Dong.Felt.Representations
             this.MajorEvent = FindLargestEvent(allEventsInRegion);
 
             // step 3 specify the boundary of the region 
-            if (allEventsInRegion.Count > 0)
+            if (this.MajorEvent != null)
             {               
                 this.topToBottomLeftVertex = query.TopInPixel - this.MajorEvent.Bottom;
                 this.bottomToBottomLeftVertex = this.MajorEvent.Bottom - query.BottomInPixel;
@@ -295,6 +295,11 @@ namespace Dong.Felt.Representations
                 this.BottomInPixel = query.BottomInPixel;
                 this.LeftInPixel = query.LeftInPixel;
                 this.RightInPixel = query.RightInPixel;
+                this.NotNullEventListCount = NotNullListCount(
+                    this.vEventList,
+                    this.hEventList,
+                    this.pEventList,
+                    this.nEventList);
             }
             this.SourceAudioFile = file;
         }
@@ -337,9 +342,16 @@ namespace Dong.Felt.Representations
 
         public static EventBasedRepresentation FindLargestEvent(List<EventBasedRepresentation> events)
         {
-            events.Sort((ae1, ae2) => ae1.Area.CompareTo(ae2.Area));
-            var majorEvent = events[events.Count - 1];
-            return majorEvent;
+            if (events.Count > 0)
+            {
+                events.Sort((ae1, ae2) => ae1.Area.CompareTo(ae2.Area));
+                var majorEvent = events[events.Count - 1];
+                return majorEvent;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -369,7 +381,7 @@ namespace Dong.Felt.Representations
                 {
                     potentialCandidatesStart.Add(c);
                 }
-            }
+            }           
             foreach (var pc in potentialCandidatesStart)
             {
                 var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
@@ -377,23 +389,35 @@ namespace Dong.Felt.Representations
                 var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
                 var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
 
-                var allEvents = EventBasedRepresentation.AddSelectedEventLists(candidateEventList, minFreqPixelIndex, maxFreqPixelIndex, startTimePixelIndex, 
+                if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
+                    && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
+                {
+                    var allEvents = EventBasedRepresentation.AddSelectedEventLists(candidateEventList, minFreqPixelIndex, maxFreqPixelIndex, startTimePixelIndex, 
                     endTimePixelIndex, maxFreq, maxFrame);
-                var candidateRegionRepre = new RegionRepresentation(allEvents, file);
-                candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex - candidateRegionRepre.MajorEvent.Bottom;
-                candidateRegionRepre.bottomToBottomLeftVertex = candidateRegionRepre.MajorEvent.Bottom - minFreqPixelIndex;
-                candidateRegionRepre.leftToBottomLeftVertex = candidateRegionRepre.MajorEvent.Left - startTimePixelIndex;
-                candidateRegionRepre.rightToBottomLeftVertex = endTimePixelIndex - candidateRegionRepre.MajorEvent.Left;                
-                candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
-                candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
-                candidateRegionRepre.LeftInPixel = startTimePixelIndex;
-                candidateRegionRepre.RightInPixel = endTimePixelIndex;         
-                result.Add(candidateRegionRepre);
+                    if (allEvents[orientationType].Count > 0)
+                    {
+                        var candidateRegionRepre = new RegionRepresentation(allEvents, file);
+                        candidateRegionRepre.MajorEvent = pc;
+                        candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex - pc.Bottom;
+                        candidateRegionRepre.bottomToBottomLeftVertex = pc.Bottom - minFreqPixelIndex;
+                        candidateRegionRepre.leftToBottomLeftVertex = pc.Left - startTimePixelIndex;
+                        candidateRegionRepre.rightToBottomLeftVertex = endTimePixelIndex - pc.Left;
+                        candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
+                        candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
+                        candidateRegionRepre.LeftInPixel = startTimePixelIndex;
+                        candidateRegionRepre.RightInPixel = endTimePixelIndex;
+                        candidateRegionRepre.NotNullEventListCount = NotNullListCount(
+                        candidateRegionRepre.vEventList,
+                        candidateRegionRepre.hEventList,
+                        candidateRegionRepre.pEventList,
+                        candidateRegionRepre.nEventList);
+                        result.Add(candidateRegionRepre);
+                    }                  
+                }                
             }
             return result;
         }
-
-        
+    
         /// <summary>
         /// This representation is derived on eventRepresentations. 
         /// </summary>
@@ -428,7 +452,30 @@ namespace Dong.Felt.Representations
                 this.RightInPixel = query.RightInPixel; 
             }           
             this.SourceAudioFile = file;
-        }      
+        }    
+  
+        public static int NotNullListCount(List<EventBasedRepresentation> vEvents, List<EventBasedRepresentation> hEvents,
+            List<EventBasedRepresentation> pEvents, List<EventBasedRepresentation> nEvents)
+        {
+            var count = 0;
+            if (vEvents.Count > 0)
+            {
+                count++;
+            }
+            if (hEvents.Count > 0)
+            {
+                count++;
+            }
+            if (pEvents.Count > 0)
+            {
+                count++;
+            }
+            if (nEvents.Count > 0)
+            {
+                count++;
+            }
+            return count;
+        }
 
         #endregion
     }

@@ -198,9 +198,9 @@ namespace Dong.Felt.Representations
                 ep.TimeScale = timeScale;
                 ep.FreqScale = freqScale;
                 nResult.Add(ep);
-            }
-            result.Add(hResult);
+            }         
             result.Add(vResult);
+            result.Add(hResult);
             result.Add(pResult);
             result.Add(nResult);
             return result;
@@ -233,15 +233,16 @@ namespace Dong.Felt.Representations
                         if (e.Left + e.Width > query.RightInPixel)
                         {
                             e.Width = query.RightInPixel - e.Left;
-                        }                       
+                        }
+                        e.Area = e.Width * e.Height;
+                        e.Centroid = new Point((e.Left + e.Width/2), e.Bottom + e.Height/2);
                         result.Add(e);
                     }
                 }
             }
             return result;
         }
-        
-        
+               
         public static List<EventBasedRepresentation> SelectEvents(
             List<EventBasedRepresentation> eventList,
             int minFreq,
@@ -251,7 +252,7 @@ namespace Dong.Felt.Representations
             int maxFrequency,
             int maxFrame)
         {
-            var result = new List<EventBasedRepresentation>();            
+            var result = new List<EventBasedRepresentation>();
             if (StatisticalAnalysis.checkBoundary(minFreq, startTime, maxFrequency, maxFrame)
                 && StatisticalAnalysis.checkBoundary(maxFreq, endTime, maxFrequency, maxFrame))
             {
@@ -267,7 +268,7 @@ namespace Dong.Felt.Representations
                             }
                             if (c.Bottom + c.Height > maxFreq)
                             {
-                                c.Height = maxFreq - c.Height;
+                                c.Height = maxFreq - c.Bottom;
                             }
                             if (c.Left < startTime)
                             {
@@ -278,6 +279,7 @@ namespace Dong.Felt.Representations
                                 c.Width = endTime - c.Left;
                             }
                             c.Area = c.Width * c.Height;
+                            c.Centroid = new Point(c.Left + c.Width / 2, c.Bottom + c.Height / 2);
                             result.Add(c);
                         }
                     }
@@ -379,6 +381,7 @@ namespace Dong.Felt.Representations
                 candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
                 candidateRegionRepre.LeftInPixel = startTimePixelIndex;
                 candidateRegionRepre.RightInPixel = endTimePixelIndex;
+
                 result.Add(candidateRegionRepre);
             }
             return result;
@@ -401,8 +404,8 @@ namespace Dong.Felt.Representations
                 }
             }
             return potentialCandidateLocation;
-        }
-       
+        }       
+
         #endregion
     }
 }

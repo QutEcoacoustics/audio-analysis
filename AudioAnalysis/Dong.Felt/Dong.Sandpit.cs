@@ -815,13 +815,12 @@
                 // event representation for the whole recording
                 var queryEventRepresentation =
                     EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, acousticEventlist);
-                // query representation is composed of 4 sets of event Representations.
                 var queryRepresentation = new RegionRepresentation(queryEventRepresentation, queryAudioFiles[i], query);
                 // 2. search through training or testing audio files
                 if (!Directory.Exists(inputFileDirectory))
                 {
                     throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", inputFileDirectory));
-                }
+                }                
                 Log.Info("# read all the training/test audio files");
                 var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);               
                 var audioFilesCount = candidatesAudioFiles.Count();
@@ -836,26 +835,24 @@
                         compressConfig,
                         candidatesAudioFiles[j],
                         featurePropSet);                   
-                    var  candidateAElist = ClusterAnalysis.SeparateRidgeListToEvents(candidateSpectrogram, candidateRidges); 
+                    var candidateAElist = ClusterAnalysis.SeparateRidgeListToEvents(candidateSpectrogram, candidateRidges); 
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
                         EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist);
                     var candidatesRepresentation = RegionRepresentation.ExtractAcousticEventList(candidateSpectrogram,
                         queryRepresentation,
                         candidatesEventsRepresentation,
-                        candidatesAudioFiles[j], 12);
+                        candidatesAudioFiles[j], 24);
                     foreach (var cn in candidatesRepresentation)
                     {
                         allCandidateList.Add(cn);
                     }
-
                 }// end of the loop for candidates audio files               
                 // 3. Rank the candidates - calculate the distance and output the matched acoustic events. 
-                // Todo: modify the all Candidate List.
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);                                             
                 var candidateDistanceList = new List<Candidates>();                
                 Log.Info("# calculate the distance between a query and a candidate");
-                //candidateDistanceList = Indexing.EventRegionBasedDistance(queryVRepresentation, allCandidateList, 5);
+                candidateDistanceList = Indexing.Event4RegionBasedScore(queryRepresentation, allCandidateList, 5);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 // To save all matched acoustic events separately                         
                 var separateCandidatesList = new List<List<Candidates>>();
