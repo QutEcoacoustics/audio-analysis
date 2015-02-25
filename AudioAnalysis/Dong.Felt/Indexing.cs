@@ -1033,7 +1033,7 @@ namespace Dong.Felt
         /// <summary>
         /// This distance calculation will be done between a query and a candidate.
         /// It is obtainted by computing the overlap between the query region and candidate region.
-        /// This one is done based on exact match on relative marquee of events.
+        /// This one is done based on exact match on relative marquee of events, but here it only consider 1 directional events
         /// </summary>
         /// <param name="queryRepresentation"></param>
         /// <param name="candidateList"></param>
@@ -1043,18 +1043,18 @@ namespace Dong.Felt
         {
             var result = new List<Candidates>();
             // get the relevant index inside the region
-            var relevantQueryRepresentation = GetRelevantIndexInRegion(queryRepresentation);
-            var eventCount = relevantQueryRepresentation.vEventList.Count();
+            var relevantQueryRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.vEventList);
+            var eventCount = relevantQueryRepresentation.Count();
 
             foreach (var c in candidateList)
             {
-                var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
-                var eventList = relevantCandidateRepresentation.vEventList;
+                var relevantCandidateRepresentation = GetRelevantIndexInEvents(c, c.vEventList);
+                var eventList = relevantCandidateRepresentation;
                 // find the cloest event to compare
                 var overalScore = 0.0;
-                if (relevantCandidateRepresentation.vEventList.Count > 0)
+                if (relevantCandidateRepresentation.Count > 0)
                 {
-                    foreach (var q in relevantQueryRepresentation.vEventList)
+                    foreach (var q in relevantQueryRepresentation)
                     {
                         var index = FindCloestEvent(eventList, q);
                         var overlap = StatisticalAnalysis.EventOverlapInPixel(
@@ -1085,7 +1085,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// This one is done based on close match on events.
+        /// This one is done based on n closest match on events.
         /// </summary>
         /// <param name="queryRepresentation"></param>
         /// <param name="candidateList"></param>
@@ -1095,18 +1095,18 @@ namespace Dong.Felt
         {
             var result = new List<Candidates>();
             // get the relevant index inside the region
-            var relevantQueryRepresentation = GetRelevantIndexInRegion(queryRepresentation);
-            var eventCount = relevantQueryRepresentation.vEventList.Count();
+            var relevantQueryRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.vEventList);
+            var eventCount = relevantQueryRepresentation.Count();
 
             foreach (var c in candidateList)
             {
-                var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
-                var eventList = relevantCandidateRepresentation.vEventList;
+                var relevantCandidateRepresentation = GetRelevantIndexInEvents(c, c.vEventList);
+                var eventList = relevantCandidateRepresentation;
 
                 var overalScore = 0.0;
-                if (relevantCandidateRepresentation.vEventList.Count > 0)
+                if (relevantCandidateRepresentation.Count > 0)
                 {
-                    foreach (var q in relevantQueryRepresentation.vEventList)
+                    foreach (var q in relevantQueryRepresentation)
                     {
                         // find the N cloest event to compare
                         var nClosestEventList = FindNCloestEvents(eventList, q, n);
@@ -1138,84 +1138,105 @@ namespace Dong.Felt
             }
             return result;
         }
-        
-        /// <summary>
-        /// This distance calculation will be done between a query and a candidate.
-        /// It is obtainted by computing the overlap between the query events and candidate events.
-        /// </summary>
-        /// <param name="queryRepresentation"></param>
-        /// <param name="candidateList"></param>
-        /// <returns></returns>
-        //public static List<Candidates> EventsBasedDistance(List<EventBasedRepresentation> queryRepresentation,
-        //    List<EventBasedRepresentation> candidateList)
-        //{
-        //    var result = new List<Candidates>();
-        //    // get the relevant index inside the region
-        //    //var relevantQueryRepresentation = GetRelevantIndexInRegion(queryRepresentation);
-        //    //var eventCount = relevantQueryRepresentation.EventList.Count();
 
-        //    foreach (var c in candidateList)
-        //    {
-        //        //var relevantCandidateRepresentation = GetRelevantIndexInRegion(c);
-        //        var eventList = relevantCandidateRepresentation.EventList;
-        //        // find the cloest event to compare
-        //        var overalScore = 0.0;
-        //        if (relevantCandidateRepresentation.EventList.Count > 0)
-        //        {
-        //            foreach (var q in relevantQueryRepresentation.EventList)
-        //            {
-        //                var index = FindCloestEvent(eventList, q);
-        //                //var overlap = StatisticalAnalysis.EventOverlapInPixel(
-        //                //        q.Left,
-        //                //        q.Bottom,
-        //                //        q.Left + q.Width,
-        //                //        q.Bottom + q.Height,
-        //                //        eventList[index].Left,
-        //                //        eventList[index].Bottom,
-        //                //        eventList[index].Left + eventList[index].Width,
-        //                //        eventList[index].Bottom + eventList[index].Height);
-        //                //overalScore += (double)overlap / q.Area;
-        //            }
-        //            //var score = overalScore / eventCount;
-        //            //var timeScale = c.EventList[0].TimeScale;
-        //            //var freqScale = c.EventList[0].FreqScale;
-        //            //var candidate = new Candidates(
-        //            //    score,
-        //            //    c.LeftInPixel * timeScale * 1000,
-        //            //    (c.RightInPixel - c.LeftInPixel) * timeScale * 1000,
-        //            //    c.TopInPixel * freqScale,
-        //            //    c.BottomInPixel * freqScale,
-        //            //    c.SourceAudioFile);
-        //            //result.Add(candidate);
-        //        }
-        //    }
-        //    return result;
-        //}
-        public static RegionRepresentation GetRelevantIndexInRegion(RegionRepresentation events)
+        public static List<Candidates> Event4RegionBasedScore(RegionRepresentation queryRepresentation,
+           List<RegionRepresentation> candidateList, int n)
         {
-            var eventList = events.vEventList;
-            var regionBottom = events.BottomInPixel;
-            var regionLeft = events.LeftInPixel;
-            foreach (var e in eventList)
-            {
-                e.Bottom = e.Bottom - regionBottom;
-                e.Left = e.Left - regionLeft;
-                e.Centroid = new Point((e.Centroid.X - regionLeft), (e.Centroid.Y - regionBottom));
+            var result = new List<Candidates>();
+            var count = 0;
+            var relevantQueryVRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.vEventList);
+            var relevantQueryHRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.hEventList);
+            var relevantQueryPRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.pEventList);
+            var relevantQueryNRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.nEventList);
+            foreach (var c in candidateList)
+            {              
+                // calculate score for vEvents, hEvents, pEvents, nEvents
+                var vScore = ScoreOver2EventRegion(relevantQueryVRepresentation, c, c.vEventList, n);
+                var hScore = ScoreOver2EventRegion(relevantQueryHRepresentation, c, c.hEventList, n);
+                var pScore = ScoreOver2EventRegion(relevantQueryPRepresentation, c, c.pEventList, n);
+                var nScore = ScoreOver2EventRegion(relevantQueryNRepresentation, c, c.nEventList, n);                
+                // Get the average score
+                //var score = (vScore + hScore + pScore + nScore) / queryRepresentation.NotNullEventListCount;
+                var score = vScore;
+                // Create a candidate item
+                var timeScale = c.MajorEvent.TimeScale;
+                var freqScale = c.MajorEvent.FreqScale;
+                if (score > 0.0)
+                {
+                    var candidate = new Candidates(
+                    score,
+                    c.LeftInPixel * timeScale * 1000,
+                    (c.RightInPixel - c.LeftInPixel) * timeScale * 1000,
+                    c.TopInPixel * freqScale,
+                    c.BottomInPixel * freqScale,
+                    c.SourceAudioFile);
+                    result.Add(candidate);
+                    count++;
+                }                
             }
-            var result = new RegionRepresentation(eventList, events.SourceAudioFile);
             return result;
         }
 
-        // Todo: 
-        public static void GetRelevantIndexInEvents(List<EventBasedRepresentation> events)
+        public static double ScoreOver2EventRegion(List<EventBasedRepresentation> queryEvents, RegionRepresentation candidate, 
+             List<EventBasedRepresentation> candidateEvents, int n)
         {
-            //var result = new EventBasedRepresentation();
-            foreach (var e in events)
+            var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
+            var score = ScoreOver2EventList(queryEvents, relevantCandidateRepresentation, n);
+            return score;
+        }
+
+        public static double ScoreOver2EventList(
+            List<EventBasedRepresentation> events1,
+            List<EventBasedRepresentation> events2, int n)
+        {
+            var overalScore = 0.0;
+            if (events1.Count > 0 && events2.Count > 0)
             {
-                var bottom = e.Bottom;
-                var left = e.Left;
-            }
-            //return result;
+                foreach (var q in events1)
+                {
+                    // find the N cloest event to compare
+                    var nClosestEventList = FindNCloestEvents(events2, q, n);
+                    var index = FindMaximumScoreEvent(nClosestEventList, q);
+                    var leftAnchor = nClosestEventList[index].Left;
+                    q.Left = leftAnchor;                    
+                    var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                        q.Left,
+                        q.Bottom,
+                        q.Left + q.Width,
+                        q.Bottom + q.Height,
+                        nClosestEventList[index].Left,
+                        nClosestEventList[index].Bottom,
+                        nClosestEventList[index].Left + nClosestEventList[index].Width,
+                        nClosestEventList[index].Bottom + nClosestEventList[index].Height);
+                    overalScore += ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
+                }
+                overalScore /= events1.Count;
+            }          
+            return overalScore;
+        }
+
+        public static List<EventBasedRepresentation> GetRelevantIndexInEvents(RegionRepresentation region, 
+            List<EventBasedRepresentation> events)
+        {
+            var regionBottom = region.BottomInPixel;
+            var regionLeft = region.LeftInPixel;
+            if (events.Count > 0)
+            {
+                foreach (var e in events)
+                {
+                    // Bottom and Left will be used for calculating overlap score.
+                    var eBottom = e.Bottom;
+                    e.Bottom = eBottom - regionBottom;
+                    var eLeft = e.Left;
+                    e.Left = eLeft - regionLeft;
+                    // Centroid will be used for finding nearest events to compare.
+                    var eCentroidX = e.Centroid.X - regionLeft;
+                    var eCentroidY = e.Centroid.Y - regionBottom;
+                    // 
+                    e.Centroid = new Point(eCentroidX, eCentroidY);
+                }  
+            }        
+            return events;
         }
 
         public static int FindCloestEvent(List<EventBasedRepresentation> es, EventBasedRepresentation modal)
