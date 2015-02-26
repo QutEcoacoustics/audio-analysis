@@ -842,7 +842,7 @@
                     var candidatesRepresentation = RegionRepresentation.ExtractAcousticEventList(candidateSpectrogram,
                         queryRepresentation,
                         candidatesEventsRepresentation,
-                        candidatesAudioFiles[j], 24);
+                        candidatesAudioFiles[j], 12);
                     foreach (var cn in candidatesRepresentation)
                     {
                         allCandidateList.Add(cn);
