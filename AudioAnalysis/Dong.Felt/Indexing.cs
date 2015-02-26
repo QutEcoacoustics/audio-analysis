@@ -1145,16 +1145,16 @@ namespace Dong.Felt
             var result = new List<Candidates>();
             var count = 0;
             var relevantQueryVRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.vEventList);
-            var relevantQueryHRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.hEventList);
-            var relevantQueryPRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.pEventList);
-            var relevantQueryNRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.nEventList);
+            //var relevantQueryHRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.hEventList);
+            //var relevantQueryPRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.pEventList);
+            //var relevantQueryNRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.nEventList);
             foreach (var c in candidateList)
             {              
                 // calculate score for vEvents, hEvents, pEvents, nEvents
                 var vScore = ScoreOver2EventRegion(relevantQueryVRepresentation, c, c.vEventList, n);
-                var hScore = ScoreOver2EventRegion(relevantQueryHRepresentation, c, c.hEventList, n);
-                var pScore = ScoreOver2EventRegion(relevantQueryPRepresentation, c, c.pEventList, n);
-                var nScore = ScoreOver2EventRegion(relevantQueryNRepresentation, c, c.nEventList, n);                
+                //var hScore = ScoreOver2EventRegion(relevantQueryHRepresentation, c, c.hEventList, n);
+                //var pScore = ScoreOver2EventRegion(relevantQueryPRepresentation, c, c.pEventList, n);
+                //var nScore = ScoreOver2EventRegion(relevantQueryNRepresentation, c, c.nEventList, n);                
                 // Get the average score
                 //var score = (vScore + hScore + pScore + nScore) / queryRepresentation.NotNullEventListCount;
                 var score = vScore;
@@ -1195,20 +1195,19 @@ namespace Dong.Felt
                 foreach (var q in events1)
                 {
                     // find the N cloest event to compare
-                    var nClosestEventList = FindNCloestEvents(events2, q, n);
-                    
+                    var nClosestEventList = FindNCloestEvents(events2, q, n);                   
                     var index = FindMaximumScoreEvent(nClosestEventList, q);
-                    // Another check 
+                    // Another check on frame offset
                     var frameCheck = OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
                     var subScore = 0.0;
                     if (frameCheck)
                     {
                         var leftAnchor = nClosestEventList[index].Left;
-                        q.Left = leftAnchor;
+                        var qLeft = leftAnchor;                        
                         var overlap = StatisticalAnalysis.EventOverlapInPixel(
-                            q.Left,
+                            qLeft,
                             q.Bottom,
-                            q.Left + q.Width,
+                            qLeft + q.Width,
                             q.Bottom + q.Height,
                             nClosestEventList[index].Left,
                             nClosestEventList[index].Bottom,
@@ -1285,14 +1284,16 @@ namespace Dong.Felt
         public static int FindMaximumScoreEvent(List<EventBasedRepresentation> es, EventBasedRepresentation modal)
         {
             var scores = new List<double>();
+            var modalLeft = modal.Left;
+            var modalBottom = modal.Bottom;
             foreach (var e in es)
             {
-                modal.Left = e.Left;
+                modalLeft = e.Left;
                 var score = StatisticalAnalysis.EventOverlapInPixel(
-                                modal.Left,
-                                modal.Bottom,
-                                modal.Left + modal.Width,
-                                modal.Bottom + modal.Height,
+                                modalLeft,
+                                modalBottom,
+                                modalLeft + modal.Width,
+                                modalBottom + modal.Height,
                                 e.Left,
                                 e.Bottom,
                                 e.Left + e.Width,
