@@ -369,7 +369,8 @@ namespace Dong.Felt.Representations
         {
             var result = new List<RegionRepresentation>();
 
-            var anchorCentroid = queryRepresentations.MajorEvent.Centroid;
+            var bottomCentroid = queryRepresentations.MajorEvent.Bottom + queryRepresentations.MajorEvent.Width / 2;
+            //var anchorCentroid = queryRepresentations.MajorEvent.Centroid;
             var orientationType = queryRepresentations.MajorEvent.InsideRidgeOrientation;
             var maxFreq = spectrogram.Configuration.FreqBinCount;
             var maxFrame = spectrogram.FrameCount;
@@ -377,7 +378,8 @@ namespace Dong.Felt.Representations
             var potentialCandidatesStart = new List<EventBasedRepresentation>();
             foreach (var c in candidateEventList[orientationType])
             {
-                if (Math.Abs(c.Centroid.Y - anchorCentroid.Y) < centroidFreqOffset)
+                var cBottomCentroi = c.Bottom + c.Width / 2;
+                if (Math.Abs(cBottomCentroi - bottomCentroid) < centroidFreqOffset)
                 {
                     potentialCandidatesStart.Add(c);
                 }
