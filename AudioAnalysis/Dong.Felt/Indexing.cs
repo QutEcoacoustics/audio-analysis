@@ -1143,21 +1143,19 @@ namespace Dong.Felt
            List<RegionRepresentation> candidateList, int n)
         {
             var result = new List<Candidates>();
-            var count = 0;
             var relevantQueryVRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.vEventList);
             var relevantQueryHRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.hEventList);
-            //var relevantQueryPRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.pEventList);
-            //var relevantQueryNRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.nEventList);
+            var relevantQueryPRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.pEventList);
+            var relevantQueryNRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.nEventList);
             foreach (var c in candidateList)
             {              
                 // calculate score for vEvents, hEvents, pEvents, nEvents
                 var vScore = ScoreOver2EventRegion(relevantQueryVRepresentation, c, c.vEventList, n);                
                 var hScore = ScoreOver2EventRegion(relevantQueryHRepresentation, c, c.hEventList, n);
-                //var pScore = ScoreOver2EventRegion(relevantQueryPRepresentation, c, c.pEventList, n);
-                //var nScore = ScoreOver2EventRegion(relevantQueryNRepresentation, c, c.nEventList, n);                
+                var pScore = ScoreOver2EventRegion(relevantQueryPRepresentation, c, c.pEventList, n);
+                var nScore = ScoreOver2EventRegion(relevantQueryNRepresentation, c, c.nEventList, n);                
                 // Get the average score
-                //var score = (vScore + hScore + pScore + nScore) / queryRepresentation.NotNullEventListCount;
-                var score = (vScore + hScore) / 2;
+                var score = (vScore + hScore + pScore + nScore) / queryRepresentation.NotNullEventListCount;
                 // Create a candidate item
                 var timeScale = c.MajorEvent.TimeScale;
                 var freqScale = c.MajorEvent.FreqScale;
@@ -1171,7 +1169,6 @@ namespace Dong.Felt
                     c.BottomInPixel * freqScale,
                     c.SourceAudioFile);
                     result.Add(candidate);
-                    count++;
                 }                
             }
             return result;

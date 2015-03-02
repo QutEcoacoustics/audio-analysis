@@ -961,25 +961,21 @@ namespace Dong.Felt
             magnitude = ridgeMagnitude / 2;
         }
 
-        public static void ImprovedRidgeDetectionNDDirection(double[,] m, out double magnitude)
+        public static void ImprovedRidgeDetectionNDDirection(double[] m, out double magnitude)
         {
             int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            if ((rows != 6) || (cols != 5)) // must be square 6X5 matrix 
+            if (rows != 7) // must be square 6X5 matrix 
             {
                 magnitude = 0.0;
                 return;
             }
 
-            double[,] ridgeNegativeDiagonalMask = { { 0.2,-0.1,-0.1,-0.1, -0.1},
-                                                    { 0.2, 0.2,-0.1,-0.1, -0.1},
-                                                    {-0.1, 0.2, 0.2,-0.1, -0.1},
-                                                    {-0.1,-0.1, 0.2, 0.2, -0.1},
-                                                    {-0.1,-0.1,-0.1, 0.2,  0.2},
-                                                    {-0.1,-0.1,-0.1,-0.1,  0.2},
-                                          };
-
-            var ridgeMagnitude = MatrixTools.DotProduct(ridgeNegativeDiagonalMask, m);
+            double[] ridgeNegativeDiagonalMask = { -0.25,-0.25,0.3, 0.4, 0.3,-0.25,-0.25};
+            var ridgeMagnitude = 0.0;
+            for (var i = 0; i < ridgeNegativeDiagonalMask.Length; i++)
+            {
+                ridgeMagnitude += ridgeNegativeDiagonalMask[i] * m[i];
+            }            
             magnitude = ridgeMagnitude / 2;
         }
 

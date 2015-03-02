@@ -16,7 +16,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\Third experiment-AED\Output
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [batch]  
+Actions: [processOne]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -30,7 +30,7 @@ NoiseReductionParameter: 0.0
 
 # CompressSpectrogram
 TimeCompressRate: 0.25
-FreqCompressRate: 1.0
+FreqCompressRate: 0.25
 
 # RidgeDetection Config 
 RidgeDetectionMagnitudeThreshold: 6.0
