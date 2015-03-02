@@ -112,6 +112,26 @@
             return overlap;
         }
 
+        public static double[] subArray(double[,] array, int startIndex, int endIndex, int dimensionIndex, int index)
+        {
+            var length = endIndex - startIndex;
+            var result = new double[length+1];
+            if (endIndex < array.GetLength(1))
+            {
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    if (dimensionIndex == 0)
+                    {
+                        result[i-startIndex] = array[index, i];
+                    }
+                    else
+                    {
+                        result[i-startIndex] = array[i, index];
+                    }
+                }
+            }        
+            return result;
+        }
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0

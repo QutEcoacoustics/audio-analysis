@@ -279,6 +279,7 @@ namespace Dong.Felt.Representations
             this.pEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[2], query);
             this.nEventList = EventBasedRepresentation.ReadQueryAsAcousticEventList(eventList[3], query);
 
+            // Group function has two functions: merge all 4 events into one list; filter out small events
             var allEventsInRegion = GroupEventBasedRepresentations(
                 this.vEventList, this.hEventList, this.pEventList, this.nEventList);
             // step 2 find the largest area of event in a specific region
@@ -321,21 +322,37 @@ namespace Dong.Felt.Representations
             List<EventBasedRepresentation> pEvents, List<EventBasedRepresentation> nEvents)
         {
             var overallRegionRepresentation = new List<EventBasedRepresentation>();
+            // 2 pixels
+            var vhThreshold = 6;
+            // 2 pixels
+            var pnThreshold = 6;
             foreach (var v in vEvents)
             {
-                overallRegionRepresentation.Add(v);
+                if (v.Area > vhThreshold)
+                {
+                    overallRegionRepresentation.Add(v);
+                }              
             }
             foreach (var h in hEvents)
             {
-                overallRegionRepresentation.Add(h);
+                if (h.Area > vhThreshold)
+                {
+                    overallRegionRepresentation.Add(h);
+                }       
             }
             foreach (var p in pEvents)
             {
-                overallRegionRepresentation.Add(p);
+                if (p.Area > pnThreshold)
+                {
+                    overallRegionRepresentation.Add(p);
+                }                  
             }
             foreach (var n in nEvents)
             {
-                overallRegionRepresentation.Add(n);
+                if (n.Area > pnThreshold)
+                {
+                    overallRegionRepresentation.Add(n);
+                }               
             }
             return overallRegionRepresentation;
         }

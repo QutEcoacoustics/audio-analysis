@@ -481,7 +481,7 @@ namespace Dong.Felt.Representations
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
                                  {
                                      IntensityThreshold = 0.5,
-                                     SmallAreaThreshold = 20,
+                                     SmallAreaThreshold = 10,
                                      BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
                                      DoNoiseRemoval = false,
                                      LargeAreaHorizontal = Default.SeparateStyle.Skip,

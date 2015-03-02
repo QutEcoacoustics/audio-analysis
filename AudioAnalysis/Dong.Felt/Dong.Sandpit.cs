@@ -272,26 +272,27 @@
                     var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
 
-                    var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                    var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
-                    var addCompressedRidges = POISelection.AddCompressedRidges(
-                        config,
-                        audioFiles[i],
-                        ridgeConfig,
-                        featurePropSet,
-                        compressConfig.TimeCompressRate,
-                        filterRidges);
+                    poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                    var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
+                    //var addCompressedRidges = POISelection.AddCompressedRidges(
+                    //    config,
+                    //    audioFiles[i],
+                    //    ridgeConfig,
+                    //    featurePropSet,
+                    //    compressConfig,
+                    //    filterRidges);
+
                     //var filteredRidges = PointOfInterestAnalysis.FilterLowIntensityPoi(filterRidges, rows, cols, 9.0);
-                    var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventlist);
+                    //var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
+                    //ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[1], out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    //foreach (PointOfInterest poi in filterRidges)
-                    //{
-                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    //}
+                    foreach (PointOfInterest poi in filterRidges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- AEDonRidges-RemoveFalseOnly-0.0.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- Filter out ridges.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
