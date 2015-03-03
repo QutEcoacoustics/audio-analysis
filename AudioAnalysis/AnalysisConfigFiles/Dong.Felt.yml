@@ -16,7 +16,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\Third experiment-AED\Output
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [processOne]  
+Actions: [batch]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
@@ -55,8 +55,8 @@ NeighbourhoodLength: 11
 SecondToMillionSecondUnit: 1000
 
 # Euclidean distance weights
-Weight1: 0.2
-Weight2: 0.8
+Weight1: 0.25
+Weight2: 0.25
 
 
 Rank: 100

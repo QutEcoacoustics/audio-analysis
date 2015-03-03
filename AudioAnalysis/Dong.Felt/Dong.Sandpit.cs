@@ -123,7 +123,7 @@
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
                     MatchingBatchProcess3(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                   ridgeConfig, compressConfig,
-                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory);
+                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                 }
                 else if (action == "processOne")
                 {
@@ -187,12 +187,8 @@
             var parameterMixtures = new[] 
             {
                 new { 
-                    RidgeDetectionMagnitudeThreshold = (double)configuration.RidgeDetectionMagnitudeThreshold,
-                    NeighbourhoodLength = (int)configuration.NeighbourhoodLength,
-                    TimeCompressRate = (double)configuration.TimeCompressRate,
-                    FreqCompressRate = (double)configuration.FreqCompressRate,
-                    WindowSize = (int)configuration.WindowSize,
-                    WindowOverlap = (double)configuration.WindowOverlap,
+                    Weight1 = (double)configuration.Weight1,               
+                    Weight2 = (double)configuration.Weight2,
                     //StThreshold = (double)configuration.StThreshold,
                     //StAvgNhLength = (int)configuration.StAvgNhLength,
                     //StFFTNeighbourhoodLength = (int)configuration.StFFTNeighbourhoodLength,
@@ -203,9 +199,8 @@
             foreach (var entry in parameterMixtures)
             {
                 var folderName = string.Format("Run_{0}_{1}",
-                    entry.RidgeDetectionMagnitudeThreshold,
-                    entry.WindowSize,
-                    entry.WindowOverlap);
+                    entry.Weight1,
+                    entry.Weight2);
                 //entry.NeighbourhoodLength);
                 //entry.TimeCompressRate,
                 //entry.FreqCompressRate);
@@ -785,7 +780,7 @@
             RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,
             GradientConfiguration gradientConfig,
             SonogramConfig config, int rank, string featurePropSet,
-            string outputPath, DirectoryInfo tempDirectory)
+            string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
         {
             /// To read the query file
             var constructed = Path.GetFullPath(inputFileDirectory + queryFilePath);
@@ -853,7 +848,7 @@
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);                                             
                 var candidateDistanceList = new List<Candidates>();                
                 Log.Info("# calculate the distance between a query and a candidate");
-                candidateDistanceList = Indexing.Event4RegionBasedScore(queryRepresentation, allCandidateList, 5);
+                candidateDistanceList = Indexing.Event4RegionBasedScore(queryRepresentation, allCandidateList, 5, weight1, weight2);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 // To save all matched acoustic events separately                         
                 var separateCandidatesList = new List<List<Candidates>>();

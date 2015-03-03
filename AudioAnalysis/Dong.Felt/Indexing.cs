@@ -1140,7 +1140,7 @@ namespace Dong.Felt
         }
 
         public static List<Candidates> Event4RegionBasedScore(RegionRepresentation queryRepresentation,
-           List<RegionRepresentation> candidateList, int n)
+           List<RegionRepresentation> candidateList, int n, double weight1, double weight2)
         {
             var result = new List<Candidates>();
             var relevantQueryVRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.vEventList);
@@ -1155,7 +1155,31 @@ namespace Dong.Felt
                 var pScore = ScoreOver2EventRegion(relevantQueryPRepresentation, c, c.pEventList, n);
                 var nScore = ScoreOver2EventRegion(relevantQueryNRepresentation, c, c.nEventList, n);                
                 // Get the average score
-                var score = (vScore + hScore + pScore + nScore) / queryRepresentation.NotNullEventListCount;
+
+                var score = 0.0;
+                if (queryRepresentation.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
+                {                   
+                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 0)
+                        {
+                            score = vScore * weight1 + hScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                        }
+                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 1)
+                        {
+                            score = hScore * weight1 + vScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                        }
+                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 2)
+                        {
+                            score = pScore * weight1 + vScore * weight2 + (hScore + nScore) * weight2 / 2.0;
+                        }
+                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 3)
+                        {
+                            score = nScore * weight1 + vScore * weight2 + (hScore + pScore) * weight2 / 2.0;
+                        }
+                }                
+                else
+                {
+                    score = (vScore + hScore + pScore + nScore) / queryRepresentation.NotNullEventListCount;
+                }             
                 // Create a candidate item
                 var timeScale = c.MajorEvent.TimeScale;
                 var freqScale = c.MajorEvent.FreqScale;
