@@ -1557,7 +1557,8 @@ namespace Dong.Felt
         /// <param name="sizeOfNeighbourhood"></param>
         /// <param name="thresholdForLeastPoint"></param>
         /// <returns></returns>
-        public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
+        public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList, int rows, int cols, 
+            int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
             var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
             for (int r = 0; r < rows; r++)
@@ -1600,58 +1601,7 @@ namespace Dong.Felt
                 r += sizeOfNeighbourhood - 1;
             }
             return PointOfInterest.TransferPOIMatrix2List(M);
-        }
-
-        /// <summary>
-        /// Given a current poi, search in its neighbourhood, check how many pois have the same orientation as the current poi. 
-        /// if the number of pois is less than threshold, it will be set to null. 
-        /// </summary>
-        /// <param name="poiList"></param>
-        /// <param name="rows"></param>
-        /// <param name="cols"></param>
-        /// <param name="sizeOfNeighbourhood"></param>
-        /// <param name="thresholdForLeastPoint"></param>
-        /// <returns></returns>
-        public static List<PointOfInterest> FilterRidges(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
-        {
-            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
-            var radius = sizeOfNeighbourhood / 2;
-            for (int r = radius; r < rows; r++)
-            {
-                for (int c = radius; c < cols; c++)
-                {
-                    if (M[r, c] != null)
-                    {
-                        var ridgeOrientation = M[r, c].OrientationCategory;
-                        var numberOfpoi = 1;
-                        // search in a neighbourhood
-                        for (int i = -radius; i < radius; i++)
-                        {
-                            for (int j = -radius; j < radius; j++)
-                            {
-                                if (StatisticalAnalysis.checkBoundary(r + i, c + j, rows, cols))
-                                {
-                                    if (M[r + i, c + j] != null)
-                                    {
-                                        var orientationCate = M[r + i, c + j].OrientationCategory;
-                                        if (orientationCate == ridgeOrientation)
-                                        {
-                                            numberOfpoi++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (numberOfpoi < thresholdForLeastPoint)
-                        {
-                            M[r, c] = null;
-                        }
-                    }
-                }
-            }
-            return PointOfInterest.TransferPOIMatrix2List(M);
-        }
-        
+        }      
         #endregion
     }
 }

@@ -160,7 +160,7 @@ namespace Dong.Felt
                 var ridgeLength = 5;
                 var magnitudeThreshold = 5.5;
                 poiList.SelectPointOfInterestFromAudioFile(fileEntries[fileIndex], ridgeLength, magnitudeThreshold);
-                var filterPoi = POISelection.FilterPointsOfInterest(poiList.poiList, poiList.RowsCount, poiList.ColsCount);               
+                var filterPoi = ImageAnalysisTools.RemoveIsolatedPoi(poiList.poiList, poiList.RowsCount, poiList.ColsCount, 7, 3);               
                 var file = new FileInfo(fileEntries[fileIndex] + "fileIndex.csv");
                 PointOfInterestListToCSV(file, filterPoi);
             }
