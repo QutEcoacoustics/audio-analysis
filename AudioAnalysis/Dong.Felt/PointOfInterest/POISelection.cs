@@ -1548,16 +1548,7 @@ namespace Dong.Felt
             RowsCount = rowsCount;
             ColsCount = colsCount;
         }
-
-        public static List<PointOfInterest> FilterPointsOfInterest(List<PointOfInterest> poiList, int rowsCount, int colsCount)
-        {
-            var pruneAdjacentPoi = ImageAnalysisTools.PruneAdjacentTracks(poiList, rowsCount, colsCount);
-            var filterNeighbourhoodSize = 7;
-            var numberOfEdge = 3;
-            var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(pruneAdjacentPoi, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
-            return filterPoiList;
-        }
-
+       
         public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);

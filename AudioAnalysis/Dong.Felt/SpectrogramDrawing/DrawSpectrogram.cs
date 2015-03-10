@@ -868,8 +868,7 @@ namespace Dong.Felt.SpectrogramDrawing
                     var ridges = POISelection.PostRidgeDetectionAmpSpec(sonogram, ridgeConfig);
                     var rows = sonogram.Data.GetLength(1) - 1;
                     var cols = sonogram.Data.GetLength(0);
-                    var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
-                    var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, size, sigma);
+                    var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridges, rows, cols, size, sigma);
                     var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
                     var dividedPOIList = POISelection.POIListDivision(ridges);
                     var verSegmentList = new List<List<PointOfInterest>>();
