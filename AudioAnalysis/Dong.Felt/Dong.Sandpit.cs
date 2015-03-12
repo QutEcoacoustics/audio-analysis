@@ -119,7 +119,7 @@
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
                     MatchingBatchProcess3(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                   ridgeConfig, compressConfig,
-                  gradientConfig, config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
+                  config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                 }
                 else if (action == "processOne")
                 {
@@ -775,8 +775,7 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         public static void MatchingBatchProcess3(string queryFilePath, string inputFileDirectory, int neighbourhoodLength,
-            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,
-            GradientConfiguration gradientConfig,
+            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,            
             SonogramConfig config, int rank, string featurePropSet,
             string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
         {
@@ -790,8 +789,7 @@
             var queryCsvFiles = Directory.GetFiles(constructed, "*.csv", SearchOption.AllDirectories);
             var queryAudioFiles = Directory.GetFiles(constructed, "*.wav", SearchOption.AllDirectories);
             var csvFilesCount = queryCsvFiles.Count();
-
-            
+           
             // this loop is used for searching query folder.
             for (int i = 0; i < csvFilesCount; i++)
             {
