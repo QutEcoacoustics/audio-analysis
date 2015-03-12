@@ -655,8 +655,9 @@ namespace Dong.Felt.SpectrogramDrawing
             {
                 /// because the query always come from first place.                   
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
-                var ridges = POISelection.ModifiedRidgeDetection(spectrogram, config, ridgeConfig, compressConfig, improvedAudioFiles[i],
+                var ridgeMatrix = POISelection.ModifiedRidgeDetection(spectrogram, config, ridgeConfig, compressConfig, improvedAudioFiles[i],
                    featurePropSet);
+                var ridges = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
                 /// To show the ridges on the spectrogram. 
                 var scores = new List<double>();
                 scores.Add(0.0);
@@ -671,53 +672,40 @@ namespace Dong.Felt.SpectrogramDrawing
                 }
                 if (endTime > 59)
                 {
-                    //startTime = startTime + 60 - endTime;
                     startTime = (candidates[i].StartTime - candidates[i].EndTime) / secondToMilliSecond + 2;
                 }
                 endTime = startTime + duration;
+                var eventList = new List<AcousticEvent>();
                 if (i == 0)
                 {
-                    var acousticEventlistForQuery = new List<AcousticEvent>();
                     var queryAcousticEvent = new AcousticEvent(startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
                     queryAcousticEvent.Duration = queryAcousticEvent.Duration;
                     queryAcousticEvent.TimeEnd = startTime + queryAcousticEvent.Duration;
                     queryAcousticEvent.BorderColour = Color.Crimson;
-                    acousticEventlistForQuery.Add(queryAcousticEvent);                   
-                    Image image = DrawSonogram(spectrogram, scores, acousticEventlistForQuery,
-                        eventThreshold, null);
-                    Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in ridges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
-                    image = (Image)bmp;
-                    var seperatedImage = DrawVerticalLine(image);
-                    var improvedImage = DrawImageLeftIndicator(seperatedImage, s[i]);
-                    var finalImage = DrawFileName(improvedImage, candidates[i]);
-                    result.Add(finalImage);
+                    eventList.Add(queryAcousticEvent);
                 }
                 else
                 {
-                    var acousticEventlistForCandidate = new List<AcousticEvent>();
                     var candAcousticEvent = new AcousticEvent(startTime, duration,
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
                     candAcousticEvent.BorderColour = Color.Green;
-                    acousticEventlistForCandidate.Add(candAcousticEvent);
-                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
-                    Image image = DrawSonogram(spectrogram, scores, acousticEventlistForCandidate,
-                        eventThreshold, null);
-                    Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in ridges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
-                    image = (Image)bmp;
-                    var seperatedImage = DrawVerticalLine(image);
-                    var improvedImage = DrawImageLeftIndicator(seperatedImage, s[i]);
-                    var finalImage = DrawFileName(improvedImage, candidates[i]);
-                    result.Add(finalImage);
+                    eventList.Add(candAcousticEvent);                   
                 }
+                Image image = DrawSonogram(spectrogram, scores, eventList,
+                        eventThreshold, null);
+                Bitmap bmp = (Bitmap)image;
+                foreach (PointOfInterest poi in ridges)
+                {
+                    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                }
+                image = (Image)bmp;
+                var seperatedImage = DrawVerticalLine(image);
+                var improvedImage = DrawImageLeftIndicator(seperatedImage, s[i]);
+                var finalImage = DrawFileName(improvedImage, candidates[i]);
+                result.Add(finalImage);
+
+
             }
             return result;
         } 
@@ -868,9 +856,9 @@ namespace Dong.Felt.SpectrogramDrawing
                     var ridges = POISelection.PostRidgeDetectionAmpSpec(sonogram, ridgeConfig);
                     var rows = sonogram.Data.GetLength(1) - 1;
                     var cols = sonogram.Data.GetLength(0);
-                    var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridges, rows, cols, size, sigma);
-                    var gaussianBlurRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(gaussianBlurRidges);
-                    var dividedPOIList = POISelection.POIListDivision(ridges);
+                    var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, rows, cols);
+                    var gaussianBlurRidges = ClusterAnalysis.GaussianBlurOnPOI(ridgeMatrix, rows, cols, size, sigma);
+                    var dividedPOIList = POISelection.POIListDivision(gaussianBlurRidges);
                     var verSegmentList = new List<List<PointOfInterest>>();
                     var horSegmentList = new List<List<PointOfInterest>>();
                     var posDiSegmentList = new List<List<PointOfInterest>>();
