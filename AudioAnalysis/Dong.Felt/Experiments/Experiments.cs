@@ -10,6 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using TowseyLibrary;
 
 namespace Dong.Felt.Experiments
 {
@@ -468,10 +469,10 @@ namespace Dong.Felt.Experiments
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
                     var smoothedRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5, 3, 1.0, 3);
-                    var smoothedRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedRidges);
+                    
                     var ridgeSegmentList = ClusterAnalysis.SeparateRidgeListToEvents(
                         spectrogram,
-                        smoothedRidgesList);
+                        smoothedRidges);
                     //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     Image image = DrawSpectrogram.DrawSonogram(
@@ -481,7 +482,7 @@ namespace Dong.Felt.Experiments
                         eventThreshold,
                         null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in smoothedRidgesList)
+                    foreach (PointOfInterest poi in smoothedRidges)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         Point point = new Point(poi.Point.Y, poi.Point.X);
@@ -507,5 +508,30 @@ namespace Dong.Felt.Experiments
                 }
             }
         }
-    }
+
+
+        public void QueryRepresentationLength(RegionRepresentation queryRepresentation)
+        {
+            var eventCount = 0;
+            if (queryRepresentation.vEventList.Count > 0)
+            {
+                eventCount += queryRepresentation.vEventList.Count;
+            }
+            if (queryRepresentation.hEventList.Count > 0)
+            {
+                eventCount += queryRepresentation.hEventList.Count;
+            }
+            if (queryRepresentation.pEventList.Count > 0)
+            {
+                eventCount += queryRepresentation.pEventList.Count;
+            }
+            if (queryRepresentation.nEventList.Count > 0)
+            {
+                eventCount += queryRepresentation.nEventList.Count;
+            }
+
+            //Log.InfoFormat("All separated candidates: {0}", eventCount);
+        }
+
+    }// End class
 }

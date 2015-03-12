@@ -132,6 +132,20 @@
             }        
             return result;
         }
+
+        public static PointOfInterest[,] PointListToPOIMatrix(List<Point> point, int rows, int cols)
+        {
+            var result = new PointOfInterest[rows, cols];
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var newPoint = new Point(point[0].X, point[0].Y);
+                    result[r, c].Point = newPoint;
+                }
+            }
+            return result;
+        }
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
@@ -754,7 +768,7 @@
                     var point = new Point(colIndex, rowIndex);
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
-                    tempPoi.OrientationCategory = 10;                  
+                    tempPoi.OrientationCategory = 10;
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }

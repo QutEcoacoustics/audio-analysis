@@ -1120,7 +1120,7 @@ namespace Dong.Felt
                                 nClosestEventList[index].Left,
                                 nClosestEventList[index].Bottom,
                                 nClosestEventList[index].Left + nClosestEventList[index].Width,
-                                nClosestEventList[index].Bottom + nClosestEventList[index].Height);                       
+                                nClosestEventList[index].Bottom + nClosestEventList[index].Height);
                         overalScore += ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
                     }
                     var score = overalScore / eventCount;
@@ -1143,43 +1143,34 @@ namespace Dong.Felt
            List<RegionRepresentation> candidateList, int n, double weight1, double weight2)
         {
             var result = new List<Candidates>();
-            var relevantQueryVRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.vEventList);
-            var relevantQueryHRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.hEventList);
-            var relevantQueryPRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.pEventList);
-            var relevantQueryNRepresentation = GetRelevantIndexInEvents(queryRepresentation, queryRepresentation.nEventList);
             foreach (var c in candidateList)
-            {              
-                // calculate score for vEvents, hEvents, pEvents, nEvents
-                var vScore = ScoreOver2EventRegion(relevantQueryVRepresentation, c, c.vEventList, n);                
-                var hScore = ScoreOver2EventRegion(relevantQueryHRepresentation, c, c.hEventList, n);
-                var pScore = ScoreOver2EventRegion(relevantQueryPRepresentation, c, c.pEventList, n);
-                var nScore = ScoreOver2EventRegion(relevantQueryNRepresentation, c, c.nEventList, n);                
-                // Get the average score
-
-                var score = 0.0;
-                if (queryRepresentation.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
-                {                   
-                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 0)
-                        {
-                            score = vScore * weight1 + hScore * weight2 + (pScore + nScore) * weight2 / 2.0;
-                        }
-                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 1)
-                        {
-                            score = hScore * weight1 + vScore * weight2 + (pScore + nScore) * weight2 / 2.0;
-                        }
-                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 2)
-                        {
-                            score = pScore * weight1 + vScore * weight2 + (hScore + nScore) * weight2 / 2.0;
-                        }
-                        if (queryRepresentation.MajorEvent.InsideRidgeOrientation == 3)
-                        {
-                            score = nScore * weight1 + vScore * weight2 + (hScore + pScore) * weight2 / 2.0;
-                        }
-                }                
-                else
+            {
+                var overlapScore = ScoreOver2Regions(queryRepresentation, c, n, weight1, weight2);
+                // Create a candidate item
+                var timeScale = c.MajorEvent.TimeScale;
+                var freqScale = c.MajorEvent.FreqScale;
+                if (overlapScore > 0.0)
                 {
-                    score = (vScore + hScore + pScore + nScore) / queryRepresentation.NotNullEventListCount;
-                }             
+                    var candidate = new Candidates(
+                    overlapScore,
+                    c.LeftInPixel * timeScale * 1000,
+                    (c.RightInPixel - c.LeftInPixel) * timeScale * 1000,
+                    c.TopInPixel * freqScale,
+                    c.BottomInPixel * freqScale,
+                    c.SourceAudioFile);
+                    result.Add(candidate);
+                }
+            }
+            return result;
+        }
+
+        public static List<Candidates> Event4FeatureBasedScore(RegionRepresentation queryRepresentation,
+           List<RegionRepresentation> candidateList, int n, double weight1, double weight2)
+        {
+            var result = new List<Candidates>();
+            foreach (var c in candidateList)
+            {
+                var score = ScoreOver2Regions2(queryRepresentation, c, n, weight1, weight2);
                 // Create a candidate item
                 var timeScale = c.MajorEvent.TimeScale;
                 var freqScale = c.MajorEvent.FreqScale;
@@ -1193,12 +1184,102 @@ namespace Dong.Felt
                     c.BottomInPixel * freqScale,
                     c.SourceAudioFile);
                     result.Add(candidate);
-                }                
+                }
             }
             return result;
         }
 
-        public static double ScoreOver2EventRegion(List<EventBasedRepresentation> queryEvents, RegionRepresentation candidate, 
+        public static double EntropyScore(double e1, double e2)
+        {
+            var distance = Math.Sqrt(Math.Pow((e1-e2), 2));
+            var score = (1-distance)/1.0;
+            return score;
+        }
+
+        // Add another 2 features
+        public static double ScoreOver2Regions2(RegionRepresentation q, RegionRepresentation c, int n, double weight1, double weight2)
+        {
+            var score = 0.0;
+            var relevantQueryVRepresentation = GetRelevantIndexInEvents(q, q.vEventList);
+            var relevantQueryHRepresentation = GetRelevantIndexInEvents(q, q.hEventList);
+            var relevantQueryPRepresentation = GetRelevantIndexInEvents(q, q.pEventList);
+            var relevantQueryNRepresentation = GetRelevantIndexInEvents(q, q.nEventList);
+
+            // calculate score for vEvents, hEvents, pEvents, nEvents
+            var vScore = ScoreOver2Events2(relevantQueryVRepresentation, c, c.vEventList, n);
+            var hScore = ScoreOver2Events2(relevantQueryHRepresentation, c, c.hEventList, n);
+            var pScore = ScoreOver2Events2(relevantQueryPRepresentation, c, c.pEventList, n);
+            var nScore = ScoreOver2Events2(relevantQueryNRepresentation, c, c.nEventList, n);
+            // Get the average score
+            if (q.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
+            {
+                if (q.MajorEvent.InsideRidgeOrientation == 0)
+                {
+                    score = vScore * weight1 + hScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 1)
+                {
+                    score = hScore * weight1 + vScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 2)
+                {
+                    score = pScore * weight1 + vScore * weight2 + (hScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 3)
+                {
+                    score = nScore * weight1 + vScore * weight2 + (hScore + pScore) * weight2 / 2.0;
+                }
+            }
+            else
+            {
+                score = (vScore + hScore + pScore + nScore) / q.NotNullEventListCount;
+            }
+            return score;
+        }
+
+        public static double ScoreOver2Regions(RegionRepresentation q, RegionRepresentation c, int n, double weight1, double weight2)
+        {
+            var score = 0.0;
+            var relevantQueryVRepresentation = GetRelevantIndexInEvents(q, q.vEventList);
+            var relevantQueryHRepresentation = GetRelevantIndexInEvents(q, q.hEventList);
+            var relevantQueryPRepresentation = GetRelevantIndexInEvents(q, q.pEventList);
+            var relevantQueryNRepresentation = GetRelevantIndexInEvents(q, q.nEventList);
+
+            // calculate score for vEvents, hEvents, pEvents, nEvents
+            var vScore = ScoreOver2Events(relevantQueryVRepresentation, c, c.vEventList, n);
+            var hScore = ScoreOver2Events(relevantQueryHRepresentation, c, c.hEventList, n);
+            var pScore = ScoreOver2Events(relevantQueryPRepresentation, c, c.pEventList, n);
+            var nScore = ScoreOver2Events(relevantQueryNRepresentation, c, c.nEventList, n);
+            // Get the average score
+
+
+            if (q.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
+            {
+                if (q.MajorEvent.InsideRidgeOrientation == 0)
+                {
+                    score = vScore * weight1 + hScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 1)
+                {
+                    score = hScore * weight1 + vScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 2)
+                {
+                    score = pScore * weight1 + vScore * weight2 + (hScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 3)
+                {
+                    score = nScore * weight1 + vScore * weight2 + (hScore + pScore) * weight2 / 2.0;
+                }
+            }
+            else
+            {
+                score = (vScore + hScore + pScore + nScore) / q.NotNullEventListCount;
+            }
+            return score;
+        }
+
+        public static double ScoreOver2Events(List<EventBasedRepresentation> queryEvents, RegionRepresentation candidate,
              List<EventBasedRepresentation> candidateEvents, int n)
         {
             var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
@@ -1208,6 +1289,18 @@ namespace Dong.Felt
             return score;
         }
 
+        public static double ScoreOver2Events2(List<EventBasedRepresentation> queryEvents, RegionRepresentation candidate,
+             List<EventBasedRepresentation> candidateEvents, int n)
+        {
+            var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
+            var pscore = ScoreOver2EventList2(queryEvents, relevantCandidateRepresentation, n);
+            var nScore = ScoreOver2EventList2(relevantCandidateRepresentation, queryEvents, n);
+            var ascore = addWeightsToScores(pscore, 0.4, 0.3);
+            var rScore = addWeightsToScores(nScore, 0.4, 0.3);
+            var score = (ascore + rScore) / 2;
+            return score;
+        } 
+       
         public static double ScoreOver2EventList(
             List<EventBasedRepresentation> events1,
             List<EventBasedRepresentation> events2, int n)
@@ -1218,7 +1311,7 @@ namespace Dong.Felt
                 foreach (var q in events1)
                 {
                     // find the N cloest event to compare
-                    var nClosestEventList = FindNCloestEvents(events2, q, n);                   
+                    var nClosestEventList = FindNCloestEvents(events2, q, n);
                     var index = FindMaximumScoreEvent(nClosestEventList, q);
                     // Another check on frame offset
                     var frameCheck = OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
@@ -1226,7 +1319,7 @@ namespace Dong.Felt
                     if (frameCheck)
                     {
                         var leftAnchor = nClosestEventList[index].Left;
-                        var qLeft = leftAnchor;                        
+                        var qLeft = leftAnchor;
                         var overlap = StatisticalAnalysis.EventOverlapInPixel(
                             qLeft,
                             q.Bottom,
@@ -1241,8 +1334,70 @@ namespace Dong.Felt
                     overalScore += subScore;
                 }
                 overalScore /= events1.Count;
-            }          
+            }
             return overalScore;
+        }
+
+        /// <summary>
+        /// It takes in 2 event-based region representation, then it generates three score values, overlap score, fEntropy score, and tEntropy score.   
+        /// </summary>
+        /// <param name="events1"></param>
+        /// <param name="events2"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static Tuple<double, double, double> ScoreOver2EventList2(
+            List<EventBasedRepresentation> events1,
+            List<EventBasedRepresentation> events2, int n)
+        {
+            var overlapScore = 0.0;
+            var fEntropyScore = 0.0;
+            var tEntropyScore = 0.0;
+            if (events1.Count > 0 && events2.Count > 0)
+            {
+                foreach (var q in events1)
+                {
+                    // find the N cloest event to compare
+                    var nClosestEventList = FindNCloestEvents(events2, q, n);
+                    var index = FindMaximumScoreEvent(nClosestEventList, q);
+                    // Another check on frame offset
+                    var frameCheck = OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
+                    var subScore = 0.0;
+                    var subFEntropyScore = 0.0;
+                    var subTEntropyScore = 0.0;
+                    if (frameCheck)
+                    {
+                        var leftAnchor = nClosestEventList[index].Left;
+                        var qLeft = leftAnchor;
+                        var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                            qLeft,
+                            q.Bottom,
+                            qLeft + q.Width,
+                            q.Bottom + q.Height,
+                            nClosestEventList[index].Left,
+                            nClosestEventList[index].Bottom,
+                            nClosestEventList[index].Left + nClosestEventList[index].Width,
+                            nClosestEventList[index].Bottom + nClosestEventList[index].Height);
+                        subScore = ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;
+                        subFEntropyScore = EntropyScore(q.FrequencyBinEntropy, nClosestEventList[index].FrequencyBinEntropy);
+                        subTEntropyScore = EntropyScore(q.TemporalEntropy, nClosestEventList[index].TemporalEntropy);
+                    }
+                    overlapScore += subScore;
+                    fEntropyScore += subFEntropyScore;
+                    tEntropyScore += subTEntropyScore;
+                }
+                overlapScore /= events1.Count;
+                fEntropyScore /= events1.Count;
+                tEntropyScore /= events1.Count;
+            }
+            var result = Tuple.Create(overlapScore, fEntropyScore, tEntropyScore);
+            return result;
+        }
+
+        public static double addWeightsToScores(Tuple<double, double, double> scores, double weight1, double weight2)
+        {
+            var result = 0.0;
+            result = weight1 * scores.Item1 + weight2 * (scores.Item2 + scores.Item3);
+            return result;
         }
 
         public static bool OverFrameOffset(int baseFrame, int startFrame, int halfCentroidX, int frameThreshold)
@@ -1257,7 +1412,7 @@ namespace Dong.Felt
             return result;
         }
 
-        public static List<EventBasedRepresentation> GetRelevantIndexInEvents(RegionRepresentation region, 
+        public static List<EventBasedRepresentation> GetRelevantIndexInEvents(RegionRepresentation region,
             List<EventBasedRepresentation> events)
         {
             var regionBottom = region.BottomInPixel;
@@ -1268,7 +1423,7 @@ namespace Dong.Felt
                 foreach (var e in events)
                 {
                     // Bottom and Left will be used for calculating overlap score.
-                    var item = new EventBasedRepresentation(e.TimeScale, e.FreqScale, e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);                   
+                    var item = new EventBasedRepresentation(e.TimeScale, e.FreqScale, e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                     var eBottom = e.Bottom;
                     item.Bottom = eBottom - regionBottom;
                     var eLeft = e.Left;
@@ -1282,7 +1437,7 @@ namespace Dong.Felt
                     item.Centroid = new Point(eCentroidX, eCentroidY);
                     item.Area = item.Width * item.Height;
                     result.Add(item);
-                }  
+                }
             }
             return result;
         }
@@ -1344,7 +1499,7 @@ namespace Dong.Felt
             }
             return index;
         }
-        
+
         /// <summary>
         /// Find N nearest events
         /// </summary>

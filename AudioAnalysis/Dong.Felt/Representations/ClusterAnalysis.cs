@@ -144,16 +144,14 @@ namespace Dong.Felt.Representations
         /// <param name="GaussianBlurSize"></param>
         /// <param name="sigma"></param>
         /// <returns></returns>
-        public static PointOfInterest[,] GaussianBlurOnPOI(List<PointOfInterest> pois, int rows, int cols, int GaussianBlurSize, double sigma)
+        public static PointOfInterest[,] GaussianBlurOnPOI(PointOfInterest[,] poiMatrix, int rows, int cols, int GaussianBlurSize, double sigma)
         {
             
             var gaussianBlur = new GaussianBlur(sigma, GaussianBlurSize);
             var radius = gaussianBlur.Size / 2;
             // it has a kernal member which is an integer 2d array. 
             var gaussianKernal = gaussianBlur.Kernel;
-            var result = new PointOfInterest[rows, cols];
-
-            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(pois, rows, cols);
+            var result = new PointOfInterest[rows, cols];           
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -278,7 +276,7 @@ namespace Dong.Felt.Representations
         /// <param name="posAcousticEvents"></param>
         /// <param name="negAcousticEvents"></param>
         public static List<List<AcousticEvent>> SeparateRidgeListToEvents(SpectrogramStandard sonogram, 
-            List<PointOfInterest> poiList)
+            PointOfInterest[,] poiList)
         {
             var dividedRidges = POISelection.POIListDivision(poiList);
             var verPoiList = dividedRidges[0];
@@ -433,7 +431,7 @@ namespace Dong.Felt.Representations
                         sonogram.FrameDuration,
                         sonogram.FrameStep,
                         sonogram.FrameCount);
-                    e.BorderColour = Color.FromArgb(128, Color.Blue);
+                    e.BorderColour = Color.FromArgb(128, Color.Blue);                    
                     return e;
                 }).ToList();           
             acousticEvents = events;          

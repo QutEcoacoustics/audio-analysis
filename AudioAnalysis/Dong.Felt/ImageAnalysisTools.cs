@@ -1557,10 +1557,11 @@ namespace Dong.Felt
         /// <param name="sizeOfNeighbourhood"></param>
         /// <param name="thresholdForLeastPoint"></param>
         /// <returns></returns>
-        public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList, int rows, int cols, 
+        public static PointOfInterest[,] RemoveIsolatedPoi(PointOfInterest[,] M,
             int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
-            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            var rows = M.GetLength(0);
+            var cols = M.GetLength(1);           
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -1590,7 +1591,8 @@ namespace Dong.Felt
                                 {
                                     if (M[r + i, c + j] != null)
                                     {
-                                        M[r + i, c + j] = null;
+                                        M[r + i, c + j].RidgeMagnitude = 0.0;
+                                        M[r + i, c + j].RidgeOrientation = 10.0;                                       
                                     }
                                 }
                             }
@@ -1600,7 +1602,7 @@ namespace Dong.Felt
                 }
                 r += sizeOfNeighbourhood - 1;
             }
-            return PointOfInterest.TransferPOIMatrix2List(M);
+            return M;
         }      
         #endregion
     }
