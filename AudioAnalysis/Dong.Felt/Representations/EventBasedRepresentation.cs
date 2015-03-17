@@ -55,7 +55,7 @@ namespace Dong.Felt.Representations
 
         public double FrequencyBinEntropy { get; set; }
 
-        public List<PointOfInterest> PointsOfInterest { get; set; }
+        public PointOfInterest[,] PointsOfInterest { get; set; }
 
         public double TimeScale { get; set; }
 
@@ -182,6 +182,7 @@ namespace Dong.Felt.Representations
                     var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
                     ep.FrequencyBinEntropy = entropyPair.Item1;
                     ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
                     vResult.Add(ep);
                 }              
             }
@@ -199,6 +200,7 @@ namespace Dong.Felt.Representations
                     var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
                     ep.FrequencyBinEntropy = entropyPair.Item1;
                     ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
                     hResult.Add(ep);
                 }               
             }
@@ -215,6 +217,7 @@ namespace Dong.Felt.Representations
                     var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
                     ep.FrequencyBinEntropy = entropyPair.Item1;
                     ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
                     pResult.Add(ep);
                 }                  
             }
@@ -232,6 +235,7 @@ namespace Dong.Felt.Representations
                     var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
                     ep.FrequencyBinEntropy = entropyPair.Item1;
                     ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
                     nResult.Add(ep);
                 }                 
             }
@@ -242,7 +246,7 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        public static Tuple<double, double> GetEntropy(EventBasedRepresentation ev, PointOfInterest[,] poiMatrix,int rowsCount, 
+        public static Tuple<double, double, PointOfInterest[,]> GetEntropy(EventBasedRepresentation ev, PointOfInterest[,] poiMatrix, int rowsCount, 
             int colsCount)        
         {            
             var startRow = rowsCount - (ev.Bottom + ev.Height);
@@ -250,7 +254,8 @@ namespace Dong.Felt.Representations
             var startCol = ev.Left;
             var endCol = ev.Left + ev.Width;
             var ridgeOrientation = RidgeMajorDirectionToOrientation(ev.InsideRidgeOrientation);
-            
+            var subMatrix = StatisticalAnalysis.Submatrix(poiMatrix, startRow, startCol, endRow, endCol);
+
             var columnEnergy = new double[endCol-startCol];
             for (int colIndex = startCol; colIndex < endCol; colIndex++)
             {
@@ -279,24 +284,17 @@ namespace Dong.Felt.Representations
                     {                        
                         if (poiMatrix[rowIndex, colIndex].OrientationCategory == ridgeOrientation)
                         {
-                        rowEnergy[rowIndex-startRow] += 1.0;
-                        //var magnitude = pointsOfInterest[rowIndex, colIndex].RidgeMagnitude;
-                        //rowEnergy[rowIndex] += magnitude;
+                            rowEnergy[rowIndex-startRow] += 1.0;
                         }
                     }
                 }
             }
             var FrequencyEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
             var FrameEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
-            //var formatedFrequencyEntropy = 0.0;
-            //var formatedFrameEntropy = 0.0;
-            //if (FrameEnergyEntropy > 0)
-            //{
-
-            //}
+            
             var formatedFrequencyEntropy = (double)decimal.Round((decimal)FrequencyEnergyEntropy, 3);
             var formatedFrameEntropy = (double)decimal.Round((decimal)FrameEnergyEntropy, 3);
-            var result = Tuple.Create(formatedFrequencyEntropy, formatedFrameEntropy);
+            var result = Tuple.Create(formatedFrequencyEntropy, formatedFrameEntropy, subMatrix);
             return result;
         }
        

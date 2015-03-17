@@ -283,7 +283,7 @@ namespace Dong.Felt.Representations
             var horPoiList = dividedRidges[1];
             var posDiaPoiList = dividedRidges[2];
             var negDiaPoiList = dividedRidges[3];
-            var verAcousticEvents =  new List<AcousticEvent>();
+            var verAcousticEvents = new List<AcousticEvent>();
             var horAcousticEvents = new List<AcousticEvent>();            
             var posAcousticEvents = new List<AcousticEvent>();          
             var negAcousticEvents = new List<AcousticEvent>();
@@ -301,7 +301,7 @@ namespace Dong.Felt.Representations
 
             return acousticEvents;
         }
-               
+      
         /// Xueyan's method not using AED       
         // public static void SeperateRidgeListToEvent(SpectrogramStandard sonogram, 
         //    List<PointOfInterest> verPoiList, List<PointOfInterest> horPoiList,

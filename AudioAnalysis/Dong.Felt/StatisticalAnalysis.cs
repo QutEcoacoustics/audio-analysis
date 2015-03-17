@@ -112,6 +112,23 @@
             return overlap;
         }
 
+        public static double EventContentOverlapInPixel(EventBasedRepresentation q, EventBasedRepresentation c)
+        {
+            var qPoiMatrix = q.PointsOfInterest;
+            var cPoiMatrix = c.PointsOfInterest;
+            var qRowIndex = qPoiMatrix.GetLength(0);
+            var qColIndex = qPoiMatrix.GetLength(1);
+            var cRowIndex = cPoiMatrix.GetLength(0);
+            var cColIndex = cPoiMatrix.GetLength(1);
+
+            var maxRowIndex = Math.Max(qRowIndex, cRowIndex);
+            var maxColIndex = Math.Max(qColIndex, cColIndex);
+
+            var modifiedqMatrix = new PointOfInterest[maxRowIndex, maxColIndex];
+            var result = 0.0;
+            return result;
+        }
+
         public static double[] subArray(double[,] array, int startIndex, int endIndex, int dimensionIndex, int index)
         {
             var length = endIndex - startIndex;
