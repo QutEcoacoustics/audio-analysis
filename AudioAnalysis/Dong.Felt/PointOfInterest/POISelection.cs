@@ -92,7 +92,7 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
-        public static List<PointOfInterest> ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,
+        public static PointOfInterest[,]  ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,
             RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, string audioFilePath,
             string featurePropSet)
         {
@@ -105,7 +105,12 @@ namespace Dong.Felt
                 featurePropSet,
                 compressConfig,
                 filterRidges);
-            return addCompressedRidges;
+            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
+            var cols = spectrogram.Data.GetLength(0);
+            var M = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, rows, cols);
+            var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(M, 3, 2);
+            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(filterIsolatedRidges, rows, cols, 3, 1.0);
+            return joinedRidges;
         }
 
         public static List<PointOfInterest> RidgePoiSelection(SpectrogramStandard spectrogram,
@@ -682,7 +687,6 @@ namespace Dong.Felt
             return result;
         }
 
-
         public void ConvertRidgeIndicatorToPOIList(byte[,] ridgeIndiMatrix, double[,] RidgeMagnitudematrix, SpectrogramStandard spectrogram)
         {
             double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
@@ -801,7 +805,9 @@ namespace Dong.Felt
                     }
                 }
             }
-            var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rows, cols);
+            var filteredPoiMatrix = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 7, 3);
+            var filteredPoiList = StatisticalAnalysis.TransposeMatrixToPOIlist(filteredPoiMatrix);
             poiList = filteredPoiList;
         }
 
@@ -1266,9 +1272,7 @@ namespace Dong.Felt
             }
             /// filter out some redundant ridges               
             var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
-            var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
-            //var connectedPoiList = PoiAnalysis.ConnectPOI(filteredPoiList);
+            var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);           
             poiList = prunedPoiList1;
         }
 
@@ -1427,14 +1431,13 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="poiList"></param>
         /// <returns></returns>
-        public static List<List<PointOfInterest>> POIListDivision(List<PointOfInterest> poiList)
+        public static List<List<PointOfInterest>> POIListDivision(PointOfInterest[,] poiList)
         {
             var poiVerticalGroup = new List<PointOfInterest>();
             var poiHorizontalGroup = new List<PointOfInterest>();
             var poiPDGroup = new List<PointOfInterest>();
             var poiNDGroup = new List<PointOfInterest>();
-            var result = new List<List<PointOfInterest>>();
-
+            var result = new List<List<PointOfInterest>>();           
             foreach (var p in poiList)
             {
                 // OrientationType = 4
@@ -1548,16 +1551,7 @@ namespace Dong.Felt
             RowsCount = rowsCount;
             ColsCount = colsCount;
         }
-
-        public static List<PointOfInterest> FilterPointsOfInterest(List<PointOfInterest> poiList, int rowsCount, int colsCount)
-        {
-            var pruneAdjacentPoi = ImageAnalysisTools.PruneAdjacentTracks(poiList, rowsCount, colsCount);
-            var filterNeighbourhoodSize = 7;
-            var numberOfEdge = 3;
-            var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(pruneAdjacentPoi, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
-            return filterPoiList;
-        }
-
+       
         public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
