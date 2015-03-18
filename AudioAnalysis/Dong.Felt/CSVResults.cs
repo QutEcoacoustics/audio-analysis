@@ -148,24 +148,6 @@ namespace Dong.Felt
             return results;
         }
 
-        public static void BatchProcess(string fileDirectoryPath, SpectrogramConfiguration spectrogramConfig)
-        {
-            string[] fileEntries = Directory.GetFiles(fileDirectoryPath);
-
-            var fileCount = fileEntries.Count();
-            for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
-            {
-                var poi = new List<PointOfInterest>();
-                var poiList = new POISelection(poi);
-                var ridgeLength = 5;
-                var magnitudeThreshold = 5.5;
-                poiList.SelectPointOfInterestFromAudioFile(fileEntries[fileIndex], ridgeLength, magnitudeThreshold);
-                var filterPoi = POISelection.FilterPointsOfInterest(poiList.poiList, poiList.RowsCount, poiList.ColsCount);               
-                var file = new FileInfo(fileEntries[fileIndex] + "fileIndex.csv");
-                PointOfInterestListToCSV(file, filterPoi);
-            }
-        }
-
         public static void ReadSimilarityDistanceToCSV(List<Tuple<double, double, double>> scoreList, string outputFilePath)
         {
             var results = new List<List<string>>();
