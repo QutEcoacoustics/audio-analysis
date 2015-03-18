@@ -383,17 +383,49 @@ SetMinute <- function (events, start.sec.col = "start.sec")  {
     # of the day that the event happened in
     
     if (is.character(start.sec.col)) {
-        start.sec.col <- which( colnames(events) ==  start.sec.col)     
+        start.sec.col <- which(colnames(events) ==  start.sec.col)     
     }
     min <- apply(events, 1, function (v) {
         sec <- as.numeric(unlist(v[start.sec.col]))
         min <- floor(sec / 60)
         return (min)
     })
-    new <- cbind(events, min)
-    return (new)
+    new.events <- cbind(events, min)
+    return (new.events)
     
 }
+
+SetTime <- function (min, sec, decimal.places = 0) {
+    # given a minute of the day, and a second of the minute
+    # returns a time string eg 13:12:03
+    # min and sec can be vectors, and it will return a vector
+    
+    h <- floor(min / 60)
+    m <- min - (h * 60)
+    sec <- round(sec, decimal.places)
+    
+    # just in case it got rounded up to 60 
+    m2 <- floor(sec / 60)
+    sec <- sec - (m2 * 60)
+    m <- m + m2
+    
+    h <- sprintf('%02d', h)
+    m <- sprintf('%02d', m)
+    
+    if (decimal.places == 0) {
+        width <- 2
+    } else {
+        width <- 3 + decimal.places
+    }
+    p <- paste0('%0',width,'.',decimal.places,'f')
+    s <- sprintf(p, sec)
+    time <- paste(h, m, s, sep = ":")
+    return(time)
+    
+    
+}
+
+
 
 CreateTargetMinutesRandom.old <- function () {
     # randomly selects a subset of the target minutes

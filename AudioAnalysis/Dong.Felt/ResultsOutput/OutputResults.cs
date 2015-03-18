@@ -6,7 +6,6 @@ using AudioAnalysisTools;
 using System.IO;
 using TowseyLibrary;
 using AudioBase;
-using AnalysisRunner;
 using Acoustics.Tools;
 using Acoustics.Shared;
 using Dong.Felt.Configuration;
@@ -15,7 +14,6 @@ namespace Dong.Felt.ResultsOutput
 {
     public class OutputResults
     {
-
         /// <summary>
         /// Matching step: 1. change candidate file path into file name for doing matching, output the changed files. 
         /// </summary>

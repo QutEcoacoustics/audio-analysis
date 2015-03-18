@@ -20,12 +20,13 @@ let rec spider (m:matrix) xs (v:(int * int) Set) =
 type AcousticEvent = {Bounds: Rectangle<int, int>; Elements:(int * int) Set}
 let getBounds ae = ae.Bounds
 let bounds aes = Seq.map (fun ae -> ae.Bounds) aes
-    
-let getAcousticEvents m =
-    let m' = Math.Matrix.copy m
-    let g xs =
+
+let elementsToAcousticEvent xs =
         let (rs, cs) = List.unzip (Set.toList xs) 
         let l,t = List.min cs, List.min rs
-        {Bounds=lengthsToRect l t (List.max cs - l + 1) (List.max rs - t + 1); Elements=xs}
-    let f i j a x = if x = 0.0 then a else (g(spider m' [(i,j)] Set.empty))::a
+        {Bounds=lengthsToRect l t (List.max cs - l + 1) (List.max rs - t + 1); Elements=xs} 
+
+let getAcousticEvents m =
+    let m' = Math.Matrix.copy m
+    let f i j a x = if x = 0.0 then a else (elementsToAcousticEvent(spider m' [(i,j)] Set.empty))::a
     Math.Matrix.foldi f [] m'

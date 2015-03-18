@@ -146,7 +146,7 @@ MergeAnnotationsAsEvents <- function () {
     
     fields <- c('site', 'start_date', 'start_date_time_char', 'end_date_time_char', 'start_frequency', 'end_frequency')
     
-    all.tags <- ReadTagsFromDb(fields = fields, target = FALSE)
+    all.tags <- ReadTargetTagsFromDb(fields = fields, target = FALSE)
     
     
     # temp small subset for debug
@@ -378,6 +378,34 @@ FileterEvents2 <- function (events) {
 }
 
 
+CreateFeaturesSubset <- function () {
+    # if event subsets have been created without feature subsets, 
+    # by choosing not to include features subsets in CreateEventAndFeaturesSubset
+    # this function will create the feature subsets for the user-selected event subsets
+    
+    keep.going <- TRUE
+    
+    all.features <- ReadOutput('all.features')
+    
+    while (keep.going) {
+        
+        events <- ReadOutput('events', use.last.accessed = FALSE)
+        
+        features <- all.features$data[all.features$data$event.id %in% events$data$event.id,]
+        
+        if (nrow(features) != nrow(events$data)) {
+            Report('features are missing for the events you chose')
+        }
+        
+        WriteOutput(features, 'features', dependencies = list(events = events$version, all.features = all.features$version))
+        
+        keep.going <- Confirm('create another feature subset?')
+        
+    }
+    
+    
+}
+
 
 CreateEventAndFeaturesSubset <- function () {
     # given the target minute ids, the events and features, and a limit for the 
@@ -445,12 +473,16 @@ CreateEventAndFeaturesSubset <- function () {
     }
      
     
-    WriteOutput(events, 'events', params = list(limit = limit, filter = filter), dependencies = dependencies)
+    events.version <- WriteOutput(events, 'events', params = list(limit = limit, filter = filter), dependencies = dependencies)
+    
+    # features and rating features are dependent on events and all features
+    f.dependencies <- list(events = events.version, all.features = all.features.version)
+    
     if (exists('event.features')) {
-        WriteOutput(event.features, 'features', params = list(limit = limit), dependencies = dependencies)
+        WriteOutput(event.features, 'features', dependencies = f.dependencies)
     }
     if (exists('rating.features')) {
-        WriteOutput(rating.features, 'rating.features', params = list(limit = limit), dependencies = dependencies)
+        WriteOutput(rating.features, 'rating.features', dependencies = f.dependencies)
     }
     
     
@@ -463,13 +495,19 @@ CreateEventAndFeaturesSubset <- function () {
 GetEventsAndFeatures <- function () {
     events <- ReadOutput('events')
     event.features <- ReadOutput('features')
-    rating.features <- ReadOutput('rating.features')  
+#    rating.features <- ReadOutput('rating.features')  
     # remove event.id.column from features table
-    drop.cols <- names(event.features$data) %in% c('event.id')
-    event.features$data <- event.features$data[!drop.cols]
-    drop.cols <- names(rating.features$data) %in% c('event.id')
-    rating.features$data <- rating.features$data[!drop.cols]
-    return (list(events = events, event.features = event.features, rating.features = rating.features))
+#    drop.cols <- names(event.features$data) %in% c('event.id')
+
+    if (! setequal(events$data$event.id, event.features$data$event.id)) {
+        stop('chosen features and events have different event ids')
+    }
+
+#    event.features$data <- event.features$data[!drop.cols]
+#    drop.cols <- names(rating.features$data) %in% c('event.id')
+#    rating.features$data <- rating.features$data[!drop.cols]
+#     return (list(events = events, event.features = event.features, rating.features = rating.features))
+    return (list(events = events, event.features = event.features))
 }
 
 

@@ -183,7 +183,7 @@ DoClusterKmeans <- function (df, weights, num.clusters = NULL) {
     
     kmeans.results <- as.list(rep(NA, length(num.clusters)))
     for (i in 1:length(num.clusters)) {
-        kmeans.results[[i]] <- kmeans(df, num.clusters[i], algorithm = "Hartigan-Wong")   
+        kmeans.results[[i]] <- kmeans(df, num.clusters[i], algorithm = "Hartigan-Wong", iter.max = 30)   
     }
     
     return(kmeans.results)

@@ -7,7 +7,7 @@ namespace Dong.Felt.Representations
     using System.Text;
 
     //This class will contain a bunch of neighbourhoods. 
-    public class RidgeDescriptionRegionRepresentation : RegionRerepresentation
+    public class RidgeDescriptionRegionRepresentation : RegionRepresentation
     {
 
         /// <summary>
