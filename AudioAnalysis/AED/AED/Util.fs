@@ -38,6 +38,7 @@ let maxmap f = Seq.max << Seq.map f
 let minmap f = Seq.min << Seq.map f
 
 let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
+let sumColumns (m:matrix) = let v = Math.Matrix.foldByCol (+) (Math.RowVector.zero m.NumCols) m in v.Transpose
 
 // TODO this is now in PowerPack.Compatibility (need to add specific Reference)
 let split (d:char array) (s:string) = s.Split(d, System.StringSplitOptions.RemoveEmptyEntries)
@@ -81,7 +82,18 @@ let matrixMapi2Unzip f (m:matrix) =
 [<Measure>] type px
 let px = 1.0<px>
 
-type Pixel = float<px>
+type Pixelf = float<px>
+type Pixel = int<px>
+
+[<Measure>] type percent
+type Percent = float<percent>  
+let unit p = p / 100.0<percent>
+let percent u : Percent = u * 100.0<percent>
+
+type System.Double with
+    member x.percent = x * 1.0<percent>
+    member x.toPercent = percent x
+    member x.toUnit = unit x
     
 let inline s x y = x - y
 //type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
@@ -147,6 +159,7 @@ let inline oldWidth r = (right r) - (left r)
 let inline height r = (top r) - (bottom r) |> abs |> increment
 let inline height2 (top:float<_>) (bottom:float<_>) = top - bottom |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
 let inline area r = (width r) * (height r)
+let inline areaUnits r = (area r) * 1<px^2>
 let inline isWithin r (x,y) =
     not (x < r.Left || x > r.Right || y < r.Top || y > r.Bottom)
     //x >= r.Left && x < r.Right && y >= r.Top && y < r.Bottom

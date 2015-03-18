@@ -62,7 +62,7 @@ namespace Dong.Felt.Experiments
                 var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
                 // regionRepresentation 
-                var candidatesRegionList = new List<RegionRerepresentation>();
+                var candidatesRegionList = new List<RegionRepresentation>();
                 for (int i = 0; i < audioFilesCount; i++)
                 {
                     /// 2. Read the candidates 

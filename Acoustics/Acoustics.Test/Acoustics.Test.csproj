@@ -92,6 +92,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="xunit">
+      <HintPath>..\..\AudioAnalysis\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
     <Reference Include="YamlDotNet, Version=2.0.1.32093, Culture=neutral, PublicKeyToken=2b53052c5884d7a1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.dll</HintPath>
@@ -117,6 +120,7 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj">
