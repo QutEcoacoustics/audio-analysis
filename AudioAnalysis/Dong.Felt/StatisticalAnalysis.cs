@@ -112,6 +112,23 @@
             return overlap;
         }
 
+        public static double EventContentOverlapInPixel(EventBasedRepresentation q, EventBasedRepresentation c)
+        {
+            var qPoiMatrix = q.PointsOfInterest;
+            var cPoiMatrix = c.PointsOfInterest;
+            var qRowIndex = qPoiMatrix.GetLength(0);
+            var qColIndex = qPoiMatrix.GetLength(1);
+            var cRowIndex = cPoiMatrix.GetLength(0);
+            var cColIndex = cPoiMatrix.GetLength(1);
+
+            var maxRowIndex = Math.Max(qRowIndex, cRowIndex);
+            var maxColIndex = Math.Max(qColIndex, cColIndex);
+
+            var modifiedqMatrix = new PointOfInterest[maxRowIndex, maxColIndex];
+            var result = 0.0;
+            return result;
+        }
+
         public static double[] subArray(double[,] array, int startIndex, int endIndex, int dimensionIndex, int index)
         {
             var length = endIndex - startIndex;
@@ -130,6 +147,20 @@
                     }
                 }
             }        
+            return result;
+        }
+
+        public static PointOfInterest[,] PointListToPOIMatrix(List<Point> point, int rows, int cols)
+        {
+            var result = new PointOfInterest[rows, cols];
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var newPoint = new Point(point[0].X, point[0].Y);
+                    result[r, c].Point = newPoint;
+                }
+            }
             return result;
         }
         /// <summary>
@@ -754,7 +785,7 @@
                     var point = new Point(colIndex, rowIndex);
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
-                    tempPoi.OrientationCategory = 10;                  
+                    tempPoi.OrientationCategory = 10;
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }
