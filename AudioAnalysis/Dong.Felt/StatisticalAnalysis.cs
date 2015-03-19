@@ -99,6 +99,39 @@
             return zero;
         }
 
+        public static double EventOverlapInPixel(int ae1Left, int ae1Bottom, int ae1Right, int ae1Top,
+                                              int ae2Left, int ae2Bottom, int ae2Right, int ae2Top)
+        {
+            var overlap = 0.0;         
+            var xOverlap = Math.Max(0, Math.Min(ae1Right, ae2Right) - Math.Max(ae1Left, ae2Left));
+            var yOverlap = Math.Max(0, Math.Min(ae1Top, ae2Top) - Math.Max(ae1Bottom, ae2Bottom));
+            if (xOverlap >= 0 && yOverlap >= 0)
+            {
+                overlap = xOverlap * yOverlap;
+            }           
+            return overlap;
+        }
+
+        public static double[] subArray(double[,] array, int startIndex, int endIndex, int dimensionIndex, int index)
+        {
+            var length = endIndex - startIndex;
+            var result = new double[length+1];
+            if (endIndex < array.GetLength(1))
+            {
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    if (dimensionIndex == 0)
+                    {
+                        result[i-startIndex] = array[index, i];
+                    }
+                    else
+                    {
+                        result[i-startIndex] = array[i, index];
+                    }
+                }
+            }        
+            return result;
+        }
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
@@ -143,7 +176,7 @@
         /// </summary>
         /// <param name="acousticEvent"></param>
         /// <returns></returns>
-        public static int CountPOIInEvent(List<RegionRerepresentation> acousticEvent)
+        public static int CountPOIInEvent(List<RegionRepresentation> acousticEvent)
         {
             var result = 0;
             foreach (var e in acousticEvent)
@@ -161,7 +194,7 @@
         /// </summary>
         /// <param name="acousticEvent"></param>
         /// <returns></returns>
-        public static int CountNhInEvent(List<RegionRerepresentation> acousticEvent)
+        public static int CountNhInEvent(List<RegionRepresentation> acousticEvent)
         {
             var result = 0;
             foreach (var e in acousticEvent)
@@ -178,9 +211,9 @@
             return result;
         }
 
-        public static List<List<RegionRerepresentation>> SplitRegionRepresentationListToBlock(List<RegionRerepresentation> regionRepresentationList)
+        public static List<List<RegionRepresentation>> SplitRegionRepresentationListToBlock(List<RegionRepresentation> regionRepresentationList)
         {
-            var result = new List<List<RegionRerepresentation>>();
+            var result = new List<List<RegionRepresentation>>();
             var regionCountInBlock = 0;
             var blockCount = 0;
             if (regionRepresentationList != null)
@@ -191,7 +224,7 @@
             for (int i = 0; i < regionRepresentationList.Count; i += regionCountInBlock)
             {
                 var tempResult = StatisticalAnalysis.SubRegionFromRegionList(regionRepresentationList, i, regionCountInBlock);
-                var temp = new List<RegionRerepresentation>();
+                var temp = new List<RegionRepresentation>();
                 foreach (var t in tempResult)
                 {
                     temp.Add(t);
@@ -201,11 +234,11 @@
             return result;
         }
         
-        public static RegionRerepresentation[,] RegionRepreListToMatrix(List<RegionRerepresentation> region)
+        public static RegionRepresentation[,] RegionRepreListToMatrix(List<RegionRepresentation> region)
         {
             var rowsCount = region[0].NhCountInRow;
             var colsCount = region[0].NhCountInCol;
-            var result = new RegionRerepresentation[rowsCount, colsCount];
+            var result = new RegionRepresentation[rowsCount, colsCount];
 
             for (int i = 0; i < rowsCount; i++)
             {
@@ -233,9 +266,9 @@
             return candidates;
         }
 
-        public static List<RegionRerepresentation> SubRegionFromRegionList(List<RegionRerepresentation> regionList, int startIndex, int count)
+        public static List<RegionRepresentation> SubRegionFromRegionList(List<RegionRepresentation> regionList, int startIndex, int count)
         {
-            var result = new List<RegionRerepresentation>();
+            var result = new List<RegionRepresentation>();
             var endIndex = startIndex + count;
             for (int i = startIndex; i < endIndex; i++)
             {
@@ -670,7 +703,7 @@
         /// <param name="rows"></param>
         /// <param name="cols"></param>
         /// <returns></returns>
-        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, SpectrogramStandard spectrogram,
+        public static PointOfInterest[,] TransposePOIsToMatrix(List<PointOfInterest> list, double[,] spectrogramData,
             int rows, int cols)
         {
             PointOfInterest[,] m = new PointOfInterest[rows, cols];
@@ -678,7 +711,7 @@
             //var matrixRowCount = fftMatrix.GetLength(0);
             //var matrixColCount = fftMatrix.GetLength(1);
             //var defaultFFTMatrix = new double[matrixRowCount, matrixColCount];
-            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
+            var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
             for (int colIndex = 0; colIndex < cols; colIndex++)
             {
                 for (int rowIndex = 0; rowIndex < rows; rowIndex++)
@@ -735,8 +768,27 @@
             }
             return m;
         }
-        /// <summary>
+
+        public static Point[,] TransposePointsToMatrix(List<Point> pointList, int rows, int cols, int rowBottom, int colLeft)
+        {
+            Point[,] m = new Point[rows, cols];
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var point = new Point(0, 0);
+                    m[r, c] = point; 
+                }
+            }
+            
+            foreach (var p in pointList)
+            {
+                m[p.X-rowBottom, p.Y-colLeft] = p;
+            }
+            return m;
+        }
         
+        /// <summary>       
         /// This version is for structure tensor matrix 
         /// This function tries to transfer a poiList into a matrix. The dimension of matrix is same with (cols * rows).
         public static PointOfInterest[,] TransposeStPOIsToMatrix(List<PointOfInterest> list, int rows, int cols)
@@ -778,10 +830,10 @@
             {
                 for (int c = 0; c < colsMax; c++)
                 {
-                    //if (matrix[r, c].Point.X != 0 && matrix[r, c].Point.Y != 0)
-                    //{
+                    if (matrix[r, c].RidgeMagnitude != 0)
+                    {
                         result.Add(matrix[r, c]);
-                    //}
+                    }
                 }
             }
             return result;
@@ -1234,9 +1286,9 @@
         /// <param name="rowsCount"></param>
         /// <param name="colsCount"></param>
         /// <returns></returns>
-        public static RegionRerepresentation[,] RegionRepresentationListToArray(List<RegionRerepresentation> candidatesList, int rowsCount, int colsCount)
+        public static RegionRepresentation[,] RegionRepresentationListToArray(List<RegionRepresentation> candidatesList, int rowsCount, int colsCount)
         {
-            var result = new RegionRerepresentation[rowsCount, colsCount];
+            var result = new RegionRepresentation[rowsCount, colsCount];
             var listCount = candidatesList.Count;
             for (int i = 0; i < listCount; i++)
             {
@@ -1250,7 +1302,7 @@
         /// </summary>
         /// <param name="scoreVectorList"></param>
         /// <returns></returns>
-        public static double ScoreVectorStatisticalAnalysis(List<List<RegionRerepresentation>> scoreVectorList)
+        public static double ScoreVectorStatisticalAnalysis(List<List<RegionRepresentation>> scoreVectorList)
         {
             var frequencyBandCount = scoreVectorList.Count;
             var frameCount = 0;
@@ -1317,7 +1369,7 @@
             return result;
         }
 
-        public static List<Candidates> ConvertCombinedDistanceToSimilarityScore(List<Candidates> candidates, List<RegionRerepresentation> candidatesList,
+        public static List<Candidates> ConvertCombinedDistanceToSimilarityScore(List<Candidates> candidates, List<RegionRepresentation> candidatesList,
             double weight1, double weight2)
         {
             var result = new List<Candidates>();

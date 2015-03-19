@@ -20,6 +20,7 @@ namespace AnalysisPrograms
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Shared.Extensions;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -32,6 +33,8 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
 
     using log4net;
+
+    using Microsoft.FSharp.Core;
 
     using QutSensors.AudioAnalysis.AED;
 
@@ -181,13 +184,23 @@ namespace AnalysisPrograms
         public static AcousticEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
         {
             Log.Info("AED start");
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
-                aedConfiguration.IntensityThreshold,
-                aedConfiguration.SmallAreaThreshold,
-                aedConfiguration.BandpassMinimum ?? 0.0,
-                aedConfiguration.BandpassMaximum ?? sonogram.Configuration.NyquistFreq,
-                aedConfiguration.NoiseReductionType == NoiseReductionType.NONE,
-                sonogram.Data);
+            var aedOptions = new AedOptions(sonogram.Configuration.NyquistFreq)
+                                 {
+                                     IntensityThreshold = aedConfiguration.IntensityThreshold,
+                                     SmallAreaThreshold = aedConfiguration.SmallAreaThreshold,
+                                     DoNoiseRemoval = aedConfiguration.NoiseReductionType == NoiseReductionType.NONE
+                                 };
+
+            if (aedConfiguration.BandpassMinimum.HasValue && aedConfiguration.BandpassMaximum.HasValue)
+            {
+                var bandPassFilter =
+                    Tuple.Create(
+                        (double)aedConfiguration.BandpassMinimum.Value,
+                        (double)aedConfiguration.BandpassMaximum.Value);
+                aedOptions.BandPassFilter = bandPassFilter.ToOption();
+            }
+               
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(aedOptions,   sonogram.Data);
             Log.Info("AED finished");
 
             var events = oblongs.Select(

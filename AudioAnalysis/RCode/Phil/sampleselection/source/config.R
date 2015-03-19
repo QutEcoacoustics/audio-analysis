@@ -97,7 +97,7 @@ g.percent.of.target <- 100
 # to get user input, set to NULL
 g.user.input <- list(
     'clustering.method' = 'Kmeans',
-    'features.for.clustering' = c('duration', 'mean.peak.f')
+    'features.for.clustering' = c('duration', 'mean.peak.f', 'f.range')
 )
     
 
