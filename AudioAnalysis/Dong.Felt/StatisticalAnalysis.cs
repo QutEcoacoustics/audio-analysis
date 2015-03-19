@@ -114,18 +114,97 @@
 
         public static double EventContentOverlapInPixel(EventBasedRepresentation q, EventBasedRepresentation c)
         {
-            var qPoiMatrix = q.PointsOfInterest;
-            var cPoiMatrix = c.PointsOfInterest;
-            var qRowIndex = qPoiMatrix.GetLength(0);
-            var qColIndex = qPoiMatrix.GetLength(1);
-            var cRowIndex = cPoiMatrix.GetLength(0);
-            var cColIndex = cPoiMatrix.GetLength(1);
-
-            var maxRowIndex = Math.Max(qRowIndex, cRowIndex);
-            var maxColIndex = Math.Max(qColIndex, cColIndex);
-
-            var modifiedqMatrix = new PointOfInterest[maxRowIndex, maxColIndex];
             var result = 0.0;
+
+            var qPoiMatrix = StatisticalAnalysis.GetRelativePoint(q.PointsOfInterest, c.Left, c.Bottom);          
+            var cPoiMatrix = StatisticalAnalysis.GetRelativePoint(c.PointsOfInterest, c.Left, c.Bottom);
+
+            var andCount = 0;
+            var orCount = 0;
+
+            var qPoiCount = 0;
+            var cPoiCount = 0; 
+
+            foreach (var qP in qPoiMatrix)
+            {
+                if (qP.RidgeMagnitude != 0.0)
+                {
+                    qPoiCount++;
+                    foreach (var cp in cPoiMatrix)
+                    {
+                        if (Distance.EuclideanDistanceForPoint(qP.Point, cp.Point) == 0.0)
+                        {
+                            andCount++;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }             
+            }
+
+            foreach (var cp in cPoiMatrix)
+            {
+                if (cp.RidgeMagnitude != 0.0)
+                {
+                    cPoiCount++;
+                }
+            }
+            
+            orCount = qPoiCount + cPoiCount - andCount;
+            
+            if (orCount > 0)
+            {
+                result = (double)andCount / orCount;
+            }           
+            return result;
+        }
+
+        public static PointOfInterest[,] GetRelativePoint(PointOfInterest[,] poiMatrix, int startCol, int startRow)
+        {
+            var rows = poiMatrix.GetLength(0);
+            var cols = poiMatrix.GetLength(1);
+
+            var result = new PointOfInterest[rows, cols];
+            var originalColStart = 0;
+            var originalRowStart = 0; 
+            if (rows > 0 && cols > 0)
+            {
+                originalColStart = poiMatrix[0, 0].Point.X;
+                originalRowStart = poiMatrix[0, 0].Point.Y;
+            }
+            for (var i = 0; i < rows; i++)
+            {
+                for (var j = 0; j < cols; j++)
+                {
+                    var point = new Point(0, 0);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    result[i, j] = tempPoi;
+                }
+            }
+            var colOffset = originalColStart - startCol;
+            var rowOffset = originalColStart - startRow;
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var pointX = poiMatrix[r, c].Point.X;
+                    var pointY = poiMatrix[r, c].Point.Y;
+                    var ridgeMagnitude = poiMatrix[r, c].RidgeMagnitude;
+                    if (poiMatrix[r, c].RidgeMagnitude != 0.0)
+                    {
+                        result[r, c].Point = new Point(pointX - colOffset, pointY - rowOffset);
+                        result[r, c].RidgeMagnitude = ridgeMagnitude;
+                    }
+                    else
+                    {
+                        result[r, c].Point = new Point(pointX, pointY);
+                        
+                    }
+                }
+            }
             return result;
         }
 
@@ -163,6 +242,7 @@
             }
             return result;
         }
+        
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0

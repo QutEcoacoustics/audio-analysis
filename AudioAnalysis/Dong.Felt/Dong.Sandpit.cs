@@ -117,7 +117,7 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    MatchingBatchProcess3(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                    MatchingBatchProcess4(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
                   ridgeConfig, compressConfig,
                   config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                 }
@@ -954,7 +954,7 @@
                 var acousticEventlist = ClusterAnalysis.SeparateRidgeListToEvents(spectrogram, queryRidges);
                 // event representation for the whole recording
                 var queryEventRepresentation =
-                    EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(spectrogram, acousticEventlist, queryRidges);
+                    EventBasedRepresentation.GassianEventsToEventBasedRepresentations(spectrogram, acousticEventlist, queryRidges);
                 var queryRepresentation = new RegionRepresentation(queryEventRepresentation, queryAudioFiles[i], query);
                 // 2. search through training or testing audio files
                 if (!Directory.Exists(inputFileDirectory))
@@ -978,7 +978,7 @@
                     var candidateAElist = ClusterAnalysis.SeparateRidgeListToEvents(candidateSpectrogram, candidateRidges);
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
-                        EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist, candidateRidges);
+                        EventBasedRepresentation.GassianEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist, candidateRidges);
                     var candidatesRepresentation = RegionRepresentation.ExtractAcousticEventList(candidateSpectrogram,
                         queryRepresentation,
                         candidatesEventsRepresentation,
@@ -992,7 +992,7 @@
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);
                 var candidateDistanceList = new List<Candidates>();
                 Log.Info("# calculate the distance between a query and a candidate");
-                candidateDistanceList = Indexing.Event4FeatureBasedScore(queryRepresentation,
+                candidateDistanceList = Indexing.GassianMaskBasedScore(queryRepresentation,
                     allCandidateList, 5, weight1, weight2);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 // To save all matched acoustic events separately                         
