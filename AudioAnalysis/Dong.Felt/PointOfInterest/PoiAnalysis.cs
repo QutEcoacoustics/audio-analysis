@@ -10,7 +10,9 @@
 namespace Dong.Felt
 {
     using System;
+    using System.CodeDom;
     using System.Collections.Generic;
+    using System.Data;
     using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.IO;
@@ -22,6 +24,9 @@ namespace Dong.Felt
     using TowseyLibrary;
     using AForge.Imaging.Filters;
     using Accord.Math.Decompositions;
+
+    using AnalysisBase.ResultBases;
+
     using Dong.Felt.Preprocessing;
     using Dong.Felt.Representations;
     using Dong.Felt.SpectrogramDrawing;
@@ -31,7 +36,7 @@ namespace Dong.Felt
 
     public class PointOfInterestAnalysis
     {
-        
+
         /// <summary>
         /// PeakAmplitudeDetection applies a window of n seconds, starting every n seconds, to the recording. The window detects points
         /// that have a peakAmplitude value.
@@ -51,7 +56,11 @@ namespace Dong.Felt
         /// <returns>
         /// strings of out of points. 
         /// </returns>
-        public static string PeakAmplitudeDetection(AmplitudeSonogram amplitudeSpectrogram, int minFreq, int maxFreq, double slideWindowDuation = 2.0)
+        public static string PeakAmplitudeDetection(
+            AmplitudeSonogram amplitudeSpectrogram,
+            int minFreq,
+            int maxFreq,
+            double slideWindowDuation = 2.0)
         {
             var spectrogramAmplitudeMatrix = amplitudeSpectrogram.Data;
             var numberOfWindows = (int)(amplitudeSpectrogram.Duration.Seconds / slideWindowDuation);
@@ -87,7 +96,10 @@ namespace Dong.Felt
                 if (point != null)
                 {
                     outputPoints += string.Format(
-                        "Point found at x:{0}, y:{1}, value: {2}\n", point.Item1.X, point.Item1.Y, point.Item2);
+                        "Point found at x:{0}, y:{1}, value: {2}\n",
+                        point.Item1.X,
+                        point.Item1.Y,
+                        point.Item2);
                 }
             }
 
@@ -116,7 +128,11 @@ namespace Dong.Felt
         /// The array of AcousticEvent.
         /// </returns>
         public static AcousticEvent[] MakeFakeAcousticEvents(
-            int numberOfFakes, double minTime, double minFrequency, double maxTime, double maxFrequency)
+            int numberOfFakes,
+            double minTime,
+            double minFrequency,
+            double maxTime,
+            double maxFrequency)
         {
             Contract.Requires(numberOfFakes > 0);
 
@@ -155,7 +171,12 @@ namespace Dong.Felt
         /// <param name="maxFrequency">
         /// The max Frequency.
         /// </param>
-        public static void DrawLine(string wavFilePath, double startTime, double endTime, int minFrequency, int maxFrequency)
+        public static void DrawLine(
+            string wavFilePath,
+            double startTime,
+            double endTime,
+            int minFrequency,
+            int maxFrequency)
         {
             var recording = new AudioRecording(wavFilePath);
             var config = new SonogramConfig();
@@ -252,7 +273,7 @@ namespace Dong.Felt
                                 //poi.RidgeOrientation = direction;
                                 // convert the orientation into - pi/2 to pi / 2 from 0 ~ pi
                                 poi1.RidgeOrientation = p.RidgeOrientation;
-                                poi1.OrientationCategory = p.OrientationCategory;                               
+                                poi1.OrientationCategory = p.OrientationCategory;
                                 poi1.RidgeMagnitude = p.RidgeMagnitude;
                                 poi1.Intensity = p.Intensity;
                                 poi1.TimeScale = p.TimeScale;
@@ -266,7 +287,6 @@ namespace Dong.Felt
             return result;
         }
 
-
         /// <summary>
         /// Gaussian blur on ridge point of interest. 
         /// </summary>
@@ -275,8 +295,12 @@ namespace Dong.Felt
         /// <param name="ridgeConfig"></param>
         /// <param name="sigma">by default 1.0</param>
         /// <param name="size">by default 3</param>
-        public static void GaussianBlur2(string audioFileDirectory, SonogramConfig config,
-            RidgeDetectionConfiguration ridgeConfig, double sigma, int size)
+        public static void GaussianBlur2(
+            string audioFileDirectory,
+            SonogramConfig config,
+            RidgeDetectionConfiguration ridgeConfig,
+            double sigma,
+            int size)
         {
             if (Directory.Exists(audioFileDirectory))
             {
@@ -294,28 +318,29 @@ namespace Dong.Felt
                     var rows = spectrogram.Data.GetLength(1) - 1;
                     var cols = spectrogram.Data.GetLength(0);
                     //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
-                    var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);                   
-                    var smoothedRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5,3, 1.0, 3);
-                    var smoothedRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedRidges);
-                    var verSegmentList = new List<AcousticEvent>();
-                    var horSegmentList = new List<AcousticEvent>();
-                    var posDiSegmentList = new List<AcousticEvent>();
-                    var negDiSegmentList = new List<AcousticEvent>();
-                    var dividedPOIList = POISelection.POIListDivision(smoothedRidgesList);
-                    
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedPOIList[0], dividedPOIList[1], dividedPOIList[2], dividedPOIList[3],
-                        rows, cols, out verSegmentList, out horSegmentList,
-                        out posDiSegmentList, out negDiSegmentList);
+                    var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
+                    var smoothedRidges = ClusterAnalysis.SmoothRidges(ridges, rows, cols, 5, 3, 1.0, 3);
+                    var smoothedRidgesList = StatisticalAnalysis.TransposeMatrixToPOIlist(smoothedRidges);                   
+                    var ridgeSegmentList = ClusterAnalysis.SeparateRidgeListToEvents(
+                        spectrogram,
+                        smoothedRidgesList);
                     //var groupedEventsList = ClusterAnalysis.GroupeSepEvents(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
                     //var groupedRidges = ClusterAnalysis.GroupeSepRidges(verSegmentList, horSegmentList, posDiSegmentList, negDiSegmentList);
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, verSegmentList, eventThreshold, null);
+                    Image image = DrawSpectrogram.DrawSonogram(
+                        spectrogram,
+                        scores,
+                        ridgeSegmentList[0],
+                        eventThreshold,
+                        null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in dividedPOIList[0])
+                    foreach (PointOfInterest poi in smoothedRidgesList)
                     {
                         poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                         Point point = new Point(poi.Point.Y, poi.Point.X);
-                        double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate); // 0.0116
-                        var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?
+                        double secondsScale = spectrogram.Configuration.GetFrameOffset(spectrogram.SampleRate);
+                            // 0.0116
+                        var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale));
+                            // Time scale here is millionSecond?
                         double herzScale = spectrogram.FBinWidth; //43 hz
                         TimeSpan time = TimeSpan.FromSeconds(poi.Point.Y * secondsScale);
                         double herz = (256 - poi.Point.X) * herzScale;
@@ -325,7 +350,9 @@ namespace Dong.Felt
                         poi.HerzScale = herzScale;
                     }
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "-Ridge detection-horizontal ridges.png");
+                    string annotatedImageFileName = Path.ChangeExtension(
+                        FileName.Name,
+                        "-Ridge detection-horizontal ridges.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -346,8 +373,8 @@ namespace Dong.Felt
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0
+                        && poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                     {
                         int tempColIndex = colIndex - matrixRadius;
                         int tempRowIndex = matrixRadius - rowIndex;
@@ -363,8 +390,8 @@ namespace Dong.Felt
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0
+                        && poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.East)
                     {
                         int tempRowIndex = matrixRadius - rowIndex;
                         double verticalDistance1 = tempRowIndex - nullLineYIntersect;
@@ -396,8 +423,8 @@ namespace Dong.Felt
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                        poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0
+                        && poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
                     {
                         int tempColIndex = colIndex - matrixRadius;
                         int tempRowIndex = matrixRadius - rowIndex;
@@ -413,8 +440,8 @@ namespace Dong.Felt
             {
                 for (int colIndex = 0; colIndex < poiMatrixLength; colIndex++)
                 {
-                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0 &&
-                         poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 100.0
+                        && poiMatrix[rowIndex, colIndex].OrientationCategory == (int)Direction.North)
                     {
                         int tempRowIndex = matrixRadius - rowIndex;
                         double verticalDistance1 = tempRowIndex - nullLineYIntersect;
@@ -440,12 +467,146 @@ namespace Dong.Felt
             return r;
         }
 
+        /// <summary>
+        /// This method aims to filter out point of interest which has spikes characteristics, these poi are possibly MP3 artefact. 
+        /// length can be 9, stdThreshold 4.0.
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="spectrogramData"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <param name="length"></param>
+        /// <param name="stdThreshold"></param>
+        /// <returns></returns>
+        public static List<PointOfInterest> FilterSpikePointOfInterests(
+            List<PointOfInterest> poiList,
+            double[,] spectrogramData,
+            int rows,
+            int cols,
+            int length,
+            double stdThreshold)
+        {
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, spectrogramData, rows, cols);
+            var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+            var halfLength = length / 2;
+            for (var r = halfLength; r < rows - halfLength; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    if (poiMatrix[r, c].RidgeMagnitude != 0.0)
+                    {
+                        var spikeMatrix = MatrixTools.Submatrix(matrix, r - halfLength, c, r + halfLength, c);
+                        double av, sd;
+                        NormalDist.AverageAndSD(spikeMatrix, out av, out sd);
+                        if (sd < stdThreshold && poiMatrix[r, c].OrientationCategory == 4)
+                        {
+                            poiMatrix[r, c].RidgeMagnitude = 0.0;
+                            poiMatrix[r, c].OrientationCategory = 10;
+                            poiMatrix[r, c].Intensity = matrix[r, c];
+                        }
+                    }
+                }
+            }
+            var filteredPoiList = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
+            return filteredPoiList;
+        }
+
+        /// <summary>
+        /// This method is designed for remove poi that are lower than the intensity threshold. 
+        /// </summary>
+        /// <param name="poiList"></param>
+        /// <param name="rows"></param>
+        /// <param name="cols"></param>
+        /// <param name="intensityThreshold"></param>
+        /// <returns></returns>
+        public static List<PointOfInterest> FilterLowIntensityPoi(
+            List<PointOfInterest> poiList,
+            int rows,
+            int cols,
+            double intensityThreshold)
+        {
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rows, cols);
+            for (var r = 0; r < rows - 0; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    if (poiMatrix[r, c].Intensity < intensityThreshold)
+                    {
+                        poiMatrix[r, c].RidgeMagnitude = 0.0;
+                        poiMatrix[r, c].OrientationCategory = 10;
+                    }
+                }
+            }
+            var filteredPoiList = StatisticalAnalysis.TransposeMatrixToPOIlist(poiMatrix);
+            return filteredPoiList;
+        }
+
+        public static List<PointOfInterest> JoinBrokenPoi(
+            List<PointOfInterest> poiList,
+            double[,] spectrogramData
+            )
+        {
+            var result = new List<PointOfInterest>();
+            var rows = spectrogramData.GetLength(1);
+            var cols = spectrogramData.GetLength(0);
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, spectrogramData, rows, cols);
+            var newMatrix = new PointOfInterest[rows, cols];
+            for (var rowIndex = 0; rowIndex < rows; rowIndex++)
+            {
+                for (var colIndex = 0; colIndex < cols; colIndex++)
+                {
+                    var point = new Point(colIndex, rowIndex);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    tempPoi.OrientationCategory = 10;
+                    newMatrix[rowIndex, colIndex] = tempPoi;
+                }
+            }
+            var offset = 2;         
+            for (var r = offset; r < rows - offset; r++)
+            {
+                for (var c = offset; c < cols - offset; c++)
+                {
+                    if (poiMatrix[r, c].OrientationCategory == 2)
+                    {
+                        newMatrix[r, c] = poiMatrix[r, c];
+                        newMatrix[r - 1, c + 1] = poiMatrix[r, c];
+                        newMatrix[r + 1, c - 1] = poiMatrix[r, c];
+                    }
+                    if (poiMatrix[r, c].OrientationCategory == 6)
+                    {
+                        newMatrix[r, c] = poiMatrix[r, c];
+                        newMatrix[r + 1, c + 1] = poiMatrix[r, c];
+                        newMatrix[r - 1, c - 1] = poiMatrix[r, c];                       
+                    }
+                    if (poiMatrix[r, c].OrientationCategory == 4)
+                    {
+                        newMatrix[r, c] = poiMatrix[r, c];
+                        newMatrix[r - 1, c] = poiMatrix[r, c];
+                        newMatrix[r + 1, c] = poiMatrix[r, c];
+                        newMatrix[r - 2, c] = poiMatrix[r, c];
+                        newMatrix[r + 2, c] = poiMatrix[r, c];
+
+                    }
+                   if (poiMatrix[r, c].OrientationCategory == 0)
+                    {
+                        newMatrix[r, c] = poiMatrix[r, c];
+                        newMatrix[r, c - 1] = poiMatrix[r, c];
+                        newMatrix[r, c + 1] = poiMatrix[r, c];
+                        newMatrix[r, c - 2] = poiMatrix[r, c];
+                        newMatrix[r, c + 2] = poiMatrix[r, c];
+                    }
+                }
+            }
+            result = StatisticalAnalysis.TransposeMatrixToPOIlist(newMatrix);
+            return result;
+        }
 
         public static double MeasureLineOfBestfit(PointOfInterest[,] poiMatrix, double lineOfSlope, double intersect)
         {
             var r = 0.0;
-            var Sreg = 0.0;
-            var Stot = 0.0;
+            var sreg = 0.0;
+            var stot = 0.0;
             var poiMatrixLength = poiMatrix.GetLength(0);
             var matrixRadius = poiMatrixLength / 2;
             var improvedRowIndex = 0.0;
@@ -460,7 +621,7 @@ namespace Dong.Felt
                         int tempRowIndex = matrixRadius - rowIndex;
                         double verticalDistance = lineOfSlope * tempColIndex + intersect - tempRowIndex;
                         improvedRowIndex += tempRowIndex;
-                        Sreg += Math.Pow(verticalDistance, 2.0);
+                        sreg += Math.Pow(verticalDistance, 2.0);
                         poiCount++;
                     }
                 }
@@ -474,14 +635,14 @@ namespace Dong.Felt
                     {
                         int tempRowIndex = matrixRadius - rowIndex;
                         double verticalDistance1 = tempRowIndex - nullLineYIntersect;
-                        Stot += Math.Pow(verticalDistance1, 2.0);
+                        stot += Math.Pow(verticalDistance1, 2.0);
                     }
                 }
             }
 
-            if (Stot != 0)
+            if (stot != 0)
             {
-                r = 1 - Sreg / Stot;
+                r = 1 - sreg / stot;
             }
             else
             {
@@ -489,5 +650,6 @@ namespace Dong.Felt
             }
             return r;
         }
+       
     }
 }

@@ -367,7 +367,7 @@
             return result;
         }
 
-        public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate,
+        public static double EuclideanDistanceScore(RegionRepresentation query, RegionRepresentation candidate,
             double matchedDistanceThreshold, double weight)
         {
             var result = 0.0;
@@ -456,7 +456,7 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, double weight1, double weight2)
+        public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRepresentation> query, List<RegionRepresentation> candidate, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -492,7 +492,7 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static double WeightedDistanceScoreRegionRepresentation3(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate,
+        public static double WeightedDistanceScoreRegionRepresentation3(List<RegionRepresentation> query, List<RegionRepresentation> candidate,
             double weight1, double weight2, double weight3, double weight4)
         {
             var result = 0.0;
@@ -550,8 +550,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature8HoGBased(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidate, int poiCountThreshold,double weight1, double weight2)
+        public static double DistanceFeature8HoGBased(List<RegionRepresentation> query, 
+            List<RegionRepresentation> candidate, int poiCountThreshold,double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -641,8 +641,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature9Representation(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature9Representation(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -692,8 +692,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature10Calculation(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold)
+        public static double DistanceFeature10Calculation(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -737,8 +737,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature12Based(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature12Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -829,8 +829,8 @@
             return result;
         }
 
-        public static double DistanceFeature14Based(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature14Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -889,8 +889,8 @@
             return result;
         }
 
-        public static double DistanceFeature16Based(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)       
+        public static double DistanceFeature16Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)       
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -958,8 +958,8 @@
             return result;
         }
 
-        public static double DistanceFeature4RidgeBased(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature4RidgeBased(List<RegionRepresentation> query, 
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -1031,7 +1031,7 @@
             return result;
         }
      
-        public static double DistanceHoGRepresentation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate)
+        public static double DistanceHoGRepresentation(List<RegionRepresentation> query, List<RegionRepresentation> candidate)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -1067,7 +1067,7 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static double WeightedDistanceScoreRegionRepresentation4(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate,
+        public static double WeightedDistanceScoreRegionRepresentation4(List<RegionRepresentation> query, List<RegionRepresentation> candidate,
             double weight1, double weight2, double weight3, double weight4, double weight5, double weight6)
         {
             var result = 0.0;

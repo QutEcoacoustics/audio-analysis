@@ -7,7 +7,11 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Text;
+
+    using Dong.Felt.Representations;
+
     using TowseyLibrary;
 
     // The query is defined by a region bounded with a fixed frequency range and duration range. 
@@ -24,7 +28,7 @@
         /// gets or sets the minFrequency, the bottom boundary of the region.
         /// </summary>
         public double minFrequency { get; set; }
-       
+
         /// <summary>
         /// gets or sets the startTime, the left boundary of the region.
         /// The unit is second.
@@ -38,10 +42,10 @@
         public double endTime { get; set; }
 
         /// <summary>
-        /// gets or sets the duration by endTime substracting startTime, its unit is millisecond. 
+        /// gets or sets the duration: endTime substracting startTime, its unit is millisecond. 
         /// </summary>
         public double duration { get; set; }
-        
+
         /// <summary>
         /// gets or sets the frequencyRange by maxFrequency substracting minFrequency. 
         /// </summary>
@@ -71,9 +75,14 @@
         /// </summary>
         public int nhStartColIndex { get; set; }
 
+        public int BottomInPixel { get; set; }
 
-        public const int secondToMillisecond = 1000;
-        
+        public int TopInPixel { get; set; }
+
+        public int LeftInPixel { get; set; }
+
+        public int RightInPixel { get; set; }
+
         #endregion
 
         #region Constructors
@@ -87,7 +96,7 @@
             minFrequency = 0.0;
             startTime = 0.0;
             endTime = 0.0;
-            duration = endTime - startTime; 
+            duration = endTime - startTime;
         }
 
         /// <summary>
@@ -97,15 +106,16 @@
         /// <param name="minimumFrequency"></param>
         /// <param name="starttime"></param>
         /// <param name="endtime"></param>
-        public Query(double maximumFrequency, double minimumFrequency, 
+        public Query(double maximumFrequency, double minimumFrequency,
             double startTime, double endTime, int neighbourhoodLength,
             int maxFrequencyIndex, int maxFrameIndex,
             SpectrogramConfiguration spectrogramConfig)
         {
-            // the unit is confusing            
+            // the unit is confusing
+            var secondToMillisecond = 1000;
             this.maxFrequency = maximumFrequency;
             this.minFrequency = minimumFrequency;
-            this.startTime = startTime *secondToMillisecond; // millisecond
+            this.startTime = startTime * secondToMillisecond; // millisecond
             this.endTime = endTime * secondToMillisecond; // millisecond
             this.duration = this.endTime - this.startTime;
             this.frequencyRange = this.maxFrequency - this.minFrequency;
@@ -126,7 +136,7 @@
             SpectrogramConfiguration spectrogramConfig,
             CompressSpectrogramConfig compressConfig)
         {
-            // the unit is confusing           
+            var secondToMillisecond = 1000;
             this.maxFrequency = maximumFrequency * compressConfig.FreqCompressRate;
             this.minFrequency = minimumFrequency * compressConfig.FreqCompressRate;
             this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
@@ -138,11 +148,12 @@
             GetNhProperties(neighbourhoodLength, spectrogramConfig);
         }
 
-        public Query(double maximumFrequency, double minimumFrequency, 
+        public Query(double maximumFrequency, double minimumFrequency,
             double startTime, double endTime,
             CompressSpectrogramConfig compressConfig)
         {
-            // the unit is confusing          
+            // the unit is confusing
+            var secondToMillisecond = 1000;
             this.maxFrequency = maximumFrequency;
             this.minFrequency = minimumFrequency;
             this.startTime = startTime * secondToMillisecond * compressConfig.TimeCompressRate; // millisecond
@@ -160,8 +171,8 @@
             this.startTime = startTime * secondToMillisecond; // millisecond
             this.endTime = endTime * secondToMillisecond; // millisecond
             this.duration = this.endTime - this.startTime;
-            this.frequencyRange = this.maxFrequency - this.minFrequency;  
-          
+            this.frequencyRange = this.maxFrequency - this.minFrequency;
+
         }
 
         // to get the nhCountInRow, nhCountInColumn, nhStartRowIndex, nhStartColIndex.
@@ -196,13 +207,13 @@
             }
             if (nhCountInCols > this.maxNhColIndex)
             {
-                nhCountInCols= this.maxNhColIndex;
+                nhCountInCols = this.maxNhColIndex;
             }
             this.nhCountInRow = nhCountInRows;
             this.nhCountInColumn = nhCountInCols;
-            
+
         }
-       
+
         /// <summary>
         /// Keep it consistent with neighbourhoodRepresentation list. 
         /// </summary>
@@ -224,7 +235,14 @@
             return result;
         }
 
-        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength, 
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile)
+        {
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart, queryInfo.TimeEnd);
+            return result;
+        }
+
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile, int neighbourhoodLength,
             SpectrogramStandard spectrogram, SpectrogramConfiguration spectrogramConfig)
         {
             var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
@@ -243,7 +261,7 @@
                 nhCountInRow, nhCountInColumn, spectrogramConfig);
             return result;
         }
-        
+
         public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile,
             CompressSpectrogramConfig compressConfig)
         {
@@ -253,6 +271,22 @@
             return result;
         }
 
+        public static Query QueryRepresentationFromQueryInfo(FileInfo queryCsvFile,
+            SpectrogramStandard spectrogram)
+        {
+            var queryInfo = CSVResults.CsvToAcousticEvent(queryCsvFile);
+            var result = new Query(queryInfo.MaxFreq, queryInfo.MinFreq, queryInfo.TimeStart,
+                queryInfo.TimeEnd);
+            var timeScale = spectrogram.FrameDuration - spectrogram.Configuration.GetFrameOffset();
+            var freqScale = spectrogram.FBinWidth;
+
+            result.BottomInPixel = (int)(result.minFrequency / freqScale);
+            result.LeftInPixel = (int)(result.startTime / 1000 / timeScale);
+            result.TopInPixel = (int)(result.maxFrequency / freqScale);
+            result.RightInPixel = (int)(result.endTime / 1000 / timeScale);
+
+            return result;
+        }
         #endregion
 
     }
