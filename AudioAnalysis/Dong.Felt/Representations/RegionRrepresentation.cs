@@ -404,7 +404,7 @@ namespace Dong.Felt.Representations
             foreach (var pc in potentialCandidatesStart)
             {
                 var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
-                var minFreqPixelIndex = pc.Bottom - queryRepresentations.bottomToBottomLeftVertex;
+                var minFreqPixelIndex = pc.Bottom - queryRepresentations.bottomToBottomLeftVertex + 1;
                 var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
                 var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
 

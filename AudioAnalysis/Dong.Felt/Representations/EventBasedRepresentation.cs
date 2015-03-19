@@ -246,7 +246,98 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        public static Tuple<double, double, PointOfInterest[,]> GetEntropy(EventBasedRepresentation ev, PointOfInterest[,] poiMatrix, int rowsCount, 
+        public static List<List<EventBasedRepresentation>> GassianEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
+           List<List<AcousticEvent>> ae, PointOfInterest[,] poiMatrix)
+        {
+            var result = new List<List<EventBasedRepresentation>>();
+            var timeScale = sonogram.FrameDuration - sonogram.Configuration.GetFrameOffset();
+            var freqScale = sonogram.FBinWidth;
+            var rows = poiMatrix.GetLength(0) - 1;
+            var cols = poiMatrix.GetLength(1);
+            var vAcousticEventList = ae[0];
+            var hAcousticEventList = ae[1];
+            var pAcousticEventList = ae[2];
+            var nAcousticEventList = ae[3];
+            var vResult = new List<EventBasedRepresentation>();
+            foreach (var e in vAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+
+                if (ep.Area >= 10)
+                {
+                    ep.InsideRidgeOrientation = 0;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    vResult.Add(ep);
+                }
+            }
+            var hResult = new List<EventBasedRepresentation>();
+            foreach (var e in hAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+
+                if (ep.Area >= 10)
+                {
+                    ep.InsideRidgeOrientation = 1;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    hResult.Add(ep);
+                }
+            }
+            var pResult = new List<EventBasedRepresentation>();
+            foreach (var e in pAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                if (ep.Area >= 6)
+                {
+                    ep.InsideRidgeOrientation = 2;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    pResult.Add(ep);
+                }
+            }
+            var nResult = new List<EventBasedRepresentation>();
+            foreach (var e in nAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                if (ep.Area >= 6)
+                {
+                    ep.InsideRidgeOrientation = 3;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;                   
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    nResult.Add(ep);
+                }
+            }
+            result.Add(vResult);
+            result.Add(hResult);
+            result.Add(pResult);
+            result.Add(nResult);
+            return result;
+        }
+
+        public static PointOfInterest[,] GetSubPoiMatrix(EventBasedRepresentation ev,
+            PointOfInterest[,] poiMatrix, int rowsCount,
+            int colsCount)
+        {
+            var startRow = rowsCount - (ev.Bottom + ev.Height);
+            var endRow = rowsCount - ev.Bottom;
+            var startCol = ev.Left;
+            var endCol = ev.Left + ev.Width;
+            var ridgeOrientation = RidgeMajorDirectionToOrientation(ev.InsideRidgeOrientation);
+            var subMatrix = StatisticalAnalysis.Submatrix(poiMatrix, startRow, startCol, endRow, endCol);
+            return subMatrix;
+        }
+
+        public static Tuple<double, double, PointOfInterest[,]> GetEntropy(EventBasedRepresentation ev, 
+            PointOfInterest[,] poiMatrix, int rowsCount, 
             int colsCount)        
         {            
             var startRow = rowsCount - (ev.Bottom + ev.Height);

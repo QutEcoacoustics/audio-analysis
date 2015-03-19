@@ -1191,7 +1191,7 @@ namespace Dong.Felt
 
 
         /// <summary>
-        /// This score calculation is based on calculating the overlap between two Gaussian masks.
+        /// This score is calculated based on the overlap between two Gaussian masks.
         /// </summary>
         /// <param name="queryRepresentation"></param>
         /// <param name="candidateList"></param>
@@ -1227,8 +1227,8 @@ namespace Dong.Felt
 
         public static double EntropyScore(double e1, double e2)
         {
-            var distance = Math.Sqrt(Math.Pow((e1-e2), 2));
-            var score = (1-distance)/1.0;
+            var distance = Math.Sqrt(Math.Pow((e1 - e2), 2));
+            var score = (1 - distance) / 1.0;
             return score;
         }
 
@@ -1242,10 +1242,10 @@ namespace Dong.Felt
             var relevantQueryNRepresentation = GetRelevantIndexInEvents(q, q.nEventList);
 
             // calculate score for vEvents, hEvents, pEvents, nEvents
-            var vScore = ScoreOver2Events2(relevantQueryVRepresentation, c, c.vEventList, n);
-            var hScore = ScoreOver2Events2(relevantQueryHRepresentation, c, c.hEventList, n);
-            var pScore = ScoreOver2Events2(relevantQueryPRepresentation, c, c.pEventList, n);
-            var nScore = ScoreOver2Events2(relevantQueryNRepresentation, c, c.nEventList, n);
+            var vScore = ScoreOver2SubGauMasks(relevantQueryVRepresentation, c, c.vEventList, n);
+            var hScore = ScoreOver2SubGauMasks(relevantQueryHRepresentation, c, c.hEventList, n);
+            var pScore = ScoreOver2SubGauMasks(relevantQueryPRepresentation, c, c.pEventList, n);
+            var nScore = ScoreOver2SubGauMasks(relevantQueryNRepresentation, c, c.nEventList, n);
             // Get the average score
             if (q.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
             {
@@ -1360,37 +1360,41 @@ namespace Dong.Felt
              List<EventBasedRepresentation> candidateEvents, int n)
         {
             var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
-            var pscore = ScoreOver2EventList(queryEvents, relevantCandidateRepresentation, n);
-            var nScore = ScoreOver2EventList(relevantCandidateRepresentation, queryEvents, n);
+            var pscore = OverlapScoreOver2EventList(queryEvents, relevantCandidateRepresentation, n);
+            var nScore = OverlapScoreOver2EventList(relevantCandidateRepresentation, queryEvents, n);
             var score = (pscore + nScore) / 2;
             return score;
         }
 
-        public static double ScoreOver2SubGauMasks(List<EventBasedRepresentation> queryEvents, RegionRepresentation candidate,
+        public static double ScoreOver2SubGauMasks(List<EventBasedRepresentation> relevantQueryEvents, RegionRepresentation candidate,
              List<EventBasedRepresentation> candidateEvents, int n)
         {
-            var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
-            var pscore = ScoreOver2EventList2(queryEvents, relevantCandidateRepresentation, n);
-            var nScore = ScoreOver2EventList2(relevantCandidateRepresentation, queryEvents, n);
-            var ascore = addWeightsToScores(pscore, 0.4, 0.3);
-            var rScore = addWeightsToScores(nScore, 0.4, 0.3);
-            var score = (ascore + rScore) / 2;
+            var score = 0.0;
+            if (candidateEvents.Count > 0)
+            {
+                var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
+                if (relevantQueryEvents.Count > 0)
+                {                    
+                    score = Overlap2Masks(relevantQueryEvents, relevantCandidateRepresentation, n);
+                }
+
+            }
             return score;
-        } 
+        }
 
         public static double ScoreOver2Events2(List<EventBasedRepresentation> queryEvents, RegionRepresentation candidate,
              List<EventBasedRepresentation> candidateEvents, int n)
         {
             var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
-            var pscore = ScoreOver2EventList2(queryEvents, relevantCandidateRepresentation, n);
-            var nScore = ScoreOver2EventList2(relevantCandidateRepresentation, queryEvents, n);
+            var pscore = ScoreOver2EventList(queryEvents, relevantCandidateRepresentation, n);
+            var nScore = ScoreOver2EventList(relevantCandidateRepresentation, queryEvents, n);
             var ascore = addWeightsToScores(pscore, 0.4, 0.3);
             var rScore = addWeightsToScores(nScore, 0.4, 0.3);
             var score = (ascore + rScore) / 2;
-            return score;
-        } 
-       
-        public static double ScoreOver2EventList(
+            return 0.0;
+        }
+
+        public static double OverlapScoreOver2EventList(
             List<EventBasedRepresentation> events1,
             List<EventBasedRepresentation> events2, int n)
         {
@@ -1434,7 +1438,7 @@ namespace Dong.Felt
         /// <param name="events2"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static Tuple<double, double, double> ScoreOver2EventList2(
+        public static Tuple<double, double, double> ScoreOver2EventList(
             List<EventBasedRepresentation> events1,
             List<EventBasedRepresentation> events2, int n)
         {
@@ -1481,40 +1485,28 @@ namespace Dong.Felt
             var result = Tuple.Create(overlapScore, fEntropyScore, tEntropyScore);
             return result;
         }
-        
+
         public static double Overlap2Masks(List<EventBasedRepresentation> events1,
             List<EventBasedRepresentation> events2, int n)
         {
-            var overlapScore = 0.0;          
-            if (events1.Count > 0 && events2.Count > 0)
+            var overlapScore = 0.0;
+
+            foreach (var q in events1)
             {
-                foreach (var q in events1)
+                // find the N cloest event to compare
+                var nClosestEventList = FindNCloestEvents(events2, q, n);
+                var index = FindMaximumScoreEvent(nClosestEventList, q);
+                // Another check on frame offset
+                var frameCheck = OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
+                var subScore = 0.0;                
+                if (frameCheck)
                 {
-                    // find the N cloest event to compare
-                    var nClosestEventList = FindNCloestEvents(events2, q, n);
-                    var index = FindMaximumScoreEvent(nClosestEventList, q);
-                    // Another check on frame offset
-                    var frameCheck = OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
-                    var subScore = 0.0;
-                    if (frameCheck)
-                    {
-                        var leftAnchor = nClosestEventList[index].Left;
-                        var qLeft = leftAnchor;
-                        var overlap = StatisticalAnalysis.EventOverlapInPixel(
-                            qLeft,
-                            q.Bottom,
-                            qLeft + q.Width,
-                            q.Bottom + q.Height,
-                            nClosestEventList[index].Left,
-                            nClosestEventList[index].Bottom,
-                            nClosestEventList[index].Left + nClosestEventList[index].Width,
-                            nClosestEventList[index].Bottom + nClosestEventList[index].Height);
-                        subScore = ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;                       
-                    }
-                    overlapScore += subScore;                  
+                    subScore = StatisticalAnalysis.EventContentOverlapInPixel(
+                        q, nClosestEventList[index]);
                 }
-                overlapScore /= events1.Count;                
-            }           
+                overlapScore += subScore;
+            }
+            overlapScore /= events1.Count;
             return overlapScore;
         }
 
@@ -1547,11 +1539,12 @@ namespace Dong.Felt
             {
                 foreach (var e in events)
                 {
-                    // Bottom and Left will be used for calculating overlap score.
+                    // Bottom and Left will be used for calculating overlap score.              
                     var item = new EventBasedRepresentation(e.TimeScale, e.FreqScale, e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                     var eBottom = e.Bottom;
                     item.Bottom = eBottom - regionBottom;
                     var eLeft = e.Left;
+                    item.PointsOfInterest = e.PointsOfInterest;
                     item.Left = eLeft - regionLeft;
                     item.Width = e.Width;
                     item.Height = e.Height;

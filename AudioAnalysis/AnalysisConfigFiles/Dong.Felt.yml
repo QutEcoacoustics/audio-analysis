@@ -6,17 +6,17 @@
 detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
-InputDirectory: C:\XUEYAN\PHD research work\Third experiment-AED\Training recordings
+InputDirectory: C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Training recordings
 
 #C:\Training recordings2 
 
-OutputDirectory: C:\XUEYAN\PHD research work\Third experiment-AED\Output
+OutputDirectory: C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output
 ## test fft output directory
 #OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [processOne]  
+Actions: [batch]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
