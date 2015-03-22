@@ -455,8 +455,8 @@ EVN:
   Units: "events/s"
   IncludeInComboIndex: false
   ComboWeight: 0.0
-FFT:
-  Name: spectralFFT
+SUM:
+  Name: spectralSUM
   Comment: "Spectrum of averaged FFT coefficient values derived from the amplitude spectorgram."
   DataType: double[]
   DefaultValue: 0.0
@@ -467,6 +467,17 @@ FFT:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
+POW:
+  Name: spectralPOW
+  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 70.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
+  IncludeInComboIndex: false
 SPT:
   Name: spectralSPT
   Comment: "Spectrum of average number of spectral Peak Tracks per second within each freq bin."

@@ -141,7 +141,13 @@ namespace AudioAnalysisTools.Indices
 
             // calculate start and end samples of the subsegment and noise segment
             int sampleStart = (int)(localOffsetInSeconds * sampleRate);
+            //calculate the number of samples in the exact subsegment duration
             int subsegmentSampleCount = (int)(subsegmentSecondsDuration * sampleRate);
+            //calculate the exact number of frames in the exact subsegment duration
+            double frameCount = subsegmentSampleCount / (double)frameStep;
+            //In order not to lose the last fracional frame, round up the frame number 
+            // and get the exact number of samples in the integer number of frames.
+            subsegmentSampleCount = (int)Math.Ceiling(frameCount) * frameStep;
             int sampleEnd   = sampleStart + subsegmentSampleCount - 1;
 
             int noiseBuffer    = (int)(BGNoiseNeighbourhood * sampleRate);
@@ -254,8 +260,8 @@ namespace AudioAnalysisTools.Indices
             double[,] amplitudeSpectrogram = dspOutput1.amplitudeSpectrogram; // get amplitude spectrogram.
             int nyquistBin = dspOutput1.NyquistBin;
 
-            // i: CALCULATE THE AVERAGE AMPLITUDE SPECTRUM
-            spectra.FFT = MatrixTools.GetColumnsAverages(amplitudeSpectrogram);
+            // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI 
+            spectra.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
 
             // calculate the bin id of boundary between low & mid frequency bins. This is to avoid low freq bins that contain anthrophony.
             int lowerBinBound = (int)Math.Ceiling(LowFreqBound / dspOutput1.FreqBinWidth);
@@ -275,6 +281,8 @@ namespace AudioAnalysisTools.Indices
             }
 
             // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
+            spectra.DIF = AcousticComplexityIndex.SumOfAmplitudeDifferences(amplitudeSpectrogram);
+            
             double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);           
             spectra.ACI = aciSpectrum;
 
@@ -332,12 +340,12 @@ namespace AudioAnalysisTools.Indices
             spectra.BGN = spectralDecibelBGN;
             //DataTools.writeBarGraph(spectralDecibelBGN);
 
-            // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM 
+            // iii: CALCULATE noise reduced AVERAGE DECIBEL POWER SPECTRUM 
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBGN);
             nhThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold);
             var tuple2 = SpectrogramTools.CalculateSpectralAvAndVariance(deciBelSpectrogram);
-            spectra.AVG = tuple2.Item1;
+            spectra.POW = tuple2.Item1;
 
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
