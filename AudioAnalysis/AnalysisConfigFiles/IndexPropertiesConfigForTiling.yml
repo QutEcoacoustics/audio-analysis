@@ -322,7 +322,7 @@ ACI:
   ComboWeight: 0.0
 AVG:
   Name: spectralAVG
-  Comment: "Spectrum of average dB amplitude in each frequency bin after noise removal."
+  Comment: "Spectrum of avg dB power in each freq bin after noise removal. AVG abbrev depracated 22-03-2015. Change to POW"
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
@@ -358,6 +358,18 @@ CVR:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
+DIF:
+  Name: spectralDIF
+  Comment: "Spectrum of SUM of DIFFERENCES amplitude values in each freq bin. Used for calculation of ACI"
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
 ENT:
   Name: spectralENT
   Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
@@ -382,9 +394,9 @@ EVN:
   Units: "events/s"
   IncludeInComboIndex: false
   ComboWeight: 0.0
-FFT:
-  Name: spectralFFT
-  Comment: "Spectrum of averaged FFT coefficient values derived from the amplitude spectorgram."
+SUM:
+  Name: spectralSUM
+  Comment: "Spectrum of summed FFT coefficient values derived from the amplitude spectorgram. Used for calculation of ACI"
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
@@ -392,6 +404,18 @@ FFT:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+POW:
+  Name: spectralPOW
+  Comment: "Spectrum of average dB power in each freq bin after noise removal."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 70.0
+  ProjectID: Acoustic Indices
+  Units: "dB"
   IncludeInComboIndex: false
   ComboWeight: 0.0
 SPT:

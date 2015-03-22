@@ -257,19 +257,21 @@ namespace AudioAnalysisTools.Indices
 
         public double[] ACI { get; set; }
 
-        public double[] AVG { get; set; }
-
         public double[] BGN { get; set; }
 
         public double[] CVR { get; set; }
+
+        public double[] DIF { get; set; }
 
         public double[] ENT { get; set; }
 
         public double[] EVN { get; set; }
 
-        public double[] FFT { get; set; }
+        public double[] POW { get; set; }
 
         public double[] SPT { get; set; }
+
+        public double[] SUM { get; set; }
 
         //public double[] CLS { get; set; }
 

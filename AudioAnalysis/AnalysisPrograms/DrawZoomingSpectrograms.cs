@@ -139,7 +139,7 @@ namespace AnalysisPrograms
             if (arguments == null)
             {
                 arguments = Dev();
-                bool verbose = true; // assume verbose if in dev mode
+                bool verbose = false; // assume verbose if in dev mode
                 if (verbose)
                 {
                     string date = "# DATE AND TIME: " + DateTime.Now;
@@ -153,11 +153,11 @@ namespace AnalysisPrograms
             }
 
             // Create the super tiles for a full set of recordings
-            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
-                                                 arguments.Output,
-                                                 arguments.SpectrogramConfigPath,
-                                                 arguments.SpectrogramTilingConfig,
-                                                 arguments.IndexPropertiesConfig);
+            //ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
+            //                                     arguments.Output,
+            //                                     arguments.SpectrogramConfigPath,
+            //                                     arguments.SpectrogramTilingConfig,
+            //                                     arguments.IndexPropertiesConfig);
 
 
             // ######################################################################################################################################################

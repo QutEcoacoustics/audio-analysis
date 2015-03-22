@@ -34,7 +34,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             DateTime now1 = DateTime.Now;
-            string[] keys = { "ACI", "AVG", "BGN", "CVR", "ENT", "EVN", "FFT", "SPT" };
+            string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "SUM", "SPT" };
             Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(inputDirectory, fileStem + "_" + analysisType, keys);
             DateTime now2 = DateTime.Now;
             TimeSpan et = now2 - now1;
@@ -148,7 +148,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // These parameters define the colour maps and appearance of the false-colour spectrogram
             string colorMap1 = "ACI-ENT-EVN";
-            string colorMap2 = "BGN-AVG-CVR";
+            string colorMap2 = "BGN-POW-CVR";
 
             double backgroundFilterCoeff = (double?)analysisConfig.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
@@ -265,9 +265,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // this is a normalisastion hack to darken the frame derived spectrograms
             double min = -100;
-            double max = -40;
+            double max = -30;
             spectralSelection = MatrixTools.boundMatrix(spectralSelection, min, max);
             spectralSelection = DataTools.normalise(spectralSelection);
+            spectralSelection = MatrixTools.SquareRootOfValues(spectralSelection);
             var cch = CubeHelix.GetCubeHelix();
             Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(spectralSelection);
 
@@ -375,9 +376,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 var newMatrix = new double[rowCount, compressedLength];
                 double[] tempArray = new double[scalingFactor];
 
+                // the ENTROPY matrix requires separate calculation
                 if ((key == "ENT") && (scalingFactor > 1))
                 {
-                    matrix = spectra["FFT"];
+                    matrix = spectra["SUM"];
                     for (int r = 0; r < rowCount; r++)
                     {
                         int colIndex = 0;
@@ -391,14 +393,34 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             }
                             double entropy = DataTools.Entropy_normalised(tempArray);
                             if (Double.IsNaN(entropy)) entropy = 1.0;
-                            //entropy = 1 - entropy - 0.4;
-                            //if (entropy < 0.0) entropy = 0.0;
                             newMatrix[r, colIndex] = 1 - entropy;
+                        }
+                    }
+                }
+                else 
+                // THE ACI matrix requires separate calculation
+                if ((key == "ACI") && (scalingFactor > 1))
+                {
+                    double[] DIFArray = new double[scalingFactor];
+                    double[] SUMArray = new double[scalingFactor];
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        int colIndex = 0;
+                        for (int c = 0; c <= colCount - scalingFactor; c += step)
+                        {
+                            colIndex = c / scalingFactor;
+                            for (int i = 0; i < scalingFactor; i++)
+                            {
+                                DIFArray[i] = spectra["DIF"][r, c + i];
+                                SUMArray[i] = spectra["SUM"][r, c + i];
+                            }
+                            newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
                         }
                     }
                 }
                 else // average all other spectral indices
                 {
+                    matrix = spectra[key];
                     for (int r = 0; r < rowCount; r++)
                     {
                         int colIndex = 0;
