@@ -68,52 +68,50 @@ namespace AudioAnalysisTools.TileImage
 
         public void TileMany(IEnumerable<ISuperTile> allSuperTiles)
         {
-            foreach (var superTile in allSuperTiles)
+
+            var windowed = allSuperTiles.Windowed(2);
+            foreach (var superTiles in windowed)
             {
-                this.Tile(superTile.Image, superTile.Scale, new Point(superTile.OffsetX, superTile.OffsetY));
+                this.Tile(superTiles[0], superTiles[1]);
             }
         }
 
         /// <summary>
-        /// Split one large image (a super tile) into smaller tiles
+        /// Split one large image (a super tile) into smaller tiles.
+        /// The super tile needs to be aligned within the layer first
         /// </summary>
-        /// <param name="image">
+        /// <param name="current">
         /// </param>
-        /// <param name="scale">
+        /// <param name="next">
+        /// The next.
         /// </param>
-        /// <param name="offsets">
-        /// The (top, left) point of the tile within the full space of the layer
-        /// </param>
-        public void Tile(Image image, double scale, Point offsets)
+        public void Tile(ISuperTile current, ISuperTile next)
         {
-            Contract.Ensures(image != null);
+            Contract.Ensures(current.Image != null);
 
-            var layer = this.CalculatedLayers.First(x => x.XScale == scale);
+            var layer = this.CalculatedLayers.First(x => x.XScale == current.Scale);
 
-            int width = image.Width, height = image.Height, xOffset = offsets.X, yOffset = offsets.Y;
+            int width = current.Image.Width, height = current.Image.Height, xOffset = current.OffsetX, yOffset = current.OffsetY;
 
-            // align super tile within layer
-            int numtilesX;
 
             // either positive or negative
-            double paddingX = 0; // TODO: call AlignSuperTileInLayer
-            double paddingY = 0; // TODO: call AlignSuperTileInLayer
+            int paddingX, paddingY;
+            int tileOffsetInLayerX = this.AlignSuperTileInLayer(layer.Width, layer.XTiles, this.profile.TileWidth, current.OffsetX, current.Image.Width, out paddingX);
+            int tileOffsetInLayerY = this.AlignSuperTileInLayer(layer.Height, layer.YTiles, this.profile.TileHeight, current.OffsetY, current.Image.Height, out paddingY); 
+            
 
-            bool isSuperTileWidthFactorOfLayerWidth = layer.Width / (double)width == 0;
-            if (true)
-            {
-                // tiles are aligned within layer on some factor of tileWidth
-                numtilesX = 0;
-            }
-
-            var numtilesY = 0;
+            // drawable tiles in the current super tile
+            // as a rule only draw the sections that are available in the current tile
+            // and as much as we need from the next tile
+            var tilesInSuperTileX = 0;
+            var tilesInSuperTileY = 0;
 
             // determine padding needed
 
             // start producing tiles
-            for (var i = 0; i < numtilesX; i++)
+            for (var i = 0; i < tilesInSuperTileX; i++)
             {
-                for (var j = 0; j < numtilesY; j++)
+                for (var j = 0; j < tilesInSuperTileY; j++)
                 {
                     // clone a segment of the super tile
                     // NOTE: At the moment it may sometimes pull regions outside of the original image
@@ -134,7 +132,7 @@ namespace AudioAnalysisTools.TileImage
                                              Width = this.profile.TileWidth, 
                                              Height = this.profile.TileHeight
                                          };
-                    var tileImage = ((Bitmap)image).Clone(subsection, image.PixelFormat);
+                    var tileImage = ((Bitmap)current.Image).Clone(subsection, current.Image.PixelFormat);
 
                     // convert co-ordinates to layer relative
                     var layerTop = 0;
@@ -170,61 +168,44 @@ namespace AudioAnalysisTools.TileImage
         /// ]]>
         /// </para>
         /// </summary>
-        /// <param name="layerWidth">
-        /// The layer Width.
+        /// <param name="layerLength">
+        ///     The layer Width.
         /// </param>
-        /// <param name="numberOfTilesNeededForLayer">
+        /// <param name="layerTileCount">
         /// </param>
-        /// <param name="tileSize">
+        /// <param name="layerTileLength">
         /// </param>
         /// <param name="superTileOffset">
-        /// The super Tile Offset.
+        ///     The super Tile Offset. This is a top/left coordinate 
+        ///     relative to the start of the data
+        ///     that needs to be converted to a middle coordinate
+        ///     that is relative to the layer.
         /// </param>
         /// <param name="superTileWidth">
-        /// The super Tile Width.
+        ///     The super Tile Width.
         /// </param>
+        /// <param name="padding"></param>
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        private int AlignSuperTileInLayer(
-            int layerWidth, 
-            int numberOfTilesNeededForLayer, 
-            int tileSize, 
-            int superTileOffset, 
-            int superTileWidth)
+        private int AlignSuperTileInLayer(int layerLength, int layerTileCount, int layerTileLength, int superTileOffset, int superTileWidth, out int padding)
         {
-            Contract.Assert(layerWidth / (double)tileSize == numberOfTilesNeededForLayer);
+            // the layer should fit a whole number of tiles
+            Contract.Assert(Math.Abs(layerLength / ((double)layerTileLength - layerTileCount)) < 0.001);
+            
+            // first determine padding required by the layer
+            var tilesInLayer = (double)layerLength / layerTileCount;
+            var overlap = tilesInLayer - Math.Floor(tilesInLayer);
+            
+            // padding is split either side
+            int overlapInPx = (int)Math.Round((overlap / 2.0) * tilesInLayer, MidpointRounding.AwayFromZero);
+            padding = layerTileLength - overlapInPx;
 
-            var middleOffset = layerWidth / 2.0;
-            if (numberOfTilesNeededForLayer.IsOdd())
-            {
-                middleOffset = layerWidth - (tileSize / 2.0);
-            }
+            // convert superTileOddset to coordinates relative to layer
+            var superTileOffsetInLayer = padding + superTileOffset;
 
-            // does the provided supertile align to a tile?
-            // i.e. how many tiles away before the super tile starts
-            var gapInTiles = superTileOffset / (double)tileSize;
-            if (gapInTiles == 0.0)
-            {
-                // then super tile is aligned
-                return 0;
-            }
-            else
-            {
-                // super tile is not aligned
-
-                // support cases where there is only one super tile per layer
-                var tilesInSuperTile = double.NaN; // TODO:
-                if (false)
-                {
-                    // TODO;
-                }
-                else
-                {
-                    throw new NotSupportedException(
-                        "The super tile is not aligned to a a tile boundrary, don't know how to proceed");
-                }
-            }
+            // with limite information it is really hard to do more/verify
+            return superTileOffsetInLayer;
         }
 
         private SortedSet<Layer> CalculateLayers(
@@ -237,27 +218,35 @@ namespace AudioAnalysisTools.TileImage
         {
             var results = new SortedSet<Layer>();
             int scaleIndex = 0;
-            var scales = xScales.Zip(yScales, Tuple.Create);
-            foreach (var scale in scales)
+            var xEnumerator = xScales.Reverse().GetEnumerator();
+            var yEnumerator = yScales.Reverse().GetEnumerator();
+
+            double xScale = double.NaN, yScale = double.NaN;
+            bool xMore, yMore;
+            while ((xMore = xEnumerator.MoveNext()) | (yMore = yEnumerator.MoveNext()))
             {
+                xScale = xMore ? xEnumerator.Current : xScale;
+                yScale = yMore ? yEnumerator.Current : yScale;
+
                 int xLayerLength, yLayerLength;
                 int xTiles, yTiles;
                 double xNormalizedScale, yNormalizedScale;
 
-                CalculateScaleStats(xUnitScale, unitWidth, this.profile.TileWidth, scale.Item1, out xNormalizedScale, out xLayerLength, out xTiles);
-                CalculateScaleStats(yUnitScale, unitHeight, this.profile.TileHeight, scale.Item2, out yNormalizedScale, out yLayerLength, out yTiles);
+                CalculateScaleStats(xUnitScale, unitWidth, this.profile.TileWidth, xScale, out xNormalizedScale, out xLayerLength, out xTiles);
+                CalculateScaleStats(yUnitScale, unitHeight, this.profile.TileHeight, yScale, out yNormalizedScale, out yLayerLength, out yTiles);
 
                 results.Add(
-                    new Layer {
-                            XNormalizedScale = xNormalizedScale,
-                            YNormalizedScale = yNormalizedScale,
-                            XScale = scale.Item1, 
-                            Width = xLayerLength, 
-                            Height = yLayerLength, 
-                            ScaleIndex = scaleIndex, 
-                            XTiles = xTiles, 
-                            YTiles = yTiles
-                        });
+                    new Layer(scaleIndex)
+                    {
+                        XNormalizedScale = xNormalizedScale,
+                        YNormalizedScale = yNormalizedScale,
+                        XScale = xScale,
+                        YScale = yScale,
+                        Width = xLayerLength, 
+                        Height = yLayerLength, 
+                        XTiles = xTiles, 
+                        YTiles = yTiles
+                    });
 
                 scaleIndex++;
             }

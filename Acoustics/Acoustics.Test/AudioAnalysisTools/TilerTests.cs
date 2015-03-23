@@ -2,11 +2,7 @@
 // <copyright file="TilerTests.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
-// <summary>
-//   Defines the TilerTests type.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
 namespace Acoustics.Test.AudioAnalysisTools
 {
     using System;
@@ -17,9 +13,10 @@ namespace Acoustics.Test.AudioAnalysisTools
     using System.Linq;
     using System.Text;
 
-    using EcoSounds.Mvc.Tests;
-
+    using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.TileImage;
+
+    using EcoSounds.Mvc.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -42,12 +39,13 @@ namespace Acoustics.Test.AudioAnalysisTools
             this.outputDirectory = TestHelper.GetTempDir();
 
             this.tiler = new Tiler(
-                this.outputDirectory,
-                this.tilingProfile,
-                new SortedSet<double>() { 60.0, 24, 12, 6, 2, 1 },
-                new SortedSet<double>() { 1, 1, 1, 1, 1, 1 },
-                60.0,
-                1440,
+                this.outputDirectory, 
+                this.tilingProfile, 
+                new SortedSet<double>() { 60.0, 24, 12, 6, 2, 1 }, 
+                60.0, 
+                1440, 
+                new SortedSet<double>() { 1, 1, 1, 1, 1, 1 }, 
+                1.0, 
                 300);
         }
 
@@ -64,30 +62,43 @@ namespace Acoustics.Test.AudioAnalysisTools
 
             Assert.AreEqual(6, layers.Count);
 
-            var numberOfTiles = new double[] { 6,  12, 24, 48, 144, 288};
+            var xScales = new[] { 60.0, 24, 12, 6, 2, 1 };
+            var xNormalScales = new[] { 1.0, 2.5, 5, 10, 30, 60 };
+            var numberOfTiles = new[] { 6, 12, 24, 48, 144, 288 };
+            var layerWidths = new[] { 1440, 300 * 12, 300 * 24, 300 * 48, 300 * 144, 300 * 288 };
             var i = 0;
             foreach (var layer in layers)
             {
                 Assert.AreEqual(numberOfTiles[i], layer.XTiles);
                 Assert.AreEqual(1, layer.YTiles);
+                Assert.AreEqual(layerWidths[i], layer.Width);
+                Assert.AreEqual(300, layer.Height);
+                Assert.AreEqual(xScales[i], layer.XScale);
+                Assert.AreEqual(1.0, layer.YScale);
+                Assert.AreEqual(i, layer.ScaleIndex);
+                Assert.AreEqual(xNormalScales[i], layer.XNormalizedScale);
+                Assert.AreEqual(1.0, layer.YNormalizedScale);
 
                 i++;
             }
-
         }
 
         [TestMethod]
         public void Test60Resolution()
         {
             var testBitmap = new Bitmap("1440px.png");
-
-            this.tiler.Tile(testBitmap, 60.0, new Point(0, 0));
+            var superTile = new SuperTile()
+                                {
+                                    Image = testBitmap,
+                                    Scale = TimeSpan.FromSeconds(60.0),
+                                    TimeOffset = TimeSpan.Zero
+                                };
+            this.tiler.Tile(superTile, superTile);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
             ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
-
             var producedFiles = this.outputDirectory.GetFiles();
-            
+
             Assert.AreEqual(6, producedFiles.Length);
         }
     }
