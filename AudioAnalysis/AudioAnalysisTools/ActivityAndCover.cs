@@ -23,18 +23,19 @@ namespace AudioAnalysisTools
     public class SummaryActivity
     {
         public double fractionOfActiveFrames, activeAvDB, eventCount;
-        public TimeSpan avEventDuration;
+        //public TimeSpan avEventDuration;
         public int activeFrameCount;
         public bool[] activeFrames, eventLocations;
 
-        public SummaryActivity(bool[] _activeFrames, int _activeFrameCount, double _activeAvDB, bool[] _events, double _eventCount, TimeSpan _avEventDuration)
+        //public SummaryActivity(bool[] _activeFrames, int _activeFrameCount, double _activeAvDB, bool[] _events, double _eventCount, TimeSpan _avEventDuration)
+        public SummaryActivity(bool[] _activeFrames, int _activeFrameCount, double _activeAvDB, bool[] _events, double _eventCount)
         {
             activeFrames = _activeFrames;
             activeFrameCount = _activeFrameCount;
             fractionOfActiveFrames = activeFrameCount / (double)activeFrames.Length;
             activeAvDB = _activeAvDB;
             eventCount = _eventCount;
-            avEventDuration = _avEventDuration;
+            //avEventDuration = _avEventDuration;
             eventLocations = _events;
         }
     }
@@ -61,6 +62,11 @@ namespace AudioAnalysisTools
         public static TimeSpan DEFAULT_MinimumEventDuration = TimeSpan.FromMilliseconds(100); // used to remove short events from consideration
 
 
+        public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration)
+        {
+            return CalculateActivity(dBarray, frameStepDuration, DEFAULT_ActivityThreshold_dB);
+        }
+
         /// <summary>
         /// Returns the number of active frames and acoustic events and their average duration in milliseconds
         /// Only counts an event if it is LONGER than one frame. 
@@ -69,7 +75,7 @@ namespace AudioAnalysisTools
         /// <param name="activeFrames"></param>
         /// <param name="frameStepDuration">frame duration in seconds</param>
         /// <returns></returns>
-        public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration)
+        public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration, double dbThreshold)
         {
             // minimum frame length for recognition of a valid event
             int minFrameCount = (int)Math.Round(ActivityAndCover.DEFAULT_MinimumEventDuration.TotalMilliseconds / frameStepDuration.TotalMilliseconds);
@@ -89,11 +95,12 @@ namespace AudioAnalysisTools
                 }
             }
 
-            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));  // this more elegant but want to keep active frame array
+            // following line is more elegant but want to keep active frame array
+            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));  
             if (activeFrameCount != 0) activeAvDB /= (double)activeFrameCount;
 
             if (activeFrameCount <= 1)
-                return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, new bool[dBarray.Length], 0, TimeSpan.Zero);
+                return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, new bool[dBarray.Length], 0);
 
 
             // store record of events
@@ -109,14 +116,15 @@ namespace AudioAnalysisTools
             List<int> eventList = DataTools.GetEventLengths(events);
             var listOfFilteredEvents = eventList.Where(x => x >= minFrameCount);
             int eventCount = listOfFilteredEvents.Count();
-            int eventSum   = listOfFilteredEvents.Sum();
 
-            if (eventCount == 0)
-                return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, 0, TimeSpan.Zero);
+            //if (eventCount == 0)
+                return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount);
 
-            TimeSpan avEventDuration = TimeSpan.FromSeconds((frameStepDuration.TotalSeconds * eventSum) / (double)eventCount);   //av segment duration in milliseconds
+            //int eventSum   = listOfFilteredEvents.Sum();
+            //calculate the av segment duration in milliseconds
+            //TimeSpan avEventDuration = TimeSpan.FromSeconds((frameStepDuration.TotalSeconds * eventSum) / (double)eventCount);   
 
-            return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount, avEventDuration);
+            //return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount, avEventDuration);
         }
 
 
@@ -131,7 +139,7 @@ namespace AudioAnalysisTools
         /// <param name="nyquist">Herz</param>
         /// <param name="binWidth">Herz per bin i.e. column in spectrogram - spectrogram rotated wrt to normal view.</param>
         /// <returns></returns>
-        public static SpectralActivity CalculateSpectralEvents(double[,] spectrogram, double bgThreshold, TimeSpan frameStepDuration, int lowFreqBound, int midFreqBound, double binWidth)
+        public static SpectralActivity CalculateSpectralEvents(double[,] spectrogram, double dbThreshold, TimeSpan frameStepDuration, int lowFreqBound, int midFreqBound, double binWidth)
         {
             //calculate boundaries between hi, mid and low frequency spectrum
             //int freqBinCount = spectrogram.GetLength(1);
@@ -149,12 +157,13 @@ namespace AudioAnalysisTools
             {
                 double[] bin = MatrixTools.GetColumn(spectrogram, c); // get the freq bin containing dB values
 
-                activity = ActivityAndCover.CalculateActivity(bin, frameStepDuration);
+                activity = ActivityAndCover.CalculateActivity(bin, frameStepDuration, dbThreshold);
                 //bool[] a1 = activity.activeFrames;
                 //int a2 = activity.activeFrameCount;
                 coverSpectrum[c] = activity.fractionOfActiveFrames; 
                 //double a4 = activity.activeAvDB;
-                eventSpectrum[c] = activity.eventCount / recordingDurationInSeconds;
+                //eventSpectrum[c] = activity.eventCount / recordingDurationInSeconds; 
+                eventSpectrum[c] = activity.eventCount;
                 //TimeSpan a6 = activity.avEventDuration;
                 //bool[] a7 = activity.eventLocations;
             }
