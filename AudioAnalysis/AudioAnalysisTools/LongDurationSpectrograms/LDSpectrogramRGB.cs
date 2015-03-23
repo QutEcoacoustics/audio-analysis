@@ -310,7 +310,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public bool ReadStandardDeviationSpectrogramCSVs(DirectoryInfo ipdir, string fileName)
         {
-            //string keys = "ACI-AVG-BGN-CVR-TEN-VAR";
             int freqBinCount;
             this.spgr_StdDevMatrices = LDSpectrogramRGB.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
             this.FrameWidth = freqBinCount * 2;
@@ -1338,12 +1337,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="indicesConfigPath">
         /// The indices Config Path.
         /// </param>
-        /// <param name="spectra">
+        /// <param name="indexSpgrams">
         /// Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
         public static void DrawSpectrogramsFromSpectralIndices(DirectoryInfo ipDir, DirectoryInfo opDir, 
                                                                FileInfo spectrogramConfigPath, FileInfo indicesConfigPath, 
-                                                               Dictionary<string, double[,]> spectra = null)
+                                                               Dictionary<string, double[,]> indexSpgrams = null)
         {
             LdSpectrogramConfig config = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
 
@@ -1351,7 +1350,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_AVG_CVR;   // assigns indices to RGB
+            string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
             string colorMap2 = config.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
 
             double backgroundFilterCoeff = (double?)config.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
@@ -1364,17 +1363,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
-            if (spectra == null)
+            if (indexSpgrams == null)
             {
-                // reads all known files spectral indices
+                DateTime now1 = DateTime.Now;
                 Logger.Info("Reading spectra files from disk");
+                // reads all known files spectral indices
                 cs1.ReadCSVFiles(ipDir, fileStem + "_" + analysisType);
+                DateTime now2 = DateTime.Now;
+                TimeSpan et = now2 - now1;
+                LoggedConsole.WriteLine("Time to read spectral index files = " + et.TotalSeconds + " seconds");
             }
             else
             {
                 // TODO: not sure if this works
                 Logger.Info("Spectra loaded from memory");
-                cs1.LoadSpectrogramDictionary(spectra);
+                cs1.LoadSpectrogramDictionary(indexSpgrams);
             }
 
             if (cs1.GetCountOfSpectrogramMatrices() == 0)

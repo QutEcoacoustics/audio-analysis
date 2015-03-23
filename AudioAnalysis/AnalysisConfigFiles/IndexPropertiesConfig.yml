@@ -380,18 +380,18 @@ ACI:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-AVG:
-  Name: spectralAVG
-  Comment: "Spectrum of average dB amplitude in each frequency bin after noise removal."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 70.0
-  ProjectID: Acoustic Indices
-  Units: "dB"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+#AVG:
+#  Name: spectralAVG
+#  Comment: "Spectrum of average dB amplitude in each frequency bin after noise removal."
+#  DataType: double[]
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0.0
+#  NormMax: 70.0
+#  ProjectID: Acoustic Indices
+#  Units: "dB"
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
 BGN:
   Name: spectralBGN
   Comment: "Spectrum of dB value of the background 'noise' removed each frequency bin."
@@ -431,6 +431,18 @@ CVR:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
+DIF:
+  Name: spectralDIF
+  Comment: "Spectrum of summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This spgram not displayed. It is used as intermediate for subsequent calculation of ACI."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 10.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
 ENT:
   Name: spectralENT
   Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
@@ -450,14 +462,14 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 2.0
+  NormMax: 0.5
   ProjectID: Acoustic Indices
   Units: "events/s"
   IncludeInComboIndex: false
   ComboWeight: 0.0
 SUM:
   Name: spectralSUM
-  Comment: "Spectrum of averaged FFT coefficient values derived from the amplitude spectorgram."
+  Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This spgram not displayed. It is used for intermediate calculations only."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
@@ -490,18 +502,18 @@ SPT:
   Units: "tracks/s"
   IncludeInComboIndex: false
   ComboWeight: 0.0
-TEN:
-  Name: spectralENT
-  Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 0.6
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+#TEN:
+#  Name: spectralENT
+#  Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead #of energy dispersal."
+#  DataType: double[]
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0.0
+#  NormMax: 0.6
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
 #VAR:
 #  Name: spectralVAR
 #  Comment: "Spectrum of variance of dB amplitude in each frequency bin after noise removal. Paired with AVG"

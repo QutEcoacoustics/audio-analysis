@@ -253,7 +253,7 @@ namespace AudioAnalysisTools.Indices
             //summaryIndexValues.AvgEventDuration = activity.avEventDuration;
 
 
-            // (B) ################################## EXTRACT INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
+            // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
             var spectra = result.SpectralIndexValues;
 
             // Note that the spectrogram has had the DC bin removed. i.e. has only 256 columns.
@@ -331,7 +331,7 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
 
 
-            // (C) ################################## EXTRACT INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
+            // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
                         
             // i: generate the SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
             deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput1.amplitudeSpectrogram, dspOutput1.WindowPower, sampleRate, epsilon);
@@ -349,17 +349,14 @@ namespace AudioAnalysisTools.Indices
 
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
-            double dBThreshold = 2.0; // dB THRESHOLD for calculating spectral coverage
+            double dBThreshold = ActivityAndCover.DEFAULT_ActivityThreshold_dB; // dB THRESHOLD for calculating spectral coverage
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, LowFreqBound, MidFreqBound, freqBinWidth);
-
-            // TODO TODO TODO TODO TODO TODO  etc 
-            // AT: what's all ^^^that^^^ about ??????
             spectra.CVR = spActivity.coverSpectrum;
             spectra.EVN = spActivity.eventSpectrum;
 
             summaryIndexValues.HighFreqCover = spActivity.highFreqBandCover;
-            summaryIndexValues.MidFreqCover = spActivity.midFreqBandCover;
-            summaryIndexValues.LowFreqCover = spActivity.lowFreqBandCover;
+            summaryIndexValues.MidFreqCover  = spActivity.midFreqBandCover;
+            summaryIndexValues.LowFreqCover  = spActivity.lowFreqBandCover;
 
 
 

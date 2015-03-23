@@ -59,8 +59,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
             this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
-            this.ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_EVN;
-            this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
+            this.ColourMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR;
+            this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;        
         }
 
@@ -101,7 +101,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public string FileName { get; set; }
 
-        private string comment4 = "FRAME WIDTH is used without overlap to calculate spectral indices";
+        private string comment4 = "FRAME WIDTH is used WITHOUT overlap to calculate spectral indices";
         public  string COMMENT4 { get { return this.comment4; } set { this.comment4 = value; } }
         /// <summary>
         ///  default value for frame width from which spectrogram was derived.
@@ -115,45 +115,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public int FrameStep { get; set; }
 
-        //[YamlIgnore]
-        //public DirectoryInfo InputDirectoryInfo { get; set; }
-
-        //public string InputDirectory
-        //{
-        //    get
-        //    {
-        //        return this.InputDirectoryInfo.FullName;
-        //    }
-
-        //    set
-        //    {
-        //        this.InputDirectoryInfo = value.ToDirectoryInfo();
-        //    }
-        //}
-
         /// <summary>
         /// default recording starts at zero minute of day i.e. midnight
         /// </summary>
         public TimeSpan MinuteOffset { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        //[YamlIgnore]
-        //public DirectoryInfo OutputDirectoryInfo { get; set; }
-
-        //public string OutputDirectory
-        //{
-        //    get
-        //    {
-        //        return this.OutputDirectoryInfo.FullName;
-        //    }
-
-        //    set
-        //    {
-        //        this.OutputDirectoryInfo = value.ToDirectoryInfo();
-        //    }
-        //}
 
         /// <summary>
         /// 

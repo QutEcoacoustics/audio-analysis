@@ -38,11 +38,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            DateTime now1 = DateTime.Now;
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigFile);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
-            string[] keys = dictIP.Keys.ToList<string>().ToArray(); 
+            string[] keys = dictIP.Keys.ToList<string>().ToArray();
 
+            DateTime now1 = DateTime.Now;
             Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(inputDirectory, fileStem + "_" + analysisType, keys);
             DateTime now2 = DateTime.Now;
             TimeSpan et = now2 - now1;
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             fileStem = fileStem.Substring(0, nameLength);
 
 
-            // TOP MOST ZOOMED OUT IMAGES 
+            // TOP MOST ZOOMED-OUT IMAGES 
             LoggedConsole.WriteLine("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
             foreach (double scale in imageScales)
             {
@@ -100,7 +100,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-            // ####################### DRAW ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
+            // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             LoggedConsole.WriteLine("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
 
             // default scales in seconds per pixel.
@@ -110,39 +110,48 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // Prepare index matrix. This will be used to enhance the frame spectrogram
             /* 
-             * RESEARCH QUESTION:   Which is the better index to use? CVR or AVG. 
-             *                      Decide on CVR. It give better contrast and a less cluttered spgram.
+             * RESEARCH QUESTION:   Which is the better index to use? CVR or POW. 
+             *                      Decide on CVR. It give better contrast.
+             *                      Later decide on POW. It gives a less cluttered spgram.
              */
-            TemporalMatrix cvrMatrix = new TemporalMatrix("columns", spectra["CVR"], ldSpConfig.IndexCalculationDuration);
-            TimeSpan dataDuration = cvrMatrix.DataDuration(); 
+            TemporalMatrix powMatrix = new TemporalMatrix("columns", spectra["POW"], ldSpConfig.IndexCalculationDuration);
+            //double min = tilingConfig.lowerNormalisationBoundForDecibelSpectrograms;
+            //double max = tilingConfig.upperNormalisationBoundForDecibelSpectrograms;
+            // bounds for normaliseing the POW spectral index values
+            double min = 0.0; // dB tilingConfig.lowerNormalisationBoundForDecibelSpectrograms;
+            double max = 70.0;
+
+            TimeSpan dataDuration = powMatrix.DataDuration(); 
             int segmentDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
 
             int minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
-            for (int min = 0; min < minuteCount; min++)
+            for (int minute = 0; minute < minuteCount; minute++)
             {
-                double[,] indexMatrix = cvrMatrix.GetDataBlock(TimeSpan.FromMinutes(min), TimeSpan.FromSeconds(segmentDurationInSeconds));
+                double[,] powIndexMatrix = powMatrix.GetDataBlock(TimeSpan.FromMinutes(minute), TimeSpan.FromSeconds(segmentDurationInSeconds));
+                powIndexMatrix = MatrixTools.boundMatrix(powIndexMatrix, min, max);
+                powIndexMatrix = DataTools.normalise(powIndexMatrix);
 
                 var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
                     inputDirectory,
                     ldSpConfig,
                     indexPropertiesConfigFile,
                     tilingConfig,
-                    min,
+                    minute,
                     imageScales2,
-                    indexMatrix);
+                    powIndexMatrix);
 
                 if (saveSuperTiles)
                 { 
                     // below saving of images is for debugging.
                     foreach (var superTile in superTilingResults)
                     {
-                        string outputName = string.Format("{0}_scale-{2:f2}_supertile-minute-{1}.png", fileStem, min, superTile.Scale.TotalSeconds);
+                        string outputName = string.Format("{0}_scale-{2:f2}_supertile-minute-{1}.png", fileStem, minute, superTile.Scale.TotalSeconds);
                         superTile.Image.Save(Path.Combine(outputDirectory.FullName, outputName));
                     }
                 }
 
                 // finaly tile the output
-                LoggedConsole.WriteLine("Begin tile production for minute: " + min);
+                LoggedConsole.WriteLine("Begin tile production for minute: " + minute);
                 //tiler.TileMany(superTilingResults);
             }
 
@@ -249,7 +258,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // These parameters define the colour maps and appearance of the false-colour spectrogram
             string colorMap1 = "ACI-ENT-EVN";
-            string colorMap2 = "BGN-AVG-CVR";
+            string colorMap2 = "BGN-POW-CVR";
 
             double backgroundFilterCoeff = (double?)config.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
@@ -333,7 +342,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="imageScales"></param>
         /// <returns></returns>
         public static SuperTile[] DrawSuperTilesFromSingleFrameSpectrogram(DirectoryInfo dataDir, LdSpectrogramConfig analysisConfig, FileInfo indexPropertiesConfigFile,
-                                              SuperTilingConfig tilingConfig, int minute, double[] imageScales, double[,] indexMatrix)
+                                              SuperTilingConfig tilingConfig, int minute, double[] imageScales, double[,] indexData_normalised)
         {
             string fileStem = analysisConfig.FileName;
             //string analysisType = analysisConfig.AnalysisType;
@@ -347,6 +356,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool skipHeader = true;
             bool skipFirstColumn = true;
 
+            // read spectrogram into a list of frames 
             List<double[]> frameList = CsvTools.ReadCSVFileOfDoubles(csvPath, skipHeader, skipFirstColumn);
             if (frameList == null)
             {
@@ -368,8 +378,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
             TemporalMatrix frameData = new TemporalMatrix("rows", MatrixTools.ConvertList2Matrix(frameList), frameScale);
-            TemporalMatrix indexData = new TemporalMatrix("columns", indexMatrix, indexScale);
-            frameData.SwapTemporalDimension(); // so two data sets are equivalent.
+            TemporalMatrix indexData = new TemporalMatrix("columns", indexData_normalised, indexScale);
+            frameData.SwapTemporalDimension(); // so the two data matrices have the same temporal dimension
 
             TimeSpan startTime = analysisConfig.MinuteOffset;   // default = zero minute of day i.e. midnight
             TimeSpan startTimeOfData = startTime + TimeSpan.FromMinutes(minute);
@@ -385,10 +395,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 //int expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / columnDuration);
 
                 // ############## RESEARCH CHOICE HERE >>>>  compress spectrograms to correct scale using either max or average
-                // AVG appears to offer better contrast.
+                // Average appears to offer better contrast.
                 //double[,] data = frameData.CompressMatrixInTemporalDirectionByTakingMax(imageScale);
                 double[,] data = frameData.CompressMatrixInTemporalDirectionByTakingAverage(imageScale);
+
+                // preprocess the index data ready for combining with the frame data
                 double[,] indexMatrixExpanded = indexData.ExpandSubmatrixInTemporalDirection(TimeSpan.Zero, tilingConfig.SegmentDuration, imageScale);
+                //double min = 0;
+                //double max = 70;
+                //double max = tilingConfig.upperNormalisationBoundForDecibelSpectrograms;
+                //indexMatrixExpanded = MatrixTools.boundMatrix(indexMatrixExpanded, min, max);
+                //indexMatrixExpanded = DataTools.normalise(indexMatrixExpanded);
 
                 Image spectrogramImage = DrawFrameSpectrogramAtScale(analysisConfig, tilingConfig, startTimeOfData, imageScale, data, indexMatrixExpanded);
 
@@ -406,7 +423,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, SuperTilingConfig tilingConfig, TimeSpan startTimeOfData,
-                                    TimeSpan frameScale, double[,] frameData, double[,] indexData)
+                                    TimeSpan frameScale, double[,] frameData, double[,] indexData_normalised)
         {
             // ################### RESEARCH QUESTION:
             // I tried different means of NORMALISATION
@@ -426,9 +443,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             frameData = DataTools.normalise(frameData);
 
             // at this point moderate the frame data using the index data
-            // threshold determines degree of moderation.
-            double threshold = 0.5;
-            ModerateFrameDataUsingIndexData(frameData, indexData, threshold);
+            int msScale = frameScale.Milliseconds;
+            double frameWt = 0.9; 
+            double indexWt = 0.1;
+            // adjust combination weights to the scale, so as to decrease influence of index data.
+            if (msScale == 100)
+            {
+                frameWt = 0.5;
+                indexWt = 0.5;
+            }
+            else
+                if (msScale == 40)
+                {
+                    frameWt = 0.7;
+                    indexWt = 0.3;
+                }
+
+            CombineFrameDataWithIndexData(frameData, indexData_normalised, frameWt, indexWt);
 
             var cch = CubeHelix.GetCubeHelix();
             Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(frameData);
@@ -451,28 +482,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="frameData"></param>
         /// <param name="indexData"></param>
         /// <param name="threshold"></param>
-        public static void ModerateFrameDataUsingIndexData(double[,] frameData, double[,] indexData, double threshold)
+        public static void CombineFrameDataWithIndexData(double[,] frameData, double[,] indexData, double frameWt, double indexWt)
         {
             int rowCount = frameData.GetLength(0); //number of rows should be same in both matrices
             int colCount = indexData.GetLength(1); //number of column will possibly be fewer in the indexData matrix.
-            double moderation = threshold + 0.1;       // makes moderationless severe
             for (int c = 0; c < colCount; c++)
             {
-                //double[] vector = MatrixTools.GetColumn(indexData, c);
-                //vector = DataTools.filterMovingAverage(vector, 3);
                 for (int r = 0; r < rowCount; r++)
                 {
-                    //if(indexData[r, c] < threshold)
-                    //    frameData[r, c] *= (vector[r] / threshold);
-                    if (indexData[r, c] < threshold)
-                        frameData[r, c] *= moderation;
-                        //frameData[r, c] *= indexData[r, c];
-                }//end all columns
+                    frameData[r, c] = (indexWt * indexData[r, c]) + (frameWt * Math.Sqrt(frameData[r, c]));
+                } 
             }//end all rows
 
         }
 
-    }
+
+    } // class
 
 
 

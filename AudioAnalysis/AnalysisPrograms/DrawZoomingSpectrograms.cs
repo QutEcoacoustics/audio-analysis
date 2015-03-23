@@ -153,15 +153,15 @@ namespace AnalysisPrograms
             }
 
             // Create the super tiles for a full set of recordings
-            //ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
-            //                                     arguments.Output,
-            //                                     arguments.SpectrogramConfigPath,
-            //                                     arguments.SpectrogramTilingConfig,
-            //                                     arguments.IndexPropertiesConfig);
+            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
+                                                 arguments.Output,
+                                                 arguments.SpectrogramConfigPath,
+                                                 arguments.SpectrogramTilingConfig,
+                                                 arguments.IndexPropertiesConfig);
 
 
             // ######################################################################################################################################################
-            bool debug = true;
+            bool debug = false;
             if (debug)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
