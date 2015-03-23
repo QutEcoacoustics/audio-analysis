@@ -9,9 +9,10 @@
 
 namespace AudioAnalysisTools.TileImage
 {
+    using System;
     using System.Collections.Generic;
 
-    public class Layer : IComparer<Layer>
+    public class Layer : IComparer<Layer>, IComparable<Layer>
     {
         public int Width { get; set; }
 
@@ -22,15 +23,24 @@ namespace AudioAnalysisTools.TileImage
 
         public int YTiles { get; set; }
 
-        public double Scale { get; set; }
+        public double XScale { get; set; }
+        
+        public double YScale { get; set; }
 
         public int ScaleIndex { get; set; }
 
-        public double NormalisedScale { get; set; }
+        public double XNormalizedScale { get; set; }
+
+        public double YNormalizedScale { get; set; }
 
         public int Compare(Layer x, Layer y)
         {
-            return x.NormalisedScale.CompareTo(y.NormalisedScale);
+            return x.XNormalizedScale.CompareTo(y.XNormalizedScale);
+        }
+
+        public int CompareTo(Layer other)
+        {
+            return this.Compare(this, other);
         }
     }
 }
