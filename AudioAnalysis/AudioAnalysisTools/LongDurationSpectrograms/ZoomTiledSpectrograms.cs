@@ -26,7 +26,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static void DrawSuperTiles(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, FileInfo ldSpConfigFile, FileInfo tilingConfigFile, FileInfo indexPropertiesConfigFile)
         {
-            const bool saveSuperTiles = true;
+            const bool SaveSuperTiles = true;
 
             var ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(ldSpConfigFile);
             var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
@@ -69,7 +69,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 var superTiles = DrawSuperTilesFromIndexSpectrograms(ldSpConfig, dictIP, tilingConfig, imageScale, spectra);
 
                 // below saving of images is for debugging.
-                if (saveSuperTiles)
+                if (SaveSuperTiles)
                 {
                     string outputName;
                     Image[] images = superTiles.Select( x => x.Image).ToArray();
@@ -140,7 +140,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     imageScales2,
                     powIndexMatrix);
 
-                if (saveSuperTiles)
+                if (SaveSuperTiles)
                 { 
                     // below saving of images is for debugging.
                     foreach (var superTile in superTilingResults)
