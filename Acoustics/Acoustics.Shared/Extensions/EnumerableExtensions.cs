@@ -24,6 +24,44 @@ namespace System
             return items == null || !items.Any();
         }
 
+        public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (action == null)
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            foreach (var item in source)
+            {
+                action(item);
+            }
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> source, Action<T, int> action)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (action == null)
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            var index = 0;
+            foreach (var item in source)
+            {
+                action(item, index);
+                index++;
+            }
+        }
+
         public static Tuple<int, int> SumAndCount(this List<int> items, Func<int, bool> predicate)
         {
             var count = 0;
@@ -95,6 +133,36 @@ namespace System
                     });
 
             return result;
+        }
+
+        public static IEnumerable<T[]> Windowed<T>(this IEnumerable<T> list, int windowSize)
+        {
+            Contract.Requires(windowSize >= 0);
+
+            var array = new T[windowSize];
+            int r = windowSize - 1, i = 0;
+            using (var e = list.GetEnumerator())
+            {
+                while (e.MoveNext())
+                {
+                    array[i] = e.Current;
+                    i = (i + 1) % windowSize;
+                    if (r == 0)
+                    {
+                        var output = new T[windowSize];
+                        for (var ii = 0; ii < windowSize; ii++)
+                        {
+                            output[ii] = array[(i + ii) % windowSize];
+                        }
+
+                        yield return output;
+                    }
+                    else
+                    {
+                        r--;
+                    }
+                }
+            }
         }
 
         #endregion

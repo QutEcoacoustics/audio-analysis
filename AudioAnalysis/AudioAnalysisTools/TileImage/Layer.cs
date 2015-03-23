@@ -14,6 +14,11 @@ namespace AudioAnalysisTools.TileImage
 
     public class Layer : IComparer<Layer>, IComparable<Layer>
     {
+        public Layer(int scaleIndex)
+        {
+            this.ScaleIndex = scaleIndex;
+        }
+
         public int Width { get; set; }
 
         public int Height { get; set; }
@@ -27,7 +32,7 @@ namespace AudioAnalysisTools.TileImage
         
         public double YScale { get; set; }
 
-        public int ScaleIndex { get; set; }
+        public int ScaleIndex { get; private set; }
 
         public double XNormalizedScale { get; set; }
 
@@ -35,7 +40,16 @@ namespace AudioAnalysisTools.TileImage
 
         public int Compare(Layer x, Layer y)
         {
-            return x.XNormalizedScale.CompareTo(y.XNormalizedScale);
+            if (x == null)
+            {
+                return -1;
+            }
+            else if (y == null)
+            {
+                return 1;
+            }
+
+            return x.ScaleIndex.CompareTo(y.ScaleIndex);
         }
 
         public int CompareTo(Layer other)
