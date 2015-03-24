@@ -246,7 +246,7 @@ namespace Dong.Felt.Representations
             return result;
         }
 
-        public static List<List<EventBasedRepresentation>> GassianEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
+        public static List<List<EventBasedRepresentation>> GaussianEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
            List<List<AcousticEvent>> ae, PointOfInterest[,] poiMatrix)
         {
             var result = new List<List<EventBasedRepresentation>>();
