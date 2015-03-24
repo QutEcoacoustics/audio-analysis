@@ -144,7 +144,8 @@ namespace Dong.Felt.Representations
         /// <param name="GaussianBlurSize"></param>
         /// <param name="sigma"></param>
         /// <returns></returns>
-        public static PointOfInterest[,] GaussianBlurOnPOI(PointOfInterest[,] poiMatrix, int rows, int cols, int GaussianBlurSize, double sigma)
+        public static PointOfInterest[,] GaussianBlurOnPOI(PointOfInterest[,] poiMatrix, int rows, int cols, 
+            int GaussianBlurSize, double sigma)
         {
             
             var gaussianBlur = new GaussianBlur(sigma, GaussianBlurSize);

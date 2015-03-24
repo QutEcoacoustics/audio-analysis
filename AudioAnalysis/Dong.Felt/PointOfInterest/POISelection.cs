@@ -18,6 +18,7 @@ namespace Dong.Felt
     using Dong.Felt.Representations;
     using Dong.Felt.Configuration;
     using Dong.Felt.Preprocessing;
+    using AForge.Imaging.Filters;
 
     public class POISelection
     {
@@ -90,6 +91,29 @@ namespace Dong.Felt
             var byteMatrix = EightDirectionsRidgeDetection(matrix, out ridgeMagnitudeMatrix, ridgeConfig);
             instance.ConvertRidgeIndicatorToPOIList(byteMatrix, ridgeMagnitudeMatrix, spectrogram);
             return instance.poiList;
+        }
+
+        public static PointOfInterest[,] RidgeDetectionPlusGaussianBlur(SpectrogramStandard spectrogram, SonogramConfig config,
+            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, 
+            GaussianBlur gaussianBlurConfig, string audioFilePath,
+            string featurePropSet)
+        {
+            var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+            var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+            var addCompressedRidges = POISelection.AddCompressedRidges(
+                config,
+                audioFilePath,
+                ridgeConfig,
+                featurePropSet,
+                compressConfig,
+                filterRidges);
+            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
+            var cols = spectrogram.Data.GetLength(0);
+            var M = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, rows, cols);
+            var filteredRidges = ImageAnalysisTools.RemoveIsolatedPoi(M, 3, 2);
+            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(M, rows, cols, gaussianBlurConfig.Size, 
+                gaussianBlurConfig.Sigma);
+            return joinedRidges;
         }
 
         public static PointOfInterest[,]  ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,

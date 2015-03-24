@@ -68,6 +68,9 @@
             int stFFTNhLength = configuration.StFFTNeighbourhoodLength;
             int stMatchedThreshold = configuration.StMatchedThreshold;
 
+            double sigma = configuration.GaussianSigma;
+            int size = configuration.GaussianSize; 
+
             int neighbourhoodLength = configuration.NeighbourhoodLength;
             int rank = configuration.Rank;
 
@@ -111,25 +114,21 @@
                     FFTNeighbourhoodLength = stFFTNhLength,
                     MatchedThreshold = stMatchedThreshold,
                 };
+                var GaussianBlurConfig = new GaussianBlur(sigma, size);
+
                 if (action == "batch")
                 {
                     /// Batch process for FELT
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    MatchingBatchProcess4(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
-                  ridgeConfig, compressConfig,
+                    MatchingBatchProcess4(queryInputDirectory, inputDirectory.FullName, 
+                  ridgeConfig, compressConfig, GaussianBlurConfig,
                   config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                 }
                 else if (action == "processOne")
                 {
-                    /// Single file experiment                 
-                    var outputFileName = string.Format("Run_{0}_{1}_{2}_{3}_{4}",
-                    ridgeDetectionmMagnitudeThreshold,
-                    ridgeMatrixLength,
-                    filterRidgeMatrixLength,
-                    minimumNumberInRidgeInMatrix,
-                    neighbourhoodLength);
+                    /// Single file experiment                   
                     //string outputFilePath = outputDirectory.FullName + outputFileName + ".csv";                   
                     //OutputResults.MatchingResultsSummary(inputDirectory, new FileInfo(outputFilePath));
                     //MatchingStatisticalAnalysis(new DirectoryInfo(inputDirectory.FullName), new FileInfo(outputDirectory.FullName), featurePropertySet);
@@ -156,9 +155,9 @@
 
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
-                    //var outputFile = @"C:\XUEYAN\PHD research work\Third experiment-AED\Output\MatchingResult.csv";
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
                     //OutputResults.MatchingSummary(inputDirectory, outputFile);
 
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
@@ -231,6 +230,9 @@
                     StFFTNeighbourhoodLength = configuration.StFFTNeighbourhoodLength,
                     StMatchedThreshold = configuration.StMatchedThreshold,
 
+                    GaussianSigma = configuration.Sigma,
+                    GaussianSize = configuration.NeighbourhoodSize,
+
                     Weight1 = configuration.Weight1,
                     Weight2 = configuration.Weight2,
 
@@ -265,26 +267,26 @@
 
                     poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
-                    //var addCompressedRidges = POISelection.AddCompressedRidges(
-                    //    config,
-                    //    audioFiles[i],
-                    //    ridgeConfig,
-                    //    featurePropSet,
-                    //    compressConfig,
-                    //    filterRidges);
+                    var addCompressedRidges = POISelection.AddCompressedRidges(
+                        config,
+                        audioFiles[i],
+                        ridgeConfig,
+                        featurePropSet,
+                        compressConfig,
+                        filterRidges);
                     var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(filterRidges, spectrogram.Data, rows, cols);
                     var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
                     var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(filterIsolatedRidges, rows, cols, 3, 1.0);
-                    var dividedRidges = POISelection.POIListDivision(joinedRidges);
+                    //var dividedRidges = POISelection.POIListDivision(joinedRidges);
                     //ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in joinedRidges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in joinedRidges)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- AED on ridges.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- ED on ridges.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -773,7 +775,7 @@
         /// <param name="tempDirectory"></param>
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
-        public static void MatchingBatchProcess3(string queryFilePath, string inputFileDirectory, int neighbourhoodLength,
+        public static void MatchingBatchProcess3(string queryFilePath, string inputFileDirectory,
             RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,            
             SonogramConfig config, int rank, string featurePropSet,
             string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
@@ -921,8 +923,8 @@
             Log.Info("#finish reading the query csv files and audio files one by one");
         }
 
-        public static void MatchingBatchProcess4(string queryFilePath, string inputFileDirectory, int neighbourhoodLength,
-            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig,
+        public static void MatchingBatchProcess4(string queryFilePath, string inputFileDirectory,
+            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, GaussianBlur gaussianBlurConfig,
             SonogramConfig config, int rank, string featurePropSet,
             string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
         {
@@ -945,16 +947,17 @@
                 // Read the query csv file
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, spectrogram);
-                var queryRidges = POISelection.ModifiedRidgeDetection(spectrogram,
+                var queryRidges = POISelection.RidgeDetectionPlusGaussianBlur(spectrogram,
                     config,
                     ridgeConfig,
                     compressConfig,
+                    gaussianBlurConfig,
                     queryAudioFiles[i],
                     featurePropSet);
                 var acousticEventlist = ClusterAnalysis.SeparateRidgeListToEvents(spectrogram, queryRidges);
                 // event representation for the whole recording
                 var queryEventRepresentation =
-                    EventBasedRepresentation.GassianEventsToEventBasedRepresentations(spectrogram, acousticEventlist, queryRidges);
+                    EventBasedRepresentation.GaussianEventsToEventBasedRepresentations(spectrogram, acousticEventlist, queryRidges);
                 var queryRepresentation = new RegionRepresentation(queryEventRepresentation, queryAudioFiles[i], query);
                 // 2. search through training or testing audio files
                 if (!Directory.Exists(inputFileDirectory))
@@ -969,16 +972,17 @@
                 {
                     Log.Info("# read each training/test audio file");
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    var candidateRidges = POISelection.ModifiedRidgeDetection(candidateSpectrogram,
+                    var candidateRidges = POISelection.RidgeDetectionPlusGaussianBlur(candidateSpectrogram,
                         config,
                         ridgeConfig,
                         compressConfig,
+                        gaussianBlurConfig,
                         candidatesAudioFiles[j],
                         featurePropSet);
                     var candidateAElist = ClusterAnalysis.SeparateRidgeListToEvents(candidateSpectrogram, candidateRidges);
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
-                        EventBasedRepresentation.GassianEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist, candidateRidges);
+                        EventBasedRepresentation.GaussianEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist, candidateRidges);
                     var candidatesRepresentation = RegionRepresentation.ExtractAcousticEventList(candidateSpectrogram,
                         queryRepresentation,
                         candidatesEventsRepresentation,
@@ -992,7 +996,7 @@
                 Log.InfoFormat("All potential candidates: {0}", allCandidateList.Count);
                 var candidateDistanceList = new List<Candidates>();
                 Log.Info("# calculate the distance between a query and a candidate");
-                candidateDistanceList = Indexing.GassianMaskBasedScore(queryRepresentation,
+                candidateDistanceList = Indexing.GaussianMaskBasedScore(queryRepresentation,
                     allCandidateList, 5, weight1, weight2);
                 Log.InfoFormat("All candidate distance list: {0}", candidateDistanceList.Count);
                 // To save all matched acoustic events separately                         
@@ -1228,5 +1232,6 @@
             var improvedOutputPath = outputPath.ToString() + featurePropertySet + ".csv";
             CSVResults.MatchingStatResultsToCSV(new FileInfo(improvedOutputPath), matchedResults);
         }
+    
     } // class dong.sandpit
 }

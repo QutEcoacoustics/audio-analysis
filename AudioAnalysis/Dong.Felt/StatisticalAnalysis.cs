@@ -185,7 +185,8 @@
                 }
             }
             var colOffset = originalColStart - startCol;
-            var rowOffset = originalColStart - startRow;
+            //var rowOffset = originalColStart - startRow;
+            var rowOffset = 0;
             for (var r = 0; r < rows; r++)
             {
                 for (var c = 0; c < cols; c++)

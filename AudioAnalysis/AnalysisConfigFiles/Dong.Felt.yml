@@ -48,6 +48,10 @@ StAvgNhLength: 11
 StFFTNeighbourhoodLength: 16
 StMatchedThreshold: 600
 
+# Gaussian blur config
+Sigma: 1.0
+NeighbourhoodSize: 3
+
 # For ridge neighbourhood representation
 NeighbourhoodLength: 11
 
