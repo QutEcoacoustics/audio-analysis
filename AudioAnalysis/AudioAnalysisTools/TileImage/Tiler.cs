@@ -93,20 +93,16 @@ namespace AudioAnalysisTools.TileImage
 
             int width = current.Image.Width, height = current.Image.Height, xOffset = current.OffsetX, yOffset = current.OffsetY;
 
-
-            // either positive or negative
+            // determine padding needed
             int paddingX, paddingY;
             int tileOffsetInLayerX = this.AlignSuperTileInLayer(layer.Width, layer.XTiles, this.profile.TileWidth, current.OffsetX, current.Image.Width, out paddingX);
             int tileOffsetInLayerY = this.AlignSuperTileInLayer(layer.Height, layer.YTiles, this.profile.TileHeight, current.OffsetY, current.Image.Height, out paddingY); 
             
-
             // drawable tiles in the current super tile
             // as a rule only draw the sections that are available in the current tile
             // and as much as we need from the next tile
-            var tilesInSuperTileX = 0;
-            var tilesInSuperTileY = 0;
-
-            // determine padding needed
+            var tilesInSuperTileX = Math.Ceiling((double)current.Image.Width / this.profile.TileWidth);
+            var tilesInSuperTileY = Math.Ceiling((double)current.Image.Height / this.profile.TileHeight);
 
             // start producing tiles
             for (var i = 0; i < tilesInSuperTileX; i++)
@@ -121,18 +117,27 @@ namespace AudioAnalysisTools.TileImage
                     // c) full segment, with empty space - ideal! do nothing
 
                     // supertile relative
-                    var top = (int)((j * this.profile.TileHeight) - paddingX);
+                    var top = (int)((j * this.profile.TileHeight) - paddingY);
 
                     // supertile relative
-                    var left = (int)((i * this.profile.TileWidth) - paddingY);
+                    var left = (int)((i * this.profile.TileWidth) - paddingX);
                     var subsection = new Rectangle()
                                          {
-                                             X = top, 
-                                             Y = left, 
+                                             X = left, 
+                                             Y = top, 
                                              Width = this.profile.TileWidth, 
                                              Height = this.profile.TileHeight
                                          };
-                    var tileImage = ((Bitmap)current.Image).Clone(subsection, current.Image.PixelFormat);
+                    var bitmap = ((Bitmap)current.Image);
+                    
+                    using (var graphics = Graphics.FromImage(current.Image))
+                    {
+                            
+                    }
+                  
+                    var tileImage = new Bitmap(this.profile.TileWidth, this.profile.TileHeight);
+                        
+                        ((Bitmap)current.Image).Clone(subsection, current.Image.PixelFormat);
 
                     // convert co-ordinates to layer relative
                     var layerTop = 0;
@@ -144,6 +149,28 @@ namespace AudioAnalysisTools.TileImage
                     tileImage.Save(outputTilePath);
                 }
             }
+        }
+
+        private List<Rectangle> GetImageParts(Rectangle rectangle, Image sourceImage)
+        {
+            var parts = new List<Rectangle>();
+
+            if (rectangle.X < 0 && rectangle.Y < 0)
+            {
+                parts.Add(new Rectangle(0, 0, Math.Abs(rectangle.X), Math.Abs(rectangle.Y)));
+            }
+            else if (rectangle.X < 0)
+            {
+                parts.Add(new Rectangle(0, 0, Math.Abs(rectangle.X), this.profile.TileHeight));
+                
+            }
+            else if (rectangle.Y < 0)
+            {
+                parts.Add(new Rectangle(0, 0, this.profile.TileWidth, Math.Abs(rectangle.Y)));                
+            }
+
+
+
         }
 
         /// <summary>
@@ -190,16 +217,13 @@ namespace AudioAnalysisTools.TileImage
         /// </returns>
         private int AlignSuperTileInLayer(int layerLength, int layerTileCount, int layerTileLength, int superTileOffset, int superTileWidth, out int padding)
         {
-            // the layer should fit a whole number of tiles
-            Contract.Assert(Math.Abs(layerLength / ((double)layerTileLength - layerTileCount)) < 0.001);
-            
             // first determine padding required by the layer
-            var tilesInLayer = (double)layerLength / layerTileCount;
+            var tilesInLayer = (double)layerLength / layerTileLength;
             var overlap = tilesInLayer - Math.Floor(tilesInLayer);
             
             // padding is split either side
-            int overlapInPx = (int)Math.Round((overlap / 2.0) * tilesInLayer, MidpointRounding.AwayFromZero);
-            padding = layerTileLength - overlapInPx;
+            int overlapInPx = (int)Math.Round((overlap / 2.0) * layerTileLength, MidpointRounding.AwayFromZero);
+            padding = overlapInPx == 0 ? 0 : layerTileLength - overlapInPx;
 
             // convert superTileOddset to coordinates relative to layer
             var superTileOffsetInLayer = padding + superTileOffset;

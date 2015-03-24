@@ -101,5 +101,11 @@ namespace Acoustics.Test.AudioAnalysisTools
 
             Assert.AreEqual(6, producedFiles.Length);
         }
+
+        [TestMethod]
+        public void Test()
+        {
+            
+        }
     }
 }
