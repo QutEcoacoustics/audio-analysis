@@ -8,12 +8,14 @@ namespace Acoustics.Test.AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Text;
 
     using global::AudioAnalysisTools.LongDurationSpectrograms;
+
     using global::AudioAnalysisTools.TileImage;
 
     using EcoSounds.Mvc.Tests;
@@ -89,8 +91,8 @@ namespace Acoustics.Test.AudioAnalysisTools
             var testBitmap = new Bitmap("1440px.png");
             var superTile = new SuperTile()
                                 {
-                                    Image = testBitmap,
-                                    Scale = TimeSpan.FromSeconds(60.0),
+                                    Image = testBitmap, 
+                                    Scale = TimeSpan.FromSeconds(60.0), 
                                     TimeOffset = TimeSpan.Zero
                                 };
             this.tiler.Tile(superTile, superTile);
@@ -102,10 +104,181 @@ namespace Acoustics.Test.AudioAnalysisTools
             Assert.AreEqual(6, producedFiles.Length);
         }
 
+        /// <summary>
+        /// 2B.abcd = Rect.FromLTRB(100, 100, 200, 200)
+        /// 
+        ///    A A   B B   C C
+        /// 1  b a | b a | b a
+        /// 1  c d | c d | c d
+        ///    ---------------
+        /// 2  b a | b a | b a
+        /// 2  c d | c d | c d
+        ///    ---------------
+        /// 3  b a | b a | b a
+        /// 3  c d | c d | c d
+        /// 
+        /// </summary>
         [TestMethod]
-        public void Test()
+        public void TestGetImageParts()
         {
-            
+            var baseRectangle = new Rectangle(100, 100, 100, 100);
+            this.InitializeAnswers();
+
+            for (int i = 0; i < this.testCases.Length; i++)
+            {
+                var testCase = this.testCases[i];
+                var fragments = Tiler.GetImageParts(baseRectangle, testCase);
+                Assert.AreEqual(this.answers[i].Length, fragments.Length);
+
+                for (int j = 0; j < fragments.Length; j++)
+                {
+                    var fragment = fragments[j];
+                    var answer = this.answers[i][j];
+
+                    Assert.AreEqual(answer.XBias, fragment.XBias);
+                    Assert.AreEqual(answer.YBias, fragment.YBias);
+                    Assert.AreEqual(answer.Fragment, fragment.Fragment);
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
+        public void TestGetImagePartsNonInstersectingRectangle()
+        {
+            var baseRectangle = new Rectangle(100, 100, 100, 100);
+            var otherRectangle = new Rectangle(0, 0, 50, 50);
+
+            Tiler.GetImageParts(baseRectangle, otherRectangle);
+        }
+
+        private Rectangle[] testCases; 
+
+        private Tiler.ImageComponent[][] answers;
+
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
+            Justification = "Reviewed. Suppression is OK here.")]
+        private void InitializeAnswers()
+        {
+           // ReSharper disable InconsistentNaming
+           this.testCases = new[] 
+               { 
+                    Rectangle.FromLTRB(100, 100, 200, 200), // 2B.abcd
+                    Rectangle.FromLTRB(50, 100, 150, 200), // 2A.ad 2B.bc
+                    Rectangle.FromLTRB(150, 100, 250, 200), // 2B.ad 2C.bc
+                    Rectangle.FromLTRB(100, 50, 200, 150), // 1B.cd 2B.ab 
+                    Rectangle.FromLTRB(100, 150, 200, 250), // 2B.cd 3B.ab
+                    Rectangle.FromLTRB(50, 50, 150, 150), // 1A.d 1B.c 2A.a 2B.b
+                    Rectangle.FromLTRB(150, 150, 250, 250), // 2B.d 2C.c 3B.a 3C.b
+                    Rectangle.FromLTRB(50, 150, 150, 250), // 2A.d 2B.c 3A.a 3B.b
+                    Rectangle.FromLTRB(150, 50, 250, 150), // 1B.d 1C.c 2B.a 2C.b
+                    Rectangle.FromLTRB(50, 50, 250, 150), // 1A.d 1B.cd 1C.c 2A.a 2B.ab 2C.b
+                    Rectangle.FromLTRB(50, 150, 250, 250), // 2A.d 2B.cd 2C.c 3A.a 3B.ab 3C.b
+                    Rectangle.FromLTRB(50, 50, 150, 250), // 1A.d 1B.c 2A.ad 2B.bc 3A.a 3B.b
+                    Rectangle.FromLTRB(150, 50, 250, 250), // 1B.d 1C.c 2B.ad 2C.bc 3B.a 3C.b
+                    Rectangle.FromLTRB(50, 50, 250, 250) // 1A.d 1B.cd 1C.c 2A.ad 2B.abcd 2C.bc 3A.a 3B.ab 3C.b
+                };
+
+            Tiler.ImageComponent f1A_d = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 50, 100, 100), -1, -1), 
+                                 f1C_c = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 50, 250, 100), 1, -1), 
+                                 f1B_cd = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 50, 200, 100), 0, -1), 
+                                 f2A_a = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 100, 100, 150), -1, 0), 
+                                 f2B_ab = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 200, 150), 0, 0), 
+                                 f2C_b = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 100, 250, 150), 1, 0), 
+                                 f2A_d = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 150, 100, 200), -1, 0), 
+                                 f2B_cd = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 150, 200, 200), 0, 0), 
+                                 f3B_ab = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 200, 200, 250), 0, 1), 
+                                 f2C_c = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 150, 250, 200), 1, 0), 
+                                 f3A_a = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 200, 100, 250), -1, 1), 
+                                 f3C_b = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 200, 250, 250), 1, 1), 
+                                 f1B_c = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 50, 150, 100), 0, -1), 
+                                 f2A_ad = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 100, 100, 200), -1, 0), 
+                                 f2B_bc = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 150, 200), 0, 0), 
+                                 f2B_ad = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 100, 200, 200), 0, 0), 
+                                 f2C_bc = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 100, 250, 200), 1, 0), 
+                                 f2B_b = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 150, 150), 0, 0), 
+                                 f2B_d = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 150, 200, 200), 0, 0), 
+                                 f3B_a = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 200, 200, 250), 0, 1), 
+                                 f2B_c = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 150, 150, 200), 0, 0), 
+                                 f3B_b = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 200, 150, 250), 0, 1), 
+                                 f1B_d = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 50, 200, 100), 0, -1), 
+                                 f2B_a = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 100, 200, 150), 0, 0), 
+                                 f2B_abcd = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 200, 200), 0, 0);
+
+            this.answers = new[]
+                          {
+                              new[]
+                                  {
+                                      // 2B.abcd
+                                      f2B_abcd
+                                  }, 
+                              new[]
+                                  {
+                                      // 2A.ad 2B.bc
+                                      f2A_ad, f2B_bc
+                                  }, 
+                              new[]
+                                  {
+                                      // 2B.ad 2C.bc
+                                      f2B_ad, f2C_bc
+                                  }, 
+                              new[]
+                                  {
+                                      // 1B.cd 2B.ab 
+                                      f1B_cd, f2B_ab
+                                  }, 
+                              new[]
+                                  {
+                                      // 2B.cd 3B.ab
+                                      f2B_cd, f3B_ab
+                                  }, 
+                              new[]
+                                  {
+                                      // 1A.d 1B.c 2A.a 2B.b
+                                      f1A_d, f1B_c, f2A_a, f2B_b
+                                  }, 
+                              new[]
+                                  {
+                                      // 2B.d 2C.c 3B.a 3C.b
+                                      f2B_d, f2C_c, f3B_a, f3C_b
+                                  }, 
+                              new[]
+                                  {
+                                      // 2A.d 2B.c 3A.a 3B.b
+                                      f2A_d, f2B_c, f3A_a, f3B_b
+                                  }, 
+                              new[]
+                                  {
+                                      // 1B.d 1C.c 2B.a 2C.b
+                                      f1B_d, f1C_c, f2B_a, f2C_b
+                                  }, 
+                              new[]
+                                  {
+                                      // 1A.d 1B.cd 1C.c 2A.a 2B.ab 2C.b
+                                      f1A_d, f1B_cd, f1C_c, f2A_a, f2B_ab, f2C_b, 
+                                  }, 
+                              new[]
+                                  {
+                                      // 2A.d 2B.cd 2C.c 3A.a 3B.ab 3C.b
+                                      f2A_d, f2B_cd, f2C_c, f3A_a, f3B_ab, f3C_b
+                                  }, 
+                              new[]
+                                  {
+                                      // 1A.d 1B.c 2A.ad 2B.bc 3A.a 3B.b
+                                      f1A_d, f1B_c, f2A_ad, f2B_bc, f3A_a, f3B_b
+                                  }, 
+                              new[]
+                                  {
+                                      // 1B.d 1C.c 2B.ad 2C.bc 3B.a 3C.b
+                                      f1B_d, f1C_c, f2B_ad, f2C_bc, f3B_a, f3C_b
+                                  }, 
+                              new[]
+                                  {
+                                      // 1A.d 1B.cd 1C.c 2A.ad 2B.abcd 2C.bc 3A.a 3B.ab 3C.b
+                                      f1A_d, f1B_cd, f1C_c, f2A_ad, f2B_abcd, f2C_bc, f3A_a, f3B_ab, f3C_b
+                                  }, 
+                          };
+            // ReSharper restore InconsistentNaming
         }
     }
 }
