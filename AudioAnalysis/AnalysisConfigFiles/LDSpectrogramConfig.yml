@@ -1,12 +1,10 @@
 ---
 AnalysisType: Towsey.Analysis
-FileName: TEST_TUITCE_20091215_220004
-InputDirectory: C:\SensorNetworks\Output\Test\TestYaml
-OutputDirectory: C:\SensorNetworks\Output\Test\TestYaml
-ColorMap: ACI-ENT-SPT
+FileName: 7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000
 BackgroundFilterCoeff: 0.75
 SampleRate: 17640
 FrameWidth: 512
 MinuteOffset: 0
-X_interval: 60
+FrameStep: 441
+IndexCalculationDuration: 00:00:00.2
 ...
