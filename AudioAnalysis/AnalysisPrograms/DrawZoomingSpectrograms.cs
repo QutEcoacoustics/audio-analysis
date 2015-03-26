@@ -153,16 +153,16 @@ namespace AnalysisPrograms
             }
 
             // Create the super tiles for a full set of recordings
-            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
-                                                 arguments.Output,
-                                                 arguments.SpectrogramConfigPath,
-                                                 arguments.SpectrogramTilingConfig,
-                                                 arguments.IndexPropertiesConfig);
-
+            ////ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
+            ////                                     arguments.Output,
+            ////                                     arguments.SpectrogramConfigPath,
+            ////                                     arguments.SpectrogramTilingConfig,
+            ////                                     arguments.IndexPropertiesConfig);
+            ////
 
             // ######################################################################################################################################################
             bool debug = false;
-            if (debug)
+            if (true)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine("# DRAW STACK OF FOCUSED MULTI-SCALE LONG DURATION SPECTROGRAMS DERIVED FROM SPECTRAL INDICES.");
@@ -176,7 +176,7 @@ namespace AnalysisPrograms
                 // draw a focused multi-resolution pyramid of images
                 //TimeSpan focalTime = TimeSpan.Zero;
                 //TimeSpan focalTime = TimeSpan.FromMinutes(16);
-                TimeSpan focalTime = TimeSpan.FromMinutes(30);
+                TimeSpan focalTime = TimeSpan.FromHours(10);
                 int imageWidth = 1500;
                 ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SourceDirectory,
                                                                       arguments.Output,
