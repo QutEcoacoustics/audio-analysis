@@ -52,6 +52,9 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".yml")]
             [ArgRequired]
             public FileInfo SpectrogramConfigPath { get; set; }
+
+
+            public int? FocusMinute { get; set; }
         }
 
 
@@ -176,7 +179,18 @@ namespace AnalysisPrograms
                 // draw a focused multi-resolution pyramid of images
                 //TimeSpan focalTime = TimeSpan.Zero;
                 //TimeSpan focalTime = TimeSpan.FromMinutes(16);
-                TimeSpan focalTime = TimeSpan.FromHours(10);
+
+                TimeSpan focalTime;
+                if (arguments.FocusMinute.HasValue)
+                {
+                    focalTime = TimeSpan.FromMinutes(arguments.FocusMinute.Value);
+                }
+                else
+                {
+                    throw new ArgumentNullException("FocusMinute", "Focus minute is null, cannot proceed");
+                }
+
+                
                 int imageWidth = 1500;
                 ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SourceDirectory,
                                                                       arguments.Output,
