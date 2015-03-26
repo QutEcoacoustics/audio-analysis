@@ -1403,6 +1403,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
+            image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
 
             colorMap = colorMap2;
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
