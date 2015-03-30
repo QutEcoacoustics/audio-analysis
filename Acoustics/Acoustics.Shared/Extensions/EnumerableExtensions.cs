@@ -165,6 +165,38 @@ namespace System
             }
         }
 
+        public static IEnumerable<T[]> WindowedOrDefault<T>(
+            this IEnumerable<T> list,
+            int windowSize,
+            T defaultValuue = default(T))
+        {
+            Contract.Requires(windowSize >= 0);
+
+            var array = new T[windowSize];
+
+            for (int a = 0; a < array.Length; a++)
+            {
+                array[a] = defaultValuue;
+            }
+
+            int i = 0;
+            using (var e = list.GetEnumerator())
+            {
+                while (e.MoveNext())
+                {
+                    array[i] = e.Current;
+                    i = (i + 1) % windowSize;
+                    var output = new T[windowSize];
+                    for (var ii = 0; ii < windowSize; ii++)
+                    {
+                        output[ii] = array[(i + ii) % windowSize];
+                    }
+
+                    yield return output;
+                }
+            }
+        }
+
         #endregion
     }
 }

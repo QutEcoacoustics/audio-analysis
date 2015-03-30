@@ -136,5 +136,48 @@ namespace Acoustics.Test
 
             input.Windowed(2).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
         }
+
+        [TestMethod]
+        public void TestWindowedFunctionSize3()
+        {
+            var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
+            int[][] expected =
+                {
+                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 }, new[] { 7, 8, 9 }, 
+                    new[] { 8, 9, 10 }
+                };
+
+            input.Windowed(3).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+
+
+        [TestMethod]
+        public void TestWindowedOrDefaultFunction()
+        {
+            var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
+            int[][] expected =
+                {
+                    new[] { int.MinValue, 3 },
+                    new[] { 3, 4 }, new[] { 4, 5 }, new[] { 5, 6 }, new[] { 6, 7 }, new[] { 7, 8 }, 
+                    new[] { 8, 9 }, new[] { 9, 10 }, new[] {10, int.MinValue}
+                };
+
+            input.WindowedOrDefault(2, int.MinValue).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+        [TestMethod]
+        public void TestWindowedOrDefaultFunctionSize3()
+        {
+            var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
+            int[][] expected =
+                {
+                    new[] { 0, 0, 3 }, new[] { 0, 3, 4 }, 
+                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 }, new[] { 7, 8, 9 }, 
+                    new[] { 8, 9, 10 }, new[] { 9, 10, 0 }, new[] { 10, 0, 0 }
+                };
+
+            input.WindowedOrDefault(3).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
     }
 }
