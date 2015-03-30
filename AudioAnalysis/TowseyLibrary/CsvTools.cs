@@ -394,6 +394,34 @@ namespace TowseyLibrary
             return list;
         }
 
+        public static double[,] ReadCSVFileOfDoubles2Matrix(string csvFileName, bool skipHeader, bool skipFirstColumn, int rowCount, int colCount)
+        {
+            int firstIndex = 0;
+            if (skipFirstColumn) firstIndex = 1;
+
+            var M = new double[rowCount, colCount];
+            using (TextReader reader = new StreamReader(csvFileName))
+            {
+                string line;
+                string[] words;
+                if (skipHeader)
+                    line = reader.ReadLine(); // skip first header line
+                int row = 0;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    //read one line at a time in string array
+                    words = line.Split(',');
+                    var values = new double[words.Length - firstIndex];
+                    for (int c = firstIndex; c < words.Length; c++)
+                    {
+                        M[row, c - firstIndex] = Double.Parse(words[c]);
+                    }
+                    row++;
+                }//end while
+            }//end using
+            return M;
+        }
+
         /// <summary>
         /// returns a Dictionary of the column values in a csv file with column headings as keys
         /// ASSUMED to be doubles

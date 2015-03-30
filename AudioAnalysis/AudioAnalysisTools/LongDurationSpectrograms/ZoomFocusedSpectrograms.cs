@@ -26,7 +26,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                          TimeSpan focalTime, int imageWidth)
         {
             LdSpectrogramConfig ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(longDurationSpectrogramConfigFile);
-            //var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
+            var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
 
             string fileStem     = ldSpConfig.FileName;
             string analysisType = ldSpConfig.AnalysisType;
@@ -66,11 +66,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 startTimeOfMaxImage = focalTime - halfMaxImageDuration;
             TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes));
 
-            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration);
+            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration, tilingConfig);
 
             // get the index data to add into the  
             TimeSpan imageScale1 = TimeSpan.FromSeconds(0.1);
-            double[,] indexData = spectra["CVR"];
+            double[,] indexData = spectra["POW"];
             
             // make the images
             for (int i = 2; i >= 0; i--)
@@ -320,6 +320,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
             for (int i = 0; i < keys.Length; i++)
             {
+                DateTime now1 = DateTime.Now;
+
                 string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
                 if (File.Exists(path))
                 {
@@ -338,6 +340,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                     warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
                 }
+
+                DateTime now2 = DateTime.Now;
+                TimeSpan et = now2 - now1;
+                LoggedConsole.WriteLine("Time to read spectral index file <" + keys[i] + "> = " + et.TotalSeconds + " seconds");
             }
 
             if (warning != null)
@@ -438,11 +444,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static List<double[]> ReadFrameData(DirectoryInfo dataDir, string fileStem, TimeSpan starttime, TimeSpan maxDuration)
+        public static List<double[]> ReadFrameData(DirectoryInfo dataDir, string fileStem, TimeSpan starttime, TimeSpan maxDuration, SuperTilingConfig tilingConfig)
         {
             TimeSpan endtime = starttime + maxDuration;
             int startMinute = (int)Math.Floor(starttime.TotalMinutes); 
             int endMinute   = (int)Math.Ceiling(endtime.TotalMinutes);
+
+            int expectedDataDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
+            int expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / tilingConfig.SpectralFrameDuration);
 
             string name = fileStem + "_" + startMinute + "min.csv";
             string csvPath = Path.Combine(dataDir.FullName, name);
@@ -450,12 +459,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool skipFirstColumn = true;
 
             List<double[]> frameData = CsvTools.ReadCSVFileOfDoubles(csvPath, skipHeader, skipFirstColumn);
-            for (int i = startMinute+1; i <= endMinute; i++)
+            ZoomTiledSpectrograms.PadEndOfListOfFrames(frameData, expectedFrameCount);
+            for (int i = startMinute + 1; i < endMinute; i++)
             {
                 name = fileStem + "_" + i + "min.csv";
                 csvPath = Path.Combine(dataDir.FullName, name);
 
                 List<double[]> data = CsvTools.ReadCSVFileOfDoubles(csvPath, skipHeader, skipFirstColumn);
+                ZoomTiledSpectrograms.PadEndOfListOfFrames(data, expectedFrameCount);
+
                 frameData.AddRange(data);
             }
             return frameData;

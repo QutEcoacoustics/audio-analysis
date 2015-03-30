@@ -153,15 +153,15 @@ namespace AnalysisPrograms
             }
 
             // Create the super tiles for a full set of recordings
-            ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
-                                                 arguments.Output,
-                                                 arguments.SpectrogramConfigPath,
-                                                 arguments.SpectrogramTilingConfig,
-                                                 arguments.IndexPropertiesConfig);
+            //ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
+            //                                     arguments.Output,
+            //                                     arguments.SpectrogramConfigPath,
+            //                                     arguments.SpectrogramTilingConfig,
+            //                                     arguments.IndexPropertiesConfig);
 
 
             // ######################################################################################################################################################
-            bool debug = false;
+            bool debug = true;
             if (debug)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -176,7 +176,7 @@ namespace AnalysisPrograms
                 // draw a focused multi-resolution pyramid of images
                 //TimeSpan focalTime = TimeSpan.Zero;
                 //TimeSpan focalTime = TimeSpan.FromMinutes(16);
-                TimeSpan focalTime = TimeSpan.FromMinutes(30);
+                TimeSpan focalTime = TimeSpan.FromMinutes(100);
                 int imageWidth = 1500;
                 ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SourceDirectory,
                                                                       arguments.Output,
@@ -185,7 +185,7 @@ namespace AnalysisPrograms
                                                                       arguments.IndexPropertiesConfig, focalTime, imageWidth);
             }
 
-            if (debug)
+            if (false)
             {
                 // draw standard false colour spectrograms - useful to check what spectrograms of the indiviual indices are like. 
                 string date = "# DATE AND TIME: " + DateTime.Now;
