@@ -363,18 +363,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 LoggedConsole.WriteErrorLine("WARNING: METHOD DrawSuperTilesFromSingleFrameSpectrogram(): NO SPECTRAL DATA SUPPLIED");
                 return null;
             }
+            PadEndOfListOfFrames(frameList, expectedFrameCount);
 
-            // frame count will be one less than expected for the recording segment because of frame overlap
-            // Therefore pad the end of the list of frames with the last frame.
-            int frameDiscrepancy = expectedFrameCount - frameList.Count;
-            if (frameDiscrepancy > 0)
-            {
-                double[] frame = frameList[frameList.Count - 1];
-                for (int d = 0; d < frameDiscrepancy; d++)
-                {
-                    frameList.Add(frame);
-                }
-            }
+            //// frame count will be one less than expected for the recording segment because of frame overlap
+            //// Therefore pad the end of the list of frames with the last frame.
+            //int frameDiscrepancy = expectedFrameCount - frameList.Count;
+            //if (frameDiscrepancy > 0)
+            //{
+            //    double[] frame = frameList[frameList.Count - 1];
+            //    for (int d = 0; d < frameDiscrepancy; d++)
+            //    {
+            //        frameList.Add(frame);
+            //    }
+            //}
 
 
             TemporalMatrix frameData = new TemporalMatrix("rows", MatrixTools.ConvertList2Matrix(frameList), frameScale);
@@ -418,6 +419,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             return str;
+        }
+
+        /// <summary>
+        /// THis method pads the end of a list of frames read from a csv file.
+        /// The frame count will be one less than expected for the recording segment because of frame overlap
+        /// Therefore pad the end of the list of frames with the last frame.
+        /// </summary>
+        /// <param name="frameList"></param>
+        /// <param name="expectedFrameCount"></param>
+        public static void PadEndOfListOfFrames(List<double[]> frameList, int expectedFrameCount)
+        {
+            int frameDiscrepancy = expectedFrameCount - frameList.Count;
+            if (frameDiscrepancy > 0)
+            {
+                double[] frame = frameList[frameList.Count - 1];
+                for (int d = 0; d < frameDiscrepancy; d++)
+                {
+                    frameList.Add(frame);
+                }
+            }
         }
 
 
