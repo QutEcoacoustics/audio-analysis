@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{993980a0-8d06-4635-8296-40e9fff9c301}</ProjectGuid>
+    <ProjectGuid>{993980A0-8D06-4635-8296-40E9FFF9C301}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>SensorImages</RootNamespace>
     <AssemblyName>AED</AssemblyName>
@@ -21,7 +21,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -95,16 +95,8 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\TowseyLibrary\TowseyLibrary.csproj">
-      <Name>TowseyLibrary</Name>
-      <Project>{7c6831fd-f60c-4f7b-8e6a-35e850174411}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <Reference Include="CsvHelper">
       <HintPath>..\..\packages\CsvHelper.2.5.0\lib\wp71\CsvHelper.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack">
       <HintPath>..\..\packages\FSPowerPack.Core.Community.3.0.0.0\Lib\Net40\FSharp.PowerPack.dll</HintPath>
@@ -128,16 +120,12 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <ProjectReference Include="..\..\FELT\Shared\MQUTeR.FSharp.Shared.fsproj">
-      <Name>MQUTeR.FSharp.Shared</Name>
-      <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
-      <Private>True</Private>
-    </ProjectReference>
+    <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
+    <Reference Include="FSharp.Core">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.

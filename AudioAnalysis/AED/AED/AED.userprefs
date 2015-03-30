@@ -1,0 +1,21 @@
+﻿<Properties StartupItem="AED.fsproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="AcousticEventDetection.fs">
+    <Files>
+      <File FileName="AcousticEventDetection.fs" Line="1" Column="1" />
+      <File FileName="Default.fs" Line="1" Column="1" />
+      <File FileName="EventPatternRecog.fs" Line="1" Column="1" />
+      <File FileName="GetAcousticEvents.fs" Line="1" Column="1" />
+      <File FileName="Matlab.fs" Line="1" Column="1" />
+      <File FileName="packages.config" Line="1" Column="1" />
+      <File FileName="SpectralPeakTrack.fs" Line="1" Column="1" />
+      <File FileName="Util.fs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/n8933464/Documents/temp/csharp_test/hello.cs" line="9" column="14" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
