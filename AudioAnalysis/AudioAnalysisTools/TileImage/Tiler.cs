@@ -74,7 +74,7 @@ namespace AudioAnalysisTools.TileImage
 
         public void TileMany(IEnumerable<ISuperTile> allSuperTiles)
         {
-            var windowed = allSuperTiles.Windowed(2);
+            var windowed = allSuperTiles.WindowedOrDefault(2);
             foreach (var superTiles in windowed)
             {
                 this.Tile(superTiles[0], superTiles[1]);
@@ -92,7 +92,10 @@ namespace AudioAnalysisTools.TileImage
         /// </param>
         public void Tile(ISuperTile current, ISuperTile next)
         {
-            Contract.Ensures(current.Image != null);
+            if (current == null)
+            {
+                return;
+            }
 
             var layer = this.CalculatedLayers.First(x => x.XScale == current.Scale);
 
@@ -183,20 +186,33 @@ namespace AudioAnalysisTools.TileImage
                                 {
                                     // No-op - the default background for the tile is transparent,
                                     // no need to paint that again
+
+                                    // also remember, we do not draw from previous super tiles
+                                    // thus we don't need access to previous tile image
                                 }
-                                else if (imageComponent.YBias == TileBias.Positive)
+                                else if (imageComponent.XBias == TileBias.Positive)
                                 {
                                     // two cases here: edge of layer reached (paint transparent padding)
                                     // or grab next section from image
+                                    if (next == null)
+                                    {
+                                        // end of stream, paint transparency
+                                        // default background for the tile is transparent,
+                                        // no need to paint that again
+                                    }
+                                    else
+                                    {
+                                        // paint a fraction from the next image
+                                        
+                                        tileGraphics.DrawImage(next.Image, imageComponent.Fragment, sourceRect, GraphicsUnit.Pixel);    
+                                        
+                                    }
                                 }
                                 else
                                 {
                                     // neutral
-                                    //tileGraphics.DrawImage(superTileBitmap, ,); ???????
+                                    tileGraphics.DrawImage(current.Image, imageComponent.Fragment, sourceRect, GraphicsUnit.Pixel);    
                                 }
-
-
-
                             }
                         }
 
