@@ -18,6 +18,7 @@ namespace Dong.Felt
     using Dong.Felt.Representations;
     using Dong.Felt.Configuration;
     using Dong.Felt.Preprocessing;
+    using AForge.Imaging.Filters;
 
     public class POISelection
     {
@@ -92,7 +93,30 @@ namespace Dong.Felt
             return instance.poiList;
         }
 
-        public static List<List<PointOfInterest>> ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,
+        public static PointOfInterest[,] RidgeDetectionPlusGaussianBlur(SpectrogramStandard spectrogram, SonogramConfig config,
+            RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, 
+            GaussianBlur gaussianBlurConfig, string audioFilePath,
+            string featurePropSet)
+        {
+            var originalRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+            var filterRidges = POISelection.RemoveFalseRidges(originalRidges, spectrogram.Data, 6, 15.0);
+            var addCompressedRidges = POISelection.AddCompressedRidges(
+                config,
+                audioFilePath,
+                ridgeConfig,
+                featurePropSet,
+                compressConfig,
+                filterRidges);
+            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
+            var cols = spectrogram.Data.GetLength(0);
+            var M = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, rows, cols);
+            var filteredRidges = ImageAnalysisTools.RemoveIsolatedPoi(M, 3, 2);
+            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(M, rows, cols, gaussianBlurConfig.Size, 
+                gaussianBlurConfig.Sigma);
+            return joinedRidges;
+        }
+
+        public static PointOfInterest[,]  ModifiedRidgeDetection(SpectrogramStandard spectrogram, SonogramConfig config,
             RidgeDetectionConfiguration ridgeConfig, CompressSpectrogramConfig compressConfig, string audioFilePath,
             string featurePropSet)
         {
@@ -103,10 +127,14 @@ namespace Dong.Felt
                 audioFilePath,
                 ridgeConfig,
                 featurePropSet,
-                compressConfig.TimeCompressRate,
+                compressConfig,
                 filterRidges);
-            var dividedRidges = POISelection.POIListDivision(addCompressedRidges);
-            return dividedRidges;
+            var rows = spectrogram.Data.GetLength(1);  // Have to minus the graphical device context(DC) line. 
+            var cols = spectrogram.Data.GetLength(0);
+            var M = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, rows, cols);
+            var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(M, 3, 2);
+            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(filterIsolatedRidges, rows, cols, 3, 1.0);
+            return joinedRidges;
         }
 
         public static List<PointOfInterest> RidgePoiSelection(SpectrogramStandard spectrogram,
@@ -394,6 +422,75 @@ namespace Dong.Felt
             }
         }
 
+        public static List<PointOfInterest> AddResizeRidgesInFreq2(List<PointOfInterest> ridges,
+                                                      SpectrogramStandard spectrogram,
+                                                      List<PointOfInterest> compressedRidges,
+                                                      double freqCompressRate,
+                                                      int rows, int cols)
+        {
+            var result = new List<PointOfInterest>();
+            var ridgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(ridges, spectrogram.Data, rows, cols);
+            var compressRate = (int)(1 / freqCompressRate);
+            var compressedRowsCount = rows / compressRate;
+            var count = 0;
+            if (rows % compressRate != 0)
+            {
+                compressedRowsCount++;
+            }
+            if (compressedRidges.Count != 0)
+            {
+                var compressRidgeMatrix = StatisticalAnalysis.TransposePOIsToMatrix(compressedRidges, compressedRowsCount, cols);
+                for (var c = 0; c < cols; c++)
+                {
+                    for (var r = 0; r < rows; r += compressRate)
+                    {
+                        var matrixLength = compressRate;
+                        if (r + compressRate > rows)
+                        {
+                            matrixLength = rows - r;
+                        }
+                        var subMatrix = StatisticalAnalysis.Submatrix(ridgeMatrix,
+                            r, c, r + matrixLength, c + 1);
+                        var intensity = new double[matrixLength];
+
+                        for (var i = 0; i < matrixLength; i++)
+                        {
+                            intensity[i] = subMatrix[i, 0].Intensity;
+                        }
+                        // If no ridges in subMatrix
+                        if (StatisticalAnalysis.NullPoiMatrix(subMatrix))
+                        {
+                            if (compressRidgeMatrix[r / compressRate, c].RidgeMagnitude != 0.0)
+                            {
+                                // get the index with max intensity value
+                                int indexMin = 0;
+                                int indexMax = 0;
+                                double diffMin = 0.0;
+                                double diffMax = 0.0;
+                                DataTools.MinMax(intensity, out indexMin, out indexMax, out diffMin, out diffMax);
+                                indexMax = compressRate / 2 - 1;
+                                ridgeMatrix[r + indexMax, c].RidgeMagnitude = compressRidgeMatrix[r / compressRate, c].RidgeMagnitude;
+                                ridgeMatrix[r + indexMax, c].OrientationCategory = compressRidgeMatrix[r / compressRate, c].OrientationCategory;
+                            }
+                        }
+                    }
+                }
+                
+                var ridges1 = StatisticalAnalysis.TransposeMatrixToPOIlist(ridgeMatrix);
+                foreach (var r in ridges1)
+                {
+                    if (r.RidgeMagnitude > 0.0)
+                    {
+                        result.Add(r);
+                    }
+                }
+                return result;
+            }
+            else
+            {
+                return ridges;
+            }
+        }
         // This function still needs to be considered. 
         public static List<PointOfInterest> ShowupPoiInsideBox(List<PointOfInterest> filterPoiList, List<PointOfInterest> finalPoiList, int rowsCount, int colsCount)
         {
@@ -427,6 +524,7 @@ namespace Dong.Felt
             }
             return PointOfInterest.TransferPOIMatrix2List(result);
         }
+
 
         public static List<PointOfInterest> Post8DirGradient(SpectrogramStandard spectrogram,
             GradientConfiguration gradientConfig)
@@ -569,12 +667,6 @@ namespace Dong.Felt
                 for (var c = offset; c < cols - offset; c++) 
                 {
                     var magnitude = 0.0;
-                    if (poiMatrix[r, c].OrientationCategory == 2 || poiMatrix[r, c].OrientationCategory == 6)
-                    {
-                        result.Add(poiMatrix[r, c]);
-                    }
-                    else
-                    {
                         if (poiMatrix[r, c].OrientationCategory == 0)
                         {
                             // substract a submatrix from spectrogramData
@@ -599,42 +691,25 @@ namespace Dong.Felt
                                 c + offset);
                             ImageAnalysisTools.ImprovedRidgeDetectionVDirection(subMatrix, out magnitude);
                         }
-
-                        //if (poiMatrix[r, c].OrientationCategory == 2)
-                        //{
-                        //    // 6 rows * 5 cols
-                        //    var pOffset = 2;
-                        //    var subMatrix = MatrixTools.Submatrix(
-                        //        matrix,
-                        //        r - halfWidth + 1,
-                        //        c - pOffset,
-                        //        r + halfWidth,
-                        //        c + pOffset);
-                        //    ImageAnalysisTools.ImprovedRidgeDetectionPDDirection(subMatrix, out magnitude);
-                        //}
-
-                        //if (poiMatrix[r, c].OrientationCategory == 6)
-                        //{
-                        //    // 6 rows * 5 cols
-                        //    var nOffset = 2;
-                        //    var subMatrix = MatrixTools.Submatrix(
-                        //        matrix,
-                        //        r - halfWidth + 1,
-                        //        c - nOffset,
-                        //        r + halfWidth,
-                        //        c + nOffset);
-                        //    ImageAnalysisTools.ImprovedRidgeDetectionNDDirection(subMatrix, out magnitude);
-                        //}
+                        var nMagnitude = 0.0;
+                        if (poiMatrix[r, c].OrientationCategory == 2 || poiMatrix[r, c].OrientationCategory == 6)
+                        {
+                            // 7 rows * 1 cols
+                            var subMatrix = StatisticalAnalysis.subArray(matrix, r - halfWidth, r + halfWidth, 1, c);
+                            ImageAnalysisTools.ImprovedRidgeDetectionNDDirection(subMatrix, out nMagnitude);
+                        }
                         if (magnitude > threshold)
                         {
                             result.Add(poiMatrix[r, c]);
                         }
-                    }
+                        if (nMagnitude > 2.5)
+                        {
+                            result.Add(poiMatrix[r, c]);
+                        }
                 }
             }
             return result;
         }
-
 
         public void ConvertRidgeIndicatorToPOIList(byte[,] ridgeIndiMatrix, double[,] RidgeMagnitudematrix, SpectrogramStandard spectrogram)
         {
@@ -643,9 +718,15 @@ namespace Dong.Felt
             double herzScale = spectrogram.FBinWidth; //43 hz
             double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
             int rows = ridgeIndiMatrix.GetLength(0);
+            if (rows > 242)
+            {
+                rows = 242;
+            }
             int cols = ridgeIndiMatrix.GetLength(1);
             var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
-            for (int r = 0; r < rows; r++)
+            // TO FILTER OUT LOW AND HIGH frequency band, spicify the col index 
+            // r = rows - 8500 / herzScale; r max = rows - 500 / herzScale
+            for (int r = 47; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
@@ -748,7 +829,9 @@ namespace Dong.Felt
                     }
                 }
             }
-            var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(poiList, rows, cols, 7, 3);
+            var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(poiList, rows, cols);
+            var filteredPoiMatrix = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 7, 3);
+            var filteredPoiList = StatisticalAnalysis.TransposeMatrixToPOIlist(filteredPoiMatrix);
             poiList = filteredPoiList;
         }
 
@@ -1213,9 +1296,7 @@ namespace Dong.Felt
             }
             /// filter out some redundant ridges               
             var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
-            var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
-            //var connectedPoiList = PoiAnalysis.ConnectPOI(filteredPoiList);
+            var prunedPoiList1 = ImageAnalysisTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);           
             poiList = prunedPoiList1;
         }
 
@@ -1374,14 +1455,13 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="poiList"></param>
         /// <returns></returns>
-        public static List<List<PointOfInterest>> POIListDivision(List<PointOfInterest> poiList)
+        public static List<List<PointOfInterest>> POIListDivision(PointOfInterest[,] poiList)
         {
             var poiVerticalGroup = new List<PointOfInterest>();
             var poiHorizontalGroup = new List<PointOfInterest>();
             var poiPDGroup = new List<PointOfInterest>();
             var poiNDGroup = new List<PointOfInterest>();
-            var result = new List<List<PointOfInterest>>();
-
+            var result = new List<List<PointOfInterest>>();           
             foreach (var p in poiList)
             {
                 // OrientationType = 4
@@ -1495,16 +1575,7 @@ namespace Dong.Felt
             RowsCount = rowsCount;
             ColsCount = colsCount;
         }
-
-        public static List<PointOfInterest> FilterPointsOfInterest(List<PointOfInterest> poiList, int rowsCount, int colsCount)
-        {
-            var pruneAdjacentPoi = ImageAnalysisTools.PruneAdjacentTracks(poiList, rowsCount, colsCount);
-            var filterNeighbourhoodSize = 7;
-            var numberOfEdge = 3;
-            var filterPoiList = ImageAnalysisTools.RemoveIsolatedPoi(pruneAdjacentPoi, rowsCount, colsCount, filterNeighbourhoodSize, numberOfEdge);
-            return filterPoiList;
-        }
-
+       
         public double[,] SpectrogramIntensityToArray(SpectrogramStandard spectrogram)
         {
             var matrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
@@ -1543,22 +1614,48 @@ namespace Dong.Felt
         // This version aims to add compressed ridges to filtered ridges. 
         public static List<PointOfInterest> AddCompressedRidges(SonogramConfig config, string audioFilePath,
             RidgeDetectionConfiguration ridgeConfig, string featurePropSet,
-            double compressRate, List<PointOfInterest> originalPoiList 
+            CompressSpectrogramConfig compressConfig, List<PointOfInterest> originalPoiList 
                                                      )
         {
             var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFilePath);
-            var copyTSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFilePath);       
-            copyTSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyTSpectrogram.Data, compressRate);
+            var copyTSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFilePath);
+            copyTSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInTime(copyTSpectrogram.Data, compressConfig.TimeCompressRate);
+            var copyFSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, audioFilePath);
+            copyFSpectrogram.Data = AudioPreprosessing.CompressSpectrogramInFreq(copyFSpectrogram.Data, compressConfig.FreqCompressRate);
            
             var rows = spectrogram.Data.GetLength(1);
             var cols = spectrogram.Data.GetLength(0);            
+            var verticalTimeCompressedRidges = new List<PointOfInterest>();
             var timeCompressedRidges = new List<PointOfInterest>();
-            if (copyTSpectrogram.Data != null)
+            if (compressConfig.TimeCompressRate != 1.0)
             {
                 timeCompressedRidges = POISelection.RidgePoiSelection(copyTSpectrogram, ridgeConfig, featurePropSet);
+            }            
+            foreach (var r in timeCompressedRidges)
+            {
+                if (r.OrientationCategory == 4)
+                {
+                    verticalTimeCompressedRidges.Add(r);
+                }
+            }
+            
+            var horiFreqCompressedRidges = new List<PointOfInterest>();
+            var freqCompressedRidges = new List<PointOfInterest>();
+            if (compressConfig.FreqCompressRate != 1.0)
+            {
+                freqCompressedRidges = POISelection.RidgePoiSelection(copyFSpectrogram, ridgeConfig, featurePropSet);
+            }          
+            foreach (var f in freqCompressedRidges)
+            {
+                if (f.OrientationCategory == 0)
+                {
+                    horiFreqCompressedRidges.Add(f);
+                }
             }
             var improvedRidges = POISelection.AddResizeRidgesInTime2(originalPoiList, spectrogram,
-                timeCompressedRidges, compressRate, rows, cols);           
+                verticalTimeCompressedRidges, compressConfig.TimeCompressRate, rows, cols);
+            improvedRidges = POISelection.AddResizeRidgesInFreq2(improvedRidges, spectrogram,
+                horiFreqCompressedRidges, compressConfig.FreqCompressRate, rows, cols);
             return improvedRidges;
         }
 

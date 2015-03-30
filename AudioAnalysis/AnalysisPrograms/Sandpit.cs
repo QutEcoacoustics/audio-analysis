@@ -41,7 +41,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            if (true)  // construct 3Dimage of audio
+            if (false)  // construct 3Dimage of audio
             {
                 //TowseyLibrary.Matrix3D.TestMatrix3dClass();
                 LDSpectrogram3D.Main(null);
@@ -58,9 +58,10 @@ namespace AnalysisPrograms
             }
 
 
-            if (false)  // do test of SNR calculation
+            if (true)  // do test of SNR calculation
             {
-                Audio2InputForConvCNN.Main(null);
+                //Audio2InputForConvCNN.Main(null);
+                Audio2InputForConvCNN.ProcessMeriemsDataset();
                 //SNR.Calculate_SNR_ofXueyans_data();
                 LoggedConsole.WriteLine("FINSIHED");
                 Console.ReadLine();

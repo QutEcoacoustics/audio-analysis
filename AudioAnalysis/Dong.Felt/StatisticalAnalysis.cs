@@ -99,15 +99,151 @@
             return zero;
         }
 
-        public static int EventOverlapInPixel(int ae1Left, int ae1Bottom, int ae1Right, int ae1Top,
+        public static double EventOverlapInPixel(int ae1Left, int ae1Bottom, int ae1Right, int ae1Top,
                                               int ae2Left, int ae2Bottom, int ae2Right, int ae2Top)
         {
-            var xOverlap = Math.Max(0,Math.Min(ae1Right, ae2Right) - Math.Max(ae1Left, ae2Left));
-            var yOverlap = Math.Max(0, Math.Min(ae1Top, ae2Top) - Math.Max(ae1Bottom, ae2Bottom));           
-            var overlap = xOverlap * yOverlap;
+            var overlap = 0.0;         
+            var xOverlap = Math.Max(0, Math.Min(ae1Right, ae2Right) - Math.Max(ae1Left, ae2Left));
+            var yOverlap = Math.Max(0, Math.Min(ae1Top, ae2Top) - Math.Max(ae1Bottom, ae2Bottom));
+            if (xOverlap >= 0 && yOverlap >= 0)
+            {
+                overlap = xOverlap * yOverlap;
+            }           
             return overlap;
         }
 
+        public static double EventContentOverlapInPixel(EventBasedRepresentation q, EventBasedRepresentation c)
+        {
+            var result = 0.0;
+
+            var qPoiMatrix = StatisticalAnalysis.GetRelativePoint(q.PointsOfInterest, c.Left, c.Bottom);          
+            var cPoiMatrix = StatisticalAnalysis.GetRelativePoint(c.PointsOfInterest, c.Left, c.Bottom);
+
+            var andCount = 0;
+            var orCount = 0;
+
+            var qPoiCount = 0;
+            var cPoiCount = 0; 
+
+            foreach (var qP in qPoiMatrix)
+            {
+                if (qP.RidgeMagnitude != 0.0)
+                {
+                    qPoiCount++;
+                    foreach (var cp in cPoiMatrix)
+                    {
+                        if (Distance.EuclideanDistanceForPoint(qP.Point, cp.Point) == 0.0)
+                        {
+                            andCount++;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }             
+            }
+
+            foreach (var cp in cPoiMatrix)
+            {
+                if (cp.RidgeMagnitude != 0.0)
+                {
+                    cPoiCount++;
+                }
+            }
+            
+            orCount = qPoiCount + cPoiCount - andCount;
+            
+            if (orCount > 0)
+            {
+                result = (double)andCount / orCount;
+            }           
+            return result;
+        }
+
+        public static PointOfInterest[,] GetRelativePoint(PointOfInterest[,] poiMatrix, int startCol, int startRow)
+        {
+            var rows = poiMatrix.GetLength(0);
+            var cols = poiMatrix.GetLength(1);
+
+            var result = new PointOfInterest[rows, cols];
+            var originalColStart = 0;
+            var originalRowStart = 0; 
+            if (rows > 0 && cols > 0)
+            {
+                originalColStart = poiMatrix[0, 0].Point.X;
+                originalRowStart = poiMatrix[0, 0].Point.Y;
+            }
+            for (var i = 0; i < rows; i++)
+            {
+                for (var j = 0; j < cols; j++)
+                {
+                    var point = new Point(0, 0);
+                    var tempPoi = new PointOfInterest(point);
+                    tempPoi.RidgeMagnitude = 0.0;
+                    result[i, j] = tempPoi;
+                }
+            }
+            var colOffset = originalColStart - startCol;
+            //var rowOffset = originalColStart - startRow;
+            var rowOffset = 0;
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var pointX = poiMatrix[r, c].Point.X;
+                    var pointY = poiMatrix[r, c].Point.Y;
+                    var ridgeMagnitude = poiMatrix[r, c].RidgeMagnitude;
+                    if (poiMatrix[r, c].RidgeMagnitude != 0.0)
+                    {
+                        result[r, c].Point = new Point(pointX - colOffset, pointY - rowOffset);
+                        result[r, c].RidgeMagnitude = ridgeMagnitude;
+                    }
+                    else
+                    {
+                        result[r, c].Point = new Point(pointX, pointY);
+                        
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static double[] subArray(double[,] array, int startIndex, int endIndex, int dimensionIndex, int index)
+        {
+            var length = endIndex - startIndex;
+            var result = new double[length+1];
+            if (endIndex < array.GetLength(1))
+            {
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    if (dimensionIndex == 0)
+                    {
+                        result[i-startIndex] = array[index, i];
+                    }
+                    else
+                    {
+                        result[i-startIndex] = array[i, index];
+                    }
+                }
+            }        
+            return result;
+        }
+
+        public static PointOfInterest[,] PointListToPOIMatrix(List<Point> point, int rows, int cols)
+        {
+            var result = new PointOfInterest[rows, cols];
+            for (var r = 0; r < rows; r++)
+            {
+                for (var c = 0; c < cols; c++)
+                {
+                    var newPoint = new Point(point[0].X, point[0].Y);
+                    result[r, c].Point = newPoint;
+                }
+            }
+            return result;
+        }
+        
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Row, column indices start at 0
@@ -730,7 +866,7 @@
                     var point = new Point(colIndex, rowIndex);
                     var tempPoi = new PointOfInterest(point);
                     tempPoi.RidgeMagnitude = 0.0;
-                    tempPoi.OrientationCategory = 10;                  
+                    tempPoi.OrientationCategory = 10;
                     m[rowIndex, colIndex] = tempPoi;
                 }
             }

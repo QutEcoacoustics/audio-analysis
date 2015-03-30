@@ -961,25 +961,21 @@ namespace Dong.Felt
             magnitude = ridgeMagnitude / 2;
         }
 
-        public static void ImprovedRidgeDetectionNDDirection(double[,] m, out double magnitude)
+        public static void ImprovedRidgeDetectionNDDirection(double[] m, out double magnitude)
         {
             int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            if ((rows != 6) || (cols != 5)) // must be square 6X5 matrix 
+            if (rows != 7) // must be square 6X5 matrix 
             {
                 magnitude = 0.0;
                 return;
             }
 
-            double[,] ridgeNegativeDiagonalMask = { { 0.2,-0.1,-0.1,-0.1, -0.1},
-                                                    { 0.2, 0.2,-0.1,-0.1, -0.1},
-                                                    {-0.1, 0.2, 0.2,-0.1, -0.1},
-                                                    {-0.1,-0.1, 0.2, 0.2, -0.1},
-                                                    {-0.1,-0.1,-0.1, 0.2,  0.2},
-                                                    {-0.1,-0.1,-0.1,-0.1,  0.2},
-                                          };
-
-            var ridgeMagnitude = MatrixTools.DotProduct(ridgeNegativeDiagonalMask, m);
+            double[] ridgeNegativeDiagonalMask = { -0.25,-0.25,0.3, 0.4, 0.3,-0.25,-0.25};
+            var ridgeMagnitude = 0.0;
+            for (var i = 0; i < ridgeNegativeDiagonalMask.Length; i++)
+            {
+                ridgeMagnitude += ridgeNegativeDiagonalMask[i] * m[i];
+            }            
             magnitude = ridgeMagnitude / 2;
         }
 
@@ -1561,9 +1557,11 @@ namespace Dong.Felt
         /// <param name="sizeOfNeighbourhood"></param>
         /// <param name="thresholdForLeastPoint"></param>
         /// <returns></returns>
-        public static List<PointOfInterest> RemoveIsolatedPoi(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
+        public static PointOfInterest[,] RemoveIsolatedPoi(PointOfInterest[,] M,
+            int sizeOfNeighbourhood, int thresholdForLeastPoint)
         {
-            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
+            var rows = M.GetLength(0);
+            var cols = M.GetLength(1);           
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -1593,7 +1591,8 @@ namespace Dong.Felt
                                 {
                                     if (M[r + i, c + j] != null)
                                     {
-                                        M[r + i, c + j] = null;
+                                        M[r + i, c + j].RidgeMagnitude = 0.0;
+                                        M[r + i, c + j].RidgeOrientation = 10.0;                                       
                                     }
                                 }
                             }
@@ -1603,59 +1602,8 @@ namespace Dong.Felt
                 }
                 r += sizeOfNeighbourhood - 1;
             }
-            return PointOfInterest.TransferPOIMatrix2List(M);
-        }
-
-        /// <summary>
-        /// Given a current poi, search in its neighbourhood, check how many pois have the same orientation as the current poi. 
-        /// if the number of pois is less than threshold, it will be set to null. 
-        /// </summary>
-        /// <param name="poiList"></param>
-        /// <param name="rows"></param>
-        /// <param name="cols"></param>
-        /// <param name="sizeOfNeighbourhood"></param>
-        /// <param name="thresholdForLeastPoint"></param>
-        /// <returns></returns>
-        public static List<PointOfInterest> FilterRidges(List<PointOfInterest> poiList, int rows, int cols, int sizeOfNeighbourhood, int thresholdForLeastPoint)
-        {
-            var M = PointOfInterest.TransferPOIsToMatrix(poiList, rows, cols);
-            var radius = sizeOfNeighbourhood / 2;
-            for (int r = radius; r < rows; r++)
-            {
-                for (int c = radius; c < cols; c++)
-                {
-                    if (M[r, c] != null)
-                    {
-                        var ridgeOrientation = M[r, c].OrientationCategory;
-                        var numberOfpoi = 1;
-                        // search in a neighbourhood
-                        for (int i = -radius; i < radius; i++)
-                        {
-                            for (int j = -radius; j < radius; j++)
-                            {
-                                if (StatisticalAnalysis.checkBoundary(r + i, c + j, rows, cols))
-                                {
-                                    if (M[r + i, c + j] != null)
-                                    {
-                                        var orientationCate = M[r + i, c + j].OrientationCategory;
-                                        if (orientationCate == ridgeOrientation)
-                                        {
-                                            numberOfpoi++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (numberOfpoi < thresholdForLeastPoint)
-                        {
-                            M[r, c] = null;
-                        }
-                    }
-                }
-            }
-            return PointOfInterest.TransferPOIMatrix2List(M);
-        }
-        
+            return M;
+        }      
         #endregion
     }
 }
