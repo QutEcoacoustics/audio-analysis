@@ -10,9 +10,11 @@ using Dong.Felt.Configuration;
 
 namespace Dong.Felt.Representations
 {
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
     using Acoustics.Shared.Extensions;
+    using TowseyLibrary;
 
     public class EventBasedRepresentation : AcousticEvent
     {
@@ -47,6 +49,14 @@ namespace Dong.Felt.Representations
         /// </summary>
         public int Area { get; set; }
 
+        public int InsideRidgeOrientation { get; set; }
+
+        public double TemporalEntropy { get; set; }
+
+        public double FrequencyBinEntropy { get; set; }
+
+        public PointOfInterest[,] PointsOfInterest { get; set; }
+
         public double TimeScale { get; set; }
 
         public double FreqScale { get; set; }
@@ -65,13 +75,13 @@ namespace Dong.Felt.Representations
             this.MinFreq = minFrequency;
             this.TimeStart = startTime;
             this.Duration = endTime - startTime;
-            this.Bottom = (int)(minFrequency / freqScale) + 1;
-            this.Left = (int)(startTime / timeScale) + 1;          
+            this.Bottom = (int)(minFrequency / freqScale);
+            this.Left = (int)(startTime / timeScale);
 
             this.Width = (int)(this.Duration / timeScale) + 1;
-            this.Height = (int)(this.FreqRange / freqScale) + 1 + 1;
+            this.Height = (int)(this.FreqRange / freqScale) + 1;
             this.Centroid = new Point(this.Left + this.Width / 2, this.Bottom + this.Height / 2);
-            this.Area = this.Width * this.Height;
+            this.Area = this.Width * this.Height;           
         }
 
         /// <summary>
@@ -129,18 +139,270 @@ namespace Dong.Felt.Representations
         //}
 
         public static List<EventBasedRepresentation> AcousticEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
-            List<AcousticEvent> ae)
+            List<AcousticEvent> ae, int orientationType)
         {
             var result = new List<EventBasedRepresentation>();
             var timeScale = sonogram.FrameDuration - sonogram.Configuration.GetFrameOffset();
             var freqScale = sonogram.FBinWidth;
             foreach (var e in ae)
             {
-                var ep = new EventBasedRepresentation(timeScale, freqScale, 
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                ep.InsideRidgeOrientation = orientationType;
                 ep.TimeScale = timeScale;
                 ep.FreqScale = freqScale;
                 result.Add(ep);
+            }
+            return result;
+        }
+
+        public static List<List<EventBasedRepresentation>> AcousticEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
+           List<List<AcousticEvent>> ae, PointOfInterest[,] poiMatrix)
+        {
+            var result = new List<List<EventBasedRepresentation>>();
+            var timeScale = sonogram.FrameDuration - sonogram.Configuration.GetFrameOffset();
+            var freqScale = sonogram.FBinWidth;
+            var rows = poiMatrix.GetLength(0) - 1;
+            var cols = poiMatrix.GetLength(1);
+            var vAcousticEventList = ae[0];
+            var hAcousticEventList = ae[1];
+            var pAcousticEventList = ae[2];
+            var nAcousticEventList = ae[3];
+            var vResult = new List<EventBasedRepresentation>();
+            foreach (var e in vAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                
+                if (ep.Area >= 10)
+                {
+                    ep.InsideRidgeOrientation = 0;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
+                    ep.FrequencyBinEntropy = entropyPair.Item1;
+                    ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
+                    vResult.Add(ep);
+                }              
+            }
+            var hResult = new List<EventBasedRepresentation>();
+            foreach (var e in hAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+               
+                if (ep.Area >= 10)
+                {
+                    ep.InsideRidgeOrientation = 1;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
+                    ep.FrequencyBinEntropy = entropyPair.Item1;
+                    ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
+                    hResult.Add(ep);
+                }               
+            }
+            var pResult = new List<EventBasedRepresentation>();
+            foreach (var e in pAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);               
+                if (ep.Area >= 6)
+                {
+                    ep.InsideRidgeOrientation = 2;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
+                    ep.FrequencyBinEntropy = entropyPair.Item1;
+                    ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
+                    pResult.Add(ep);
+                }                  
+            }
+            var nResult = new List<EventBasedRepresentation>();
+            foreach (var e in nAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);               
+                if (ep.Area >= 6)
+                {
+                    ep.InsideRidgeOrientation = 3;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+
+                    var entropyPair = GetEntropy(ep, poiMatrix, rows, cols);
+                    ep.FrequencyBinEntropy = entropyPair.Item1;
+                    ep.TemporalEntropy = entropyPair.Item2;
+                    ep.PointsOfInterest = entropyPair.Item3;
+                    nResult.Add(ep);
+                }                 
+            }
+            result.Add(vResult);
+            result.Add(hResult);
+            result.Add(pResult);
+            result.Add(nResult);
+            return result;
+        }
+
+        public static List<List<EventBasedRepresentation>> GaussianEventsToEventBasedRepresentations(SpectrogramStandard sonogram,
+           List<List<AcousticEvent>> ae, PointOfInterest[,] poiMatrix)
+        {
+            var result = new List<List<EventBasedRepresentation>>();
+            var timeScale = sonogram.FrameDuration - sonogram.Configuration.GetFrameOffset();
+            var freqScale = sonogram.FBinWidth;
+            var rows = poiMatrix.GetLength(0) - 1;
+            var cols = poiMatrix.GetLength(1);
+            var vAcousticEventList = ae[0];
+            var hAcousticEventList = ae[1];
+            var pAcousticEventList = ae[2];
+            var nAcousticEventList = ae[3];
+            var vResult = new List<EventBasedRepresentation>();
+            foreach (var e in vAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+
+                if (ep.Area >= 10)
+                {
+                    ep.InsideRidgeOrientation = 0;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    vResult.Add(ep);
+                }
+            }
+            var hResult = new List<EventBasedRepresentation>();
+            foreach (var e in hAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+
+                if (ep.Area >= 10)
+                {
+                    ep.InsideRidgeOrientation = 1;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    hResult.Add(ep);
+                }
+            }
+            var pResult = new List<EventBasedRepresentation>();
+            foreach (var e in pAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                if (ep.Area >= 6)
+                {
+                    ep.InsideRidgeOrientation = 2;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    pResult.Add(ep);
+                }
+            }
+            var nResult = new List<EventBasedRepresentation>();
+            foreach (var e in nAcousticEventList)
+            {
+                var ep = new EventBasedRepresentation(timeScale, freqScale,
+                    e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
+                if (ep.Area >= 6)
+                {
+                    ep.InsideRidgeOrientation = 3;
+                    ep.TimeScale = timeScale;
+                    ep.FreqScale = freqScale;                   
+                    ep.PointsOfInterest = GetSubPoiMatrix(ep, poiMatrix, rows, cols);
+                    nResult.Add(ep);
+                }
+            }
+            result.Add(vResult);
+            result.Add(hResult);
+            result.Add(pResult);
+            result.Add(nResult);
+            return result;
+        }
+
+        public static PointOfInterest[,] GetSubPoiMatrix(EventBasedRepresentation ev,
+            PointOfInterest[,] poiMatrix, int rowsCount,
+            int colsCount)
+        {
+            var startRow = rowsCount - (ev.Bottom + ev.Height);
+            var endRow = rowsCount - ev.Bottom;
+            var startCol = ev.Left;
+            var endCol = ev.Left + ev.Width;
+            var ridgeOrientation = RidgeMajorDirectionToOrientation(ev.InsideRidgeOrientation);
+            var subMatrix = StatisticalAnalysis.Submatrix(poiMatrix, startRow, startCol, endRow, endCol);
+            return subMatrix;
+        }
+
+        public static Tuple<double, double, PointOfInterest[,]> GetEntropy(EventBasedRepresentation ev, 
+            PointOfInterest[,] poiMatrix, int rowsCount, 
+            int colsCount)        
+        {            
+            var startRow = rowsCount - (ev.Bottom + ev.Height);
+            var endRow = rowsCount - ev.Bottom;
+            var startCol = ev.Left;
+            var endCol = ev.Left + ev.Width;
+            var ridgeOrientation = RidgeMajorDirectionToOrientation(ev.InsideRidgeOrientation);
+            var subMatrix = StatisticalAnalysis.Submatrix(poiMatrix, startRow, startCol, endRow, endCol);
+
+            var columnEnergy = new double[endCol-startCol];
+            for (int colIndex = startCol; colIndex < endCol; colIndex++)
+            {
+                for (int rowIndex = startRow; rowIndex < endRow; rowIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {
+
+                        if (poiMatrix[rowIndex, colIndex].OrientationCategory == ridgeOrientation)
+                        {                            
+                            ///Count based 
+                            columnEnergy[colIndex-startCol] += 1.0;   // Count of POI
+                            ///Magnitude Based
+                            //var magnitude = pointsOfInterest[colIndex, rowIndex].RidgeMagnitude;
+                            // columnEnergy[rowIndex] += magnitude;                           
+                        }
+                    }
+                }
+            }
+            var rowEnergy = new double[endRow-startRow];
+            for (int rowIndex = startRow; rowIndex < endRow; rowIndex++)
+            {
+                for (int colIndex = startCol; colIndex < endCol; colIndex++)
+                {
+                    if (poiMatrix[rowIndex, colIndex].RidgeMagnitude != 0)
+                    {                        
+                        if (poiMatrix[rowIndex, colIndex].OrientationCategory == ridgeOrientation)
+                        {
+                            rowEnergy[rowIndex-startRow] += 1.0;
+                        }
+                    }
+                }
+            }
+            var FrequencyEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(columnEnergy));
+            var FrameEnergyEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(rowEnergy));
+            
+            var formatedFrequencyEntropy = (double)decimal.Round((decimal)FrequencyEnergyEntropy, 3);
+            var formatedFrameEntropy = (double)decimal.Round((decimal)FrameEnergyEntropy, 3);
+            var result = Tuple.Create(formatedFrequencyEntropy, formatedFrameEntropy, subMatrix);
+            return result;
+        }
+       
+        public static int RidgeMajorDirectionToOrientation(int ridgeMajorDirection)
+        {
+            var result = 0;
+            if (ridgeMajorDirection == 0)
+            {
+                result = 4;
+            }
+            if (ridgeMajorDirection == 2)
+            {
+                result = 2;
+            }
+            if (ridgeMajorDirection == 3)
+            {
+                result = 6;
             }
             return result;
         }
@@ -152,7 +414,7 @@ namespace Dong.Felt.Representations
             var result = new List<EventBasedRepresentation>();
 
             foreach (var e in events)
-            {                
+            {
                 if (e.Centroid.X > query.LeftInPixel && e.Centroid.X < query.RightInPixel)
                 {
                     if (e.Centroid.Y > query.BottomInPixel && e.Centroid.Y < query.TopInPixel)
@@ -173,6 +435,8 @@ namespace Dong.Felt.Representations
                         {
                             e.Width = query.RightInPixel - e.Left;
                         }
+                        e.Area = e.Width * e.Height;
+                        e.Centroid = new Point((e.Left + e.Width / 2), e.Bottom + e.Height / 2);
                         result.Add(e);
                     }
                 }
@@ -180,37 +444,102 @@ namespace Dong.Felt.Representations
             return result;
         }
 
+        public static List<EventBasedRepresentation> SelectEvents(
+            List<EventBasedRepresentation> eventList,
+            int minFreq,
+            int maxFreq,
+            int startTime,
+            int endTime,
+            int maxFrequency,
+            int maxFrame)
+        {
+            var result = new List<EventBasedRepresentation>();
+            if (StatisticalAnalysis.checkBoundary(minFreq, startTime, maxFrequency, maxFrame)
+                && StatisticalAnalysis.checkBoundary(maxFreq, endTime, maxFrequency, maxFrame))
+            {
+                foreach (var c in eventList)
+                {
+                    if (c.Centroid.X > startTime && c.Centroid.X < endTime)
+                    {
+                        if (c.Centroid.Y > minFreq && c.Centroid.Y < maxFreq)
+                        {
+                            if (c.Bottom < minFreq)
+                            {
+                                c.Bottom = minFreq;
+                            }
+                            if (c.Bottom + c.Height > maxFreq)
+                            {
+                                c.Height = maxFreq - c.Bottom;
+                            }
+                            if (c.Left < startTime)
+                            {
+                                c.Left = startTime;
+                            }
+                            if (c.Left + c.Width > endTime)
+                            {
+                                c.Width = endTime - c.Left;
+                            }
+                            c.Area = c.Width * c.Height;
+                            c.Centroid = new Point(c.Left + c.Width / 2, c.Bottom + c.Height / 2);
+                            result.Add(c);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static List<List<EventBasedRepresentation>> AddSelectedEventLists(List<List<EventBasedRepresentation>> eventList,
+            int minFreq,
+            int maxFreq,
+            int startTime,
+            int endTime,
+            int maxFrequency,
+            int maxFrame)
+        {
+            var result = new List<List<EventBasedRepresentation>>();
+            var vEvents = SelectEvents(eventList[0], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame);
+            var hEvents = SelectEvents(eventList[1], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame);
+            var pEvents = SelectEvents(eventList[2], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame);
+            var nEvents = SelectEvents(eventList[3], minFreq, maxFreq, startTime, endTime, maxFrequency, maxFrame);
+            result.Add(vEvents);
+            result.Add(hEvents);
+            result.Add(pEvents);
+            result.Add(nEvents);
+            return result;
+        }
+
         /// <summary>
-        /// 
+        /// This method aims to extract candidate region representation according to the provided
+        /// marquee of the queryRepresentation, the frequencyBound are exactly the same as query.
         /// </summary>
         /// <param name="queryRepresentations"></param>
         /// <param name="candidateEventList"></param>
         /// <param name="centroidFreqOffset"> 
         /// </param>
         /// <returns></returns>
-        public static List<RegionRepresentation> ExtractAcousticEventList(SpectrogramStandard spectrogram,
+        public static List<RegionRepresentation> ExtractFixedAcousticEventList(SpectrogramStandard spectrogram,
             RegionRepresentation queryRepresentations,
-            List<EventBasedRepresentation> candidateEventList, string file, int centroidFreqOffset)
+            List<EventBasedRepresentation> candidateEventList, string file, Query query)
         {
             var result = new List<RegionRepresentation>();
-            var startCentriod = queryRepresentations.bottomLeftEvent.Centroid;
+            var startCentriod = queryRepresentations.MajorEvent.Centroid;
 
             var maxFrame = spectrogram.FrameCount;
             var maxFreq = spectrogram.Configuration.FreqBinCount;
             var potentialCandidateStart = new List<EventBasedRepresentation>();
             foreach (var c in candidateEventList)
             {
-                if (Math.Abs(c.Centroid.Y - startCentriod.Y) <= centroidFreqOffset)
+                if (c.Centroid.Y <= queryRepresentations.TopInPixel && c.Centroid.Y >= queryRepresentations.BottomInPixel)
                 {
                     potentialCandidateStart.Add(c);
                 }
             }
-
             foreach (var pc in potentialCandidateStart)
-            {                                        
+            {
                 var realCandidate = new List<EventBasedRepresentation>();
                 var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
-                var minFreqPixelIndex =  pc.Bottom - queryRepresentations.bottomToBottomLeftVertex;
+                var minFreqPixelIndex = pc.Bottom - queryRepresentations.bottomToBottomLeftVertex;
                 var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
                 var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
 
@@ -243,8 +572,8 @@ namespace Dong.Felt.Representations
                             }
                         }
                     }
-                }                 
-                var candidateRegionRepre = new RegionRepresentation(realCandidate, file);
+                }
+                var candidateRegionRepre = new RegionRepresentation(realCandidate, file, query);
                 candidateRegionRepre.bottomToBottomLeftVertex = minFreqPixelIndex;
                 candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex;
                 candidateRegionRepre.rightToBottomLeftVertex = startTimePixelIndex;
@@ -252,10 +581,30 @@ namespace Dong.Felt.Representations
                 candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
                 candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
                 candidateRegionRepre.LeftInPixel = startTimePixelIndex;
-                candidateRegionRepre.RightInPixel = endTimePixelIndex; 
+                candidateRegionRepre.RightInPixel = endTimePixelIndex;
+
                 result.Add(candidateRegionRepre);
             }
             return result;
+        }
+
+        public static List<EventBasedRepresentation> ExtractPotentialCandidateEvents(
+            List<EventBasedRepresentation> queryRepresentations, List<EventBasedRepresentation> candidateEventList, int centroidFreqOffset)
+        {
+            if (queryRepresentations.Count > 0)
+            {
+                queryRepresentations.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
+            }
+            var BottomLeftEventInQuery = queryRepresentations[0];
+            var potentialCandidateLocation = new List<EventBasedRepresentation>();
+            foreach (var c in candidateEventList)
+            {
+                if (Math.Abs(c.Centroid.Y - BottomLeftEventInQuery.Centroid.Y) <= centroidFreqOffset)
+                {
+                    potentialCandidateLocation.Add(c);
+                }
+            }
+            return potentialCandidateLocation;
         }
 
         #endregion
