@@ -277,7 +277,7 @@
     <Compile Include="SURFFeatures.cs" />
     <Compile Include="TileImage\ISuperTile.cs" />
     <Compile Include="TileImage\Layer.cs" />
-    <Compile Include="TileImage\PanoJsNamingPattern.cs" />
+    <Compile Include="TileImage\PanoJsTilingProfile.cs" />
     <Compile Include="TileImage\TilingProfile.cs" />
     <Compile Include="TileImage\Tiler.cs" />
     <Compile Include="WavTools\AudioRecording.cs" />

@@ -394,7 +394,7 @@ namespace AnalysisPrograms
                                  // this next line is probably wrong - does not give start of the source recording only a segment of it.
                                  MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                                  ColourMap2   = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                                 ColourMap1   = SpectrogramConstants.RGBMap_BGN_AVG_CVR,
+                                 ColourMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
                                  BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF       
                              };
 
