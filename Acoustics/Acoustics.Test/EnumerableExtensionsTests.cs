@@ -2,16 +2,13 @@
 // <copyright file="EnumerableExtensionsTests.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
-// <summary>
-//   Defines the EnumerableExtensions type.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
 namespace Acoustics.Test
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
 
     using Acoustics.Shared;
 
@@ -20,7 +17,6 @@ namespace Acoustics.Test
     [TestClass]
     public class EnumerableExtensionsTests
     {
-
         public class DummyData
         {
             public double[] Field1 { get; set; }
@@ -33,10 +29,9 @@ namespace Acoustics.Test
         private readonly Dictionary<string, Func<DummyData, double[]>> selectors =
             new Dictionary<string, Func<DummyData, double[]>>()
                 {
-                    { "Field1", (dd => dd.Field1) },
-                    { "Field2", (dd => dd.Field2) }
+                    { "Field1", dd => dd.Field1 }, 
+                    { "Field2", dd => dd.Field2 }
                 };
-
 
         [TestInitialize]
         public void SetupData()
@@ -45,17 +40,16 @@ namespace Acoustics.Test
                                   {
                                       new DummyData()
                                           {
-                                              Field1 = new[] { 0.0, 1, 2, 3, 4, },
+                                              Field1 = new[] { 0.0, 1, 2, 3, 4, }, 
                                               Field2 = new[] { 5.0, 6, 7, 8, 9, }
-                                          },
+                                          }, 
                                       new DummyData()
                                           {
-                                              Field1 = new[] { 10.0, 11, 12, 13, 14 },
+                                              Field1 = new[] { 10.0, 11, 12, 13, 14 }, 
                                               Field2 = new[] { 15.0, 16, 17, 18, 19 }
-                                          },
+                                          }, 
                                   };
         }
-
 
         [TestMethod]
         public void EnumerableToDictionaryOfMatriciesTest()
@@ -91,7 +85,6 @@ namespace Acoustics.Test
             Test2DArray(field2, expected2);
 
             TestDims(field1, 5, 2);
-
         }
 
         [TestMethod]
@@ -110,7 +103,6 @@ namespace Acoustics.Test
             Test2DArray(field2, expected2);
 
             TestDims(field1, 5, 2);
-
         }
 
         private static void TestDims(double[,] matrix, int rows, int columns)
@@ -130,6 +122,62 @@ namespace Acoustics.Test
                 Assert.AreEqual(expected[index], d);
                 index++;
             }
+        }
+
+        [TestMethod]
+        public void TestWindowedFunction()
+        {
+            var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
+            int[][] expected =
+                {
+                    new[] { 3, 4 }, new[] { 4, 5 }, new[] { 5, 6 }, new[] { 6, 7 }, new[] { 7, 8 }, 
+                    new[] { 8, 9 }, new[] { 9, 10 }
+                };
+
+            input.Windowed(2).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+        [TestMethod]
+        public void TestWindowedFunctionSize3()
+        {
+            var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
+            int[][] expected =
+                {
+                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 }, new[] { 7, 8, 9 }, 
+                    new[] { 8, 9, 10 }
+                };
+
+            input.Windowed(3).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+
+
+        [TestMethod]
+        public void TestWindowedOrDefaultFunction()
+        {
+            var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
+            int[][] expected =
+                {
+                    new[] { int.MinValue, 3 },
+                    new[] { 3, 4 }, new[] { 4, 5 }, new[] { 5, 6 }, new[] { 6, 7 }, new[] { 7, 8 }, 
+                    new[] { 8, 9 }, new[] { 9, 10 }, new[] {10, int.MinValue}
+                };
+
+            input.WindowedOrDefault(2, int.MinValue).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+        [TestMethod]
+        public void TestWindowedOrDefaultFunctionSize3()
+        {
+            var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
+            int[][] expected =
+                {
+                    new[] { 0, 0, 3 }, new[] { 0, 3, 4 }, 
+                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 }, new[] { 7, 8, 9 }, 
+                    new[] { 8, 9, 10 }, new[] { 9, 10, 0 }, new[] { 10, 0, 0 }
+                };
+
+            input.WindowedOrDefault(3).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
         }
     }
 }

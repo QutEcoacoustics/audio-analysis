@@ -52,6 +52,9 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".yml")]
             [ArgRequired]
             public FileInfo SpectrogramConfigPath { get; set; }
+
+
+            public int? FocusMinute { get; set; }
         }
 
 
@@ -153,14 +156,15 @@ namespace AnalysisPrograms
             }
 
             // Create the super tiles for a full set of recordings
-            //ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
-            //                                     arguments.Output,
-            //                                     arguments.SpectrogramConfigPath,
-            //                                     arguments.SpectrogramTilingConfig,
-            //                                     arguments.IndexPropertiesConfig);
-
+			////ZoomTiledSpectrograms.DrawSuperTiles(arguments.SourceDirectory,
+            ////                                     arguments.Output,
+            ////                                     arguments.SpectrogramConfigPath,
+            ////                                     arguments.SpectrogramTilingConfig,
+            ////                                     arguments.IndexPropertiesConfig);
+            ////
 
             // ######################################################################################################################################################
+			
             bool debug = true;
             if (debug)
             {
@@ -176,7 +180,17 @@ namespace AnalysisPrograms
                 // draw a focused multi-resolution pyramid of images
                 //TimeSpan focalTime = TimeSpan.Zero;
                 //TimeSpan focalTime = TimeSpan.FromMinutes(16);
-                TimeSpan focalTime = TimeSpan.FromMinutes(100);
+
+                TimeSpan focalTime;
+                if (arguments.FocusMinute.HasValue)
+                {
+                    focalTime = TimeSpan.FromMinutes(arguments.FocusMinute.Value);
+                }
+                else
+                {
+                    throw new ArgumentNullException("FocusMinute", "Focus minute is null, cannot proceed");
+                }
+
                 int imageWidth = 1500;
                 ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(arguments.SourceDirectory,
                                                                       arguments.Output,

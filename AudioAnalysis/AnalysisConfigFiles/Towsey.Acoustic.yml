@@ -5,7 +5,7 @@ SegmentDuration: 1
 SegmentOverlap: 0
 
 # IndexCalculationDuration: units=seconds (default=60 seconds)
-IndexCalculationDuration: 0.2
+IndexCalculationDuration: 60.0
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 BGNoiseNeighbourhood: 5
 
@@ -30,7 +30,7 @@ SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 
 # SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
-SaveSonogramData: true
+SaveSonogramData: false
 SaveSonogramImages: false
 
 DisplayCsvImage: true
