@@ -65,16 +65,35 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     
 }
 
-Sp.CreateFromFile <- function (path, draw = FALSE) {
+Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 256, 
+                               smooth = TRUE, db = TRUE, filename = FALSE) {
 
+    defaults = list(
+        frame.width = 256,
+        smooth = TRUE,
+        db = TRUE
+        )
+    
+    id <- ''
+    if (frame.width != defaults$frame.width) {
+        id <- paste0(id, ".framewidth=",frame.width)
+    }
+    if (smooth != defaults$smooth) {
+        val <- ifelse(smooth, 1, 0)
+        id <- paste0(id, "smooth=",val)
+    }
+    if (db != defaults$db) {
+        val <- ifelse(db, 1, 0)
+        id <- paste0(id, "smooth=",val)
+    }
     
     split <- strsplit(path, .Platform$file.sep)
     basepath <- BasePath(path)
-    cache.id <- paste0(basepath, '.spectro')
+    cache.id <- paste0(basepath,id, '.spectro')
     
     spectro <- ReadCache(cache.id)
     if (class(spectro) != 'spectrogram') {
-        spectro <- Sp.Create(path, draw = draw)
+        spectro <- Sp.Create(path, draw = draw, frame.width, smooth = smooth, db = db, filename = filename)
         WriteCache(spectro, cache.id) 
     } else {
         Report(5, 'using spectrgram retrieved from cache')
@@ -226,10 +245,7 @@ Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
     vp <- viewport(x = 0, y = 0, just = c('left', 'bottom'), width = vp.width.cm, height = vp.height.cm, default.units = 'cm')
     pushViewport(vp)
     
-    
     grid.raster(image = rast, vp = vp)
-
-    
 
     Sp.Label(spectro)
     

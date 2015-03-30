@@ -607,5 +607,25 @@ AreNumbersEqual <- function (nums, tol = .Machine$double.eps) {
    return(max(nums) - min(nums) < tol)
 }
 
+LastBlock <- function (vals) {
+    # given a vector of values, will return the indexes of
+    # the last value and a continuous run of the same values from the end
+    # eg c(1,2,1,2,3,2,2,3,2,3,3,3) will return c(10,11,12) because the last value (12) is 3
+    # and values 10 and 11 next to it are also 3
+    
+    vals.r <- rev(vals)
+    last <- vals.r[1]
+    from <- match(TRUE, vals.r != last)
+    if (is.na(from)) {
+        return(1:length(vals)) 
+    }
+    
+    to <- length(vals)
+    from <- to - from + 2
+    
+    return(from:to)
+    
+    
+}
 
-
+SampleFromVector <- function(x, ...) x[sample.int(length(x), ...)]

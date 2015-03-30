@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "AED", "AED.fsproj", "{993980A0-8D06-4635-8296-40E9FFF9C301}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		AudioAnalysis|Any CPU = AudioAnalysis|Any CPU
+		Core|Any CPU = Core|Any CPU
+		SilverlightOnly|Any CPU = SilverlightOnly|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.AudioAnalysis|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.AudioAnalysis|Any CPU.Build.0 = AudioAnalysis|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Core|Any CPU.ActiveCfg = Core|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Core|Any CPU.Build.0 = Core|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Any CPU.Build.0 = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.SilverlightOnly|Any CPU.ActiveCfg = SilverlightOnly|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.SilverlightOnly|Any CPU.Build.0 = SilverlightOnly|Any CPU
+	EndGlobalSection
+EndGlobal

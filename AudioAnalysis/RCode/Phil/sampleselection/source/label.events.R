@@ -3,7 +3,7 @@
 
 
 
-LabelEvents.2 <- function (events = NULL) {
+LabelEvents.2 <- function (events = NULL, reference.tags = FALSE, tag.ids = NULL) {
     
     if (is.null(events)) {
         events <- ReadOutput('all.events')
@@ -12,69 +12,175 @@ LabelEvents.2 <- function (events = NULL) {
     
     dependencies <- list(all.events = events$version)
     events <- events$data
+    
+    events.selection <- EventsSelection(events)
+    events <- events[events.selection,]
 
     fields <- c('id', 'species_id', 'site', 'start_date_time_char', 'end_date_time_char', 'start_frequency', 'end_frequency', 'start_date', 'start_time') 
-
-    tags <- ReadTagsFromDb(fields, unique(events$site), min(events$start.date.time), max(events$end.date.time))
-
+    tags <- ReadTagsFromDb(fields, unique(events$site), min(events$start.date.time), max(events$end.date.time), reference.tags = reference.tags)
+    # remove tags for audio that we don't have
     tags <- RemoveTagsForMissingAudio(events, tags)
+    
+    if (!is.null(tag.ids)) {
+        tags <- tags[tags$id %in% tag.ids,]
+    }
     
     
     event.labels <- ReadOutput('event.labels', dependencies = dependencies, false.if.missing = TRUE)
+
     if (!is.list(event.labels)) {
-        event.labels <- data.frame(event.id = events$event.id, species.id = rep(NA, nrow(events)), tag.id = rep(NA, nrow(events)))
+        event.labels <- data.frame(event.id = integer(), species.id = integer(), tag.id = integer())
         WriteOutput(event.labels, 'event.labels', dependencies = dependencies)
     } else {
         event.labels <- event.labels$data
     }
+    
+    Report(4, sum(event.labels$species.id > 0)," / ", nrow(event.labels), "labeled events have a species id")
+    
+    save.every <- 50
+    next.save <- nrow(event.labels) + save.every
+    
     
     # add a 'min' column based on the 'time' column
     tags$min <- TimeToMin(tags$start_time)
     # extend the bounds
     tags <- ExtendTagBounds(tags)
     
-    # remove tags for audio that we don't have
+    
+    ######
+    # TEMP to fix 0 tag ids in labels
+    ######
+    fix.zeros <- FALSE
+    if (fix.zeros) {
+        zeros <- which(event.labels$tag.id == 0)
+        # indexes of rows neighbourning a zero
+        neig <- c(zeros - 1, zeros + 1)
+        
+        neig <- neig[neig > 0 & neig < nrow(event.labels)]
+        neig <- sort(unique(neig))
+        
+        tag.ids.to.fix <- event.labels$tag.id[neig]
+        tag.ids.to.fix <- unique(tag.ids.to.fix[tag.ids.to.fix > 0])
+        tags <- tags[tags$id %in% tag.ids.to.fix,]
+        include.tags <- rep(TRUE, nrow(tags))
+    } else {
+        # ignore annotations that have already been checked
+        include.tags <- !tags$id %in% event.labels$tag.id
+    }
+    
+
+    
+
+
+    
     
     enough = FALSE
-    
+    event.ids.before <- event.labels$event.id
+    use.tag.id <- FALSE
     while (!enough) {
         
-        # remove tags that have already been checked
-        tags <- tags[!tags$id %in% event.labels$tag.id, ]
-        
-        # species ids for annotations which are still available for checking
-        species.ids <- unique(tags$species_id)
-        
-        # choose an annotation for a random species 
-        sp.id <- sample(species.ids, 1)
-        species.tags <- tags[tags$species_id == sp.id,]
-        cur.tag <- species.tags[sample.int(nrow(species.tags),1),]
-        
+        if (use.tag.id > 0) {
+            # use this tag id, whether or not it's already done
+            # (it will be already done, because this will be true after an undo)
+            cur.tag <- tags[tags$id == use.tag.id,]
+        } else {
+            
+            if (sum(include.tags) < 1) {
+                # we have finished !!
+                Report(5, "All tags have been processed, well done!")
+                break()   
+            }
+            
+            Report(5, sum(include.tags), "tags left to process!") 
+            
+            # species ids for annotations which are still available for checking
+            species.ids <- unique(tags$species_id[include.tags])
+            
+            # choose an annotation for a random species 
+            sp.id <- SampleFromVector(species.ids, 1)
+            species.tags <- tags[tags$species_id == sp.id & include.tags,]
+            cur.tag <- species.tags[sample.int(nrow(species.tags),1),]
+            
+        }
+
         nearby.event.selection <- GetNearbyEvents(events, cur.tag)
+        nearby.events <- events[nearby.event.selection,]  
+        use.tag.id <- FALSE
         
-        nearby.events <- events[nearby.event.selection,]
         
-        if (nrow(nearby.events) > 0) {
+        
+        if (any(nearby.events$event.id %in% event.labels$event.id)) {
+            # due to a bug, events that were not positively labeled
+            # did not have the tag id recorded, so they could be in the list
+            
+            Report(5, 'updating tag id in event labels from 0')
+            
+            event.labels$tag.id[event.labels$event.id %in% nearby.events$event.id] <- cur.tag$id
+            
+            # this one's done
+            include.tags[tags$id == cur.tag$id] <- FALSE
+            
+        } else if (nrow(nearby.events) > 0) {
             cur.event.labels <- LabelEventsForTag(cur.tag, nearby.events)
             
-            #todo: update event.labels
-            res <- cur.event.labels
-            event.labels[nearby.event.selection,c('species.id', 'tag.id')] <- res
-            
-            if (!is.data.frame(cur.event.labels)) {
+            if (is.data.frame(cur.event.labels)) {
+                event.labels <- rbind(event.labels, cur.event.labels)
+            }  else {               
                 # if Q was pressed in the labling user input
-                enough <- TRUE
-            }    
+                choices <- c('stop', 'Go back and fix last one')
+                choice <- GetUserChoice(choices)
+                
+                if (choice == 2) {     
+                    last.annotation.id <- event.labels$tag.id[nrow(event.labels)]
+                    Report(5, 'Removing labels for events near annotation ', last.annotation.id)
+                    to.remove <- LastBlock(event.labels$tag.id)
+                    event.labels <- event.labels[-to.remove,]
+                    use.tag.id <- last.annotation.id
+                } else {
+                    enough <- TRUE
+                }
+                
+            }
             
         } else {
-            # most probably because we don't have AED results for this day
-            Report(5, "0 events found")
+            # This shouldn't really happen, since every annotation should have an overlapping event
+            Report(5, "0 events found for tag ", cur.tag$id)
+            # this one's done
+            include.tags[tags$id == cur.tag$id] <- FALSE
         }
         
-
+        
+        if (next.save < nrow(event.labels)) {
+            next.save <- nrow(event.labels) + save.every
+            WriteOutput(event.labels, 'event.labels', dependencies = dependencies)
+        }
         
         
     }
+    
+    new.event.ids <- setdiff(event.labels$event.id, event.ids.before)
+    
+    
+    new.labels <- event.labels[event.labels$event.id %in% new.event.ids,]
+    
+    ones <- sum(new.labels$species.id == -1)
+    twos <- sum(new.labels$species.id == -2)
+    
+   if (length(new.event.ids) > 0 || fix.zeros) {
+       WriteOutput(event.labels, 'event.labels', dependencies = dependencies)   
+   }
+    
+    
+
+    
+    
+}
+
+EventsSelection <- function (events) {
+    
+    f1 <- events$bottom.f < events$top.f
+    
+    return(f1)
     
     
 }
@@ -113,7 +219,7 @@ LabelEventsForTag <- function (tag, events) {
     
     spectro <- Sp.CreateTargeted(site = tag$site, start.date = date, start.sec = spectro.start.sec, duration = spectro.duration, rects = rects)
     
-    species.ids <- tag.ids <- rep(NA, nrow(events))
+    species.ids <- tag.ids <- rep(0, nrow(events))
     
     codes.msg <- c('same species as annotation', 'bird but unsure about species', 'not bird', 'all are from annotation')
     codes.char <- c('1', '2', '3', '4')
@@ -130,17 +236,17 @@ LabelEventsForTag <- function (tag, events) {
 
     cur.e <- 1
     # while there are still unprocessed events
-    while(sum(is.na(species.ids)) > 0) {
+    while(any(species.ids == 0)) {
         spectro$rects$rect.color[cur.e] <- event.col.selected   
         Sp.Rect(spectro, rect.num = cur.e, fill.alpha = 0)
 
         valid <- FALSE
         while(!valid) {
             valid <- TRUE
-            input <- readline(paste("tag event?  : "))
+            input <- readline(paste("label event?  : "))
             if (input == '4') {
-                # all
-                species.ids <- tag$species_id
+                # all from this one until the end
+                species.ids[cur.e:length(species.ids)] <- tag$species_id
             } else if (input == '1') {
                 species.ids[cur.e] <- tag$species_id
             } else if (input == '2') {
@@ -160,12 +266,10 @@ LabelEventsForTag <- function (tag, events) {
         
     }
     
-    # record this tag as belonging to any event we have labled
-    tag.ids[species.ids == tag$species_id] <- as.integer(tag$id)
+
     
     
-    
-    return(data.frame(species.id = species.ids, tag.id = tag.ids))
+    return(data.frame(event.id = events$event.id, species.id = species.ids, tag.id = as.integer(tag$id)))
     
     
     
@@ -175,7 +279,7 @@ LabelEventsForTag <- function (tag, events) {
 
 
 
-GetNearbyEvents <- function (events, tag, amount.inside.tag = 0.5) {
+GetNearbyEvents <- function (events, tag, min.time.overlap = 0.5, min.frequency.overlap = 0.2) {
     # given a df of events and a tag from the database, 
     # finds any events that are amount.inside.tag overlapping with the tag
     # eg if amount.inside.tag == 0.5 then it will find events that are more then half inside the tag
@@ -194,7 +298,7 @@ GetNearbyEvents <- function (events, tag, amount.inside.tag = 0.5) {
     # filters
     f1 <- events$site == tag$site
     
-    if (amount.inside.tag >= 1) {
+    if (min.time.overlap * min.frequency.overlap >= 1) {
         
         # this could be done the same as the other cases,
         # but it might be faster so I separated it out
@@ -212,7 +316,7 @@ GetNearbyEvents <- function (events, tag, amount.inside.tag = 0.5) {
         frequency.overlap <- RangeIntersection(e.b, e.t, t.b, t.t)
         frequency.overlap <- frequency.overlap / (events$top.f - events$bottom.f)
         overlap <- frequency.overlap * time.overlap
-        matching <- overlap >= amount.inside.tag & f1
+        matching <- frequency.overlap >= min.frequency.overlap & time.overlap >= min.time.overlap  & f1
         
     }
     

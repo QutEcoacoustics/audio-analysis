@@ -67,10 +67,8 @@ GetAudioFile <- function (site, date, mins) {
     # sitename/UID_YYMMDD-0000.mp3/UID_date-0000_0min.mp3
 
     audio.dir <- Path('audio')
-    
     site.dir <- file.path(audio.dir, site)
     day.folders <- list.dirs(site.dir, full.names = FALSE, recursive = FALSE)
-    
     day.folders <- sapply(day.folders, function (folder) {
         date <- unlist(strsplit(unlist(strsplit(folder, c("_")))[2], "-"))[1]
         prefix <- substr(folder,start=1,stop=(nchar(folder)-4))

@@ -117,11 +117,11 @@ ReadTargetTagsFromDb <- function (fields = c('start_date',
 
 
 
-ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE) {
+ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE) {
     # does a database query with the supplied constraints
     require('RMySQL')
     sites <- MapSites(sites)    
-    where.statement <- WhereStatement(sites, start.date.time, end.date.time, no.duplicates)
+    where.statement <- WhereStatement(sites, start.date.time, end.date.time, no.duplicates, reference.tags)
     # construct SQL statement
     sql.statement <- paste(
         "SELECT",
@@ -142,7 +142,7 @@ ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.da
     
 }
 
-WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE) {
+WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE) {
     
     where.statement <- "WHERE species_id > 0"
     quote = "'"
@@ -170,6 +170,10 @@ WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time 
     
     if (no.duplicates) {
         where.statement <- c(where.statement, paste0("duplicate = 0"))
+    }
+    
+    if (reference.tags) {
+        where.statement <- c(where.statement, paste0("reference_tag > 0"))
     }
     
     where.statement <- paste(where.statement, collapse = " AND ")
