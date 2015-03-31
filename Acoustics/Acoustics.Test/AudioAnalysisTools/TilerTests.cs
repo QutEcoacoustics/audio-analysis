@@ -88,7 +88,7 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestMethod]
         public void Test60Resolution()
         {
-            var testBitmap = new Bitmap("1440px.png");
+            var testBitmap = new Bitmap("1440px2.png");
             var superTile = new SuperTile()
                                 {
                                     Image = testBitmap, 
@@ -102,6 +102,61 @@ namespace Acoustics.Test.AudioAnalysisTools
             var producedFiles = this.outputDirectory.GetFiles();
 
             Assert.AreEqual(6, producedFiles.Length);
+
+            var expectedImages = new[]
+                                     {
+                                         "panojstile_005_004_000.png", "panojstile_005_005_000.png",
+                                         "panojstile_005_000_000.png", "panojstile_005_001_000.png",
+                                         "panojstile_005_002_000.png", "panojstile_005_003_000.png"
+                                     }.OrderBy(x => x).ToArray();
+            var loadedImages = expectedImages.Select(Image.FromFile).ToArray();
+
+            for (int i = 0; i < loadedImages.Length; i++)
+            {
+
+                var producedImage = Image.FromFile(producedFiles[i].FullName);
+                var areEqual = BitmapEquals((Bitmap)loadedImages[i], (Bitmap)producedImage);
+                Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedImages[i], producedFiles[i].Name);
+            }
+        }
+
+        [TestMethod]
+        public void Test1Resolution()
+        {
+            var testBitmap = new Bitmap("Farmstay_ECLIPSE3_201_scale-1.0_supertile-1.png");
+            var superTile = new SuperTile()
+            {
+                Image = testBitmap,
+                Scale = TimeSpan.FromSeconds(1.0),
+                TimeOffset = TimeSpan.FromHours(1.0)
+            };
+            this.tiler.Tile(superTile, superTile);
+
+            ////Debug.WriteLine(this.outputDirectory.FullName);
+            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            var producedFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
+
+            Assert.AreEqual(12, producedFiles.Length);
+
+        }
+
+        private static bool BitmapEquals(Bitmap bmp1, Bitmap bmp2)
+        {
+            if (!bmp1.Size.Equals(bmp2.Size))
+            {
+                return false;
+            }
+            for (int x = 0; x < bmp1.Width; ++x)
+            {
+                for (int y = 0; y < bmp1.Height; ++y)
+                {
+                    if (bmp1.GetPixel(x, y) != bmp2.GetPixel(x, y))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         /// <summary>
@@ -154,7 +209,7 @@ namespace Acoustics.Test.AudioAnalysisTools
 
         private Rectangle[] testCases; 
 
-        private Tiler.ImageComponent[][] answers;
+        private global::AudioAnalysisTools.TileImage.ImageComponent[][] answers;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Reviewed. Suppression is OK here.")]
@@ -179,31 +234,31 @@ namespace Acoustics.Test.AudioAnalysisTools
                     Rectangle.FromLTRB(50, 50, 250, 250) // 1A.d 1B.cd 1C.c 2A.ad 2B.abcd 2C.bc 3A.a 3B.ab 3C.b
                 };
 
-            Tiler.ImageComponent f1A_d = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 50, 100, 100), -1, -1), 
-                                 f1C_c = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 50, 250, 100), 1, -1), 
-                                 f1B_cd = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 50, 200, 100), 0, -1), 
-                                 f2A_a = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 100, 100, 150), -1, 0), 
-                                 f2B_ab = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 200, 150), 0, 0), 
-                                 f2C_b = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 100, 250, 150), 1, 0), 
-                                 f2A_d = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 150, 100, 200), -1, 0), 
-                                 f2B_cd = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 150, 200, 200), 0, 0), 
-                                 f3B_ab = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 200, 200, 250), 0, 1), 
-                                 f2C_c = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 150, 250, 200), 1, 0), 
-                                 f3A_a = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 200, 100, 250), -1, 1), 
-                                 f3C_b = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 200, 250, 250), 1, 1), 
-                                 f1B_c = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 50, 150, 100), 0, -1), 
-                                 f2A_ad = new Tiler.ImageComponent(Rectangle.FromLTRB(50, 100, 100, 200), -1, 0), 
-                                 f2B_bc = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 150, 200), 0, 0), 
-                                 f2B_ad = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 100, 200, 200), 0, 0), 
-                                 f2C_bc = new Tiler.ImageComponent(Rectangle.FromLTRB(200, 100, 250, 200), 1, 0), 
-                                 f2B_b = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 150, 150), 0, 0), 
-                                 f2B_d = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 150, 200, 200), 0, 0), 
-                                 f3B_a = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 200, 200, 250), 0, 1), 
-                                 f2B_c = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 150, 150, 200), 0, 0), 
-                                 f3B_b = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 200, 150, 250), 0, 1), 
-                                 f1B_d = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 50, 200, 100), 0, -1), 
-                                 f2B_a = new Tiler.ImageComponent(Rectangle.FromLTRB(150, 100, 200, 150), 0, 0), 
-                                 f2B_abcd = new Tiler.ImageComponent(Rectangle.FromLTRB(100, 100, 200, 200), 0, 0);
+            global::AudioAnalysisTools.TileImage.ImageComponent f1A_d = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(50, 50, 100, 100), -1, -1), 
+                                 f1C_c = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(200, 50, 250, 100), 1, -1), 
+                                 f1B_cd = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 50, 200, 100), 0, -1), 
+                                 f2A_a = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(50, 100, 100, 150), -1, 0), 
+                                 f2B_ab = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 100, 200, 150), 0, 0), 
+                                 f2C_b = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(200, 100, 250, 150), 1, 0), 
+                                 f2A_d = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(50, 150, 100, 200), -1, 0), 
+                                 f2B_cd = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 150, 200, 200), 0, 0), 
+                                 f3B_ab = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 200, 200, 250), 0, 1), 
+                                 f2C_c = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(200, 150, 250, 200), 1, 0), 
+                                 f3A_a = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(50, 200, 100, 250), -1, 1), 
+                                 f3C_b = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(200, 200, 250, 250), 1, 1), 
+                                 f1B_c = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 50, 150, 100), 0, -1), 
+                                 f2A_ad = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(50, 100, 100, 200), -1, 0), 
+                                 f2B_bc = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 100, 150, 200), 0, 0), 
+                                 f2B_ad = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(150, 100, 200, 200), 0, 0), 
+                                 f2C_bc = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(200, 100, 250, 200), 1, 0), 
+                                 f2B_b = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 100, 150, 150), 0, 0), 
+                                 f2B_d = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(150, 150, 200, 200), 0, 0), 
+                                 f3B_a = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(150, 200, 200, 250), 0, 1), 
+                                 f2B_c = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 150, 150, 200), 0, 0), 
+                                 f3B_b = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 200, 150, 250), 0, 1), 
+                                 f1B_d = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(150, 50, 200, 100), 0, -1), 
+                                 f2B_a = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(150, 100, 200, 150), 0, 0), 
+                                 f2B_abcd = new global::AudioAnalysisTools.TileImage.ImageComponent(Rectangle.FromLTRB(100, 100, 200, 200), 0, 0);
 
             this.answers = new[]
                           {

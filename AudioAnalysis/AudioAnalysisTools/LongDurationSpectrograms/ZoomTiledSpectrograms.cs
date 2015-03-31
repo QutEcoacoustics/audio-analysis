@@ -732,7 +732,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             get
             {
                 // TODO: this needs to be in units of the layer... need to normalise and multiply by scale
-                return (int)this.TimeOffset.TotalSeconds;
+                return (int)Math.Round(this.TimeOffset.TotalSeconds / this.Scale.TotalSeconds);
             }
         }
 
