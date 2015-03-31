@@ -133,6 +133,45 @@ namespace Dong.Felt.ResultsOutput
                 CSVResults.CandidateListToCSV(new FileInfo(outputFile), finalOutputResult);
             }
         }
+
+        public static void CSVMatchingAnalysisOfSongScope(DirectoryInfo inputDirectory, string groundTruthFile)
+        {
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var grounTruthList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
+            var timeDifference = 500; // 1000 ms
+            var secondToMilliSecondUnit = 1000;
+            
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[0]));
+                var candidatesCount = subCandicatesList.Count();
+                for (var index = 0; index < candidatesCount; index++)
+                {
+                    var currentCandidate = subCandicatesList[index];
+                    foreach (var g in grounTruthList)
+                    {
+                        var gEndTime = g.EndTime * secondToMilliSecondUnit;
+                        var gStartTime = g.StartTime * secondToMilliSecondUnit;
+                        if (currentCandidate.SourceFilePath == g.SourceFilePath)
+                        {                           
+                                if ((Math.Abs(currentCandidate.StartTime  - gStartTime) < timeDifference) ||
+                                   (Math.Abs(currentCandidate.EndTime - gEndTime) < timeDifference))
+                                {
+                                    currentCandidate.Score = 1;
+                                    break;
+                                }
+                                else
+                                {
+                                    currentCandidate.Score = 0;
+                                }
+                        }
+                        else
+                        {
+                            currentCandidate.Score = 0;
+                        }
+                    }
+                }
+                CSVResults.CandidateListToCSV(new FileInfo(csvFiles[0]), subCandicatesList);
+        }
+
         /// <summary>
         /// To summarize the matching results by taking into inputDirectory, output the results to the output file.
         /// Especially, the input directory include all seperated matching results for all queries. 
