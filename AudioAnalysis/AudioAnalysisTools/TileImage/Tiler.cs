@@ -12,17 +12,18 @@ namespace AudioAnalysisTools.TileImage
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
-
-    using AudioAnalysisTools.LongDurationSpectrograms;
-
-    using MathNet.Numerics.NumberTheory;
 
     public class Tiler
     {
+        #region Fields
+
+        private readonly SortedSet<Layer> calculatedLayers;
         private readonly DirectoryInfo outputDirectory;
         private readonly TilingProfile profile;
-        private readonly SortedSet<Layer> calculatedLayers;
+
+        #endregion
+
+        #region Constructors and Destructors
 
         public Tiler(
             DirectoryInfo outputDirectory, 
@@ -56,13 +57,9 @@ namespace AudioAnalysisTools.TileImage
                 unitHeight);
         }
 
-        public DirectoryInfo OutputDirectory
-        {
-            get
-            {
-                return this.outputDirectory;
-            }
-        }
+        #endregion
+
+        #region Public Properties
 
         public SortedSet<Layer> CalculatedLayers
         {
@@ -72,182 +69,17 @@ namespace AudioAnalysisTools.TileImage
             }
         }
 
-        public void TileMany(IEnumerable<ISuperTile> allSuperTiles)
+        public DirectoryInfo OutputDirectory
         {
-            var windowed = allSuperTiles.WindowedOrDefault(2);
-            foreach (var superTiles in windowed)
+            get
             {
-                this.Tile(superTiles[0], superTiles[1]);
+                return this.outputDirectory;
             }
         }
 
-        /// <summary>
-        /// Split one large image (a super tile) into smaller tiles.
-        /// The super tile needs to be aligned within the layer first
-        /// </summary>
-        /// <param name="current">
-        /// </param>
-        /// <param name="next">
-        /// The next.
-        /// </param>
-        public void Tile(ISuperTile current, ISuperTile next)
-        {
-            if (current == null)
-            {
-                return;
-            }
+        #endregion
 
-            var layer = this.CalculatedLayers.First(x => x.XScale == current.Scale);
-
-            int width = current.Image.Width, 
-                height = current.Image.Height, 
-                xOffset = current.OffsetX, 
-                yOffset = current.OffsetY;
-
-            // determine padding needed
-            int paddingX, paddingY;
-            int tileOffsetInLayerX = this.AlignSuperTileInLayer(
-                layer.Width, 
-                layer.XTiles, 
-                this.profile.TileWidth, 
-                current.OffsetX, 
-                current.Image.Width, 
-                out paddingX);
-            int tileOffsetInLayerY = this.AlignSuperTileInLayer(
-                layer.Height, 
-                layer.YTiles, 
-                this.profile.TileHeight, 
-                current.OffsetY, 
-                current.Image.Height, 
-                out paddingY);
-
-            var superTileRectangle = new Rectangle(xOffset, yOffset, width, height);
-
-            // drawable tiles in the current super tile
-            // as a rule only draw the sections that are available in the current tile
-            // and as much as we need from the next tile
-            var tilesInSuperTileX = Math.Abs(((double)current.Image.Width / this.profile.TileWidth) - 1.0) < 0.001
-                                        ? (double)current.Image.Width / this.profile.TileWidth
-                                        : Math.Ceiling((current.Image.Width / 2.0) / this.profile.TileWidth) * 2.0;
-            var tilesInSuperTileY = Math.Abs(((double)current.Image.Height / this.profile.TileHeight) - 1.0) < 0.001
-                                        ? (double)current.Image.Height / this.profile.TileHeight
-                                        : Math.Ceiling((current.Image.Height / 2.0) / this.profile.TileHeight) * 2.0;
-
-            // define source
-            var superTileBitmap = (Bitmap)current.Image;
-            using (var superTileGraphics = Graphics.FromImage(superTileBitmap))
-            {
-
-                // start producing tiles
-                for (var i = 0; i < tilesInSuperTileX; i++)
-                {
-                    for (var j = 0; j < tilesInSuperTileY; j++)
-                    {
-                        // clone a segment of the super tile
-                        // two cases are catered for bounds that exceed the current super tile
-                        // a) Negative X Bias - Paint transparency
-                        // b) Positive X Bias - Pull subsection from next image, or paint transparency
-                        //
-                        // Note: best case: Neutral X Bias
-                        // Note: no support for anything other than Neutral y Bias
-
-                        // make destination image
-                        var tileImage = new Bitmap(
-                            this.profile.TileWidth,
-                            this.profile.TileHeight,
-                            PixelFormat.Format64bppArgb);
-
-                        if (this.profile.PaddingColor == Color.Transparent)
-                        {
-                            tileImage.MakeTransparent();
-                        }
-                        else
-                        {
-                            using (var grapics = Graphics.FromImage(tileImage))
-                            {
-                                grapics.Clear(this.profile.PaddingColor);
-                            }
-                        }
-
-                        // determine how to paint it
-                        // supertile relative
-                        int layerTop = j * this.profile.TileHeight,
-                            top = layerTop - paddingY;
-
-                        // supertile relative
-                        int layerLeft = i * this.profile.TileWidth,
-                            left = layerLeft - paddingX;
-
-                        var subsection = new Rectangle()
-                                             {
-                                                 X = left,
-                                                 Y = top,
-                                                 Width = this.profile.TileWidth,
-                                                 Height = this.profile.TileHeight
-                                             };
-                        var fragments = GetImageParts(superTileRectangle, subsection);
-
-                        // now paint on destination image
-                        // 3 possible sources: nothing (transparent), current, next image (along X-axis)
-                        using (var tileGraphics = Graphics.FromImage(tileImage))
-                        {
-                            foreach (var imageComponent in fragments)
-                            {
-                                if (imageComponent.YBias != TileBias.Neutral)
-                                {
-                                    throw new NotImplementedException(
-                                        "Currently no support has been implemented for drawing from supertiles that are not aligned with the current tile on the y-axis");
-                                }
-
-                                if (imageComponent.XBias == TileBias.Negative)
-                                {
-                                    // No-op - the default background for the tile is transparent,
-                                    // no need to paint that again
-
-                                    // also remember, we do not draw from previous super tiles
-                                    // thus we don't need access to previous tile image
-                                }
-                                else if (imageComponent.XBias == TileBias.Positive)
-                                {
-                                    // two cases here: edge of layer reached (paint transparent padding)
-                                    // or grab next section from image
-                                    if (next == null)
-                                    {
-                                        // end of stream, paint transparency
-                                        // default background for the tile is transparent,
-                                        // no need to paint that again
-                                    }
-                                    else
-                                    {
-                                        // paint a fraction from the next image
-                                        var sourceRect =
-                                            new Rectangle(
-                                                new Point(
-                                                    subsection.Location.X + imageComponent.Fragment.X,
-                                                    imageComponent.Fragment.Y),
-                                                imageComponent.Fragment.Size);
-                                        tileGraphics.DrawImage(next.Image, imageComponent.Fragment, sourceRect, GraphicsUnit.Pixel);    
-
-                                    }
-                                }
-                                else
-                                {
-                                    // neutral
-                                    var sourceRect = new Rectangle(new Point(layerLeft, layerTop), imageComponent.Fragment.Size);
-                                    var destRect = new Rectangle(new Point(layerLeft + paddingX, layerTop + paddingY),  imageComponent.Fragment.Size);
-                                    tileGraphics.DrawImage(current.Image, destRect, sourceRect, GraphicsUnit.Pixel);    
-                                }
-                            }
-                        }
-
-                        // write tile to disk
-                        var name = this.profile.GetFileBaseName(layer, new Point(layerLeft, layerTop));
-                        var outputTilePath = this.OutputDirectory.CombineFile(name + ".png").FullName;
-                        tileImage.Save(outputTilePath);
-                    }
-                }
-            }
-        }
+        #region Public Methods and Operators
 
         /// <summary>
         /// Returns a set of rectangles that can be used to compose a baseRectangle
@@ -276,19 +108,19 @@ namespace AudioAnalysisTools.TileImage
                     "The premise of this function relies on the supplied rectangles intersecting");
             }
 
-            var innerSegment = Rectangle.Intersect(baseRectangle, requestedRectangle);
+            Rectangle innerSegment = Rectangle.Intersect(baseRectangle, requestedRectangle);
 
             // one by one just cut out rectangles
             // 8 cases to check in the general case
             // check left side
             if (requestedRectangle.Left < baseRectangle.Left)
             {
-                var rects = SplitAlongY(
+                List<ImageComponent> rects = SplitAlongY(
                     requestedRectangle.Left, 
                     requestedRectangle.Top, 
                     baseRectangle.X - requestedRectangle.Left, 
-                    requestedRectangle.Height,
-                    innerSegment.Top,
+                    requestedRectangle.Height, 
+                    innerSegment.Top, 
                     innerSegment.Bottom, 
                     TileBias.Negative);
                 parts.AddRange(rects);
@@ -297,13 +129,13 @@ namespace AudioAnalysisTools.TileImage
             // check middle (this check is always true since rects are required to overlap
             if (requestedRectangle.Right > baseRectangle.Left && requestedRectangle.Left < baseRectangle.Right)
             {
-                var rects = SplitAlongY(
-                    innerSegment.Left,
-                    requestedRectangle.Top,
-                    innerSegment.Width,
-                    requestedRectangle.Height,
-                    innerSegment.Top,
-                    innerSegment.Bottom,
+                List<ImageComponent> rects = SplitAlongY(
+                    innerSegment.Left, 
+                    requestedRectangle.Top, 
+                    innerSegment.Width, 
+                    requestedRectangle.Height, 
+                    innerSegment.Top, 
+                    innerSegment.Bottom, 
                     TileBias.Neutral);
                 parts.AddRange(rects);
             }
@@ -311,18 +143,214 @@ namespace AudioAnalysisTools.TileImage
             // check right side
             if (requestedRectangle.Right >= baseRectangle.Right)
             {
-                var rects = SplitAlongY(
+                List<ImageComponent> rects = SplitAlongY(
                     baseRectangle.Right, 
                     requestedRectangle.Top, 
                     requestedRectangle.Right - baseRectangle.Right, 
-                    requestedRectangle.Height,
-                    innerSegment.Top,
+                    requestedRectangle.Height, 
+                    innerSegment.Top, 
                     innerSegment.Bottom, 
                     TileBias.Positive);
                 parts.AddRange(rects);
             }
 
             return parts.OrderBy(ic => ic.YBias).ThenBy(ic => ic.XBias).ToArray();
+        }
+
+        /// <summary>
+        /// Split one large image (a super tile) into smaller tiles.
+        ///     The super tile needs to be aligned within the layer first
+        /// </summary>
+        /// <param name="current">
+        /// </param>
+        /// <param name="next">
+        /// The next.
+        /// </param>
+        public void Tile(ISuperTile current, ISuperTile next)
+        {
+            if (current == null)
+            {
+                return;
+            }
+
+            Layer layer = this.CalculatedLayers.First(x => x.XScale == current.Scale);
+
+            int width = current.Image.Width, 
+                height = current.Image.Height, 
+                xOffset = current.OffsetX, 
+                yOffset = current.OffsetY;
+
+            // determine padding needed
+            int paddingX, paddingY;
+            int superTileOffsetInLayerX = this.AlignSuperTileInLayer(
+                layer.Width, 
+                layer.XTiles, 
+                this.profile.TileWidth, 
+                current.OffsetX, 
+                current.Image.Width, 
+                out paddingX);
+            int superTileOffsetInLayerY = this.AlignSuperTileInLayer(
+                layer.Height, 
+                layer.YTiles, 
+                this.profile.TileHeight, 
+                current.OffsetY, 
+                current.Image.Height, 
+                out paddingY);
+
+            var superTileRectangle = new Rectangle(xOffset, yOffset, width, height);
+
+            // drawable tiles in the current super tile
+            // as a rule only draw the sections that are available in the current tile
+            // and as much as we need from the next tile
+            double tilesInSuperTileX = Math.Abs(((double)current.Image.Width / this.profile.TileWidth) - 1.0) < 0.001
+                                           ? (double)current.Image.Width / this.profile.TileWidth
+                                           : Math.Ceiling((current.Image.Width / 2.0) / this.profile.TileWidth) * 2.0;
+            double tilesInSuperTileY = Math.Abs(((double)current.Image.Height / this.profile.TileHeight) - 1.0) < 0.001
+                                           ? (double)current.Image.Height / this.profile.TileHeight
+                                           : Math.Ceiling((current.Image.Height / 2.0) / this.profile.TileHeight) * 2.0;
+
+            // define source
+            var superTileBitmap = (Bitmap)current.Image;
+            using (Graphics superTileGraphics = Graphics.FromImage(superTileBitmap))
+            {
+                // start producing tiles
+                for (int i = 0; i < tilesInSuperTileX; i++)
+                {
+                    for (int j = 0; j < tilesInSuperTileY; j++)
+                    {
+                        // clone a segment of the super tile
+                        // two cases are catered for bounds that exceed the current super tile
+                        // a) Negative X Bias - Paint transparency
+                        // b) Positive X Bias - Pull subsection from next image, or paint transparency
+                        // Note: best case: Neutral X Bias
+                        // Note: no support for anything other than Neutral y Bias
+
+                        // make destination image
+                        var tileImage = new Bitmap(
+                            this.profile.TileWidth, 
+                            this.profile.TileHeight, 
+                            PixelFormat.Format32bppArgb);
+
+                        // determine how to paint it
+                        // supertile relative
+                        int layerLeft = (i * this.profile.TileWidth) + superTileOffsetInLayerX, superTileLeft = layerLeft - (2 * paddingX);
+                        int layerTop = (j * this.profile.TileHeight) + superTileOffsetInLayerY, superTileTop = layerTop - (2 * paddingY);
+
+                        using (Graphics tileGraphics = Graphics.FromImage(tileImage))
+                        {
+                            var subsection = new Rectangle
+                                                 {
+                                                     X = superTileLeft,
+                                                     Y = superTileTop, 
+                                                     Width = this.profile.TileWidth, 
+                                                     Height = this.profile.TileHeight
+                                                 };
+                            ImageComponent[] fragments = GetImageParts(superTileRectangle, subsection);
+
+                            // now paint on destination image
+                            // 3 possible sources: nothing (transparent), current, next image (along X-axis)
+                            foreach (ImageComponent imageComponent in fragments)
+                            {
+                                if (imageComponent.YBias != TileBias.Neutral)
+                                {
+                                    throw new NotImplementedException(
+                                        "Currently no support has been implemented for drawing from supertiles that are not aligned with the current tile on the y-axis");
+                                }
+
+                                var destRect =
+                                    new Rectangle(
+                                        new Point(
+                                            imageComponent.Fragment.X - superTileLeft, 
+                                            imageComponent.Fragment.Y - superTileTop), 
+                                        imageComponent.Fragment.Size);
+
+                                var sourceRect =
+                                    new Rectangle(
+                                        new Point(
+                                            imageComponent.Fragment.Location.X, 
+                                            imageComponent.Fragment.Location.Y), 
+                                        imageComponent.Fragment.Size);
+
+                                if (imageComponent.XBias == TileBias.Negative)
+                                {
+                                    // No-op - the default background for the tile is transparent,
+                                    // no need to paint that again
+
+                                    // also remember, we do not draw from previous super tiles
+                                    // thus we don't need access to previous tile image
+                                }
+                                else if (imageComponent.XBias == TileBias.Positive)
+                                {
+                                    // two cases here: edge of layer reached (paint transparent padding)
+                                    // or grab next section from image
+                                    if (next == null)
+                                    {
+                                        // end of stream, paint transparency
+                                        // default background for the tile is transparent,
+                                        // no need to paint that again
+                                    }
+                                    else
+                                    {
+                                        // paint a fraction from the next image
+                                        tileGraphics.DrawImage(next.Image, destRect, sourceRect, GraphicsUnit.Pixel);
+                                    }
+                                }
+                                else
+                                {
+                                    // neutral
+                                    tileGraphics.DrawImage(current.Image, destRect, sourceRect, GraphicsUnit.Pixel);
+                                }
+                            }
+                        }
+
+                        // write tile to disk
+                        string name = this.profile.GetFileBaseName(
+                            this.calculatedLayers, 
+                            layer, 
+                            new Point(layerLeft, layerTop));
+                        string outputTilePath = this.OutputDirectory.CombineFile(name + ".png").FullName;
+                        tileImage.Save(outputTilePath);
+                    }
+                }
+            }
+        }
+
+        public void TileMany(IEnumerable<ISuperTile> allSuperTiles)
+        {
+            IEnumerable<ISuperTile[]> windowed = allSuperTiles.WindowedOrDefault(2);
+            foreach (var superTiles in windowed)
+            {
+                this.Tile(superTiles[0], superTiles[1]);
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        private static void CalculateScaleStats(
+            double unitScale, 
+            int unitLength, 
+            int tileLength, 
+            double scale, 
+            out double normalizedScale, 
+            out int layerLength, 
+            out int tiles)
+        {
+            normalizedScale = unitScale / scale;
+            layerLength = (int)(unitLength * normalizedScale);
+
+            double tilelength = (double)layerLength / tileLength;
+
+            // if the tiles fit exactly within, then that exact number of tiles
+            // otherwise, plus 2 tiles (to pad either side)
+            tiles = PadIfNotRounded(tilelength);
+        }
+
+        private static int PadIfNotRounded(double value)
+        {
+            double floored = Math.Floor(value);
+            return (int)(Math.Abs(floored - value) < 0.001 ? floored : floored + 2);
         }
 
         private static List<ImageComponent> SplitAlongY(
@@ -360,7 +388,7 @@ namespace AudioAnalysisTools.TileImage
             }
 
             // bottom
-            if ((y + height) - ySplit2  > 0)
+            if ((y + height) - ySplit2 > 0)
             {
                 var bottom = new Rectangle(x, ySplit2, width, (y + height) - ySplit2);
                 split.Add(new ImageComponent(bottom, xBias, TileBias.Positive));
@@ -369,75 +397,9 @@ namespace AudioAnalysisTools.TileImage
             return split;
         }
 
-
-
-        public enum TileBias
-        {
-            Negative = -1, 
-            Neutral = 0, 
-            Positive = 1
-        }
-
-        public class ImageComponent
-        {
-            public ImageComponent()
-            {
-            }
-
-            public ImageComponent(Rectangle fragment, TileBias xBias, TileBias yBias)
-            {
-                this.Fragment = fragment;
-                this.XBias = xBias;
-                this.YBias = yBias;
-            }
-
-            public ImageComponent(Rectangle fragment, int xBias, int yBias)
-                : this(fragment, (TileBias)xBias, (TileBias)yBias)
-            {
-            }
-
-            public Rectangle Fragment { get; set; }
-
-            /// <summary>
-            /// Gets or sets XBias.
-            /// Represents the image this rectangle needs to be drawn from.
-            /// -1: image before on x axis
-            /// 0: current image
-            /// 1: next image on x axis
-            /// </summary>
-            public TileBias XBias { get; set; }
-
-            /// <summary>
-            /// Gets or sets YBias
-            /// Represents the image this rectangle needs to be drawn from.
-            /// -1: image before on y axis
-            /// 0: current image
-            /// 1: next image on y axis
-            /// </summary>
-            public TileBias YBias { get; set; }
-        }
-
         /// <summary>
         /// Aligns a supertile into a layer for one dimension only
-        /// 
-        /// tiles are aligned to the center of the layer
-        /// if odd number of tiles required, then middle tile is offset by half tile size
-        /// <para>
-        /// <![CDATA[ 
-        ///    |-----------------|====‖========|---------------|
-        ///    l1                s1   ‖        s2              l2
-        ///    |_|_|_|_|_|_|_|_|_|_|_|‖|_|_|_|_|_|_|_|_|_|_|_|_|       <- odd
-        ///    tmin                   ‖                        tmax
-        ///                           middle     
-        ///                           ‖  
-        ///     |----------------|====‖========|--------------|
-        ///     l1               s1   ‖        s2             l2
-        ///     |_|_|_|_|_|_|_|_|_|_|_‖_|_|_|_|_|_|_|_|_|_|_|_|        <- even
-        ///     tmin                  ‖                       tmax
-        ///                           middle      
-        /// tileSize = 2 characters
-        /// ]]>
-        /// </para>
+        ///     tiles are aligned to the center of the layer
         /// </summary>
         /// <param name="layerLength">
         /// The layer Width.
@@ -447,7 +409,7 @@ namespace AudioAnalysisTools.TileImage
         /// <param name="layerTileLength">
         /// </param>
         /// <param name="superTileOffset">
-        /// The super Tile Offset. This is a top/left coordinate 
+        /// The super Tile Offset. This is a top/left coordinate
         ///     relative to the start of the data
         ///     that needs to be converted to a middle coordinate
         ///     that is relative to the layer.
@@ -469,15 +431,15 @@ namespace AudioAnalysisTools.TileImage
             out int padding)
         {
             // first determine padding required by the layer
-            var tilesInLayer = (double)layerLength / layerTileLength;
-            var overlap = tilesInLayer - Math.Floor(tilesInLayer);
+            double tilesInLayer = (double)layerLength / layerTileLength;
+            double overlap = tilesInLayer - Math.Floor(tilesInLayer);
 
             // padding is split either side
-            int overlapInPx = (int)Math.Round((overlap / 2.0) * layerTileLength, MidpointRounding.AwayFromZero);
+            var overlapInPx = (int)Math.Round((overlap / 2.0) * layerTileLength, MidpointRounding.AwayFromZero);
             padding = overlapInPx == 0 ? 0 : layerTileLength - overlapInPx;
 
             // convert superTileOddset to coordinates relative to layer
-            var superTileOffsetInLayer = padding + superTileOffset;
+            int superTileOffsetInLayer = padding + superTileOffset;
 
             // with limite information it is really hard to do more/verify
             return superTileOffsetInLayer;
@@ -493,8 +455,8 @@ namespace AudioAnalysisTools.TileImage
         {
             var results = new SortedSet<Layer>();
             int scaleIndex = 0;
-            var xEnumerator = xScales.Reverse().GetEnumerator();
-            var yEnumerator = yScales.Reverse().GetEnumerator();
+            IEnumerator<double> xEnumerator = xScales.Reverse().GetEnumerator();
+            IEnumerator<double> yEnumerator = yScales.Reverse().GetEnumerator();
 
             double xScale = double.NaN, yScale = double.NaN;
             bool xMore, yMore;
@@ -543,29 +505,6 @@ namespace AudioAnalysisTools.TileImage
             return results;
         }
 
-        private static void CalculateScaleStats(
-            double unitScale, 
-            int unitLength, 
-            int tileLength, 
-            double scale, 
-            out double normalizedScale, 
-            out int layerLength, 
-            out int tiles)
-        {
-            normalizedScale = unitScale / scale;
-            layerLength = (int)(unitLength * normalizedScale);
-
-            var tilelength = (double)layerLength / tileLength;
-
-            // if the tiles fit exactly within, then that exact number of tiles
-            // otherwise, plus 2 tiles (to pad either side)
-            tiles = PadIfNotRounded(tilelength);
-        }
-
-        private static int PadIfNotRounded(double value)
-        {
-            var floored = Math.Floor(value);
-            return (int)(Math.Abs(floored - value) < 0.001 ? floored : floored + 2);
-        }
+        #endregion
     }
 }

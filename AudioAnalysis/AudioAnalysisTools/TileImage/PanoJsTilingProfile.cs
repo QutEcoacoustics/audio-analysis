@@ -1,12 +1,8 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PanoJsNamingPattern.cs" company="QutBioacoustics">
+// <copyright file="PanoJsTilingProfile.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
-// <summary>
-//   Defines the PanoJsTilingProfile type.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
 namespace AudioAnalysisTools.TileImage
 {
     using System;
@@ -41,14 +37,20 @@ namespace AudioAnalysisTools.TileImage
             }
         }
 
-        public override int GetZoomIndex(Layer selectedLayer)
+        public override int GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
         {
-            return selectedLayer.ScaleIndex;
+            return calculatedLayers.Count - selectedLayer.ScaleIndex - 1;
         }
 
-        public override Point GetTileIndexes(Layer selectedLayer, Point tileOffsets)
+        public override Point GetTileIndexes(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
-            return tileOffsets;
+            return new Point(tileOffsets.X / this.TileWidth, tileOffsets.Y / this.TileHeight);
+        }
+
+        public override string GetFileBaseName(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
+        {
+            var coordinates = this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
+            return string.Format("{0}_{1:D3}_{2:D3}_{3:D3}", "panojstile", this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
         }
     }
 }
