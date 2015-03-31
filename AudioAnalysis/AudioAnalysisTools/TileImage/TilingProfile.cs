@@ -37,9 +37,15 @@ namespace AudioAnalysisTools.TileImage
             }
         }
 
-        public abstract int GetZoomIndex(Layer selectedLayer);
+        public virtual int GetZoomIndex(Layer selectedLayer)
+        {
+            return selectedLayer.ScaleIndex;
+        }
 
-        public abstract Point GetTileIndexes(Layer selectedLayer, Point tileOffsets);
+        public virtual Point GetTileIndexes(Layer selectedLayer, Point tileOffsets)
+        {
+            return tileOffsets;
+        }
 
         public virtual string GetFileBaseName(Layer selectedLayer, Point tileOffsets)
         {
