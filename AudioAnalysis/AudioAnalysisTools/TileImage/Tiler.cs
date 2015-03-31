@@ -126,8 +126,12 @@ namespace AudioAnalysisTools.TileImage
             // drawable tiles in the current super tile
             // as a rule only draw the sections that are available in the current tile
             // and as much as we need from the next tile
-            var tilesInSuperTileX = Math.Ceiling((double)current.Image.Width / this.profile.TileWidth);
-            var tilesInSuperTileY = Math.Ceiling((double)current.Image.Height / this.profile.TileHeight);
+            var tilesInSuperTileX = Math.Abs(((double)current.Image.Width / this.profile.TileWidth) - 1.0) < 0.001
+                                        ? (double)current.Image.Width / this.profile.TileWidth
+                                        : Math.Ceiling((current.Image.Width / 2.0) / this.profile.TileWidth) * 2.0;
+            var tilesInSuperTileY = Math.Abs(((double)current.Image.Height / this.profile.TileHeight) - 1.0) < 0.001
+                                        ? (double)current.Image.Height / this.profile.TileHeight
+                                        : Math.Ceiling((current.Image.Height / 2.0) / this.profile.TileHeight) * 2.0;
 
             // define source
             var superTileBitmap = (Bitmap)current.Image;
@@ -152,14 +156,27 @@ namespace AudioAnalysisTools.TileImage
                             this.profile.TileWidth,
                             this.profile.TileHeight,
                             PixelFormat.Format64bppArgb);
-                        tileImage.MakeTransparent();
+
+                        if (this.profile.PaddingColor == Color.Transparent)
+                        {
+                            tileImage.MakeTransparent();
+                        }
+                        else
+                        {
+                            using (var grapics = Graphics.FromImage(tileImage))
+                            {
+                                grapics.Clear(this.profile.PaddingColor);
+                            }
+                        }
 
                         // determine how to paint it
                         // supertile relative
-                        var top = (int)((j * this.profile.TileHeight) - paddingY);
+                        int layerTop = j * this.profile.TileHeight,
+                            top = layerTop - paddingY;
 
                         // supertile relative
-                        var left = (int)((i * this.profile.TileWidth) - paddingX);
+                        int layerLeft = i * this.profile.TileWidth,
+                            left = layerLeft - paddingX;
 
                         var subsection = new Rectangle()
                                              {
@@ -203,26 +220,28 @@ namespace AudioAnalysisTools.TileImage
                                     else
                                     {
                                         // paint a fraction from the next image
-                                        
-                                        //tileGraphics.DrawImage(next.Image, imageComponent.Fragment, sourceRect, GraphicsUnit.Pixel);    
-                                        
+                                        var sourceRect =
+                                            new Rectangle(
+                                                new Point(
+                                                    subsection.Location.X + imageComponent.Fragment.X,
+                                                    imageComponent.Fragment.Y),
+                                                imageComponent.Fragment.Size);
+                                        tileGraphics.DrawImage(next.Image, imageComponent.Fragment, sourceRect, GraphicsUnit.Pixel);    
+
                                     }
                                 }
                                 else
                                 {
                                     // neutral
-                                    //tileGraphics.DrawImage(current.Image, imageComponent.Fragment, sourceRect, GraphicsUnit.Pixel);    
+                                    var sourceRect = new Rectangle(new Point(layerLeft, layerTop), imageComponent.Fragment.Size);
+                                    var destRect = new Rectangle(new Point(layerLeft + paddingX, layerTop + paddingY),  imageComponent.Fragment.Size);
+                                    tileGraphics.DrawImage(current.Image, destRect, sourceRect, GraphicsUnit.Pixel);    
                                 }
                             }
                         }
 
-
-                        // convert co-ordinates to layer relative
-                        var layerTop = 0;
-                        var layerLeft = 0;
-
                         // write tile to disk
-                        var name = this.profile.GetFileBaseName(layer, new Point(layerTop, layerLeft));
+                        var name = this.profile.GetFileBaseName(layer, new Point(layerLeft, layerTop));
                         var outputTilePath = this.OutputDirectory.CombineFile(name + ".png").FullName;
                         tileImage.Save(outputTilePath);
                     }

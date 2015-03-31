@@ -48,7 +48,7 @@ namespace AudioAnalysisTools.TileImage
 
         public override Point GetTileIndexes(Layer selectedLayer, Point tileOffsets)
         {
-            throw new NotImplementedException();
+            return tileOffsets;
         }
     }
 }
