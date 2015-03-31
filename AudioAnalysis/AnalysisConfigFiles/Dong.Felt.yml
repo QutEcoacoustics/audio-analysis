@@ -16,7 +16,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Ou
 
 # C:\Output
 # action # processOne or batch makeImages another
-Actions: [batch]  
+Actions: [processOne]  
 
 # configs relative path
 QueryInputDirectory: "..\\..\\Query"
