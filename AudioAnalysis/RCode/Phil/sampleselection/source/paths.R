@@ -5,8 +5,10 @@ paths <- list(
                      "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
-              '/Users/n8933464/Documents/sample_selection_output/cache')
+              '/Users/n8933464/Documents/sample_selection_output/cache'),
+    indices.1.sec = c("/Users/n8933464/Documents/SERF/indices_1_sec/TaggedRecordings")
     )
+    
 
 
 # path to cache
@@ -86,3 +88,27 @@ FixCacheFn <- function (path) {
     
     
 }
+
+
+
+GetAnalysisOutputPath <- function (site, date, dir) {
+    # audio is in a folder structure like:
+    # sitename/UID_YYMMDD-0000.mp3/UID_date-0000_0min.mp3
+    
+    
+    site.dir <- file.path(dir, site)
+    day.folders <- list.dirs(site.dir, full.names = FALSE, recursive = FALSE)
+    day.folders <- sapply(day.folders, function (folder) {
+        date <- unlist(strsplit(unlist(strsplit(folder, c("_")))[2], "-"))[1]
+        prefix <- substr(folder,start=1,stop=(nchar(folder)-4))
+        return(c(folder, DateFromShortFormat(date), prefix, file.path(site.dir, folder)))
+    })
+    day.folders <- as.data.frame(t(day.folders), stringsAsFactors = FALSE)
+    colnames(day.folders) <- c('folder', 'date', 'prefix', 'path')
+    day.folder <- day.folders[day.folders$date == date,]
+    
+    return(day.folder)
+    
+}
+
+

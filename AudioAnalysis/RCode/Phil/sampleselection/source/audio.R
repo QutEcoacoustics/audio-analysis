@@ -62,21 +62,17 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
     
 } 
 
-GetAudioFile <- function (site, date, mins) {
-    # audio is in a folder structure like:
-    # sitename/UID_YYMMDD-0000.mp3/UID_date-0000_0min.mp3
 
+
+
+GetAudioFile <- function (site, date, mins) {
+    # for a given site, date and list of minutes
+    # returns all the files needed 
+    
     audio.dir <- Path('audio')
-    site.dir <- file.path(audio.dir, site)
-    day.folders <- list.dirs(site.dir, full.names = FALSE, recursive = FALSE)
-    day.folders <- sapply(day.folders, function (folder) {
-        date <- unlist(strsplit(unlist(strsplit(folder, c("_")))[2], "-"))[1]
-        prefix <- substr(folder,start=1,stop=(nchar(folder)-4))
-        return(c(folder, DateFromShortFormat(date), prefix))
-    })
-    day.folders <- as.data.frame(t(day.folders), stringsAsFactors = FALSE)
-    colnames(day.folders) <- c('folder', 'date', 'prefix')
-    day.folder <- day.folders[day.folders$date == date,]
+    
+    day.folder <- GetAnalysisOutputPath(site, date, audio.dir)
+    
     
     # files are done every 10 mins, so min should be rounded DOWN to the nearest min ending with 0
     mins <- floor(mins/10)*10;
@@ -86,11 +82,18 @@ GetAudioFile <- function (site, date, mins) {
     })
     selected.files <- sapply(min.suffix, function (m) {
         fn <- paste0(day.folder$prefix, m)
-        path <- file.path(site.dir, day.folder$folder, fn)
+        path <- file.path(day.folder$path, fn)
         return(path)
     })
     return(as.character(selected.files))
+    
+
+    
+    
 }
+
+
+
 
 DateFromShortFormat <- function (date, decade = '20') {
     # converts a date string from YYMMDD to
