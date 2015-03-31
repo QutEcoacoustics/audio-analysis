@@ -232,5 +232,17 @@
 
             return Color.FromArgb(255, parts[2], parts[1], parts[0]);
         }
+
+        /// <summary>
+        /// Unions a fragment of a rectangle from a source rectangle.
+        /// Returns a rectangle in the same coordinate system as source.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="fragment"></param>
+        /// <returns></returns>
+        public static Rectangle Subtract(this Rectangle source, Rectangle fragment)
+        {
+            Rectangle.Union()
+        }
     }
 }

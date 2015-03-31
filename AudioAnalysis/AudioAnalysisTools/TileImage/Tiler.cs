@@ -217,15 +217,6 @@ namespace AudioAnalysisTools.TileImage
                         }
 
 
-
-                        using (var graphics = Graphics.FromImage(current.Image))
-                        {
-                        }
-
-
-
-                        ((Bitmap)current.Image).Clone(subsection, current.Image.PixelFormat);
-
                         // convert co-ordinates to layer relative
                         var layerTop = 0;
                         var layerLeft = 0;
@@ -358,6 +349,8 @@ namespace AudioAnalysisTools.TileImage
 
             return split;
         }
+
+
 
         public enum TileBias
         {
