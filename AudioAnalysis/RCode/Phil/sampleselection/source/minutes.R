@@ -95,7 +95,6 @@ CreateTargetMinutes <- function (target = NULL) {
     params <- list(target = GetTargetDescription(target))
     WriteOutput(target.mins, 'target.min.ids', params = params)
     
-    
 }
 
 TargetSubset <- function (df, target) {
