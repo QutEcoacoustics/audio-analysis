@@ -282,13 +282,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Log.Info("Begin Draw Super Tiles");
 
             LdSpectrogramConfig ldsConfig = LdSpectrogramConfig.ReadYamlToConfig(ldsConfigFile);
-            var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
+            var tilingConfig = Yaml.Deserialise<SuperTilingConfig>(tilingConfigFile);
 
             // scales for false color images in seconds per pixel.
             double[] imageScales = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };
 
             // default scales for standard spectrograms in seconds per pixel.
             double[] imageScales2 = { 0.1, 0.04, 0.02 };
+
+            if (tilingConfig != null)
+            {
+                imageScales = tilingConfig.SpectralIndexScale;
+            }
+
+            if (tilingConfig != null)
+            {
+                imageScales2 = tilingConfig.SpectralFrameScale;
+            }
 
             IEnumerable<double> allImageScales = imageScales.Concat(imageScales2);
 
@@ -322,11 +332,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 keys);
             timer.Stop();
             Log.Info("Time to read spectral index files = " + timer.Elapsed.TotalSeconds + " seconds");
-
-            if (tilingConfig != null)
-            {
-                imageScales = tilingConfig.SpectralIndexScale;
-            }
 
             // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
             // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
@@ -380,11 +385,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
-
-            if (tilingConfig != null)
-            {
-                imageScales2 = tilingConfig.SpectralFrameScale;
-            }
 
             // Prepare index matrix. This will be used to enhance the frame spectrogram
             /* 

@@ -26,7 +26,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                          TimeSpan focalTime, int imageWidth)
         {
             LdSpectrogramConfig ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(longDurationSpectrogramConfigFile);
-            var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
+            var tilingConfig = Yaml.Deserialise<SuperTilingConfig>(tilingConfigFile);
 
             string fileStem     = ldSpConfig.FileName;
             string analysisType = ldSpConfig.AnalysisType;

@@ -171,6 +171,12 @@ namespace System
             T defaultValuue = default(T))
         {
             Contract.Requires(windowSize >= 0);
+            Contract.Requires(list != null);
+
+            if (list == null)
+            {
+                throw new ArgumentNullException("list", "list should not be null");
+            }
 
             var array = new T[windowSize];
 

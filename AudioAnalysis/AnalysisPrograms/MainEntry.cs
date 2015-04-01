@@ -14,6 +14,8 @@ namespace AnalysisPrograms
     using System;
     using System.Reflection;
 
+    using AnalysisPrograms.Production;
+
     using log4net;
 
     /// <summary>

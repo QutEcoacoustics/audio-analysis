@@ -140,7 +140,7 @@ namespace AnalysisPrograms.Production
                 if (extension == null || !string.Equals(extension, this.Extension, StringComparison.CurrentCultureIgnoreCase))
                 {
                     throw new ValidationArgException(
-                        "Expected an input file with an extensions of {1}. Instead got {2} for argument {3}".Format2(
+                        "Expected an input file with an extensions of {0}. Instead got {1} for argument {2}".Format2(
                             this.Extension,
                             arg,
                             name));
