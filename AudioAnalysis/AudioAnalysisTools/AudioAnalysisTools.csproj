@@ -258,6 +258,8 @@
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfigOfJie.cs" />
+    <Compile Include="LongDurationSpectrograms\SuperTile.cs" />
+    <Compile Include="LongDurationSpectrograms\SuperTilingConfig.cs" />
     <Compile Include="LongDurationSpectrograms\ZoomTiledSpectrograms.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogram3D.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />

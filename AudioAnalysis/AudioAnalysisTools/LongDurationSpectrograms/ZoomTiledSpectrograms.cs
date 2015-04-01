@@ -2,259 +2,133 @@
 // <copyright company="QutBioacoustics" file="ZoomTiledSpectrograms.cs">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
-// 
 // --------------------------------------------------------------------------------------------------------------------
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
 
     using Acoustics.Shared;
-    using Acoustics.Shared.Csv;
 
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.TileImage;
 
     using log4net;
-    using log4net.Repository.Hierarchy;
 
     using TowseyLibrary;
 
     public static class ZoomTiledSpectrograms
     {
-        public static void DrawSuperTiles(
-            DirectoryInfo inputDirectory, 
-            DirectoryInfo outputDirectory, 
-            FileInfo ldSpConfigFile, 
-            FileInfo tilingConfigFile, 
-            FileInfo indexPropertiesConfigFile)
+        #region Static Fields
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// THis method is a way of getting the acoustic index data at 0.2 second resolution to have some influence on the
+        ///     frame spectrograms at 0.02s resolution.
+        ///     We cannot assume that the two matrices will have the same number of columns i.e. same temporal duration.
+        ///     The frame data has been padded to one minute duration. But the last index matrix will probably NOT be the full one
+        ///     minute duration.
+        ///     Therefore assume that indexData matrix will be shorter and take its column count.
+        /// </summary>
+        /// <param name="frameData">
+        /// </param>
+        /// <param name="indexData">
+        /// </param>
+        /// <param name="frameWt">
+        /// The frame Wt.
+        /// </param>
+        /// <param name="indexWt">
+        /// The index Wt.
+        /// </param>
+        public static void CombineFrameDataWithIndexData(
+            double[,] frameData, 
+            double[,] indexData, 
+            double frameWt, 
+            double indexWt)
         {
-            const bool SaveSuperTiles = true;
-
-            var ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(ldSpConfigFile);
-            var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
-
-            string fileStem = ldSpConfig.FileName;
-            string analysisType = ldSpConfig.AnalysisType;
-            var namingPattern = new PanoJsTilingProfile();
-            var tiler = new Tiler(
-                outputDirectory, 
-                namingPattern, 
-                new SortedSet<double>() { 60, 24, 12, 6, 2, 1, 0.6, 0.2 }, 
-                60.0, 
-                1440, 
-                new SortedSet<double>() { 1, 1, 1, 1, 1, 1, 1, 1 },
-                1.0,
-                300);
-
-            // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigFile);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
-            string[] keys = dictIP.Keys.ToList<string>().ToArray();
-
-            DateTime now1 = DateTime.Now;
-            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(
-                inputDirectory, 
-                fileStem + "_" + analysisType, 
-                keys);
-            DateTime now2 = DateTime.Now;
-            TimeSpan et = now2 - now1;
-            LoggedConsole.WriteLine("Time to read spectral index files = " + et.TotalSeconds + " seconds");
-
-            // scales in seconds per pixel.
-            double[] imageScales = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };
-            if (tilingConfig != null)
+            int rowCount = frameData.GetLength(0); // number of rows should be same in both matrices
+            int colCount = indexData.GetLength(1); // number of column will possibly be fewer in the indexData matrix.
+            for (int c = 0; c < colCount; c++)
             {
-                imageScales = tilingConfig.SpectralIndexScale;
-            }
-
-            // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
-            // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
-            int nameLength = fileStem.Length - 16;
-            fileStem = fileStem.Substring(0, nameLength);
-
-            // TOP MOST ZOOMED-OUT IMAGES 
-            LoggedConsole.WriteLine("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
-            foreach (double scale in imageScales)
-            {
-                TimeSpan imageScale = TimeSpan.FromSeconds(scale);
-                var superTiles = DrawSuperTilesFromIndexSpectrograms(
-                    ldSpConfig, 
-                    dictIP, 
-                    tilingConfig, 
-                    imageScale, 
-                    spectra);
-
-                // below saving of images is for debugging.
-                if (SaveSuperTiles)
+                for (int r = 0; r < rowCount; r++)
                 {
-                    string outputName;
-                    Image[] images = superTiles.Select(x => x.Image).ToArray();
-                    if ((images != null) && (images.Length > 0))
-                    {
-                        for (int i = 0; i < images.Length; i++)
-                        {
-                            outputName = string.Format("{0}_scale-{1:f1}_supertile-{2}.png", fileStem, scale, i);
-                            if (images[i] != null)
-                            {
-                                images[i].Save(Path.Combine(outputDirectory.FullName, outputName));
-                            }
-                        }
-                    }
-
-                    Image combo = ImageTools.CombineImagesInLine(images);
-                    outputName = string.Format("{0}_scale-{1:f1}_Combo.png", fileStem, scale);
-                    if (combo != null)
-                    {
-                        combo.Save(Path.Combine(outputDirectory.FullName, outputName));
-                    }
+                    frameData[r, c] = (indexWt * indexData[r, c]) + (frameWt * Math.Sqrt(frameData[r, c]));
                 }
-
-                // tile images as we go
-                LoggedConsole.WriteLine("Writing index tiles for " + scale);
-
-                // tiler.TileMany(superTiles);
             }
 
-            // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
-            LoggedConsole.WriteLine("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
-
-            // default scales in seconds per pixel.
-            double[] imageScales2 = { 0.1, 0.04, 0.02 };
-            if (tilingConfig != null)
-            {
-                imageScales2 = tilingConfig.SpectralFrameScale;
-            }
-
-            // Prepare index matrix. This will be used to enhance the frame spectrogram
-            /* 
-             * RESEARCH QUESTION:   Which is the better index to use? CVR or POW. 
-             *                      Decide on CVR. It give better contrast.
-             *                      Later decide on POW. It gives a less cluttered spgram.
-             */
-            TemporalMatrix powMatrix = new TemporalMatrix(
-                "columns", 
-                spectra["POW"], 
-                ldSpConfig.IndexCalculationDuration);
-
-            // double min = tilingConfig.lowerNormalisationBoundForDecibelSpectrograms;
-            // double max = tilingConfig.upperNormalisationBoundForDecibelSpectrograms;
-            // bounds for normaliseing the POW spectral index values
-            double min = 0.0; // dB tilingConfig.lowerNormalisationBoundForDecibelSpectrograms;
-            double max = 70.0;
-
-            TimeSpan dataDuration = powMatrix.DataDuration();
-            int segmentDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
-
-            int minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
-            for (int minute = 0; minute < minuteCount; minute++)
-            {
-                double[,] powIndexMatrix = powMatrix.GetDataBlock(
-                    TimeSpan.FromMinutes(minute), 
-                    TimeSpan.FromSeconds(segmentDurationInSeconds));
-                powIndexMatrix = MatrixTools.boundMatrix(powIndexMatrix, min, max);
-                powIndexMatrix = DataTools.normalise(powIndexMatrix);
-
-                var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
-                    inputDirectory, 
-                    ldSpConfig, 
-                    indexPropertiesConfigFile, 
-                    tilingConfig, 
-                    minute, 
-                    imageScales2, 
-                    powIndexMatrix);
-
-                if (SaveSuperTiles)
-                {
-                    // below saving of images is for debugging.
-                    foreach (var superTile in superTilingResults)
-                    {
-                        string outputName = string.Format(
-                            "{0}_scale-{2:f2}_supertile-minute-{1}.png", 
-                            fileStem, 
-                            minute, 
-                            superTile.Scale.TotalSeconds);
-                        superTile.Image.Save(Path.Combine(outputDirectory.FullName, outputName));
-                    }
-                }
-
-                // finaly tile the output
-                LoggedConsole.WriteLine("Begin tile production for minute: " + minute);
-
-                // tiler.TileMany(superTilingResults);
-            }
-
-            LoggedConsole.WriteLine("Tiling complete");
+            // end all rows
         }
 
-        public static SuperTile[] DrawSuperTilesFromIndexSpectrograms(
-            LdSpectrogramConfig analysisConfig, 
-            Dictionary<string, IndexProperties> dictIP, 
+        public static Image DrawFrameSpectrogramAtScale(
+            LdSpectrogramConfig config, 
             SuperTilingConfig tilingConfig, 
-            TimeSpan imageScale, 
-            Dictionary<string, double[,]> spectra)
+            TimeSpan startTimeOfData, 
+            TimeSpan frameScale, 
+            double[,] frameData, 
+            double[,] indexData_normalised)
         {
-            if ((spectra == null) || (spectra.Count == 0))
+            // ################### RESEARCH QUESTION:
+            // I tried different means of NORMALISATION
+            // double min; double max;
+            // DataTools.MinMax(spectralSelection, out min, out max);
+            // double range = max - min;
+            // readjust min and max to create the effect of contrast stretching. It enhances the spectrogram a bit
+            // double fractionalStretching = 0.2;
+            // min = min + (range * fractionalStretching);
+            // max = max - (range * fractionalStretching);
+            // range = max - min;
+
+            // ULTIMATELY THE BEST APPROACH APPEARED TO BE FIXED NORMALISATION BOUNDS
+            double min = tilingConfig.LowerNormalisationBoundForDecibelSpectrograms;
+            double max = tilingConfig.UpperNormalisationBoundForDecibelSpectrograms;
+            frameData = MatrixTools.boundMatrix(frameData, min, max);
+            frameData = DataTools.normalise(frameData);
+
+            // at this point moderate the frame data using the index data
+            int msScale = frameScale.Milliseconds;
+            double frameWt = 0.9;
+            double indexWt = 0.1;
+
+            // adjust combination weights to the scale, so as to decrease influence of index data.
+            if (msScale == 100)
             {
-                LoggedConsole.WriteLine("WARNING: NO SPECTRAL DATA SUPPLIED");
-                return null;
+                frameWt = 0.5;
+                indexWt = 0.5;
+            }
+            else if (msScale == 40)
+            {
+                frameWt = 0.7;
+                indexWt = 0.3;
             }
 
-            // check that scalingFactor >= 1.0
-            double scalingFactor = tilingConfig.ScalingFactor_SpectralIndex(imageScale.TotalSeconds);
-            if (scalingFactor < 1.0)
-            {
-                LoggedConsole.WriteLine("WARNING: Scaling Factor < 1.0");
-                return null;
-            }
+            CombineFrameDataWithIndexData(frameData, indexData_normalised, frameWt, indexWt);
 
-            // calculate source data duration from column count of abitrary matrix
-            TimeSpan dataScale = analysisConfig.IndexCalculationDuration;
-            var matrix = spectra["ACI"]; // assume this key will always be present!!
-            TimeSpan sourceDataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
+            CubeHelix cch = CubeHelix.GetCubeHelix();
+            Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(frameData);
 
-            int tileWidth = tilingConfig.TileWidth;
-            int superTileWidth = tilingConfig.SuperTileWidthDefault();
-            int superTileCount =
-                (int)Math.Ceiling(tilingConfig.SuperTileCount(sourceDataDuration, imageScale.TotalSeconds));
-
-            TimeSpan superTileDuration = TimeSpan.FromTicks(superTileWidth * imageScale.Ticks);
-
-            // initialise the image array to return
-            var imageArray = new SuperTile[superTileCount];
-            TimeSpan startTime = analysisConfig.MinuteOffset; // default = zero minute of day i.e. midnight
-
-            // start the loop
-            for (int t = 0; t < superTileCount; t++)
-            {
-                Image image = ZoomTiledSpectrograms.DrawIndexSpectrogramAtScale(
-                    analysisConfig, 
-                    dictIP, 
-                    startTime, 
-                    dataScale, 
-                    imageScale, 
-                    superTileWidth, 
-                    spectra);
-                imageArray[t] = new SuperTile()
-                                    {
-                                        Scale = imageScale, 
-                                        SpectrogramType = SpectrogramType.Index, 
-                                        Image = image
-                                    };
-
-                startTime += superTileDuration;
-                if (startTime > sourceDataDuration)
-                {
-                    break;
-                }
-            }
-
-            return imageArray;
+            int nyquist = config.SampleRate / 2;
+            int herzInterval = 1000;
+            string title = string.Format("ZOOM SCALE={0}ms/pixel ", frameScale.TotalMilliseconds);
+            Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, spectrogramImage.Width);
+            spectrogramImage = ZoomFocusedSpectrograms.FrameZoomSpectrogram(
+                spectrogramImage, 
+                titleBar, 
+                startTimeOfData, 
+                frameScale, 
+                config.XAxisTicInterval, 
+                nyquist, 
+                herzInterval);
+            return spectrogramImage;
         }
 
         public static Image DrawIndexSpectrogramAtScale(
@@ -271,7 +145,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan sourceMinuteOffset = config.MinuteOffset;
 
             // calculate data duration from column count of abitrary matrix
-            var matrix = spectra["ACI"]; // assume this key will always be present!!
+            double[,] matrix = spectra["ACI"]; // assume this key will always be present!!
             int columnCount = matrix.GetLength(1);
             TimeSpan dataDuration = TimeSpan.FromSeconds(columnCount * dataScale.TotalSeconds);
 
@@ -291,10 +165,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             TimeSpan spectrogramDuration = endTime - startTime;
-            int spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
+            var spectrogramWidth = (int)(spectrogramDuration.Ticks / imageScale.Ticks);
 
-            int startIndex = (int)(startTime.Ticks / dataScale.Ticks);
-            int endIndex = (int)(endTime.Ticks / dataScale.Ticks);
+            var startIndex = (int)(startTime.Ticks / dataScale.Ticks);
+            var endIndex = (int)(endTime.Ticks / dataScale.Ticks);
             if (endIndex >= columnCount)
             {
                 endIndex = columnCount - 1;
@@ -331,7 +205,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
             cs1.LoadSpectrogramDictionary(spectralSelection);
 
-            int imageScaleInMsPerPixel = (int)imageScale.TotalMilliseconds;
+            var imageScaleInMsPerPixel = (int)imageScale.TotalMilliseconds;
             double blendWt1 = 0.0;
             double blendWt2 = 1.0;
 
@@ -390,19 +264,261 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Graphics g1 = Graphics.FromImage(image);
             g1.Clear(Color.DarkGray);
 
-            int Xoffset = (int)(offsetTime.Ticks / imageScale.Ticks);
+            var Xoffset = (int)(offsetTime.Ticks / imageScale.Ticks);
             g1.DrawImage(LDSpectrogram, Xoffset, 0);
 
             return image;
         }
 
+        public static void DrawSuperTiles(
+            DirectoryInfo inputDirectory, 
+            DirectoryInfo outputDirectory, 
+            FileInfo ldsConfigFile, 
+            FileInfo tilingConfigFile, 
+            FileInfo indexPropertiesConfigFile)
+        {
+            const bool SaveSuperTiles = false;
+
+            Log.Info("Begin Draw Super Tiles");
+
+            LdSpectrogramConfig ldsConfig = LdSpectrogramConfig.ReadYamlToConfig(ldsConfigFile);
+            var tilingConfig = Json.Deserialise<SuperTilingConfig>(tilingConfigFile);
+
+            // scales for false color images in seconds per pixel.
+            double[] imageScales = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };
+
+            // default scales for standard spectrograms in seconds per pixel.
+            double[] imageScales2 = { 0.1, 0.04, 0.02 };
+
+            IEnumerable<double> allImageScales = imageScales.Concat(imageScales2);
+
+            string fileStem = ldsConfig.FileName;
+            string analysisType = ldsConfig.AnalysisType;
+            var namingPattern = new PanoJsTilingProfile();
+
+            // create a new tiler
+            // pass it scales for x and y-axis
+            // also pass it unit scale relations (between unit scale and unit height/width) to use as a reference point
+            var tiler = new Tiler(
+                outputDirectory, 
+                namingPattern, 
+                new SortedSet<double>(allImageScales), 
+                60.0, 
+                1440, 
+                new SortedSet<double>(allImageScales.Select(x => 1.0)), 
+                1.0, 
+                300);
+
+            // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
+            Dictionary<string, IndexProperties> indexProperties =
+                IndexProperties.GetIndexProperties(indexPropertiesConfigFile);
+            indexProperties = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(indexProperties);
+            string[] keys = indexProperties.Keys.ToArray();
+
+            Stopwatch timer = Stopwatch.StartNew();
+            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(
+                inputDirectory, 
+                fileStem + "_" + analysisType, 
+                keys);
+            timer.Stop();
+            Log.Info("Time to read spectral index files = " + timer.Elapsed.TotalSeconds + " seconds");
+
+            if (tilingConfig != null)
+            {
+                imageScales = tilingConfig.SpectralIndexScale;
+            }
+
+            // remove "Towsey.Acoustic" (i.e. 16 letters) from end of the file names
+            // fileStem = "TEST_TUITCE_20091215_220004.Towsey.Acoustic" becomes "TEST_TUITCE_20091215_220004";
+            int nameLength = fileStem.Length - 16;
+            fileStem = fileStem.Substring(0, nameLength);
+
+            // TOP MOST ZOOMED-OUT IMAGES 
+            Log.Info("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
+            foreach (double scale in imageScales)
+            {
+                TimeSpan imageScale = TimeSpan.FromSeconds(scale);
+                SuperTile[] superTiles = DrawSuperTilesFromIndexSpectrograms(
+                    ldsConfig, 
+                    indexProperties, 
+                    tilingConfig, 
+                    imageScale, 
+                    spectra);
+
+                // below saving of images is for debugging.
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (SaveSuperTiles)
+                {
+                    string outputName;
+                    Image[] images = superTiles.Select(x => x.Image).ToArray();
+                    if ((images != null) && (images.Length > 0))
+                    {
+                        for (int i = 0; i < images.Length; i++)
+                        {
+                            outputName = string.Format("{0}_scale-{1:f1}_supertile-{2}.png", fileStem, scale, i);
+                            if (images[i] != null)
+                            {
+                                images[i].Save(Path.Combine(outputDirectory.FullName, outputName));
+                            }
+                        }
+                    }
+
+                    Image combo = ImageTools.CombineImagesInLine(images);
+                    outputName = string.Format("{0}_scale-{1:f1}_Combo.png", fileStem, scale);
+                    if (combo != null)
+                    {
+                        combo.Save(Path.Combine(outputDirectory.FullName, outputName));
+                    }
+                }
+                else
+                {
+                    // tile images as we go
+                    Log.Info("Writing index tiles for " + scale);
+                    tiler.TileMany(superTiles);
+                }
+            }
+
+            // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
+            Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
+
+            if (tilingConfig != null)
+            {
+                imageScales2 = tilingConfig.SpectralFrameScale;
+            }
+
+            // Prepare index matrix. This will be used to enhance the frame spectrogram
+            /* 
+             * RESEARCH QUESTION:   Which is the better index to use? CVR or POW. 
+             *                      Decide on CVR. It give better contrast.
+             *                      Later decide on POW. It gives a less cluttered spgram.
+             */
+            var powMatrix = new TemporalMatrix("columns", spectra["POW"], ldsConfig.IndexCalculationDuration);
+
+            // double min = tilingConfig.lowerNormalisationBoundForDecibelSpectrograms;
+            // double max = tilingConfig.upperNormalisationBoundForDecibelSpectrograms;
+            // bounds for normaliseing the POW spectral index values
+            const double Min = 0.0; // dB tilingConfig.lowerNormalisationBoundForDecibelSpectrograms;
+            const double Max = 70.0;
+
+            TimeSpan dataDuration = powMatrix.DataDuration();
+            var segmentDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
+
+            var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
+            for (int minute = 0; minute < minuteCount; minute++)
+            {
+                double[,] powIndexMatrix = powMatrix.GetDataBlock(
+                    TimeSpan.FromMinutes(minute), 
+                    TimeSpan.FromSeconds(segmentDurationInSeconds));
+                powIndexMatrix = MatrixTools.boundMatrix(powIndexMatrix, Min, Max);
+                powIndexMatrix = DataTools.normalise(powIndexMatrix);
+
+                SuperTile[] superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
+                    inputDirectory, 
+                    ldsConfig, 
+                    indexPropertiesConfigFile, 
+                    tilingConfig, 
+                    minute, 
+                    imageScales2, 
+                    powIndexMatrix);
+
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (SaveSuperTiles)
+                {
+                    // below saving of images is for debugging.
+                    foreach (SuperTile superTile in superTilingResults)
+                    {
+                        string outputName = string.Format(
+                            "{0}_scale-{2:f2}_supertile-minute-{1}.png",
+                            fileStem,
+                            minute,
+                            superTile.Scale.TotalSeconds);
+                        superTile.Image.Save(Path.Combine(outputDirectory.FullName, outputName));
+                    }
+                }
+                else
+                {
+                    // finaly tile the output
+                    Log.Info("Begin tile production for minute: " + minute);
+                    tiler.TileMany(superTilingResults);
+                    Log.Info("Begin tile production for minute: " + minute);
+                }
+            }
+
+            Log.Info("Tiling complete");
+        }
+
+        public static SuperTile[] DrawSuperTilesFromIndexSpectrograms(
+            LdSpectrogramConfig analysisConfig, 
+            Dictionary<string, IndexProperties> dictIP, 
+            SuperTilingConfig tilingConfig, 
+            TimeSpan imageScale, 
+            Dictionary<string, double[,]> spectra)
+        {
+            if ((spectra == null) || (spectra.Count == 0))
+            {
+                LoggedConsole.WriteLine("WARNING: NO SPECTRAL DATA SUPPLIED");
+                return null;
+            }
+
+            // check that scalingFactor >= 1.0
+            double scalingFactor = tilingConfig.ScalingFactorSpectralIndex(imageScale.TotalSeconds);
+            if (scalingFactor < 1.0)
+            {
+                LoggedConsole.WriteLine("WARNING: Scaling Factor < 1.0");
+                return null;
+            }
+
+            // calculate source data duration from column count of abitrary matrix
+            TimeSpan dataScale = analysisConfig.IndexCalculationDuration;
+            double[,] matrix = spectra["ACI"]; // assume this key will always be present!!
+            TimeSpan sourceDataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
+
+            int tileWidth = tilingConfig.TileWidth;
+            int superTileWidth = tilingConfig.SuperTileWidthDefault();
+            var superTileCount =
+                (int)Math.Ceiling(tilingConfig.SuperTileCount(sourceDataDuration, imageScale.TotalSeconds));
+
+            TimeSpan superTileDuration = TimeSpan.FromTicks(superTileWidth * imageScale.Ticks);
+
+            // initialise the image array to return
+            var imageArray = new SuperTile[superTileCount];
+            TimeSpan startTime = analysisConfig.MinuteOffset; // default = zero minute of day i.e. midnight
+
+            // start the loop
+            for (int t = 0; t < superTileCount; t++)
+            {
+                Image image = DrawIndexSpectrogramAtScale(
+                    analysisConfig, 
+                    dictIP, 
+                    startTime, 
+                    dataScale, 
+                    imageScale, 
+                    superTileWidth, 
+                    spectra);
+                imageArray[t] = new SuperTile
+                                    {
+                                        Scale = imageScale, 
+                                        SpectrogramType = SpectrogramType.Index, 
+                                        Image = image
+                                    };
+
+                startTime += superTileDuration;
+                if (startTime > sourceDataDuration)
+                {
+                    break;
+                }
+            }
+
+            return imageArray;
+        }
+
         /// <summary>
         /// Assume that we are processing data for one minute only.
-        /// From this one minute of data, we produce images at three scales.
-        /// A one minute recording framed at 20ms should yield 3000 frames.
-        /// But to achieve this where sr= 22050 and frameSize=512, we need an overlap of 71 samples.
-        /// Consequently only 2999 frames returned per minute.
-        /// Therefore have to pad end to get 3000 frames.
+        ///     From this one minute of data, we produce images at three scales.
+        ///     A one minute recording framed at 20ms should yield 3000 frames.
+        ///     But to achieve this where sr= 22050 and frameSize=512, we need an overlap of 71 samples.
+        ///     Consequently only 2999 frames returned per minute.
+        ///     Therefore have to pad end to get 3000 frames.
         /// </summary>
         /// <param name="dataDir">
         /// The data Dir.
@@ -438,8 +554,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // string analysisType = analysisConfig.AnalysisType;
             TimeSpan indexScale = analysisConfig.IndexCalculationDuration;
             TimeSpan frameScale = TimeSpan.FromSeconds(tilingConfig.SpectralFrameDuration);
-            int expectedDataDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
-            int expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / tilingConfig.SpectralFrameDuration);
+            var expectedDataDurationInSeconds = (int)tilingConfig.SegmentDuration.TotalSeconds;
+            var expectedFrameCount = (int)Math.Round(expectedDataDurationInSeconds / tilingConfig.SpectralFrameDuration);
 
             string fileName = fileStem + "_" + minute + "min.csv";
             string csvPath = Path.Combine(dataDir.FullName, fileName);
@@ -454,22 +570,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     "WARNING: METHOD DrawSuperTilesFromSingleFrameSpectrogram(): NO SPECTRAL DATA SUPPLIED");
                 return null;
             }
+
             PadEndOfListOfFrames(frameList, expectedFrameCount);
 
             //// frame count will be one less than expected for the recording segment because of frame overlap
             //// Therefore pad the end of the list of frames with the last frame.
-            //int frameDiscrepancy = expectedFrameCount - frameList.Count;
-            //if (frameDiscrepancy > 0)
-            //{
-            //    double[] frame = frameList[frameList.Count - 1];
-            //    for (int d = 0; d < frameDiscrepancy; d++)
-            //    {
-            //        frameList.Add(frame);
-            //    }
-            //}
-
-            TemporalMatrix frameData = new TemporalMatrix("rows", MatrixTools.ConvertList2Matrix(frameList), frameScale);
-            TemporalMatrix indexData = new TemporalMatrix("columns", indexData_normalised, indexScale);
+            // int frameDiscrepancy = expectedFrameCount - frameList.Count;
+            // if (frameDiscrepancy > 0)
+            // {
+            // double[] frame = frameList[frameList.Count - 1];
+            // for (int d = 0; d < frameDiscrepancy; d++)
+            // {
+            // frameList.Add(frame);
+            // }
+            // }
+            var frameData = new TemporalMatrix("rows", MatrixTools.ConvertList2Matrix(frameList), frameScale);
+            var indexData = new TemporalMatrix("columns", indexData_normalised, indexScale);
             frameData.SwapTemporalDimension(); // so the two data matrices have the same temporal dimension
 
             TimeSpan startTime = analysisConfig.MinuteOffset; // default = zero minute of day i.e. midnight
@@ -481,7 +597,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int scale = 0; scale < imageScales.Length; scale++)
             {
                 TimeSpan imageScale = TimeSpan.FromSeconds(imageScales[scale]);
-                int compressionFactor =
+                var compressionFactor =
                     (int)Math.Round(imageScale.TotalMilliseconds / frameData.DataScale.TotalMilliseconds);
                 double columnDuration = imageScale.TotalSeconds;
 
@@ -511,7 +627,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     data, 
                     indexMatrixExpanded);
 
-                str[scale] = new SuperTile()
+                str[scale] = new SuperTile
                                  {
                                      Scale = imageScale, 
                                      SpectrogramType = SpectrogramType.Frame, 
@@ -524,11 +640,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// THis method pads the end of a list of frames read from a csv file.
-        /// The frame count will be one less than expected for the recording segment because of frame overlap
-        /// Therefore pad the end of the list of frames with the last frame.
+        ///     The frame count will be one less than expected for the recording segment because of frame overlap
+        ///     Therefore pad the end of the list of frames with the last frame.
         /// </summary>
-        /// <param name="frameList"></param>
-        /// <param name="expectedFrameCount"></param>
+        /// <param name="frameList">
+        /// </param>
+        /// <param name="expectedFrameCount">
+        /// </param>
         public static void PadEndOfListOfFrames(List<double[]> frameList, int expectedFrameCount)
         {
             int frameDiscrepancy = expectedFrameCount - frameList.Count;
@@ -542,232 +660,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
         }
 
-        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, SuperTilingConfig tilingConfig, TimeSpan startTimeOfData,
-                                    TimeSpan frameScale, double[,] frameData, double[,] indexData_normalised)
-        {
-            // ################### RESEARCH QUESTION:
-            // I tried different means of NORMALISATION
-            // double min; double max;
-            // DataTools.MinMax(spectralSelection, out min, out max);
-            // double range = max - min;
-            // readjust min and max to create the effect of contrast stretching. It enhances the spectrogram a bit
-            // double fractionalStretching = 0.2;
-            // min = min + (range * fractionalStretching);
-            // max = max - (range * fractionalStretching);
-            // range = max - min;
-
-            // ULTIMATELY THE BEST APPROACH APPEARED TO BE FIXED NORMALISATION BOUNDS
-            double min = tilingConfig.lowerNormalisationBoundForDecibelSpectrograms;
-            double max = tilingConfig.upperNormalisationBoundForDecibelSpectrograms;
-            frameData = MatrixTools.boundMatrix(frameData, min, max);
-            frameData = DataTools.normalise(frameData);
-
-            // at this point moderate the frame data using the index data
-            int msScale = frameScale.Milliseconds;
-            double frameWt = 0.9;
-            double indexWt = 0.1;
-
-            // adjust combination weights to the scale, so as to decrease influence of index data.
-            if (msScale == 100)
-            {
-                frameWt = 0.5;
-                indexWt = 0.5;
-            }
-            else if (msScale == 40)
-            {
-                frameWt = 0.7;
-                indexWt = 0.3;
-            }
-
-            CombineFrameDataWithIndexData(frameData, indexData_normalised, frameWt, indexWt);
-
-            var cch = CubeHelix.GetCubeHelix();
-            Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(frameData);
-
-            int nyquist = config.SampleRate / 2;
-            int herzInterval = 1000;
-            string title = string.Format("ZOOM SCALE={0}ms/pixel ", frameScale.TotalMilliseconds);
-            Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, spectrogramImage.Width);
-            spectrogramImage = ZoomFocusedSpectrograms.FrameZoomSpectrogram(
-                spectrogramImage, 
-                titleBar, 
-                startTimeOfData, 
-                frameScale, 
-                config.XAxisTicInterval, 
-                nyquist, 
-                herzInterval);
-            return spectrogramImage;
-        }
-
-        /// <summary>
-        /// THis method is a way of getting the acoustic index data at 0.2 second resolution to have some influence on the frame spectrograms at 0.02s resolution.
-        /// We cannot assume that the two matrices will have the same number of columns i.e. same temporal duration.
-        /// The frame data has been padded to one minute duration. But the last index matrix will probably NOT be the full one minute duration.
-        /// Therefore assume that indexData matrix will be shorter and take its column count.
-        /// </summary>
-        /// <param name="frameData">
-        /// </param>
-        /// <param name="indexData">
-        /// </param>
-        /// <param name="frameWt">
-        /// The frame Wt.
-        /// </param>
-        /// <param name="indexWt">
-        /// The index Wt.
-        /// </param>
-        public static void CombineFrameDataWithIndexData(
-            double[,] frameData, 
-            double[,] indexData, 
-            double frameWt, 
-            double indexWt)
-        {
-            int rowCount = frameData.GetLength(0); // number of rows should be same in both matrices
-            int colCount = indexData.GetLength(1); // number of column will possibly be fewer in the indexData matrix.
-            for (int c = 0; c < colCount; c++)
-            {
-                for (int r = 0; r < rowCount; r++)
-                {
-                    frameData[r, c] = (indexWt * indexData[r, c]) + (frameWt * Math.Sqrt(frameData[r, c]));
-                }
-            }
- // end all rows
-        }
-    } // class
-
-    public class SuperTilingConfig
-    {
-        public TimeSpan SegmentDuration = TimeSpan.FromSeconds(60);
-
-        public string UnitsOfTime { get; set; } // should be "seconds"
-
-        public string ScaleUnits { get; set; } // should be "SecondsPerPixel"
-
-        public double IndexCalculationDuration { get; set; } // : 0.2,
-
-        public double SpectralFrameDuration { get; set; } // "SpectralFrameDuration": 0.02,
-
-        public int TileWidth { get; set; } // "TileWidth": 300,
-
-        public int MaxTilesPerSuperTile { get; set; } // should be about 12
-
-        public double[] SpectralIndexScale { get; set; }
-
-        public double[] SpectralFrameScale { get; set; }
-
-        public double lowerNormalisationBoundForDecibelSpectrograms = -100;
-
-        public double LowerNormalisationBoundForDecibelSpectrograms { get; set; }
-
-        public double upperNormalisationBoundForDecibelSpectrograms = -30;
-
-        public double UpperNormalisationBoundForDecibelSpectrograms { get; set; }
-
-        public int ScalingFactor_SpectralIndex(double scaleValue_secondsPerPixel)
-        {
-            int scaleFactor = (int)Math.Round(scaleValue_secondsPerPixel / IndexCalculationDuration);
-            return scaleFactor;
-        }
-
-        public int ScalingFactor_SpectralFrame(double scaleValue_secondsPerPixel)
-        {
-            int scaleFactor = (int)Math.Round(scaleValue_secondsPerPixel / SpectralFrameDuration);
-            return scaleFactor;
-        }
-
-        public TimeSpan TimePerTile(double scaleValue_secondsPerPixel)
-        {
-            return TimeSpan.FromSeconds(TileWidth * scaleValue_secondsPerPixel);
-        }
-
-        /// <summary>
-        /// returns fractional tile count generated by a recording at any one scale
-        /// </summary>
-        /// <param name="recordingDuration">
-        /// </param>
-        /// <param name="scaleValue_secondsPerPixel">
-        /// </param>
-        /// <returns>
-        /// The <see cref="double"/>.
-        /// </returns>
-        public double TileCount(TimeSpan recordingDuration, double scaleValue_secondsPerPixel)
-        {
-            TimeSpan tileDuration = TimeSpan.FromSeconds(TileWidth * scaleValue_secondsPerPixel);
-            double count = recordingDuration.TotalMilliseconds / tileDuration.TotalMilliseconds;
-            return count;
-        }
-
-        public TimeSpan TimePerSuperTile(double scaleValue_secondsPerPixel)
-        {
-            return TimeSpan.FromSeconds(TileWidth * scaleValue_secondsPerPixel * MaxTilesPerSuperTile);
-        }
-
-        public int SuperTileWidthDefault()
-        {
-            return TileWidth * MaxTilesPerSuperTile;
-        }
-
-        public double SuperTileCount(TimeSpan recordingDuration, double scaleValue_secondsPerPixel)
-        {
-            TimeSpan supertileDuration =
-                TimeSpan.FromSeconds(TileWidth * scaleValue_secondsPerPixel * MaxTilesPerSuperTile);
-            double count = recordingDuration.TotalMilliseconds / supertileDuration.TotalMilliseconds;
-            return count;
-        }
+        #endregion
     }
-
-    public enum SpectrogramType
-    {
-        Frame, 
-        Index
-    }
-
-    public class SuperTile : ISuperTile
-    {
-        public TimeSpan TimeOffset { get; set; }
-
-        public TimeSpan Scale { get; set; }
-
-        public int OffsetX
-        {
-            get
-            {
-                // TODO: this needs to be in units of the layer... need to normalise and multiply by scale
-                return (int)Math.Round(this.TimeOffset.TotalSeconds / this.Scale.TotalSeconds);
-            }
-        }
-
-        public int OffsetY
-        {
-            get
-            {
-                return 0;
-            }
-        }
-
-        public SpectrogramType SpectrogramType { get; set; }
-
-        public Image Image { get; set; }
-
-        double ISuperTile.Scale
-        {
-            get
-            {
-                return this.Scale.TotalSeconds;
-            }
-        }
-    }
-
-    // public class SuperTilingResults
-    // {
-    // //public string UnitsOfTime { get; set; } // should be "seconds"
-    // //public string ScaleUnits { get; set; }  // should be "SecondsPerPixel"
-    // //public double IndexCalculationDuration { get; set; } //: 0.2,
-    // //public double SpectralFrameDuration { get; set; } //"SpectralFrameDuration": 0.02,
-    // //public int TileWidth { get; set; }                  //"TileWidth": 300,
-    // public Image[] SupertilesFromSpectralIndices { get; set; }
-    // public Image[] SuperTilesFromFrameData { get; set; }
-    // public Image SuperTileScale1 { get; set; }
-    // public Image SuperTileScale2 { get; set; }
-    // public Image SuperTileScale5 { get; set; }
-    // }
 }

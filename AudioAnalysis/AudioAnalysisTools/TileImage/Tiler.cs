@@ -267,8 +267,8 @@ namespace AudioAnalysisTools.TileImage
                                 var sourceRect =
                                     new Rectangle(
                                         new Point(
-                                            imageComponent.Fragment.Location.X, 
-                                            imageComponent.Fragment.Location.Y), 
+                                            imageComponent.Fragment.Location.X - (superTileOffsetInLayerX - paddingX),
+                                            imageComponent.Fragment.Location.Y - (superTileOffsetInLayerY - paddingY)), 
                                         imageComponent.Fragment.Size);
 
                                 if (imageComponent.XBias == TileBias.Negative)
