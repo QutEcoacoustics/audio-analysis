@@ -154,12 +154,12 @@
                     //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
 
                     ///Automatic check
-                    OutputResults.ChangeCandidateFileName(inputDirectory);
-                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-testData.csv";
+                    //OutputResults.ChangeCandidateFileName(inputDirectory);
+                    var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
                     OutputResults.CSVMatchingAnalysisOfSongScope(inputDirectory, goundTruthFile);
-                    var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
-                    OutputResults.MatchingSummary(inputDirectory, outputFile);
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
+                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
 
 
 
