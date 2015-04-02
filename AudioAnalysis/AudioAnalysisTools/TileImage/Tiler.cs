@@ -17,6 +17,8 @@ namespace AudioAnalysisTools.TileImage
     {
         #region Fields
 
+        private const double Epsilon = 1.0 / (2.0 * TimeSpan.TicksPerSecond);
+
         private readonly SortedSet<Layer> calculatedLayers;
         private readonly DirectoryInfo outputDirectory;
         private readonly TilingProfile profile;
@@ -82,98 +84,23 @@ namespace AudioAnalysisTools.TileImage
         #region Public Methods and Operators
 
         /// <summary>
-        /// Returns a set of rectangles that can be used to compose a baseRectangle
-        /// </summary>
-        /// <param name="baseRectangle">
-        /// The base Rectangle.
-        /// </param>
-        /// <param name="requestedRectangle">
-        /// The requested Rectangle.
-        /// </param>
-        /// <returns>
-        /// The <see cref="ImageComponent[]"/>.
-        /// </returns>
-        public static ImageComponent[] GetImageParts(Rectangle baseRectangle, Rectangle requestedRectangle)
-        {
-            if (baseRectangle == requestedRectangle)
-            {
-                return new[] { new ImageComponent(requestedRectangle, 0, 0) };
-            }
-
-            var parts = new List<ImageComponent>(9);
-
-            if (!baseRectangle.IntersectsWith(requestedRectangle))
-            {
-                throw new NotSupportedException(
-                    "The premise of this function relies on the supplied rectangles intersecting");
-            }
-
-            Rectangle innerSegment = Rectangle.Intersect(baseRectangle, requestedRectangle);
-
-            // one by one just cut out rectangles
-            // 8 cases to check in the general case
-            // check left side
-            if (requestedRectangle.Left < baseRectangle.Left)
-            {
-                List<ImageComponent> rects = SplitAlongY(
-                    requestedRectangle.Left, 
-                    requestedRectangle.Top, 
-                    baseRectangle.X - requestedRectangle.Left, 
-                    requestedRectangle.Height, 
-                    innerSegment.Top, 
-                    innerSegment.Bottom, 
-                    TileBias.Negative);
-                parts.AddRange(rects);
-            }
-
-            // check middle (this check is always true since rects are required to overlap
-            if (requestedRectangle.Right > baseRectangle.Left && requestedRectangle.Left < baseRectangle.Right)
-            {
-                List<ImageComponent> rects = SplitAlongY(
-                    innerSegment.Left, 
-                    requestedRectangle.Top, 
-                    innerSegment.Width, 
-                    requestedRectangle.Height, 
-                    innerSegment.Top, 
-                    innerSegment.Bottom, 
-                    TileBias.Neutral);
-                parts.AddRange(rects);
-            }
-
-            // check right side
-            if (requestedRectangle.Right >= baseRectangle.Right)
-            {
-                List<ImageComponent> rects = SplitAlongY(
-                    baseRectangle.Right, 
-                    requestedRectangle.Top, 
-                    requestedRectangle.Right - baseRectangle.Right, 
-                    requestedRectangle.Height, 
-                    innerSegment.Top, 
-                    innerSegment.Bottom, 
-                    TileBias.Positive);
-                parts.AddRange(rects);
-            }
-
-            return parts.OrderBy(ic => ic.YBias).ThenBy(ic => ic.XBias).ToArray();
-        }
-
-        /// <summary>
         /// Split one large image (a super tile) into smaller tiles.
         ///     The super tile needs to be aligned within the layer first
         /// </summary>
         /// <param name="current">
+        /// The super tile currently being operated on.
         /// </param>
         /// <param name="next">
-        /// The next.
+        /// The next super tile that will be processed (positive x-dimension)
         /// </param>
-        public void Tile(ISuperTile current, ISuperTile next)
+        public virtual void Tile(ISuperTile current, ISuperTile next)
         {
             if (current == null)
             {
                 return;
             }
 
-            Layer layer = this.CalculatedLayers.First(x => x.XScale == current.Scale);
+            Layer layer = this.CalculatedLayers.First(x => Math.Abs(x.XScale - current.Scale) < Epsilon);
 
             int width = current.Image.Width, 
                 height = current.Image.Height, 
@@ -202,10 +129,10 @@ namespace AudioAnalysisTools.TileImage
             // drawable tiles in the current super tile
             // as a rule only draw the sections that are available in the current tile
             // and as much as we need from the next tile
-            double tilesInSuperTileX = Math.Abs(((double)current.Image.Width / this.profile.TileWidth) - 1.0) < 0.001
+            double tilesInSuperTileX = Math.Abs(((double)current.Image.Width / this.profile.TileWidth) - 1.0) < Epsilon
                                            ? (double)current.Image.Width / this.profile.TileWidth
                                            : Math.Ceiling((current.Image.Width / 2.0) / this.profile.TileWidth) * 2.0;
-            double tilesInSuperTileY = Math.Abs(((double)current.Image.Height / this.profile.TileHeight) - 1.0) < 0.001
+            double tilesInSuperTileY = Math.Abs(((double)current.Image.Height / this.profile.TileHeight) - 1.0) < Epsilon
                                            ? (double)current.Image.Height / this.profile.TileHeight
                                            : Math.Ceiling((current.Image.Height / 2.0) / this.profile.TileHeight) * 2.0;
 
@@ -317,14 +244,95 @@ namespace AudioAnalysisTools.TileImage
 
         public void TileMany(IEnumerable<ISuperTile> allSuperTiles)
         {
-            IEnumerable<ISuperTile[]> windowed = allSuperTiles.WindowedOrDefault(2);
-            foreach (var superTiles in windowed)
+
+            var scaleGroups = allSuperTiles.GroupBy(st => st.Scale).OrderByDescending(stg => stg.Key);
+            foreach (var scaleGroup in scaleGroups)
             {
-                this.Tile(superTiles[0], superTiles[1]);
+                IEnumerable<ISuperTile[]> windowed = scaleGroup.OrderBy(st => st.OffsetX).WindowedOrDefault(2);
+                foreach (var superTiles in windowed)
+                {
+                    this.Tile(superTiles[0], superTiles[1]);
+                }
             }
         }
 
         #endregion
+
+        /// <summary>
+        /// Returns a set of rectangles that can be used to compose a baseRectangle
+        /// </summary>
+        /// <param name="baseRectangle">
+        /// The base Rectangle.
+        /// </param>
+        /// <param name="requestedRectangle">
+        /// The requested Rectangle.
+        /// </param>
+        /// <returns>
+        /// The <see cref="ImageComponent[]"/>.
+        /// </returns>
+        internal static ImageComponent[] GetImageParts(Rectangle baseRectangle, Rectangle requestedRectangle)
+        {
+            if (baseRectangle == requestedRectangle)
+            {
+                return new[] { new ImageComponent(requestedRectangle, 0, 0) };
+            }
+
+            var parts = new List<ImageComponent>(9);
+
+            if (!baseRectangle.IntersectsWith(requestedRectangle))
+            {
+                throw new NotSupportedException(
+                    "The premise of this function relies on the supplied rectangles intersecting");
+            }
+
+            Rectangle innerSegment = Rectangle.Intersect(baseRectangle, requestedRectangle);
+
+            // one by one just cut out rectangles
+            // 8 cases to check in the general case
+            // check left side
+            if (requestedRectangle.Left < baseRectangle.Left)
+            {
+                List<ImageComponent> rects = SplitAlongY(
+                    requestedRectangle.Left, 
+                    requestedRectangle.Top, 
+                    baseRectangle.X - requestedRectangle.Left, 
+                    requestedRectangle.Height, 
+                    innerSegment.Top, 
+                    innerSegment.Bottom, 
+                    TileBias.Negative);
+                parts.AddRange(rects);
+            }
+
+            // check middle (this check is always true since rects are required to overlap
+            if (requestedRectangle.Right > baseRectangle.Left && requestedRectangle.Left < baseRectangle.Right)
+            {
+                List<ImageComponent> rects = SplitAlongY(
+                    innerSegment.Left, 
+                    requestedRectangle.Top, 
+                    innerSegment.Width, 
+                    requestedRectangle.Height, 
+                    innerSegment.Top, 
+                    innerSegment.Bottom, 
+                    TileBias.Neutral);
+                parts.AddRange(rects);
+            }
+
+            // check right side
+            if (requestedRectangle.Right >= baseRectangle.Right)
+            {
+                List<ImageComponent> rects = SplitAlongY(
+                    baseRectangle.Right, 
+                    requestedRectangle.Top, 
+                    requestedRectangle.Right - baseRectangle.Right, 
+                    requestedRectangle.Height, 
+                    innerSegment.Top, 
+                    innerSegment.Bottom, 
+                    TileBias.Positive);
+                parts.AddRange(rects);
+            }
+
+            return parts.OrderBy(ic => ic.YBias).ThenBy(ic => ic.XBias).ToArray();
+        }
 
         #region Methods
 
@@ -350,7 +358,7 @@ namespace AudioAnalysisTools.TileImage
         private static int PadIfNotRounded(double value)
         {
             double floored = Math.Floor(value);
-            return (int)(Math.Abs(floored - value) < 0.001 ? floored : floored + 2);
+            return (int)(Math.Abs(floored - value) < Epsilon ? floored : floored + 2);
         }
 
         private static List<ImageComponent> SplitAlongY(

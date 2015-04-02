@@ -138,16 +138,28 @@ namespace Acoustics.Test
         }
 
         [TestMethod]
+        public void TestWindowedFunctionSingleItem()
+        {
+            var input = new[] { 3};
+            
+            var windowed = input.Windowed(2);
+            Assert.AreEqual(0, windowed.Count());
+            ////windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+        [TestMethod]
         public void TestWindowedFunctionSize3()
         {
             var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
             int[][] expected =
                 {
-                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 }, new[] { 7, 8, 9 }, 
-                    new[] { 8, 9, 10 }
+                    new[] { 3, 4, 5 }, new[] { 4, 5, 6 }, new[] { 5, 6, 7 }, new[] { 6, 7, 8 },
+                    new[] { 7, 8, 9 }, new[] { 8, 9, 10 }
                 };
 
-            input.Windowed(3).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+            var windowed = input.Windowed(3);
+            Assert.AreEqual(expected.Length, windowed.Count());
+            windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
         }
 
 
@@ -167,6 +179,22 @@ namespace Acoustics.Test
         }
 
         [TestMethod]
+        public void TestWindowedOrDefaultFunctionSingleItem()
+        {
+            var input = new[] { 3 };
+            int[][] expected =
+                {
+                    new[] { int.MinValue, 3 },
+                    new[] { 3, int.MinValue }
+                };
+
+            var windowed = input.WindowedOrDefault(2, int.MinValue);
+            Assert.AreEqual(expected.Length, windowed.Count());
+            windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+
+        [TestMethod]
         public void TestWindowedOrDefaultFunctionSize3()
         {
             var input = new[] { 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -177,7 +205,26 @@ namespace Acoustics.Test
                     new[] { 8, 9, 10 }, new[] { 9, 10, 0 }, new[] { 10, 0, 0 }
                 };
 
-            input.WindowedOrDefault(3).ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+            var windowed = input.WindowedOrDefault(3);
+            Assert.AreEqual(expected.Length, windowed.Count());
+            windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
+        }
+
+        [TestMethod]
+        public void TestWindowedOrDefaultFunctionSize4()
+        {
+            var input = new[] { 3, 4, 5, 6};
+            int[][] expected =
+                {
+                    new[] { 0, 0, 0, 3 }, new[] { 0, 0, 3, 4 }, 
+                    new[] { 0, 3, 4, 5 }, new[] { 3, 4, 5, 6 }, 
+                    new[] { 4, 5, 6, 0 }, new[] { 5, 6, 0, 0 },
+                    new[] { 6, 0, 0, 0 }
+                };
+
+            var windowed = input.WindowedOrDefault(4);
+            Assert.AreEqual(expected.Length, windowed.Count());
+            windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
         }
     }
 }
