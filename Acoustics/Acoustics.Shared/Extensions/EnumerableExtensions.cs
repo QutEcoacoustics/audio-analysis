@@ -168,7 +168,7 @@ namespace System
         public static IEnumerable<T[]> WindowedOrDefault<T>(
             this IEnumerable<T> list,
             int windowSize,
-            T defaultValuue = default(T))
+            T defaultValue = default(T))
         {
             Contract.Requires(windowSize >= 0);
             Contract.Requires(list != null);
@@ -182,14 +182,16 @@ namespace System
 
             for (int a = 0; a < array.Length; a++)
             {
-                array[a] = defaultValuue;
+                array[a] = defaultValue;
             }
 
             int i = 0;
+            bool enumeratorEmpty = true;
             using (var e = list.GetEnumerator())
             {
                 while (e.MoveNext())
                 {
+                    enumeratorEmpty = false;
                     array[i] = e.Current;
                     i = (i + 1) % windowSize;
                     var output = new T[windowSize];
@@ -199,6 +201,28 @@ namespace System
                     }
 
                     yield return output;
+                }
+
+                if (!enumeratorEmpty)
+                {
+                    for (var w = 1; w < windowSize; w++)
+                    {
+                        var lastOutput = new T[windowSize];
+                        
+                        for (var ii = 0; ii < windowSize; ii++)
+                        {
+                            if (ii < (windowSize - w))
+                            {
+                                lastOutput[ii] = array[(ii + windowSize + w + i) % windowSize];
+                            }
+                            else
+                            {
+                                lastOutput[ii] = defaultValue;
+                            }
+                        }
+
+                        yield return lastOutput;
+                    }
                 }
             }
         }
