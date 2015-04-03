@@ -176,36 +176,36 @@ namespace Acoustics.Test.AudioAnalysisTools
             }
         }
 
-        private ISuperTile[] superTileTestCases =
+        private readonly ISuperTile[] superTileTestCases =
                 {
                     new SuperTile()
                         {
-                            Scale = TimeSpan.FromSeconds(60.0),
+                            Scale = TimeSpan.FromSeconds(24),
                             TimeOffset = TimeSpan.FromMinutes(0)
                         },
                     new SuperTile()
                         {
-                            Scale = TimeSpan.FromSeconds(60.0),
+                            Scale = TimeSpan.FromSeconds(24),
                             TimeOffset = TimeSpan.FromMinutes(1)
                         },
                     new SuperTile()
                         {
-                            Scale = TimeSpan.FromSeconds(30.0),
+                            Scale = TimeSpan.FromSeconds(12),
                             TimeOffset = TimeSpan.FromMinutes(16)
                         },
                     new SuperTile()
                         {
-                            Scale = TimeSpan.FromSeconds(30.0),
+                            Scale = TimeSpan.FromSeconds(12),
                             TimeOffset = TimeSpan.FromMinutes(15.5)
                         },
                     new SuperTile()
                         {
-                            Scale = TimeSpan.FromSeconds(30.0),
+                            Scale = TimeSpan.FromSeconds(12),
                             TimeOffset = TimeSpan.FromMinutes(15.0)
                         },
                     new SuperTile()
                         {
-                            Scale = TimeSpan.FromSeconds(120.0),
+                            Scale = TimeSpan.FromSeconds(60),
                             TimeOffset = TimeSpan.FromMinutes(0)
                         },
                     new SuperTile()
@@ -218,6 +218,8 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestMethod]
         public void TestTileManyCatchesRepeatedTilesA()
         {
+            this.tiler.WriteImages = false;
+
             this.tiler.TileMany(
                 this.superTileTestCases.Concat(
                     new[]
@@ -228,14 +230,13 @@ namespace Acoustics.Test.AudioAnalysisTools
 
 
         [TestMethod]
-        public void TestTileManyCatchesRepeatedTilesB()
+        public void TestTileManyCatchesRepeatedTilesKeepsStateAfterMultipleCalls()
         {
-            this.tiler.TileMany(
-                this.superTileTestCases.Concat(
-                    new[]
-                        {
-                            new SuperTile() { Scale = TimeSpan.FromSeconds(30.0), TimeOffset = TimeSpan.FromMinutes(15.5) } 
-                        }));
+            this.tiler.WriteImages = false;
+
+            this.tiler.TileMany(this.superTileTestCases);
+
+            this.tiler.Tile(new SuperTile { Scale = TimeSpan.FromSeconds(30.0), TimeOffset = TimeSpan.FromMinutes(15.5) }, null);
         }
 
         [TestMethod]

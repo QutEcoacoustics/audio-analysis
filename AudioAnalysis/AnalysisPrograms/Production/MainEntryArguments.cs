@@ -28,6 +28,8 @@ namespace AnalysisPrograms.Production
 
     public partial class MainEntryArguments
     {
+        private LogVerbosity logLevel;
+
         public MainEntryArguments()
         {
             this.DebugOption = DebugOptions.Prompt;
@@ -79,6 +81,33 @@ namespace AnalysisPrograms.Production
                 }
             }
         }
+
+        [DefaultValue(LogVerbosity.Info)]
+        public LogVerbosity LogLevel
+        {
+            get
+            {
+                return this.Verbose ? LogVerbosity.Debug : this.logLevel;
+            }
+            set
+            {
+                this.Verbose = value == LogVerbosity.Debug;
+                
+                this.logLevel = value;
+            }
+        }
+
+        public bool Verbose { get; set; }
+    }
+
+    public enum LogVerbosity
+    {
+        None = 0,
+        Error = 1,
+        Warn = 2,
+        Info = 3,
+        Debug = 4,
+        All = 5
     }
 
     public class HelpArguments
