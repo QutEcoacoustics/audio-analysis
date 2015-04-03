@@ -260,7 +260,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 herzInterval);
 
             // create the base image
-            Image image = new Bitmap(imageWidth, LDSpectrogram.Height);
+            Image image = new Bitmap(LDSpectrogram.Width, LDSpectrogram.Height);
             Graphics g1 = Graphics.FromImage(image);
             g1.Clear(Color.DarkGray);
 
@@ -342,6 +342,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Log.Info("START DRAWING ZOOMED-OUT INDEX SPECTROGRAMS");
             foreach (double scale in imageScales)
             {
+                Log.Info("Starting scale: " + scale);
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
                 SuperTile[] superTiles = DrawSuperTilesFromIndexSpectrograms(
                     ldsConfig, 
@@ -378,8 +379,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 else
                 {
                     // tile images as we go
-                    Log.Info("Writing index tiles for " + scale);
+                    Log.Debug("Writing index tiles for " + scale);
                     tiler.TileMany(superTiles);
+                    Log.Debug("Completed writing index tiles for " + scale);
                 }
             }
 
@@ -406,6 +408,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
             for (int minute = 0; minute < minuteCount; minute++)
             {
+                Log.Info("Starting minute: " + minute);
                 double[,] powIndexMatrix = powMatrix.GetDataBlock(
                     TimeSpan.FromMinutes(minute), 
                     TimeSpan.FromSeconds(segmentDurationInSeconds));
@@ -497,6 +500,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     spectra);
                 imageArray[t] = new SuperTile
                                     {
+                                        TimeOffset = startTime,
                                         Scale = imageScale, 
                                         SpectrogramType = SpectrogramType.Index, 
                                         Image = image
@@ -629,6 +633,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 str[scale] = new SuperTile
                                  {
+                                     TimeOffset = startTimeOfData,
                                      Scale = imageScale, 
                                      SpectrogramType = SpectrogramType.Frame, 
                                      Image = spectrogramImage

@@ -42,6 +42,8 @@ namespace AnalysisPrograms
             var debugOptions = Arguments.Args.DebugOption;
             AttachDebugger(ref debugOptions);
 
+            ModifyVerbosity(Arguments.Args);
+
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             Execute(Arguments);
 

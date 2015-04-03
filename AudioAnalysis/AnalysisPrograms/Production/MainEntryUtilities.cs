@@ -22,6 +22,11 @@ namespace AnalysisPrograms
     using System.Text;
 
     using Acoustics.Shared;
+
+    using log4net.Appender;
+    using log4net.Core;
+    using log4net.Filter;
+    using log4net.Repository.Hierarchy;
 #if DEBUG
     using Acoustics.Shared.Debugging;
 #endif
@@ -373,6 +378,61 @@ namespace AnalysisPrograms
                 Console.ReadLine();
             }
 #endif
+        }
+
+        private static void ModifyVerbosity(MainEntryArguments arguments)
+        {
+            Level modifiedLevel;
+            switch (arguments.LogLevel)
+            {
+                case LogVerbosity.None:
+                    modifiedLevel = Level.Off;
+                    break;
+                case LogVerbosity.Error:
+                    modifiedLevel = Level.Error;
+                    break;
+                case LogVerbosity.Warn:
+                    modifiedLevel = Level.Warn;
+                    break;
+                case LogVerbosity.Info:
+                    modifiedLevel = Level.Info;
+                    break;
+                case LogVerbosity.Debug:
+                    modifiedLevel = Level.Debug;
+                    break;
+                case LogVerbosity.All:
+                    modifiedLevel = Level.All;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            var repository = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
+            ////repository.Root.Level = modifiedLevel;
+            ////repository.Threshold = modifiedLevel;
+
+            foreach (var appender in repository.GetAppenders())
+            {
+                IFilter filter = ((AppenderSkeleton)appender).FilterHead;
+                while (filter.GetType() != typeof(LevelRangeFilter) && filter != null)
+                {
+                    filter = filter.Next;
+                }
+
+                // only modify filters with RangeFilters on them
+                if (filter == null)
+                {
+                    continue;
+                }
+                else
+                {
+                    ((LevelRangeFilter)filter).LevelMin = modifiedLevel;
+                }
+            }
+
+            repository.RaiseConfigurationChanged(EventArgs.Empty);
+            
+            Log.Debug("Log level changed to: " + arguments.LogLevel);
         }
     }
 }
