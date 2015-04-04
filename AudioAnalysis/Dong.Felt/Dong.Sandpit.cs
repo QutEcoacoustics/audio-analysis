@@ -158,14 +158,12 @@
                     //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
                     //OutputResults.CSVMatchingAnalysisOfSongScope(inputDirectory, goundTruthFile);
-                    OutputResults.SplitFiles(inputDirectory, inputDirectory);
+                    //OutputResults.SplitFiles(inputDirectory, inputDirectory);
                     //var rate = OutputResults.ClassificationStatistics(inputDirectory, 5);
-                    //var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
-                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
-
-                    /// Split one files into many subfiles based on file name
-                    
-
+                    var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
+                    OutputResults.SCMatchingSummary(inputDirectory, outputFile, 7
+                        );
+                 
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 
                     ///GaussianBlur
