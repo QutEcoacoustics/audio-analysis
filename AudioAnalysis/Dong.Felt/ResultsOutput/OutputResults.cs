@@ -134,6 +134,33 @@ namespace Dong.Felt.ResultsOutput
             }
         }
 
+        //For song scope
+        public static void SCMatchingSummary(DirectoryInfo inputDirectory, string outputFile, int n)
+        {
+            var finalOutputResult = new List<SongScopeCandidates>();
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var csvFileCount = csvFiles.Count();
+
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToSCCandidatesList(new FileInfo(csvFiles[i]));
+               
+                var subCandicatesCount = subCandicatesList.Count;
+                if (subCandicatesCount < n)
+                {
+                    n = subCandicatesCount;
+                }
+                for (var j = 0; j < n; j++)
+                {
+                    if (subCandicatesList[j].Score == 1)
+                    {
+                        finalOutputResult.Add(subCandicatesList[j]);                        
+                    }
+                }                
+            }
+            CSVResults.SCCandidateListToCSV(new FileInfo(outputFile), finalOutputResult);
+        }
+
         public static void CSVMatchingAnalysisOfSongScope(DirectoryInfo inputDirectory, string groundTruthFile)
         {
             var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
