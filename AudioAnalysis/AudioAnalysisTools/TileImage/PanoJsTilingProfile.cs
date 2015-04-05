@@ -50,7 +50,7 @@ namespace AudioAnalysisTools.TileImage
         public override string GetFileBaseName(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
             var coordinates = this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
-            return string.Format("{0}_{1:D3}_{2:D3}_{3:D3}", "panojstile", this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
+            return string.Format("{0}_{1:D5}_{2:D5}_{3:D5}", "panojstile", this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
         }
     }
 }
