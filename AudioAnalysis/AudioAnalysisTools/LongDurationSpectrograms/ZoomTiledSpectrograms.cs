@@ -441,9 +441,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 else
                 {
                     // finaly tile the output
-                    Log.Info("Begin tile production for minute: " + minute);
+                    Log.Debug("Begin tile production for minute: " + minute);
                     tiler.TileMany(superTilingResults);
-                    Log.Info("Begin tile production for minute: " + minute);
+                    Log.Debug("Begin tile production for minute: " + minute);
                 }
             }
 
@@ -576,6 +576,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             PadEndOfListOfFrames(frameList, expectedFrameCount);
+            TrimEndOfListOfFrames(frameList, expectedFrameCount);
 
             //// frame count will be one less than expected for the recording segment because of frame overlap
             //// Therefore pad the end of the list of frames with the last frame.
@@ -595,7 +596,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan startTime = analysisConfig.MinuteOffset; // default = zero minute of day i.e. midnight
             TimeSpan startTimeOfData = startTime + TimeSpan.FromMinutes(minute);
 
-            var str = new SuperTile[3];
+            var str = new SuperTile[imageScales.Length];
 
             // make the images
             for (int scale = 0; scale < imageScales.Length; scale++)
@@ -662,6 +663,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     frameList.Add(frame);
                 }
+            }
+        }
+
+        /// <summary>
+        /// THis method trims the end of a list of frames read from a csv file.
+        ///     Sometimes inaccuracies in cutting audio produced frame counts that are too long.
+        ///     Therefore too many columns are rendered. Simply remove the end frames and issue a warning.
+        /// TODO: a better solution would be to interpolate the extra frames... but too hard at the moment.
+        /// </summary>
+        /// <param name="frameList">
+        /// </param>
+        /// <param name="expectedFrameCount">
+        /// </param>
+        public static void TrimEndOfListOfFrames(List<double[]> frameList, int expectedFrameCount)
+        {
+            int frameDiscrepancy = frameList.Count - expectedFrameCount;
+            if (frameDiscrepancy > 0)
+            {
+                frameList.RemoveRange(frameList.Count - frameDiscrepancy, frameDiscrepancy);
+                Log.Warn(frameDiscrepancy + " frames were timmed from a frame spectrogram");
             }
         }
 
