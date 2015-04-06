@@ -37,12 +37,12 @@ namespace AudioAnalysisTools.TileImage
             }
         }
 
-        public virtual int GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
+        public virtual object GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
         {
             return selectedLayer.ScaleIndex;
         }
 
-        public virtual Point GetTileIndexes(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
+        public virtual object GetTileIndexes(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
             return tileOffsets;
         }
@@ -50,8 +50,8 @@ namespace AudioAnalysisTools.TileImage
         public virtual string GetFileBaseName(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
 
-            var coordinates = this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
-            return string.Format("{0}-{1}_{2}_{3}", "tile", this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
+            var coordinates = (Point)this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
+            return string.Format("{0}-{1}_{2}_{3}", "tile", (double)this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
         }
     }
 }

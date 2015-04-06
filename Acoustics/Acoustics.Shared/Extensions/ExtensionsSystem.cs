@@ -281,22 +281,6 @@ namespace System
         }
 
 #if ! SILVERLIGHT
-        /// <summary>
-        /// Gets Date Format for Readings.
-        /// </summary>
-        public static string ReadingsDateFormat
-        {
-            get
-            {
-                var retVal = System.Configuration.ConfigurationManager.AppSettings["ReadingsDateFormat"];
-                if (string.IsNullOrEmpty(retVal))
-                {
-                    retVal = "yyyyMMddTHHmmss";
-                }
-
-                return retVal;
-            }
-        }
 
         /// <summary>
         /// Gets ExecutingDirectory.

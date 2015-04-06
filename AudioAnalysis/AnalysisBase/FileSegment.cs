@@ -19,6 +19,8 @@ namespace AnalysisBase
     using System.Text;
     using System.Text.RegularExpressions;
 
+    using Acoustics.Shared;
+
     /// <summary>
     /// Represents a segment file. Also stores the original file. 
     /// Be aware that the original file may also be a segment file.
@@ -121,7 +123,7 @@ namespace AnalysisBase
                     DateTime dt;
                     if (DateTime.TryParseExact(
                         match.Groups[1].Value,
-                        "yyyyMMdd_HHmmss",
+                        AppConfigHelper.StandardDateFormatSm2,
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.AssumeLocal,
                         out dt))

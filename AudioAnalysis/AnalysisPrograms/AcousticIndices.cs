@@ -13,6 +13,7 @@ namespace AnalysisPrograms
     using System.Collections;
     using System.Collections.Generic;
     using System.Data;
+    using System.Diagnostics;
     using System.Diagnostics.Contracts;
     using System.Drawing;
     using System.Drawing.Imaging;
@@ -36,6 +37,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
 
     using log4net;
@@ -43,6 +45,8 @@ namespace AnalysisPrograms
     using PowerArgs;
 
     using TowseyLibrary;
+
+    using SuperTile = AudioAnalysisTools.TileImage.SuperTile;
 
     public class Acoustic : IAnalyser2
     {
@@ -371,6 +375,7 @@ namespace AnalysisPrograms
             var sourceAudio = inputFileSegment.OriginalFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
             var configFile = settings.ConfigFile;
+            var tileOutput = settings.Configuration[AnalysisKeys.TileImageOutput];
 
             int frameWidth = 512;
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
@@ -414,7 +419,7 @@ namespace AnalysisPrograms
             // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
             if (settings.IndexCalculationDuration.Value != TimeSpan.FromSeconds(60.0))
             {
-                Log.Warn("False color spectrograms were not rendered!");
+                Log.Warn("False color spectrograms were not rendered (or !");
             }
             else
             {
@@ -426,12 +431,44 @@ namespace AnalysisPrograms
                 // this method also AUTOMATICALLY SORTS because it uses array indexing
                 var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-                LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(resultsDirectory, resultsDirectory,
-                                                                     configFileDestination, indicesPropertiesConfig, dictionaryOfSpectra);
+                Image[] images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                    resultsDirectory,
+                    resultsDirectory,
+                    configFileDestination,
+                    indicesPropertiesConfig,
+                    dictionaryOfSpectra,
+                    tileOutput);
+
+                if (tileOutput)
+                {
+                    Debug.Assert(images.Length == 2);
+
+                    Log.Debug("Tiling output");
+                    TileOutput(resultsDirectory, sourceAudio.Name, , images[0]);
+                }
             }
         }
 
+        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, DateTimeOffset recordingStartDate, Image image)
+        {
+            const int TileHeight = 256;
+            const int TileWidth = 60;
+            
+            // seconds per pixel
+            const double Scale = 60.0;
 
+            if (image.Height != TileHeight)
+            {
+                throw new InvalidOperationException("Expecting images exactly the same height as the defined tile height");
+            }
+
+            var tilingProfile = new AbsoluteDateTilingProfile(fileStem, recordingStartDate, TileHeight, TileWidth);
+            var tiler = new Tiler(outputDirectory, tilingProfile, Scale, image.Width, 1.0, image.Height);
+
+            var tile = new SuperTile() { Image = image, OffsetX = 0, OffsetY = 0, Scale = Scale };
+
+            tiler.Tile(tile, null);
+        }
 
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
