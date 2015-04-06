@@ -51,6 +51,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// </summary>
     public class LDSpectrogramRGB
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public string FileName { get; set; }
 
         private static readonly ILog Logger =
@@ -656,15 +658,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.spectrogramMatrices[key] = matrix;
         }
 
-        public Image DrawFalseColourSpectrogram(string colorMODE)
+        public Image DrawFalseColourSpectrogram(string colorMODE, bool withChrome = true)
         {
-            Image bmp = this.DrawFalseColourSpectrogram(colorMODE, this.ColorMap);
+            Image bmp = this.DrawFalseColourSpectrogram(colorMODE, this.ColorMap, withChrome);
             return bmp;
         }
 
-        public Image DrawFalseColourSpectrogram(string colorMODE, string colorMap)
+        public Image DrawFalseColourSpectrogram(string colorMode, string colorMap, bool withChrome = true)
         {
-            if (! this.ContainsMatrixForKeys(colorMap))
+            if (!this.ContainsMatrixForKeys(colorMap))
             {
                 return null;
             }
@@ -675,9 +677,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var redMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[0]);
             var grnMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[1]);
             var bluMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[2]);
-            bool doReverseColour = colorMODE.StartsWith("POS");
+            bool doReverseColour = colorMode.StartsWith("POS");
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
+
+            if (!withChrome)
+            {
+                return bmp;
+            }
+
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             int herzInterval = 1000;
             int nyquist = this.SampleRate / 2;
@@ -1318,31 +1326,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return (Image)colorScale;
         }
 
-
-        //========================================================================================================================================================
-        //========= DrawFalseColourSpectrograms() IS THE MAJOR METHOD FOR CREATING LD SPECTROGRAMS ===============================================================
-        //========= IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. ===============================================================
-        //========================================================================================================================================================
-
-
-
         /// <summary>
         /// This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS 
         ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
-        ///  
         /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
         /// </summary>
         /// <param name="longDurationSpectrogramConfig">
         /// </param>
+        /// <param name="spectrogramConfigPath"></param>
         /// <param name="indicesConfigPath">
         /// The indices Config Path.
         /// </param>
         /// <param name="indexSpgrams">
         /// Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
-        public static void DrawSpectrogramsFromSpectralIndices(DirectoryInfo ipDir, DirectoryInfo opDir, 
-                                                               FileInfo spectrogramConfigPath, FileInfo indicesConfigPath, 
-                                                               Dictionary<string, double[,]> indexSpgrams = null)
+        /// <param name="returnChromelessImages">If true, this method generates and returns separate chromeless images.</param>
+        public static Image[] DrawSpectrogramsFromSpectralIndices(
+            DirectoryInfo ipDir,
+            DirectoryInfo opDir,
+            FileInfo spectrogramConfigPath,
+            FileInfo indicesConfigPath,
+            Dictionary<string, double[,]> indexSpgrams = null,
+            bool returnChromelessImages = false)
         {
             LdSpectrogramConfig config = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
 
@@ -1382,51 +1387,45 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
-                LoggedConsole.WriteLine("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
-                return;
+                Log.Error("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                throw new InvalidOperationException("Cannot find spectrogram matrix files");
             }
 
             cs1.DrawGreyScaleSpectrograms(opDir, fileStem);
 
-            cs1.CalculateStatisticsForAllIndices();
-            Json.Serialise(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.indexStats);
-
-
+            WriteStatisticsForLdSpectrogram(cs1, opDir, fileStem);
+            
             cs1.DrawIndexDistributionsAndSave(Path.Combine(opDir.FullName, fileStem + ".IndexDistributions.png"));
 
-            string colorMap = colorMap1;
-            Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+            // create a chromeless false color image for tiling
+            Image image1NoChrome = null;
+            if (returnChromelessImages)
+            {
+                image1NoChrome = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap1);
+            }
 
-            TimeSpan minuteOffset = config.MinuteOffset;   // default = zero minute of day i.e. midnight
-            int nyquist = cs1.SampleRate / 2;
-            int herzInterval = 1000;
-            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-            image1.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
+            // then pass that image into chromer
+            Image image1 = CreateSpectrogramFromSpectralIndices(cs1, colorMap1, config.MinuteOffset, fileStem, image1NoChrome, opDir);
 
-            colorMap = colorMap2;
-            Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-            title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-            image2.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap + ".png"));
+            // create a chromeless false color image for tiling
+            Image image2NoChrome = null;
+            if (returnChromelessImages)
+            {
+                image2NoChrome = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap1);
+            }
+
+            // then pass that image into chromer
+            Image image2 = CreateSpectrogramFromSpectralIndices(cs1, colorMap2, config.MinuteOffset, fileStem, image2NoChrome, opDir);
 
             // read high amplitude and clipping info into an image
-            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + ".csv");
             string indicesFile = Path.Combine(ipDir.FullName, fileStem + ".Indices.csv");
-            //string indicesFile = Path.Combine(configuration.InputDirectoryInfo.FullName, fileStem + "_" + configuration.AnalysisType + ".csv");
-
             Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
-            if (null != imageX) 
+            if (imageX != null)
+            {
                 imageX.Save(Path.Combine(opDir.FullName, fileStem + ".ClipHiAmpl.png"));
+            }
 
-            var imageList = new List<Image>();
-            imageList.Add(image1);
-            imageList.Add(imageX);
-            imageList.Add(image2);
-            Image image3 = ImageTools.CombineImagesVertically(imageList);
-            image3.Save(Path.Combine(opDir.FullName, fileStem + ".2MAPS.png"));
+            CreateTwoMapsImage(opDir, fileStem, image1, imageX, image2);
 
             Image ribbon;
             // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
@@ -1440,6 +1439,48 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
             ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
+
+            return new[] { image1NoChrome, image2NoChrome };
+        }
+
+        public static void WriteStatisticsForLdSpectrogram(LDSpectrogramRGB cs1, DirectoryInfo outputDirectory, string fileStem)
+        {
+            cs1.CalculateStatisticsForAllIndices();
+            Json.Serialise(outputDirectory.CombineFile(fileStem + ".IndexStatistics.json"), cs1.indexStats);
+        }
+
+        private static void PrepareDataForSpectralIndicesSpectrograms()
+        {
+            
+        }
+
+        private static Image CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, TimeSpan minuteOffset, string fileStem, Image imageNoChrome, DirectoryInfo outputDirectory)
+        {
+            const int HertzInterval = 1000;
+            int nyquist = cs1.SampleRate / 2;
+
+            Image image;
+            if (imageNoChrome != null)
+            {
+                image = (Image)imageNoChrome.Clone();
+            }
+            else
+            {
+                image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            }
+
+            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
+            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
+            image.Save(outputDirectory.CombineFile(fileStem + "." + colorMap + ".png").FullName);
+            return image;
+        }
+
+        private static void CreateTwoMapsImage(DirectoryInfo outputDirectory, string fileStem, Image image1, Image imageX, Image image2)
+        {
+            var imageList = new[] { image1, imageX, image2 };
+            Image image3 = ImageTools.CombineImagesVertically(imageList);
+            image3.Save(outputDirectory.CombineFile(fileStem + ".2MAPS.png").FullName);
         }
     }
 }

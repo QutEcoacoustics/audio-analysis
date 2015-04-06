@@ -70,6 +70,25 @@ namespace AudioAnalysisTools.TileImage
             this.WriteImages = true;
         }
 
+        public Tiler(
+            DirectoryInfo outputDirectory,
+            TilingProfile profile,
+            double xUnitScale,
+            int unitWidth,
+            double yUnitScale,
+            int unitHeight)
+            : this(
+                outputDirectory,
+                profile,
+                new SortedSet<double>() { xUnitScale },
+                xUnitScale,
+                unitWidth,
+                new SortedSet<double>() { yUnitScale },
+                yUnitScale,
+                unitHeight)
+        {
+        }
+
         #endregion
 
         #region Public Properties

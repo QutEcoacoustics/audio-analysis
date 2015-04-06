@@ -37,20 +37,20 @@ namespace AudioAnalysisTools.TileImage
             }
         }
 
-        public override int GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
+        public override object GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
         {
             return calculatedLayers.Count - selectedLayer.ScaleIndex - 1;
         }
 
-        public override Point GetTileIndexes(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
+        public override object GetTileIndexes(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
             return new Point(tileOffsets.X / this.TileWidth, tileOffsets.Y / this.TileHeight);
         }
 
         public override string GetFileBaseName(SortedSet<Layer> calculatedLayers, Layer selectedLayer, Point tileOffsets)
         {
-            var coordinates = this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
-            return string.Format("{0}_{1:D5}_{2:D5}_{3:D5}", "panojstile", this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
+            var coordinates = (Point)this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
+            return string.Format("{0}_{1:D5}_{2:D5}_{3:D5}", "panojstile", (int)this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
         }
     }
 }

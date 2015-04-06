@@ -31,6 +31,60 @@ namespace Acoustics.Shared
             }
         }
 
+        public const string StandardDateFormatUtc = "yyyyMMdd_HHmmssZ";
+
+        public static string FileDateFormatUtc
+        {
+            get
+            {
+                var dateFormat = GetString("StandardFileDateFormatUtc");
+                if (dateFormat.IsNotWhitespace())
+                {
+                    return dateFormat;
+                }
+                else
+                {
+                    return StandardDateFormatUtc;
+                }
+            }
+        }
+
+        public const string StandardDateFormat = "yyyyMMdd_HHmmsszzz";
+
+        public static string FileDateFormat
+        {
+            get
+            {
+                var dateFormat = GetString("StandardFileDateFormat");
+                if (dateFormat.IsNotWhitespace())
+                {
+                    return dateFormat;
+                }
+                else
+                {
+                    return StandardDateFormat;
+                }
+            }
+        }
+
+        public const string StandardDateFormatSm2 = "yyyyMMdd_HHmmss";
+
+        public static string FileDateFormatSm2
+        {
+            get
+            {
+                var dateFormat = GetString("StandardFileDateFormatSm2");
+                if (dateFormat.IsNotWhitespace())
+                {
+                    return dateFormat;
+                }
+                else
+                {
+                    return StandardDateFormatSm2;
+                }
+            }
+        }
+
         /// <summary>
         /// Gets FfmpegExe.
         /// </summary>
@@ -307,14 +361,6 @@ namespace Acoustics.Shared
                 var appBasePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
                 var hostingEnvironmentRoot = HostingEnvironment.MapPath("/");
                 return hostingEnvironmentRoot;
-            }
-        }
-
-        public static IEnumerable<DirectoryInfo> SuggestionAnalysisCacheDirectoy
-        {
-            get
-            {
-                return GetDirs(WebsiteBasePath, "SuggestionAnalysisCacheDirectoy", true, ",");
             }
         }
 

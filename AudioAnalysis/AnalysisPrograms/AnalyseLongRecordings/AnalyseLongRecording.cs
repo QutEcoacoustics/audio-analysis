@@ -89,10 +89,9 @@ Output  to  directory: {1}
             bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
             bool saveSonogramsImages      = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
-            
-            // There's no reason for this to be here
-            ////bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
+            bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
+
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
             FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
 
@@ -112,6 +111,23 @@ Output  to  directory: {1}
             else
             {
                 Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
+            }
+
+            // if tiling output we need to be able to parse the date from the file name
+            Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
+            if (tileOutput)
+            {
+                DateTimeOffset parsedDate;
+                if (FileRenamer.FileNameContainsDateTime(sourceAudio.Name, out parsedDate))
+                {
+                    Log.Debug("Parsed file start date as " + parsedDate.ToString("O"));
+                    // TODO: ANTHONGT continue
+                    asdfgvbhnhj
+                }
+                else
+                {
+                    throw new InvalidOperationException("When TileImageOutput option is set, the filename of the source audio file must contain a valid date. Date was not detected.");
+                }
             }
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
