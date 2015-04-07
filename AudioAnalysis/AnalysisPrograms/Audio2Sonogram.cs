@@ -426,6 +426,11 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
+        public void BeforeAnalyse(AnalysisSettings analysisSettings)
+        {
+            // noop
+        }
+
         public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;

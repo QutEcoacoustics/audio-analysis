@@ -40,6 +40,13 @@ namespace AnalysisBase
         AnalysisSettings DefaultSettings { get; }
 
         /// <summary>
+        /// A hook to modify analysis settings before an analysis is run.
+        /// Ideally run once (whereas Analyze is run N times).
+        /// </summary>
+        /// <param name="analysisSettings">The analysis Settings.</param>
+        void BeforeAnalyse(AnalysisSettings analysisSettings);
+
+        /// <summary>
         /// Run analysis using the given analysis settings.
         /// </summary>
         /// <param name="analysisSettings">

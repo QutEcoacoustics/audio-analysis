@@ -253,7 +253,12 @@ namespace AnalysisPrograms
             return;
         }
 
-
+        public void BeforeAnalyse(AnalysisSettings analysisSettings)
+        {
+            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(analysisSettings.Configuration, analysisSettings.ConfigFile);
+            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+            SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+        }
 
         public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
         {
@@ -267,6 +272,9 @@ namespace AnalysisPrograms
             double recordingDuration = recording.Duration().TotalSeconds;
             TimeSpan ts = (TimeSpan)analysisSettings.IndexCalculationDuration;
             double subsegmentDuration = ts.TotalSeconds;
+            the following line fails when imperfect recordings are added
+                e.g. 59.9510204 ForeignKeyConstraint ICD=60.0
+                    this should probs be a Ceiling, michael, thoughts?
             int subsegmentCount = (int)Math.Floor(recordingDuration / subsegmentDuration);
 
             analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
@@ -373,7 +381,7 @@ namespace AnalysisPrograms
             var sourceAudio = inputFileSegment.OriginalFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
             var configFile = settings.ConfigFile;
-            var tileOutput = settings.Configuration[AnalysisKeys.TileImageOutput];
+            bool tileOutput = (bool?)settings.Configuration[AnalysisKeys.TileImageOutput] ?? false;
 
             int frameWidth = 512;
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
@@ -434,7 +442,7 @@ namespace AnalysisPrograms
                     resultsDirectory,
                     configFileDestination,
                     indicesPropertiesConfig,
-                    dictionaryOfSpectra,
+                    dictionaryOfSpectra, 
                     tileOutput);
 
                 if (tileOutput)
