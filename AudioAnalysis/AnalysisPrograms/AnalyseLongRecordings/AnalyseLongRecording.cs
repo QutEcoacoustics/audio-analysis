@@ -117,14 +117,7 @@ Output  to  directory: {1}
             Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
             if (tileOutput)
             {
-                DateTimeOffset parsedDate;
-                if (FileRenamer.FileNameContainsDateTime(sourceAudio.Name, out parsedDate))
-                {
-                    Log.Debug("Parsed file start date as " + parsedDate.ToString("O"));
-                    // TODO: ANTHONGT continue
-                    asdfgvbhnhj
-                }
-                else
+                if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
                 {
                     throw new InvalidOperationException("When TileImageOutput option is set, the filename of the source audio file must contain a valid date. Date was not detected.");
                 }
@@ -140,7 +133,8 @@ Output  to  directory: {1}
             };
 
             // 4. get the segment of audio to be analysed
-            var fileSegment = new FileSegment { OriginalFile = sourceAudio };
+            // if tiling output, specify that FileSegment needs to be able to read the date
+            var fileSegment = new FileSegment(sourceAudio, tileOutput); 
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {

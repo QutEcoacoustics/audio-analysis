@@ -106,7 +106,7 @@
         /// </returns>
         public AnalysisResult2[] Run(FileInfo file, IAnalyser2 analysis, AnalysisSettings settings)
         {
-            return this.Run(new List<FileSegment>() { new FileSegment() {OriginalFile = file} }, analysis, settings);
+            return this.Run(new List<FileSegment>() { new FileSegment(file) }, analysis, settings);
         }
 
         /// <summary>

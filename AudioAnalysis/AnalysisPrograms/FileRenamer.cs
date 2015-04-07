@@ -113,24 +113,6 @@
             Log.Info("Finished.");
         }
 
-        public static bool FileNameContainsDateTime(string fileName)
-        {
-            DateTimeOffset fileDate;
-            return
-                IsDateTimeBasic(fileName, out fileDate) ||
-                IsDateTimeSimple(fileName, out fileDate) ||
-                IsDateTimeWithOffset(fileName, out fileDate) ||
-                IsDateTimeWithSuffix(fileName, out fileDate);
-        }
-
-        public static bool FileNameContainsDateTime(string fileName, out DateTimeOffset parsedDate)
-        {
-            return
-                IsDateTimeBasic(fileName, out parsedDate) ||
-                IsDateTimeSimple(fileName, out parsedDate) ||
-                IsDateTimeWithOffset(fileName, out parsedDate) ||
-                IsDateTimeWithSuffix(fileName, out parsedDate);
-        }
 
         /// <summary>
         /// Determine new files names and rename if not a dry run.
@@ -154,7 +136,7 @@
 
                     var fileName = item1.Name;
 
-                    var isDateTimeInFileName = FileNameContainsDateTime(fileName);
+                    var isDateTimeInFileName = FileDateHelpers.FileNameContainsDateTime(fileName);
 
                     if (isDateTimeInFileName)
                     {
@@ -200,102 +182,13 @@
             ////var modifiedRecordingStart = mediaFile.RecordingStart.Date.AddSeconds(roundedTotalSeconds);
 
             var dateWithOffset = new DateTimeOffset(recordingStart, timezone);
-            var dateTime = recordingStart.ToString("yyyyMMdd_HHmmss") + timezone;
+            var dateTime = dateWithOffset.ToUniversalTime().ToString(AppConfigHelper.StandardDateFormatUtc);
             var ext = fileName.Substring(fileName.LastIndexOf('.') + 1).ToLowerInvariant();
 
             var prefix = fileName.Substring(0, fileName.LastIndexOf('.'));
             var result = string.Format("{0}_{1}.{2}", prefix, dateTime, ext);
 
             return result;
-        }
-
-        private static bool IsDateTimeBasic(string fileName, out DateTimeOffset fileDate)
-        {
-            // valid: Prefix_YYYYMMDD_hhmmss.wav
-            const string Pattern = @".*_(\d{8}_\d{6}Z?)\..+";
-            var match = Regex.Match(fileName, Pattern);
-
-            if (match.Success)
-            {
-                fileDate = DateTimeOffset.ParseExact(
-                    match.Groups[1].Value,
-                    AppConfigHelper.StandardDateFormatSm2,
-                    CultureInfo.InvariantCulture);
-
-                // assume is UTC
-                Debug.Assert(fileDate.Offset == TimeSpan.Zero, "file data should be UTC");
-            }
-            else
-            {
-                fileDate = new DateTimeOffset();
-            }
-
-            return match.Success;
-        }
-
-        private static bool IsDateTimeSimple(string fileName, out DateTimeOffset fileDate)
-        {
-            // valid: prefix_20140101_235959.mp3, a_00000000_000000.a, a_99999999_999999.dnsb48364JSFDSD, prefix_20140101_235959Z.mp3
-            const string Pattern = @"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$";
-            var match = Regex.Match(fileName, Pattern);
-
-            if (match.Success)
-            {
-                fileDate = DateTimeOffset.ParseExact(
-                    match.Groups[2].Value,
-                    AppConfigHelper.StandardDateFormatSm2,
-                    CultureInfo.InvariantCulture);
-
-                Debug.Assert(fileDate.Offset == TimeSpan.Zero, "file data should be UTC");
-            }
-            else
-            {
-                fileDate = new DateTimeOffset();
-            }
-
-            return match.Success;
-        }
-
-        private static bool IsDateTimeWithOffset(string fileName, out DateTimeOffset fileDate)
-        {
-            // valid: prefix_20140101_235959+10.mp3, a_00000000_000000+00.a, a_99999999_999999+9999.dnsb48364JSFDSD
-            const string Pattern = @"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})([+-]\d{2,4}))\.([a-zA-Z0-9]+)$";
-            var match = Regex.Match(fileName, Pattern);
-
-            if (match.Success)
-            {
-                fileDate = DateTimeOffset.ParseExact(
-                    match.Groups[2].Value,
-                    AppConfigHelper.StandardDateFormat,
-                    CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                fileDate = new DateTimeOffset();
-            }
-
-            return match.Success;
-        }
-
-        private static bool IsDateTimeWithSuffix(string fileName, out DateTimeOffset fileDate)
-        {
-            // valid: SERF_20130314_000021_000.wav, a_20130314_000021_a.a, a_99999999_999999_a.dnsb48364JSFDSD
-            const string Pattern = @"(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2}Z?))_(.*?)\.([a-zA-Z0-9]+)$";
-            var match = Regex.Match(fileName, Pattern);
-
-            if (match.Success)
-            {
-                fileDate = DateTimeOffset.ParseExact(
-                    match.Groups[1].Value,
-                    AppConfigHelper.StandardDateFormatSm2,
-                    CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                fileDate = new DateTimeOffset();
-            }
-
-            return match.Success;
         }
     }
 }
