@@ -205,15 +205,6 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.SegmentTargetSampleRate + " used)");
             }
 
-
-            //var config = analysisSettings.Configuration;
-            //var indicesPropertiesConfig = FindIndicesConfig.Find(config, analysisSettings.ConfigFile);
-            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
-            AudioAnalysisTools.Indices.SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
-
-
-
-
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);

@@ -32,6 +32,10 @@ namespace AnalysisBase
             }
         }
 
+        public virtual void BeforeAnalyse(AnalysisSettings analysisSettings)
+        {
+            return; // noop
+        }
 
         public abstract AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
 

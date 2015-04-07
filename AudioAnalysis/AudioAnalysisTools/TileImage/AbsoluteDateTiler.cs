@@ -78,7 +78,7 @@ namespace AudioAnalysisTools.TileImage
             
             var zoomIndex = (double)this.GetZoomIndex(calculatedLayers, selectedLayer);
 
-            return string.Format("{0}_{1}_{2}_{3}", this.prefix, formattedDateTime, zoomIndex);
+            return string.Format("{0}_{1}_{2}", this.prefix, formattedDateTime, zoomIndex);
         }
     }
 }
