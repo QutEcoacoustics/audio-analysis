@@ -46,8 +46,6 @@ namespace AnalysisPrograms
 
     using TowseyLibrary;
 
-    using SuperTile = AudioAnalysisTools.TileImage.SuperTile;
-
     public class Acoustic : IAnalyser2
     {
         [CustomDetailedDescription]
@@ -444,7 +442,8 @@ namespace AnalysisPrograms
                     Debug.Assert(images.Length == 2);
 
                     Log.Debug("Tiling output");
-                    TileOutput(resultsDirectory, sourceAudio.Name, , images[0]);
+
+                    TileOutput(resultsDirectory, sourceAudio.Name, inputFileSegment.OriginalFileStartDate.Value , images[0]);
                 }
             }
         }
@@ -465,7 +464,7 @@ namespace AnalysisPrograms
             var tilingProfile = new AbsoluteDateTilingProfile(fileStem, recordingStartDate, TileHeight, TileWidth);
             var tiler = new Tiler(outputDirectory, tilingProfile, Scale, image.Width, 1.0, image.Height);
 
-            var tile = new SuperTile() { Image = image, OffsetX = 0, OffsetY = 0, Scale = Scale };
+            var tile = new DefaultSuperTile() { Image = image, OffsetX = 0, OffsetY = 0, Scale = Scale };
 
             tiler.Tile(tile, null);
         }

@@ -11,7 +11,7 @@ namespace AudioAnalysisTools.TileImage
 {
     using System.Drawing;
 
-    public class SuperTile : ISuperTile
+    public class DefaultSuperTile : ISuperTile
     {
         public double Scale { get; set; }
 

@@ -71,7 +71,7 @@ namespace Ecosounds.Test.AnalysisPrograms
             //settings.AnalysisRunMode = AnalysisMode.Efficient;
 
             var files = keyValueStore.GetValueAsFiles("Files", ",");
-            var results = coord.Run(files.Select(f => new FileSegment { OriginalFile = f }), matchingPlugin, settings);
+            var results = coord.Run(files.Select(f => new FileSegment(f)), matchingPlugin, settings);
 
 
         }
