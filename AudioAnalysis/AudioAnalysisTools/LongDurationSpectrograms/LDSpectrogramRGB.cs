@@ -1440,7 +1440,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
             ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
 
-            return new[] { image1NoChrome, image2NoChrome };
+            return returnChromelessImages ? new[] { image1NoChrome, image2NoChrome } : new Image[0];
         }
 
         public static void WriteStatisticsForLdSpectrogram(LDSpectrogramRGB cs1, DirectoryInfo outputDirectory, string fileStem)

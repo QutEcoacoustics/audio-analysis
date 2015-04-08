@@ -272,10 +272,8 @@ namespace AnalysisPrograms
             double recordingDuration = recording.Duration().TotalSeconds;
             TimeSpan ts = (TimeSpan)analysisSettings.IndexCalculationDuration;
             double subsegmentDuration = ts.TotalSeconds;
-            the following line fails when imperfect recordings are added
-                e.g. 59.9510204 ForeignKeyConstraint ICD=60.0
-                    this should probs be a Ceiling, michael, thoughts?
-            int subsegmentCount = (int)Math.Floor(recordingDuration / subsegmentDuration);
+            
+            int subsegmentCount = Math.Max((int)Math.Floor(recordingDuration / subsegmentDuration), 1);
 
             analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
             analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
