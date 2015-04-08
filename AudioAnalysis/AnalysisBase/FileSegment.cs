@@ -41,9 +41,9 @@ namespace AnalysisBase
 
         }
 
-        public FileSegment(FileInfo originalFile, bool fileDateRequried)
+        public FileSegment(FileInfo originalFile, bool fileDateRequired)
         {
-            this.fileDateRequired = fileDateRequried;
+            this.fileDateRequired = fileDateRequired;
             this.OriginalFile = originalFile;
             this.fileStartDate = this.AudioFileStart();
 
