@@ -19,7 +19,7 @@ namespace Acoustics.Shared
 
     public class FileDateHelpers
     {
-        private static  readonly DateVariants[] PossibleFormats = new[]
+        internal static readonly DateVariants[] PossibleFormats = new[]
                                                      {
                                                          // valid: Prefix_YYYYMMDD_hhmmss.wav, Prefix_YYYYMMDD_hhmmssZ.wav
                                                          new DateVariants(@".*_(\d{8}_\d{6}Z?)\..+", AppConfigHelper.StandardDateFormatSm2, false, 1), 
@@ -98,7 +98,7 @@ namespace Acoustics.Shared
             return Regex.IsMatch(filename, regex);
         }
 
-        private class DateVariants
+        internal class DateVariants
         {
             public DateVariants(string regex, string parseFormat, bool parseTimeZone, int parseGroup)
             {
@@ -116,6 +116,27 @@ namespace Acoustics.Shared
 
             public int ParseGroup { get; set; }
         }
+    }
 
+    public class InvalidFileDateException : Exception
+    {
+        private string options;
+
+        public InvalidFileDateException(string message)
+            : base(message)
+        {
+            this.options = "\n Valid formats include:  \n"
+                           + FileDateHelpers.PossibleFormats.Select(x => x.ParseFormat)
+                                 .Distinct()
+                                 .Aggregate(string.Empty, (s, x) => s += "\t - " + x + "\n");
+        }
+
+        public override string Message
+        {
+            get
+            {
+                return base.Message + this.options;
+            }
+        }
     }
 }

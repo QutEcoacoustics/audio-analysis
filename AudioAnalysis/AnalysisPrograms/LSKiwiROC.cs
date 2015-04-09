@@ -11,6 +11,8 @@ using Acoustics.Shared;
 
 namespace AnalysisPrograms
 {
+    using AnalysisPrograms.Production;
+
     using PowerArgs;
 
     public class LSKiwiROC

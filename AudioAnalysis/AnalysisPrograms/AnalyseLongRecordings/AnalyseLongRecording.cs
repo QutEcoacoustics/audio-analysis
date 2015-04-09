@@ -24,6 +24,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
+    using AnalysisPrograms.Production;
+
     using AnalysisRunner;
 
     using AudioAnalysisTools;
@@ -119,7 +121,7 @@ Output  to  directory: {1}
             {
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
                 {
-                    throw new InvalidOperationException("When TileImageOutput option is set, the filename of the source audio file must contain a valid date. Date was not detected.");
+                    throw new InvalidFileDateException("When TileImageOutput option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
             }
 

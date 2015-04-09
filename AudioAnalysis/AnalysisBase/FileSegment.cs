@@ -32,8 +32,9 @@ namespace AnalysisBase
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly DateTimeOffset? fileStartDate;
         private readonly bool fileDateRequired;
+        private DateTimeOffset? fileStartDate;
+        private bool triedToParseDate = false;
 
         public FileSegment(FileInfo originalFile)
             : this(originalFile, false)
@@ -45,11 +46,18 @@ namespace AnalysisBase
         {
             this.fileDateRequired = fileDateRequired;
             this.OriginalFile = originalFile;
-            this.fileStartDate = this.AudioFileStart();
+            
 
-            if (this.fileDateRequired && !this.fileStartDate.HasValue)
+            if (this.fileDateRequired)
             {
-                throw new InvalidOperationException("A file date is required but one has not been sucessfully parsed");
+                this.triedToParseDate = true;
+                this.fileStartDate = this.AudioFileStart();
+
+                if (!this.fileStartDate.HasValue)
+                {
+                    throw new InvalidFileDateException(
+                        "A file date is required but one has not been sucessfully parsed");
+                }
             }
         }
 
@@ -85,6 +93,12 @@ namespace AnalysisBase
         public DateTimeOffset? OriginalFileStartDate {
             get
             {
+                if (!this.fileStartDate.HasValue && !this.triedToParseDate)
+                {
+                    this.triedToParseDate = true;
+                    this.fileStartDate = this.AudioFileStart();
+                }
+
                 return this.fileStartDate;
             } 
         }

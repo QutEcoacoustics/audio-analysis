@@ -11,6 +11,8 @@ namespace AnalysisPrograms
 {
     using Acoustics.Shared.Extensions;
 
+    using AnalysisPrograms.Production;
+
     using PowerArgs;
 
     public class SpeciesAccumulationStats

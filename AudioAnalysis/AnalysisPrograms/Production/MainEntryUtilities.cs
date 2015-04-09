@@ -263,9 +263,16 @@ namespace AnalysisPrograms
             bool found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);            
             found = found && style.Handle;
 
-            // print usage, if exception is recognised
-            if (found && ex.GetType() != typeof(Exception))
+            // if found, print message only if usage printing disabled
+            if (found && !style.PrintUsage)
             {
+                // this branch prints the message but supresses the stack trace
+                LoggedConsole.WriteFatalLine("FATAL:\n\t", ex);
+            }
+            else if (found && ex.GetType() != typeof(Exception))
+            {
+                // print usage, if exception is recognised
+                // --
                 // attempt to retrieve action
                 string action = null;
                 if (Arguments != null)

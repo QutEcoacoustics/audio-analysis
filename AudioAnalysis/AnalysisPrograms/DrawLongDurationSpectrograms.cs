@@ -14,6 +14,8 @@ namespace AnalysisPrograms
     using System;
     using System.IO;
 
+    using AnalysisPrograms.Production;
+
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     using PowerArgs;
