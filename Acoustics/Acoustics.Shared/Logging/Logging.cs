@@ -92,6 +92,12 @@ namespace System
             Log.Error(str);
             Console.Error.WriteLine(str);
         }
+
+        public static void WriteFatalLine(string str, Exception exception)
+        {
+            Log.Fatal(str, exception);
+            Console.Error.WriteLine(str + exception.Message);
+        }
     }
 }
 

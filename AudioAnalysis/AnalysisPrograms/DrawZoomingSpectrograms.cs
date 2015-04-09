@@ -9,6 +9,8 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Reflection;
 
+    using AnalysisPrograms.Production;
+
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     using log4net;
