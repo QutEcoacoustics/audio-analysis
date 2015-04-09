@@ -1,4 +1,9 @@
 
+# verify this:
+# for the purpose of funcitons in this file
+# "events" data frame needs only to contain the column "min.id" and match (row for row) to the "clustered events" data frame. 
+# in other words, events data frame is only used to map clustered segments to minute ids
+
 Batch1 <- function () {
     # performs a batch with pre-defined versions
     #- 2010-10-17 NE     12      9      3

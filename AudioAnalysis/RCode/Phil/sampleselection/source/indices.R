@@ -23,20 +23,15 @@ RankMinutesFromIndices <- function () {
     
    which.indices <- c("H.spectral.", "H.spectralVar.", "clusterCount")
    weights <- c(0.5, 0.1, 0.4)
-   
    indices <- ReadIndices(which.indices)
    indices[,1:2] <- 1-indices[,1:2]  # entropy indices are negatively correlated with species richness
-   
    indices <- scale(indices)
-   
    scores <- t(crossprod(weights, t(indices)))
    
    # hack the minute ids
    # assume minutes of the indices start at midnight
    min.id <- 1:nrow(scores)
-   
    rank <- order(scores, decreasing = TRUE)
-    
    return(data.frame(min.id = min.id, rank = rank))
     
 }

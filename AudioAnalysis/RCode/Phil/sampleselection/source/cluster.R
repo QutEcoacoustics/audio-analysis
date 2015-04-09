@@ -20,7 +20,7 @@ ClusterEvents <- function (num.groups = 'auto',
     #     Will create a csv file which is the same as 
     #     events.csv but with a new 'groups' column
     
-    print('test')
+
     # choose heirachical or Kmeans
     # use config setting if available
     choice <- GetUserChoice(c('HA', 'Kmeans'), choosing.what = "clustering method", default = 1, allow.range = FALSE, config.setting = 'clustering.method')
@@ -65,8 +65,8 @@ ClusterEvents <- function (num.groups = 'auto',
 
 
 CreateEventGroups.kmeans <- function (events, clustering.results) {
-    # given a Kmeans clustering result, which is the result of kmeans for various numbers of clusters
-    # will product a dataframe of the groups for each number of clusters
+    # given a Kmeans clustering result, which is a list of results of kmeans for various numbers of clusters
+    # will produce a dataframe of the groups for each number of clusters
     
     groups.df <- matrix(NA, nrow = nrow(events), ncol = length(clustering.results))
     names <- rep(NA, length(clustering.results))
