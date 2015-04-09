@@ -127,11 +127,21 @@ namespace Dong.Felt
             Csv.WriteToCsv(file, candidates);
         }
 
+        public static void SCCandidateListToCSV(FileInfo file, List<SongScopeCandidates> candidates)
+        {
+            Csv.WriteToCsv(file, candidates);
+        }
+
         public static List<Candidates> CsvToCandidatesList(FileInfo candidatesCsvfile)
         {
             return Csv.ReadFromCsv<Candidates>(candidatesCsvfile).ToList();
         }
-      
+
+        public static List<SongScopeCandidates> CsvToSCCandidatesList(FileInfo candidatesCsvfile)
+        {
+            return Csv.ReadFromCsv<SongScopeCandidates>(candidatesCsvfile).ToList();
+        }
+
         public static List<Tuple<double, double, double>> CSVToSimilarityDistanceSocre(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
