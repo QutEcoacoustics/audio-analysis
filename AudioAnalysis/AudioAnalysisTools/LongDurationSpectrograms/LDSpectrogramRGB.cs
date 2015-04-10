@@ -1341,9 +1341,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
         /// <param name="returnChromelessImages">If true, this method generates and returns separate chromeless images.</param>
-        public static Image[] DrawSpectrogramsFromSpectralIndices(
+        public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo ipDir,
-            DirectoryInfo opDir,
+            DirectoryInfo outputDirectory,
             FileInfo spectrogramConfigPath,
             FileInfo indicesConfigPath,
             Dictionary<string, double[,]> indexSpgrams = null,
@@ -1391,56 +1391,47 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 throw new InvalidOperationException("Cannot find spectrogram matrix files");
             }
 
-            cs1.DrawGreyScaleSpectrograms(opDir, fileStem);
+            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
-            WriteStatisticsForLdSpectrogram(cs1, opDir, fileStem);
+            WriteStatisticsForLdSpectrogram(cs1, outputDirectory, fileStem);
             
-            cs1.DrawIndexDistributionsAndSave(Path.Combine(opDir.FullName, fileStem + ".IndexDistributions.png"));
+            cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
 
-            // create a chromeless false color image for tiling
-            Image image1NoChrome = null;
-            if (returnChromelessImages)
-            {
-                image1NoChrome = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap1);
-            }
 
-            // then pass that image into chromer
-            Image image1 = CreateSpectrogramFromSpectralIndices(cs1, colorMap1, config.MinuteOffset, fileStem, image1NoChrome, opDir);
+            Image image1;
+            Image image1NoChrome;
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap1, config.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image1, out image1NoChrome);
 
-            // create a chromeless false color image for tiling
-            Image image2NoChrome = null;
-            if (returnChromelessImages)
-            {
-                image2NoChrome = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap1);
-            }
-
-            // then pass that image into chromer
-            Image image2 = CreateSpectrogramFromSpectralIndices(cs1, colorMap2, config.MinuteOffset, fileStem, image2NoChrome, opDir);
+            Image image2;
+            Image image2NoChrome;
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap2, config.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
 
             // read high amplitude and clipping info into an image
             string indicesFile = Path.Combine(ipDir.FullName, fileStem + ".Indices.csv");
             Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
             if (imageX != null)
             {
-                imageX.Save(Path.Combine(opDir.FullName, fileStem + ".ClipHiAmpl.png"));
+                imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
             }
 
-            CreateTwoMapsImage(opDir, fileStem, image1, imageX, image2);
+            CreateTwoMapsImage(outputDirectory, fileStem, image1, imageX, image2);
 
             Image ribbon;
             // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
-            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
             // ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
-            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
 
             ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
-            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
-            ribbon.Save(Path.Combine(opDir.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
+            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
 
-            return returnChromelessImages ? new[] { image1NoChrome, image2NoChrome } : new Image[0];
+            return returnChromelessImages
+                       ? new[] { Tuple.Create(image1NoChrome, colorMap1), Tuple.Create(image2NoChrome, colorMap2) }
+                       : null;
         }
 
         public static void WriteStatisticsForLdSpectrogram(LDSpectrogramRGB cs1, DirectoryInfo outputDirectory, string fileStem)
@@ -1449,31 +1440,27 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Json.Serialise(outputDirectory.CombineFile(fileStem + ".IndexStatistics.json"), cs1.indexStats);
         }
 
-        private static void PrepareDataForSpectralIndicesSpectrograms()
-        {
-            
-        }
-
-        private static Image CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, TimeSpan minuteOffset, string fileStem, Image imageNoChrome, DirectoryInfo outputDirectory)
+        private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, TimeSpan minuteOffset, string fileStem, bool returnChromelessImages, DirectoryInfo outputDirectory)
         {
             const int HertzInterval = 1000;
             int nyquist = cs1.SampleRate / 2;
 
-            Image image;
-            if (imageNoChrome != null)
+            // create a chromeless false color image for tiling
+            Image imageNoChrome = null;
+            if (returnChromelessImages)
             {
-                image = (Image)imageNoChrome.Clone();
-            }
-            else
-            {
-                image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+                imageNoChrome = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap, withChrome: false);
             }
 
+            // create a normal image with chrome
+            Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+
+            // then pass that image into chromer
             string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
             image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
             image.Save(outputDirectory.CombineFile(fileStem + "." + colorMap + ".png").FullName);
-            return image;
+            return Tuple.Create(image, imageNoChrome);
         }
 
         private static void CreateTwoMapsImage(DirectoryInfo outputDirectory, string fileStem, Image image1, Image imageX, Image image2)

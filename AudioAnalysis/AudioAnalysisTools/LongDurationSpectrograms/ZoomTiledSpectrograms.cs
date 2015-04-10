@@ -344,7 +344,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 Log.Info("Starting scale: " + scale);
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
-                SuperTile[] superTiles = DrawSuperTilesFromIndexSpectrograms(
+                TimeOffsetSingleLayerSuperTile[] superTiles = DrawSuperTilesFromIndexSpectrograms(
                     ldsConfig, 
                     indexProperties, 
                     tilingConfig, 
@@ -415,7 +415,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 powIndexMatrix = MatrixTools.boundMatrix(powIndexMatrix, Min, Max);
                 powIndexMatrix = DataTools.normalise(powIndexMatrix);
 
-                SuperTile[] superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
+                TimeOffsetSingleLayerSuperTile[] superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
                     inputDirectory, 
                     ldsConfig, 
                     indexPropertiesConfigFile, 
@@ -428,7 +428,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if (SaveSuperTiles)
                 {
                     // below saving of images is for debugging.
-                    foreach (SuperTile superTile in superTilingResults)
+                    foreach (TimeOffsetSingleLayerSuperTile superTile in superTilingResults)
                     {
                         string outputName = string.Format(
                             "{0}_scale-{2:f2}_supertile-minute-{1}.png",
@@ -450,7 +450,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Log.Info("Tiling complete");
         }
 
-        public static SuperTile[] DrawSuperTilesFromIndexSpectrograms(
+        public static TimeOffsetSingleLayerSuperTile[] DrawSuperTilesFromIndexSpectrograms(
             LdSpectrogramConfig analysisConfig, 
             Dictionary<string, IndexProperties> dictIP, 
             SuperTilingConfig tilingConfig, 
@@ -484,7 +484,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan superTileDuration = TimeSpan.FromTicks(superTileWidth * imageScale.Ticks);
 
             // initialise the image array to return
-            var imageArray = new SuperTile[superTileCount];
+            var imageArray = new TimeOffsetSingleLayerSuperTile[superTileCount];
             TimeSpan startTime = analysisConfig.MinuteOffset; // default = zero minute of day i.e. midnight
 
             // start the loop
@@ -498,7 +498,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     imageScale, 
                     superTileWidth, 
                     spectra);
-                imageArray[t] = new SuperTile
+                imageArray[t] = new TimeOffsetSingleLayerSuperTile
                                     {
                                         TimeOffset = startTime,
                                         Scale = imageScale, 
@@ -544,7 +544,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <returns>
         /// The <see cref="SuperTile[]"/>.
         /// </returns>
-        public static SuperTile[] DrawSuperTilesFromSingleFrameSpectrogram(
+        public static TimeOffsetSingleLayerSuperTile[] DrawSuperTilesFromSingleFrameSpectrogram(
             DirectoryInfo dataDir, 
             LdSpectrogramConfig analysisConfig, 
             FileInfo indexPropertiesConfigFile, 
@@ -596,7 +596,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan startTime = analysisConfig.MinuteOffset; // default = zero minute of day i.e. midnight
             TimeSpan startTimeOfData = startTime + TimeSpan.FromMinutes(minute);
 
-            var str = new SuperTile[imageScales.Length];
+            var str = new TimeOffsetSingleLayerSuperTile[imageScales.Length];
 
             // make the images
             for (int scale = 0; scale < imageScales.Length; scale++)
@@ -632,7 +632,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     data, 
                     indexMatrixExpanded);
 
-                str[scale] = new SuperTile
+                str[scale] = new TimeOffsetSingleLayerSuperTile
                                  {
                                      TimeOffset = startTimeOfData,
                                      Scale = imageScale, 

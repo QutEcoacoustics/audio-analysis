@@ -120,6 +120,15 @@ namespace AudioAnalysisTools.TileImage
         #region Public Methods and Operators
 
         /// <summary>
+        /// Split one large image (a super tile) into smaller tiles
+        /// </summary>
+        /// <param name="superTile">The super tile to be split</param>
+        public virtual void Tile(ISuperTile superTile)
+        {
+            this.Tile(superTile, null);
+        }
+
+        /// <summary>
         /// Split one large image (a super tile) into smaller tiles.
         ///     The super tile needs to be aligned within the layer first
         /// </summary>
@@ -158,28 +167,33 @@ namespace AudioAnalysisTools.TileImage
 
             // determine padding needed
             int paddingX, paddingY;
+            int startTileEdgeX, startTileEdgeY;
             int superTileOffsetInLayerX = this.AlignSuperTileInLayer(
                 layer.Width, 
                 layer.XTiles, 
                 this.profile.TileWidth, 
                 current.OffsetX, 
                 current.Image.Width, 
-                out paddingX);
+                out paddingX,
+                out startTileEdgeX);
             int superTileOffsetInLayerY = this.AlignSuperTileInLayer(
                 layer.Height, 
                 layer.YTiles, 
                 this.profile.TileHeight, 
                 current.OffsetY, 
                 current.Image.Height, 
-                out paddingY);
+                out paddingY,
+                out startTileEdgeY);
 
+            var deltaTileEdgeSuperTileX = superTileOffsetInLayerX - startTileEdgeX;
+            var deltaTileEdgeSuperTileY = superTileOffsetInLayerY - startTileEdgeY;
             var superTileRectangle = new Rectangle(xOffset, yOffset, width, height);
 
             // drawable tiles in the current super tile
             // as a rule only draw the sections that are available in the current tile
             // and as much as we need from the next tile
-            double tilesInSuperTileX = CalculateTilesInSuperTile(current.Image.Width, this.profile.TileWidth, paddingX);
-            double tilesInSuperTileY = CalculateTilesInSuperTile(current.Image.Height, this.profile.TileHeight, paddingY);
+            double tilesInSuperTileX = CalculateTilesInSuperTile(current.Image.Width, this.profile.TileWidth, paddingX, deltaTileEdgeSuperTileX);
+            double tilesInSuperTileY = CalculateTilesInSuperTile(current.Image.Height, this.profile.TileHeight, paddingY, deltaTileEdgeSuperTileY);
 
             // draw tiles
             for (int i = 0; i < tilesInSuperTileX; i++)
@@ -201,10 +215,10 @@ namespace AudioAnalysisTools.TileImage
 
                     // determine how to paint it
                     // supertile relative
-                    int layerLeft = (i * this.profile.TileWidth) + superTileOffsetInLayerX,
-                        superTileLeft = layerLeft - (2 * paddingX);
-                    int layerTop = (j * this.profile.TileHeight) + superTileOffsetInLayerY,
-                        superTileTop = layerTop - (2 * paddingY);
+                    int layerLeft = (i * this.profile.TileWidth) + startTileEdgeX,
+                        superTileLeft = layerLeft - (paddingX);
+                    int layerTop = (j * this.profile.TileHeight) + startTileEdgeY,
+                        superTileTop = layerTop - (paddingY);
 
                     using (Graphics tileGraphics = Graphics.FromImage(tileImage))
                     {
@@ -424,20 +438,21 @@ namespace AudioAnalysisTools.TileImage
             tiles = PadIfNotRounded(tilelength);
         }
 
-        private static double CalculateTilesInSuperTile(int actualSuperTileLength, int tileLength, int layerPadding)
+        private static double CalculateTilesInSuperTile(int actualSuperTileLength, int tileLength, int layerPadding, int additionalPadding)
         {
-            if (actualSuperTileLength % tileLength == 0)
+            var lengthToSplit = actualSuperTileLength + additionalPadding;
+            if (lengthToSplit % tileLength == 0)
             {
-                return actualSuperTileLength / tileLength;
+                return lengthToSplit / tileLength;
             }
 
             if (layerPadding == 0)
             {
-                return Math.Ceiling((double)actualSuperTileLength / tileLength);
+                return Math.Ceiling((double)lengthToSplit / tileLength);
             }
             else
             {
-                return Math.Ceiling((actualSuperTileLength / 2.0) / tileLength) * 2.0;
+                return Math.Ceiling((lengthToSplit / 2.0) / tileLength) * 2.0;
             }
         }
 
@@ -513,6 +528,9 @@ namespace AudioAnalysisTools.TileImage
         /// </param>
         /// <param name="padding">
         /// </param>
+        /// <param name="startTileEdge">
+        /// The start Tile Edge.
+        /// </param>
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
@@ -522,7 +540,8 @@ namespace AudioAnalysisTools.TileImage
             int layerTileLength, 
             int superTileOffset, 
             int superTileWidth, 
-            out int padding)
+            out int padding,
+            out int startTileEdge)
         {
             // first determine padding required by the layer
             double tilesInLayer = (double)layerLength / layerTileLength;
@@ -535,7 +554,16 @@ namespace AudioAnalysisTools.TileImage
             // convert superTileOddset to coordinates relative to layer
             int superTileOffsetInLayer = padding + superTileOffset;
 
-            // with limite information it is really hard to do more/verify
+            // does this offset lay on the edge of a tile?
+            var tilesBeforeOffset = (double)superTileOffsetInLayer / layerTileLength;
+            
+            // ideally the number of tiles before the offset is a whole number
+            var wholeTilesBeforeOffset = (int)Math.Floor(tilesBeforeOffset);
+
+            // if it isn't though, use the edge of the nearest whole tile processing the super tile offset as a start point
+            startTileEdge = wholeTilesBeforeOffset * layerTileLength;
+            
+            // with limited information it is really hard to do more/verify
             return superTileOffsetInLayer;
         }
 

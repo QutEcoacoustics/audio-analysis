@@ -10,23 +10,17 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
-    using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -438,7 +432,7 @@ namespace AnalysisPrograms
                 // this method also AUTOMATICALLY SORTS because it uses array indexing
                 var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-                Image[] images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                Tuple<Image, string>[] images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                     resultsDirectory,
                     resultsDirectory,
                     configFileDestination,
@@ -450,9 +444,10 @@ namespace AnalysisPrograms
                 {
                     Debug.Assert(images.Length == 2);
 
-                    Log.Debug("Tiling output");
+                    Log.Info("Tiling output at scale: " + settings.IndexCalculationDuration.Value);
 
-                    TileOutput(resultsDirectory, sourceAudio.Name, inputFileSegment.OriginalFileStartDate.Value , images[0]);
+                    var image = images[1];
+                    TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
                 }
             }
         }
@@ -464,16 +459,29 @@ namespace AnalysisPrograms
             
             // seconds per pixel
             const double Scale = 60.0;
+            TimeSpan scale = Scale.Seconds();
 
             if (image.Height != TileHeight)
             {
                 throw new InvalidOperationException("Expecting images exactly the same height as the defined tile height");
             }
 
-            var tilingProfile = new AbsoluteDateTilingProfile(fileStem, recordingStartDate, TileHeight, TileWidth);
-            var tiler = new Tiler(outputDirectory, tilingProfile, Scale, image.Width, 1.0, image.Height);
+            // if recording does not start on an absolutely aligned hour of the day
+            // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
+            var timeOfDay = recordingStartDate.TimeOfDay;
+            var previousAbsoluteHour = TimeSpan.FromSeconds(Math.Floor(timeOfDay.TotalSeconds / (Scale * TileWidth)) * (Scale * TileWidth));
+            var gap = timeOfDay - previousAbsoluteHour;
+            var tilingStartDate = recordingStartDate - gap;
 
-            var tile = new DefaultSuperTile() { Image = image, OffsetX = 0, OffsetY = 0, Scale = Scale };
+            var tilingProfile = new AbsoluteDateTilingProfile(fileStem, tilingStartDate, TileHeight, TileWidth);
+
+            // pad out image so it produces a whole number of tiles
+            // this solves the asymetric right padding of short audio files
+            var width = (int)(Math.Ceiling(image.Width / Scale) * Scale);
+            var tiler = new Tiler(outputDirectory, tilingProfile, Scale, width, 1.0, image.Height);
+
+            // prepare super tile
+            var tile = new TimeOffsetSingleLayerSuperTile() { Image = image, TimeOffset = gap, Scale = scale};
 
             tiler.Tile(tile, null);
         }

@@ -29,7 +29,7 @@ namespace Acoustics.Test.AudioAnalysisTools
     /// Note the files in /TestResources are copied 
     /// automagically by using a build step.
     /// </summary>
-    [TestClass]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Automagically is totally a word!"), TestClass]
     public class TilerTests
     {
         private PanoJsTilingProfile tilingProfile;
@@ -95,37 +95,37 @@ namespace Acoustics.Test.AudioAnalysisTools
 
             ISuperTile[] testCases =
                 {
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(60.0),
                             TimeOffset = TimeSpan.FromMinutes(0)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(60.0),
                             TimeOffset = TimeSpan.FromMinutes(1)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(30.0),
                             TimeOffset = TimeSpan.FromMinutes(16)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(30.0),
                             TimeOffset = TimeSpan.FromMinutes(15.5)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(30.0),
                             TimeOffset = TimeSpan.FromMinutes(15.0)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(120.0),
                             TimeOffset = TimeSpan.FromMinutes(0)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(1.0),
                             TimeOffset = TimeSpan.FromMinutes(0)
@@ -178,37 +178,37 @@ namespace Acoustics.Test.AudioAnalysisTools
 
         private readonly ISuperTile[] superTileTestCases =
                 {
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(24),
                             TimeOffset = TimeSpan.FromMinutes(0)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(24),
                             TimeOffset = TimeSpan.FromMinutes(1)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(12),
                             TimeOffset = TimeSpan.FromMinutes(16)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(12),
                             TimeOffset = TimeSpan.FromMinutes(15.5)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(12),
                             TimeOffset = TimeSpan.FromMinutes(15.0)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(60),
                             TimeOffset = TimeSpan.FromMinutes(0)
                         },
-                    new SuperTile()
+                    new TimeOffsetSingleLayerSuperTile()
                         {
                             Scale = TimeSpan.FromSeconds(1.0),
                             TimeOffset = TimeSpan.FromMinutes(0)
@@ -224,7 +224,7 @@ namespace Acoustics.Test.AudioAnalysisTools
                 this.superTileTestCases.Concat(
                     new[]
                         {
-                            new SuperTile() { Scale = TimeSpan.FromSeconds(60.0), TimeOffset = TimeSpan.FromMinutes(0) } 
+                            new TimeOffsetSingleLayerSuperTile() { Scale = TimeSpan.FromSeconds(60.0), TimeOffset = TimeSpan.FromMinutes(0) } 
                         }));
         }
 
@@ -236,20 +236,20 @@ namespace Acoustics.Test.AudioAnalysisTools
 
             this.tiler.TileMany(this.superTileTestCases);
 
-            this.tiler.Tile(new SuperTile { Scale = TimeSpan.FromSeconds(30.0), TimeOffset = TimeSpan.FromMinutes(15.5) }, null);
+            this.tiler.Tile(new TimeOffsetSingleLayerSuperTile { Scale = TimeSpan.FromSeconds(30.0), TimeOffset = TimeSpan.FromMinutes(15.5) }, null);
         }
 
         [TestMethod]
         public void Test60Resolution()
         {
             var testBitmap = new Bitmap("1440px2.png");
-            var superTile = new SuperTile()
+            var superTile = new TimeOffsetSingleLayerSuperTile()
                                 {
                                     Image = testBitmap, 
                                     Scale = TimeSpan.FromSeconds(60.0), 
                                     TimeOffset = TimeSpan.Zero
                                 };
-            this.tiler.Tile(superTile, superTile);
+            this.tiler.Tile(superTile, null);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
             ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
@@ -278,13 +278,13 @@ namespace Acoustics.Test.AudioAnalysisTools
         public void Test1Resolution()
         {
             var testBitmap = new Bitmap("Farmstay_ECLIPSE3_201_scale-1.0_supertile-1.png");
-            var superTile = new SuperTile()
+            var superTile = new TimeOffsetSingleLayerSuperTile()
             {
                 Image = testBitmap,
                 Scale = TimeSpan.FromSeconds(1.0),
                 TimeOffset = TimeSpan.FromHours(1.0)
             };
-            this.tiler.Tile(superTile, superTile);
+            this.tiler.Tile(superTile, null);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
             ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
@@ -313,7 +313,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             }
         }
 
-        private static bool BitmapEquals(Bitmap bmp1, Bitmap bmp2)
+        public static bool BitmapEquals(Bitmap bmp1, Bitmap bmp2)
         {
             if (!bmp1.Size.Equals(bmp2.Size))
             {
@@ -323,7 +323,10 @@ namespace Acoustics.Test.AudioAnalysisTools
             {
                 for (int y = 0; y < bmp1.Height; ++y)
                 {
-                    if (bmp1.GetPixel(x, y) != bmp2.GetPixel(x, y))
+                    var pixel1 = bmp1.GetPixel(x, y);
+                    var pixel2 = bmp2.GetPixel(x, y);
+                    var alphaEqual = pixel1.A == 0 && pixel2.A == 0;
+                    if (pixel1.ToArgb() != pixel2.ToArgb() && !alphaEqual)
                     {
                         return false;
                     }
@@ -517,6 +520,133 @@ namespace Acoustics.Test.AudioAnalysisTools
                                   }, 
                           };
             // ReSharper restore InconsistentNaming
+        }
+    }
+
+    [TestClass]
+    public class AbsoluteDateTimeTilerTests
+    {
+        private AbsoluteDateTilingProfile tilingProfile;
+        private Tiler tiler;
+        private DirectoryInfo outputDirectory;
+        private AbsoluteDateTilingProfile tilingProfileNotRoundStart;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            this.tilingProfile = new AbsoluteDateTilingProfile("TILE", new DateTimeOffset(2015, 04, 10, 0, 0, 0, TimeSpan.FromHours(10)), 256, 60);
+            this.tilingProfileNotRoundStart = new AbsoluteDateTilingProfile("TILE", new DateTimeOffset(2015, 04, 10, 3, 30, 0, TimeSpan.FromHours(10)), 256, 60);
+
+            this.outputDirectory = TestHelper.GetTempDir();
+
+            this.tiler = new Tiler(
+                this.outputDirectory,
+                this.tilingProfile,
+                new SortedSet<double>() { 60.0 },
+                60.0,
+                1440,
+                new SortedSet<double>() { 1 },
+                1.0,
+                256);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            TestHelper.DeleteTempDir(this.outputDirectory);
+        }
+
+        [TestMethod]
+        public void TestItShouldCutAndPadRightWithTransparency()
+        {
+            var testBitmap = new Bitmap("4c77b524-1857-4550-afaa-c0ebe5e3960a_20101013_000000+1000.ACI-ENT-EVN.png");
+            var superTile = new DefaultSuperTile()
+            {
+                Image = testBitmap,
+                OffsetX = 0,
+                Scale = 60.0
+            };
+            this.tiler.Tile(superTile, null);
+
+            ////Debug.WriteLine(this.outputDirectory.FullName);
+            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            var producedFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
+
+            Assert.AreEqual(24, producedFiles.Length);
+
+            var expectedImages = new[]
+                                     {
+                                         "4c77b524-1857-4550-afaa-c0ebe5e3960a_20101013_000000+1000.ACI-ENT-EVN-endtile.png"
+                                     }.OrderBy(x => x).ToArray();
+
+            var loadedImages = expectedImages.Select(Image.FromFile).ToArray();
+
+
+
+            var producedImage = Image.FromFile(producedFiles[23].FullName);
+            var areEqual = TilerTests.BitmapEquals((Bitmap)loadedImages[0], (Bitmap)producedImage);
+            Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedImages[0], producedFiles[23].Name);
+            
+        }
+
+        [TestMethod]
+        public void TestPaddingANonBlockTime()
+        {
+            this.tiler = new Tiler(
+                this.outputDirectory,
+                this.tilingProfileNotRoundStart,
+                new SortedSet<double>() { 60.0 },
+                60.0,
+                1440,
+                new SortedSet<double>() { 1 },
+                1.0,
+                256);
+
+            var testBitmap = new Bitmap("4c77b524-1857-4550-afaa-c0ebe5e3960a_20101013_000000+1000.ACI-ENT-EVN.png");
+            var superTile = new DefaultSuperTile()
+            {
+                Image = testBitmap,
+                OffsetX = 30, // starts on a half hour, at 60s/px hence half a tile, hence half 60px
+                Scale = 60.0
+            };
+            this.tiler.Tile(superTile, null);
+
+            ////Debug.WriteLine(this.outputDirectory.FullName);
+            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            var producedFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
+
+            Assert.AreEqual(25, producedFiles.Length);
+
+            var expectedImages =
+                new[]
+                    {
+                        "TILE_20150410_083000Z_60.00.png", "TILE_20150410_093000Z_60.00.png",
+                        "TILE_20150410_103000Z_60.00.png", "TILE_20150410_113000Z_60.00.png",
+                        "TILE_20150410_123000Z_60.00.png", "TILE_20150410_133000Z_60.00.png",
+                        "TILE_20150410_143000Z_60.00.png", "TILE_20150410_153000Z_60.00.png",
+                        "TILE_20150410_163000Z_60.00.png", "TILE_20150410_173000Z_60.00.png",
+                        "TILE_20150409_173000Z_60.00.png", "TILE_20150409_183000Z_60.00.png",
+                        "TILE_20150409_193000Z_60.00.png", "TILE_20150409_203000Z_60.00.png",
+                        "TILE_20150409_213000Z_60.00.png", "TILE_20150409_223000Z_60.00.png",
+                        "TILE_20150409_233000Z_60.00.png", "TILE_20150410_003000Z_60.00.png",
+                        "TILE_20150410_013000Z_60.00.png", "TILE_20150410_023000Z_60.00.png",
+                        "TILE_20150410_033000Z_60.00.png", "TILE_20150410_043000Z_60.00.png",
+                        "TILE_20150410_053000Z_60.00.png", "TILE_20150410_063000Z_60.00.png",
+                        "TILE_20150410_073000Z_60.00.png"
+                    }.OrderBy(x => x).ToArray();
+
+            var loadedImages = expectedImages.Select(Image.FromFile).ToArray();
+
+
+
+            for (int i = 0; i < loadedImages.Length; i++)
+            {
+
+                var producedImage = Image.FromFile(producedFiles[i].FullName);
+                var areEqual = TilerTests.BitmapEquals((Bitmap)loadedImages[i], (Bitmap)producedImage);
+                Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedImages[i], producedFiles[i].Name);
+            }
+
         }
     }
 }
