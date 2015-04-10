@@ -172,6 +172,7 @@
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\DoubleExtensions.cs" />
     <Compile Include="Extensions\DoubleSquareArrayExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\ExceptionsExtensions.cs" />

@@ -20,7 +20,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         Index
     }
 
-    public class SuperTile : ISuperTile
+    public class TimeOffsetSingleLayerSuperTile : ISuperTile
     {
         #region Public Properties
 
