@@ -420,6 +420,9 @@ namespace AnalysisPrograms
 
             Json.Serialise(configFileDestination, configInfo);
 
+            // var statistics = IndexDistributions.Calculate();
+            //Json.Serialise(index distributions path, index statistics);
+
             // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
             if (settings.IndexCalculationDuration.Value != TimeSpan.FromSeconds(60.0))
             {
