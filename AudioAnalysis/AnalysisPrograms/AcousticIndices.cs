@@ -483,7 +483,7 @@ namespace AnalysisPrograms
             // prepare super tile
             var tile = new TimeOffsetSingleLayerSuperTile() { Image = image, TimeOffset = gap, Scale = scale};
 
-            tiler.Tile(tile, null);
+            tiler.Tile(tile);
         }
 
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
