@@ -125,7 +125,7 @@ namespace AudioAnalysisTools.TileImage
         /// <param name="superTile">The super tile to be split</param>
         public virtual void Tile(ISuperTile superTile)
         {
-            this.Tile(superTile, null);
+            this.Tile(null, superTile, null);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace AudioAnalysisTools.TileImage
         /// <param name="next">
         /// The next super tile that will be processed (positive x-dimension)
         /// </param>
-        public virtual void Tile(ISuperTile current, ISuperTile next)
+        public virtual void Tile(ISuperTile previous, ISuperTile current, ISuperTile next)
         {
             if (current == null)
             {
@@ -188,6 +188,11 @@ namespace AudioAnalysisTools.TileImage
             var deltaTileEdgeSuperTileX = superTileOffsetInLayerX - startTileEdgeX;
             var deltaTileEdgeSuperTileY = superTileOffsetInLayerY - startTileEdgeY;
             var superTileRectangle = new Rectangle(xOffset, yOffset, width, height);
+
+            if (previous == null && startTileEdgeX != 0)
+            {
+                throw new InvalidOperationException("A non-aligned super tile, with no previous tile has been requested to be drawn, this means a fragment of the supertile will not been drawn.");
+            }
 
             // drawable tiles in the current super tile
             // as a rule only draw the sections that are available in the current tile
@@ -304,11 +309,11 @@ namespace AudioAnalysisTools.TileImage
             var scaleGroups = allSuperTiles.GroupBy(st => st.Scale).OrderByDescending(stg => stg.Key);
             foreach (var scaleGroup in scaleGroups)
             {
-                IEnumerable<ISuperTile[]> windowed = scaleGroup.OrderBy(st => st.OffsetX).WindowedOrDefault(2);
+                IEnumerable<ISuperTile[]> windowed = scaleGroup.OrderBy(st => st.OffsetX).WindowedOrDefault(3);
                 foreach (var superTiles in windowed)
                 {
                     
-                    this.Tile(superTiles[0], superTiles[1]);
+                    this.Tile(superTiles[0], superTiles[1], superTiles[2]);
                 }
             }
         }

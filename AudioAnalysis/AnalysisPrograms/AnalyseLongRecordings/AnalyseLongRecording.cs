@@ -11,6 +11,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Data;
     using System.Diagnostics;
     using System.Drawing;
@@ -123,6 +124,8 @@ Output  to  directory: {1}
                 {
                     throw new InvalidFileDateException("When TileImageOutput option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
+
+
             }
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
@@ -177,6 +180,11 @@ Output  to  directory: {1}
             {
                 double indexCalculationDuration = configuration[AnalysisKeys.IndexCalculationDuration];
                 analysisSettings.IndexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDuration);
+
+                if (tileOutput && indexCalculationDuration != 60.0)
+                {
+                    throw new ArgumentException("Invalid configuration detected: tile image output is enabled but ICD != 60.0 so the images won'tbe created");
+                }
             }
             catch (Exception ex)
             {

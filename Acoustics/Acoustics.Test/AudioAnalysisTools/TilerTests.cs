@@ -144,9 +144,9 @@ namespace Acoustics.Test.AudioAnalysisTools
                 new SortedSet<double>() { 1, 1, 1, 1, 1, 1 },
                 1.0,
                 300);
-            tilerMock.Setup(t => t.Tile(It.IsAny<ISuperTile>(), It.IsAny<ISuperTile>()))
-                .Callback<ISuperTile, ISuperTile>(
-                    (current, next) =>
+            tilerMock.Setup(t => t.Tile(It.IsAny<ISuperTile>(), It.IsAny<ISuperTile>(), It.IsAny<ISuperTile>()))
+                .Callback<ISuperTile, ISuperTile, ISuperTile>(
+                    (previous, current, next) =>
                         {
                             moqCurrent.Add(current);
                             moqNext.Add(next);
@@ -157,12 +157,13 @@ namespace Acoustics.Test.AudioAnalysisTools
             const ISuperTile Empty = null;
             var expected = new[]
                                {
-                                   Tuple.Create(Empty, testCases[5]), Tuple.Create(testCases[5], Empty), 
+                                   
+                                   Tuple.Create(Empty, testCases[5]), Tuple.Create(testCases[5], Empty), Tuple.Create(Empty, Empty), 
                                    Tuple.Create(Empty, testCases[0]),
-                                   Tuple.Create(testCases[0], testCases[1]), Tuple.Create(testCases[1], Empty),
+                                   Tuple.Create(testCases[0], testCases[1]), Tuple.Create(testCases[1], Empty), Tuple.Create(Empty, Empty),
                                    Tuple.Create(Empty, testCases[4]), Tuple.Create(testCases[4], testCases[3]),
-                                   Tuple.Create(testCases[3], testCases[2]), Tuple.Create(testCases[2], Empty),
-                                   Tuple.Create(Empty, testCases[6]), Tuple.Create(testCases[6], Empty),
+                                   Tuple.Create(testCases[3], testCases[2]), Tuple.Create(testCases[2], Empty), Tuple.Create(Empty, Empty),
+                                   Tuple.Create(Empty, testCases[6]), Tuple.Create(testCases[6], Empty), Tuple.Create(Empty, Empty)
                                };
 
             Assert.AreEqual(expected.Length, moqCurrent.Count);
@@ -236,7 +237,7 @@ namespace Acoustics.Test.AudioAnalysisTools
 
             this.tiler.TileMany(this.superTileTestCases);
 
-            this.tiler.Tile(new TimeOffsetSingleLayerSuperTile { Scale = TimeSpan.FromSeconds(30.0), TimeOffset = TimeSpan.FromMinutes(15.5) }, null);
+            this.tiler.Tile(new TimeOffsetSingleLayerSuperTile { Scale = TimeSpan.FromSeconds(30.0), TimeOffset = TimeSpan.FromMinutes(15.5) });
         }
 
         [TestMethod]
@@ -249,7 +250,7 @@ namespace Acoustics.Test.AudioAnalysisTools
                                     Scale = TimeSpan.FromSeconds(60.0), 
                                     TimeOffset = TimeSpan.Zero
                                 };
-            this.tiler.Tile(superTile, null);
+            this.tiler.Tile(superTile);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
             ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
@@ -284,7 +285,7 @@ namespace Acoustics.Test.AudioAnalysisTools
                 Scale = TimeSpan.FromSeconds(1.0),
                 TimeOffset = TimeSpan.FromHours(1.0)
             };
-            this.tiler.Tile(superTile, null);
+            this.tiler.Tile(superTile);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
             ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
@@ -566,7 +567,7 @@ namespace Acoustics.Test.AudioAnalysisTools
                 OffsetX = 0,
                 Scale = 60.0
             };
-            this.tiler.Tile(superTile, null);
+            this.tiler.Tile(superTile);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
             ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
@@ -609,7 +610,7 @@ namespace Acoustics.Test.AudioAnalysisTools
                 OffsetX = 30, // starts on a half hour, at 60s/px hence half a tile, hence half 60px
                 Scale = 60.0
             };
-            this.tiler.Tile(superTile, null);
+            this.tiler.Tile(superTile);
 
             ////Debug.WriteLine(this.outputDirectory.FullName);
             ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
