@@ -75,6 +75,29 @@ GetStudyDescription <- function () {
     
 }
 
+GetTargetMinutesByDay <- function (site, date, version.only = TRUE) {
+    # gets the list of target minutes for the specified site and date
+    
+    target <- list()
+    target[site] <- list()
+    target[[site]][[date]] <- c(0, 1439)
+    
+    target.description <- GetTargetDescription(target)
+    params <- list('target' = target.description)
+    target.minutes <- ReadOutput('target.min.ids', params = params)
+    
+    if (version.only) {
+        version <- target.minutes$version
+        return(version)   
+    } else {
+        return(target.minutes)
+    }
+    
+
+    
+    
+}
+
 
 CreateTargetMinutes <- function (target = NULL) {
     # creates a list of target minute ids, based on
@@ -154,6 +177,15 @@ TargetSubset <- function (df, target) {
     
 
 GetTargetDescription <- function (target) {
+    # Converts a target from a nested list to a compact textual representation 
+    #
+    # Args:
+    #   target: list; names of top level are sites, values are lists of dates
+    #                 names of 2nd level are dates, values are minutes to include 
+    #                 eg c(0, 13, 29, 34) will include minutes 0-13 and 29-34
+    # 
+    
+    
     sites <- names(target)
     sites.txt <- sites
     # first get all dates, to if they are all the same year or month

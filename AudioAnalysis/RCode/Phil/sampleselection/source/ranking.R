@@ -53,26 +53,37 @@ RankSamplesBatch <- function (events.versions, clustered.events.versions, target
         
         # can't check clustered events, because no is not directly dependent on other stuff here
         # todo: make output return full dependency chain
-    
         
-        
-        RankSamples(events = events, mins = mins, clustered.events = clustered.events)
+        RankSamples(mins = mins, clustered.events = clustered.events, events = events)
     }
 }
 
 
 
-RankSamples <- function (events = NULL, mins = NULL, clustered.events = NULL) {
+RankSamples <- function (mins = NULL, clustered.events = NULL) {
+    #
+    # Args:
+    #   mins: data.frame; must contain a column called "min.id". The minutes to rank. There might be minute ids that must be ranked,
+    #                      but which are not contained in the clustered events due to an absence of events in that minute 
+    #   clustered.events: data.frame; must contain the column "event.id" which must have the same values as "events$event.id"
  
-    if (is.null(events)) {
-        events <- ReadOutput('events') 
-    }
-    if (is.null(mins)) {
-        mins <- ReadOutput('target.min.ids')
-    }
+#     if (is.null(events)) {
+#         events <- ReadOutput('events') 
+#     }
+    
+    
     if (is.null(clustered.events)) {
         clustered.events <- ReadOutput('clustered.events')
+    } 
+    
+    if (is.null(mins)) {
+        mins <- ReadOutput('target.min.ids')
+    } else if (class(mins) != 'data.frame' && class(mins) != 'numeric') {
+        # pass in NA to use the same min ids as are present in the 
+        min <- unique(clustered.events$min.id)
     }
+    
+
     
     ranking.methods <- list()
     ranking.methods[[1]] <- RankSamples1
@@ -86,7 +97,7 @@ RankSamples <- function (events = NULL, mins = NULL, clustered.events = NULL) {
     ranking.methods[[9]] <- RankSamples9 # same as 5 but with temporal dispersal
     ranking.methods[[10]] <- RankSamples10 # same as 6 but with temporal dispersal
     
-    use.ranking.methods <- c(4,5,6,8,9,10)
+    use.ranking.methods <- c(5,6,9,10)
     #use.ranking.methods <- c(9)
     
 
@@ -94,7 +105,7 @@ RankSamples <- function (events = NULL, mins = NULL, clustered.events = NULL) {
     # the clustered events df has a column of event ids, and the other columns are the group, 
     # with the name of the column being the number of clusters
     num.clusters <- colnames(clustered.events$data)
-    num.clusters <- num.clusters[num.clusters != 'event.id']
+    num.clusters <- num.clusters[!num.clusters %in% c('event.id', 'min.id')]
     
     # initialise a 3 dimentional array
     # x: ranking methods
@@ -103,20 +114,22 @@ RankSamples <- function (events = NULL, mins = NULL, clustered.events = NULL) {
     # so, for each ranking method and number of clusters, we have a rank for each minute
     output <- array(data = NA, dim = c(nrow(mins$data), length(use.ranking.methods), length(num.clusters)), dimnames = list(min.id = mins$data$min.id, ranking.method = as.character(use.ranking.methods), num.clusters = num.clusters))
     
+    events <- data.frame(event.id = clustered.events$data$event.id, min.id = clustered.events$data$min.id)
+    
     for (n in 1:length(num.clusters)) {
         group <- clustered.events$data[,num.clusters[n]]
-        events$data$group <- group #temporarily add the group to the events for ranking
+        events$group <- group #temporarily add the group to the events for ranking
         for (m in 1:length(use.ranking.methods)) {    
             Report(1, 'Ranking samples:', use.ranking.methods[m], ' num.clusters:', num.clusters[n])
             r.m <- use.ranking.methods[m]
-            r <- ranking.methods[[r.m]](events = events$data, min.ids = mins$data$min.id)
+            r <- ranking.methods[[r.m]](events = events, min.ids = mins$data$min.id)
             r <- r[order(r$rank), ] 
             output[,as.character(r.m), n] <- r$min.id
         }
     }
     
     params <- list(ranking.methods = use.ranking.methods)
-    dependencies <- list(target.min.ids = mins$version, clustered.events = clustered.events$version)
+    dependencies <- list(clustered.events = clustered.events$version)
     
     WriteOutput(output, 'ranked.samples', params = params, dependencies = dependencies)
     

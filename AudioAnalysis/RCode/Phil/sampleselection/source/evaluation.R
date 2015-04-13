@@ -24,7 +24,9 @@ EvaluateSamples <- function (use.last.accessed = FALSE, versions = NULL, subset.
         ranks <- ReadOutput('ranked.samples', use.last.accessed = use.last.accessed)
         ranks <- ChooseNumClusters(ranks)
         ranks <- ChooseRankingsToComapre(ranks, subset.rankings)
-        heading <- GetHeading(ranks)
+        
+        # !! TODO fix this
+  #      heading <- GetHeading(ranks)
         EvaluateSamples2d(ranks, heading = heading)  
         # don't return results because we only use that to get averages across many
     }

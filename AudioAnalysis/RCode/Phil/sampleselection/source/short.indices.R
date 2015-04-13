@@ -4,24 +4,30 @@ spectral.indices <- c('ACI', 'BGN', 'CVR', 'ENT', 'EVN', 'POW')
 
 
 
-DoClusteringWithIndices <- function (df = NULL) {
+DoClusteringWithIndices <- function (indices.df = NULL, indices.version = NULL) {
     
     if (is.null(df)) {
         res <- ReadOutput('indices')
-        df <- res$data
+        indices.df <- res$data
+        indices.version <- res$version
     }
-    
-    clustering.result <- ClusterSegments(df) 
-    res <- CreateEventGroups.kmeans(df, clustering.result)
-    
-    return(res)
+    num.clusters = 240
+    clustering.result <- ClusterSegments(indices.df, num.clusters = num.clusters) 
+    params <- list(num.clusters = num.clusters)
+    dependencies <- list(indices = indices.version)
+    clustering.version <- WriteOutput(clustering.result, 'clustering.kmeans', params = params, dependencies = dependencies)
+    groups.df <- CreateEventGroups.kmeans(indices.df, clustering.result)
+    groups.df$min.id <- indices$min.id
+    groups.df.dependencies <- list('clustering.kmeans' = clustering.version)
+    WriteOutput(groups.df, 'clustered.events', dependencies = groups.df.dependencies)
+    return(groups.df)
     
 }
 
 
 
 
-CreateFeatureCsv <- function (site = "NE", date = "2010-10-13", include.frequencies = c(200, 8000), source.max.frequency = 22050, merge.columns = 1, resolution = 60)  {
+CreateFeatureCsv <- function (site = "NE", date = "2010-10-13", include.frequencies = c(200, 8000), source.max.frequency = 22050, merge.cols = 2, resolution = 60)  {
     # for a particular recording, takes all the different features and condenses them to 1 file, which will be input to clustering
     # rounds precision to 3 sig digits, to save space in the CSV
     # discards a given number of frequency bands from the bottom of the recording
@@ -64,7 +70,7 @@ CreateFeatureCsv <- function (site = "NE", date = "2010-10-13", include.frequenc
         # 256 - 46 = 210
         # take averages to make frequency bands 5 bins wide
         # 210 / 5 = 42
-        csv <- ReduceCsv(csv, discard.bottom, discard.top, merge.columns)
+        csv <- ReduceCsv(csv, discard.bottom, discard.top, merge.cols)
         colnames(csv) <- paste0(spectral.indices[f], '.', colnames(csv))
         if (exists("joined.csv")) {
             joined.csv <- cbind(joined.csv, csv)
@@ -76,12 +82,16 @@ CreateFeatureCsv <- function (site = "NE", date = "2010-10-13", include.frequenc
     # add min ids
     
     joined.csv$min.id <- CreateMinIdColumn(site, date, resolution, nrow(joined.csv), start.min = 0)
+    joined.csv <- AddEventIdColumn(joined.csv)
     params <- list(site = site, date = date, include.frequencies = include.frequencies)
-    if (merge.columns > 1) {
+    if (merge.cols > 1) {
         params$merge.cols = merge.cols
     }
+    
+    dependencies <- list('target.min.ids' = GetTargetMinutesByDay(site, date))
+    
     # don't put source frequency or resolution in params as they are a property of the source file, not the params for csv merging
-    WriteOutput(x = joined.csv, name = 'indices', params = params)
+    version = WriteOutput(x = joined.csv, name = 'indices', params = params, dependencies = dependencies)
     
     return(joined.csv)
 
@@ -117,7 +127,8 @@ CreateMinIdColumn <- function (site, date, resolution, num.rows, start.min = 0) 
     
 }
 
-CreateEventIdColumn <- function (df) {
+
+AddEventIdColumn <- function (df) {
     
     df$event.id <- NA
     
@@ -179,13 +190,6 @@ ReduceCsv <- function (csv, discard.bottom = 6, discard.top = 40, merge.columns 
     
     # descard top and bottom
     csv <- csv[, (discard.bottom+1):(ncol(csv) - discard.top)]
-    
-
-    
-    
-
-        
-
         
         # the number of columns to use per frequency band
         band.width = merge.columns
@@ -226,7 +230,7 @@ ReduceCsv <- function (csv, discard.bottom = 6, discard.top = 40, merge.columns 
     
 }
 
-ClusterSegments <- function (df, num.clusters = 240, normalize = TRUE) {
+ClusterSegments <- function (df, num.clusters = 240, normalize = TRUE, nstart = 10) {
     # k-means clustering segments based on spectral index values
     # 
     # Args:
@@ -248,8 +252,10 @@ ClusterSegments <- function (df, num.clusters = 240, normalize = TRUE) {
     }
     
     kmeans.results <- as.list(rep(NA, length(num.clusters)))
+    alg <- "Hartigan-Wong"  #"Hartigan-Wong" seems to cause an error if too many clusters, but Lloyd seems to not converge easily
+    gc()
     for (i in 1:length(num.clusters)) {
-        kmeans.results[[i]] <- kmeans(features, num.clusters[i], algorithm = "Hartigan-Wong", iter.max = 30)   
+        kmeans.results[[i]] <- kmeans(features, num.clusters[i], algorithm = alg, iter.max = 30, nstart = nstart)   
     }
     
     return(kmeans.results)

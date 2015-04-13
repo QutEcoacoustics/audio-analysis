@@ -71,6 +71,50 @@ SetLastAccessed.recursive <- function (name, version, meta = NA) {
 }
 
 
+GetIndirectDependenciesStack <- function (name, version, meta = NA) {
+    require('rjson')   
+    if (!is.data.frame(meta)) {
+        meta <- ReadMeta()
+    }    
+    meta.row <- meta[meta$name == name & meta$version == version, ]
+    if (nrow(meta.row) != 1) {
+        return(FALSE)
+    }
+    d <- DependenciesToDf(meta.row$dependencies)
+
+    if (nrow(d) > 0) {
+        for (i in 1:nrow(d)) {  
+            cur.d.name <- as.character(d$name[i])
+            cur.d.version <- as.character(d$version[i])
+            cur.d.dependencies <- GetIndirectDependenciesStack(cur.d.name, cur.d.version, meta)
+            d <- rbind(d, cur.d.dependencies)
+        }
+    }
+    return(d)
+}
+GetIndirectDependenciesTree <- function (name, version, meta = NA) {
+    require('rjson')   
+    if (!is.data.frame(meta)) {
+        meta <- ReadMeta()
+    }    
+    meta.row <- meta[meta$name == name & meta$version == version, ]
+    if (nrow(meta.row) != 1) {
+        return(FALSE)
+    }
+    d <- fromJSON(meta.row$dependencies)
+    d.names <- names(d)
+    if (length(d) > 0) {
+        for (i in 1:length(d)) {  
+            cur.d.name <- d.names[i]
+            cur.d.version <- d[[d.names[i]]]
+            cur.d.dependencies <- GetIndirectDependencies.recursive(cur.d.name, cur.d.version, meta)
+            d[[cur.d.name]] <- list(version = cur.d.version, dependencies <- cur.d.dependencies)
+        }
+    }
+    return(d)
+}
+
+
 CheckPaths <- function () {
     # checks all global paths to make sure they exist
     # missing output paths are created
