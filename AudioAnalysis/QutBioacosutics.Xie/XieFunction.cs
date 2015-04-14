@@ -221,7 +221,7 @@ namespace QutBioacosutics.Xie
             }
             cs1.DrawGreyScaleSpectrograms(opDir, fileStem, new[] {SpectrogramConstantsJie.ALL_KNOWN_KEYS});
 
-            cs1.CalculateStatisticsForAllIndices();
+            //cs1.CalculateStatisticsForAllIndices();
 
             Json.Serialise(Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.IndexStats);
 

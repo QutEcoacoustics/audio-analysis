@@ -124,32 +124,29 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // used if reading standard devaition matrices for tTest
         private Dictionary<string, double[,]> spgr_StdDevMatrices;                                      
 
-        public class SpectralStats
-        {
-            public double Minimum { get; set; }
-
-            public double Maximum { get; set; }
-
-            public double Mode { get; set; }
-
-            public double StandardDeviation { get; set; }
-        }
-
-        // used to save mode and sd of the indices 
-        private readonly Dictionary<string, SpectralStats> indexStats = new Dictionary<string, SpectralStats>();
-
-        public Dictionary<string, SpectralStats> IndexStats
-        {
-            get
-            {
-                return indexStats;
-            }
-        }
-
         /// <summary>
         /// used where the spectrograms are derived from averages and want to do t-test of difference.
         /// </summary>
         public int SampleCount { get; set; }
+
+        private readonly Dictionary<string, IndexDistributions.SpectralStats> indexStats;
+        public Dictionary<string, IndexDistributions.SpectralStats> IndexStats
+        { get; private set; 
+            //get
+            //{
+            //    return indexStats;
+            //}
+            //private set()
+            //{
+            //    return indexStats;
+            //}
+        }
+
+
+
+
+
+
 
         /// <summary>
         /// CONSTRUCTOR
@@ -361,70 +358,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public int GetCountOfStandardDeviationMatrices()
         {
             return this.spgr_StdDevMatrices.Count;
-        }
-
-
-        public void CalculateStatisticsForAllIndices()
-        {
-            double[,] matrix;
-
-            foreach (string key in this.spectrogramKeys)
-            {
-                if(this.spectrogramMatrices.ContainsKey(key)) 
-                {
-                    matrix = this.spectrogramMatrices[key];
-                    SpectralStats stats = LDSpectrogramRGB.GetModeAndOneTailedStandardDeviation(matrix);
-                    this.indexStats.Add(key, stats); // add index statistics
-                }
-            }
-        }
-
-        /* public List<string> WriteStatisticsForAllIndices()
-        {
-           List<string> lines = new List<string>();
-            foreach (string key in this.spectrogramKeys)
-            {
-                if (this.spectrogramMatrices.ContainsKey(key))
-                {
-                    string outString = "STATS for " + key + ":   ";
-                    Dictionary<string, double> stats = this.GetIndexStatistics(key);
-                    foreach (string stat in stats.Keys)
-                    {
-                        outString = string.Format("{0}  {1}={2:f3} ", outString, stat, stats[stat]);
-                    }
-                    lines.Add(outString);
-                }
-            }
-            return lines;
-
-        }*/
-
-        public void DrawIndexDistributionsAndSave(string imagePath)
-        {
-            int width = 100;  // pixels 
-            int height = 100; // pixels
-            var list = new List<Image>();
-            foreach (string key in this.spectrogramMatrices.Keys)
-            {
-                var stats = this.indexStats[key];
-                int[] histogram = Histogram.Histo(this.spectrogramMatrices[key], width);
-                list.Add(
-                    ImageTools.DrawHistogram(
-                        key,
-                        histogram,
-                        new Dictionary<string, double>()
-                            {
-                                { "min", stats.Minimum },
-                                { "max", stats.Maximum },
-                                { "mode", stats.Mode },
-                                { "sd", stats.StandardDeviation },
-                            },
-                        width,
-                        height));
-            }
-
-            Image image3 = ImageTools.CombineImagesVertically(list.ToArray());
-            image3.Save(imagePath);
         }
 
 
@@ -1066,21 +999,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M)
-        {
-            double[] values = DataTools.Matrix2Array(M);
-            const bool DisplayHistogram = false;
-            double min, max, mode, SD;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
-
-            return new SpectralStats()
-                       {
-                           Minimum = min,
-                           Maximum = max,
-                           Mode = mode,
-                           StandardDeviation = SD
-                       };
-        }
 
         //========================================================================================================================================================
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
@@ -1393,9 +1311,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
-            WriteStatisticsForLdSpectrogram(cs1, outputDirectory, fileStem);
-            
-            cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
+            //WriteStatisticsForLdSpectrogram(cs1, outputDirectory, fileStem);
+            //cs1.CalculateStatisticsForAllIndices();
+            var indexStats = IndexDistributions.CalculateStatisticsForAllIndices(cs1.spectrogramMatrices);
+            cs1.IndexStats = indexStats; // needed for difference spectrograms etc.
+            Json.Serialise(outputDirectory.CombineFile(fileStem + ".IndexStatistics.json"), indexStats);
+            string imagePath = Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png");
+            IndexDistributions.DrawIndexDistributionsAndSave(cs1.spectrogramMatrices, imagePath);
 
 
             Image image1;
@@ -1434,11 +1356,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                        : null;
         }
 
-        public static void WriteStatisticsForLdSpectrogram(LDSpectrogramRGB cs1, DirectoryInfo outputDirectory, string fileStem)
-        {
-            cs1.CalculateStatisticsForAllIndices();
-            Json.Serialise(outputDirectory.CombineFile(fileStem + ".IndexStatistics.json"), cs1.indexStats);
-        }
+        //public static void WriteStatisticsForLdSpectrogram(LDSpectrogramRGB cs1, DirectoryInfo outputDirectory, string fileStem)
+        //{
+        //    cs1.CalculateStatisticsForAllIndices();
+        //    Json.Serialise(outputDirectory.CombineFile(fileStem + ".IndexStatistics.json"), cs1.indexStats);
+        //}
 
         private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, TimeSpan minuteOffset, string fileStem, bool returnChromelessImages, DirectoryInfo outputDirectory)
         {

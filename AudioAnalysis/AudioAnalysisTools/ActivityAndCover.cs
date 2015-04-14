@@ -113,12 +113,18 @@ namespace AudioAnalysisTools
             }
 
             //bool[] events2 = {false, false, true, true, true, false, true, true, false, false, true, true, true}; //3 events; lengths = 3, 2, 3
-            List<int> eventList = DataTools.GetEventLengths(events);
-            var listOfFilteredEvents = eventList.Where(x => x >= minFrameCount);
-            int eventCount = listOfFilteredEvents.Count();
+            //List<int> eventList = DataTools.GetEventLengths(events);
+            //var listOfFilteredEvents = eventList.Where(x => x >= minFrameCount);
+            //int eventCount = listOfFilteredEvents.Count();
 
-            //if (eventCount == 0)
-                return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount);
+            double eventCount = 0;
+            for (int i = 0; i < activeFrames.Length - 1; i++)
+            {
+                if ((!events[i] && events[i+1]) || (events[i] && !events[i + 1]))
+                    eventCount += 1.0; // count the starts and ends of events
+            }
+            eventCount /= 2;  // divide by 2 because counted starts and ends
+            return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount);
 
             //int eventSum   = listOfFilteredEvents.Sum();
             //calculate the av segment duration in milliseconds
@@ -153,17 +159,19 @@ namespace AudioAnalysisTools
             SummaryActivity activity;
             double[] coverSpectrum = new double[cols];
             double[] eventSpectrum = new double[cols];
-            for (int c = 0; c < cols; c++) // calculate coverage for each freq band
+            // for each frequency bin, calculate coverage
+            for (int c = 0; c < cols; c++) 
             {
-                double[] bin = MatrixTools.GetColumn(spectrogram, c); // get the freq bin containing dB values
+                // get the freq bin containing dB values
+                double[] bin = MatrixTools.GetColumn(spectrogram, c); 
 
+                // get activity and event info
                 activity = ActivityAndCover.CalculateActivity(bin, frameStepDuration, dbThreshold);
                 //bool[] a1 = activity.activeFrames;
                 //int a2 = activity.activeFrameCount;
                 coverSpectrum[c] = activity.fractionOfActiveFrames; 
                 //double a4 = activity.activeAvDB;
-                //eventSpectrum[c] = activity.eventCount / recordingDurationInSeconds; 
-                eventSpectrum[c] = activity.eventCount;
+                eventSpectrum[c] = activity.eventCount / recordingDurationInSeconds; 
                 //TimeSpan a6 = activity.avEventDuration;
                 //bool[] a7 = activity.eventLocations;
             }

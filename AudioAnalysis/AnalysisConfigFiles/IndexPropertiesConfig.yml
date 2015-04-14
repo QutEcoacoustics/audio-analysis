@@ -375,7 +375,7 @@ ACI:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.4
-  NormMax: 0.7
+  NormMax: 0.6
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
@@ -461,8 +461,8 @@ EVN:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 0.5
+  NormMin: 0.5
+  NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: "events/s"
   IncludeInComboIndex: false

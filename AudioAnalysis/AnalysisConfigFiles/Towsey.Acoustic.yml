@@ -37,10 +37,10 @@ DisplayCsvImage: false
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0
 SonogramBackgroundThreshold: 4.0
-ParallelProcessing: true
+ParallelProcessing: false
 
 # if true an additional set of images will be produced that are tiles
-TileImageOutput: true
+TileImageOutput: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 EventThreshold: 0.2
