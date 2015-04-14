@@ -186,10 +186,10 @@ namespace QutBioacosutics.Xie.LDSpectrograms
 
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
-            cs1.CalculateStatisticsForAllIndices();
-            Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.IndexStats);
+            //cs1.CalculateStatisticsForAllIndices();
+            //Json.Serialise(Path.Combine(outputDirectory.FullName, fileStem + ".IndexStatistics.json").ToFileInfo(), cs1.IndexStats);
 
-            cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
+            //cs1.DrawIndexDistributionsAndSave(Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png"));
 
             string colorMap = colorMap1;
             Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
