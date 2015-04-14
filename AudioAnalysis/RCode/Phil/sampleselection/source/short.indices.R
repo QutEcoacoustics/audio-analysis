@@ -4,7 +4,7 @@ spectral.indices <- c('ACI', 'BGN', 'CVR', 'ENT', 'EVN', 'POW')
 
 
 
-DoClusteringWithIndices <- function (indices.df = NULL, indices.version = NULL) {
+ClusterSectonds <- function (indices.output, time.domain.cc.output = NULL) {
     
     if (is.null(df)) {
         res <- ReadOutput('indices')

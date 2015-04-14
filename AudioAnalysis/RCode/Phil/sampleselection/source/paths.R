@@ -20,11 +20,16 @@ Path <- function (path.name) {
     # looks for the path in the paths list
     # if muliple paths are supplied for the pathname, will return the first one
     # this is used so that different hard drives can be used (for home and work)
-    path <- paths[[path.name]][match(TRUE, file.exists(paths[[path.name]]))]
-    if (is.character(path)) {
+    
+    
+    first.match <- match(TRUE, file.exists(paths[[path.name]]))
+    
+    
+    if (!is.na(first.match)) {
+        path <- paths[[path.name]][first.match]
         return(path)
     } else {
-        stop(paste("path for", path.name,"doesn't exist:", path))
+        stop(paste("path for", path.name,"doesn't exist"))
     }
 
 }

@@ -22,11 +22,16 @@ EvaluateSamples <- function (use.last.accessed = FALSE, versions = NULL, subset.
         return(results)
     } else {
         ranks <- ReadOutput('ranked.samples', use.last.accessed = use.last.accessed)
+        
+        # user must choose the a single number-of-clusters to plot
         ranks <- ChooseNumClusters(ranks)
+        
+        # if subset.rankings has been supplied, create a subset of the ranking methods available
+        # also creates consistent column names
         ranks <- ChooseRankingsToComapre(ranks, subset.rankings)
         
         # !! TODO fix this
-  #      heading <- GetHeading(ranks)
+        heading <- GetHeading(ranks)
         EvaluateSamples2d(ranks, heading = heading)  
         # don't return results because we only use that to get averages across many
     }
@@ -60,8 +65,10 @@ ChooseRankingsToComapre <- function (ranks, subset.rankings = NULL) {
     # on the same data done with different ranking algorithms 
     # creates a subset
     
+    colnames(ranks$data) <- ConsistentRankNames(colnames(ranks$data))
+    
     if (!is.null(subset.rankings)) {
-        colnames(ranks$data) <- ConsistentRankNames(colnames(ranks$data))
+
         subset.rankings <- ConsistentRankNames(subset.rankings)    
         ranks$data <- ranks$data[,subset.rankings]    
     }
@@ -103,7 +110,7 @@ EvaluateSamplesEventCountOnly <- function (use.last.accessed = FALSE, versions =
 
 
 GetHeading <- function (ranks) {
-    target.min.ids <- GetMeta('target.min.ids', ranks$dependencies$target.min.ids)
+    target.min.ids <- GetMeta('target.min.ids', ranks$indirect.dependencies$target.min.ids)
     target <- target.min.ids$params$target
     target <- gsub("[^A-Za-z0-9 -]", '', target)
     heading = target;
@@ -217,7 +224,7 @@ EvaluateSamples2d <- function (ranks, add.dawn = FALSE, cutoff = NA, heading = '
     
     # save/retrieve the optimal samples by giving the target.min.ids as dependencies
     # which come from the target.min.ids of the ranks
-    dependencies <- list(target.min.ids = ranks$dependencies$target.min.ids)
+    dependencies <- list(target.min.ids = ranks$indirect.dependencies$target.min.ids)
     optimal <- ReadOutput('optimal.samples', dependencies = dependencies, false.if.missing = TRUE)
     if (!is.list(optimal)) {
         optimal <- OptimalSamples(species.in.each.min = species.in.each.sample)

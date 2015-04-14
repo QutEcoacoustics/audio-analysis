@@ -71,8 +71,23 @@ SetLastAccessed.recursive <- function (name, version, meta = NA) {
 }
 
 
-GetIndirectDependenciesStack <- function (name, version, meta = NA) {
-    require('rjson')   
+GetIndirectDependenciesDFStack <- function (name, version, meta = NA) {
+    # given a name and a version, will return a dataframe listing of all of the dependencies and their versions
+    # if an output type is a dependency of more than one dependency, then it will only appear once. 
+    # if this occurs, it should have the same version. If there are different versions of the same dependency 
+    # in the dependency tree, this is wrong, and it will cause an error. 
+    #
+    # Args:
+    #     name: string;
+    #     version: int;
+    #     meta: data.frame; optional. The dataframe of all outputs. If ommited will read from disk
+    # 
+    # Value: 
+    #     data.frame; with columns name, version
+    
+    
+    
+  
     if (!is.data.frame(meta)) {
         meta <- ReadMeta()
     }    
@@ -81,18 +96,98 @@ GetIndirectDependenciesStack <- function (name, version, meta = NA) {
         return(FALSE)
     }
     d <- DependenciesToDf(meta.row$dependencies)
+   
 
     if (nrow(d) > 0) {
         for (i in 1:nrow(d)) {  
             cur.d.name <- as.character(d$name[i])
             cur.d.version <- as.character(d$version[i])
-            cur.d.dependencies <- GetIndirectDependenciesStack(cur.d.name, cur.d.version, meta)
+            cur.d.dependencies <- GetIndirectDependenciesDFStack(cur.d.name, cur.d.version, meta)
             d <- rbind(d, cur.d.dependencies)
         }
     }
     return(d)
 }
+
+GetIndirectDependenciesStack <- function (name, version, meta = NA) {
+    # given a name and a version, will return a list of all of the dependencies and their versions
+    # if an output type is a dependency of more than one dependency, then it will only appear once. 
+    # if this occurs, it should have the same version. If there are different versions of the same dependency 
+    # in the dependency tree, this is wrong, and it will cause an error. 
+    #
+    # Args:
+    #     name: string;
+    #     version: int;
+    #     meta: data.frame; optional. The dataframe of all outputs. If ommited will read from disk
+    # 
+    # Value: 
+    #     list; Each dependency type is the name of and the version is the value
+    
+ 
+    if (!is.data.frame(meta)) {
+        meta <- ReadMeta()
+    }    
+    meta.row <- meta[meta$name == name & meta$version == version, ]
+    if (nrow(meta.row) != 1) {
+        return(FALSE)
+    }
+    d <- DependenciesToDf(meta.row$dependencies)
+    d.list <- list()
+    
+    if (nrow(d) > 0) {
+        for (i in 1:nrow(d)) {  
+            cur.d.name <- as.character(d$name[i])
+            cur.d.version <- as.integer(d$version[i])
+            d.list <- AddToDependencyStack(d.list, cur.d.name, cur.d.version) 
+            cur.d.dependencies <- GetIndirectDependenciesStack(cur.d.name, cur.d.version, meta)
+            for(j in names(cur.d.dependencies)) {
+                d.list <- AddToDependencyStack(d.list, j, cur.d.dependencies[[j]])   
+            }
+        }
+    }
+    return(d.list)
+}
+
+
+AddToDependencyStack <- function (list, name, value) {
+    # adds a value to a list only if it doesn't exist
+    # if it does exist with the same value, it is ignored, 
+    # if it does exist with a different value, it causes an error
+    
+    if (name %in% names(list) && list[[name]] != value) {
+        stop('multiple versions of same output type in dependency tree')
+    } else {
+        list[[name]] <- value
+        return(list)
+    }
+}
+
+
+
+
 GetIndirectDependenciesTree <- function (name, version, meta = NA) {
+    # given a name and version, will return a tree of all the dependencies and their dependencies etc
+    # 
+    # Args:
+    #     name: string;
+    #     version: int;
+    #     meta: data.frame; optional. The dataframe of all outputs. If ommited will read from disk
+    #
+    # Value:
+    #     list; in the form 
+    #list(dependency.1 = list(version = 12, 
+    #                         dependencies = list(dependency.1.1.name = list(version = 3, 
+    #                                                                        dependencies = list())
+    #                                             dependency.1.2.name = list(version = 2, 
+    #                                                                        dependencies = list())))
+    #     dependency.2 = list(version = 12, 
+    #                         dependencies = list(dependency.2.1.name = list(version = 3, 
+    #                                                                        dependencies = list())
+    #                                             dependency.2.2.name = list(version = 2, 
+    #                                                                        dependencies = list()))))
+    
+    
+    
     require('rjson')   
     if (!is.data.frame(meta)) {
         meta <- ReadMeta()
@@ -149,6 +244,16 @@ CheckPaths <- function () {
 
 
 GetType <- function (name) { 
+    # some types of output are data.frames and some are not. 
+    # Those which can be represented as a data frame are saved as a csv\
+    # those which can't must be saved as a binary object
+    # this function returns which forms for the given type of output
+    #
+    # clustering is the object returned by clustering method
+    # ranked samples is a 3d array with ranking-method, num-clusters and min-num as the dimensions
+    # species.in.each.min and optimal.samples are lists
+    
+    
     if (name %in% c('clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples')) {
         return('object')
     } else {
@@ -227,6 +332,7 @@ ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = N
     }
     if (include.meta) {
         meta <- ExpandMeta(meta.row)
+        meta$indirect.dependencies <- GetIndirectDependenciesStack(name, meta.row$version)
         meta$data <- val
         return(meta)
     } else {

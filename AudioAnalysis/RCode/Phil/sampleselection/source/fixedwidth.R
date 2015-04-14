@@ -2,27 +2,17 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     
     if (is.null(min.list)) {
         min.list <- ReadOutput('target.min.ids')
-        min.list <- min.list$data
     }
-    
-    
-    min.list.per.10 <- min.list[min.list$min %% 10 == 0, ]
-    
+    min.list.per.10 <- min.list$data[min.list$data$min %% 10 == 0, ]
     wave.path.per.10 <- rep(NA, nrow(min.list.per.10))
     for (i in 1:length(wave.path.per.10)) {
         wave.path.per.10[i] <- GetAudioFile(min.list.per.10$site[i], min.list.per.10$date[i], min.list.per.10$min[i])
     }  
-        
-    min.list$wave.path <- wave.path.per.10[rep(1:length(wave.path.per.10),each=10)]
-    
-    segment.list <- min.list[rep(1:nrow(min.list),each=num.per.min), ]
-    
-    segment.list$seg.num <- rep(1:num.per.min, nrow(min.list))
-    
+    min.list$data$wave.path <- wave.path.per.10[rep(1:length(wave.path.per.10),each=10)]
+    segment.list <- min.list$data[rep(1:nrow(min.list$data),each=num.per.min), ]
+    segment.list$seg.num <- rep(1:num.per.min, nrow(min.list$data))
     segment.list$start.sec <- (segment.list$seg.num - 1) * (60/num.per.min)
-    
     return(segment.list)
-    
     
 }
 
@@ -43,17 +33,16 @@ ExtractSDF <- function (segment.list) {
 }
 
 
-ExtractSDF <- function (segment.list, segment.length = 1, num.fbands = 16) {
+ExtractSDF <- function (segment.list, segment.length = 1, num.fbands = 16, num.coefficients = 16) {
     
     files <- unique(segment.list$wave.path)
-    
     
     for (f in 1:length(files)) {
         
         # create the spectrogram
         cur.spectro <- Sp.CreateFromFile(files[f], frame.width = num.fbands*2)
         
-        cur.spectro$vals <- RemoveNoise(cur.spectro$vals)
+#        cur.spectro$vals <- RemoveNoise(cur.spectro$vals)
         
         # width of segment should be rounded down to the nearest power of 2 (for fft)
         width <- RoundToPow2(segment.length * cur.spectro$frames.per.sec, floor = TRUE)
@@ -72,23 +61,17 @@ ExtractSDF <- function (segment.list, segment.length = 1, num.fbands = 16) {
         
         # add the start.col.in.file
         start.col.in.file <- start.sec.in.file * cur.spectro$frames.per.sec + 1
-        
-        
-        
-        
+
         
         for (s in 1:sum(segs)) {
             
             seg <- segment.list[segs, ][s, ]
-            
-            # make multople of 2
             start.col <- start.col.in.file[s]
             end.col <- start.col + width - 1
             seg.spectro <- cur.spectro$vals[,start.col:end.col]
-            seg.spectro <- seg.spectro * hamming
-            SDFs <- Mod(mvfft(seg.spectro * hamming))
             
-            
+            TDCCs <- ExtractTDCCs(seg.spectro, window = hamming, num.coefficients = num.coefficients)
+
             
             
         }
@@ -97,6 +80,43 @@ ExtractSDF <- function (segment.list, segment.length = 1, num.fbands = 16) {
     }
     
 }
+
+
+ExtractTDCCs <- function (spectro, window, num.coefficients) {
+    # given a spectrogram that has width = window length, 
+    # will do a fft on each frequency bin
+    # coefficients higher than num.coefficients will be discarded
+    
+    seg.spectro <- t(seg.spectro) * window
+    
+    # each column corresponds to a frequency band
+    # and consists of the same number of coefficients as the window width
+    
+    # Mod removes the imaginary part (phase)
+    TDCCs <- Mod(mvfft(seg.spectro))      
+    
+    # remove one of the symetrical halves
+    # we now have the number of rows = half the frame width
+    # top rows are the low frequencies (as in, frequency with which the amplidude modulates for that frequency band within the window)
+    amp <- TDCCs[1:(width / 2), ]
+    
+    # amplitude modulation frequency of row x = ((width/2) - x + 1) / (width/2) cycles per time frame
+    # eg, row 1 = 1 cycle per time frame
+    # eg, if width = 512, row 256 = 256 cycles per time frame 
+    
+    # keep only low-frequency coefficients
+    amp <- amp[1:num.coefficients,]  
+    
+    # return vector coefficient 1 - num.coefficients for bin 1, coefficient 1 - num.coefficients for bin 2 etc
+    amp <- as.vector(amp)
+    
+    return(amp)
+    
+    
+}
+
+
+
 
 RoundToPow2 <- function (x, ceil = FALSE, floor = FALSE) {
     # rounds the number x off to the nearest power of 2
