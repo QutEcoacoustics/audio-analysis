@@ -2394,12 +2394,13 @@ namespace TowseyLibrary
         }
 
 
-        public static Image DrawHistogram(string label, int[] histogram, Dictionary<string, double> statistics, int imageWidth, int height)
+        public static Image DrawHistogram(string label, int[] histogram, int upperPercentileBin, Dictionary<string, double> statistics, int imageWidth, int height)
         {
             int sum = histogram.Sum();
             Pen pen1 = new Pen(Color.White);
             Pen pen2 = new Pen(Color.Red);
             Pen pen3 = new Pen(Color.Wheat);
+            Pen pen4 = new Pen(Color.Purple);
             SolidBrush brush = new SolidBrush(Color.Red);
             Font stringFont = new Font("Arial", 9);
             //Font stringFont = new Font("Tahoma", 9);
@@ -2407,6 +2408,11 @@ namespace TowseyLibrary
 
             imageWidth = 300;
             int barWidth = imageWidth / histogram.Length;
+            int upperBound = upperPercentileBin * barWidth;
+
+            int modeBin = 0;
+            DataTools.getMaxIndex(histogram, out modeBin);
+            modeBin *= barWidth;
 
             int grid1 = imageWidth / 4;
             int grid2 = imageWidth / 2;
@@ -2419,6 +2425,10 @@ namespace TowseyLibrary
             g.DrawLine(pen3, grid2, height - 1, grid2, 0);
             g.DrawLine(pen3, grid3, height - 1, grid3, 0);
             g.DrawLine(pen1, 0, height-1, imageWidth, height - 1);
+            // draw mode bin and upper percentile bound
+            g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
+            g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
+
             g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
             string[] statKeys = statistics.Keys.ToArray();

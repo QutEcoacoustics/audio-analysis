@@ -11,6 +11,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         {
             //use the following paths for the command line.
 
+            // TO GET TO HERE audio2csv MUST BE ONLY COMMAND LINE ARGUMENT
+
             // testing for running on bigdata
             // "F:\Projects\QUT\qut-svn-trunk\AudioAnalysis\AnalysisPrograms\bin\Debug\AnalysisPrograms.exe" audio2csv -source "F:\Projects\test-audio\cabin_EarlyMorning4_CatBirds20091101-000000.wav" -config "F:\Projects\QUT\qut-svn-trunk\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg" -output "F:\Projects\test-audio\results" -tempdir "F:\Projects\test-audio\results\temp"
 

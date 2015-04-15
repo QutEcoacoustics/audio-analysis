@@ -6,6 +6,19 @@
 //   Defines the DrawLongDurationSpectrograms type.
 //
 // Action code for this analysis = ColourSpectrogram
+/// Activity Codes for other tasks to do with spectrograms and audio files:
+/// 
+/// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+/// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+/// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
+/// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
+/// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+/// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
+///
+/// audiofilecheck - Writes information about audio files to a csv file.
+/// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
+/// audiocutter - Cuts audio into segments of desired length and format
+/// createfoursonograms 
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -48,6 +61,19 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// To get to this DEV method, the FIRST AND ONLY command line argument must be "colourspectrogram"
+        /// Activity Codes for other tasks to do with spectrograms and audio files:
+        /// 
+        /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+        /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+        /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
+        /// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
+        /// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+        /// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
+        ///
+        /// audiofilecheck - Writes information about audio files to a csv file.
+        /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
+        /// audiocutter - Cuts audio into segments of desired length and format
+        /// createfoursonograms 
         /// </summary>
         /// <param name="arguments"></param>
         public static Arguments Dev()
@@ -89,7 +115,7 @@ namespace AnalysisPrograms
 
             // false-colour spectrograms
             string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
             string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
             // zoomable spectrograms
