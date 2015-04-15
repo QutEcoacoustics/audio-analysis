@@ -122,8 +122,8 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    MatchingBatchProcess4(queryInputDirectory, inputDirectory.FullName, 
-                  ridgeConfig, compressConfig, GaussianBlurConfig,
+                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength, 
+                  ridgeConfig, compressConfig, gradientConfig,
                   config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                 }
                 else if (action == "processOne")
@@ -160,9 +160,9 @@
                     //OutputResults.CSVMatchingAnalysisOfSongScope(inputDirectory, goundTruthFile);
                     //OutputResults.SplitFiles(inputDirectory, inputDirectory);
                     //var rate = OutputResults.ClassificationStatistics(inputDirectory, 5);
-                    var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
-                    OutputResults.SCMatchingSummary(inputDirectory, outputFile, 7
-                        );
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
+                    //OutputResults.SCMatchingSummary(inputDirectory, outputFile, 7
+                    //    );
                  
                     //GaussianBlurAmplitudeSpectro(inputDirectory.FullName, config, ridgeConfig, 1.0, 3);
 

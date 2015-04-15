@@ -726,6 +726,7 @@ namespace Dong.Felt
             var spectrogramMatrix = MatrixTools.MatrixRotate90Anticlockwise(spectrogram.Data);
             // TO FILTER OUT LOW AND HIGH frequency band, spicify the col index 
             // r = rows - 8500 / herzScale; r max = rows - 500 / herzScale
+            // r = 47 to filter out unnecessary ridges, but in ridge based features, it is not important.
             for (int r = 47; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
