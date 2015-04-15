@@ -119,7 +119,7 @@
             bool DoExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
             if (config.DoFullBandwidth) DoExtractSubband = false;   //if sono only intended for image
 
-            //set config params to the current recording
+            //set config params to the current recording           
             this.SampleRate = wav.SampleRate;
             this.Configuration.Duration = wav.Time;
             this.Configuration.SampleRate = wav.SampleRate; //also set the Nyquist
