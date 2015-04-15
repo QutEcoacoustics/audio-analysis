@@ -319,10 +319,11 @@ namespace TowseyLibrary
 
             int width = 100;  // pixels 
             int height = 100; // pixels
+            int upperPercentileBin = 0;
 
             string title = "wpd";
             int[] histogram = Histogram.Histo(matrix, width);
-            Image image = ImageTools.DrawHistogram(title, histogram,
+            Image image = ImageTools.DrawHistogram(title, histogram, upperPercentileBin,
                         new Dictionary<string, double>()
                             {
                                 { "min", min },

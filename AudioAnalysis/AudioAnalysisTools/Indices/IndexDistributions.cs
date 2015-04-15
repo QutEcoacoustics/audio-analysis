@@ -16,6 +16,8 @@ namespace AudioAnalysisTools.Indices
     using System.Text;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using TowseyLibrary;
+    using System.IO;
+    using Acoustics.Shared;
 
     public static class IndexDistributions
     {
@@ -29,97 +31,151 @@ namespace AudioAnalysisTools.Indices
             public double Mode { get; set; }
 
             public double StandardDeviation { get; set; }
+
+            public int UpperPercentile { get; set; }
+
+            public int UpperPercentileBin { get; set; }
+
+            public int[] Distribution { get; set; }
+
+            public double GetValueOfThresholdPercentile(int percentile)
+            {
+                return this.GetValueOfNthPercentile(this.UpperPercentile);
+            }
+                public double GetValueOfNthPercentile(int percentile)
+            {
+                int length = Distribution.Length;
+                double threshold = percentile / (double)100;
+                double[] probs = DataTools.NormaliseArea(this.Distribution);
+                double[] cumProb = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(probs);
+                int percentileBin = 0;
+                for (int i = 0; i < length - 1; i++)
+                {
+                    if (cumProb[i] >= threshold)
+                    {
+                        percentileBin = i;
+                        break;
+                    }
+                }
+                this.UpperPercentileBin = percentileBin;
+                double binWidth = (this.Maximum - this.Minimum) / (double)length;
+                double value = this.Minimum + (binWidth * percentileBin);
+                return value;
+            }
+
         }
 
-        public static Dictionary<string, SpectralStats> CalculateStatisticsForAllIndices(Dictionary<string, double[,]> spectrogramMatrices)
-        {
-            double[,] matrix;
-            Dictionary<string, SpectralStats> indexStats = new Dictionary<string, SpectralStats>();
+        public static Dictionary<string, SpectralStats> ReadIndexDistributionStatistics(DirectoryInfo opDir, string fileStem)
+        {           
+            FileInfo statsFile = new FileInfo(GetStatsPath(opDir, fileStem));
+            var indexDistributionStatistics = Json.Deserialise<Dictionary<string, SpectralStats>>(statsFile);
+            return indexDistributionStatistics;
+        }
 
+        public static Dictionary<string, SpectralStats> WriteIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo opDir, string fileStem)
+        {
+            // this sets the upper normalisation bound for image colour of spectral indices - derived from index distribution.
+            int upperPercentile = 95;
+            string label = "95%";
+
+            // to accumulate the images
+            int width = 100;  // pixels 
+            int height = 100; // pixels
+            var imageList = new List<Image>();
+            Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();
+
+            double[,] matrix;
             string[] spectrogramKeys = spectrogramMatrices.Keys.ToArray();
+
             foreach (string key in spectrogramKeys)
             {
                 if (spectrogramMatrices.ContainsKey(key))
                 {
                     matrix = spectrogramMatrices[key];
-                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix);
-                    indexStats.Add(key, stats); // add index statistics
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, upperPercentile);
+                    indexDistributionStatistics.Add(key, stats); // add index statistics
+                    double value = stats.GetValueOfThresholdPercentile(upperPercentile);
+
+                    imageList.Add(
+                        ImageTools.DrawHistogram(
+                            key,
+                            stats.Distribution,
+                            stats.UpperPercentileBin,
+                            new Dictionary<string, double>()
+                            {
+                                { "min",  stats.Minimum },
+                                { "max",  stats.Maximum },
+                                { "mode", stats.Mode },
+                                { "sd",   stats.StandardDeviation},
+                                { label,  value},
+                            },
+                            width,
+                            height));
                 }
             }
-            return indexStats;
-        }
 
+            FileInfo statsFile = new FileInfo(GetStatsPath(opDir, fileStem));
+            Json.Serialise(statsFile, indexDistributionStatistics);
+
+            Image image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
+            string imagePath = GetImagePath(opDir, fileStem);
+            image3.Save(imagePath);
+
+            return indexDistributionStatistics;
+        }
 
 
         public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M)
         {
+            int binCount = 100; 
+            int upperPercentile = 0;
             double[] values = DataTools.Matrix2Array(M);
             const bool DisplayHistogram = false;
             double min, max, mode, SD;
             DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
+            int[] histogram = Histogram.Histo(M, binCount);
 
             return new SpectralStats()
             {
                 Minimum = min,
                 Maximum = max,
                 Mode = mode,
-                StandardDeviation = SD
+                StandardDeviation = SD,
+                UpperPercentile = upperPercentile,
+                Distribution = histogram
             };
         }
 
-
-        /* public List<string> WriteStatisticsForAllIndices()
+        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M, int binCount, int upperPercentile)
         {
-           List<string> lines = new List<string>();
-            foreach (string key in this.spectrogramKeys)
+            double[] values = DataTools.Matrix2Array(M);
+            const bool DisplayHistogram = false;
+            double min, max, mode, SD;
+            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
+            int[] histogram = Histogram.Histo(M, binCount);
+
+            return new SpectralStats()
             {
-                if (this.spectrogramMatrices.ContainsKey(key))
-                {
-                    string outString = "STATS for " + key + ":   ";
-                    Dictionary<string, double> stats = this.GetIndexStatistics(key);
-                    foreach (string stat in stats.Keys)
-                    {
-                        outString = string.Format("{0}  {1}={2:f3} ", outString, stat, stats[stat]);
-                    }
-                    lines.Add(outString);
-                }
-            }
-            return lines;
-
-        }*/
-
-        public static void DrawIndexDistributionsAndSave(Dictionary<string, double[,]> spectrogramMatrices, string imagePath)
-        {
-            int width = 100;  // pixels 
-            int height = 100; // pixels
-            var list = new List<Image>();
-            double[,] matrix;
-            string[] spectrogramKeys = spectrogramMatrices.Keys.ToArray();
-            foreach (string key in spectrogramMatrices.Keys)
-            {
-                // used to save mode and sd of the indices 
-                matrix = spectrogramMatrices[key];
-                SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix);
-                int[] histogram = Histogram.Histo(spectrogramMatrices[key], width);
-                list.Add(
-                    ImageTools.DrawHistogram(
-                        key,
-                        histogram,
-                        new Dictionary<string, double>()
-                            {
-                                { "min", stats.Minimum },
-                                { "max", stats.Maximum },
-                                { "mode", stats.Mode },
-                                { "sd", stats.StandardDeviation },
-                            },
-                        width,
-                        height));
-            }
-
-            Image image3 = ImageTools.CombineImagesVertically(list.ToArray());
-            image3.Save(imagePath);
+                Minimum = min,
+                Maximum = max,
+                Mode = mode,
+                StandardDeviation = SD,
+                UpperPercentile = upperPercentile,
+                Distribution = histogram
+            };
         }
 
+        public static string GetStatsPath(DirectoryInfo opDir, string fileStem)
+        {
+            string imagePath = Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.json");
+            return imagePath;
+        }
+
+        public static string GetImagePath(DirectoryInfo opDir, string fileStem)
+        {
+            string imagePath = Path.Combine(opDir.FullName, fileStem + ".IndexDistributions.png");
+            return imagePath;
+        }
 
 
 

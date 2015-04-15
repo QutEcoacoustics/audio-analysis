@@ -13,6 +13,22 @@
 //   Create the config file throu an instance of the class LDSpectrogramConfig
 //   and then call config.WritConfigToYAML(FileInfo path).
 //   Then pass that path to the above static method.
+//
+//
+//  Activity Codes for other tasks to do with spectrograms and audio files:
+/// 
+/// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+/// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+/// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
+/// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
+/// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+/// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
+///
+/// audiofilecheck - Writes information about audio files to a csv file.
+/// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
+/// audiocutter - Cuts audio into segments of desired length and format
+/// createfoursonograms 
+///
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -1311,13 +1327,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
-            //WriteStatisticsForLdSpectrogram(cs1, outputDirectory, fileStem);
-            //cs1.CalculateStatisticsForAllIndices();
-            var indexStats = IndexDistributions.CalculateStatisticsForAllIndices(cs1.spectrogramMatrices);
-            cs1.IndexStats = indexStats; // needed for difference spectrograms etc.
-            Json.Serialise(outputDirectory.CombineFile(fileStem + ".IndexStatistics.json"), indexStats);
-            string imagePath = Path.Combine(outputDirectory.FullName, fileStem + ".IndexDistributions.png");
-            IndexDistributions.DrawIndexDistributionsAndSave(cs1.spectrogramMatrices, imagePath);
+            // Get index distribution statistics. 
+            // Either read from json file or calculate if json file not available. 
+            // Keep stats because needed if drawing difference spectrograms etc.
+            if (false)
+            {
+                cs1.IndexStats = IndexDistributions.ReadIndexDistributionStatistics(outputDirectory, fileStem);
+            }
+            else
+            {
+                // Calculate the distribution Statistics For All Indices - save a text file and image
+                cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, outputDirectory, fileStem);
+                //cs1.IndexStats = indexStats;
+                // issue warning that stats file not find therefore calculating
+                LoggedConsole.WriteWarnLine("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
+                LoggedConsole.WriteWarnLine("   Therefore calculating them, writing to file and making image - all saved in above directory.");
+            }
 
 
             Image image1;
@@ -1355,12 +1380,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                        ? new[] { Tuple.Create(image1NoChrome, colorMap1), Tuple.Create(image2NoChrome, colorMap2) }
                        : null;
         }
-
-        //public static void WriteStatisticsForLdSpectrogram(LDSpectrogramRGB cs1, DirectoryInfo outputDirectory, string fileStem)
-        //{
-        //    cs1.CalculateStatisticsForAllIndices();
-        //    Json.Serialise(outputDirectory.CombineFile(fileStem + ".IndexStatistics.json"), cs1.indexStats);
-        //}
 
         private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, TimeSpan minuteOffset, string fileStem, bool returnChromelessImages, DirectoryInfo outputDirectory)
         {
