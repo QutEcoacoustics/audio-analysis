@@ -1,10 +1,10 @@
 ---
-  UnitsOfTime: "second"
-  IndexCalculationDuration: 0.2
-  SpectralFrameDuration: 0.02
-  TileWidth: 300
-  ScaleUnits: "SecondsPerPixel"
-  SpectralIndexScale: 
+UnitsOfTime: "second"
+IndexCalculationDuration: 0.2
+SpectralFrameDuration: 0.02
+TileWidth: 300
+ScaleUnits: "SecondsPerPixel"
+SpectralIndexScale: 
     - 60
     - 24
     - 12
@@ -13,9 +13,11 @@
     - 1
     - 0.6
     - 0.2
-  SpectralFrameScale: 
+SpectralFrameScale: 
     - 0.1
     - 0.04
     - 0.02
-  MaxTilesPerSuperTile: 12
+MaxTilesPerSuperTile: 12
+UseDistributionsForNormalization: false
+IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 ...
