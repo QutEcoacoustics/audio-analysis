@@ -259,7 +259,7 @@ namespace Dong.Felt
             var nhRowsCount = query.nhCountInRow;
             var nhColsCount = query.nhCountInColumn;
             var nhStartRowIndex = query.nhStartRowIndex;
-
+           
             for (int colIndex = 0; colIndex < colsCount; colIndex++)
             {
                 if (StatisticalAnalysis.checkBoundary(nhStartRowIndex + nhRowsCount - 1, colIndex + nhColsCount - 1, rowsCount, colsCount))
