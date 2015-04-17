@@ -108,7 +108,7 @@ namespace AudioAnalysisTools.Indices
             TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
             var config = analysisSettings.Configuration;
-            var indicesPropertiesConfig = FindIndicesConfig.Find(config, analysisSettings.ConfigFile);
+            var indicesPropertiesConfig = IndexProperties.Find(config, analysisSettings.ConfigFile);
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
             // get frame parameters for the analysis

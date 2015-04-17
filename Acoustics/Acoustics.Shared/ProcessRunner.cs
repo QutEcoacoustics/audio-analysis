@@ -21,6 +21,8 @@
 
         private Process process;
 
+        public int ExitCode { get; private set; }
+
         /// <summary>
         /// Gets ExecutableFile.
         /// </summary>
@@ -47,7 +49,13 @@
         /// </summary>
         public int MaxRetries { get; set; }
 
-        public IEnumerable<string> FailedRunOutput { get { return failedRuns.ToArray(); } }
+        public IEnumerable<string> FailedRunOutput
+        {
+            get
+            {
+                return this.failedRuns.ToArray();
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessRunner"/> class.
@@ -263,6 +271,8 @@
                     this.process.WaitForExit();
                 }
             }
+
+            this.ExitCode = process.ExitCode;
         }
 
         private void RunTaskReaders(string arguments, string workingDirectory, int retryCount)
@@ -293,7 +303,7 @@
                         // if waitResult == true hope those already finished or will finish fast
                         // otherwise wait for taks to complete to be able to dispose them
 
-                        //exitCode = process.ExitCode;
+                        this.ExitCode = process.ExitCode;
 
                         standardOutput.Append(outputReader.Result);
                         errorOutput.Append(errorReader.Result);
@@ -308,6 +318,7 @@
 
                     Task.WaitAll(processWaiter, outputReader, errorReader);
 
+                    this.ExitCode = process.ExitCode;
                     standardOutput.Append(outputReader.Result);
                     errorOutput.Append(errorReader.Result);
                     

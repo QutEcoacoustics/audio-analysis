@@ -249,7 +249,7 @@ namespace AnalysisPrograms
 
         public void BeforeAnalyse(AnalysisSettings analysisSettings)
         {
-            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(analysisSettings.Configuration, analysisSettings.ConfigFile);
+            FileInfo indicesPropertiesConfig = IndexProperties.Find(analysisSettings.Configuration, analysisSettings.ConfigFile);
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
         }
@@ -356,10 +356,9 @@ namespace AnalysisPrograms
             foreach (var kvp in selectors)
             {   
                 // write spectrogram to disk as CSV file
-                ////string fileName = ;
-                var saveCsvPath = destination.CombineFile(fileNameBase + "." + kvp.Key + ".csv");
-                spectralIndexFiles.Add(saveCsvPath);
-                Csv.WriteMatrixToCsv(saveCsvPath, results, kvp.Value);
+                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                spectralIndexFiles.Add(filename);
+                Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
         }
 
@@ -379,40 +378,37 @@ namespace AnalysisPrograms
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
             int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
-     
-            // gather settings for rendering false color spectrograms
-            string fileName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
-            var configInfo = new LdSpectrogramConfig
-                             {
-                                 AnalysisType = settings.Configuration[AnalysisKeys.AnalysisName],
-                                 FileName = fileName,
-                                 SampleRate = sampleRate,
-                                 FrameWidth = frameWidth,
-                                 FrameStep  = settings.Configuration[AnalysisKeys.FrameStep],
 
-                                 IndexCalculationDuration = settings.IndexCalculationDuration.Value,
-                                 BGNoiseNeighbourhood     = settings.BGNoiseNeighbourhood.Value,
-                                 XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+            string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
-                                 // this next line is probably wrong - does not give start of the source recording only a segment of it.
-                                 MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
-                                 ColourMap2   = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                                 ColourMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
-                                 BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF       
-                             };
+            // output to disk (so other analysers can use the data,
+            // only data - configuration settings that generated these indices
+            // this data can then be used by post-process analyses
+            var indexConfigData = new IndexGenerationData()
+                                      {
+                                          SampleRate = sampleRate,
+                                          FrameWidth = frameWidth,
+                                          FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
+                                          IndexCalculationDuration = settings.IndexCalculationDuration.Value,
+                                          BGNoiseNeighbourhood = settings.BGNoiseNeighbourhood.Value,
+                                          MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                                          BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF
+                                      };
+            var icdPath = FilenameHelpers.AnalysisResultName(
+                resultsDirectory.FullName,
+                basename,
+                IndexGenerationData.FileNameFragment,
+                "json");
+            Json.Serialise(icdPath.ToFileInfo(), indexConfigData);
 
-            // copy relevant config settings to the output directory so user can later refer to the parameters.
-            var configFileDestination = new FileInfo(Path.Combine(resultsDirectory.FullName, fileName + ".config.yml"));
-            if (configFileDestination.Exists)
-            {
-#if DEBUG
-                configFileDestination.Delete();
-#else
-                throw new InvalidOperationException("The given file should not exist: " + configFileDestination.FullName);
-#endif
-            }
+            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
+            // this is the most effcient way to do this
+            // gather up numbers and strings store in memory, write to disk one time
+            // this method also AUTOMATICALLY SORTS because it uses array indexing
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-            Json.Serialise(configFileDestination, configInfo);
+            // Calculate the index distribution statistics and write to a json file. Also save as png image
+            IndexDistributions.WriteIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
 
             // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
             if (settings.IndexCalculationDuration.Value != TimeSpan.FromSeconds(60.0))
@@ -421,24 +417,26 @@ namespace AnalysisPrograms
             }
             else
             {
-                FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
+                FileInfo indicesPropertiesConfig = IndexProperties.Find(settings.Configuration, settings.ConfigFile);
+                // gather settings for rendering false color spectrograms
+                var config = new LdSpectrogramConfig
+                {
+                    XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                    ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                    ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+                };
 
-                // gather spectra to form spectrograms.  Assume same spectra in all analyser results
-                // this is the most effcient way to do this
-                // gather up numbers and strings store in memory, write to disk one time
-                // this method also AUTOMATICALLY SORTS because it uses array indexing
-                var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
-
-                Tuple<Image, string>[] images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
-                    resultsDirectory,
-                    resultsDirectory,
-                    configFileDestination,
-                    indicesPropertiesConfig,
-                    dictionaryOfSpectra, 
-                    tileOutput);
-
-                // Calculate the index distribution statistics and write to a json file. Also save as png image
-                IndexDistributions.WriteIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, fileName);            
+                Tuple<Image, string>[] images =
+                    LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                        inputDirectory: resultsDirectory,
+                        outputDirectory: resultsDirectory,
+                        ldSpectrogramConfig: config,
+                        indicesConfigPath: indicesPropertiesConfig,
+                        indexGenerationData: indexConfigData, 
+                        basename: basename, 
+                        analysisType: this.Identifier,
+                        indexSpectrograms: dictionaryOfSpectra,
+                        returnChromelessImages: tileOutput);
 
                 if (tileOutput)
                 {
@@ -447,12 +445,12 @@ namespace AnalysisPrograms
                     Log.Info("Tiling output at scale: " + settings.IndexCalculationDuration.Value);
 
                     var image = images[1];
-                    TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
+                    TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
                 }
             }
         }
 
-        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, DateTimeOffset recordingStartDate, Image image)
+        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, string analysisTag, DateTimeOffset recordingStartDate, Image image)
         {
             const int TileHeight = 256;
             const int TileWidth = 60;
@@ -473,7 +471,7 @@ namespace AnalysisPrograms
             var gap = timeOfDay - previousAbsoluteHour;
             var tilingStartDate = recordingStartDate - gap;
 
-            var tilingProfile = new AbsoluteDateTilingProfile(fileStem, tilingStartDate, TileHeight, TileWidth);
+            var tilingProfile = new AbsoluteDateTilingProfile(fileStem, analysisTag, tilingStartDate, TileHeight, TileWidth);
 
             // pad out image so it produces a whole number of tiles
             // this solves the asymetric right padding of short audio files
