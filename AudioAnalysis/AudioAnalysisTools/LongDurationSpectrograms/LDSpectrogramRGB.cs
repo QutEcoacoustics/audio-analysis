@@ -36,6 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
@@ -183,14 +184,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public LDSpectrogramRGB(LdSpectrogramConfig config, string colourMap)
+        public LDSpectrogramRGB(LdSpectrogramConfig config, IndexGenerationData igd, string colourMap)
         {
             this.BackgroundFilter = 1.0;
-            this.SampleRate = config.SampleRate;
-            this.FrameWidth = config.FrameWidth;
-            this.StartOffset = config.MinuteOffset;
+            this.SampleRate = igd.SampleRate;
+            this.FrameWidth = igd.FrameWidth;
+            this.StartOffset = igd.MinuteOffset;
             // set the X and Y axis scales for the spectrograms 
-            this.IndexCalculationDuration = config.IndexCalculationDuration;
+            this.IndexCalculationDuration = igd.IndexCalculationDuration;
             this.XTicInterval = config.XAxisTicInterval; 
             this.ColorMap = colourMap;
         }
@@ -1265,58 +1266,61 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
         /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
         /// </summary>
-        /// <param name="longDurationSpectrogramConfig">
-        /// </param>
-        /// <param name="spectrogramConfigPath"></param>
+        /// <param name="inputDirectory"></param>
+        /// <param name="outputDirectory"></param>
+        /// <param name="ldSpectrogramConfig"></param>
         /// <param name="indicesConfigPath">
-        /// The indices Config Path.
+        ///     The indices Config Path.
         /// </param>
-        /// <param name="indexSpgrams">
-        /// Optional spectra to pass in. If specified the spectra will not be loaded from disk!
+        /// <param name="indexGenerationData"></param>
+        /// <param name="basename"></param>
+        /// <param name="analysisType"></param>
+        /// <param name="indexSpectrograms">
+        ///     Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
         /// <param name="returnChromelessImages">If true, this method generates and returns separate chromeless images.</param>
+        /// <param name="longDurationSpectrogramConfig">
+        /// </param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
-            DirectoryInfo ipDir,
-            DirectoryInfo outputDirectory,
-            FileInfo spectrogramConfigPath,
-            FileInfo indicesConfigPath,
-            Dictionary<string, double[,]> indexSpgrams = null,
-            bool returnChromelessImages = false)
+            DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, LdSpectrogramConfig ldSpectrogramConfig, 
+            FileInfo indicesConfigPath, IndexGenerationData indexGenerationData, string basename, string analysisType, 
+            Dictionary<string, double[,]> indexSpectrograms = null, bool returnChromelessImages = false)
         {
-            LdSpectrogramConfig config = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
+            LdSpectrogramConfig config = ldSpectrogramConfig;
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
-            string colorMap2 = config.ColourMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+            string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
+            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
 
-            double backgroundFilterCoeff = (double?)config.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            double backgroundFilterCoeff = indexGenerationData.BackgroundFilterCoeff;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
-            var cs1 = new LDSpectrogramRGB(config, colorMap1);
-            string fileStem = config.FileName;
-            string analysisType = config.AnalysisType;
+            var cs1 = new LDSpectrogramRGB(config, indexGenerationData, colorMap1);
+            string fileStem = basename;
+            
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
-            if (indexSpgrams == null)
+            if (indexSpectrograms == null)
             {
-                DateTime now1 = DateTime.Now;
+                var sw = Stopwatch.StartNew();
                 Logger.Info("Reading spectra files from disk");
                 // reads all known files spectral indices
-                cs1.ReadCSVFiles(ipDir, fileStem + "_" + analysisType);
+                throw new NotImplementedException("Anthony was too lazy to patch this... complain to him when it breaks");
+                ////cs1.ReadCSVFiles(inputDirectory, fileStem, analysisType);
                 DateTime now2 = DateTime.Now;
-                TimeSpan et = now2 - now1;
-                LoggedConsole.WriteLine("Time to read spectral index files = " + et.TotalSeconds + " seconds");
+                sw.Stop();
+                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
             }
             else
             {
                 // TODO: not sure if this works
                 Logger.Info("Spectra loaded from memory");
-                cs1.LoadSpectrogramDictionary(indexSpgrams);
+                cs1.LoadSpectrogramDictionary(indexSpectrograms);
             }
 
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
@@ -1347,14 +1351,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             Image image1;
             Image image1NoChrome;
-            CreateSpectrogramFromSpectralIndices(cs1, colorMap1, config.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image1, out image1NoChrome);
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap1, indexGenerationData.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image1, out image1NoChrome);
 
             Image image2;
             Image image2NoChrome;
-            CreateSpectrogramFromSpectralIndices(cs1, colorMap2, config.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap2, indexGenerationData.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
 
             // read high amplitude and clipping info into an image
-            string indicesFile = Path.Combine(ipDir.FullName, fileStem + ".Indices.csv");
+            string indicesFile = Path.Combine(inputDirectory.FullName, fileStem + ".Indices.csv");
             Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
             if (imageX != null)
             {

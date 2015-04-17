@@ -27,6 +27,17 @@ namespace Acoustics.Shared
             }   
         }
 
+        public static void Serialise<T>(TextWriter stream, T obj)
+        {
+            var serializer = new JsonSerializer();
+            serializer.Formatting = Formatting.Indented;
+
+            using (var writer = new JsonTextWriter(stream))
+            {
+                serializer.Serialize(writer, obj);
+            }
+        }
+
         public static string SerialiseToString<T>(T obj, bool prettyPrint = true)
         {
             return JsonConvert.SerializeObject(obj, prettyPrint ? Formatting.Indented : Formatting.None);

@@ -164,6 +164,7 @@
     <Compile Include="Base58.cs" />
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="CompareFeatures.cs" />
+    <Compile Include="ConfigFile.cs" />
     <Compile Include="Coordinate.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />
     <Compile Include="Csv\Csv.cs" />
@@ -188,6 +189,7 @@
     <Compile Include="Extensions\ReflectionExtensions.cs" />
     <Compile Include="Extensions\TupleExtensions.cs" />
     <Compile Include="FileDateHelpers.cs" />
+    <Compile Include="FileNameHelpers.cs" />
     <Compile Include="FilterResult.cs" />
     <Compile Include="Formatters.cs" />
     <Compile Include="GraphicsSegmented.cs" />

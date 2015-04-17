@@ -21,6 +21,8 @@ namespace AudioAnalysisTools.Indices
 
     public static class IndexDistributions
     {
+        public static string IndexDistributionsFilenameFragment;
+        public const string IndexStatisticsFilenameFragment = "IndexStatistics";
 
         public class SpectralStats
         {
@@ -167,17 +169,18 @@ namespace AudioAnalysisTools.Indices
 
         public static string GetStatsPath(DirectoryInfo opDir, string fileStem)
         {
-            string imagePath = Path.Combine(opDir.FullName, fileStem + ".IndexStatistics.json");
-            return imagePath;
+            return FilenameHelpers.AnalysisResultName(opDir.FullName, fileStem, IndexStatisticsFilenameFragment, "json");
         }
 
         public static string GetImagePath(DirectoryInfo opDir, string fileStem)
         {
-            string imagePath = Path.Combine(opDir.FullName, fileStem + ".IndexDistributions.png");
-            return imagePath;
+            IndexDistributionsFilenameFragment = FilenameHelpers.AnalysisResultName(opDir.FullName, fileStem, "IndexDistributions", "json");
+            return IndexDistributionsFilenameFragment;
         }
 
-
-
+        public static Dictionary<string, SpectralStats> Deserialize(FileInfo file)
+        {
+            return Json.Deserialise<Dictionary<string, SpectralStats>>(file);
+        }
     }
 }

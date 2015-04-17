@@ -16,6 +16,7 @@ namespace AudioAnalysisTools
     using System.Linq;
     using System.Text;
 
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
 
     using AnalysisBase;
@@ -470,13 +471,13 @@ namespace AudioAnalysisTools
         public static FileInfo SaveEvents(IAnalyser2 analyser2, string fileName,
             DirectoryInfo outputDirectory, IEnumerable<EventBase> events)
         {
-            return SaveResults(outputDirectory, fileName + ".Events", analyser2.WriteEventsFile, events);
+            return SaveResults(outputDirectory, fileName, analyser2.Identifier + ".Events", analyser2.WriteEventsFile, events);
         }
 
         public static FileInfo SaveSummaryIndices(IAnalyser2 analyser2, string fileName,
             DirectoryInfo outputDirectory, IEnumerable<SummaryIndexBase> indices) 
         {
-            return SaveResults(outputDirectory, fileName + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
+            return SaveResults(outputDirectory, fileName, analyser2.Identifier + ".Indices", analyser2.WriteSummaryIndicesFile, indices);
         }
 
         public static DirectoryInfo SaveSpectralIndices(IAnalyser2 analyser2, string fileName, DirectoryInfo outputDirectory, IEnumerable<SpectralIndexBase> spectra)
@@ -491,7 +492,7 @@ namespace AudioAnalysisTools
             return outputDirectory;
         }
 
-        private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)
+        private static FileInfo SaveResults<T>(DirectoryInfo outputDirectory, string resultFilenamebase, string analysisTag, Action<FileInfo, IEnumerable<T>> serialiseFunc, IEnumerable<T> results)
         {
             if (results == null)
             {
@@ -499,9 +500,9 @@ namespace AudioAnalysisTools
                 return null;    
             }
 
-
-            var reportfilePath = outputDirectory.CombineFile(resultFilenamebase + ReportFileExt);
-            var reportfilePathBackup = outputDirectory.CombineFile(resultFilenamebase + "_BACKUP" + ReportFileExt);
+            
+            var reportfilePath = FilenameHelpers.AnalysisResultName(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt).ToFileInfo();
+            var reportfilePathBackup = FilenameHelpers.AnalysisResultName(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt, "BACKUP").ToFileInfo();
 
             serialiseFunc(reportfilePath, results);
 

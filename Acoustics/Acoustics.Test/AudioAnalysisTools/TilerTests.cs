@@ -535,8 +535,8 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestInitialize]
         public void Setup()
         {
-            this.tilingProfile = new AbsoluteDateTilingProfile("TILE", new DateTimeOffset(2015, 04, 10, 0, 0, 0, TimeSpan.FromHours(10)), 256, 60);
-            this.tilingProfileNotRoundStart = new AbsoluteDateTilingProfile("TILE", new DateTimeOffset(2015, 04, 10, 3, 30, 0, TimeSpan.FromHours(10)), 256, 60);
+            this.tilingProfile = new AbsoluteDateTilingProfile("TILE", "", new DateTimeOffset(2015, 04, 10, 0, 0, 0, TimeSpan.FromHours(10)), 256, 60);
+            this.tilingProfileNotRoundStart = new AbsoluteDateTilingProfile("TILE", "", new DateTimeOffset(2015, 04, 10, 3, 30, 0, TimeSpan.FromHours(10)), 256, 60);
 
             this.outputDirectory = TestHelper.GetTempDir();
 
