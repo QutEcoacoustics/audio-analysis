@@ -38,7 +38,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
     public partial class AnalyseLongRecording
     {
-        private const string ImagefileExt = ".png";
+        private const string ImagefileExt = "png";
 
         private const string FinishedMessage = @"
 
