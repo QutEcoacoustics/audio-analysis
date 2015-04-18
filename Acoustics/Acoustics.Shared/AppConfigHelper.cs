@@ -31,7 +31,7 @@ namespace Acoustics.Shared
             }
         }
 
-        public const string StandardDateFormatUtc = "yyyyMMdd_HHmmssZ";
+        public const string StandardDateFormatUtc = "yyyyMMdd-HHmmssZ";
 
         public static string FileDateFormatUtc
         {
@@ -49,7 +49,7 @@ namespace Acoustics.Shared
             }
         }
 
-        public const string StandardDateFormat = "yyyyMMdd_HHmmsszzz";
+        public const string StandardDateFormat = "yyyyMMdd-HHmmsszzz";
 
         public static string FileDateFormat
         {

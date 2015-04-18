@@ -167,14 +167,14 @@ namespace AudioAnalysisTools.Indices
             };
         }
 
-        public static string GetStatsPath(DirectoryInfo opDir, string fileStem)
+        public static string GetStatsPath(DirectoryInfo outputDirectory, string fileStem)
         {
-            return FilenameHelpers.AnalysisResultName(opDir.FullName, fileStem, IndexStatisticsFilenameFragment, "json");
+            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, IndexStatisticsFilenameFragment, "json");
         }
 
-        public static string GetImagePath(DirectoryInfo opDir, string fileStem)
+        public static string GetImagePath(DirectoryInfo outputDirectory, string fileStem)
         {
-            IndexDistributionsFilenameFragment = FilenameHelpers.AnalysisResultName(opDir.FullName, fileStem, "IndexDistributions", "json");
+            IndexDistributionsFilenameFragment = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, "IndexDistributions", "json");
             return IndexDistributionsFilenameFragment;
         }
 

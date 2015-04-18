@@ -311,7 +311,7 @@ Output  to  directory: {1}
                 }
                 else
                 {
-                    string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                    string fileName = Path.GetFileNameWithoutExtension(fileNameBase);
                     string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
                     Bitmap tracksImage =
                         DrawSummaryIndices.DrawImageOfSummaryIndices(

@@ -165,7 +165,6 @@ namespace AudioAnalysisTools
             int frameCount = selectedFrames.Length;
 
             //DO CLUSTERING - if have suitable data
-            BinaryCluster.Verbose = false;
             BinaryCluster.RandomiseTrnSetOrder = false;
             int initialClusterCount = 2;
             double vigilance = 0.15;    //vigilance parameter - increasing this proliferates categories. A vigilance=0.1 requires (AND/OR) similarity > 10%
@@ -180,8 +179,8 @@ namespace AudioAnalysisTools
             List<double[]> prunedClusterWts = tuple_output2.Item2;
             double[] clusterSpectrum = BinaryCluster.GetClusterSpectrum(clusterWts);
 
-            if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
-            if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
+            BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
+            LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
 
             // ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
             //  first:  reassemble cluster hits into an array matching the original array of active frames.

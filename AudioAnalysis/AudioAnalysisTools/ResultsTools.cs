@@ -30,7 +30,7 @@ namespace AudioAnalysisTools
 
     public static class ResultsTools
     {
-        public const string ReportFileExt = ".csv";
+        public const string ReportFileExt = "csv";
         private static readonly ILog Log = LogManager.GetLogger(typeof(ResultsTools));
 
         /* 

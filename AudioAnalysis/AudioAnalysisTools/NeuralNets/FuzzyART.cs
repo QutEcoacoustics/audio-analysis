@@ -19,8 +19,6 @@ namespace NeuralNets
         public double theta { get; set; }
         public double rhoStar { get; set; }
 
-        public static bool Verbose { get; set; }
-
         double[,] wts;               //: the WEIGHTS of the F2 units
         bool[] uncommittedJ;        //: PtrToArrayOfBool;
 
@@ -169,8 +167,8 @@ namespace NeuralNets
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-        if (FuzzyART.Verbose) LoggedConsole.WriteLine("\n BEGIN TRAINING");
-        if (FuzzyART.Verbose) LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
+       LoggedConsole.WriteLine("\n BEGIN TRAINING");
+       LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
 
         //repeat //{training set until max iter or trn set learned}
         int iterNum = 0;
@@ -246,7 +244,7 @@ namespace NeuralNets
 
             if (trainSetLearned)
             {
-                if (FuzzyART.Verbose) LoggedConsole.WriteLine("Training set learned after " + iterNum + " iterations");
+                LoggedConsole.WriteLine("Training set learned after " + iterNum + " iterations");
                 break;
             }
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
@@ -265,8 +263,8 @@ namespace NeuralNets
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-        if (FuzzyART.Verbose) LoggedConsole.WriteLine("\n BEGIN TRAINING");
-        if (FuzzyART.Verbose) LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
+        LoggedConsole.WriteLine("\n BEGIN TRAINING");
+        LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
 
         //repeat //{training set until max iter or trn set learned}
         int iterNum = 0;
@@ -614,7 +612,7 @@ namespace NeuralNets
         int IPSize = trainingData.GetLength(1);
         int F2Size = trnSetSize;
         int maxIterations = 100;
-        if (FuzzyART.Verbose) LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+        LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
 
         //************************** INITIALISE PARAMETER VALUES *************************
         double alpha = 0.57;   //increasing alpha proliferates categories - 0.57 is good value
@@ -626,7 +624,7 @@ namespace NeuralNets
         FuzzyART fuzzyART = new FuzzyART(IPSize, F2Size); //initialise FuzzyART class
 
         fuzzyART.SetParameterValues(alpha, beta, rho, theta);
-        if (FuzzyART.Verbose) fuzzyART.WriteParameters();
+        fuzzyART.WriteParameters();
         fuzzyART.InitialiseArrays();
         
         //fuzzyART.RepeatTrainNet(trainingData, maxIterations, 1, seed, 3);
@@ -636,7 +634,7 @@ namespace NeuralNets
         int iterNum = output.Item1;
         noOfCommittedF2Nodes = output.Item2;
 
-        if (FuzzyART.Verbose) LoggedConsole.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
+        LoggedConsole.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
         
         return fuzzyART.inputCategory;  //keepScore;
 
@@ -657,7 +655,7 @@ namespace NeuralNets
         int F2Size = trnSetSize;
         int numberOfRepeats = 1;
         int maxIterations = 100;
-        if (FuzzyART.Verbose) LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+        LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
         int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2 units}
         //int[] iterToConv = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# training iterations}
 
@@ -683,7 +681,7 @@ namespace NeuralNets
         FuzzyART fuzzyART = new FuzzyART(IPSize, F2Size); //initialise FuzzyART class
 
         fuzzyART.SetParameterValues(alpha, beta, rho, theta);
-        if (FuzzyART.Verbose) fuzzyART.WriteParameters();
+        fuzzyART.WriteParameters();
 
         //{********** DO REPEATS ***********}
         for (int rep = 0; rep < numberOfRepeats; rep++)

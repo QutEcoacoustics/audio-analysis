@@ -156,14 +156,8 @@ namespace AnalysisPrograms
             Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
             common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 
-            // read in required files
-            // we expect a valid indices output directory (the input directory in this action)
-            // to contain a IndexDistributions.json and a IndexGenerationData.json file
-            common.IndexGenerationDataFile = arguments.SourceDirectory.GetFiles(IndexGenerationData.FileNameFragment).Single();
-            common.IndexDistributionsFile = arguments.SourceDirectory.GetFiles(IndexDistributions.IndexStatisticsFilenameFragment).Single();
-
-            // this also means we can parse out other information from these files
-            common.GuessOriginalBasename();
+            // get the indexDistributions and the indexGenerationData
+            common.CheckForNeededFiles(arguments.SourceDirectory);
 
             switch (arguments.ZoomAction)
             {

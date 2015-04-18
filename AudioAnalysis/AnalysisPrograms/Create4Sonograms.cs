@@ -37,8 +37,6 @@ using System.Drawing;
             [ArgRequired]
             public FileInfo Output { get; set; }
 
-            public bool Verbose { get; set; }
-
             //[ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
             //[ArgRange(0, double.MaxValue)]
             //public double? StartOffset { get; set; }
@@ -69,7 +67,6 @@ using System.Drawing;
                 Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                Verbose = true
             };
 
             throw new NoDeveloperMethodException();

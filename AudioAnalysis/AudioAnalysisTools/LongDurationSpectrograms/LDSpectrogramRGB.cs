@@ -497,7 +497,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
-                string path = Path.Combine(opdir.FullName, opFileName + "." + key + ".png");
+                string path = FilenameHelpers.AnalysisResultName(opdir, opFileName, key, "png");
                 Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
                 if (bmp != null)
                 {
@@ -554,7 +554,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             } 
             else 
             {
-                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEG.png"));
+                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEGpng"));
             }
 
             Image bmpBgn;
@@ -568,7 +568,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(key);
                 bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
-                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEGBGN.png"));
+                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEGBGNpng"));
             }
         }
 
@@ -583,7 +583,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             else
             {
-                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + "." + colorMap + ".png"));
+                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + "." + colorMap + "png"));
             }
         }
 
@@ -598,7 +598,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             else
             {
-                bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
+                bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEGpng"));
             }
         }
 
@@ -671,7 +671,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool doReverseColour = colorMODE.StartsWith("POS");
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
-            //bmp.Save(@"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages\TESTIMAGE.png");
+            //bmp.Save(@"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages\TESTIMAGEpng");
 
             //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             //int herzInterval = 1000;
@@ -1358,11 +1358,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             CreateSpectrogramFromSpectralIndices(cs1, colorMap2, indexGenerationData.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
 
             // read high amplitude and clipping info into an image
-            string indicesFile = Path.Combine(inputDirectory.FullName, fileStem + ".Indices.csv");
+            string indicesFile = FilenameHelpers.AnalysisResultName(inputDirectory, fileStem, "Indices", "csv");
             Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
             if (imageX != null)
             {
-                imageX.Save(Path.Combine(outputDirectory.FullName, fileStem + ".ClipHiAmpl.png"));
+                imageX.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + "ClipHiAmpl", "png"));
             }
 
             CreateTwoMapsImage(outputDirectory, fileStem, image1, imageX, image2);
@@ -1370,15 +1370,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image ribbon;
             // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SummaryRibbon.png"));
+
+            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".SummaryRibbon", "png"));
             // ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SummaryRibbon.png"));
+            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap2 + ".SummaryRibbon", "png"));
 
             ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap1 + ".SpectralRibbon.png"));
+            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".SpectralRibbon", "png"));
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
-            ribbon.Save(Path.Combine(outputDirectory.FullName, fileStem + "." + colorMap2 + ".SpectralRibbon.png"));
+            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap2 + ".SpectralRibbon", "png"));
 
             return returnChromelessImages
                        ? new[] { Tuple.Create(image1NoChrome, colorMap1), Tuple.Create(image2NoChrome, colorMap2) }
@@ -1404,7 +1405,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
             image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
-            image.Save(outputDirectory.CombineFile(fileStem + "." + colorMap + ".png").FullName);
+            var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap, "png");
+            image.Save(outputPath);
             return Tuple.Create(image, imageNoChrome);
         }
 
@@ -1412,7 +1414,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             var imageList = new[] { image1, imageX, image2 };
             Image image3 = ImageTools.CombineImagesVertically(imageList);
-            image3.Save(outputDirectory.CombineFile(fileStem + ".2MAPS.png").FullName);
+            var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, "2Maps", "png");
+            image3.Save(outputPath);
         }
     }
 }
