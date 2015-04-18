@@ -39,5 +39,39 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 #endif
             this.OriginalBasename = originalBaseName;
         }
+
+        /// <summary>
+        /// read in required files
+        /// we expect a valid indices output directory (the input directory in this action)
+        /// to contain a IndexDistributions.json and a IndexGenerationData.json file
+        /// </summary>
+        /// <param name="indicesDirectory"></param>
+        public void CheckForNeededFiles(DirectoryInfo indicesDirectory)
+        {
+            FileInfo indexDistributionsFile;
+            FileInfo indexGenerationDataFile;
+            CheckForNeededFiles(indicesDirectory, out indexGenerationDataFile, out indexDistributionsFile);
+
+            this.IndexGenerationDataFile = indexGenerationDataFile;
+            this.IndexDistributionsFile = indexDistributionsFile;
+
+            // this also means we can parse out other information from these files
+            this.GuessOriginalBasename();
+
+        }
+
+        /// <summary>
+        /// read in required files
+        /// we expect a valid indices output directory (the input directory in this action)
+        /// to contain a IndexDistributions.json and a IndexGenerationData.json file
+        /// </summary>
+        /// <param name="indicesDirectory"></param>
+        /// <param name="indexGenerationDataFile"></param>
+        /// <param name="indexDistributionsFile"></param>
+        public static void CheckForNeededFiles(DirectoryInfo indicesDirectory, out FileInfo indexGenerationDataFile, out FileInfo indexDistributionsFile)
+        {
+            indexGenerationDataFile = indicesDirectory.GetFiles(IndexGenerationData.FileNameFragment).Single();
+            indexDistributionsFile = indicesDirectory.GetFiles(IndexDistributions.IndexStatisticsFilenameFragment).Single();
+        }
     }
 }

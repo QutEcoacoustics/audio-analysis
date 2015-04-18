@@ -48,7 +48,7 @@ namespace AnalysisPrograms
             [ArgDescription("The task to execute, either `" + TaskAnalyse + "` or `" + TaskLoadCsv + "`")]
             [ArgRequired]
             [ArgPosition(1)]
-            [ArgOneOfThese(TaskAnalyse, TaskLoadCsv, ExceptionMessage = "The task to execute is not recognised.")]
+            [ArgOneOfThese(TaskAnalyse, TaskLoadCsv, ExceptionMessage = "The task to execute is not recognized.")]
             public string Task { get; set; }
 
             [ArgIgnore]
@@ -142,6 +142,7 @@ namespace AnalysisPrograms
         // TASK IDENTIFIERS
         public const string TaskAnalyse = AnalysisName;
         public const string TaskLoadCsv = "loadCsv";
+        public const string TowseyAcoustic = "Towsey." + AnalysisName;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -152,7 +153,10 @@ namespace AnalysisPrograms
 
         public string Identifier
         {
-            get { return "Towsey." + AnalysisName; }
+            get
+            {
+                return TowseyAcoustic;
+            }
         }
 
 
@@ -395,7 +399,7 @@ namespace AnalysisPrograms
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF
                                       };
             var icdPath = FilenameHelpers.AnalysisResultName(
-                resultsDirectory.FullName,
+                resultsDirectory,
                 basename,
                 IndexGenerationData.FileNameFragment,
                 "json");

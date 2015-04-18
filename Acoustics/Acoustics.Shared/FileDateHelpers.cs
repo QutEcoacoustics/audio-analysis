@@ -25,10 +25,12 @@ namespace Acoustics.Shared
                                                          new DateVariants(@".*_(\d{8}_\d{6}Z?)\..+", AppConfigHelper.StandardDateFormatSm2, false, 1), 
 
                                                          // valid: prefix_20140101_235959.mp3, a_00000000_000000.a, a_99999999_999999.dnsb48364JSFDSD, prefix_20140101_235959Z.mp3
-                                                         new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false,  2), 
 
-                                                         // valid: prefix_20140101_235959+10.mp3, a_00000000_000000+00.a, a_99999999_999999+9999.dnsb48364JSFDSD
-                                                         new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})([+-]\d{2,4}))\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, true, 2),
+                                                         // valid: prefix_20140101-235959.mp3, a_00000000-000000.a, a_99999999-999999Z.dnsb48364JSFDSD
+                                                         new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, false, 2),                                                         new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false,  2), 
+
+                                                         // valid: prefix_20140101-235959+10.mp3, a_00000000-000000+00.a, a_99999999-999999+9999.dnsb48364JSFDSD
+                                                         new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})([+-]\d{2,4}))\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, true, 2),
 
                                                          // valid: SERF_20130314_000021_000.wav, a_20130314_000021_a.a, a_99999999_999999_a.dnsb48364JSFDSD
                                                          new DateVariants(@"(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2}Z?))_(.*?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false, 2), 

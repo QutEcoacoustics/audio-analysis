@@ -13,11 +13,11 @@ namespace Acoustics.Shared
     /// </summary>
     public static class FilenameHelpers
     {
-        public const string SegmentSeperator = "_";
-        public const string BasenameSeperator = "_-_";
-        public const string ExtensionSeperator = ".";
-        public const string ExampleFilename = "orginalBasename" + BasenameSeperator + "AnalysisType.SubType" + SegmentSeperator + "someOtherValue" + ExtensionSeperator + "extension";
-        public static readonly Regex AnalysisResultRegex = new Regex(@"^(.*)" + BasenameSeperator + @"(.*)\" + ExtensionSeperator + "(.+)$");
+        public const string SegmentSeparator = "_";
+        public const string BasenameSeparator = "__";
+        public const string ExtensionSeparator = ".";
+        public const string ExampleFilename = "orginalBasename" + BasenameSeparator + "AnalysisType.SubType" + SegmentSeparator + "someOtherValue" + ExtensionSeparator + "extension";
+        public static readonly Regex AnalysisResultRegex = new Regex(@"^(.*)" + BasenameSeparator + @"(.*)\" + ExtensionSeparator + "(.+)$");
 
         public static string AnalysisResultName(
             FileInfo orignalFile,
@@ -54,16 +54,21 @@ namespace Acoustics.Shared
                 throw new ArgumentException("analysisTag must have a value", "analysisTag");
             }
 
-            var filename = basename + BasenameSeperator + analysisTag;
+            if (basename.Contains(BasenameSeparator))
+            {
+                basename = basename.Replace(BasenameSeparator, SegmentSeparator);
+            }
+
+            var filename = basename + BasenameSeparator + analysisTag;
 
             if (otherSegments.Length > 0)
             {
-                filename += otherSegments.Aggregate(SegmentSeperator, string.Concat);
+                filename += otherSegments.Aggregate(string.Empty, (aggregate, item) => aggregate + SegmentSeparator + item);
             }
 
             if (!string.IsNullOrWhiteSpace(newExtension))
             {
-                filename += ExtensionSeperator + newExtension;
+                filename += ExtensionSeparator + newExtension;
             }
 
             return filename;
@@ -109,7 +114,7 @@ namespace Acoustics.Shared
                 originalBasename = match.Groups[1].Value;
                 var suffix = match.Groups[2].Value;
 
-                var segments = suffix.Split(new[] { SegmentSeperator }, StringSplitOptions.None);
+                var segments = suffix.Split(new[] { SegmentSeparator }, StringSplitOptions.None);
 
                 analysisTag = segments[0];
 

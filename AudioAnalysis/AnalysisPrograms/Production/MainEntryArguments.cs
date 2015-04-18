@@ -89,7 +89,7 @@ namespace AnalysisPrograms.Production
             get
             {
                 Contract.Assert(!this.Verbose || (this.Verbose && this.logLevel == LogVerbosity.Debug));
-                Contract.Assert(!this.VeryVerbose || (this.VeryVerbose && this.logLevel == LogVerbosity.Debug));
+                Contract.Assert(!this.VVerbose || (this.VVerbose && this.logLevel == LogVerbosity.Debug));
                 
                 return this.logLevel;
             }
@@ -97,7 +97,7 @@ namespace AnalysisPrograms.Production
             {
                 this.Verbose = value == LogVerbosity.Debug;
 
-                this.VeryVerbose = value == LogVerbosity.All;
+                this.VVerbose = value == LogVerbosity.All;
                 
                 this.logLevel = value;
             }
@@ -105,8 +105,7 @@ namespace AnalysisPrograms.Production
 
         public bool Verbose { get; set; }
 
-        [ArgShortcut("vv")]
-        public bool VeryVerbose { get; set; }
+        public bool VVerbose { get; set; }
     }
 
     public enum LogVerbosity

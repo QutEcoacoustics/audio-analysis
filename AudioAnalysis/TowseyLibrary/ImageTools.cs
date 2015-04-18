@@ -33,8 +33,6 @@ namespace TowseyLibrary
     {
         const string paintPath = @"C:\Windows\system32\mspaint.exe";
 
-        public static bool Verbose { set; get; }
-
         // this is a list of predefined colors in the Color class.
         public static string[] colorNames ={"AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet",
                             "Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan",
@@ -274,32 +272,32 @@ namespace TowseyLibrary
                 case Kernal.HighPass1: kernal = highPassKernal1;
                     break;
                 case Kernal.HighPass2: kernal = highPassKernal2;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied highPassKernal2 Kernal");
+                    LoggedConsole.WriteLine("Applied highPassKernal2 Kernal");
                     break;
                 case Kernal.HorizontalLine3: kernal = horiLineKernal3;
                     break;
                 case Kernal.HorizontalLine5: kernal = horiLineKernal5;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Horizontal Line5 Kernal");
+                    LoggedConsole.WriteLine("Applied Horizontal Line5 Kernal");
                     break;
                 case Kernal.VerticalLine: kernal = vertLineKernal;
                     break;
                 case Kernal.DiagLine1: kernal = diagLineKernal1;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied diagLine1 Kernal");
+                    LoggedConsole.WriteLine("Applied diagLine1 Kernal");
                     break;
                 case Kernal.DiagLine2: kernal = diagLineKernal2;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied diagLine2 Kernal");
+                    LoggedConsole.WriteLine("Applied diagLine2 Kernal");
                     break;
                 case Kernal.Laplace1: kernal = Laplace1Kernal;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace1 Kernal");
+                    LoggedConsole.WriteLine("Applied Laplace1 Kernal");
                     break;
                 case Kernal.Laplace2: kernal = Laplace2Kernal;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace2 Kernal");
+                    LoggedConsole.WriteLine("Applied Laplace2 Kernal");
                     break;
                 case Kernal.Laplace3: kernal = Laplace3Kernal;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace3 Kernal");
+                    LoggedConsole.WriteLine("Applied Laplace3 Kernal");
                     break;
                 case Kernal.Laplace4: kernal = Laplace4Kernal;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Laplace4 Kernal");
+                    LoggedConsole.WriteLine("Applied Laplace4 Kernal");
                     break;
 
 
@@ -379,19 +377,19 @@ namespace TowseyLibrary
             switch (name)
             {
                 case Kernal.Grid2: kernal = grid2;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Kernal 2");
+                    LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid3: kernal = grid3;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Kernal 2");
+                    LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid4: kernal = grid4;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Kernal 2");
+                    LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid2Wave: kernal = grid2Wave;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Wave Kernal 2");
+                    LoggedConsole.WriteLine("Applied Grid Wave Kernal 2");
                     break;
                 case Kernal.Grid3Wave: kernal = grid3Wave;
-                    if (ImageTools.Verbose) LoggedConsole.WriteLine("Applied Grid Wave Kernal 3");
+                    LoggedConsole.WriteLine("Applied Grid Wave Kernal 3");
                     break;
 
 
@@ -425,7 +423,7 @@ namespace TowseyLibrary
             }
             double noiseAv; double noiseSd;
             NormalDist.AverageAndSD(noiseScores, out noiseAv, out noiseSd);
-            if (ImageTools.Verbose) LoggedConsole.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
+            LoggedConsole.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
 
             double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
 
@@ -1772,16 +1770,16 @@ namespace TowseyLibrary
             }//end rows
 
             //NOW DO SHAPE MERGING TO REDUCE NUMBERS
-            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
+            LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
             int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
             double widthRatio = 5.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
             shapes = Oblong.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
-            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 2 =" + shapes.Count);
+            LoggedConsole.WriteLine("Object Count 2 =" + shapes.Count);
             //shapes = Shape.RemoveEnclosedShapes(shapes);
             shapes = Oblong.RemoveOverlappingShapes(shapes);
             int minArea = 14;
             shapes = Oblong.RemoveSmall(shapes, minArea);
-            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 3 =" + shapes.Count);
+            LoggedConsole.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
 
@@ -1870,16 +1868,16 @@ namespace TowseyLibrary
             }//end rows
 
             //NOW DO SHAPE MERGING TO REDUCE NUMBERS
-            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
+            LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
             int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
             double widthRatio = 4.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
             shapes = Oblong.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
-            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 2 =" + shapes.Count);
+            LoggedConsole.WriteLine("Object Count 2 =" + shapes.Count);
             shapes = Oblong.RemoveEnclosedShapes(shapes);
             //shapes = Shape.RemoveOverlappingShapes(shapes);
             int minArea = 30;
             shapes = Oblong.RemoveSmall(shapes, minArea);
-            if (ImageTools.Verbose) LoggedConsole.WriteLine("Object Count 3 =" + shapes.Count);
+            LoggedConsole.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
 

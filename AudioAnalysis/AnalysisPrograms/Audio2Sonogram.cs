@@ -50,8 +50,6 @@ namespace AnalysisPrograms
         [CustomDescription]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            public bool Verbose { get; set; }
-
             [ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
             [ArgRange(0, double.MaxValue)]
             public double? StartOffset { get; set; }
@@ -94,7 +92,6 @@ namespace AnalysisPrograms
                 //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
                 Output = @"C:\SensorNetworks\Output\Sonograms\SonogramTest_2014November".ToDirectoryInfo(),
-                Verbose = true
             };
 
             throw new NoDeveloperMethodException();
@@ -128,9 +125,6 @@ namespace AnalysisPrograms
                 startOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
                 endOffset   = TimeSpan.FromMinutes(arguments.EndOffset.Value);
             }
-
-            bool verbose = arguments.Verbose;
- 
 
             const string Title = "# MAKE A SONOGRAM FROM AUDIO RECORDING";
             string date  = "# DATE AND TIME: " + DateTime.Now;
@@ -206,14 +200,12 @@ namespace AnalysisPrograms
             /* #################################################################### */
 
             // print out the sonogram parameters
-            if (verbose)
+            LoggedConsole.WriteLine("\nPARAMETERS");
+            foreach (KeyValuePair<string, string> kvp in configDict)
             {
-                LoggedConsole.WriteLine("\nPARAMETERS");
-                foreach (KeyValuePair<string, string> kvp in configDict)
-                {
-                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
-                }
+                LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
+
 
             // 3: GET RECORDING
             // put temp FileSegment in same directory as the required output image.
