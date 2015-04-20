@@ -102,7 +102,7 @@ namespace AudioAnalysisTools.Indices
         public static void ReadAllSpectralIndicesAndWriteToDataTable(FileInfo indexPropertiesConfig, DirectoryInfo inputDirInfo, DirectoryInfo opDir)
         {
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
             string[] spectrogramKeys = dictIP.Keys.ToArray();
 
             int count = 0;

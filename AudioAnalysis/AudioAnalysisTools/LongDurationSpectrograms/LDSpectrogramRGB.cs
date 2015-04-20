@@ -39,6 +39,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -154,15 +155,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Index distribution statistics are now calulated after the indices have been calculated.
         /// </summary>
         private readonly Dictionary<string, IndexDistributions.SpectralStats> indexStats;
-        public Dictionary<string, IndexDistributions.SpectralStats> IndexStats
-        { get; private set; 
-        }
 
-
-
-
-
-
+        public Dictionary<string, IndexDistributions.SpectralStats> IndexStats { get; private set; }
 
         /// <summary>
         /// CONSTRUCTOR
@@ -183,14 +177,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public LDSpectrogramRGB(LdSpectrogramConfig config, IndexGenerationData igd, string colourMap)
+        public LDSpectrogramRGB(LdSpectrogramConfig config, IndexGenerationData indexGenerationData, string colourMap)
         {
             this.BackgroundFilter = 1.0;
-            this.SampleRate = igd.SampleRate;
-            this.FrameWidth = igd.FrameWidth;
-            this.StartOffset = igd.MinuteOffset;
+            this.SampleRate = indexGenerationData.SampleRate;
+            this.FrameWidth = indexGenerationData.FrameWidth;
+            this.StartOffset = indexGenerationData.MinuteOffset;
             // set the X and Y axis scales for the spectrograms 
-            this.IndexCalculationDuration = igd.IndexCalculationDuration;
+            this.IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
             this.XTicInterval = config.XAxisTicInterval; 
             this.ColorMap = colourMap;
         }
@@ -566,7 +560,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             } 
             else 
             {
-                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEGpng"));
+                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEG.png"));
             }
 
             Image bmpBgn;
@@ -580,7 +574,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 bmpBgn = this.DrawGreyscaleSpectrogramOfIndex(key);
                 bmpNeg = this.DrawDoubleSpectrogram(bmpNeg, bmpBgn, "NEGATIVE");
-                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEGBGNpng"));
+                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEGBGN.png"));
             }
         }
 
@@ -610,7 +604,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             else
             {
-                bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEGpng"));
+                bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
             }
         }
 
@@ -683,7 +677,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool doReverseColour = colorMODE.StartsWith("POS");
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
-            //bmp.Save(@"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages\TESTIMAGEpng");
+            //bmp.Save(@"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages\TESTIMAGE.png");
 
             //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             //int herzInterval = 1000;
@@ -1277,19 +1271,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         ///  IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE. 
         /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
         /// </summary>
-<<<<<<< HEAD
-        /// <param name="longDurationSpectrogramConfig">
-        /// </param>
-        /// <param name="spectrogramConfigPath"></param>
-        /// <param name="indexPropertiesConfigPath">
-        /// The indices Config Path.
-=======
         /// <param name="inputDirectory"></param>
         /// <param name="outputDirectory"></param>
         /// <param name="ldSpectrogramConfig"></param>
-        /// <param name="indicesConfigPath">
+        /// <param name="indexPropertiesConfigPath">
         ///     The indices Config Path.
->>>>>>> origin/spectrogramZoom
         /// </param>
         /// <param name="indexGenerationData"></param>
         /// <param name="basename"></param>
@@ -1297,22 +1283,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="indexSpectrograms">
         ///     Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
+        /// <param name="indexDistributions"></param>
         /// <param name="returnChromelessImages">If true, this method generates and returns separate chromeless images.</param>
         /// <param name="longDurationSpectrogramConfig">
         /// </param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
-<<<<<<< HEAD
-            DirectoryInfo ipDir,
+            DirectoryInfo inputDirectory,
             DirectoryInfo outputDirectory,
-            FileInfo spectrogramConfigPath,
+            LdSpectrogramConfig ldSpectrogramConfig,
             FileInfo indexPropertiesConfigPath,
-            Dictionary<string, double[,]> indexSpgrams = null,
+            IndexGenerationData indexGenerationData,
+            string basename,
+            string analysisType,
+            Dictionary<string, double[,]> indexSpectrograms = null,
+            Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
             bool returnChromelessImages = false)
-=======
-            DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, LdSpectrogramConfig ldSpectrogramConfig, 
-            FileInfo indicesConfigPath, IndexGenerationData indexGenerationData, string basename, string analysisType, 
-            Dictionary<string, double[,]> indexSpectrograms = null, bool returnChromelessImages = false)
->>>>>>> origin/spectrogramZoom
         {
             LdSpectrogramConfig config = ldSpectrogramConfig;
 
@@ -1329,18 +1314,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
 
-<<<<<<< HEAD
             // Get and set the dictionary of index properties
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigPath);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
             cs1.SetSpectralIndexProperties(dictIP); 
 
-
             // Load the Index Spectrograms into a Dictionary
-            if (indexSpgrams == null)
-=======
             if (indexSpectrograms == null)
->>>>>>> origin/spectrogramZoom
             {
                 var sw = Stopwatch.StartNew();
                 Logger.Info("Reading spectra files from disk");
@@ -1349,7 +1329,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 ////cs1.ReadCSVFiles(inputDirectory, fileStem, analysisType);
                 DateTime now2 = DateTime.Now;
                 sw.Stop();
-                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture) + " seconds");
             }
             else
             {
@@ -1365,17 +1345,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             
             // Get index distribution statistics. 
-            // Either read from json file or calculate if json file not available. 
-            // Keep stats because needed if drawing difference spectrograms etc.
-            cs1.IndexStats = IndexDistributions.ReadIndexDistributionStatistics(ipDir, fileStem);
-            if ((cs1.IndexStats == null) || (cs1.IndexStats.Count == 0))
+            // Either read from input variable or json file. 
+            // Stats are useful because needed if drawing difference spectrograms etc.     
+            if (indexDistributions == null)
             {
-                // Calculate the distribution Statistics For All Indices - save a text file and image
-                cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
-                // issue warning that stats file not found therefore calculating
-                LoggedConsole.WriteWarnLine("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
-                LoggedConsole.WriteWarnLine("   Therefore calculating them, writing to file and making image - all saved in above directory.");
+                indexDistributions = IndexDistributions.ReadIndexDistributionStatistics(inputDirectory, fileStem);
+
+                Log.Fatal("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
+
+                if (indexDistributions == null)
+                {
+                    throw new InvalidOperationException("Cannot proceed without index distribution data");
+                }
             }
+            cs1.IndexStats = indexDistributions;
 
 
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);

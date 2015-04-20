@@ -176,6 +176,7 @@ namespace AnalysisPrograms
             FileInfo indexDistributionsFile;
             ZoomCommonArguments.CheckForNeededFiles(arguments.InputDataDirectory, out indexGenerationDataFile, out indexDistributionsFile);
             var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
+            var indexDistributionsData = IndexDistributions.Deserialize(indexDistributionsFile);
 
             string originalBaseName;
             string[] otherSegments;
@@ -190,11 +191,12 @@ namespace AnalysisPrograms
                 inputDirectory: arguments.InputDataDirectory,
                 outputDirectory: arguments.OutputDirectory,
                 ldSpectrogramConfig: config,
-                indicesConfigPath: arguments.IndexPropertiesConfig,
+                indexPropertiesConfigPath: arguments.IndexPropertiesConfig,
                 indexGenerationData: indexGenerationData,
                 basename: originalBaseName,
                 analysisType: Acoustic.TowseyAcoustic,
                 indexSpectrograms: null,
+                indexDistributions: indexDistributionsData,
                 returnChromelessImages: false);
         }
     }

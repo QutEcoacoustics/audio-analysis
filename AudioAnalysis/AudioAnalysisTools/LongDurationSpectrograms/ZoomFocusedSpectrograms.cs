@@ -128,7 +128,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
             Dictionary<string, IndexProperties> dictIP = indexProperties;
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
 
             TimeSpan sourceMinuteOffset = indexGeneration.MinuteOffset;
 

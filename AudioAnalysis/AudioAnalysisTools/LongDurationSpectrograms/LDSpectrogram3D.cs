@@ -224,7 +224,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 // 4. Read the yaml file describing the Index Properties 
                 Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-                dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+                dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
 
                 // 5. Convert data slice to image
                 string[] indexNames = colorMap.Split('-');

@@ -130,11 +130,11 @@ namespace QutBioacosutics.Xie.LDSpectrograms
         /// <param name="configuration"></param>
         public static void DrawSpectrogramsFromSpectralIndicesJiesCopyDoNotUseAnthonyThisWholeCopyingMethodsThingIsConfusingMe(FileInfo spectrogramConfigPath, FileInfo indicesConfigPath)
         {
-            //var configuration = Yaml.Deserialise<LDSpectrogramConfig>(configPath);
+            //var configuration = Yaml.Deserialize<LDSpectrogramConfig>(configPath);
             var configuration = LdSpectrogramConfigOfJie.ReadYamlToConfig(spectrogramConfigPath);
 
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
             //var dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties();
 
             string fileStem = configuration.FileName;

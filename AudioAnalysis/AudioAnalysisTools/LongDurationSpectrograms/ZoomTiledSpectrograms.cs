@@ -317,7 +317,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 300);
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            indexProperties = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(indexProperties);
+            indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
             string[] keys = indexProperties.Keys.ToArray();
 
             Stopwatch timer = Stopwatch.StartNew();
