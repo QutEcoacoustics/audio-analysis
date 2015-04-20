@@ -108,8 +108,6 @@ namespace TowseyLibrary
             }
         }
 
-        public static bool Verbose { get; set; }
-
         /// <summary>
         ///     location of Oblong's centre column in parent matrix
         /// </summary>
@@ -323,20 +321,13 @@ namespace TowseyLibrary
                 distribution[bin]++;
             }
 
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Number of data columns = " + maxCol);
-            }
 
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("One bin = " + binWidth + " of the original data columns.");
-            }
+            LoggedConsole.WriteLine("Number of data columns = " + maxCol);
 
-            if (Verbose)
-            {
-                WriteDistribution(distribution, binWidth);
-            }
+            LoggedConsole.WriteLine("One bin = " + binWidth + " of the original data columns.");
+
+            WriteDistribution(distribution, binWidth);
+
 
             return distribution;
         }
@@ -436,10 +427,8 @@ namespace TowseyLibrary
         public static ArrayList MergeShapesWhoseEndsOverlap(ArrayList shapes, int dyThreshold)
         {
             // merge shapes whose ends overlap
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Merge shapes whose ends overlap.");
-            }
+            LoggedConsole.WriteLine("Merge shapes whose ends overlap.");
+
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -453,10 +442,7 @@ namespace TowseyLibrary
                     }
 
                     double dy = s1.RowShift(s2);
-                    if (Verbose)
-                    {
-                        LoggedConsole.WriteLine("dy=" + dy);
-                    }
+                    LoggedConsole.WriteLine("dy=" + dy);
 
                     if (Math.Abs(dy) > dyThreshold)
                     {
@@ -490,10 +476,7 @@ namespace TowseyLibrary
         public static ArrayList MergeShapesWithAdjacentRows(ArrayList shapes, int dxThreshold, double ratio)
         {
             // merge shapes whose ends overlap
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Merge shapes whose sides are adjacent.");
-            }
+            LoggedConsole.WriteLine("Merge shapes whose sides are adjacent.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -556,26 +539,18 @@ namespace TowseyLibrary
         public static ArrayList ProcessShapes(ArrayList shapes)
         {
             shapes = RemoveSmallShapes(shapes);
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Number of shapes after removing small ones=" + shapes.Count);
-            }
+            LoggedConsole.WriteLine("Number of shapes after removing small ones=" + shapes.Count);
+
 
             shapes = MergeCloseShapes(shapes);
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Number of shapes after merging close shapes=" + shapes.Count);
-            }
+            LoggedConsole.WriteLine("Number of shapes after merging close shapes=" + shapes.Count);
 
             return shapes;
         }
 
         public static ArrayList RemoveEnclosedShapes(ArrayList shapes)
         {
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Remove enclosed shapes.");
-            }
+            LoggedConsole.WriteLine("Remove enclosed shapes.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -603,10 +578,7 @@ namespace TowseyLibrary
 
         public static ArrayList RemoveOverlappingShapes(ArrayList shapes)
         {
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Remove the smaller of any pair of overlapping shapes.");
-            }
+            LoggedConsole.WriteLine("Remove the smaller of any pair of overlapping shapes.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -859,10 +831,7 @@ namespace TowseyLibrary
                 x += 4; // jump through 5 lines at a time.
             }
 
-            if (Verbose)
-            {
-                LoggedConsole.WriteLine("Number of shapes=" + shapes.Count);
-            }
+            LoggedConsole.WriteLine("Number of shapes=" + shapes.Count);
 
             shapes = ProcessShapes(shapes);
 

@@ -38,7 +38,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
     public partial class AnalyseLongRecording
     {
-        private const string ImagefileExt = ".png";
+        private const string ImagefileExt = "png";
 
         private const string FinishedMessage = @"
 
@@ -96,7 +96,7 @@ Output  to  directory: {1}
             bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
 
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
-            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
+            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, arguments.Config);
 
             if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
             {
@@ -215,6 +215,9 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.SegmentTargetSampleRate + " used)");
             }
 
+            // Execute a pre analyzer hook
+            analyser.BeforeAnalyse(analysisSettings);
+
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
@@ -283,7 +286,7 @@ Output  to  directory: {1}
 
 
             // 11. SAVE THE RESULTS
-            string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
+            string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
             var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
             var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
@@ -308,14 +311,14 @@ Output  to  directory: {1}
                 }
                 else
                 {
-                    string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
+                    string fileName = Path.GetFileNameWithoutExtension(fileNameBase);
                     string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
                     Bitmap tracksImage =
                         DrawSummaryIndices.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
                             indicesFile,
                             imageTitle);
-                    var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
+                    var imagePath =FilenameHelpers.AnalysisResultName(instanceOutputDirectory, fileName, "Indices", ImagefileExt);
                     tracksImage.Save(imagePath);
                 }
             }

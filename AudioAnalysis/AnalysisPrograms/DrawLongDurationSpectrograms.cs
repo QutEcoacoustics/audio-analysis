@@ -27,8 +27,11 @@ namespace AnalysisPrograms
     using System;
     using System.IO;
 
+    using Acoustics.Shared;
+
     using AnalysisPrograms.Production;
 
+    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     using PowerArgs;
@@ -133,7 +136,7 @@ namespace AnalysisPrograms
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfig(ipFileName); // default values have been set
+            var config = new LdSpectrogramConfig(); // default values have been set
             FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
             config.WriteConfigToYaml(fiSpectrogramConfig);
 
@@ -167,20 +170,32 @@ namespace AnalysisPrograms
 
             }
 
-            //var config = LdSpectrogramConfig.ReadYamlToConfig();
+            var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+
+            FileInfo indexGenerationDataFile;
+            FileInfo indexDistributionsFile;
+            ZoomCommonArguments.CheckForNeededFiles(arguments.InputDataDirectory, out indexGenerationDataFile, out indexDistributionsFile);
+            var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
+
+            string originalBaseName;
+            string[] otherSegments;
+            string analysisTag;
+            FilenameHelpers.ParseAnalysisFileName(indexGenerationDataFile, out originalBaseName, out analysisTag, out otherSegments);
+
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(1.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(60.0);
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(60.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(3600.0);
-
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(arguments.InputDataDirectory, 
-                                                                 arguments.OutputDirectory, 
-                                                                 arguments.SpectrogramConfigPath, 
-                                                                 arguments.IndexPropertiesConfig);
+            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                inputDirectory: arguments.InputDataDirectory,
+                outputDirectory: arguments.OutputDirectory,
+                ldSpectrogramConfig: config,
+                indicesConfigPath: arguments.IndexPropertiesConfig,
+                indexGenerationData: indexGenerationData,
+                basename: originalBaseName,
+                analysisType: Acoustic.TowseyAcoustic,
+                indexSpectrograms: null,
+                returnChromelessImages: false);
         }
-
-
-
-
     }
 }

@@ -50,8 +50,6 @@ namespace AnalysisPrograms
         [CustomDescription]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            public bool Verbose { get; set; }
-
             public FileInfo QueryWavFile { get; set; }
             public FileInfo QueryCsvFile { get; set; }
 
@@ -86,7 +84,6 @@ namespace AnalysisPrograms
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
 
                 Output = (@"C:\SensorNetworks\Output\XueyanDataset\" + datestamp).ToDirectoryInfo(),
-                Verbose = true,
                 Source = null
             };
 
@@ -111,9 +108,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# Input target file: " + arguments.TargtWavFile.Name);
             LoggedConsole.WriteLine("# Configure    file: " + arguments.Config.Name);
             LoggedConsole.WriteLine("# Output  directory: " + arguments.Output.Name);
-
-
-            bool verbose = arguments.Verbose;
 
             // 1. set up the necessary files
             FileInfo queryWavfile = arguments.QueryWavFile;
@@ -144,13 +138,10 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             // print out the parameters
-            if (verbose)
+            LoggedConsole.WriteLine("\nPARAMETERS");
+            foreach (KeyValuePair<string, string> kvp in configDict)
             {
-                LoggedConsole.WriteLine("\nPARAMETERS");
-                foreach (KeyValuePair<string, string> kvp in configDict)
-                {
-                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
-                }
+                LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
 
 

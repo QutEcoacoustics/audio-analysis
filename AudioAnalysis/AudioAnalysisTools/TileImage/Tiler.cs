@@ -189,7 +189,7 @@ namespace AudioAnalysisTools.TileImage
             var deltaTileEdgeSuperTileY = superTileOffsetInLayerY - startTileEdgeY;
             var superTileRectangle = new Rectangle(xOffset, yOffset, width, height);
 
-            if (previous == null && startTileEdgeX != 0)
+            if (previous == null && (startTileEdgeX % this.profile.TileWidth) !=  0)
             {
                 throw new InvalidOperationException("A non-aligned super tile, with no previous tile has been requested to be drawn, this means a fragment of the supertile will not been drawn.");
             }

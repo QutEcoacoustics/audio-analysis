@@ -368,13 +368,14 @@
                 stopwatch.Stop();
 
                 this.Log.DebugFormat(
-                    "Executed {0} in working directory {1}. Took {2} ({3}ms).",
+                    "Executed {0} in working directory {1}. Took {2} ({3}ms). Exit code: {4}",
                     processRunner.ExecutableFile.Name,
                     workingDirectory,
                     stopwatch.Elapsed.Humanise(),
-                    stopwatch.Elapsed.TotalMilliseconds);
+                    stopwatch.Elapsed.TotalMilliseconds,
+                    processRunner.ExitCode);
 
-                this.Log.Debug(processRunner.BuildLogOutput());
+                this.Log.Verbose(processRunner.BuildLogOutput());
             }
             else
             {
@@ -384,7 +385,7 @@
             if (this.Log.IsWarnEnabled)
             {
                 var failedRunOutput = processRunner.FailedRunOutput;
-                if (failedRunOutput.Count() > 0)
+                if (failedRunOutput.Any())
                 {
                     foreach (var failure in failedRunOutput)
                     {
