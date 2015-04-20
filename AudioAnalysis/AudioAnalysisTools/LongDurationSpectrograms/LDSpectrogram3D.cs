@@ -722,8 +722,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static double[,] NormaliseSpectrogramMatrix(IndexProperties indexProperties, double[,] matrix, double backgroundFilterCoeff)
         {
-            matrix = indexProperties.NormaliseIndexValues(matrix);
-
+            matrix = MatrixTools.NormaliseInZeroOne(matrix, indexProperties.NormMin, indexProperties.NormMax);
             matrix = MatrixTools.FilterBackgroundValues(matrix, backgroundFilterCoeff); // to de-demphasize the background small values
             return matrix;
         }
