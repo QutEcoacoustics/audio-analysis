@@ -130,8 +130,10 @@ namespace AudioAnalysisTools.Indices
         public bool DoDisplay { get; set; }
 
         public double NormMin { get; set; }
+        public bool CalculateNormMin { get; set; }
 
         public double NormMax { get; set; }
+        public bool CalculateNormMax { get; set; }
 
         public string Units { get; set; }
 
@@ -156,6 +158,8 @@ namespace AudioAnalysisTools.Indices
             this.DoDisplay = true;
             this.NormMin = 0.0;
             this.NormMax = 1.0;
+            this.CalculateNormMin = false;
+            this.CalculateNormMax = false;
             this.Units = string.Empty;
 
             this.IncludeInComboIndex = false;
@@ -188,10 +192,10 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-        public double[,] NormaliseIndexValues(double[,] M)
-        {
-            return MatrixTools.NormaliseInZeroOne(M, this.NormMin, this.NormMax);
-        }
+        //public double[,] NormaliseIndexValues(double[,] M)
+        //{
+        //    return MatrixTools.NormaliseInZeroOne(M, this.NormMin, this.NormMax);
+        //}
 
 
         /// <summary>

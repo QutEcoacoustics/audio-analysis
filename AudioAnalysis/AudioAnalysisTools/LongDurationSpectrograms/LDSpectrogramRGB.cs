@@ -130,8 +130,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public string ColorMode { get; set; }     
 
-        private Dictionary<string, IndexProperties> spectralIndexProperties; 
-
         public string[] spectrogramKeys { get; private set; }
 
         // used to save all spectrograms as dictionary of matrices 
@@ -145,17 +143,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public int SampleCount { get; set; }
 
+
+        /// <summary>
+        /// Index properties - conatins user defined min and max values for index normalisation - required when drawing images.
+        /// </summary>
+        private Dictionary<string, IndexProperties> spectralIndexProperties;
+        
+        /// <summary>
+        /// Index distribution statistics are now calulated after the indices have been calculated.
+        /// </summary>
         private readonly Dictionary<string, IndexDistributions.SpectralStats> indexStats;
         public Dictionary<string, IndexDistributions.SpectralStats> IndexStats
         { get; private set; 
-            //get
-            //{
-            //    return indexStats;
-            //}
-            //private set()
-            //{
-            //    return indexStats;
-            //}
         }
 
 
@@ -447,10 +446,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return null;
             }
 
+            var matrix = this.GetMatrix(key);
+            // get min, max from index properties file
             IndexProperties indexProperties = this.spectralIndexProperties[key];
-            var matrix = indexProperties.NormaliseIndexValues(this.GetMatrix(key));
+            double min = indexProperties.NormMin;
+            double max = indexProperties.NormMax;
 
-            return MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
+            // check to determine if user wants to use the automated bound.
+            if (this.IndexStats != null)
+            {
+                if (indexProperties.CalculateNormMin) min = this.IndexStats[key].Mode;
+                if (indexProperties.CalculateNormMax) max = this.IndexStats[key].GetValueOfThresholdPercentile();
+            }
+
+            //Console.WriteLine(key + "     min=" + min + "      max=" + max); // check min, max values
+            matrix = MatrixTools.NormaliseInZeroOne(matrix, min, max);
+            matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
+            return matrix;
         }
 
 
@@ -1006,13 +1018,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //############################################################################################################################################################
 
 
-        public static double[,] NormaliseSpectrogramMatrix(IndexProperties indexProperties, double[,] matrix, double backgroundFilterCoeff)
-        {
-            matrix = indexProperties.NormaliseIndexValues(matrix);
-
-            matrix = MatrixTools.FilterBackgroundValues(matrix, backgroundFilterCoeff); // to de-demphasize the background small values
-            return matrix;
-        }
+        //public static double[,] NormaliseSpectrogramMatrix(IndexProperties indexProperties, double[,] matrix, double backgroundFilterCoeff)
+        //{
+        //    matrix = MatrixTools.NormaliseInZeroOne(matrix, indexProperties.NormMin, indexProperties.NormMax);
+        //    matrix = MatrixTools.FilterBackgroundValues(matrix, backgroundFilterCoeff); // to de-demphasize the background small values
+        //    return matrix;
+        //}
 
 
 
@@ -1268,7 +1279,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="longDurationSpectrogramConfig">
         /// </param>
         /// <param name="spectrogramConfigPath"></param>
-        /// <param name="indicesConfigPath">
+        /// <param name="indexPropertiesConfigPath">
         /// The indices Config Path.
         /// </param>
         /// <param name="indexSpgrams">
@@ -1279,14 +1290,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DirectoryInfo ipDir,
             DirectoryInfo outputDirectory,
             FileInfo spectrogramConfigPath,
-            FileInfo indicesConfigPath,
+            FileInfo indexPropertiesConfigPath,
             Dictionary<string, double[,]> indexSpgrams = null,
             bool returnChromelessImages = false)
         {
             LdSpectrogramConfig config = LdSpectrogramConfig.ReadYamlToConfig(spectrogramConfigPath);
-
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indicesConfigPath);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string colorMap1 = config.ColourMap1 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
@@ -1300,8 +1308,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string analysisType = config.AnalysisType;
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilterCoeff;
-            cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
+            // Get and set the dictionary of index properties
+            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigPath);
+            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            cs1.SetSpectralIndexProperties(dictIP); 
+
+
+            // Load the Index Spectrograms into a Dictionary
             if (indexSpgrams == null)
             {
                 DateTime now1 = DateTime.Now;
@@ -1314,7 +1328,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             else
             {
-                // TODO: not sure if this works
                 Logger.Info("Spectra loaded from memory");
                 cs1.LoadSpectrogramDictionary(indexSpgrams);
             }
@@ -1325,25 +1338,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 throw new InvalidOperationException("Cannot find spectrogram matrix files");
             }
 
-            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
-
+            
             // Get index distribution statistics. 
             // Either read from json file or calculate if json file not available. 
             // Keep stats because needed if drawing difference spectrograms etc.
-            if (false)
-            {
-                cs1.IndexStats = IndexDistributions.ReadIndexDistributionStatistics(outputDirectory, fileStem);
-            }
-            else
+            cs1.IndexStats = IndexDistributions.ReadIndexDistributionStatistics(ipDir, fileStem);
+            if ((cs1.IndexStats == null) || (cs1.IndexStats.Count == 0))
             {
                 // Calculate the distribution Statistics For All Indices - save a text file and image
-                cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, outputDirectory, fileStem);
-                //cs1.IndexStats = indexStats;
-                // issue warning that stats file not find therefore calculating
+                cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
+                // issue warning that stats file not found therefore calculating
                 LoggedConsole.WriteWarnLine("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
                 LoggedConsole.WriteWarnLine("   Therefore calculating them, writing to file and making image - all saved in above directory.");
             }
 
+
+            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
             Image image1;
             Image image1NoChrome;
