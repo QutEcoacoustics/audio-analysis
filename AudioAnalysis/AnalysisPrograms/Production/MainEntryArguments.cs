@@ -5,6 +5,7 @@ using System.Text;
 
 namespace AnalysisPrograms.Production
 {
+    using System.Diagnostics.Contracts;
     using System.Dynamic;
     using System.IO;
     using System.Reflection;
@@ -87,17 +88,24 @@ namespace AnalysisPrograms.Production
         {
             get
             {
-                return this.Verbose ? LogVerbosity.Debug : this.logLevel;
+                Contract.Assert(!this.Verbose || (this.Verbose && this.logLevel == LogVerbosity.Debug));
+                Contract.Assert(!this.VVerbose || (this.VVerbose && this.logLevel == LogVerbosity.Debug));
+                
+                return this.logLevel;
             }
             set
             {
                 this.Verbose = value == LogVerbosity.Debug;
+
+                this.VVerbose = value == LogVerbosity.All;
                 
                 this.logLevel = value;
             }
         }
 
         public bool Verbose { get; set; }
+
+        public bool VVerbose { get; set; }
     }
 
     public enum LogVerbosity

@@ -1,0 +1,29 @@
+---
+UnitsOfTime: "second"
+SpectralFrameDuration: 0.02
+TileWidth: 300
+ScaleUnits: "SecondsPerPixel"
+SpectralIndexScale: 
+    - 60
+    - 24
+    - 12
+    - 6
+    - 2
+    - 1
+    - 0.6
+    - 0.2
+SpectralFrameScale: 
+    - 0.1
+    - 0.04
+    - 0.02
+MaxTilesPerSuperTile: 12
+UseDistributionsForNormalization: false
+LDSpectrogramConfig:
+    ColorMap1: "BGN-POW-CVR"
+    ColorMap2: "ACI-ENT-EVN" 
+    # minutes
+    XAxisTicInterval: 60
+    # Hertz
+    YAxisTicInterval: 1000
+IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+...

@@ -15,7 +15,6 @@ namespace NeuralNets
         public double vigilance_rho { get; set; } //vigilance
         public double momentum_beta { get; set; } //momentum #### NOT USED AT PRESENT
 
-        public static bool Verbose { get; set; }
         public static bool RandomiseTrnSetOrder { get; set; }
 
         List<double[]> wts;           //of the OP or F2 units/nodes
@@ -126,8 +125,7 @@ namespace NeuralNets
             for (int j = 0; j < this.OPSize; j++) 
                 if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
 
-            if(BinaryCluster.Verbose)
-                LoggedConsole.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+            LoggedConsole.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
 
             if (trainSetLearned) break;
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
@@ -474,20 +472,17 @@ namespace NeuralNets
         BinaryCluster binaryCluster = new BinaryCluster(IPSize, trnSetSize); //initialise BinaryCluster class
         binaryCluster.SetParameterValues(beta, vigilance);
 
-        if (BinaryCluster.Verbose)
-        {
-            LoggedConsole.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
-            LoggedConsole.WriteLine("\n BEGIN TRAINING");
-        }
+        LoggedConsole.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
+        LoggedConsole.WriteLine("\n BEGIN TRAINING");
+        
         var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialClusterCount);
         int iterCount     = output.Item1;
         int clusterCount  = output.Item2;
         int[] clusterHits = output.Item3;
         var clusterWts    = output.Item4;
-        if (BinaryCluster.Verbose)
-        {
-            LoggedConsole.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)" + "    CommittedNodes=" + clusterCount);
-        }
+
+        LoggedConsole.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)" + "    CommittedNodes=" + clusterCount);
+        
         return System.Tuple.Create(clusterHits, clusterWts);  //keepScore;
 
     } //END of ClusterBinaryVectors.

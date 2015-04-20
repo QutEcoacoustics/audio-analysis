@@ -20,13 +20,15 @@ namespace AudioAnalysisTools.TileImage
     public class AbsoluteDateTilingProfile : TilingProfile
     {
         private readonly string prefix;
+        private readonly string tag;
         private readonly DateTimeOffset baseDateUtc;
         private readonly int tileHeight;
         private readonly int tileWidth;
 
-        public AbsoluteDateTilingProfile(string prefix, DateTimeOffset baseDate, int tileHeight, int tileWidth)
+        public AbsoluteDateTilingProfile(string prefix, string tag, DateTimeOffset baseDate, int tileHeight, int tileWidth)
         {
             this.prefix = prefix;
+            this.tag = tag;
             this.baseDateUtc = baseDate.ToUniversalTime();
             this.tileHeight = tileHeight;
             this.tileWidth = tileWidth;
@@ -78,7 +80,8 @@ namespace AudioAnalysisTools.TileImage
             
             var zoomIndex = (double)this.GetZoomIndex(calculatedLayers, selectedLayer);
 
-            return string.Format("{0}_{1}_{2:##.00}", this.prefix, formattedDateTime, zoomIndex);
+            var basename = FilenameHelpers.AnalysisResultName(this.prefix, this.tag, null,  formattedDateTime, zoomIndex.ToString());
+            return basename;
         }
     }
 }

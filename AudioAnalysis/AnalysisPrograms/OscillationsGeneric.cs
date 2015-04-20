@@ -78,12 +78,6 @@ namespace AnalysisPrograms
         [CustomDescription]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            [ArgDescription("A file path to write output to")]
-            [ArgNotExistingFile]
-            [ArgRequired]
-
-            public bool Verbose { get; set; }
-
             [ArgDescription("The start offset (in minutes) of the source audio file to operate on")]
             [ArgRange(0, double.MaxValue)]
             public double? StartOffset { get; set; }
@@ -121,7 +115,6 @@ namespace AnalysisPrograms
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.OscillationsGeneric.yml".ToFileInfo(),
                 Output = @"C:\SensorNetworks\Output\Sonograms".ToDirectoryInfo(),
-                Verbose = true
             };
 
             throw new NoDeveloperMethodException();
@@ -153,8 +146,6 @@ namespace AnalysisPrograms
                 startOffset = TimeSpan.FromMinutes(arguments.StartOffset.Value);
                 endOffset   = TimeSpan.FromMinutes(arguments.EndOffset.Value);
             }
-
-            bool verbose = arguments.Verbose;
 
             const string Title = "# MAKE A SONOGRAM FROM AUDIO RECORDING and do OscillationsGeneric activity.";
             string date  = "# DATE AND TIME: " + DateTime.Now;
@@ -200,15 +191,12 @@ namespace AnalysisPrograms
             // ####################################################################
 
             // print out the sonogram parameters
-            if (verbose)
+            LoggedConsole.WriteLine("\nPARAMETERS");
+            foreach (KeyValuePair<string, string> kvp in configDict)
             {
-                LoggedConsole.WriteLine("\nPARAMETERS");
-                foreach (KeyValuePair<string, string> kvp in configDict)
-                {
-                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
-                }
-                LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", SampleLength);
+                LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
+            LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", SampleLength);
 
             // 3: GET RECORDING
             FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));

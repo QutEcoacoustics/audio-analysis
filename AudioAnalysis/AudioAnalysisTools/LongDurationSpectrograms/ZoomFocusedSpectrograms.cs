@@ -14,46 +14,49 @@ using log4net.Repository.Hierarchy;
 using TowseyLibrary;
 using Acoustics.Shared.Csv;
 
-//
-// Action code for this analysis = ZoomingSpectrograms
-/// Activity Codes for other tasks to do with spectrograms and audio files:
-/// 
-/// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
-/// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
-/// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
-/// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-/// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
-/// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
-///
-/// audiofilecheck - Writes information about audio files to a csv file.
-/// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
-/// audiocutter - Cuts audio into segments of desired length and format
-/// createfoursonograms 
+/*
+    Action code for this analysis = ZoomingSpectrograms
+    Activity Codes for other tasks to do with spectrograms and audio files:
 
+    audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+    audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+    indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
+    colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
+    zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+    differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
 
+    audiofilecheck - Writes information about audio files to a csv file.
+    snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
+    audiocutter - Cuts audio into segments of desired length and format
+    createfoursonograms 
+*/
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
+    using System.Diagnostics;
+
     public static class ZoomFocusedSpectrograms
     {
 
         public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, 
-                                                         FileInfo longDurationSpectrogramConfigFile, FileInfo tilingConfigFile, FileInfo indexPropertiesFile, 
+                                                         ZoomCommonArguments common,
                                                          TimeSpan focalTime, int imageWidth)
         {
-            LdSpectrogramConfig ldSpConfig = LdSpectrogramConfig.ReadYamlToConfig(longDurationSpectrogramConfigFile);
-            var tilingConfig = Yaml.Deserialise<SuperTilingConfig>(tilingConfigFile);
+            var zoomConfig = common.SuperTilingConfig;
+            LdSpectrogramConfig ldsConfig = common.SuperTilingConfig.LdSpectrogramConfig;
+            var distributions = IndexDistributions.Deserialize(common.IndexDistributionsFile);
+            var indexGeneration = Json.Deserialise<IndexGenerationData>(common.IndexGenerationDataFile);
+            var indexProperties = common.IndexProperties;
 
-            string fileStem     = ldSpConfig.FileName;
-            string analysisType = ldSpConfig.AnalysisType;
-            TimeSpan dataScale  = ldSpConfig.IndexCalculationDuration;
+            string fileStem     = common.OriginalBasename;
+            string analysisType = "Towsey.Acoustic";
+            TimeSpan dataScale  = indexGeneration.IndexCalculationDuration;
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-            DateTime now1 = DateTime.Now;
+            var sw = Stopwatch.StartNew();
             string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "SUM", "SPT" };
             Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(inputDirectory, fileStem + "_" + analysisType, keys);
-            DateTime now2 = DateTime.Now;
-            TimeSpan et = now2 - now1;
-            LoggedConsole.WriteLine("Time to read spectral index files = " + et.TotalSeconds + " seconds");
+            sw.Stop();
+            LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
 
 
             // standard scales in seconds per pixel.
@@ -64,12 +67,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int i = 7; i >= 0; i--)
             {
                 TimeSpan imageScale = TimeSpan.FromSeconds(imageScales[i]);
-                image = DrawIndexSpectrogramAtScale(ldSpConfig, indexPropertiesFile, focalTime, dataScale, imageScale, imageWidth, spectra);
+                image = DrawIndexSpectrogramAtScale(ldsConfig, indexProperties, focalTime, dataScale, imageScale, imageWidth, spectra, indexGeneration, fileStem);
                 if (image != null) imageList.Add(image);
             }
 
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
-            double frameStepInSeconds     = ldSpConfig.FrameStep / (double)ldSpConfig.SampleRate;
+            double frameStepInSeconds     = indexGeneration.FrameStep / (double)indexGeneration.SampleRate;
             TimeSpan frameScale = TimeSpan.FromTicks((long)Math.Round(frameStepInSeconds * 10000000));
             int[] compressionFactor = { 1, 2, 5 };
             int maxCompression = compressionFactor[compressionFactor.Length - 1];
@@ -81,7 +84,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 startTimeOfMaxImage = focalTime - halfMaxImageDuration;
             TimeSpan startTimeOfData = TimeSpan.FromMinutes(Math.Floor(startTimeOfMaxImage.TotalMinutes));
 
-            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration, tilingConfig);
+            List<double[]> frameData = ReadFrameData(inputDirectory, fileStem, startTimeOfMaxImage, maxImageDuration, zoomConfig);
 
             // get the index data to add into the  
             TimeSpan imageScale1 = TimeSpan.FromSeconds(0.1);
@@ -91,7 +94,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int i = 2; i >= 0; i--)
             {
                 int factor = compressionFactor[i];
-                image = ZoomFocusedSpectrograms.DrawFrameSpectrogramAtScale(ldSpConfig, startTimeOfData, frameScale, factor, frameData, indexData, focalTime, imageWidth);
+                image = ZoomFocusedSpectrograms.DrawFrameSpectrogramAtScale(ldsConfig, startTimeOfData, frameScale, factor, frameData, indexData, focalTime, imageWidth, indexGeneration.MinuteOffset);
                 if (image != null) imageList.Add(image);
             }
 
@@ -104,8 +107,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static Image DrawIndexSpectrogramAtScale(LdSpectrogramConfig analysisConfig, FileInfo indexPropsConfigFile,
-                                    TimeSpan focalTime, TimeSpan dataScale, TimeSpan imageScale, int imageWidth, Dictionary<string, double[,]> spectra)
+        public static Image DrawIndexSpectrogramAtScale(
+            LdSpectrogramConfig spectrogramDrawingConfig, Dictionary<string, IndexProperties> indexProperties, TimeSpan focalTime, 
+            TimeSpan dataScale, TimeSpan imageScale, int imageWidth, Dictionary<string, double[,]> spectra, 
+            IndexGenerationData indexGeneration, string basename)
         {
             if (spectra == null)
             {
@@ -122,10 +127,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
 
-            Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropsConfigFile);
+            Dictionary<string, IndexProperties> dictIP = indexProperties;
             dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
 
-            TimeSpan sourceMinuteOffset = analysisConfig.MinuteOffset;
+            TimeSpan sourceMinuteOffset = indexGeneration.MinuteOffset;
 
             // calculate data duration from column count of abitrary matrix
             var matrix = spectra["ACI"]; // assume this key will always be present!!
@@ -162,15 +167,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 spectralSelection = CompressIndexSpectrograms(spectralSelection, imageScale, dataScale);
 
             // These parameters define the colour maps and appearance of the false-colour spectrogram
+            // TODO: change these to the values from spectrogramDrawingConfig
             string colorMap1 = "ACI-ENT-EVN";
             string colorMap2 = "BGN-POW-CVR";
 
-            double backgroundFilterCoeff = (double?)analysisConfig.BackgroundFilterCoeff ?? SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
-            var cs1 = new LDSpectrogramRGB(analysisConfig, colorMap1);
-            cs1.FileName = analysisConfig.FileName;
-            cs1.BackgroundFilter = backgroundFilterCoeff;
+            var cs1 = new LDSpectrogramRGB(spectrogramDrawingConfig, indexGeneration, colorMap1);
+            cs1.FileName = basename;
+            cs1.BackgroundFilter = indexGeneration.BackgroundFilterCoeff;
             cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
             // TODO: not sure if this works
@@ -222,7 +227,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string title = string.Format("ZOOM SCALE={0}s/pixel   Image duration={1} ",  //  (colour:R-G-B={2})
                                                                        imageScale.TotalSeconds, spectrogramDuration);
             Image titleBar = DrawTitleBarOfZoomSpectrogram(title, LDSpectrogram.Width);
-            LDSpectrogram = FrameZoomSpectrogram(LDSpectrogram, titleBar, startTime, imageScale, analysisConfig.XAxisTicInterval, nyquist, herzInterval);
+            LDSpectrogram = FrameZoomSpectrogram(LDSpectrogram, titleBar, startTime, imageScale, spectrogramDrawingConfig.XAxisTicInterval, nyquist, herzInterval);
 
             // create the base image
             Image image = new Bitmap(imageWidth, LDSpectrogram.Height);
@@ -238,8 +243,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, /*FileInfo SpectrogramTilingConfig,*/ TimeSpan startTimeOfData,
-                                    TimeSpan frameScale, int compressionFactor, List<double[]> frameData, double[,] indexData, TimeSpan focalTime, int imageWidth)
+        public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, TimeSpan startTimeOfData, TimeSpan frameScale, int compressionFactor, List<double[]> frameData, double[,] indexData, TimeSpan focalTime, int imageWidth, TimeSpan minuteOffset /*FileInfo SpectrogramTilingConfig,*/)
         {
             if ((frameData == null) || (frameData.Count == 0))
             {
@@ -247,7 +251,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return null;
             }
 
-            TimeSpan sourceMinuteOffset = config.MinuteOffset;   // default = zero minute of day i.e. midnight
+            TimeSpan sourceMinuteOffset = minuteOffset;   // default = zero minute of day i.e. midnight
             TimeSpan imageScale = TimeSpan.FromTicks(frameScale.Ticks * compressionFactor);
             TimeSpan imageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks);
             TimeSpan halfImageDuration = TimeSpan.FromTicks(imageWidth * imageScale.Ticks / 2);

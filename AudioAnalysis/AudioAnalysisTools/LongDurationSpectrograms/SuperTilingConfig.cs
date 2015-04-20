@@ -11,7 +11,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
 
-    public class SuperTilingConfig
+    using AudioAnalysisTools.Indices;
+
+    public class SuperTilingConfig : IIndexPropertyReferenceConfiguration
     {
         #region Fields
 
@@ -25,12 +27,25 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             this.LowerNormalisationBoundForDecibelSpectrograms = DefaultLowerNormalisationBoundForDecibelSpectrograms;
             this.UpperNormalisationBoundForDecibelSpectrograms = DefaultUpperNormalisationBoundForDecibelSpectrograms;
+
+            this.LdSpectrogramConfig = new LdSpectrogramConfig();
         }
 
         // should be "SecondsPerPixel"
         #region Public Properties
 
-        public double IndexCalculationDuration { get; set; }
+        /// <summary>
+        /// Gets or sets an optional reference to a config that defines 
+        /// the style for drawing LD spectrograms.
+        /// </summary>
+        /// <returns></returns>
+        public LdSpectrogramConfig LdSpectrogramConfig { get; set; }
+
+        /// <summary>
+        /// Gets or sets a whether or not to render images using distributions (rather than index properties)
+        /// </summary>
+        /// <returns></returns>
+        public bool UseDistributionsForNormalization { get; set; }
 
         public double LowerNormalisationBoundForDecibelSpectrograms { get; set; }
 
@@ -72,9 +87,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return scaleFactor;
         }
 
-        public int ScalingFactorSpectralIndex(double scaleValueSecondsPerPixel)
+        public int ScalingFactorSpectralIndex(double scaleValueSecondsPerPixel, double indexCalculationDuration)
         {
-            var scaleFactor = (int)Math.Round(scaleValueSecondsPerPixel / this.IndexCalculationDuration);
+            var scaleFactor = (int)Math.Round(scaleValueSecondsPerPixel / indexCalculationDuration);
             return scaleFactor;
         }
 
@@ -119,5 +134,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         #endregion
+
+        public string IndexPropertiesConfig { get; set; }
     }
 }
