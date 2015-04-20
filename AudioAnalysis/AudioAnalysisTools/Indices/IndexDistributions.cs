@@ -21,8 +21,8 @@ namespace AudioAnalysisTools.Indices
 
     public static class IndexDistributions
     {
-        public static string IndexDistributionsFilenameFragment;
         public const string IndexStatisticsFilenameFragment = "IndexStatistics";
+        public const string IndexDistributionsFilenameFragment = "IndexDistributions";
 
         public class SpectralStats
         {
@@ -70,13 +70,15 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, SpectralStats> ReadIndexDistributionStatistics(DirectoryInfo opDir, string fileStem)
         {           
             FileInfo statsFile = new FileInfo(GetStatsPath(opDir, fileStem));
-            if (! statsFile.Exists) 
+            if (!statsFile.Exists)
+            {
                 return null;
-            var indexDistributionStatistics = Json.Deserialise<Dictionary<string, SpectralStats>>(statsFile);
-            return indexDistributionStatistics;
+            }
+
+            return Deserialize(statsFile);
         }
 
-        public static Dictionary<string, SpectralStats> WriteIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo opDir, string fileStem)
+        public static Dictionary<string, SpectralStats> WriteIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo outputDirectory, string fileStem)
         {
             // this sets the upper normalisation bound for image colour of spectral indices - derived from index distribution.
             int upperPercentile = 99;
@@ -118,11 +120,11 @@ namespace AudioAnalysisTools.Indices
                 }
             }
 
-            FileInfo statsFile = new FileInfo(GetStatsPath(opDir, fileStem));
+            FileInfo statsFile = new FileInfo(GetStatsPath(outputDirectory, fileStem));
             Json.Serialise(statsFile, indexDistributionStatistics);
 
             Image image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
-            string imagePath = GetImagePath(opDir, fileStem);
+            string imagePath = GetImagePath(outputDirectory, fileStem);
             image3.Save(imagePath);
 
             return indexDistributionStatistics;
@@ -176,8 +178,7 @@ namespace AudioAnalysisTools.Indices
 
         public static string GetImagePath(DirectoryInfo outputDirectory, string fileStem)
         {
-            IndexDistributionsFilenameFragment = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, "IndexDistributions", "json");
-            return IndexDistributionsFilenameFragment;
+            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, IndexDistributionsFilenameFragment, "png");
         }
 
         public static Dictionary<string, SpectralStats> Deserialize(FileInfo file)

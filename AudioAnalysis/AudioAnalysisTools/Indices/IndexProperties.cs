@@ -262,8 +262,8 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, IndexProperties> GetIndexProperties(FileInfo configFile)
         {
             // AT: the effects of this method have been significantly altered
-            // a) caching introduced - unkown effects for parallelism and dodgy file rewriting stuff
-            // b) static deserialisation utilised (instead of dynamic)
+            // a) caching introduced - unknown effects for parallelism and dodgy file rewriting stuff
+            // b) static deserialization utilized (instead of dynamic)
             lock (CachedProperties)
             {
                 Dictionary<string, IndexProperties> props;
@@ -273,21 +273,21 @@ namespace AudioAnalysisTools.Indices
                 }
                 else
                 {
-                    var deserialised = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
+                    var deserialized = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
 
                     int i = 0;
-                    foreach (var kvp in deserialised)
+                    foreach (var kvp in deserialized)
                     {
                         // assign the key to the object for consistency
                         kvp.Value.Key = kvp.Key;
 
-                        // HACK: infer order of properties for visualisation based on order of for-each
+                        // HACK: infer order of properties for visualization based on order of for-each
                         kvp.Value.Order = i;
                         i++;
                     }
 
-                    CachedProperties.Add(configFile.FullName, deserialised);
-                    return deserialised;
+                    CachedProperties.Add(configFile.FullName, deserialized);
+                    return deserialized;
                 }
             }
 
