@@ -231,7 +231,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string warning = null;
             for (int i = 0; i < keys.Length; i++)
             {
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
+                // TODO: this string constant is dodgy... but should never change... fix me when broken :-)
+                const string analysisType = "Towsey.Acoustic";
+                var path = FilenameHelpers.AnalysisResultName(ipdir, fileName, analysisType + "." + keys[i], "csv"); 
+                //string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
                 if (File.Exists(path))
                 {
                     int freqBinCount;
@@ -451,7 +454,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (this.IndexStats != null)
             {
                 if (indexProperties.CalculateNormMin) min = this.IndexStats[key].Mode;
-                if (indexProperties.CalculateNormMax) max = this.IndexStats[key].GetValueOfThresholdPercentile();
+                if (indexProperties.CalculateNormMax) max = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
             }
 
             //Console.WriteLine(key + "     min=" + min + "      max=" + max); // check min, max values
@@ -1325,8 +1328,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 var sw = Stopwatch.StartNew();
                 Logger.Info("Reading spectra files from disk");
                 // reads all known files spectral indices
-                throw new NotImplementedException("Anthony was too lazy to patch this... complain to him when it breaks");
-                ////cs1.ReadCSVFiles(inputDirectory, fileStem, analysisType);
+
+                cs1.ReadCSVFiles(inputDirectory, fileStem, cs1.spectrogramKeys);
                 DateTime now2 = DateTime.Now;
                 sw.Stop();
                 LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture) + " seconds");
@@ -1350,7 +1353,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (indexDistributions == null)
             {
                 indexDistributions = IndexDistributions.ReadIndexDistributionStatistics(inputDirectory, fileStem);
-
+                // cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
                 Log.Fatal("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
 
                 if (indexDistributions == null)

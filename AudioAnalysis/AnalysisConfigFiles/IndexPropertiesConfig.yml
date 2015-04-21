@@ -391,7 +391,7 @@ BGN:
   NormMin: -100.0
   NormMax: -30.0
   CalculateNormMin: true
-  CalculateNormMax: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "dB"
 CVR:
