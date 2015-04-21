@@ -21,8 +21,14 @@ namespace AudioAnalysisTools.Indices
 
     public static class IndexDistributions
     {
-        public const string IndexStatisticsFilenameFragment = "IndexStatistics";
+        public const string IndexStatisticsFilenameFragment    = "IndexStatistics";
         public const string IndexDistributionsFilenameFragment = "IndexDistributions";
+
+        // This constant sets the upper percentile bound for RGB normalisation (0-255) of spectral indices.
+        // The relevant distribution is derived from the index distribution statistics file.
+        public const int  UPPER_PERCENTILE_DEFAULT = 98;
+        public const string UPPER_PERCENTILE_LABEL = "98%"; // corresponding label
+
 
         public class SpectralStats
         {
@@ -40,11 +46,11 @@ namespace AudioAnalysisTools.Indices
 
             public int[] Distribution { get; set; }
 
-            public double GetValueOfThresholdPercentile()
-            {
-                return this.GetValueOfNthPercentile(this.UpperPercentile);
-            }
-                public double GetValueOfNthPercentile(int percentile)
+            //public double GetValueOfThresholdPercentile()
+            //{
+            //    return this.GetValueOfNthPercentile(this.UpperPercentile);
+            //}
+            public double GetValueOfNthPercentile(int percentile)
             {
                 int length = Distribution.Length;
                 double threshold = percentile / (double)100;
@@ -80,10 +86,6 @@ namespace AudioAnalysisTools.Indices
 
         public static Dictionary<string, SpectralStats> WriteIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo outputDirectory, string fileStem)
         {
-            // this sets the upper normalisation bound for image colour of spectral indices - derived from index distribution.
-            int upperPercentile = 99;
-            string label = "99%";
-
             // to accumulate the images
             int width = 100;  // pixels 
             int height = 100; // pixels
@@ -98,9 +100,9 @@ namespace AudioAnalysisTools.Indices
                 if (spectrogramMatrices.ContainsKey(key))
                 {
                     matrix = spectrogramMatrices[key];
-                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, upperPercentile);
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, IndexDistributions.UPPER_PERCENTILE_DEFAULT);
                     indexDistributionStatistics.Add(key, stats); // add index statistics
-                    double value = stats.GetValueOfThresholdPercentile();
+                    double value = stats.GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
 
                     imageList.Add(
                         ImageTools.DrawHistogram(
@@ -113,7 +115,7 @@ namespace AudioAnalysisTools.Indices
                                 { "max",  stats.Maximum },
                                 { "mode", stats.Mode },
                                 { "sd",   stats.StandardDeviation},
-                                { label,  value},
+                                { IndexDistributions.UPPER_PERCENTILE_LABEL,  value},
                             },
                             width,
                             height));
