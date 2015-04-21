@@ -1,9 +1,9 @@
 clear;
 clc;
-iteration = 500;
+iteration = 10;
 % category = 'bird';   %choice: 'bird','insect','low activity','rain','wind'
 category = {'bird', 'insect', 'low activity', 'rain', 'wind'};
-dict = dictread('C:\\Program Files (x86)\\MPTK\\mptk\\reference\\dictionary\\dic_chirp_16384p.xml');
+dict = dictread('C:\\Program Files (x86)\\MPTK\\mptk\\reference\\dictionary\\dic_chirp_three_scales.xml');
 flag = false;
 
 %2nd-order butterworth highpass filter
@@ -30,22 +30,31 @@ for m = 1:length(category)
         signal = filter(B, A, signal);
         [book, residual] = mpdecomp(signal(:,1),sampleRate,dict,iteration);
         MP_SRR(n - 2, m) = 10 * log10(sum(signal(:,1).^2) / sum(residual.^2));
-        MP_chirp_mean(n - 2, m) = mean(book.atom.params.chirp);
-        MP_chirp_std(n - 2, m) = std(book.atom.params.chirp);
-        MP_pos_mean(n - 2, m) = mean(book.atom.params.pos);
-        MP_pos_std(n - 2, m) = std(book.atom.params.pos);
-        MP_freq_mean(n - 2, m) = mean(book.atom.params.freq);
-        MP_freq_std(n - 2, m) = std(book.atom.params.freq);
+        chirp = [];
+        freq = [];
+        pos = [];
+        
+        for k = 1:length(book.atom)
+            chirp = [chirp; book.atom(k).params.chirp];
+            freq = [freq; book.atom(k).params.freq];
+            pos = [pos; book.atom(k).params.pos];
+        end
+        MP_chirp_mean(n - 2, m) = mean(chirp);
+        MP_chirp_std(n - 2, m) = std(chirp);
+        MP_freq_mean(n - 2, m) = mean(freq);
+        MP_freq_std(n - 2, m) = std(freq);
+        MP_pos_mean(n - 2, m) = mean(pos);
+        MP_pos_std(n - 2, m) = std(pos);
     end
 end
 
 MP_SRR = reshape(MP_SRR, 150, 1);
 MP_chirp_mean =reshape(MP_chirp_mean, 150, 1);
 MP_chirp_std = reshape(MP_chirp_std, 150, 1);
-MP_pos_mean = reshape(MP_pos_mean, 150, 1);
-MP_pos_std = reshape(MP_pos_std, 150, 1);
 MP_freq_mean = reshape(MP_freq_mean, 150, 1);
 MP_freq_std = reshape(MP_freq_std, 150, 1);
+MP_pos_mean = reshape(MP_pos_mean, 150, 1);
+MP_pos_std = reshape(MP_pos_std, 150, 1);
 result = [MP_SRR, MP_pos_mean, MP_pos_std, MP_freq_mean, MP_freq_std, MP_chirp_mean, MP_chirp_std];
 
 %csvwrite('c:/work/myfile/MP-feature/mp_rain.csv',result);
