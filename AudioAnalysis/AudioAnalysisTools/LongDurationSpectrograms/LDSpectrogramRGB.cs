@@ -902,10 +902,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 //  get the average of the three indices in the low bandwidth
                 index = (indices1[0, i] + indices2[0, i] + indices3[0, i]) / 3; 
                 int red = (int)(255 * index);
+                if (red > 255) red = 255;
                 index = (indices1[1, i] + indices2[1, i] + indices3[1, i]) / 3;
                 int grn = (int)(255 * index);
+                if (grn > 255) grn = 255;
                 index = (indices1[2, i] + indices2[2, i] + indices3[2, i]) / 3;
                 int blu = (int)(255 * index);
+                if (blu > 255) blu = 255;
 
                 pen = new Pen(Color.FromArgb(red, grn, blu));
                 g.DrawLine(pen, i, 0, i, height);
@@ -951,14 +954,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     double[] subArray = DataTools.Subarray(spectrum1, start, bandWidth);
                     double index = subArray.Average();
                     int red = (int)(255 * index);
+                    if (red > 255) red = 255;
 
                     subArray = DataTools.Subarray(spectrum2, start, bandWidth);
                     index = subArray.Average();
                     int grn = (int)(255 * index);
+                    if (grn > 255) grn = 255;
 
                     subArray = DataTools.Subarray(spectrum3, start, bandWidth);
                     index = subArray.Average();
                     int blu = (int)(255 * index);
+                    if (blu > 255) blu = 255;
 
                     image.SetPixel(i, h, Color.FromArgb(red, grn, blu));
                 }
@@ -980,7 +986,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double[] indices3 = MatrixTools.GetColumn(normalisedIndex3, minuteInDay);
             indices3 = DataTools.reverseArray(indices3);
             indices3 = CalculateDecayedSpectralIndices(indices3, distanceInMeters, decayConstant);
-
 
             // ####################### TO DO
             // COMBINE THE INDCES IN SOME WAY
@@ -1029,9 +1034,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
 
-        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan startOffset, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval)
+        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan startOffset, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval, DateTimeOffset? dateTimeOffset = null)
         {
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
+
+            
+            if (dateTimeOffset.HasValue)
+            {
+                // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
+            }
 
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
 
@@ -1421,7 +1432,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // then pass that image into chromer
             string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
-            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
+
+            //TODO TODO TODO 
+
+            DateTimeOffset? dateTimeOffset = null;
+            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval, dateTimeOffset);
             var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap, "png");
             image.Save(outputPath);
             return Tuple.Create(image, imageNoChrome);
