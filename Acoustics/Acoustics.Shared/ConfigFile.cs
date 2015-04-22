@@ -5,12 +5,14 @@ using System.Text;
 
 namespace Acoustics.Shared
 {
+    using System.Diagnostics.Contracts;
     using System.IO;
 
     public class ConfigFile
     {
         private static readonly string ExecutingAssemblyPath = System.Reflection.Assembly.GetEntryAssembly().Location;
-        private static readonly string ConfigFolder = Path.Combine(ExecutingAssemblyPath, "ConfigFiles");
+        private static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
+        private static readonly string ConfigFolder = Path.Combine(ExecutingAssemblyDirectory, "ConfigFiles");
 
         public static FileInfo ResolveConfigFile(FileInfo file, params DirectoryInfo[] searchPaths)
         {
@@ -32,6 +34,8 @@ namespace Acoustics.Shared
 
         public static bool TryResolveConfigFile(string file, DirectoryInfo[] searchPaths, out FileInfo configFile)
         {
+            Contract.Ensures(Contract.Result<bool>() == false || Contract.Result<bool>() == true && Contract.ValueAtReturn(out configFile).Exists);
+
             configFile = null;
             if (string.IsNullOrWhiteSpace(file))
             {
@@ -54,7 +58,7 @@ namespace Acoustics.Shared
             {
                 foreach (var directoryInfo in searchPaths)
                 {
-                    var searchPath = Path.Combine(directoryInfo.FullName, file);
+                    var searchPath = Path.GetFullPath(Path.Combine(directoryInfo.FullName, file));
                     if (File.Exists(searchPath))
                     {
                         configFile = new FileInfo(searchPath);
@@ -63,10 +67,10 @@ namespace Acoustics.Shared
                 }
             }
 
-            var defaultConfigFile = Path.Combine(ConfigFolder, file);
+            var defaultConfigFile = Path.GetFullPath(Path.Combine(ConfigFolder, file));
             if (File.Exists(defaultConfigFile))
             {
-                configFile = new FileInfo(file);
+                configFile = new FileInfo(defaultConfigFile);
                 return true;
             }
 
