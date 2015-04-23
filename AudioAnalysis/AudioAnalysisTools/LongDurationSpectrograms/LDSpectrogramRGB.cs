@@ -457,7 +457,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if (indexProperties.CalculateNormMax) max = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
             }
 
-            //Console.WriteLine(key + "     min=" + min + "      max=" + max); // check min, max values
+            Log.Debug("GetNormalisedSpectrogramMatrix(key=" + key + "): min bound=" + min + "      max bound=" + max); // check min, max values
             matrix = MatrixTools.NormaliseInZeroOne(matrix, min, max);
             matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
             return matrix;

@@ -375,9 +375,9 @@ ACI:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.4
-  NormMax: 0.6
+  NormMax: 0.7
   CalculateNormMin: true
-  CalculateNormMax: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
 BGN:
@@ -389,7 +389,7 @@ BGN:
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
   # -20 adds more contrast into BGN spectrogram
   NormMin: -100.0
-  NormMax: -40.0
+  NormMax: -30.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -438,7 +438,7 @@ EVN:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.5
+  NormMin: 0.1
   NormMax: 4.0
   CalculateNormMin: true
   CalculateNormMax: false
@@ -465,7 +465,7 @@ POW:
   NormMin: 0.0
   NormMax: 70.0
   CalculateNormMin: true
-  CalculateNormMax: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "dB"
 SPT:
