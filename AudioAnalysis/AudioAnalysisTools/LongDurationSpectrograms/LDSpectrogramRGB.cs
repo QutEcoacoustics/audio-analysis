@@ -1310,6 +1310,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string basename,
             string analysisType,
             Dictionary<string, double[,]> indexSpectrograms = null,
+            SummaryIndexBase[] summaryIndices = null,
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
             bool returnChromelessImages = false)
         {
@@ -1386,11 +1387,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             CreateSpectrogramFromSpectralIndices(cs1, colorMap2, indexGenerationData.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
 
             // read high amplitude and clipping info into an image
-            string indicesFile = FilenameHelpers.AnalysisResultName(inputDirectory, fileStem, "Indices", "csv");
-            Image imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
+            Image imageX;
+            if (summaryIndices == null)
+            {
+                string indicesFile = FilenameHelpers.AnalysisResultName(
+                    inputDirectory,
+                    fileStem,
+                    analysisType + ".Indices",
+                    "csv");
+                imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
+            }
+            else
+            {
+                imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(summaryIndices);
+            }
+
             if (imageX != null)
             {
-                imageX.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + "ClipHiAmpl", "png"));
+                imageX.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".ClipHiAmpl", "png"));
             }
 
             CreateTwoMapsImage(outputDirectory, fileStem, image1, imageX, image2);

@@ -8,6 +8,8 @@
     using System.Linq;
     using System.Reflection;
 
+    using AnalysisBase.ResultBases;
+
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     using log4net;
@@ -128,8 +130,6 @@
             return compositeBmp;
         }
 
-
-        /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
         /// <returns></returns>
@@ -144,6 +144,17 @@
 
             double[] array1 = dictionaryOfCsvFile["HighAmplitudeIndex"];
             double[] array2 = dictionaryOfCsvFile["ClippingIndex"];
+
+            DrawHighAmplitudeClippingTrack(array1, array2);
+        }
+
+
+        /// <summary>
+        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// </summary>
+        /// <returns></returns>
+        public static Bitmap DrawHighAmplitudeClippingTrack(double[] array1, double[] array2)
+        {
 
             double[] values1 = DataTools.NormaliseInZeroOne(array1, 0, 1.0);
             double[] values2 = DataTools.NormaliseInZeroOne(array2, 0, 1.0);
@@ -192,7 +203,19 @@
             return bmp;
         }
 
+        public static Image DrawHighAmplitudeClippingTrack(SummaryIndexBase[] summaryIndices)
+        {
+            var highAmplitudeIndex = new double[summaryIndices.Length];
+            var clippingIndex = new double[summaryIndices.Length];
+            for (int i = 0; i < summaryIndices.Length; i++)
+            {
+                var values = (SummaryIndexValues)summaryIndices[i];
+                highAmplitudeIndex[i] = values.HighAmplitudeIndex;
+                clippingIndex[i] = values.ClippingIndex;
+            }
 
+            DrawHighAmplitudeClippingTrack(highAmplitudeIndex, clippingIndex);
+        }
 
 
 
@@ -370,7 +393,5 @@
         //    //table2Display = NormaliseColumnsOfDataTable(table2Display);
         //    return System.Tuple.Create(dt, table2Display);
         //} // ProcessCsvFile()
-
-
     } //class DisplayIndices
 }
