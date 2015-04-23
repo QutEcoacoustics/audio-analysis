@@ -121,9 +121,9 @@ Activity:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 100
+  NormMax: 1.0
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 EventsPerSecond:
@@ -133,7 +133,7 @@ EventsPerSecond:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 2.0
+  NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
@@ -157,9 +157,9 @@ HighFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
-  NormMax: 50
+  NormMax: 0.5
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 MidFreqCover:
@@ -169,9 +169,9 @@ MidFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 50
+  NormMax: 0.50
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 LowFreqCover:
@@ -181,9 +181,9 @@ LowFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 50
+  NormMax: 0.50
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 AcousticComplexity:
@@ -287,7 +287,7 @@ SptDensity:
   Comment: "Average number of spectral peaks tracks traversing a frame."
   DataType: double
   DefaultValue: 0.0
-  DoDisplay: true
+  DoDisplay: false
   NormMin: 0.0
   NormMax: 2.0
   ProjectID: Acoustic Indices
@@ -439,7 +439,7 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.1
-  NormMax: 4.0
+  NormMax: 5.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices

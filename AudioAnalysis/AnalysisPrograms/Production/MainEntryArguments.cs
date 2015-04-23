@@ -88,8 +88,15 @@ namespace AnalysisPrograms.Production
         {
             get
             {
-                Contract.Assert(!this.Verbose || (this.Verbose && this.logLevel == LogVerbosity.Debug));
-                Contract.Assert(!this.VVerbose || (this.VVerbose && this.logLevel == LogVerbosity.Debug));
+                if (this.Verbose)
+                {
+                    return LogVerbosity.Debug;
+                }
+
+                if (this.VVerbose)
+                {
+                    return  LogVerbosity.All;
+                }
                 
                 return this.logLevel;
             }
