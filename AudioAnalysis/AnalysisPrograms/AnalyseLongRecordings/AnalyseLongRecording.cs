@@ -94,6 +94,7 @@ Output  to  directory: {1}
             bool saveSonogramsImages      = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
             bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
+            bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
 
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
             FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, arguments.Config);
@@ -120,12 +121,18 @@ Output  to  directory: {1}
             Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
             if (tileOutput)
             {
+                if (!filenameDate)
+                {
+                    throw new ConfigFileException("If TileImageOutput is set then RequireDateInFilename must be set as well");
+                }
+            }
+
+            if (filenameDate)
+            {
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
                 {
-                    throw new InvalidFileDateException("When TileImageOutput option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
+                    throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
-
-
             }
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
@@ -139,7 +146,7 @@ Output  to  directory: {1}
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
-            var fileSegment = new FileSegment(sourceAudio, tileOutput); 
+            var fileSegment = new FileSegment(sourceAudio, filenameDate); 
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {

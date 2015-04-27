@@ -8,7 +8,7 @@ namespace Acoustics.Shared
     using System.Diagnostics.Contracts;
     using System.IO;
 
-    public class ConfigFile
+    public static class ConfigFile
     {
         private static readonly string ExecutingAssemblyPath = System.Reflection.Assembly.GetEntryAssembly().Location;
         private static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
@@ -75,6 +75,34 @@ namespace Acoustics.Shared
             }
 
             return false;
+        }
+    }
+
+    public class ConfigFileException : Exception
+    {
+        public const string Prelude = "Configuration exception: ";
+
+        public ConfigFileException(string message)
+            : base(message)
+        {
+        }
+
+        public ConfigFileException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+
+        public ConfigFileException()
+        {
+        }
+
+
+        public override string Message
+        {
+            get
+            {
+                return Prelude + base.Message;
+            }
         }
     }
 }

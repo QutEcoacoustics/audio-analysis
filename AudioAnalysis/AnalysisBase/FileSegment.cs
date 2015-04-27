@@ -56,7 +56,7 @@ namespace AnalysisBase
                 if (!this.fileStartDate.HasValue)
                 {
                     throw new InvalidFileDateException(
-                        "A file date is required but one has not been sucessfully parsed");
+                        "A file date is required but one has not been successfully parsed");
                 }
             }
         }
@@ -179,12 +179,20 @@ namespace AnalysisBase
                 return null;
             }
 
+            /*
+             *  Disabling this block - it is too unpredictable.
+             *  No gaurantee where a date is coming from.
+             *  Additionally, in a performance centric scenario, an
+             *  extra call to audio libs is unecessary
+             */
+            /*
             var dateTime = this.FileModifedDateTime();
             if (this.OriginalFileDuration > TimeSpan.Zero && dateTime.HasValue &&
                 dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
             {
                 return dateTime - this.OriginalFileDuration;
             }
+            */
 
             return null;
         }

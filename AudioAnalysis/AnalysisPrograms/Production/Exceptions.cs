@@ -86,6 +86,10 @@ namespace AnalysisPrograms.Production
                                       new ExceptionStyle() { ErrorCode = 102, PrintUsage = false}
                                   },
                                   {
+                                      typeof(ConfigFileException),
+                                      new ExceptionStyle() {ErrorCode = 103, PrintUsage = false}
+                                  },
+                                  {
                                       typeof(AnalysisOptionDevilException), 
                                       new ExceptionStyle
                                           {
