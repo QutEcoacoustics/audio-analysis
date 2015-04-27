@@ -415,27 +415,27 @@ namespace AnalysisPrograms
             }
 
             var repository = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
-            ////repository.Root.Level = modifiedLevel;
-            ////repository.Threshold = modifiedLevel;
+            repository.Root.Level = modifiedLevel;
+            repository.Threshold = modifiedLevel;
 
-            foreach (var appender in repository.GetAppenders())
-            {
-                IFilter filter = ((AppenderSkeleton)appender).FilterHead;
-                while (filter.GetType() != typeof(LevelRangeFilter) && filter != null)
-                {
-                    filter = filter.Next;
-                }
-
-                // only modify filters with RangeFilters on them
-                if (filter == null)
-                {
-                    continue;
-                }
-                else
-                {
-                    ((LevelRangeFilter)filter).LevelMin = modifiedLevel;
-                }
-            }
+//            foreach (var appender in repository.GetAppenders())
+//            {
+//                IFilter filter = ((AppenderSkeleton)appender).FilterHead;
+//                while (filter.GetType() != typeof(LevelRangeFilter) && filter != null)
+//                {
+//                    filter = filter.Next;
+//                }
+//
+//                // only modify filters with RangeFilters on them
+//                if (filter == null)
+//                {
+//                    continue;
+//                }
+//                else
+//                {
+//                    ((LevelRangeFilter)filter).LevelMin = modifiedLevel;
+//                }
+//            }
 
             repository.RaiseConfigurationChanged(EventArgs.Empty);
             

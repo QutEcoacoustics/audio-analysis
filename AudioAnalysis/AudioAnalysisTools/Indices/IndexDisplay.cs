@@ -145,7 +145,7 @@
             double[] array1 = dictionaryOfCsvFile["HighAmplitudeIndex"];
             double[] array2 = dictionaryOfCsvFile["ClippingIndex"];
 
-            DrawHighAmplitudeClippingTrack(array1, array2);
+            return DrawHighAmplitudeClippingTrack(array1, array2);
         }
 
 
@@ -214,7 +214,7 @@
                 clippingIndex[i] = values.ClippingIndex;
             }
 
-            DrawHighAmplitudeClippingTrack(highAmplitudeIndex, clippingIndex);
+            return DrawHighAmplitudeClippingTrack(highAmplitudeIndex, clippingIndex);
         }
 
 

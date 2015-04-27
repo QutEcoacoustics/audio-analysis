@@ -40,7 +40,11 @@ SonogramBackgroundThreshold: 4.0
 ParallelProcessing: false
 
 # if true an additional set of images will be produced that are tiles
+# if true, RequireDateInFilename must be set
 TileImageOutput: false
+
+# if true, an unambiguous date time must be provided in the source file's name.
+RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 EventThreshold: 0.2

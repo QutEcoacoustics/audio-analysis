@@ -124,5 +124,6 @@ namespace AudioAnalysisTools
         // Other config keys
         public const string KeyIndexPropertiesConfig = "IndexPropertiesConfig";
         public const string TileImageOutput = "TileImageOutput";
+        public const string RequireDateInFilename = "RequireDateInFilename";
     }
 }
