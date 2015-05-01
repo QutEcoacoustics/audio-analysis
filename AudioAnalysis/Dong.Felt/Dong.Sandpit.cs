@@ -148,8 +148,8 @@
                     //featurePropertySet, outputDirectory.FullName);
 
                     /// Ridge detection analysis
-                    //RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
-                    //    featurePropertySet);
+                    RidgeDetectionBatchProcess(inputDirectory.FullName, config, ridgeConfig, gradientConfig, compressConfig,
+                        featurePropertySet);
                     /// Jie request ridge detection
                     //RidgeDetectionForJie(inputDirectory.FullName, ridgeConfig);
 
@@ -269,18 +269,18 @@
                     var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
 
-                    poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                    var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
-                    var addCompressedRidges = POISelection.AddCompressedRidges(
-                        config,
-                        audioFiles[i],
-                        ridgeConfig,
-                        featurePropSet,
-                        compressConfig,
-                        filterRidges);
-                    var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(filterRidges, spectrogram.Data, rows, cols);
-                    var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
-                    var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(filterIsolatedRidges, rows, cols, 3, 1.0);
+                    //poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                    //var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
+                    //var addCompressedRidges = POISelection.AddCompressedRidges(
+                    //    config,
+                    //    audioFiles[i],
+                    //    ridgeConfig,
+                    //    featurePropSet,
+                    //    compressConfig,
+                    //    filterRidges);
+                    //var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(filterRidges, spectrogram.Data, rows, cols);
+                    //var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
+                    //var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(filterIsolatedRidges, rows, cols, 3, 1.0);
                     //var dividedRidges = POISelection.POIListDivision(joinedRidges);
                     //ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventlist);
                     Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
