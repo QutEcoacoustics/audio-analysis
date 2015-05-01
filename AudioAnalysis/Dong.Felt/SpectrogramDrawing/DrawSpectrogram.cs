@@ -20,10 +20,10 @@ namespace Dong.Felt.SpectrogramDrawing
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent,
             double eventThreshold, List<PointOfInterest> poiList)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            bool doHighlightSubband = true; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0, 0.0, 0));
+            //image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0, 0.0, 0));
             //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if ((acousticEvent != null) && (acousticEvent.Count > 0))
             {

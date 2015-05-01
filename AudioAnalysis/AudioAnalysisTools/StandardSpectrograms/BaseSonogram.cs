@@ -336,7 +336,8 @@
             Image image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
                                              doHighlightSubband, this.subBand_MinHz, this.subBand_MaxHz);
             bool doMelScale = false;
-            double freqBinWidth = 0.0;
+            //double freqBinWidth = 0.0;
+            double freqBinWidth = this.FBinWidth;
             if (add1kHzLines) 
                 SpectrogramTools.Draw1kHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
             return image;
