@@ -438,6 +438,44 @@ namespace Dong.Felt.Representations
             acousticEvents = events;          
         }
 
+        public static void RidgeListToEvent(SpectrogramStandard sonogram,
+            PointOfInterest[,] poiMatrix,
+            out List<AcousticEvent> acousticEvents)
+        {                 
+            /////call AED to group ridges into event-based on ridge
+            var doubleMatrix = poiMatrix.Map(x => x.RidgeMagnitude > 0 ? 1 : 0.0);
+            var rotateDoubleMatrix = MatrixTools.MatrixRotate90Clockwise(doubleMatrix);
+            /// based on spectrogram intensity matrix directly
+            //var rotateDoubleMatrix = sonogram.Data;
+            var aedOptions = new AedOptions(sonogram.NyquistFrequency)
+            {
+                IntensityThreshold = 0.5,
+                SmallAreaThreshold = 10,
+                BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
+                DoNoiseRemoval = false,
+                LargeAreaHorizontal = Default.SeparateStyle.Skip,
+                LargeAreaVeritical = Default.SeparateStyle.Skip,
+                //LargeAreaHorizontal = Default.SeparateStyle.NewVertical(new Default.SeparateParameters(5000, 10, 10, false)),
+                //LargeAreaVeritical = Default.SeparateStyle.NewHorizontal(new Default.SeparateParameters(2000, 20, 10, false))
+            };
+            var oblongs = AcousticEventDetection.detectEvents(aedOptions, rotateDoubleMatrix);
+            //=> to call a anonymous method
+            var events = oblongs.Select(
+                o =>
+                {
+                    var e = new AcousticEvent(
+                        o,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FrameDuration,
+                        sonogram.FrameStep,
+                        sonogram.FrameCount);
+                    e.BorderColour = Color.FromArgb(128, Color.Blue);
+                    return e;
+                }).ToList();
+            acousticEvents = events;
+        }
+
         public static List<AcousticEvent> SplitAcousticEvent(List<AcousticEvent> acousticEvent)
         {
             var result = new List<AcousticEvent>();
