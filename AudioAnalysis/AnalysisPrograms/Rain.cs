@@ -185,7 +185,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
+        /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
         public static void Execute(Arguments arguments)

@@ -259,7 +259,8 @@ namespace AnalysisPrograms
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
             IAnalyser2 analyser = new Canetoad();
-            AnalysisResult2 result = analyser.Analyse(analysisSettings);
+            analyser.BeforeAnalyze(analysisSettings);
+            AnalysisResult2 result = analyser.Analyze(analysisSettings);
             /* ############################################################################################################################################# */
 
             if (result.Events.Length > 0)
@@ -272,7 +273,7 @@ namespace AnalysisPrograms
             }
         }
 
-        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             FileInfo audioFile = analysisSettings.AudioFile;
 

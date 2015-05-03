@@ -370,7 +370,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
+        /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
         ///     To be called as an executable with command line arguments.
         /// </summary>
         /// <param name="arguments">
@@ -412,7 +412,8 @@ namespace AnalysisPrograms
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
             IAnalyser2 analyser = new KoalaMale();
-            AnalysisResult2 result = analyser.Analyse(analysisSettings);
+            analyser.BeforeAnalyze(analysisSettings);
+            AnalysisResult2 result = analyser.Analyze(analysisSettings);
 
             /* ############################################################################################################################################# */
             if (result.Events.Length > 0)
@@ -490,7 +491,7 @@ namespace AnalysisPrograms
             return events;
         }
 
-        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             FileInfo audioFile = analysisSettings.AudioFile;
 

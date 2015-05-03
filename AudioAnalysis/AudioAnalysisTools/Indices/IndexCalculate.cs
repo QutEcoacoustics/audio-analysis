@@ -93,13 +93,19 @@ namespace AudioAnalysisTools.Indices
         /// Extracts summary and spectral acoustic indices from the entire segment of the passed recording or a subsegment of it.
         /// </summary>
         /// <param name="recording">an audio recording</param>
+        /// <param name="analysisSettings"></param>
+        /// <param name="offset"></param>
         /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
         /// <param name="int LowFreqBound">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
+        /// <param name="subsegmentOffsetTimeSpan">
+        /// The start time of the required subsegment relative to start of SOURCE audio recording. 
+        /// i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
+        /// </param>
         /// <returns></returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
-        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings)
+        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, TimeSpan subsegmentOffsetTimeSpan)
         {
             string recordingFileName = recording.FileName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
@@ -131,12 +137,12 @@ namespace AudioAnalysisTools.Indices
             // get TimeSpans and durations
             TimeSpan subsegmentTimeSpan = (TimeSpan)analysisSettings.IndexCalculationDuration;
             double subsegmentSecondsDuration = subsegmentTimeSpan.TotalSeconds;
-            TimeSpan ts = (TimeSpan)analysisSettings.SubsegmentOffset;
+            TimeSpan ts = subsegmentOffsetTimeSpan;
             double subsegmentOffset = ts.TotalSeconds;
             ts = (TimeSpan)analysisSettings.SegmentStartOffset;
             double segmentOffset = ts.TotalSeconds;
             double localOffsetInSeconds = subsegmentOffset - segmentOffset;
-            ts = (TimeSpan)analysisSettings.BGNoiseNeighbourhood;
+            ts = (TimeSpan)analysisSettings.BgNoiseNeighborhood;
             double BGNoiseNeighbourhood = ts.TotalSeconds;
 
             // calculate start and end samples of the subsegment and noise segment

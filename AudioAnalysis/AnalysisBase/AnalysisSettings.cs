@@ -47,7 +47,7 @@ namespace AnalysisBase
         private int? instanceId = null;
 
         /// <summary>
-        /// CONSTRUCTOR: Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
+        /// Initializes a new instance of the <see cref="AnalysisSettings"/> class. 
         /// </summary>
         public AnalysisSettings()
         {
@@ -214,28 +214,6 @@ namespace AnalysisBase
         public TimeSpan? SegmentStartOffset { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration of the sub-segment for which indices are calulated. 
-        /// Default = 60 seconds i.e. same duration as the Segment.
-        /// </summary>
-        public TimeSpan? IndexCalculationDuration { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start time of the required subsegment relative to start of SOURCE audio recording. 
-        /// i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
-        /// Units = seconds
-        /// </summary>
-        public TimeSpan? SubsegmentOffset { get; set; }
-
-        /// <summary>
-        /// Gets or sets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
-        /// Units = seconds
-        /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighbourhood = 10 seconds) 
-        ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
-        ///                In case of edge effects, the BGnoise neighbourhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
-        /// </summary>
-        public TimeSpan? BGNoiseNeighbourhood { get; set; }
-
-        /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
         /// This is initially set to the value of the <c>DefaultTargetSampleRateKey</c> setting in the app.config.
         /// This used to be set by a constant in each implementation of an analysis.
@@ -271,10 +249,17 @@ namespace AnalysisBase
         /// </summary>
         public dynamic Configuration { get; set; }
 
+        /// <summary>
+        /// Get or sets an object that can be used to store arbitrary configuration or options.
+        /// This is useful for passing information between BeforeAnalyze and Analyze.
+        /// DO NOT STORE MUTABLE STATE IN THIS OBJECT
+        /// </summary>
+        public object AnalyzerSpecificConfiguration { get; set; }
+
         public object Clone()
         {
             AnalysisSettings deepClone = this.DeepClone();
-            Log.Debug("Instance Id of old: {0}, vs new {1}".Format2(this.InstanceId, deepClone.InstanceId));
+            Log.Trace("Instance Id of old: {0}, vs new {1}".Format2(this.InstanceId, deepClone.InstanceId));
             return deepClone;
         }
 
@@ -283,7 +268,7 @@ namespace AnalysisBase
             return string.Format(
                 "Settings for {0} with instance id {1} and config file {2}.",
                 this.AudioFile.Name,
-                this.InstanceId,
+                this.InstanceId.ToString(),
                 this.ConfigFile.Name);
         }
     }

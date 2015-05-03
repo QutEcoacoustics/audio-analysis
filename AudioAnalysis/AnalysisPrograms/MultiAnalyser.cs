@@ -31,7 +31,7 @@ namespace AnalysisPrograms
     /// This class is a combination of analysers
     /// When adding a new analyser to this class need to modify two methods:
     ///    1) ConvertEvents2Indices();  and
-    ///    2) Analyse()
+    ///    2) Analyze()
     ///
     /// As of 20 June 2012 this class includes three analysers: crow, human, machine.
     /// As of 22 June 2012 this class includes five  analysers: crow, human, machine, canetoad, koala-male.
@@ -182,7 +182,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
+        /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
         public static void Execute(Arguments arguments)
@@ -471,7 +471,7 @@ namespace AnalysisPrograms
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
             return analysisResults;
-        } //Analyse()
+        } //Analyze()
 
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)

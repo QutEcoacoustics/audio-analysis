@@ -91,9 +91,9 @@ Output  to  directory: {1}
 
             bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
-            bool saveSonogramsImages      = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
+            bool saveSonogramsImages = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
-            bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
+            
             bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
 
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
@@ -115,16 +115,6 @@ Output  to  directory: {1}
             else
             {
                 Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
-            }
-
-            // if tiling output we need to be able to parse the date from the file name
-            Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
-            if (tileOutput)
-            {
-                if (!filenameDate)
-                {
-                    throw new ConfigFileException("If TileImageOutput is set then RequireDateInFilename must be set as well");
-                }
             }
 
             if (filenameDate)
@@ -182,35 +172,6 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
             }
 
-            // set IndexCalculationDuration i.e. duration of a subsegment
-            try
-            {
-                double indexCalculationDuration = configuration[AnalysisKeys.IndexCalculationDuration];
-                analysisSettings.IndexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDuration);
-
-                if (tileOutput && indexCalculationDuration != 60.0)
-                {
-                    throw new ArgumentException("Invalid configuration detected: tile image output is enabled but ICD != 60.0 so the images won'tbe created");
-                }
-            }
-            catch (Exception ex)
-            {
-                analysisSettings.IndexCalculationDuration = TimeSpan.FromSeconds(60);
-                Log.Warn("Cannot read IndexCalculationDuration from config file (Exceptions squashed. Used default value = " + analysisSettings.IndexCalculationDuration + ")");
-            }
-
-            // set background noise neighbourhood
-            try
-            {
-                int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
-                analysisSettings.BGNoiseNeighbourhood = TimeSpan.FromSeconds(bgnNh);
-            }
-            catch (Exception ex)
-            {
-                analysisSettings.BGNoiseNeighbourhood = analysisSettings.SegmentMaxDuration;
-                Log.Warn("Cannot read BGNNeighbourhood from config file (Exceptions squashed. Used default value = " + analysisSettings.BGNoiseNeighbourhood + ")");
-            }
-
             // set target sample rate
             try
             {
@@ -223,7 +184,7 @@ Output  to  directory: {1}
             }
 
             // Execute a pre analyzer hook
-            analyser.BeforeAnalyse(analysisSettings);
+            analyser.BeforeAnalyze(analysisSettings);
 
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");

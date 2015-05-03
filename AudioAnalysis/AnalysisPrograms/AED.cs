@@ -283,7 +283,7 @@ namespace AnalysisPrograms
         }
 
 
-        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             FileInfo audioFile = analysisSettings.AudioFile;
 

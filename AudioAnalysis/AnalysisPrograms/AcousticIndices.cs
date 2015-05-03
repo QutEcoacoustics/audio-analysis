@@ -251,15 +251,89 @@ namespace AnalysisPrograms
             return;
         }
 
-        public void BeforeAnalyse(AnalysisSettings analysisSettings)
+        public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
-            FileInfo indicesPropertiesConfig = IndexProperties.Find(analysisSettings.Configuration, analysisSettings.ConfigFile);
+            var configuration = analysisSettings.Configuration;
+            var parsedConfig = new AcousticIndicesParsedConfiguration();
+
+            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, analysisSettings.ConfigFile);
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+
+            bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
+            bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
+            parsedConfig.TileOutput = tileOutput;
+
+            // if tiling output we need to be able to parse the date from the file name
+            Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
+            if (tileOutput)
+            {
+                if (!filenameDate)
+                {
+                    throw new ConfigFileException("If TileImageOutput is set then RequireDateInFilename must be set as well");
+                }
+            }
+
+
+            // set IndexCalculationDuration i.e. duration of a subsegment
+            TimeSpan indexCalculationDuration;
+            try
+            {
+                double indexCalculationDurationSeconds = (double)configuration[AnalysisKeys.IndexCalculationDuration];
+                indexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDurationSeconds);
+            }
+            catch (Exception ex)
+            {
+                indexCalculationDuration = analysisSettings.SegmentMaxDuration.Value;
+                Log.Warn("Cannot read IndexCalculationDuration from config file (Exceptions squashed. Used default value = " + indexCalculationDuration.ToString() + ")");
+            }
+            parsedConfig.IndexCalculationDuration = indexCalculationDuration;
+
+
+            if (tileOutput && indexCalculationDuration != TimeSpan.FromSeconds(60))
+            {
+                throw new ConfigFileException("Invalid configuration detected: tile image output is enabled but ICD != 60.0 so the images won'tbe created");
+            }
+
+            // set background noise neighborhood
+            try
+            {
+                int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                parsedConfig.BgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
+            }
+            catch (Exception ex)
+            {
+                parsedConfig.BgNoiseNeighborhood = analysisSettings.SegmentMaxDuration.Value;
+                Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + parsedConfig.BgNoiseNeighborhood.ToString() + ")");
+            }
+
+            analysisSettings.AnalyzerSpecificConfiguration = parsedConfig;
         }
 
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        private class AcousticIndicesParsedConfiguration
         {
+            public bool TileOutput { get; set; }
+
+            /// <summary>
+            /// Gets or sets the duration of the sub-segment for which indices are calculated. 
+            /// Default = 60 seconds i.e. same duration as the Segment.
+            /// </summary>
+            public TimeSpan IndexCalculationDuration { get; set; }
+
+            /// <summary>
+            /// Gets or sets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
+            /// Units = seconds
+            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighbourhood = 10 seconds) 
+            ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
+            ///                In case of edge effects, the BGnoise neighborhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
+            /// </summary>
+            public TimeSpan BgNoiseNeighborhood { get; set; }
+        }
+
+        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        {
+            AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalyzerSpecificConfiguration;
+
             var audioFile = analysisSettings.AudioFile;
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
@@ -268,7 +342,7 @@ namespace AnalysisPrograms
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             double recordingDuration = recording.Duration().TotalSeconds;
-            TimeSpan ts = (TimeSpan)analysisSettings.IndexCalculationDuration;
+            TimeSpan ts = acousticIndicesParsedConfiguration.IndexCalculationDuration;
             double subsegmentDuration = ts.TotalSeconds;
             
             int subsegmentCount = Math.Max((int)Math.Floor(recordingDuration / subsegmentDuration), 1);
@@ -280,12 +354,13 @@ namespace AnalysisPrograms
             for (int i = 0; i < subsegmentCount; i++)
             {
 
-                analysisSettings.SubsegmentOffset = analysisSettings.SegmentStartOffset  + TimeSpan.FromSeconds(i * subsegmentDuration);
+                var subsegmentOffset = (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero)  + TimeSpan.FromSeconds(i * subsegmentDuration);
 
-                // ######################################################################
-                var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings);
+                /* ###################################################################### */
 
-                // ######################################################################
+                var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings, subsegmentOffset);
+
+                /* ###################################################################### */
 
                 analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
@@ -295,8 +370,6 @@ namespace AnalysisPrograms
             {
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
                 analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
-
-                // ############################### SAVE OSCILLATION CSV HERE ###############################
             }
 
             if (analysisSettings.SpectrumIndicesDirectory != null)
@@ -394,7 +467,7 @@ namespace AnalysisPrograms
                                           FrameWidth = frameWidth,
                                           FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
                                           IndexCalculationDuration = settings.IndexCalculationDuration.Value,
-                                          BGNoiseNeighbourhood = settings.BGNoiseNeighbourhood.Value,
+                                          BGNoiseNeighbourhood = settings.BgNoiseNeighborhood.Value,
                                           MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF
                                       };
