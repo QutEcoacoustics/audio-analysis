@@ -783,12 +783,12 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
-        public void BeforeAnalyse(AnalysisSettings analysisSettings)
+        public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             // noop
         }
 
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
             var recording = new AudioRecording(audioFile.FullName);

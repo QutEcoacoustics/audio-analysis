@@ -44,7 +44,7 @@ namespace AnalysisBase
         /// Ideally run once (whereas Analyze is run N times).
         /// </summary>
         /// <param name="analysisSettings">The analysis Settings.</param>
-        void BeforeAnalyse(AnalysisSettings analysisSettings);
+        void BeforeAnalyze(AnalysisSettings analysisSettings);
 
         /// <summary>
         /// Run analysis using the given analysis settings.
@@ -55,7 +55,7 @@ namespace AnalysisBase
         /// <returns>
         /// The results of the analysis.
         /// </returns>
-        AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
+        AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
 
         /// <summary>
         /// Ensures abstract types are downcast by the analyzer and written to file.

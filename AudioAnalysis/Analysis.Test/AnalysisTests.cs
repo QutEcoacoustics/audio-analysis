@@ -94,7 +94,7 @@ namespace Ecosounds.Test.AnalysisPrograms
 //            var configuration = new ConfigDictionary(settings.ConfigFile.FullName);
 //            settings.ConfigDict = configuration.GetTable();
 //
-//            var results = canetoad.Analyse(settings);
+//            var results = canetoad.Analyze(settings);
 
 
         }

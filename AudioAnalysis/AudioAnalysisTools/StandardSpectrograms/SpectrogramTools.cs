@@ -65,7 +65,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 settings.AnalysisInstanceOutputDirectory = diOutputDir;
                 // want to psas SampleRate of the original file.
                 settings.SampleRateOfOriginalAudioFile = Int32.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);
-                var results = analyser.Analyse(settings);
+
+                analyser.BeforeAnalyze(settings);
+
+                var results = analyser.Analyze(settings);
                 if (results.ImageFile == null) image = null;
                 else image = Image.FromFile(results.ImageFile.FullName);
                 analyser = null;

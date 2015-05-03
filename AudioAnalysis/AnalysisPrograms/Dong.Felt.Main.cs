@@ -322,7 +322,7 @@ namespace AnalysisPrograms
 
     public class RidgeAnalysis : AbstractStrongAnalyser
     {
-        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
             var startOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
