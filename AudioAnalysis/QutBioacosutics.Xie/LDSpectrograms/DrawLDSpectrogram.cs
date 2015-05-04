@@ -62,16 +62,16 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             //string opdir = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct16_SpectralIndices";
 
             //2010 Oct 17th
-            string ipFileName = "020313";
-            string ipdir = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta"; // this is where ALL you indices csv files are located
-            string opdir = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta";
+            string inputFileName = "020313";
+            string inputDirectory = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta"; // this is where ALL you indices csv files are located
+            string outputDirectory = @"C:\JCU\Campus\MyResults_Campus_020313_Nasuta";
 
 
-            DirectoryInfo ipDir = new DirectoryInfo(ipdir);
-            DirectoryInfo opDir = new DirectoryInfo(opdir);
+            DirectoryInfo ipDir = new DirectoryInfo(inputDirectory);
+            DirectoryInfo opDir = new DirectoryInfo(outputDirectory);
 
             //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfigOfJie(ipFileName, ipDir, opDir)
+            var config = new LdSpectrogramConfigOfJie(inputFileName, ipDir, opDir)
                              {
                                  ColourMap1 = "ACI-ENT-CVR",
                                  ColourMap2 = "OSC-ENG-TRK",

@@ -29,7 +29,7 @@ public class CubeHelix
 
             public CubeHelix(string mode)
             {
-                if (mode.Equals(ColourCubeHelix.DEFAULT))
+                if (mode.Equals(ColorCubeHelix.Default))
                 {
                     //Hsl colorARgb = new Hsl(300, 0.5, 0.0);
                     //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0);
@@ -41,7 +41,7 @@ public class CubeHelix
                     //TestImage(path);
                 }
                 else
-                    if (mode.Equals(ColourCubeHelix.GRAYSCALE))
+                    if (mode.Equals(ColorCubeHelix.Grayscale))
                     {
                         ColourPallette = ImageTools.GrayScale();
                     }

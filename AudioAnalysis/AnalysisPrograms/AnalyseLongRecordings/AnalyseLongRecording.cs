@@ -80,12 +80,6 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
 
-
-            if (!sourceAudio.Exists)
-            {
-                Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
-            }
-
             // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
 
