@@ -10,21 +10,18 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Data;
-    using System.Diagnostics.Contracts;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
+    using System.Reflection;
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
-    using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -34,7 +31,11 @@ namespace AnalysisPrograms
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
+
+    using log4net;
 
     using PowerArgs;
 
@@ -48,7 +49,7 @@ namespace AnalysisPrograms
             [ArgDescription("The task to execute, either `" + TaskAnalyse + "` or `" + TaskLoadCsv + "`")]
             [ArgRequired]
             [ArgPosition(1)]
-            [ArgOneOfThese(TaskAnalyse, TaskLoadCsv, ExceptionMessage = "The task to execute is not recognised.")]
+            [ArgOneOfThese(TaskAnalyse, TaskLoadCsv, ExceptionMessage = "The task to execute is not recognized.")]
             public string Task { get; set; }
 
             [ArgIgnore]
@@ -142,6 +143,9 @@ namespace AnalysisPrograms
         // TASK IDENTIFIERS
         public const string TaskAnalyse = AnalysisName;
         public const string TaskLoadCsv = "loadCsv";
+        public const string TowseyAcoustic = "Towsey." + AnalysisName;
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public string DisplayName
         {
@@ -150,7 +154,10 @@ namespace AnalysisPrograms
 
         public string Identifier
         {
-            get { return "Towsey." + AnalysisName; }
+            get
+            {
+                return TowseyAcoustic;
+            }
         }
 
 
@@ -185,7 +192,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
                 var diOutputDir = new DirectoryInfo(outputDir);
 
-                Log.Verbosity = 1;
                 int startMinute = 0;
                 int durationSeconds = 0; //set zero to get entire recording
                 var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
@@ -228,8 +234,8 @@ namespace AnalysisPrograms
                 FileInfo fiCsvIndices = new FileInfo(indicesPath);
                 if (!fiCsvIndices.Exists)
                 {
-                    Log.WriteLine(
-                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.",
+                    Log.InfoFormat(
+                        "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{1}>.",
                         arguments.Start,
                         arguments.Source.FullName);
                 }
@@ -246,98 +252,93 @@ namespace AnalysisPrograms
             return;
         }
 
-        /// <summary>
-        /// Directs task to the appropriate method based on the first argument in the command line string.
-        /// </summary>
-        /// <returns></returns>
-        //public static void Execute(Arguments arguments)
-        //{
-        //    Contract.Requires(arguments != null);
-  
-        //    // loads a csv file for visulisation
-        //    if (arguments.TaskIsLoadCsv)
-        //    {
-        //        string[] defaultColumns2Display = { "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "hfCover", "mfCover", "lfCover", "H[ampl]", "H[avSpectrum]", "#clusters", "avClustDur" };
-        //        var fiCsvFile = arguments.InputCsv;
-        //        var fiConfigFile = arguments.Config;
-        //        //var fiImageFile  = new FileInfo(restOfArgs[2]); //path to which to save image file.
-        //        IAnalyser analyser = new Acoustic();
-        //        var dataTables = analyser.ProcessCsvFile(fiCsvFile, fiConfigFile);
-        //        //returns two datatables, the second of which is to be converted to an image (fiImageFile) for display
-        //    } 
-        //    else if (arguments.TaskIsAnalyse)
-        //    {
-        //        // perform the analysis task
-        //        ExecuteAnalysis(arguments);
-        //    }
-        //} // Execute()
-
-
-        /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
-        /// To be called as an executable with command line arguments.
-        /// </summary>
-        //public static void ExecuteAnalysis(Arguments args)
-        //{
-        //    // Check arguments and that paths are valid
-        //    AnalysisSettings analysisSettings = GetAndCheckAllArguments(args);
-        //    analysisSettings.SegmentStartOffset = new TimeSpan(0, 0, args.Start ?? 0);
-        //    analysisSettings.SegmentMaxDuration = new TimeSpan(0, 0, args.Duration ?? 0);
-
-        //    // EXTRACT THE REQUIRED RECORDING SEGMENT
-        //    FileInfo fiSource = analysisSettings.SourceFile;
-        //    FileInfo tempF = analysisSettings.AudioFile;
-        //    if (tempF.Exists) { tempF.Delete(); }
-
-        //    // GET INFO ABOUT THE SOURCE and the TARGET files - esp need the sampling rate
-        //    AudioUtilityModifiedInfo beforeAndAfterInfo;
-
-        //    if (analysisSettings.SegmentMaxDuration != null) // Process entire file
-        //    {
-        //        beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = IndexCalculate.RESAMPLE_RATE }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-        //    }
-        //    else
-        //    {
-        //        beforeAndAfterInfo = AudioFilePreparer.PrepareFile(
-        //            fiSource,
-        //            tempF,
-        //            new AudioUtilityRequest
-        //            {
-        //                TargetSampleRate = IndexCalculate.RESAMPLE_RATE,
-        //                OffsetStart = analysisSettings.SegmentStartOffset,
-        //                OffsetEnd = analysisSettings.SegmentStartOffset.Value.Add(analysisSettings.SegmentMaxDuration.Value)
-        //            }, analysisSettings.AnalysisBaseTempDirectoryChecked);
-        //    }
-
-        //    // Store source sample rate - may need during the analysis if have upsampled the source.
-        //    analysisSettings.SampleRateOfOriginalAudioFile = beforeAndAfterInfo.SourceInfo.SampleRate;
-
-        //    // DO THE ANALYSIS
-        //    // #############################################################################################################################################
-        //    IAnalyser analyser = new Acoustic();
-        //    AnalysisResult result = analyser.Analyse(analysisSettings);
-        //    DataTable dt = result.Data;
-        //    if (dt == null) { throw new InvalidOperationException("Data table of results is null"); }
-        //    // #############################################################################################################################################
-
-        //    // ADD IN ADDITIONAL INFO TO RESULTS TABLE
-        //    int iter = 0; // dummy - iteration number would ordinarily be available at this point.
-        //    int startMinute = (int)(args.Start ?? 0);
-        //    foreach (DataRow row in dt.Rows)
-        //    {
-        //        row[IndexProperties.header_count] = iter;
-        //        row[IndexProperties.header_startMin] = startMinute;
-        //        row[IndexProperties.header_SecondsDuration] = result.AudioDuration.TotalSeconds;
-        //    }
-
-        //    CsvTools.DataTable2CSV(dt, analysisSettings.IndicesFile.FullName);
-        //    //DataTableTools.WriteTable2Console(dt);
-        //} // ExecuteAnalysis()
-
-
-
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
+            var configuration = analysisSettings.Configuration;
+
+            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, analysisSettings.ConfigFile);
+            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+            SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+
+            bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
+            bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
+
+            // if tiling output we need to be able to parse the date from the file name
+            Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
+            if (tileOutput)
+            {
+                if (!filenameDate)
+                {
+                    throw new ConfigFileException("If TileImageOutput is set then RequireDateInFilename must be set as well");
+                }
+            }
+
+
+            // set IndexCalculationDuration i.e. duration of a subsegment
+            TimeSpan indexCalculationDuration;
+            try
+            {
+                double indexCalculationDurationSeconds = (double)configuration[AnalysisKeys.IndexCalculationDuration];
+                indexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDurationSeconds);
+            }
+            catch (Exception ex)
+            {
+                indexCalculationDuration = analysisSettings.SegmentMaxDuration.Value;
+                Log.Warn("Cannot read IndexCalculationDuration from config file (Exceptions squashed. Used default value = " + indexCalculationDuration.ToString() + ")");
+            }
+
+            if (tileOutput && indexCalculationDuration != TimeSpan.FromSeconds(60))
+            {
+                throw new ConfigFileException("Invalid configuration detected: tile image output is enabled but ICD != 60.0 so the images won'tbe created");
+            }
+
+            // set background noise neighborhood
+            TimeSpan bgNoiseNeighborhood;
+            try
+            {
+                int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                bgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
+            }
+            catch (Exception ex)
+            {
+                bgNoiseNeighborhood = analysisSettings.SegmentMaxDuration.Value;
+                Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + bgNoiseNeighborhood.ToString() + ")");
+            }
+
+            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood);
+        }
+
+        private class AcousticIndicesParsedConfiguration
+        {
+            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood)
+            {
+                this.TileOutput = tileOutput;
+                this.IndexCalculationDuration = indexCalculationDuration;
+                this.BgNoiseNeighborhood = bgNoiseNeighborhood;
+            }
+
+            public bool TileOutput { get; private set; }
+
+            /// <summary>
+            /// Gets or sets the duration of the sub-segment for which indices are calculated. 
+            /// Default = 60 seconds i.e. same duration as the Segment.
+            /// </summary>
+            public TimeSpan IndexCalculationDuration { get; private set; }
+
+            /// <summary>
+            /// Gets or sets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
+            /// Units = seconds
+            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighbourhood = 10 seconds) 
+            ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
+            ///                In case of edge effects, the BGnoise neighborhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
+            /// </summary>
+            public TimeSpan BgNoiseNeighborhood { get; private set; }
+        }
+
+        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
+        {
+            AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalyzerSpecificConfiguration;
+
             var audioFile = analysisSettings.AudioFile;
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
@@ -345,40 +346,83 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
+            double recordingDuration = recording.Duration().TotalSeconds;
+            TimeSpan ts = acousticIndicesParsedConfiguration.IndexCalculationDuration;
+            double subsegmentDuration = ts.TotalSeconds;
+            
+            int subsegmentCount = Math.Max((int)Math.Floor(recordingDuration / subsegmentDuration), 1);
 
-            // ######################################################################
-            var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings);
+            analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
+            analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
 
-            // ######################################################################
-            if (indexCalculateResult == null)
+            List<Plot> trackScores = new List<Plot>(subsegmentCount);
+            List<SpectralTrack> tracks = new List<SpectralTrack>(subsegmentCount);
+
+            // calculate indices for each subsegment
+            for (int i = 0; i < subsegmentCount; i++)
             {
-                return analysisResults; // nothing to process 
-            }
 
-            analysisResults.SummaryIndices = new SummaryIndexBase[] { indexCalculateResult.SummaryIndexValues };
-            analysisResults.SpectralIndices = new SpectralIndexBase[] { indexCalculateResult.SpectralIndexValues };
+                var subsegmentOffset = (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero)  + TimeSpan.FromSeconds(i * subsegmentDuration);
 
+                /* ###################################################################### */
 
-            if ((indexCalculateResult.Sg != null) && (analysisSettings.ImageFile != null))
-            {
-                string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
-                var image = DrawSonogram(indexCalculateResult.Sg, indexCalculateResult.Hits, indexCalculateResult.TrackScores, indexCalculateResult.Tracks);
-                image.Save(imagePath, ImageFormat.Png);
-                analysisResults.ImageFile = new FileInfo(imagePath);
+                var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings, subsegmentOffset, acousticIndicesParsedConfiguration.IndexCalculationDuration, acousticIndicesParsedConfiguration.BgNoiseNeighborhood);
 
-                // ############################### SAVE OSCILLATION IMAGE HERE ###############################
+                
+                /* ###################################################################### */
+
+                analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
+                analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
+                trackScores.AddRange(indexCalculateResult.TrackScores);
+                tracks.AddRange(indexCalculateResult.Tracks);
             }
 
             if (analysisSettings.SummaryIndicesFile != null)
             {
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
-
-                // ############################### SAVE OSCILLATION CSV HERE ###############################
+                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
             }
 
             if (analysisSettings.SpectrumIndicesDirectory != null)
             {
-                this.WriteSpectrumIndicesFiles(analysisSettings.SpectrumIndicesDirectory, Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name), analysisResults.SpectralIndices);
+                analysisResults.SpectraIndicesFiles =
+                    this.WriteSpectrumIndicesFilesCustom(
+                        analysisSettings.SpectrumIndicesDirectory,
+                        Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name),
+                        analysisResults.SpectralIndices);
+            }
+
+            // write the segment spectrogram (typically of one minute duration) to CSV
+            // this is required if you want to produced zoomed spectrograms at a resolution greater than 0.2 seconds/pixel 
+            bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
+            if (saveSonogramData || analysisSettings.ImageFile != null) 
+            {
+                SonogramConfig sonoConfig = new SonogramConfig(); // default values config
+                sonoConfig.SourceFName = recording.FilePath;
+                sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
+                sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
+                sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
+                //sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
+                //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+                var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                // remove the DC row of the spectrogram
+                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
+
+                if (analysisSettings.ImageFile != null)
+                {
+                    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
+                    
+                    // NOTE: hits (SPT in this case) is intentionally not supported
+                    var image = DrawSonogram(sonogram, null, trackScores, tracks);
+                    image.Save(imagePath, ImageFormat.Png);
+                    analysisResults.ImageFile = new FileInfo(imagePath);
+                }
+
+                if (saveSonogramData)
+                {
+                    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
+                }
             }
 
             return analysisResults;
@@ -394,17 +438,26 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
-        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public List<FileInfo> WriteSpectrumIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             var selectors = results.First().GetSelectors();
 
+            var spectralIndexFiles = new List<FileInfo>(selectors.Count);
+
             foreach (var kvp in selectors)
-            {   
+            {
                 // write spectrogram to disk as CSV file
-                ////string fileName = ;
-                var saveCsvPath = destination.CombineFile(fileNameBase + "." + kvp.Key + ".csv");
-                Csv.WriteMatrixToCsv(saveCsvPath, results, kvp.Value);
+                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                spectralIndexFiles.Add(filename);
+                Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
+
+            return spectralIndexFiles;
+        }
+
+        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        {
+            this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
@@ -414,48 +467,123 @@ namespace AnalysisPrograms
 
         public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results)
         {
+            AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
+
             var sourceAudio = inputFileSegment.OriginalFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
-
-
-            string fileName = Path.GetFileNameWithoutExtension(sourceAudio.Name);
-
+            var configFile = settings.ConfigFile;
+            bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
             int frameWidth = 512;
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
-            int sampleRate = 17640;
+            int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
+
+            string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
+
+            // output to disk (so other analysers can use the data,
+            // only data - configuration settings that generated these indices
+            // this data can then be used by post-process analyses
+            var indexConfigData = new IndexGenerationData()
+                                      {
+                                          SampleRate = sampleRate,
+                                          FrameWidth = frameWidth,
+                                          FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
+                                          IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
+                                          BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                                          MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                                          BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF
+                                      };
+            var icdPath = FilenameHelpers.AnalysisResultName(
+                resultsDirectory,
+                basename,
+                IndexGenerationData.FileNameFragment,
+                "json");
+            Json.Serialise(icdPath.ToFileInfo(), indexConfigData);
 
             // gather spectra to form spectrograms.  Assume same spectra in all analyser results
             // this is the most effcient way to do this
             // gather up numbers and strings store in memory, write to disk one time
             // this method also AUTOMATICALLY SORTS because it uses array indexing
-            var startMinute = (int)(inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero).TotalMinutes;
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
-            var config = new LdSpectrogramConfig
-                             {
-                                 FileName = fileName,
-                                 OutputDirectoryInfo = resultsDirectory,
-                                 InputDirectoryInfo = resultsDirectory,
+            // Calculate the index distribution statistics and write to a json file. Also save as png image
+            var indexDistributions = IndexDistributions.WriteIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
 
-                                 SampleRate = sampleRate,
-                                 FrameWidth = frameWidth,
-                                 XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                                 MinuteOffset = SpectrogramConstants.MINUTE_OFFSET,
-                                 ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                                 ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_CVR,
-                                 BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF       
-                             };
+            // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
+            if (acousticIndicesParsedConfiguration.IndexCalculationDuration != TimeSpan.FromSeconds(60.0))
+            {
+                Log.Warn("False color spectrograms were not rendered");
+            }
+            else
+            {
+                FileInfo indicesPropertiesConfig = IndexProperties.Find(settings.Configuration, settings.ConfigFile);
+                // gather settings for rendering false color spectrograms
+                var config = new LdSpectrogramConfig
+                {
+                    XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                    ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                    ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+                };
 
-            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(settings.Configuration, settings.ConfigFile);
+                Tuple<Image, string>[] images =
+                    LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                        inputDirectory: resultsDirectory,
+                        outputDirectory: resultsDirectory,
+                        ldSpectrogramConfig: config,
+                        indexPropertiesConfigPath: indicesPropertiesConfig,
+                        indexGenerationData: indexConfigData, 
+                        basename: basename, 
+                        analysisType: this.Identifier,
+                        indexSpectrograms: dictionaryOfSpectra,
+                        indexDistributions: indexDistributions,
+                        returnChromelessImages: tileOutput);
 
-            var matrixOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+                if (tileOutput)
+                {
+                    Debug.Assert(images.Length == 2);
 
-            LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(config, indicesPropertiesConfig, matrixOfSpectra);
+                    Log.Info("Tiling output at scale: " + acousticIndicesParsedConfiguration.IndexCalculationDuration);
 
+                    var image = images[1];
+                    TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
+                }
+            }
         }
 
+        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, string analysisTag, DateTimeOffset recordingStartDate, Image image)
+        {
+            const int TileHeight = 256;
+            const int TileWidth = 60;
+            
+            // seconds per pixel
+            const double Scale = 60.0;
+            TimeSpan scale = Scale.Seconds();
 
+            if (image.Height != TileHeight)
+            {
+                throw new InvalidOperationException("Expecting images exactly the same height as the defined tile height");
+            }
+
+            // if recording does not start on an absolutely aligned hour of the day
+            // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
+            var timeOfDay = recordingStartDate.TimeOfDay;
+            var previousAbsoluteHour = TimeSpan.FromSeconds(Math.Floor(timeOfDay.TotalSeconds / (Scale * TileWidth)) * (Scale * TileWidth));
+            var gap = timeOfDay - previousAbsoluteHour;
+            var tilingStartDate = recordingStartDate - gap;
+
+            var tilingProfile = new AbsoluteDateTilingProfile(fileStem, analysisTag, tilingStartDate, TileHeight, TileWidth);
+
+            // pad out image so it produces a whole number of tiles
+            // this solves the asymetric right padding of short audio files
+            var width = (int)(Math.Ceiling(image.Width / Scale) * Scale);
+            var tiler = new Tiler(outputDirectory, tilingProfile, Scale, width, 1.0, image.Height);
+
+            // prepare super tile
+            var tile = new TimeOffsetSingleLayerSuperTile() { Image = image, TimeOffset = gap, Scale = scale};
+
+            tiler.Tile(tile);
+        }
 
         private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
         {
@@ -485,76 +613,6 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-
-
-        /* // deprecated
-        public Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
-        {
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true); //get original data table
-            if ((dt == null) || (dt.Rows.Count == 0))
-            {
-                return null;
-            }
-            //get its column headers
-            var dtHeaders = new List<string>();
-            var dtTypes = new List<Type>();
-            foreach (DataColumn col in dt.Columns)
-            {
-                dtHeaders.Add(col.ColumnName);
-                dtTypes.Add(col.DataType);
-            }
-
-            List<string> displayHeaders = null;
-            bool addColumnOfweightedIndices = true;
-            //check if config file contains list of display headers
-            if (fiConfigFile != null)
-            {
-                var configuration = new ConfigDictionary(fiConfigFile.FullName);
-                Dictionary<string, string> configDict = configuration.GetTable();
-                if (configDict.ContainsKey(AnalysisKeys.DISPLAY_COLUMNS))
-                {
-                    displayHeaders = configDict[AudioAnalysisTools.AnalysisKeys.DISPLAY_COLUMNS].Split(',').ToList();
-                    for (int i = 0; i < displayHeaders.Count; i++)
-                    {
-                        displayHeaders[i] = displayHeaders[i].Trim();
-                    }
-                }
-
-            }
-            //if config file does not exist or does not contain display headers then use the original headers
-            if (displayHeaders == null) displayHeaders = dtHeaders; //use existing headers if user supplies none.
-
-            //now determine how to display tracks in display datatable
-            Type[] displayTypes = new Type[displayHeaders.Count];
-            bool[] canDisplay = new bool[displayHeaders.Count];
-            for (int i = 0; i < displayTypes.Length; i++)
-            {
-                displayTypes[i] = typeof(double);
-                canDisplay[i] = false;
-                if (dtHeaders.Contains(displayHeaders[i])) canDisplay[i] = true;
-            }
-
-            //order the table if possible
-            if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_START_ABS + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.EVENT_COUNT))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.EVENT_COUNT + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_RankOrder))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_RankOrder + " ASC");
-            }
-            else if (dt.Columns.Contains(AudioAnalysisTools.AnalysisKeys.KEY_StartMinute))
-            {
-                dt = DataTableTools.SortTable(dt, AudioAnalysisTools.AnalysisKeys.KEY_StartMinute + " ASC");
-            }
-
-            DataTable table2Display = null;
-            return System.Tuple.Create(dt, table2Display);
-        } // ProcessCsvFile()*/
 
 
         public AnalysisSettings DefaultSettings
@@ -617,4 +675,5 @@ namespace AnalysisPrograms
 
 
     }
+
 }

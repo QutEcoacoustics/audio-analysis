@@ -65,7 +65,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 settings.AnalysisInstanceOutputDirectory = diOutputDir;
                 // want to psas SampleRate of the original file.
                 settings.SampleRateOfOriginalAudioFile = Int32.Parse(settings.ConfigDict[AnalysisKeys.ResampleRate]);
-                var results = analyser.Analyse(settings);
+
+                analyser.BeforeAnalyze(settings);
+
+                var results = analyser.Analyze(settings);
                 if (results.ImageFile == null) image = null;
                 else image = Image.FromFile(results.ImageFile.FullName);
                 analyser = null;
@@ -609,16 +612,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         // #######################################################################################################################################
-        // ### BELOW METHODS DRAW GRID LINES ON SPECTROGRAMS ####################################################################################
+        // ### BELOW METHODS DRAW GRID LINES ON SPECTROGRAMS #####################################################################################
         // #######################################################################################################################################
 
 
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan minOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval)
+        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval)
         {
             int rows = bmp.Height;
             int cols = bmp.Width;
 
-            Graphics g = Graphics.FromImage(bmp);
+            //Graphics g = Graphics.FromImage(bmp);
 
             // for rows draw in Y-axis line
             // number of horizontal grid lines
@@ -629,31 +632,33 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 int row = (int)(i * Y_interval);
                 int rowFromBottom = rows - row;
-                for (int column = 0; column < cols - 1; column++)
+                for (int column = 0; column < cols - 3; column++) 
                 {
                     bmp.SetPixel(column, rowFromBottom, Color.Black);
-                    bmp.SetPixel(column + 1, rowFromBottom, Color.White);
+                    column += 3;
+                    bmp.SetPixel(column, rowFromBottom, Color.White);
                     column += 2;
                 }
                 int band = (int)(rowFromBottom / Y_interval);
-                g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Black, 2, row - 5);
+                //g.DrawString(((band * kHzInterval) + " kHz"), new Font("Thachoma", 8), Brushes.Gray, 2, row - 5);
             }
 
-            // for columns, draw in X-axis hour lines
-            int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds));
-            for (int column = 1; column < cols; column++)
-            {
+            // for columns, draw in X-axis lines
+            //double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)cols;
+            //int xInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            //for (int column = 1; column < cols; column++)
+            //{
 
-                if (column % xInterval == 0)
-                {
-                    for (int row = 0; row < rows - 1; row++)
-                    {
-                        bmp.SetPixel(column, row, Color.Black);
-                        bmp.SetPixel(column, row + 1, Color.White);
-                        row += 2;
-                    }
-                }
-            }
+            //    if (column % xInterval == 0)
+            //    {
+            //        for (int row = 0; row < rows - 1; row++)
+            //        {
+            //            bmp.SetPixel(column, row, Color.Black);
+            //            bmp.SetPixel(column, row + 1, Color.White);
+            //            row += 2;
+            //        }
+            //    }
+            //}
         } // DrawGridLInesOnImage()
 
 

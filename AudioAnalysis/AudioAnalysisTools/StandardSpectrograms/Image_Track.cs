@@ -883,27 +883,91 @@
             return bmp;
         }
 
-        public static Bitmap DrawTimeTrack(int duration, TimeSpan scale, int trackWidth, int trackHeight, string title)
-        {
-            TimeSpan offsetMinute = TimeSpan.Zero;
-            return DrawTimeTrack(duration, offsetMinute, scale, trackWidth, trackHeight, title);
-        }
         
-        // mark off X-axis time scale according to scale.
-        public static Bitmap DrawTimeTrack(int duration, TimeSpan offsetMinute, TimeSpan scale, int trackWidth, int trackHeight, string title)
+        /// <summary>
+        /// Returns a bitmap of a time scale.
+        /// Interval between tic marks is calculated automatically.
+        /// THis method is used for long duration spectrograms.
+        /// It could be generalised for any time track.
+        /// </summary>
+        /// <param name="fullDuration">time span of entire time track to be drawn</param>
+        /// <param name="startTime">time at start of track </param>
+        /// <param name="trackWidth">X pixel dimension</param>
+        /// <param name="trackHeight">Y pixel dimension</param>
+        /// <returns></returns>
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startTime, int trackWidth, int trackHeight)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
 
+            int roundedStartSeconds = (int)Math.Ceiling(startTime.TotalSeconds);
+            while ((roundedStartSeconds % 5) != 0)
+            {
+                roundedStartSeconds++;
+            }
+            TimeSpan roundedStartTime = TimeSpan.FromSeconds(roundedStartSeconds);
+            TimeSpan offsetTime = roundedStartTime - startTime;
+            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)trackWidth;
+            int pixelStartOffset = (int)(offsetTime.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
+
+            TimeSpan xAxisTicInterval = CalculateGridInterval(fullDuration, trackWidth);
+
+            Pen whitePen = new Pen(Color.White);
+            //Pen grayPen = new Pen(Color.Gray);
+            Font stringFont = new Font("Arial", 8);
+
+                        int rows = bmp.Height;
+            int cols = bmp.Width;
+
+            // for columns, draw in X-axis lines
+            int xPixelInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            for (int x = pixelStartOffset; x < cols; x++)
+            {
+
+                if (x % xPixelInterval == 0)
+                {
+                    int tickPosition = x + pixelStartOffset;
+                    g.DrawLine(whitePen, tickPosition, 0, tickPosition, trackHeight);
+                    TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * x);
+
+                    TimeSpan absoluteTS = roundedStartTime + elapsedTimeSpan;
+                    TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(Math.Round(absoluteTS.TotalSeconds));
+                    string time = String.Format("{0}", roundedTimeSpan);
+                    g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 1)); //draw time
+                }
+            }
+            g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
+            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            return bmp;
+        }
+
+        /// <summary>
+        /// Like the above method but adds a label at end displaying units of time.
+        /// </summary>
+        /// <param name="fullDuration"></param>
+        /// <param name="startOffset"></param>
+        /// <param name="ticInterval"></param>
+        /// <param name="trackWidth"></param>
+        /// <param name="trackHeight"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startOffset, TimeSpan ticInterval, int trackWidth, int trackHeight, string title)
+        {
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+
+            TimeSpan gridInterval = CalculateGridInterval(fullDuration, trackWidth);
+
             int hour;
-            int min = (int)offsetMinute.TotalMinutes - 1;
-            int XaxisScale = (int)scale.TotalMinutes;
+            int min = (int)startOffset.TotalMinutes - 1;
+            int XaxisScale = (int)gridInterval.TotalMinutes;
             Pen whitePen = new Pen(Color.White);
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
 
-            for (int x = 0; x < duration; x++) //for pixels in the line
+            for (int x = 0; x < trackWidth; x++) //for pixels in the line
             {
                 min++;
                 if (min % XaxisScale != 0) continue;
@@ -918,10 +982,25 @@
             }//end over all pixels
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
-            g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
+            g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
 
-            g.DrawString(title, stringFont, Brushes.White, new PointF(duration + 4, 3));
+            g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
             return bmp;
+        }
+
+        public static TimeSpan CalculateGridInterval(TimeSpan totalDuration, int width)
+        {
+            double pixelDuration = totalDuration.TotalMinutes / width;
+            double[] gridIntervals = { 0.08333333, 0.1666666, 0.333333, 0.5, 1.0, 2.0, 4.0, 8.0, 15.0, 30.0, 60.0 }; //minutes
+
+            double pixelInterval = 0;
+            foreach (double gridInterval in gridIntervals)
+            {
+                if (pixelInterval > 111) break;
+                pixelInterval = gridInterval / (double)pixelDuration;
+            }
+            TimeSpan ts = TimeSpan.FromMinutes(pixelInterval * pixelDuration);
+            return ts;
         }
 
 

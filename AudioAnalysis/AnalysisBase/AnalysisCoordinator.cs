@@ -90,7 +90,7 @@
         public bool IsParallel { get; set; }
 
         /// <summary>
-        /// Analyse one file using the analysis and settings.
+        /// Analyze one file using the analysis and settings.
         /// </summary>
         /// <param name="file">
         /// The file.
@@ -106,11 +106,11 @@
         /// </returns>
         public AnalysisResult2[] Run(FileInfo file, IAnalyser2 analysis, AnalysisSettings settings)
         {
-            return this.Run(new List<FileSegment>() { new FileSegment() {OriginalFile = file} }, analysis, settings);
+            return this.Run(new List<FileSegment>() { new FileSegment(file) }, analysis, settings);
         }
 
         /// <summary>
-        /// Analyse one file segment using the analysis and settings.
+        /// Analyze one file segment using the analysis and settings.
         /// </summary>
         /// <param name="fileSegment">
         /// The file Segment.
@@ -130,7 +130,7 @@
         }
 
         /// <summary>
-        /// Analyse one or more file segments using the same analysis and settings.
+        /// Analyze one or more file segments using the same analysis and settings.
         /// </summary>
         /// <param name="fileSegments">
         /// The file Segments.
@@ -174,7 +174,7 @@
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // Analyse the sub-segments in parallel or sequentially (IsParallel property), 
+            // Analyze the sub-segments in parallel or sequentially (IsParallel property), 
             // Create and delete directories and/or files as indicated by properties
             // DeleteFinished and SubFoldersUnique
             if (this.IsParallel)
@@ -207,7 +207,7 @@
         }
 
         /// <summary>
-        /// Analyse segments of an audio file in parallel.
+        /// Analyze segments of an audio file in parallel.
         /// </summary>
         /// <param name="analysisSegments">
         /// The analysis Segments.
@@ -258,7 +258,7 @@
         }
 
         /// <summary>
-        /// Analyse segments of an audio file in sequence.
+        /// Analyze segments of an audio file in sequence.
         /// </summary>
         /// <param name="analysisSegments">
         /// The analysis Segments.
@@ -385,7 +385,7 @@
             stopwatch.Start();
 
             /* ##### RUN the ANALYSIS ################################################################ */
-            AnalysisResult2 result = analyser.Analyse(localCopyOfSettings);
+            AnalysisResult2 result = analyser.Analyze(localCopyOfSettings);
             /* ####################################################################################### */
 
             stopwatch.Stop();
@@ -434,7 +434,7 @@
         }
 
         /// <summary>
-        /// This method simply ensures that certain requirements are fullfilled by IAnalyser2.Analyse results.
+        /// This method simply ensures that certain requirements are fullfilled by IAnalyser2.Analyze results.
         /// It only runs when the program is built as DEBUG.
         /// </summary>
        [Conditional("DEBUG")]
@@ -463,7 +463,7 @@
                    "If events were produced and an events file was expected, then the events file should exist");
            }
 
-           Debug.Assert(result.SummaryIndices != null, "The SummaryIndices array should never be null. No SummaryIndices should be represted by a zero length SummaryIndices array.");
+           Debug.Assert(result.SummaryIndices != null, "The SummaryIndices array should never be null. No SummaryIndices should be represented by a zero length SummaryIndices array.");
            if (result.SummaryIndices.Length != 0 && preAnalysisSettings.SummaryIndicesFile != null)
            {
                Debug.Assert(
@@ -471,7 +471,7 @@
                    "If SummaryIndices were produced and an SummaryIndices file was expected, then the SummaryIndices file should exist");
            }
 
-           Debug.Assert(result.SpectralIndices != null, "The SpectralIndices array should never be null. No SpectralIndices should be represted by a zero length SpectralIndices array.");
+           Debug.Assert(result.SpectralIndices != null, "The SpectralIndices array should never be null. No SpectralIndices should be represented by a zero length SpectralIndices array.");
            if (result.SpectralIndices.Length != 0 && preAnalysisSettings.SpectrumIndicesDirectory != null)
            {
                foreach (var spectraIndicesFile in result.SpectraIndicesFiles)

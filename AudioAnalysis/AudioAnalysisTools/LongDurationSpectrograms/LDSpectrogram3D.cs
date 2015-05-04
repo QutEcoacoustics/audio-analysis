@@ -224,7 +224,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 // 4. Read the yaml file describing the Index Properties 
                 Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-                dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+                dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
 
                 // 5. Convert data slice to image
                 string[] indexNames = colorMap.Split('-');
@@ -347,15 +347,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             g.DrawString(dateString, stringFont, Brushes.Wheat, new PointF(10, 3));
 
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
-            var minOffset = TimeSpan.Zero;
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, xAxisPixelDuration, nyquistFreq, 1000);
+            var minuteOffset = TimeSpan.Zero;
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minuteOffset, fullDuration, X_interval, nyquistFreq, 1000);
 
-            int imageWidth = bmp1.Width;
             int trackHeight = 20;
-
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
             TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
-            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(imageWidth, minOffset, xAxisTicInterval, imageWidth, trackHeight, "hours");
+            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(fullDuration, minuteOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
 
             var imageList = new List<Image>();
             imageList.Add(titleBar);
@@ -365,7 +365,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             imageList.Add(timeScale24hour);
             Image compositeBmp = ImageTools.CombineImagesVertically(imageList.ToArray());
 
-            imageWidth = 20;
             trackHeight = compositeBmp.Height;
             //Bitmap timeScale12Months = Image_Track.DrawYearScale_vertical(40, trackHeight);
             //Bitmap freqScale = DrawFreqScale_vertical(40, trackHeight, HerzValue, nyquistFreq);
@@ -395,15 +394,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             g.DrawString(str, stringFont, Brushes.Wheat, new PointF(10, 7));
 
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
-            var minOffset = TimeSpan.Zero;
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, minOffset, X_interval, xAxisPixelDuration, nyquistFreq, 1000);
+            var startOffset = TimeSpan.Zero;
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
+            TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, X_interval, nyquistFreq, 1000);
 
-            int imageWidth = bmp1.Width;
             int trackHeight = 20;
-
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
             TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
-            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(imageWidth, minOffset, xAxisTicInterval, imageWidth, trackHeight, "hours");
+            Bitmap timeScale24hour = Image_Track.DrawTimeTrack(fullDuration, startOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
 
             var imageList = new List<Image>();
             imageList.Add(titleBar);
@@ -412,7 +411,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             imageList.Add(timeScale24hour);
             Image compositeBmp = ImageTools.CombineImagesVertically(imageList.ToArray());
 
-            imageWidth = 20;
             trackHeight = compositeBmp.Height;
             Bitmap timeScale12Months = Image_Track.DrawYearScale_vertical(40, trackHeight);
             Bitmap freqScale = DrawFreqScale_vertical(40, trackHeight, HerzValue, nyquistFreq);
@@ -724,8 +722,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static double[,] NormaliseSpectrogramMatrix(IndexProperties indexProperties, double[,] matrix, double backgroundFilterCoeff)
         {
-            matrix = indexProperties.NormaliseIndexValues(matrix);
-
+            matrix = MatrixTools.NormaliseInZeroOne(matrix, indexProperties.NormMin, indexProperties.NormMax);
             matrix = MatrixTools.FilterBackgroundValues(matrix, backgroundFilterCoeff); // to de-demphasize the background small values
             return matrix;
         }

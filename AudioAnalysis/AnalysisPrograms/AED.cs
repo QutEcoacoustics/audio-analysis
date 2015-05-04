@@ -296,7 +296,7 @@ namespace AnalysisPrograms
         }
 
 
-        public override AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             FileInfo audioFile = analysisSettings.AudioFile;
 
@@ -383,10 +383,7 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
-        public override void WriteSpectrumIndicesFiles(
-            DirectoryInfo destination, 
-            string fileNameBase, 
-            IEnumerable<SpectralIndexBase> results)
+        public override void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             throw new NotImplementedException();
         }

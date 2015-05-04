@@ -8,6 +8,8 @@
     using System.Linq;
     using System.Reflection;
 
+    using AnalysisBase.ResultBases;
+
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     using log4net;
@@ -92,8 +94,8 @@
                 scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array);
 
-
-                arrayOfBitmaps[ip.Order] = bitmap;
+                if (arrayOfBitmaps.Length > ip.Order) // THIS IF CONDITION IS A HACK. THERE IS A BUG SOMEWHERE.
+                        arrayOfBitmaps[ip.Order] = bitmap;
             }
 
             var listOfBitmaps = arrayOfBitmaps.Where(b => b != null).ToList();
@@ -102,9 +104,10 @@
             //set up the composite image parameters
             int X_offset = 2;
             int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TrackEndPanelWidth;
+            TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = TrackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleLength, DrawSummaryIndices.TimeScale, imageWidth, TrackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, imageWidth, TrackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -127,8 +130,6 @@
             return compositeBmp;
         }
 
-
-        /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
         /// <returns></returns>
@@ -143,6 +144,17 @@
 
             double[] array1 = dictionaryOfCsvFile["HighAmplitudeIndex"];
             double[] array2 = dictionaryOfCsvFile["ClippingIndex"];
+
+            return DrawHighAmplitudeClippingTrack(array1, array2);
+        }
+
+
+        /// <summary>
+        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// </summary>
+        /// <returns></returns>
+        public static Bitmap DrawHighAmplitudeClippingTrack(double[] array1, double[] array2)
+        {
 
             double[] values1 = DataTools.NormaliseInZeroOne(array1, 0, 1.0);
             double[] values2 = DataTools.NormaliseInZeroOne(array2, 0, 1.0);
@@ -191,7 +203,19 @@
             return bmp;
         }
 
+        public static Image DrawHighAmplitudeClippingTrack(SummaryIndexBase[] summaryIndices)
+        {
+            var highAmplitudeIndex = new double[summaryIndices.Length];
+            var clippingIndex = new double[summaryIndices.Length];
+            for (int i = 0; i < summaryIndices.Length; i++)
+            {
+                var values = (SummaryIndexValues)summaryIndices[i];
+                highAmplitudeIndex[i] = values.HighAmplitudeIndex;
+                clippingIndex[i] = values.ClippingIndex;
+            }
 
+            return DrawHighAmplitudeClippingTrack(highAmplitudeIndex, clippingIndex);
+        }
 
 
 
@@ -369,7 +393,5 @@
         //    //table2Display = NormaliseColumnsOfDataTable(table2Display);
         //    return System.Tuple.Create(dt, table2Display);
         //} // ProcessCsvFile()
-
-
     } //class DisplayIndices
 }

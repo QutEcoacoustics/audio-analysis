@@ -11,6 +11,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Data;
     using System.Diagnostics;
     using System.Drawing;
@@ -24,6 +25,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
+    using AnalysisPrograms.Production;
+
     using AnalysisRunner;
 
     using AudioAnalysisTools;
@@ -35,7 +38,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
     public partial class AnalyseLongRecording
     {
-        private const string ImagefileExt = ".png";
+        private const string ImagefileExt = "png";
 
         private const string FinishedMessage = @"
 
@@ -72,7 +75,7 @@ Output  to  directory: {1}
                 tempFilesDirectory = arguments.Output;
             }
 
-            LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.Name);
+            LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
@@ -82,13 +85,13 @@ Output  to  directory: {1}
 
             bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             bool saveIntermediateCsvFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateCsvFiles] ?? false;
-            bool saveSonograms = (bool?)configuration[AnalysisKeys.SaveSonograms] ?? false;
-            
-            // There's no reason for this to be here
-            ////bool displayCsvImage = (bool?)configuration[AnalysisKeys.DisplayCsvImage] ?? false;
+            bool saveSonogramsImages = (bool?)configuration[AnalysisKeys.SaveSonogramImages] ?? false;
             bool doParallelProcessing = (bool?)configuration[AnalysisKeys.ParallelProcessing] ?? false;
+            
+            bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
+
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
-            FileInfo indicesPropertiesConfig = FindIndicesConfig.Find(configuration, arguments.Config);
+            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, arguments.Config);
 
             if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
             {
@@ -108,8 +111,16 @@ Output  to  directory: {1}
                 Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
             }
 
+            if (filenameDate)
+            {
+                if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
+                {
+                    throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
+                }
+            }
+
             // 3. initilise AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonograms, saveIntermediateCsvFiles)
+            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles)
             {
                 // create and delete directories
                 DeleteFinished = !saveIntermediateWavFiles,  
@@ -118,7 +129,8 @@ Output  to  directory: {1}
             };
 
             // 4. get the segment of audio to be analysed
-            var fileSegment = new FileSegment { OriginalFile = sourceAudio };
+            // if tiling output, specify that FileSegment needs to be able to read the date
+            var fileSegment = new FileSegment(sourceAudio, filenameDate); 
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {
@@ -127,7 +139,7 @@ Output  to  directory: {1}
             }
             else
             {
-                Log.Warn("Both offsets were not provided, thus all ignored");
+                Log.Warn("Neither start nor end segment offsets provided. Therefore ignored");
             }
 
             // 5. initialise the analyser
@@ -154,18 +166,6 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentMaxDuration from config file (exceptions squashed, default value of " + analysisSettings.SegmentMaxDuration + " used)");
             }
 
-            // set overlap
-            try
-            {
-                int rawOverlap = configuration[AnalysisKeys.SegmentOverlap];
-                analysisSettings.SegmentOverlapDuration = TimeSpan.FromSeconds(rawOverlap);
-            }
-            catch (Exception ex)
-            {
-                analysisSettings.SegmentOverlapDuration = TimeSpan.Zero;
-                Log.Warn("Can't read SegmentOverlapDuration from config file (exceptions squashed, default value  of " + analysisSettings.SegmentOverlapDuration + " used)");
-            }
-
             // set target sample rate
             try
             {
@@ -177,6 +177,9 @@ Output  to  directory: {1}
                 Log.Warn("Can't read SegmentTargetSampleRate from config file (exceptions squashed, default value  of " + analysisSettings.SegmentTargetSampleRate + " used)");
             }
 
+            // Execute a pre analyzer hook
+            analyser.BeforeAnalyze(analysisSettings);
+
             // 7. ####################################### DO THE ANALYSIS ###################################
             LoggedConsole.WriteLine("STARTING ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
@@ -184,6 +187,7 @@ Output  to  directory: {1}
             // ##############################################################################################
             // 8. PROCESS THE RESULTS
             LoggedConsole.WriteLine(string.Empty);
+            LoggedConsole.WriteLine("START PROCESSING RESULTS ...");
             if (analyserResults == null)
             {
                 LoggedConsole.WriteErrorLine("###################################################\n");
@@ -239,12 +243,12 @@ Output  to  directory: {1}
             Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
             Debug.Assert(analysisSettings.SourceFile == fileSegment.OriginalFile);
 
-            // Important - this is where IAnalyser2's post processer gets called. I.e. Long duration spectrograms are drawn IFF anlaysis type is Towsey.Acoustic
+            // Important - this is where IAnalyser2's post processer gets called. I.e. Long duration spectrograms are drawn IFF analysis type is Towsey.Acoustic
             analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);
 
 
             // 11. SAVE THE RESULTS
-            string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name) + "_" + analyser.Identifier;
+            string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
             var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
             var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
@@ -262,15 +266,23 @@ Output  to  directory: {1}
                     throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
                 }
 
-                string fileName = Path.GetFileNameWithoutExtension(indicesFile.Name);
-                string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-                Bitmap tracksImage =
-                    DrawSummaryIndices.DrawImageOfSummaryIndices(
-                        IndexProperties.GetIndexProperties(indicesPropertiesConfig),
-                        indicesFile,
-                        imageTitle);
-                var imagePath = Path.Combine(instanceOutputDirectory.FullName, fileName + ImagefileExt);
-                tracksImage.Save(imagePath);
+                // this arbitary amount - a sheer guess... who knows if it will work.
+                if (mergedIndicesResults.Length > 5000)
+                {
+                    Log.Warn("Summary Indices Image not able to be drawn - there are too many indices to render");
+                }
+                else
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(fileNameBase);
+                    string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                    Bitmap tracksImage =
+                        DrawSummaryIndices.DrawImageOfSummaryIndices(
+                            IndexProperties.GetIndexProperties(indicesPropertiesConfig),
+                            indicesFile,
+                            imageTitle);
+                    var imagePath =FilenameHelpers.AnalysisResultName(instanceOutputDirectory, fileName, "Indices", ImagefileExt);
+                    tracksImage.Save(imagePath);
+                }
             }
 
             // 13. wrap up, write stats

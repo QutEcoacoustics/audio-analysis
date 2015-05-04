@@ -164,7 +164,7 @@
             this.tabPageAnalyseAudioFile.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageAnalyseAudioFile.Size = new System.Drawing.Size(1497, 759);
             this.tabPageAnalyseAudioFile.TabIndex = 5;
-            this.tabPageAnalyseAudioFile.Text = "Analyse Audio File";
+            this.tabPageAnalyseAudioFile.Text = "Analyze Audio File";
             this.tabPageAnalyseAudioFile.UseVisualStyleBackColor = true;
             // 
             // textBoxAnalyseOutputDir
@@ -247,7 +247,7 @@
             this.btnAanlyseRun.Name = "btnAanlyseRun";
             this.btnAanlyseRun.Size = new System.Drawing.Size(70, 23);
             this.btnAanlyseRun.TabIndex = 21;
-            this.btnAanlyseRun.Text = "Analyse";
+            this.btnAanlyseRun.Text = "Analyze";
             this.btnAanlyseRun.UseVisualStyleBackColor = true;
             this.btnAanlyseRun.Click += new System.EventHandler(this.btnAanlyseRun_Click);
             // 

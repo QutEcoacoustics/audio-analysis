@@ -296,7 +296,7 @@ namespace AnalysisPrograms
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
             return result;
-        } //Analyse()
+        } //Analyze()
 
 
 

@@ -249,10 +249,17 @@ namespace AnalysisBase
         /// </summary>
         public dynamic Configuration { get; set; }
 
+        /// <summary>
+        /// Get or sets an object that can be used to store arbitrary configuration or options.
+        /// This is useful for passing information between BeforeAnalyze and Analyze.
+        /// DO NOT STORE MUTABLE STATE IN THIS OBJECT
+        /// </summary>
+        public object AnalyzerSpecificConfiguration { get; set; }
+
         public object Clone()
         {
             AnalysisSettings deepClone = this.DeepClone();
-            Log.Debug("Instance Id of old: {0}, vs new {1}".Format2(this.InstanceId, deepClone.InstanceId));
+            Log.Trace("Instance Id of old: {0}, vs new {1}".Format2(this.InstanceId, deepClone.InstanceId));
             return deepClone;
         }
 
@@ -261,7 +268,7 @@ namespace AnalysisBase
             return string.Format(
                 "Settings for {0} with instance id {1} and config file {2}.",
                 this.AudioFile.Name,
-                this.InstanceId,
+                this.InstanceId.ToString(),
                 this.ConfigFile.Name);
         }
     }

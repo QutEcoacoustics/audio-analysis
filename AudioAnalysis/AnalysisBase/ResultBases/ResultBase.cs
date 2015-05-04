@@ -26,9 +26,6 @@ namespace AnalysisBase.ResultBases
         /// </summary>
         public string FileName { get; set; }
 
-        // found no use for this (or usage) disabled
-        ////public int SegmentCount { get; set; }
-
         /// <summary>
         /// Gets or sets the StartOffset.
         /// This basically allows every sort of result to be sorted/time indexed from the start of the file.
@@ -46,6 +43,7 @@ namespace AnalysisBase.ResultBases
             set
             {
                 this.StartOffsetMinute = (int)value.TotalMinutes;
+                this.StartOffsetSecond = (Single)value.TotalSeconds;
                 this.startOffset = value;
             }
         }
@@ -57,6 +55,12 @@ namespace AnalysisBase.ResultBases
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         public TimeSpan SegmentDuration { get; set; }
+
+        /// <summary>
+        /// Gets the StartOffsetSecond.
+        /// This is an representation of <c>SegmentStartOffset</c>.
+        /// </summary>
+        public Single StartOffsetSecond { get; private set; }
 
         /// <summary>
         /// Gets the StartOffsetMinute.

@@ -156,7 +156,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
+        /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// Use this when you want to analyse only a short segment of recording i.e. 1-2 miniutes
         /// </summary>

@@ -91,7 +91,11 @@
                 .OrderBy(f => f.Name)
                 .ToArray();
 
-            var newFileNames = StartParallel(files, arguments.DryRun, arguments.Timezone);
+            var parsedTimeZone =
+                DateTimeOffset.Parse(
+                    new DateTime(DateTime.Now.Ticks, DateTimeKind.Unspecified).ToString("O") + arguments.Timezone)
+                    .Offset;
+            var newFileNames = StartParallel(files, arguments.DryRun, parsedTimeZone);
 
             // print out mapping of original file name to new file name
             // only include file names that have changed
@@ -109,14 +113,6 @@
             Log.Info("Finished.");
         }
 
-        private static bool FileNameContainsDateTime(string fileName)
-        {
-            return
-                IsDateTimeBasic(fileName) ||
-                IsDateTimeSimple(fileName) ||
-                IsDateTimeWithOffset(fileName) ||
-                IsDateTimeWithSuffix(fileName);
-        }
 
         /// <summary>
         /// Determine new files names and rename if not a dry run.
@@ -125,7 +121,7 @@
         /// <param name="isDryRun">Dry run or not.</param>
         /// <param name="timezone">Timezone string to use.</param>
         /// <returns>Array of file names in same order.</returns>
-        private static string[] StartParallel(FileInfo[] files, bool isDryRun, string timezone)
+        private static string[] StartParallel(FileInfo[] files, bool isDryRun, TimeSpan timezone)
         {
             var count = files.Count();
             var results = new string[count];
@@ -140,7 +136,7 @@
 
                     var fileName = item1.Name;
 
-                    var isDateTimeInFileName = FileNameContainsDateTime(fileName);
+                    var isDateTimeInFileName = FileDateHelpers.FileNameContainsDateTime(fileName);
 
                     if (isDateTimeInFileName)
                     {
@@ -160,7 +156,7 @@
             return results;
         }
 
-        private static string GetNewName(FileInfo file, string timezone)
+        private static string GetNewName(FileInfo file, TimeSpan timezone)
         {
             var fileName = file.Name;
             var fileLength = file.Length;
@@ -185,42 +181,14 @@
             ////var roundedTotalSeconds = Math.Round(mediaFile.RecordingStart.TimeOfDay.TotalSeconds);
             ////var modifiedRecordingStart = mediaFile.RecordingStart.Date.AddSeconds(roundedTotalSeconds);
 
-
-            var dateTime = recordingStart.ToString("yyyyMMdd_HHmmss") + timezone;
+            var dateWithOffset = new DateTimeOffset(recordingStart, timezone);
+            var dateTime = dateWithOffset.ToUniversalTime().ToString(AppConfigHelper.StandardDateFormatUtc);
             var ext = fileName.Substring(fileName.LastIndexOf('.') + 1).ToLowerInvariant();
 
             var prefix = fileName.Substring(0, fileName.LastIndexOf('.'));
             var result = string.Format("{0}_{1}.{2}", prefix, dateTime, ext);
 
             return result;
-        }
-
-        private static bool IsDateTimeBasic(string fileName)
-        {
-            // valid: Prefix_YYYYMMDD_hhmmss.wav
-            var pattern = @".*_(\d{8}_\d{6})\..+";
-            return Regex.IsMatch(fileName, pattern);
-        }
-
-        private static bool IsDateTimeSimple(string fileName)
-        {
-            // valid: prefix_20140101_235959.mp3, a_00000000_000000.a, a_99999999_999999.dnsb48364JSFDSD
-            var pattern = @"^(.*)(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})\.([a-zA-Z0-9]+)$";
-            return Regex.IsMatch(fileName, pattern);
-        }
-
-        private static bool IsDateTimeWithOffset(string fileName)
-        {
-            // valid: prefix_20140101_235959+10.mp3, a_00000000_000000+00.a, a_99999999_999999+9999.dnsb48364JSFDSD
-            var pattern = @"^(.*)(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})([+-]\d{2,4})\.([a-zA-Z0-9]+)$";
-            return Regex.IsMatch(fileName, pattern);
-        }
-
-        private static bool IsDateTimeWithSuffix(string fileName)
-        {
-            // valid: SERF_20130314_000021_000.wav, a_20130314_000021_a.a, a_99999999_999999_a.dnsb48364JSFDSD
-            var pattern = @"^(.*)(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})_(.*?)\.([a-zA-Z0-9]+)$";
-            return Regex.IsMatch(fileName, pattern);
         }
     }
 }

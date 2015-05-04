@@ -34,26 +34,37 @@ namespace AudioAnalysisTools.DSP
             public int ClipCount { get; set; }
         }
 
+        /// <summary>
+        ///             //int frameStep = (int)(frameSize * (1 - overlap));
+        /// </summary>
+        /// <param name="windowSize"></param>
+        /// <param name="windowOverlap"></param>
+        /// <returns></returns>
         public static int FrameStep(int windowSize, double windowOverlap)
         {
             int step = (int)(windowSize * (1 - windowOverlap));
             return step;
         }
 
+        public static int[,] FrameStartEnds(int dataLength, int frameSize, double windowOverlap)
+        {
+            int frameStep = (int)(frameSize * (1 - windowOverlap));
+            return FrameStartEnds(dataLength, frameSize, frameStep);
+        }
+
         /// <summary>
         /// returns the start and end index of all frames in a long audio signal
         /// </summary>
-        public static int[,] FrameStartEnds(int dataLength, int windowSize, double windowOverlap)
+        public static int[,] FrameStartEnds(int dataLength, int frameSize, int frameStep)
         {
-            int step = FrameStep(windowSize, windowOverlap);
 
-            if (step < 1)
+            if (frameStep < 1)
                 throw new ArgumentException("Frame Step must be at least 1");
-            if (step > windowSize)
-                throw new ArgumentException("Frame Step must be <=" + windowSize);
+            if (frameStep > frameSize)
+                throw new ArgumentException("Frame Step must be <=" + frameSize);
 
-            int overlap = windowSize - step;
-            int framecount = (dataLength - overlap) / step; //this truncates residual samples
+            int overlap = frameSize - frameStep;
+            int framecount = (dataLength - overlap) / frameStep; //this truncates residual samples
             if (framecount < 2)
                 //throw new ArgumentException("Signal must produce at least two frames!");
                 return null;
@@ -64,8 +75,8 @@ namespace AudioAnalysisTools.DSP
             for (int i = 0; i < framecount; i++) //foreach frame
             {
                 frames[i, 0] = offset;                  //start of frame
-                frames[i, 1] = offset + windowSize - 1; //end of frame
-                offset += step;
+                frames[i, 1] = offset + frameSize - 1; //end of frame
+                offset += frameStep;
             }
             return frames;
         }
@@ -114,11 +125,25 @@ namespace AudioAnalysisTools.DSP
             return frames;
         }
 
-        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(AudioRecording recording, int windowSize, double overlap)
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(AudioRecording recording, int frameSize, double overlap)
+        {
+            int frameStep = (int)(frameSize * (1 - overlap));
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            return ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
+        }
+
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(AudioRecording recording, int frameSize, int frameStep)
         {
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            return ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, windowSize, overlap);
+            return ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
         }
+
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, double epsilon, int frameSize, double overlap)
+        {
+            int frameStep = (int)(frameSize * (1 - overlap));
+            return ExtractEnvelopeAndFFTs(signal, sr, epsilon, frameSize, frameStep);
+        }
+
 
 
         /// <summary>
@@ -130,13 +155,13 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         /// <param name="signal"></param>
         /// <param name="sr"></param>
-        /// <param name="windowSize"></param>
+        /// <param name="frameSize"></param>
         /// <param name="overlap"></param>
         /// <returns></returns>
-        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, double epsilon, int windowSize, double overlap)
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, double epsilon, int frameSize, int frameStep)
         {
-            int frameStepSize = (int)(windowSize * (1 - overlap));
-            int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, windowSize, overlap);
+            //int frameStep = (int)(frameSize * (1 - overlap));
+            int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, frameSize, frameStep);
             if (frameIDs == null) return null;
             int frameCount = frameIDs.GetLength(0);
 
@@ -146,7 +171,7 @@ namespace AudioAnalysisTools.DSP
 
             // set up the FFT parameters
             FFT.WindowFunc w = FFT.GetWindowFunction(FFT.Key_HammingWindow);
-            var fft = new FFT(windowSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
+            var fft = new FFT(frameSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
             double[,] spectrogram = new double[frameCount, fft.CoeffCount]; // init amplitude sonogram
             double[] f1; // the fft
             double minSignalValue = double.MaxValue;
@@ -156,8 +181,8 @@ namespace AudioAnalysisTools.DSP
             for (int i = 0; i < frameCount; i++)
             {
                 List<int> periodList = new List<int>();
-                int start = i * frameStepSize;
-                int end = start + windowSize;
+                int start = i * frameStep;
+                int end = start + frameSize;
 
                 // get average and envelope
                 double frameDC = signal[start];
@@ -174,14 +199,14 @@ namespace AudioAnalysisTools.DSP
                     if (absValue > maxValue) maxValue = absValue;
                     energy += (signal[x] * signal[x]);
                 }
-                frameDC /= windowSize;
-                average[i] = total / windowSize;
+                frameDC /= frameSize;
+                average[i] = total / frameSize;
                 envelope[i] = maxValue;
-                frameEnergy[i] = energy / windowSize; 
+                frameEnergy[i] = energy / frameSize; 
 
                 // remove DC value from signal values
-                double[] signalMinusAv = new double[windowSize];
-                for (int j = 0; j < windowSize; j++)
+                double[] signalMinusAv = new double[frameSize];
+                for (int j = 0; j < frameSize; j++)
                     signalMinusAv[j] = signal[start + j] - frameDC;
 
                 // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
@@ -197,8 +222,7 @@ namespace AudioAnalysisTools.DSP
 
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
             int maxAmplitudeCount, clipCount;
-            Clipping.GetClippingCount(signal, envelope, frameStepSize, epsilon, out maxAmplitudeCount, out clipCount);
-            //int clipCount = Clipping.GetClippingCount(signal, envelope.Max(), epsilon);
+            Clipping.GetClippingCount(signal, envelope, frameStep, epsilon, out maxAmplitudeCount, out clipCount);
 
             // Remove the DC column ie column zero from amplitude spectrogram.
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);

@@ -165,7 +165,6 @@ namespace AudioAnalysisTools
             int frameCount = selectedFrames.Length;
 
             //DO CLUSTERING - if have suitable data
-            BinaryCluster.Verbose = false;
             BinaryCluster.RandomiseTrnSetOrder = false;
             int initialClusterCount = 2;
             double vigilance = 0.15;    //vigilance parameter - increasing this proliferates categories. A vigilance=0.1 requires (AND/OR) similarity > 10%
@@ -180,8 +179,8 @@ namespace AudioAnalysisTools
             List<double[]> prunedClusterWts = tuple_output2.Item2;
             double[] clusterSpectrum = BinaryCluster.GetClusterSpectrum(clusterWts);
 
-            if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
-            if (BinaryCluster.Verbose) LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
+            BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
+            LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
 
             // ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
             //  first:  reassemble cluster hits into an array matching the original array of active frames.
@@ -415,11 +414,12 @@ namespace AudioAnalysisTools
             string imageFname = "test3.png";
             string imagePath = Path.Combine(outputDir, imageFname);
             int frameSize = 512;
-            double _windowOverlap = 0.0;
+            int frameStep = 512;
+            double frameOverlap = 0.0; // alternative to step
 
             //NORMAL WAY TO DO THINGS
             var recording = new AudioRecording(wavFilePath); // get recording segment
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = _windowOverlap };
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = frameOverlap };
             config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             Plot scores = null;
@@ -431,7 +431,7 @@ namespace AudioAnalysisTools
             //#######################################################################################################################################
             // get amplitude spectrogram and remove the DC column ie column zero.
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, _windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
             double[,] spectrogramData = results2.amplitudeSpectrogram;
             double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
 

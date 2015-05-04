@@ -29,7 +29,6 @@ namespace AudioAnalysisTools.Indices
                 //SonogramConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
                 TableDir = (@"C:\SensorNetworks\OutputDataSets\Spectrograms3D\" + datestamp).ToDirectoryInfo(),
                 OutputDir = (@"C:\SensorNetworks\Output\FalseColourSpectrograms\Spectrograms3D\" + datestamp).ToDirectoryInfo(),
-                Verbose = true
             };
         }
 
@@ -39,7 +38,6 @@ namespace AudioAnalysisTools.Indices
         {
             //FileInfo indexPropertiesConfig, DirectoryInfo inputDirInfo, DirectoryInfo opDir
 
-            public bool Verbose { get; set; }
             public FileInfo IndexPropertiesConfig { get; set; }
             public DirectoryInfo InputDir  { get; set; }
             //public FileInfo SonogramConfig { get; set; }
@@ -104,7 +102,7 @@ namespace AudioAnalysisTools.Indices
         public static void ReadAllSpectralIndicesAndWriteToDataTable(FileInfo indexPropertiesConfig, DirectoryInfo inputDirInfo, DirectoryInfo opDir)
         {
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-            dictIP = InitialiseIndexProperties.GetDictionaryOfSpectralIndexProperties(dictIP);
+            dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
             string[] spectrogramKeys = dictIP.Keys.ToArray();
 
             int count = 0;

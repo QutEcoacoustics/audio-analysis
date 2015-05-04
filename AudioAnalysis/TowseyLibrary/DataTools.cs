@@ -119,7 +119,7 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="A"></param>
         /// <param name="start"></param>
-        /// <param name="length"></param>
+        /// <param name="length">the length of the subarray to be returned </param>
         /// <returns></returns>
         public static double[] Subarray(double[] A, int start, int length)
         {
@@ -834,7 +834,7 @@ namespace TowseyLibrary
         {
             if (boolArray[i])
             {
-                    counter++;
+                counter++;
                 if (! inEvent)
                 {
                     inEvent = true;
@@ -3117,7 +3117,7 @@ namespace TowseyLibrary
       /// This method accomodates the possibility that the distribution of values is a truncated Gaussian or a skewed Gaussian.
       /// Once the modal position has been determined, it is assumed that the Sd is to be determined from the long-tailed side.
       /// i.e. the modal position is assumed to be the average of the underlying distribution.
-      /// This method is used to calculate the mean and SD of acoustic indices whose distrubtions are very skewed, e.g. temporal entropy and cover.
+      /// This method is used to calculate the mean and SD of acoustic indices whose distributions are very skewed, e.g. temporal entropy and cover.
       /// </summary>
       /// <param name="values"></param>
       /// <param name="min"></param>
@@ -3161,7 +3161,13 @@ namespace TowseyLibrary
   /// <param name="indexOfOneSD"></param>
   public static void GetModeAndOneTailedStandardDeviation(int[] histo, out int indexOfMode, out int indexOfOneSD)
   {
-      indexOfMode = DataTools.GetMaxIndex(histo);
+      // the below smoothing was added on 15th April 2015. It may or may not be helpful.
+      // It was tried on the assumption that some acoustic indices have flat distributions or not many values
+      //  and therefore it is valid to smooth the distribution.
+      double[] smoothedHisto = DataTools.filterMovingAverage(histo, 3);
+      indexOfMode = DataTools.GetMaxIndex(smoothedHisto);
+
+      //indexOfMode = DataTools.GetMaxIndex(histo); // this was first line in method prior to 15th April 2015. 
 
       int halfway = histo.Length / 2;
       double totalAreaUnderLowerCurve = 0.0;

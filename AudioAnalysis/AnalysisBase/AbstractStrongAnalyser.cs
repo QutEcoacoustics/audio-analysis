@@ -32,8 +32,12 @@ namespace AnalysisBase
             }
         }
 
+        public virtual void BeforeAnalyze(AnalysisSettings analysisSettings)
+        {
+            return; // noop
+        }
 
-        public abstract AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
+        public abstract AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
 
         public abstract void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results);
 

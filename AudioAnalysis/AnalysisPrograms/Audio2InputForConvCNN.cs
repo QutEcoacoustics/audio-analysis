@@ -51,8 +51,6 @@ namespace AnalysisPrograms
         [CustomDescription]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            public bool Verbose { get; set; }
-
             public string TargetEventBounds { get; set; }
 
             public static string Description()
@@ -87,7 +85,6 @@ namespace AnalysisPrograms
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
                 Output = (@"C:\SensorNetworks\Output\ConvDNN\" + datestamp).ToDirectoryInfo(),
-                Verbose = true
             };
 
             throw new NoDeveloperMethodException();
@@ -165,9 +162,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
             LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
 
-
-            bool verbose = arguments.Verbose;
-
             // 1. set up the necessary files
             FileInfo csvFileInfo = arguments.Source;
             FileInfo configFile = arguments.Config;
@@ -180,14 +174,12 @@ namespace AnalysisPrograms
 
 
             // print out the parameters
-            if (verbose)
+            LoggedConsole.WriteLine("\nPARAMETERS");
+            foreach (var kvp in configDict)
             {
-                LoggedConsole.WriteLine("\nPARAMETERS");
-                foreach (var kvp in configDict)
-                {
-                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
-                }
+                LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
+            
 
 
             // set up header of the output file
@@ -873,7 +865,12 @@ namespace AnalysisPrograms
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
-        public AnalysisResult2 Analyse(AnalysisSettings analysisSettings)
+        public void BeforeAnalyze(AnalysisSettings analysisSettings)
+        {
+            // noop
+        }
+
+        public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             var audioFile = analysisSettings.AudioFile;
             var recording = new AudioRecording(audioFile.FullName);

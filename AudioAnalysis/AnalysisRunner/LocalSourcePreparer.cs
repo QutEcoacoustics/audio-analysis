@@ -51,7 +51,7 @@ namespace AnalysisRunner
             var audioUtility = new MasterAudioUtility();
             var preparedFileInfo = audioUtility.Info(preparedFile);
 
-            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile, OriginalFileSampleRate = request.OriginalSampleRate };
+            return new FileSegment(preparedFile) { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFileSampleRate = request.OriginalSampleRate };
         }
 
         /// <summary>
@@ -116,9 +116,8 @@ namespace AnalysisRunner
 
                 for (var index = 0; index < segments.Count; index++)
                 {
-                    var currentSegment = new FileSegment
+                    var currentSegment = new FileSegment(fileSegment.OriginalFile)
                         {
-                            OriginalFile = fileSegment.OriginalFile,
                             SegmentStartOffset = startOffset.Add(TimeSpan.FromMilliseconds(aggregate)),
                             OriginalFileDuration = fileSegment.OriginalFileDuration
                         };
@@ -270,7 +269,7 @@ namespace AnalysisRunner
             var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
             var preparedFileInfo = audioUtility.Info(preparedFile);
 
-            return new FileSegment { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFile = preparedFile, OriginalFileSampleRate = request.OriginalSampleRate };
+            return new FileSegment(preparedFile) { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFileSampleRate = request.OriginalSampleRate };
         }
     }
 }
