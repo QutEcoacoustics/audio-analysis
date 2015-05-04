@@ -105,7 +105,7 @@ namespace AudioAnalysisTools.Indices
         /// </param>
         /// <returns></returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
-        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, TimeSpan subsegmentOffsetTimeSpan)
+        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, TimeSpan subsegmentOffsetTimeSpan, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood)
         {
             string recordingFileName = recording.FileName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
@@ -135,14 +135,14 @@ namespace AudioAnalysisTools.Indices
             int MidFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? IndexCalculate.DefaultMidFreqBound;
 
             // get TimeSpans and durations
-            TimeSpan subsegmentTimeSpan = (TimeSpan)analysisSettings.IndexCalculationDuration;
+            TimeSpan subsegmentTimeSpan = indexCalculationDuration;
             double subsegmentSecondsDuration = subsegmentTimeSpan.TotalSeconds;
             TimeSpan ts = subsegmentOffsetTimeSpan;
             double subsegmentOffset = ts.TotalSeconds;
             ts = (TimeSpan)analysisSettings.SegmentStartOffset;
             double segmentOffset = ts.TotalSeconds;
             double localOffsetInSeconds = subsegmentOffset - segmentOffset;
-            ts = (TimeSpan)analysisSettings.BgNoiseNeighborhood;
+            ts = bgNoiseNeighborhood;
             double BGNoiseNeighbourhood = ts.TotalSeconds;
 
             // calculate start and end samples of the subsegment and noise segment
@@ -165,7 +165,7 @@ namespace AudioAnalysisTools.Indices
 
             // set the SUBSEGMENT recording = total segment if its length >= 60 seconds
             AudioRecording subsegmentRecording = recording;
-            if (analysisSettings.IndexCalculationDuration < recordingSegmentDuration)
+            if (indexCalculationDuration < recordingSegmentDuration)
             {
                 double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, sampleStart, subsegmentSampleCount);
                 Acoustics.Tools.Wav.WavReader wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
@@ -198,7 +198,7 @@ namespace AudioAnalysisTools.Indices
 
             // initialise a result object in which to store SummaryIndexValues and SpectralIndexValues etc.
             // var result = new IndexCalculateResult(subsegmentTimeSpan, freqBinCount, indexProperties, analysisSettings.SegmentStartOffset.Value);
-            var result = new IndexCalculateResult(analysisSettings, freqBinCount, indexProperties);
+            var result = new IndexCalculateResult(analysisSettings, freqBinCount, indexProperties, indexCalculationDuration, subsegmentOffsetTimeSpan);
 
 
             // (A) ################################## EXTRACT SUMMARY INDICES FROM THE SIGNAL WAVEFORM ##################################
@@ -563,12 +563,5 @@ namespace AudioAnalysisTools.Indices
         //    //return items.Item4; // COMBO_WEIGHTS;
         //    return InitialiseIndexProperties.GetArrayOfComboWeights(indexProperties);
         //}
-
-
-
-
-
-
-
     }
 }

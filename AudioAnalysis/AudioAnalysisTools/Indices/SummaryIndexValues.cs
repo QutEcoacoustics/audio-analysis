@@ -35,11 +35,11 @@ namespace AudioAnalysisTools.Indices
     public class IndexCalculateResult
     {
         //public IndexCalculateResult(TimeSpan wavDuration, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan startOffset)
-        public IndexCalculateResult(AnalysisSettings analysisSettings, int freqBinCount, Dictionary<string, IndexProperties> indexProperties)
+        public IndexCalculateResult(AnalysisSettings analysisSettings, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan indexCalculationDuration, TimeSpan subsegmentOffset)
         {
-            TimeSpan wavDuration = (TimeSpan)analysisSettings.IndexCalculationDuration; // subsegment TimeSpan
+            TimeSpan wavDuration = indexCalculationDuration; // subsegment TimeSpan
             //TimeSpan startOffset = analysisSettings.SegmentStartOffset.Value; // offset from beginning of source audio
-            TimeSpan subsegmentOffsetFromStartOfSource = analysisSettings.SubsegmentOffset.Value; // offset from beginning of source audio
+            TimeSpan subsegmentOffsetFromStartOfSource = subsegmentOffset; // offset from beginning of source audio
 
             this.Hits = null;
             this.Tracks = null;
@@ -200,16 +200,11 @@ namespace AudioAnalysisTools.Indices
 
 
                 double[] initArray = (new double[spectrumLength]).FastFill(kvp.Value.DefaultValue);
-                try
-                {
-                    this.SetPropertyValue(kvp.Key, initArray);
-                }
-                catch(Exception e)
-                {
-                    // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
-                    // This prevents multiple warnings through loop.
-                    // LoggedConsole.WriteWarnLine("The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
-                }
+
+                // WARNING: Potential throw site
+                // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
+                // This prevents multiple warnings through loop.
+                this.SetPropertyValue(kvp.Key, initArray);
             }
         }
 
@@ -223,8 +218,7 @@ namespace AudioAnalysisTools.Indices
         {
 
             var siv = new SpectralIndexValues();
-            int spectrumLength = 4;
-            double[] dummyArray = (new double[spectrumLength]).FastFill(0.0);
+            double[] dummyArray = null;
 
             foreach (var kvp in indexProperties)
             {
@@ -233,11 +227,8 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                try
-                {
-                    siv.SetPropertyValue(kvp.Key, dummyArray);
-                }
-                catch (Exception e)
+                var success = siv.TrySetPropertyValue(kvp.Key, dummyArray);
+                if (!success)
                 {
                     LoggedConsole.WriteWarnLine("### WARNING: The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
                 }

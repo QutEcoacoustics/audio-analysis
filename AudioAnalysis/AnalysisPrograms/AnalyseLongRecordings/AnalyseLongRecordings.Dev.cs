@@ -67,15 +67,27 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
 
 
-            return new AnalyseLongRecording.Arguments
+
+
+
+            var arguments = new Arguments
+                                {
+                                    Source = recordingPath.ToFileInfo(),
+                                    Config = configPath.ToFileInfo(),
+                                    //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
+                                    //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
+                                    //Output = @"C:\SensorNetworks\Output\Test\AfterAnthonyRefactor7".ToDirectoryInfo()
+                                    Output =
+                                        @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom"
+                                        .ToDirectoryInfo()
+                                };
+
+            if (!arguments.Source.Exists)
             {
-                Source = recordingPath.ToFileInfo(),
-                Config = configPath.ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-                //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                //Output = @"C:\SensorNetworks\Output\Test\AfterAnthonyRefactor7".ToDirectoryInfo()
-                Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom".ToDirectoryInfo()
-            };
+                Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
+            }
+
+            return arguments;
 
             // ACOUSTIC_INDICES_LSK_TUITCE_20091215_220004
             /*return new Arguments

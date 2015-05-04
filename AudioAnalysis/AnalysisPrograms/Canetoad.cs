@@ -332,10 +332,7 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
-        public override void WriteSpectrumIndicesFiles(
-            DirectoryInfo destination, 
-            string fileNameBase, 
-            IEnumerable<SpectralIndexBase> results)
+        public override void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             throw new NotImplementedException();
         }
