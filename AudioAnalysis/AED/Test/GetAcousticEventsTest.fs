@@ -8,24 +8,24 @@ open Xunit
 [<Fact>]
 let spiderTest () = 
     let m = Math.Matrix.zero 3 4
-    Assert.Equal(Set.empty, spider m [(0,0)] Set.empty)
+    Assert.Equal<Set<_>>(Set.empty, spider m [(0,0)] Set.empty)
     m.[0,2] <- 1.0
-    Assert.Equal(Set.ofList [(0,2)], spider m [(0,2)] Set.empty)
+    Assert.Equal<Set<_>>(Set.ofList [(0,2)], spider m [(0,2)] Set.empty)
     m.[0,2] <- 1.0
     m.[1,2] <- 1.0 // resulting matrix: 0 0 1 0
     m.[2,1] <- 1.0 //                   1 0 1 0
     m.[1,0] <- 1.0 //                   0 1 0 0 
-    Assert.Equal(Set.ofList [(0,2);(1,0);(1,2);(2,1)], spider m [(0,2)] Set.empty)
+    Assert.Equal<Set<_>>(Set.ofList [(0,2);(1,0);(1,2);(2,1)], spider m [(0,2)] Set.empty)
  
 [<Fact>]   
 let getAcousticEventsTestQuick () =
     let m = Math.Matrix.zero 4 3
-    Assert.Equal([], getAcousticEvents m)
+    Assert.Equal<list<_>>([], getAcousticEvents m)
     m.[0,1] <- 1.0
-    Assert.Equal([{Bounds=lengthsToRect 1 0 1 1; Elements=Set.ofList [(0,1)]}], (getAcousticEvents m))
+    Assert.Equal<list<_>>([{Bounds=lengthsToRect 1 0 1 1; Elements=Set.ofList [(0,1)]}], (getAcousticEvents m))
     m.[1,1] <- 1.0
     m.[1,2] <- 1.0
-    Assert.Equal([{Bounds=lengthsToRect 1 0 2 2; Elements=Set.ofList [(0,1);(1,1);(1,2)]}], (getAcousticEvents m))
+    Assert.Equal<list<_>>([{Bounds=lengthsToRect 1 0 2 2; Elements=Set.ofList [(0,1);(1,1);(1,2)]}], (getAcousticEvents m))
     m.[3,0] <- 1.0
     Assert.Equal(2, List.length (getAcousticEvents m))
 
@@ -35,7 +35,7 @@ let getAcousticEventsTest () =
         let ae = loadTestFile "I6.csv" md |> getAcousticEvents |> bounds
         let aem = loadIntEventsFile "AE1.csv" md  
         Assert.Equal(Seq.length aem, Seq.length ae)
-        Assert.Equal(Seq.sort aem, Seq.sort ae)
+        Assert.Equal<seq<_>>(Seq.sort aem, Seq.sort ae)
     testAll f
 
 [<Fact>]
@@ -59,7 +59,7 @@ let ``spidering test - testing blocking`` () =
                     (4,2); (4,3); (4,4); (4,5); (4,6); (4, 7); (4, 8);
                    ]
 
-    Assert.Equal(expected, results)
+    Assert.Equal<Set<_>>(expected, results)
 
 [<Fact>]
 let ``spidering test - testing blocking with hole`` () = 
@@ -82,7 +82,7 @@ let ``spidering test - testing blocking with hole`` () =
                     (4,2); (4,3); (4,4); (4,5); (4,6); (4, 7); (4, 8);
                    ]
 
-    Assert.Equal(expected, results)
+    Assert.Equal<Set<_>>(expected, results)
 
 [<Fact>]
 let ``spidering test - blank edge`` () = 
@@ -113,4 +113,5 @@ let ``spidering test - blank edge`` () =
 
     let results = spider testMatrix [(0,0)] Set.empty
 
-    Assert.Equal(expectedElements, results)
+    Assert.Equal<Set<_>>(expectedElements, results)
+

@@ -51,7 +51,7 @@
         {
             this.FilePath  = path;
             this.FileName  = Path.GetFileNameWithoutExtension(path);
-            this.wavReader = new WavReader(path);
+            this.wavReader = new WavReader(path);           
         }
 
         /// <summary>

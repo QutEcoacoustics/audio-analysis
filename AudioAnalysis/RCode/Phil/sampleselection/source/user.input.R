@@ -70,7 +70,7 @@ GetMultiUserchoice <- function (options, choosing.what = 'one of the following',
     #   config.setting: string or NULL. If set, will look for a value set in config, instead of asking for user input
     
     choice <- GetConfigSettingForInput(options, config.setting)
-    if (choice != FALSE) {
+    if (is.numeric(choice)) {
         return(choice)
     }
     
@@ -255,6 +255,32 @@ Report <- function (level, ..., nl.before = FALSE, nl.after = TRUE) {
             cat("\n")
         }
         cat(paste(c(paste(as.vector(list(...)),  collapse = " ")), collapse = ""))
+        if (nl.after) {
+            cat("\n")
+        }
+    }
+}
+
+ReportAnimated <- function (level, ..., nl.before = FALSE, nl.after = TRUE, duration = NULL, after = 4) {
+    # prints to screen, but does it one character at a time
+    if (level <= g.report.level) {
+        if (nl.before) {
+            cat("\n")
+        }
+        str <- paste(c(paste(as.vector(list(...)),  collapse = " ")), collapse = "")
+        str <- strsplit(str, '')[[1]]
+        str <- c(str, rep(".", round(after*length(str))))
+        if (is.null(duration)) {
+            sleep.for <- 0.1
+        } else {
+            sleep.for <- duration / length(str)  
+        }
+
+        for (char in str) {
+            cat(char)
+            Sys.sleep(sleep.for)
+        }
+        
         if (nl.after) {
             cat("\n")
         }

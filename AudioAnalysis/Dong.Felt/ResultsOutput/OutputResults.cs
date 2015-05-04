@@ -6,7 +6,6 @@ using AudioAnalysisTools;
 using System.IO;
 using TowseyLibrary;
 using AudioBase;
-using AnalysisRunner;
 using Acoustics.Tools;
 using Acoustics.Shared;
 using Dong.Felt.Configuration;
@@ -15,7 +14,6 @@ namespace Dong.Felt.ResultsOutput
 {
     public class OutputResults
     {
-
         /// <summary>
         /// Matching step: 1. change candidate file path into file name for doing matching, output the changed files. 
         /// </summary>
@@ -134,6 +132,147 @@ namespace Dong.Felt.ResultsOutput
                 }
                 CSVResults.CandidateListToCSV(new FileInfo(outputFile), finalOutputResult);
             }
+        }
+
+        //For song scope
+        public static void SCMatchingSummary(DirectoryInfo inputDirectory, string outputFile, int n)
+        {
+            var finalOutputResult = new List<SongScopeCandidates>();
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var csvFileCount = csvFiles.Count();
+
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToSCCandidatesList(new FileInfo(csvFiles[i]));
+               
+                var subCandicatesCount = subCandicatesList.Count;
+                if (subCandicatesCount < n)
+                {
+                    n = subCandicatesCount;
+                }
+                for (var j = 0; j < n; j++)
+                {
+                    if (subCandicatesList[j].Score == 1)
+                    {
+                        finalOutputResult.Add(subCandicatesList[j]);                        
+                    }
+                }                
+            }
+            CSVResults.SCCandidateListToCSV(new FileInfo(outputFile), finalOutputResult);
+        }
+
+        public static void CSVMatchingAnalysisOfSongScope(DirectoryInfo inputDirectory, string groundTruthFile)
+        {
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var grounTruthList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
+            var timeDifference = 500; // 1000 ms
+            var secondToMilliSecondUnit = 1000;
+            
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[0]));
+                var candidatesCount = subCandicatesList.Count();
+                for (var index = 0; index < candidatesCount; index++)
+                {
+                    var currentCandidate = subCandicatesList[index];
+                    foreach (var g in grounTruthList)
+                    {
+                        var gEndTime = g.EndTime * secondToMilliSecondUnit;
+                        var gStartTime = g.StartTime * secondToMilliSecondUnit;
+                        if (currentCandidate.SourceFilePath == g.SourceFilePath)
+                        {                           
+                                if ((Math.Abs(currentCandidate.StartTime  - gStartTime) < timeDifference) ||
+                                   (Math.Abs(currentCandidate.EndTime - gEndTime) < timeDifference))
+                                {
+                                    currentCandidate.Score = 1;
+                                    break;
+                                }
+                                else
+                                {
+                                    currentCandidate.Score = 0;
+                                }
+                        }
+                        else
+                        {
+                            currentCandidate.Score = 0;
+                        }
+                    }
+                }
+                CSVResults.CandidateListToCSV(new FileInfo(csvFiles[0]), subCandicatesList);
+        }
+
+        public static void SplitFiles(DirectoryInfo inputDirectory, DirectoryInfo outputFolder)
+        {
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var audioFiles = Directory.GetFiles(inputDirectory.FullName, "*.wav", SearchOption.AllDirectories);
+            var audioFileCount = audioFiles.Count();
+            var sepCandidatesList = new List<List<SongScopeCandidates>>();
+
+            var candicatesList = CSVResults.CsvToSCCandidatesList(new FileInfo(csvFiles[0]));           
+            if (candicatesList.Count != 0)
+                {
+                    for (int l = 0; l < audioFileCount; l++)
+                    {
+                        var audioFileName = new FileInfo(audioFiles[l]);
+                        var fileName = audioFileName.Name;
+                        var temp = new List<SongScopeCandidates>();
+                        foreach (var s in candicatesList)
+                        {
+                            if (s.SourceFilePath == fileName)
+                            {
+                                temp.Add(s);
+                            }
+                        }
+                        temp = temp.OrderByDescending(x => x.Probability).ToList();
+                        sepCandidatesList.Add(temp);
+                    }
+                }
+            if (sepCandidatesList.Count != 0)
+                {
+                    for (int index = 0; index < sepCandidatesList.Count; index++)
+                    {
+                        if (sepCandidatesList[index].Count != 0)
+                        {
+                            string outputFilePath = Path.Combine(outputFolder.FullName, sepCandidatesList[index][0].SourceFilePath);
+                            var outputFileName = new FileInfo(outputFilePath);
+                            var changedFileName = Path.ChangeExtension(outputFileName.FullName, ".csv");
+                            CSVResults.SCCandidateListToCSV(new FileInfo(changedFileName), sepCandidatesList[index]);
+                        }
+                    }
+                }           
+        }
+
+        public static int ClassificationStatistics(DirectoryInfo inputDirectory, int N)
+        {
+            var count = 0;
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var csvFileCount = csvFiles.Count();
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToSCCandidatesList(new FileInfo(csvFiles[i]));
+                int modifiedCount = 0;
+                var topNCandidates = new List<SongScopeCandidates>();
+                if (subCandicatesList.Count >= N)
+                {
+                    modifiedCount = N;
+                    
+                }
+                else
+                {
+                    modifiedCount = subCandicatesList.Count;
+                }
+                for (int j = 0; j < modifiedCount; j++)
+                {
+                    topNCandidates.Add(subCandicatesList[j]);
+                }
+                foreach (var c in topNCandidates)
+                {
+                    if (c.Score == 1)
+                    {
+                        count++;
+                        break;
+                    }
+                }
+            }
+            return count; 
         }
         /// <summary>
         /// To summarize the matching results by taking into inputDirectory, output the results to the output file.

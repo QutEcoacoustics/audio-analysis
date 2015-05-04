@@ -14,6 +14,9 @@
 
 
 
+
+
+
 Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE) {
     # use extractWave from TuneR to take a subset of a wave 
     #
@@ -31,14 +34,14 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
     
     require('tuneR')
     
-    start <- as.POSIXlt(start.date, tz = "GMT") + start.sec
-    end <- as.POSIXlt(start + duration, tz = "GMT")
+    start <- as.POSIXlt(start.date) + start.sec
+    end <- as.POSIXlt(start + duration)
     file.positions <- DateTimeToFn(site, start, end, ext = 'wav')
     wav.samples <- numeric()
     samp.rate <- NA
     bit <- NA
     for (i in 1:nrow(file.positions)) {   
-        w <- readWave(file.path(g.audio.dir, file.positions$fn[i]))
+        w <- readWave(file.positions$fn[i])
         if (is.na(samp.rate) && is.na(bit)) {
             samp.rate <- w@samp.rate
             bit <- w@bit
@@ -62,12 +65,123 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
 
 
 
+GetAudioFile <- function (site, date, mins) {
+    # for a given site, date and list of minutes
+    # returns all the files needed 
+    
+    audio.dir <- Path('audio')
+    
+    day.folder <- GetAnalysisOutputPath(site, date, audio.dir)
+    
+    
+    # files are done every 10 mins, so min should be rounded DOWN to the nearest min ending with 0
+    mins <- floor(mins/10)*10;
+    
+    min.suffix <- sapply(mins, function (min) {
+        paste0("_",as.character(min), "min.wav")
+    })
+    selected.files <- sapply(min.suffix, function (m) {
+        fn <- paste0(day.folder$prefix, m)
+        path <- file.path(day.folder$path, fn)
+        return(path)
+    })
+    return(as.character(selected.files))
+    
+
+    
+    
+}
+
+
+
+
+DateFromShortFormat <- function (date, decade = '20') {
+    # converts a date string from YYMMDD to
+    # YYYY-MM-DD
+    YY <- substr(date,start=1,stop=2)
+    MM <- substr(date,start=3,stop=4)
+    DD <- substr(date,start=5,stop=6)
+    return(paste0(decade, YY, "-", MM, "-", DD))
+}
+
 DateTimeToFn <- function (site, start.datetime = NA, end.datetime = NA, start.date = NA, start.min = NA, ext = FALSE) {
     # determines which file the 
     # recording at a given site and datetime (POSIXlt), 
     # and the number of seconds into the recording it is 
     # if the optional end.datetime is included, then all the files between start.datetime and end.datetime are included
     # alternative params are start date and start min
+    #
+    # Args
+    #   site: string
+    #   start.datetime: string
+    #   end.datetime: string (optional)
+    #   start.date: string
+    #   start.min: int
+    
+    
+    if (is.na(start.datetime)) {     
+        start.datetime <- paste(start.date, MinToTime(start.min))      
+    }
+    
+    start.datetime <- as.POSIXlt(start.datetime) 
+    
+    if (is.na(end.datetime)) {
+        end.datetime <- start.datetime
+    } else {
+        end.datetime <- as.POSIXlt(end.datetime) 
+    }
+
+    target.diff <-  as.double(difftime(end.datetime, 
+                                       start.datetime, 
+                                       units = 'secs'))
+    
+    file.length <- 10 # in minutes
+
+    distance.from.start.of.file <- DifferenceFromNearestXmins(start.datetime, file.length)
+    num.files <- ceiling((target.diff + distance.from.start.of.file) / (file.length * 60))
+    
+    target.fns <- rep(NA, num.files)
+    target.from.sec <- rep(0, num.files)
+    target.to.sec <- rep(file.length * 60, num.files)
+    
+    target.from.sec[1] <- distance.from.start.of.file
+    target.to.sec[num.files] <- (target.diff + distance.from.start.of.file) %% (file.length * 60)
+    
+    file.second.offsets <- 1:num.files * (file.length * 60) - (file.length * 60)
+    # a vector of posixlt object at the start date time, the start date time plus file length (2nd file), start datetime plus 2 file lengths (3rd filename)
+    file.start.datetimes <- file.second.offsets + start.datetime
+    
+    for (f in 1:length(file.start.datetimes)) {
+        start.date <- strftime(file.start.datetimes[f],'%Y-%m-%d')
+        start.min <-  as.numeric(strftime(file.start.datetimes[f], '%H')) * 60 + as.numeric(strftime(file.start.datetimes[f], '%M'))
+        target.fns[f] <- GetAudioFile(site, start.date, start.min) 
+    }
+       
+    return(data.frame(fn = target.fns, from.sec = target.from.sec, 
+                      to.sec = target.to.sec, stringsAsFactors = FALSE))
+    
+    
+}
+
+
+DifferenceFromNearestXmins <- function (datetime, xmins = 10) {
+    # finds how many seconds after the nearest 10 mins (eg 12:10:00, 13:20:00) datetime is
+    datetime <- as.POSIXlt(datetime)
+    m <- as.integer(strftime(datetime, '%M'))
+    s <- as.numeric(strftime(datetime, '%OS3'))
+    nearest.m <- floor(m/xmins) * xmins
+    diff <- (m - nearest.m) * 60 + s
+    return(diff)
+}
+
+
+DateTimeToFn.1 <- function (site, start.datetime = NA, end.datetime = NA, start.date = NA, start.min = NA, ext = FALSE) {
+    # determines which file the 
+    # recording at a given site and datetime (POSIXlt), 
+    # and the number of seconds into the recording it is 
+    # if the optional end.datetime is included, then all the files between start.datetime and end.datetime are included
+    # alternative params are start date and start min
+    # NOTE: uses the old file naming structure
     #
     # Args
     #   site: string

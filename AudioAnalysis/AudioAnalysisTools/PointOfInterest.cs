@@ -369,18 +369,6 @@ namespace AudioAnalysisTools
             {
                 color = Color.Red;
             }
-            //if (orientationCategory == 4)
-            //{
-            //    color = Color.Blue;
-            //}
-            //if (orientationCategory == 2)
-            //{
-            //    color = Color.Green;
-            //}
-            //if (orientationCategory == 6)
-            //{
-            //    color = Color.Purple;
-            //}
             else
             {
                 if (orientationCategory == 1)
@@ -417,7 +405,7 @@ namespace AudioAnalysisTools
                             }
                             else if (orientationCategory == 8)
                             {
-                                color = Color.Purple;
+                                color = Color.BlueViolet;
                             }
                             else
                             {

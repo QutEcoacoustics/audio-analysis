@@ -119,7 +119,7 @@
             bool DoExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
             if (config.DoFullBandwidth) DoExtractSubband = false;   //if sono only intended for image
 
-            //set config params to the current recording
+            //set config params to the current recording           
             this.SampleRate = wav.SampleRate;
             this.Configuration.Duration = wav.Time;
             this.Configuration.SampleRate = wav.SampleRate; //also set the Nyquist
@@ -338,7 +338,8 @@
             Image image = BaseSonogram.GetSonogramImage(this.Data, this.NyquistFrequency, maxFrequency, this.Configuration.DoMelScale, binHeight,
                                              doHighlightSubband, this.subBand_MinHz, this.subBand_MaxHz);
             bool doMelScale = false;
-            double freqBinWidth = 0.0;
+            //double freqBinWidth = 0.0;
+            double freqBinWidth = this.FBinWidth;
             if (add1kHzLines) 
                 SpectrogramTools.Draw1kHzLines((Bitmap)image, doMelScale, maxFrequency, freqBinWidth);
             return image;

@@ -6,11 +6,11 @@
 detectionTechnique: StdDevs
 
 # argument defaults (if not overridden)
-InputDirectory: C:\XUEYAN\PHD research work\Second experiment\Training recordings2
+InputDirectory: C:\XUEYAN\PHD research work\Fifth experiment\Test recordings
 
 #C:\Training recordings2 
 
-OutputDirectory: C:\XUEYAN\PHD research work\Second experiment\Output
+OutputDirectory: C:\XUEYAN\PHD research work\Fifth experiment\Output
 ## test fft output directory
 #OutputDirectory: C:\XUEYAN\PHD research work\First experiment datasets-six species\Training recordings2\DFTtest.png
 
@@ -19,7 +19,7 @@ OutputDirectory: C:\XUEYAN\PHD research work\Second experiment\Output
 Actions: [processOne]  
 
 # configs relative path
-QueryInputDirectory: "..\\..\\Query"
+QueryInputDirectory: "..\\..\\Query1"
 
 # SonogramConfig
 NoiseReductionType: STANDARD
@@ -30,7 +30,7 @@ NoiseReductionParameter: 0.0
 
 # CompressSpectrogram
 TimeCompressRate: 0.25
-FreqCompressRate: 1.0
+FreqCompressRate: 0.25
 
 # RidgeDetection Config 
 RidgeDetectionMagnitudeThreshold: 6.0
@@ -48,6 +48,10 @@ StAvgNhLength: 11
 StFFTNeighbourhoodLength: 16
 StMatchedThreshold: 600
 
+# Gaussian blur config
+Sigma: 1.0
+NeighbourhoodSize: 3
+
 # For ridge neighbourhood representation
 NeighbourhoodLength: 11
 
@@ -57,7 +61,6 @@ SecondToMillionSecondUnit: 1000
 # Euclidean distance weights
 Weight1: 0.2
 Weight2: 0.8
-
 
 Rank: 100
 
