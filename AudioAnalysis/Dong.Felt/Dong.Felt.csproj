@@ -157,6 +157,7 @@
     <Compile Include="ResultsOutput\MathingResultsAnalysis.cs" />
     <Compile Include="ResultsOutput\OutputResults.cs" />
     <Compile Include="SimilarityMatching\SimilarityMatching.cs" />
+    <Compile Include="SongScopeCandidates.cs" />
     <Compile Include="SpectrogramDrawing\DrawSpectrogram.cs" />
     <Compile Include="StatisticalAnalysis.cs" />
     <Compile Include="PointOfInterest\StructureTensor.cs" />
