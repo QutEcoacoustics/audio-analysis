@@ -40,6 +40,13 @@ namespace AnalysisBase
         AnalysisSettings DefaultSettings { get; }
 
         /// <summary>
+        /// A hook to modify analysis settings before an analysis is run.
+        /// Ideally run once (whereas Analyze is run N times).
+        /// </summary>
+        /// <param name="analysisSettings">The analysis Settings.</param>
+        void BeforeAnalyze(AnalysisSettings analysisSettings);
+
+        /// <summary>
         /// Run analysis using the given analysis settings.
         /// </summary>
         /// <param name="analysisSettings">
@@ -48,7 +55,7 @@ namespace AnalysisBase
         /// <returns>
         /// The results of the analysis.
         /// </returns>
-        AnalysisResult2 Analyse(AnalysisSettings analysisSettings);
+        AnalysisResult2 Analyze(AnalysisSettings analysisSettings);
 
         /// <summary>
         /// Ensures abstract types are downcast by the analyzer and written to file.

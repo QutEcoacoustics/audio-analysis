@@ -156,9 +156,8 @@
             };
 
             // create segments from file
-            var fileSegment = new FileSegment()
+            var fileSegment = new FileSegment(arguments.InputFile)
             {
-                OriginalFile = arguments.InputFile,
                 SegmentStartOffset = TimeSpan.FromSeconds(arguments.StartOffset)
             };
 

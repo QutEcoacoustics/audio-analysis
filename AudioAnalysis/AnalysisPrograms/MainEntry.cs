@@ -14,6 +14,8 @@ namespace AnalysisPrograms
     using System;
     using System.Reflection;
 
+    using AnalysisPrograms.Production;
+
     using log4net;
 
     /// <summary>
@@ -32,13 +34,15 @@ namespace AnalysisPrograms
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
             // HACK: Remove the following two line when argument refactoring is done
-            ////var options = DebugOptions.Yes;
-            ////AttachDebugger(ref options);
+            //var options = DebugOptions.Yes;
+            //AttachDebugger(ref options);
 
             Arguments = ParseArguments(args);
 
             var debugOptions = Arguments.Args.DebugOption;
             AttachDebugger(ref debugOptions);
+
+            ModifyVerbosity(Arguments.Args);
 
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             Execute(Arguments);

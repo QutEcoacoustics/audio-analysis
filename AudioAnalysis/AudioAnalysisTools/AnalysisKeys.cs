@@ -14,6 +14,7 @@ namespace AudioAnalysisTools
         // KEYS TO PARAMETERS IN CONFIG FILE
         public const string AnnotateSonogram = "AnnotateSonogram";
         public const string AnalysisName = "AnalysisName";
+        public const string BGNoiseNeighbourhood = "BGNoiseNeighbourhood";
         public const string CallDuration = "CallDuration";
         public const string DctDuration = "DctDuration";
         public const string DctThreshold = "DctThreshold";
@@ -24,7 +25,9 @@ namespace AudioAnalysisTools
         public const string DominantFrequency = "DominantFrequency";
         public const string DoSegmentation = "DoSegmentation";
         public const string FrameLength = "FrameLength";
+        public const string FrameStep = "FrameStep";
         public const string FrameOverlap = "FrameOverlap";
+        public const string IndexCalculationDuration = "IndexCalculationDuration";
         public const string IntensityThreshold = "IntensityThreshold";
         public const string MinHz = "MinHz";
         public const string MaxHz = "MaxHz";
@@ -49,16 +52,17 @@ namespace AudioAnalysisTools
         public const string SaveIntermediateWavFiles = "SaveIntermediateWavFiles";
         public const string SegmentDuration = "SegmentDuration";
         public const string SegmentOverlap = "SegmentOverlap";
+        public const string SubsegmentOffset = "SubsegmentOffset";
         public const string SmoothingWindow = "SmoothingWindow";
         public const string Threshold = "Threshold";
-
 
         // Keys to recognise identifiers in ANALYSIS CONFIG file. 
         public const string LowFreqBound = "LowFreqBound";
         public const string MidFreqBound = "MidFreqBound";
 
         // KEYS to SONOGRAMS
-        public const string SaveSonograms = "SaveSonogramFiles";
+        public const string SaveSonogramData    = "SaveSonogramData";
+        public const string SaveSonogramImages  = "SaveSonogramImages";
         public const string TimeReductionFactor = "TimeReductionFactor";
         public const string FreqReductionFactor = "FreqReductionFactor";
         public const string AddAxes = "AddAxes";
@@ -119,5 +123,7 @@ namespace AudioAnalysisTools
 
         // Other config keys
         public const string KeyIndexPropertiesConfig = "IndexPropertiesConfig";
+        public const string TileImageOutput = "TileImageOutput";
+        public const string RequireDateInFilename = "RequireDateInFilename";
     }
 }

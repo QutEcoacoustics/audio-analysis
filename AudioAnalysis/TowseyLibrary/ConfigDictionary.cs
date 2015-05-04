@@ -17,6 +17,7 @@ namespace TowseyLibrary
     /// <summary>
     /// Configuration files: this class is a wrapper around a Dictionary
     /// </summary>
+    [Obsolete]
     public class ConfigDictionary
     {
         private Dictionary<string, string> dictionary;
@@ -355,13 +356,8 @@ namespace TowseyLibrary
             return table;
         } // end ReadPropertiesFile()
 
-    } // end of class ConfigDictionary
+    }
 
-    //#####################################################################################################################################
-
-
-
-    //#####################################################################################################################################
 
 
 
@@ -384,57 +380,6 @@ namespace TowseyLibrary
             }
             writer.WriteLine(key + "=" + value.ToString());
         }
-
-        /// <summary>
-        /// NOTE: This is an extension method
-        /// i.e. can call this thus:- writer.WriteConfigPath(string basePath, string key, string value)
-        /// where var writer is type TextWriter.
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="basePath"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        public static void WriteConfigPath(this TextWriter writer, string basePath, string key, string value)
-        {
-            //var relValue = RelativePathTo(basePath, value);
-            var relValue = basePath + "\\" + value;
-            writer.WriteConfigValue(key, relValue);
-        }
-
-        public static void WriteConfigArray(this TextWriter writer, string keyPattern, object[] values)
-        {
-            if (values == null)
-            {
-            }
-
-            for (int i = 0; i < values.Length; i++)
-                writer.WriteConfigValue(string.Format(keyPattern, i + 1), values[i]);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="writer"></param>
-        /// <param name="basePath">the output directory</param>
-        /// <param name="keyPattern">the key as reg exp</param>
-        /// <param name="values"></param>
-        public static void WriteConfigPathArray(this TextWriter writer, string basePath, string keyPattern, string[] values)
-        {
-            //Log.WriteLine("WriteConfigPathArray(): keyPattern=" + keyPattern, 1);
-            if (keyPattern == null)
-            {
-                Log.WriteLine("WriteConfigPathArray() WARNING!!!! NULL VALUE for keyPattern");
-                return;
-            }
-            if (values == null)
-            {
-                Log.WriteLine("WriteConfigPathArray() WARNING!!!! NULL ARRAY for KEY=" + keyPattern, '?');
-                return;
-            }
-            for (int i = 0; i < values.Length; i++)
-                writer.WriteConfigPath(basePath, string.Format(keyPattern, i + 1), values[i]);
-        }
-
 
         public static string RelativePathTo(string fromDirectory, string toPath)
         {
@@ -480,9 +425,6 @@ namespace TowseyLibrary
                 relativePath.Add(toDirectories[x]);
 
             return string.Join(Path.DirectorySeparatorChar.ToString(), relativePath.ToArray());
-        } //end of method RelativePathTo(string fromDirectory, string toPath)
-
-
-    } //end of static class ConfigurationExtensions
-
+        }
+    }
 }

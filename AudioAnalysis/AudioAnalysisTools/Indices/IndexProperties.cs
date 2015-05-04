@@ -26,45 +26,6 @@ namespace AudioAnalysisTools.Indices
     using YamlDotNet.Dynamic;
     using YamlDotNet.Serialization;
 
-    public class FindIndicesConfig
-    {
-        public static FileInfo Find(dynamic configuration, FileInfo originalConfigFile)
-        {
-            if (configuration == null)
-            {
-                return null;
-            }
-
-            var indexPropertiesConfigPath = (string)configuration[AnalysisKeys.KeyIndexPropertiesConfig];
-
-            if (indexPropertiesConfigPath.IsNullOrEmpty())
-            {
-                return null;
-            }
-
-            if (!Path.IsPathRooted(indexPropertiesConfigPath) && originalConfigFile != null)
-            {
-                Debug.Assert(originalConfigFile.Directory != null, "originalConfigFile.Directory != null");
-
-                indexPropertiesConfigPath =
-                    Path.GetFullPath(Path.Combine(originalConfigFile.Directory.FullName, indexPropertiesConfigPath));
-            }
-            else
-            {
-                return null;
-            }
-
-            var fileInfo = new FileInfo(indexPropertiesConfigPath);
-
-            if (fileInfo.Exists)
-            {
-                return fileInfo;
-            }
-
-            return null;
-        }
-    }
-
     /// <summary>
     /// This class stores the properties of a particular index.
     /// THIS CLASS DOES NOT STORE THE VALUE OF THE INDEX - the value is stored in class IndexValues.
@@ -130,8 +91,10 @@ namespace AudioAnalysisTools.Indices
         public bool DoDisplay { get; set; }
 
         public double NormMin { get; set; }
+        public bool CalculateNormMin { get; set; }
 
         public double NormMax { get; set; }
+        public bool CalculateNormMax { get; set; }
 
         public string Units { get; set; }
 
@@ -147,7 +110,7 @@ namespace AudioAnalysisTools.Indices
         {
             // TODO: why not initialise these to null, the proper empty value?
             this.Key = "NOT SET";
-            this.Name = string.Empty;
+            this.Name = String.Empty;
             this.DataType = "double";
             this.DefaultValue = default(double);
             this.ProjectID = "NOT SET";
@@ -156,6 +119,8 @@ namespace AudioAnalysisTools.Indices
             this.DoDisplay = true;
             this.NormMin = 0.0;
             this.NormMax = 1.0;
+            this.CalculateNormMin = false;
+            this.CalculateNormMax = false;
             this.Units = string.Empty;
 
             this.IncludeInComboIndex = false;
@@ -188,10 +153,10 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-        public double[,] NormaliseIndexValues(double[,] M)
-        {
-            return MatrixTools.NormaliseInZeroOne(M, this.NormMin, this.NormMax);
-        }
+        //public double[,] NormaliseIndexValues(double[,] M)
+        //{
+        //    return MatrixTools.NormaliseInZeroOne(M, this.NormMin, this.NormMax);
+        //}
 
 
         /// <summary>
@@ -200,32 +165,32 @@ namespace AudioAnalysisTools.Indices
         /// <returns></returns>
         public string GetPlotAnnotation()
         {
-            if (this.Units == string.Empty)
+            if (this.Units == String.Empty)
             {
-                return string.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "%")
             {
-                return string.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "dB")
             {
-                return string.Format(" {0} ({1:f0} .. {2:f0} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return String.Format(" {0} ({1:f0} .. {2:f0} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "ms")
             {
-                return string.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return String.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
             if (this.Units == "s")
             {
-                return string.Format(" {0} ({1:f1} .. {2:f1}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return String.Format(" {0} ({1:f1} .. {2:f1}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
             }
 
-            return string.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+            return String.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
         }
 
         /// <summary>
@@ -297,8 +262,8 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, IndexProperties> GetIndexProperties(FileInfo configFile)
         {
             // AT: the effects of this method have been significantly altered
-            // a) caching introduced - unkown effects for parallelism and dodgy file rewriting stuff
-            // b) static deserialisation utilised (instead of dynamic)
+            // a) caching introduced - unknown effects for parallelism and dodgy file rewriting stuff
+            // b) static deserialization utilized (instead of dynamic)
             lock (CachedProperties)
             {
                 Dictionary<string, IndexProperties> props;
@@ -308,21 +273,21 @@ namespace AudioAnalysisTools.Indices
                 }
                 else
                 {
-                    var deserialised = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
+                    var deserialized = Yaml.Deserialise<Dictionary<string, IndexProperties>>(configFile);
 
                     int i = 0;
-                    foreach (var kvp in deserialised)
+                    foreach (var kvp in deserialized)
                     {
                         // assign the key to the object for consistency
                         kvp.Value.Key = kvp.Key;
 
-                        // HACK: infer order of properties for visualisation based on order of for-each
+                        // HACK: infer order of properties for visualization based on order of for-each
                         kvp.Value.Order = i;
                         i++;
                     }
 
-                    CachedProperties.Add(configFile.FullName, deserialised);
-                    return deserialised;
+                    CachedProperties.Add(configFile.FullName, deserialized);
+                    return deserialized;
                 }
             }
 
@@ -372,5 +337,41 @@ namespace AudioAnalysisTools.Indices
 
             return dict;*/
         }
+
+        public static FileInfo Find(dynamic configuration, FileInfo originalConfigFile)
+        {
+            if (configuration == null)
+            {
+                return null;
+            }
+
+            return Find((string)configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile);
+        }
+
+        public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration, FileInfo originalConfigFile)
+        {
+            if (configuration == null)
+            {
+                return null;
+            }
+
+            return Find(configuration, originalConfigFile);
+        }
+
+        public static FileInfo Find(string relativePath, FileInfo originalConfigFile)
+        {
+            FileInfo configFile;
+            var found = ConfigFile.TryResolveConfigFile(
+                relativePath,
+                new[] { originalConfigFile.Directory },
+                out configFile);
+
+            return found ? configFile : null;
+        }
+    }
+
+    public interface IIndexPropertyReferenceConfiguration
+    {
+        string IndexPropertiesConfig { get; set; }
     }
 }

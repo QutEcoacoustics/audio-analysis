@@ -166,7 +166,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// A WRAPPER AROUND THE analyser.Analyse(analysisSettings) METHOD
+        /// A WRAPPER AROUND THE analyser.Analyze(analysisSettings) METHOD
         /// To be called as an executable with command line arguments.
         /// </summary>
         public static void Execute(Arguments arguments)
@@ -281,7 +281,7 @@ namespace AnalysisPrograms
             //result.DisplayItems = { { 0, "example" }, { 1, "example 2" }, }
             //result.OutputFiles = { { "exmaple file key", new FileInfo("Where's that file?") } }
             return analysisResults;
-        } //Analyse()
+        } //Analyze()
 
 
 

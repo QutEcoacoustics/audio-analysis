@@ -98,19 +98,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             Image compositeBmp = ImageTools.CombineImagesInLine(images.ToArray());
 
-            int totalWidth = compositeBmp.Width;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(totalWidth, minOffset, xAxisTicInterval, totalWidth, trackHeight, "hours");
+            TimeSpan fullDuration = TimeSpan.FromMinutes(compositeBmp.Width);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, compositeBmp.Width, trackHeight, "hours");
 
             Graphics gr = Graphics.FromImage(compositeBmp);
             int halfHeight = compositeBmp.Height / 2;
 
             //add in the title bars
             string title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "BGN-AVG-CVR");
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(totalWidth, trackHeight, title);
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             int offset = 0;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
             title = string.Format("24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = {0})         (c) QUT.EDU.AU.  ", "ACI-ENT-EVN");
-            titleBmp = Image_Track.DrawTitleTrack(totalWidth, trackHeight, title);
+            titleBmp = Image_Track.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
             offset = halfHeight;
             gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
 
@@ -237,14 +237,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
+            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
             image1.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
 
             colorMap = "BGN-AVG-VAR";
             Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.XInterval, nyquist, herzInterval);
+            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
             image2.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
             Image[] array = new Image[2];
             array[0] = image1;

@@ -1,12 +1,17 @@
 ---
 AnalysisName: Towsey.Acoustic
-#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;     IndexCalculationDuration: units=seconds; (default=60 seconds)
+#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
 SegmentDuration: 1
 SegmentOverlap: 0
-IndexCalculationDuration: 1
-#FRAME LENGTH in samples and Frame Overlap as fraction 
+
+# IndexCalculationDuration: units=seconds (default=60 seconds)
+IndexCalculationDuration: 60.0
+# BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
+BGNoiseNeighbourhood: 5
+
+#FRAME LENGTH and FRAME STEP in samples. Frame step only used for frame spectrograms - not indices 
 FrameLength: 512
-FrameOverlap: 0.0
+FrameStep: 441
 #Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 17640
 ResampleRate: 22050
@@ -19,15 +24,27 @@ MidFreqBound: 4000
 #indices NOT displayed:avAmp-dB,activeSnr-dB,avSegDur,H[spectralMax],H[spectralVar],avClustDur,3gramCount,av3gramRepetition,SpPkTracks%Dur
 DisplayWeightedIndices: false
 
-#SAVE INTERMEDIARY FILES
+
+# SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
-DisplayCsvImage: true
+
+# SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
+SaveSonogramData: false
+SaveSonogramImages: false
+
+DisplayCsvImage: false
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0
 SonogramBackgroundThreshold: 4.0
 ParallelProcessing: false
+
+# if true an additional set of images will be produced that are tiles
+# if true, RequireDateInFilename must be set
+TileImageOutput: false
+
+# if true, an unambiguous date time must be provided in the source file's name.
+RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 EventThreshold: 0.2

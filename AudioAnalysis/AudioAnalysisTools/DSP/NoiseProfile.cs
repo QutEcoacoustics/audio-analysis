@@ -73,6 +73,24 @@ namespace AudioAnalysisTools.DSP
             return profile;
         }
 
+        /// <summary>
+        /// (1) MODAL METHOD
+        /// Calculates the modal background noise for each freqeuncy bin.
+        /// Assumes the passed spectrogram is oriented as: rows=frames, cols=freq bins.
+        /// Return the smoothed modal profile.
+        /// By default set the number of SDs = 0.
+        /// </summary>
+        /// <param name="amplitudeSpectrogram"></param>
+        /// <returns></returns>
+        public static double[] CalculateBackgroundNoise(double[,] spectrogram)
+        {
+            double sdCount = 0.0;
+            NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(spectrogram, sdCount);
+            double[] noiseValues = DataTools.filterMovingAverage(profile.NoiseThresholds, 7);
+            return noiseValues;
+        }
+
+
 
         /// <summary>
         /// (2) LOWEST PERCENTILE FRAMES METHOD

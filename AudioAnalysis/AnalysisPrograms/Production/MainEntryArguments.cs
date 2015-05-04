@@ -5,6 +5,7 @@ using System.Text;
 
 namespace AnalysisPrograms.Production
 {
+    using System.Diagnostics.Contracts;
     using System.Dynamic;
     using System.IO;
     using System.Reflection;
@@ -28,11 +29,12 @@ namespace AnalysisPrograms.Production
 
     public partial class MainEntryArguments
     {
+        private LogVerbosity logLevel;
+
         public MainEntryArguments()
         {
             this.DebugOption = DebugOptions.Prompt;
         }
-
            
         [ArgRequired]
         [ArgPosition(0)]
@@ -80,6 +82,47 @@ namespace AnalysisPrograms.Production
                 }
             }
         }
+
+        [DefaultValue(LogVerbosity.Info)]
+        public LogVerbosity LogLevel
+        {
+            get
+            {
+                if (this.Verbose)
+                {
+                    return LogVerbosity.Debug;
+                }
+
+                if (this.VVerbose)
+                {
+                    return  LogVerbosity.All;
+                }
+                
+                return this.logLevel;
+            }
+            set
+            {
+                this.Verbose = value == LogVerbosity.Debug;
+
+                this.VVerbose = value == LogVerbosity.All;
+                
+                this.logLevel = value;
+            }
+        }
+
+        public bool Verbose { get; set; }
+
+        public bool VVerbose { get; set; }
+    }
+
+    public enum LogVerbosity
+    {
+        None = 0,
+        Error = 1,
+        Warn = 2,
+        Info = 3,
+        Debug = 4,
+        All = 5
     }
 
     public class HelpArguments
@@ -87,7 +130,6 @@ namespace AnalysisPrograms.Production
         [ArgPosition(1)]
         public string ActionName { get; set; }
     }
-
     
     public class SourceArguments
     {

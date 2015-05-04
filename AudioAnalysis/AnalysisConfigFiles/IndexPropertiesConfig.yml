@@ -121,9 +121,9 @@ Activity:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 100
+  NormMax: 1.0
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 EventsPerSecond:
@@ -133,7 +133,7 @@ EventsPerSecond:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 2.0
+  NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
@@ -157,9 +157,9 @@ HighFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
-  NormMax: 50
+  NormMax: 0.5
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 MidFreqCover:
@@ -169,9 +169,9 @@ MidFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 50
+  NormMax: 0.50
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 LowFreqCover:
@@ -181,9 +181,9 @@ LowFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 50
+  NormMax: 0.50
   ProjectID: Acoustic Indices
-  Units: "%"
+  Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
 AcousticComplexity:
@@ -246,66 +246,78 @@ EntropyPeaks:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-ClusterCount:
-  Name: Cluster Count
-  Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
-  DataType: int
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 50
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: true
-  ComboWeight: 0.3
-AvgClusterDuration:
-  Name: av Cluster Duration
-  Comment: "Average duration in ms of the spectrum cluster sequences."
-  DataType: TimeSpan
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 250
-  ProjectID: Acoustic Indices
-  Units: "ms"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-ThreeGramCount:
-  Name: 3-gram Count
-  Comment: "Number of different tri-gram cluster sequences."
-  DataType: int
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 1000
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-SptPerSecond:
-  Name: av Tracks/Sec
-  Comment: "Average number of spectral tracks per second."
+#ClusterCount:
+#  Name: Cluster Count
+#  Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
+#  DataType: int
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 50
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: true
+#  ComboWeight: 0.3
+#AvgClusterDuration:
+#  Name: av Cluster Duration
+#  Comment: "Average duration in ms of the spectrum cluster sequences."
+#  DataType: TimeSpan
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 250
+#  ProjectID: Acoustic Indices
+#  Units: "ms"
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+#ThreeGramCount:
+#  Name: 3-gram Count
+#  Comment: "Number of different tri-gram cluster sequences."
+#  DataType: int
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 1000
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+SptDensity:
+  Name: SPT density
+  Comment: "Average number of spectral peaks tracks traversing a frame."
   DataType: double
   DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 50
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 2.0
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-AvgSptDuration:
-  Name: av Track Duration
-  Comment: "Average duration of a spectral track."
-  DataType: TimeSpan
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.25
-  NormMax: 2.0
-  ProjectID: Acoustic Indices
-  Units: "s"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+#SptPerSecond:
+#  Name: av Tracks/Sec
+#  Comment: "Average number of spectral tracks per second."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 50
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+#AvgSptDuration:
+#  Name: av Track Duration
+#  Comment: "Average duration of a spectral track."
+#  DataType: TimeSpan
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0.25
+#  NormMax: 2.0
+#  ProjectID: Acoustic Indices
+#  Units: "s"
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
 RainIndex:
   Name: Rain Index
   Comment: "Rain score calculated every 10 sec and 6 values averaged over the minute."
@@ -364,22 +376,10 @@ ACI:
   DoDisplay: true
   NormMin: 0.4
   NormMax: 0.7
+  CalculateNormMin: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-AVG:
-  Name: spectralAVG
-  Comment: "Spectrum of average dB amplitude in each frequency bin after noise removal."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 70.0
-  ProjectID: Acoustic Indices
-  Units: "dB"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 BGN:
   Name: spectralBGN
   Comment: "Spectrum of dB value of the background 'noise' removed each frequency bin."
@@ -389,23 +389,11 @@ BGN:
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
   # -20 adds more contrast into BGN spectrogram
   NormMin: -100.0
-  NormMax: -20.0
+  NormMax: -30.0
+  CalculateNormMin: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "dB"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-CLS:
-  Name: spectralCLS
-  Comment: "Spectrum of the number of spectral clusters in which each frequency bin is included."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 10.0
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 CVR:
   Name: spectralCVR
   Comment: "Freq bin COVER: Spectrum of the fraction of active elements in each freq bin where amplitude > threshold = 3 dB."
@@ -415,34 +403,23 @@ CVR:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.7
+  CalculateNormMin: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-EVN:
-  Name: spectralEVN
-  Comment: "Spectrum of acoustic events per second (as defined above) in each frequency band."
+#  ComboWeight: 0.0
+DIF:
+  Name: spectralDIF
+  Comment: "Spectrum of summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This spgram not displayed. It is used as intermediate for subsequent calculation of ACI."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 2.0
+  NormMax: 10.0
+  CalculateNormMin: false
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
-  Units: "events/s"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-SPT:
-  Name: spectralSPT
-  Comment: "Spectrum of average number of spectral Peak Tracks persecond within each freq bin."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 0.5
-  ProjectID: Acoustic Indices
-  Units: "tracks/s"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+  Units: ""
 ENT:
   Name: spectralENT
   Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
@@ -451,31 +428,55 @@ ENT:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.6
+  CalculateNormMin: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-TEN:
-  Name: spectralENT
-  Comment: "1 - Temporal Entropy. Default value = 0.0 because index = 1-Ht = a measure of concentration of acoustic energy instead of energy dispersal."
+EVN:
+  Name: spectralEVN
+  Comment: "Spectrum of acoustic events per second (as defined above) in each frequency band."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.1
+  NormMax: 5.0
+  CalculateNormMin: true
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "events/s"
+SUM:
+  Name: spectralSUM
+  Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This spgram not displayed. It is used for intermediate calculations only."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.6
+  NormMax: 10.0
+  CalculateNormMin: false
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-VAR:
-  Name: spectralVAR
-  Comment: "Spectrum of variance of dB amplitude in each frequency bin after noise removal. Paired with AVG"
+POW:
+  Name: spectralPOW
+  Comment: "Spectrum of average dB power in each frequency bin after noise removal."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 100.0
+  NormMax: 70.0
+  CalculateNormMin: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
-  Units: "dB^2"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+  Units: "dB"
+SPT:
+  Name: spectralSPT
+  Comment: "Spectrum of average number of spectral Peak Tracks per second within each freq bin."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.5
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"

@@ -30,24 +30,32 @@ namespace AudioAnalysisTools.Indices
     using NeuralNets;
 
     using TowseyLibrary;
+    using AnalysisBase;
 
     public class IndexCalculateResult
     {
-        public IndexCalculateResult(TimeSpan wavDuration, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan startOffset)
+        //public IndexCalculateResult(TimeSpan wavDuration, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan startOffset)
+        public IndexCalculateResult(AnalysisSettings analysisSettings, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan indexCalculationDuration, TimeSpan subsegmentOffset)
         {
+            TimeSpan wavDuration = indexCalculationDuration; // subsegment TimeSpan
+            //TimeSpan startOffset = analysisSettings.SegmentStartOffset.Value; // offset from beginning of source audio
+            TimeSpan subsegmentOffsetFromStartOfSource = subsegmentOffset; // offset from beginning of source audio
+
             this.Hits = null;
             this.Tracks = null;
             this.TrackScores = new List<Plot>();
 
             this.SummaryIndexValues = new SummaryIndexValues(wavDuration, indexProperties)
                                           {
-                                              // give the index a offset value so it can be sorted. 
-                                              StartOffset = startOffset
+                                              // give the results object an offset value so it can be sorted. 
+                                              StartOffset = subsegmentOffsetFromStartOfSource,
+                                              SegmentDuration = wavDuration
                                           };
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
                                            {
-                                               // give the index a offset value so it can be sorted. 
-                                               StartOffset = startOffset
+                                              // give the results object an offset value so it can be sorted. 
+                                              StartOffset = subsegmentOffsetFromStartOfSource,
+                                              SegmentDuration = wavDuration
                                            };
         }
 
@@ -88,7 +96,9 @@ namespace AudioAnalysisTools.Indices
 
         public double EventsPerSecond { get; set; }
 
-        public TimeSpan AvgEventDuration { get; set; }
+        // Commented out on 2nd Feb 2015.
+        // AvgEventDuration is no longer accurately calculated now that estimating it on subsegments of < 1 second duration.
+        //public TimeSpan AvgEventDuration { get; set; }
 
         public double HighFreqCover { get; set; }
 
@@ -106,15 +116,18 @@ namespace AudioAnalysisTools.Indices
 
         public double EntropyPeaks { get; set; }
 
-        public int ClusterCount { get; set; }
+        //meaningless when calculated over short
+        //public int ClusterCount { get; set; }
 
-        public TimeSpan AvgClusterDuration { get; set; }
+        //public TimeSpan AvgClusterDuration { get; set; }
 
-        public int ThreeGramCount { get; set; }
+        //public int ThreeGramCount { get; set; }
 
-        public double SptPerSecond { get; set; }
+        //public double SptPerSecond { get; set; }
 
-        public TimeSpan AvgSptDuration { get; set; }
+        //public TimeSpan AvgSptDuration { get; set; }
+        
+        public double SptDensity { get; set; }
 
         public double RainIndex { get; set; }
 
@@ -187,10 +200,42 @@ namespace AudioAnalysisTools.Indices
 
 
                 double[] initArray = (new double[spectrumLength]).FastFill(kvp.Value.DefaultValue);
+
+                // WARNING: Potential throw site
+                // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
+                // This prevents multiple warnings through loop.
                 this.SetPropertyValue(kvp.Key, initArray);
             }
         }
 
+
+        /// <summary>
+        /// Used to check that the keys in the indexProperties dictionary corerspond to Properties in the SpectralIndexValues class.
+        /// Call this method before entering a loop because do not want the error message at every iteration through loop.
+        /// </summary>
+        /// <param name="indexProperties"></param>
+        public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
+        {
+
+            var siv = new SpectralIndexValues();
+            double[] dummyArray = null;
+
+            foreach (var kvp in indexProperties)
+            {
+                if (!kvp.Value.IsSpectralIndex)
+                {
+                    continue;
+                }
+
+                var success = siv.TrySetPropertyValue(kvp.Key, dummyArray);
+                if (!success)
+                {
+                    LoggedConsole.WriteWarnLine("### WARNING: The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
+                }
+            }
+        }
+
+        
         public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
         {
             get
@@ -203,19 +248,23 @@ namespace AudioAnalysisTools.Indices
 
         public double[] ACI { get; set; }
 
-        public double[] ENT { get; set; }
-
         public double[] BGN { get; set; }
-
-        public double[] AVG { get; set; }
 
         public double[] CVR { get; set; }
 
+        public double[] DIF { get; set; }
+
+        public double[] ENT { get; set; }
+
         public double[] EVN { get; set; }
+
+        public double[] POW { get; set; }
 
         public double[] SPT { get; set; }
 
-        public double[] CLS { get; set; }
+        public double[] SUM { get; set; }
+
+        //public double[] CLS { get; set; }
 
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
         {

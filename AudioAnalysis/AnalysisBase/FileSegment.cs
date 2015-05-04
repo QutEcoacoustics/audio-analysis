@@ -16,8 +16,13 @@ namespace AnalysisBase
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
+
+    using Acoustics.Shared;
+
+    using log4net;
 
     /// <summary>
     /// Represents a segment file. Also stores the original file. 
@@ -25,10 +30,41 @@ namespace AnalysisBase
     /// </summary>
     public class FileSegment
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        private readonly bool fileDateRequired;
+        private DateTimeOffset? fileStartDate;
+        private bool triedToParseDate = false;
+
+        public FileSegment(FileInfo originalFile)
+            : this(originalFile, false)
+        {
+
+        }
+
+        public FileSegment(FileInfo originalFile, bool fileDateRequired)
+        {
+            this.fileDateRequired = fileDateRequired;
+            this.OriginalFile = originalFile;
+            
+
+            if (this.fileDateRequired)
+            {
+                this.triedToParseDate = true;
+                this.fileStartDate = this.AudioFileStart();
+
+                if (!this.fileStartDate.HasValue)
+                {
+                    throw new InvalidFileDateException(
+                        "A file date is required but one has not been successfully parsed");
+                }
+            }
+        }
+
         /// <summary>
-        /// Gets or sets the Original File.
+        /// Gets the Original File.
         /// </summary>
-        public FileInfo OriginalFile { get; set; }
+        public FileInfo OriginalFile { get; private set; }
 
         /// <summary>
         /// Gets or sets SegmentStartOffset.
@@ -52,6 +88,22 @@ namespace AnalysisBase
         public int? OriginalFileSampleRate { get; set; }
 
         /// <summary>
+        /// Gets the OriginalFileStartDate
+        /// </summary>
+        public DateTimeOffset? OriginalFileStartDate {
+            get
+            {
+                if (!this.fileStartDate.HasValue && !this.triedToParseDate)
+                {
+                    this.triedToParseDate = true;
+                    this.fileStartDate = this.AudioFileStart();
+                }
+
+                return this.fileStartDate;
+            } 
+        }
+
+        /// <summary>
         /// Validate the <see cref="FileSegment"/> properties.
         /// </summary>
         /// <returns>
@@ -62,6 +114,11 @@ namespace AnalysisBase
         {
             if (this.OriginalFile == null ||
                  !File.Exists(this.OriginalFile.FullName))
+            {
+                return false;
+            }
+
+            if (this.fileDateRequired && this.fileStartDate == null)
             {
                 return false;
             }
@@ -106,51 +163,36 @@ namespace AnalysisBase
             return null;
         }
 
-        // Prefix_YYYYMMDD_hhmmss.wav
-        private const string FileNameWithPrefixPattern = @".*_(\d{8}_\d{6})\..+";
-
-        public DateTime? FileNameDateTime()
+        private DateTimeOffset? AudioFileStart()
         {
-            if (this.OriginalFile != null && this.OriginalFile.Exists)
+            DateTimeOffset parsedDate;
+            var fileDateFound = FileDateHelpers.FileNameContainsDateTime(this.OriginalFile.Name, out parsedDate);
+
+            if (fileDateFound)
             {
-                var fileName = this.OriginalFile.Name;
-
-                if (Regex.IsMatch(fileName, FileNameWithPrefixPattern, RegexOptions.IgnoreCase))
-                {
-                    var match = Regex.Match(fileName, FileNameWithPrefixPattern, RegexOptions.IgnoreCase);
-                    DateTime dt;
-                    if (DateTime.TryParseExact(
-                        match.Groups[1].Value,
-                        "yyyyMMdd_HHmmss",
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.AssumeLocal,
-                        out dt))
-                    {
-
-                        return dt;
-                    }
-                }
-
-                return DateTime.MinValue;
+                Log.Debug("Parsed file start date as " + parsedDate.ToString("O"));
+                return parsedDate;
             }
 
-            return null;
-        }
-
-        public DateTime? AudioFileStart()
-        {
-            var dateTime = this.FileNameDateTime();
-            if (dateTime.HasValue && dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
+            if (this.fileDateRequired)
             {
-                return dateTime;
+                return null;
             }
 
-            dateTime = this.FileModifedDateTime();
+            /*
+             *  Disabling this block - it is too unpredictable.
+             *  No gaurantee where a date is coming from.
+             *  Additionally, in a performance centric scenario, an
+             *  extra call to audio libs is unecessary
+             */
+            /*
+            var dateTime = this.FileModifedDateTime();
             if (this.OriginalFileDuration > TimeSpan.Zero && dateTime.HasValue &&
                 dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
             {
                 return dateTime - this.OriginalFileDuration;
             }
+            */
 
             return null;
         }

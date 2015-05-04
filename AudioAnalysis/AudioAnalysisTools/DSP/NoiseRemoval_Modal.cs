@@ -133,6 +133,21 @@ namespace AudioAnalysisTools.DSP
             sd_noise = (indexOfMode - indexOfOneSD) * histogramBinWidth; // SD of the noise
         }
 
+        /// <summary>
+        /// Calls the algorithm of Lamel et al, 1981.
+        /// </summary>
+        /// <param name="signalEnvelope"></param>
+        /// <returns></returns>
+        public static double CalculateBackgroundNoise(double[] signalEnvelope)
+        {
+            double[] dBarray = SNR.Signal2Decibels(signalEnvelope);
+            double noise_mode, noise_SD;
+            double min_dB, max_dB;
+            NoiseRemoval_Modal.CalculateNoise_LamelsAlgorithm(dBarray, out min_dB, out max_dB, out noise_mode, out noise_SD);
+            return noise_mode;
+        }
+
+
 
         static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
         {

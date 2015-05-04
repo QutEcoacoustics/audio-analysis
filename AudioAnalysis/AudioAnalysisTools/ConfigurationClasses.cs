@@ -15,6 +15,8 @@ namespace AudioAnalysisTools
     using System.Linq;
     using System.Text;
 
+    using Acoustics.Shared;
+
     using AudioAnalysisTools.DSP;
 
     using TowseyLibrary;
@@ -136,14 +138,9 @@ namespace AudioAnalysisTools
 
 		public void Save(TextWriter writer)
 		{
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DoMelScale, DoMelScale);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_FilterbankCount, FilterbankCount);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_CcCount, CcCount);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_IncludeDelta, IncludeDelta);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_IncludeDoubleDelta, IncludeDoubleDelta);
-            writer.Flush();
+            Json.Serialise(writer, this);
 		}
-    }//end class MfccConfiguration
+    }
 
 
 
