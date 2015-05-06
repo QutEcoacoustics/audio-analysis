@@ -306,35 +306,38 @@ namespace AnalysisPrograms
                 Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + bgNoiseNeighborhood.ToString() + ")");
             }
 
-            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood);
+            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig);
         }
 
         [Serializable]
         private class AcousticIndicesParsedConfiguration
         {
-            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood)
+            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile)
             {
                 this.TileOutput = tileOutput;
                 this.IndexCalculationDuration = indexCalculationDuration;
                 this.BgNoiseNeighborhood = bgNoiseNeighborhood;
+                this.IndexPropertiesFile = indexPropertiesFile;
             }
 
             public bool TileOutput { get; private set; }
 
             /// <summary>
-            /// Gets or sets the duration of the sub-segment for which indices are calculated. 
+            /// Gets the duration of the sub-segment for which indices are calculated. 
             /// Default = 60 seconds i.e. same duration as the Segment.
             /// </summary>
             public TimeSpan IndexCalculationDuration { get; private set; }
 
             /// <summary>
-            /// Gets or sets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
+            /// Gets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
             /// Units = seconds
-            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighbourhood = 10 seconds) 
+            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighborhood = 10 seconds) 
             ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
             ///                In case of edge effects, the BGnoise neighborhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
             /// </summary>
             public TimeSpan BgNoiseNeighborhood { get; private set; }
+
+            public FileInfo IndexPropertiesFile { get; private set; }
         }
 
         public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
@@ -368,7 +371,13 @@ namespace AnalysisPrograms
 
                 /* ###################################################################### */
 
-                var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings, subsegmentOffset, acousticIndicesParsedConfiguration.IndexCalculationDuration, acousticIndicesParsedConfiguration.BgNoiseNeighborhood);
+                var indexCalculateResult = IndexCalculate.Analysis(
+                    recording,
+                    analysisSettings,
+                    subsegmentOffset,
+                    acousticIndicesParsedConfiguration.IndexCalculationDuration,
+                    acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                    acousticIndicesParsedConfiguration.IndexPropertiesFile);
 
                 
                 /* ###################################################################### */
@@ -522,7 +531,8 @@ namespace AnalysisPrograms
             }
             else
             {
-                FileInfo indicesPropertiesConfig = IndexProperties.Find(settings.Configuration, settings.ConfigFile);
+                FileInfo indicesPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
+
                 // gather settings for rendering false color spectrograms
                 var config = new LdSpectrogramConfig
                 {

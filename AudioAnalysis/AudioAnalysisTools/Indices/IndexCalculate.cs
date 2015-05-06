@@ -94,18 +94,23 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="recording">an audio recording</param>
         /// <param name="analysisSettings"></param>
+        /// <param name="subsegmentOffsetTimeSpan">
+        ///     The start time of the required subsegment relative to start of SOURCE audio recording. 
+        ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
+        /// </param>
+        /// <param name="indexCalculationDuration"></param>
+        /// <param name="bgNoiseNeighborhood"></param>
+        /// <param name="indicesPropertiesConfig"></param>
         /// <param name="offset"></param>
         /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
         /// <param name="int LowFreqBound">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
-        /// <param name="subsegmentOffsetTimeSpan">
-        /// The start time of the required subsegment relative to start of SOURCE audio recording. 
-        /// i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
-        /// </param>
         /// <returns></returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
-        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, TimeSpan subsegmentOffsetTimeSpan, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood)
+        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, 
+            TimeSpan subsegmentOffsetTimeSpan, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, 
+            FileInfo indicesPropertiesConfig)
         {
             string recordingFileName = recording.FileName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
@@ -114,7 +119,6 @@ namespace AudioAnalysisTools.Indices
             TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
             var config = analysisSettings.Configuration;
-            var indicesPropertiesConfig = IndexProperties.Find(config, analysisSettings.ConfigFile);
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
             // get frame parameters for the analysis
