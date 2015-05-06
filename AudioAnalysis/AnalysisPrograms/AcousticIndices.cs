@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.Serialization;
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
@@ -308,6 +309,7 @@ namespace AnalysisPrograms
             analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood);
         }
 
+        [Serializable]
         private class AcousticIndicesParsedConfiguration
         {
             public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood)
@@ -374,7 +376,10 @@ namespace AnalysisPrograms
                 analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
                 trackScores.AddRange(indexCalculateResult.TrackScores);
-                tracks.AddRange(indexCalculateResult.Tracks);
+                if (indexCalculateResult.Tracks != null)
+                {
+                    tracks.AddRange(indexCalculateResult.Tracks);
+                }
             }
 
             if (analysisSettings.SummaryIndicesFile != null)
