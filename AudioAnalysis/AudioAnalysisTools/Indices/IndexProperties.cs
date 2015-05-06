@@ -355,7 +355,7 @@ namespace AudioAnalysisTools.Indices
                 return null;
             }
 
-            return Find(configuration, originalConfigFile);
+            return Find(configuration.IndexPropertiesConfig, originalConfigFile);
         }
 
         public static FileInfo Find(string relativePath, FileInfo originalConfigFile)
