@@ -628,7 +628,7 @@
 
         private DirectoryInfo GetInstanceDirTempElseOutput(AnalysisSettings settings)
         {
-            if (settings.AnalysisBaseTempDirectory != null && settings.AnalysisInstanceTempDirectory != null)
+            if (settings.AnalysisBaseTempDirectory != null && settings.AnalysisInstanceTempDirectory != null && !this.saveIntermediateWavFiles)
             {
                 return settings.AnalysisInstanceTempDirectory;
             }
