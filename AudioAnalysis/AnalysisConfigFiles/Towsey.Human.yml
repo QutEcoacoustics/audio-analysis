@@ -22,7 +22,7 @@ EventThreshold: 0.2
 
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 #DoNoiseReduction: true
 #BgNoiseThreshold: 3.0
 ...

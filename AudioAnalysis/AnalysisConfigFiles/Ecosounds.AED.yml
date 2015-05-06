@@ -12,7 +12,7 @@ BandpassMinimum: ~
 BandpassMaximum: ~
 IncludeHitElementsInOutput: true
 
-## Image output options (only if SaveSonogramFiles==true)
+## Image output options (only if SaveSonogramImages==true)
 AedEventColor: '#88FF0000'
 AedHitColor: '#4400FF00'
 
@@ -25,7 +25,7 @@ BgNoiseThreshold: 3.5
 ## IAnalyzer Settings
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: true
-SaveSonogramFiles: true
+SaveSonogramImages: true
 ParallelProcessing: true
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"

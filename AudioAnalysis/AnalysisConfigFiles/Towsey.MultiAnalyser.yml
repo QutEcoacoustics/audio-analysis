@@ -57,7 +57,7 @@ KOALAMALE_EventThreshold: 0.2
 #######################################
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 DoNoiseReduction: false
 BgNoiseThreshold: 3.0
 ParallelProcessing: true

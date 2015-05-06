@@ -40,6 +40,6 @@ EXCLUDE_IF_RULE: DeltaPeriodScore_LT_0.1
 #SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: true
+SaveSonogramImages: true
 ParallelProcessing: false
 ...

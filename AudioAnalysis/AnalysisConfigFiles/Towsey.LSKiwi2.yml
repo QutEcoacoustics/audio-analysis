@@ -30,5 +30,5 @@ EventThreshold: 0.04
 #SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 ...
