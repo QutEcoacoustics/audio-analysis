@@ -1,23 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using System.Diagnostics;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Features2D;
-using Emgu.CV.Structure;
-using Emgu.CV.Util;
-using Emgu.CV.GPU;
-using System.IO;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Text;
+
+    /*
+    using Emgu.CV;
+    using Emgu.CV.CvEnum;
+    using Emgu.CV.Features2D;
+    using Emgu.CV.GPU;
+    using Emgu.CV.Structure;
+    using Emgu.CV.Util;
+    */
+
+    using MathNet.Numerics.LinearAlgebra.Generic;
+
     public static class SURFFeatures
     {
+        /*
         /// <summary>
         /// this class used for SURF intermediate data.
         /// </summary>
@@ -327,6 +332,6 @@ namespace AudioAnalysisTools
 
             return result;
         }
-
+*/
     }
 }
