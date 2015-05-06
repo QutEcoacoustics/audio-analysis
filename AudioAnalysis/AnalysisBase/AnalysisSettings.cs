@@ -14,6 +14,7 @@ namespace AnalysisBase
     using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
+    using System.Runtime.Serialization;
 
     using Acoustics.Shared;
 
@@ -252,7 +253,8 @@ namespace AnalysisBase
         /// <summary>
         /// Get or sets an object that can be used to store arbitrary configuration or options.
         /// This is useful for passing information between BeforeAnalyze and Analyze.
-        /// DO NOT STORE MUTABLE STATE IN THIS OBJECT
+        /// DO NOT STORE MUTABLE STATE IN THIS OBJECT.
+        /// The object provided must be serializable!
         /// </summary>
         public object AnalyzerSpecificConfiguration { get; set; }
 
