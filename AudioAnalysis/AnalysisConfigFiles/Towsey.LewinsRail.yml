@@ -19,7 +19,7 @@ IntensityThreshold: 0.01
 # save sonograms and other files 
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 #DoNoiseReduction: true
 #BgNoiseThreshold: 3.0
 ...

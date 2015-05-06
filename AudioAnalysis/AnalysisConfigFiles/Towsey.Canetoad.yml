@@ -21,7 +21,7 @@ DoNoiseReduction: false
 #BgNoiseThreshold: 3.0
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 DisplayCsvImage: false
 ParallelProcessing: false
 

@@ -16,7 +16,7 @@ SONOGRAM_BACKGROUND_Threshold: 4.0
 #SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 DoNoiseReduction: false
 BgNoiseThreshold: 3.0
 

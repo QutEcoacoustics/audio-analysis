@@ -37,14 +37,14 @@ DisplayCsvImage: false
 DoNoiseReduction: true
 BgNoiseThreshold: 3.0
 SonogramBackgroundThreshold: 4.0
-ParallelProcessing: false
+ParallelProcessing: true
 
 # if true an additional set of images will be produced that are tiles
 # if true, RequireDateInFilename must be set
-TileImageOutput: false
+TileImageOutput: true
 
 # if true, an unambiguous date time must be provided in the source file's name.
-RequireDateInFilename: false
+RequireDateInFilename: true
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 EventThreshold: 0.2
