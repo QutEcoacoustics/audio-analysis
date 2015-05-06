@@ -331,10 +331,11 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.EntropyPeaks = 1 - AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin);
 
             // vii: calculate RAIN and CICADA indices.
-            Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
+            Logger.Warn("Rain and cicada index caculation is disabled");
+            ////Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
 
-            summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
-            summaryIndexValues.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
+            ////summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
+            ////summaryIndexValues.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
 
 
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################           
