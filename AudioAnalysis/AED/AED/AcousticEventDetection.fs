@@ -154,7 +154,7 @@ let detectEventsMinor (options: AedOptions) a =
         | Some (low, high) ->
             if (low > high) then failwith "bandPassFilter args invalid"
             low |> frequencyToPixels floor actualRows options.NyquistFrequency, high |> frequencyToPixels ceil actualRows options.NyquistFrequency
-        | None -> (0, m.NumRows)
+        | None -> (0, actualRows - 1) // -1 for zero indexing
 
     let mPrime =  m.Region (dc + min, 0, dc + max - min, m.NumCols) 
 
