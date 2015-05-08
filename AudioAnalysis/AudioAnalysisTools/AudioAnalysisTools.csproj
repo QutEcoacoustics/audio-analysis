@@ -280,7 +280,7 @@
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SURFFeatures.cs" />
-    <Compile Include="TileImage\AbsoluteDateTiler.cs" />
+    <Compile Include="TileImage\AbsoluteDateTillingProfile.cs" />
     <Compile Include="TileImage\ImageComponent.cs" />
     <Compile Include="TileImage\ISuperTile.cs" />
     <Compile Include="TileImage\Layer.cs" />

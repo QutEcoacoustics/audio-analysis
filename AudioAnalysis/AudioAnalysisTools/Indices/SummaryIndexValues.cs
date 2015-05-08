@@ -133,7 +133,6 @@ namespace AudioAnalysisTools.Indices
 
         public double CicadaIndex { get; set; }
 
-
         private static Dictionary<string, Func<SummaryIndexValues, object>> CachedSelectors { get; set; }
 
 
@@ -235,7 +234,6 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-        
         public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
         {
             get
@@ -243,8 +241,6 @@ namespace AudioAnalysisTools.Indices
                 return CachedSelectorsInternal;
             }
         }
-
-
 
         public double[] ACI { get; set; }
 
