@@ -50,6 +50,8 @@ namespace AudioAnalysisTools.Indices
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private static bool warned = false;
+
         /// <summary>
         /// a set of parameters derived from ini file.
         /// </summary>
@@ -167,14 +169,32 @@ namespace AudioAnalysisTools.Indices
             if (bgnSampleEnd >= signalLength) bgnSampleEnd = signalLength - 1;
             int bgnSubsegmentSampleCount = bgnSampleEnd - bgnSampleStart + 1;
 
+
+            // minimum samples needed to calculate data
+            // this value was chosen somewhat arbitrarily
+            int minnimumViableDuration = frameSize * 8;
+            
             // set the SUBSEGMENT recording = total segment if its length >= 60 seconds
             AudioRecording subsegmentRecording = recording;
             if (indexCalculationDuration < recordingSegmentDuration)
             {
+                var end = sampleStart + subsegmentSampleCount;
+                if (end > signalLength && end - signalLength < minnimumViableDuration)
+                {
+                    // back track so at least we can fill a whole result
+                    // this is equivalent to setting overlap for only one frame.
+                    // this is an effectively silent correction
+                    var oldStart = sampleStart;
+                    sampleStart = signalLength - subsegmentSampleCount;
+                    
+                    Logger.Trace("Backtracking to fill missing data from imperect audio cuts because not enough samples available. " + (oldStart - sampleStart) + " samples overlap.");
+                }
+
                 double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, sampleStart, subsegmentSampleCount);
-                Acoustics.Tools.Wav.WavReader wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }
+
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
 
@@ -184,7 +204,7 @@ namespace AudioAnalysisTools.Indices
             if (bgnSubsegmentSampleCount <= signalLength)
             {
                 double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, bgnSampleStart, bgnSubsegmentSampleCount);
-                Acoustics.Tools.Wav.WavReader wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 bgnSubsegmentRecording = new AudioRecording(wr);
             }
             // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
@@ -335,7 +355,12 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.EntropyPeaks = 1 - AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin);
 
             // vii: calculate RAIN and CICADA indices.
-            Logger.Warn("Rain and cicada index caculation is disabled");
+            if (!warned)
+            {
+                Logger.Warn("Rain and cicada index caculation is disabled");
+                warned = true;
+            }
+
             ////Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
 
             ////summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];

@@ -194,6 +194,14 @@ namespace AnalysisBase
         public TimeSpan SegmentOverlapDuration { get; set; }
 
         /// <summary>
+        /// Gets or sets the ideal duration of audio for the segment being analyzed.
+        /// This number represents what was requested for cutting whereas the actual
+        /// duration of audio provided by <c>AudioFile</c> may differ slightly due to
+        /// inaccuracies in cutting audio.
+        /// </summary>
+        public TimeSpan? SegmentDuration { get; set; }
+
+        /// <summary>
         /// Gets or sets the minimum audio file duration the analysis can process.
         /// This is the min duration without including overlap. Overlap will be added.
         /// This should be set to an initial value by an analysis.
