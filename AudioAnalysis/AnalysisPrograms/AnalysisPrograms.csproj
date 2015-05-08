@@ -371,7 +371,8 @@
       xcopy "$(ProjectDir)..\..\Extra Assemblies\sox" "$(TargetDir)audio-utils\sox\" /S /Y
       xcopy "$(ProjectDir)..\..\Extra Assemblies\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y
       xcopy "$(ProjectDir)..\..\Extra Assemblies\shntool" "$(TargetDir)audio-utils\shntool\" /S /Y
-      xcopy "$(ProjectDir)..\packages\VVVV.EmguCV.2.4.2.1\build\net40\opencv\x64" "$(TargetDir)" /S /Y
+      
+      rem xcopy "$(ProjectDir)..\packages\VVVV.EmguCV.2.4.2.1\build\net40\opencv\x64" "$(TargetDir)" /S /Y
 
       rem copy configs
       xcopy "$(ProjectDir)..\AnalysisConfigFiles" "$(TargetDir)ConfigFiles\" /S /Y
