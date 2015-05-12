@@ -122,8 +122,8 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength, 
-                  ridgeConfig, compressConfig, gradientConfig,
+                    MatchingBatchProcess3(queryInputDirectory, inputDirectory.FullName, 
+                  ridgeConfig, compressConfig, 
                   config, rank, featurePropertySet, outputDirectory.FullName, tempDirectory, weight1, weight2);
                 }
                 else if (action == "processOne")
@@ -158,6 +158,8 @@
                     //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
                     //OutputResults.CSVMatchingAnalysisOfSongScope(inputDirectory, goundTruthFile);
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Third experiment-AED\Output\SimilarityScore-top1.csv";
+                    //OutputResults.AutomatedSimilarityScoreSelection(inputDirectory, outputFile); 
                     //OutputResults.SplitFiles(inputDirectory, inputDirectory);
                     //var rate = OutputResults.ClassificationStatistics(inputDirectory, 5);
                     //var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\MatchingResult.csv";
@@ -247,7 +249,7 @@
                 Play(currentConfig, featurePropertySet, inputDirectory, new DirectoryInfo(fullPath), tempDirectory);
             }          
         }
-       
+
         public static void RidgeDetectionBatchProcess(string audioFileDirectory, SonogramConfig config,
             RidgeDetectionConfiguration ridgeConfig, GradientConfiguration gradientConfig,
             CompressSpectrogramConfig compressConfig, string featurePropSet)
@@ -268,29 +270,29 @@
 
                     var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
-
                     poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
                     var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
-                    //var addCompressedRidges = POISelection.AddCompressedRidges(
-                    //    config,
-                    //    audioFiles[i],
-                    //    ridgeConfig,
-                    //    featurePropSet,
-                    //    compressConfig,
-                    //    filterRidges);
-                    var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(filterRidges, spectrogram.Data, rows, cols);
+                    var addCompressedRidges = POISelection.AddCompressedRidges(
+                        config,
+                        audioFiles[i],
+                        ridgeConfig,
+                        featurePropSet,
+                        compressConfig,
+                        filterRidges);
+                    var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, spectrogram.Data, rows, cols);
                     //var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
                     var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(poiMatrix, rows, cols, 3, 1.0);
                     //var dividedRidges = POISelection.POIListDivision(joinedRidges);
                     ClusterAnalysis.RidgeListToEvent(spectrogram, joinedRidges, out acousticEventlist);
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);
+                    var resultEvent = ClusterAnalysis.RemoveSmallEvents(acousticEventlist, 30);
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, resultEvent, eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in filterRidges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in joinedRidges)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- AED on ridges.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- filter false ridges.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -764,7 +766,7 @@
 
         /// <summary>
         /// This method is designed for retrieval algorithm based on AED. 
-        /// AED is used for forming events to be compared rather than neighbourhood representation. 
+        /// AED is used for cluster ridges to events to be compared rather than neighbourhood representation. 
         /// </summary>
         /// <param name="queryFilePath"></param>
         /// <param name="inputFileDirectory"></param>
@@ -837,10 +839,11 @@
                     // to get event Representation for the whole recording
                     var candidatesEventsRepresentation =
                         EventBasedRepresentation.AcousticEventsToEventBasedRepresentations(candidateSpectrogram, candidateAElist, candidateRidges);
+                    var frequencyOffsetInPixel = 12; // equal to 1 kHz
                     var candidatesRepresentation = RegionRepresentation.ExtractAcousticEventList(candidateSpectrogram,
                         queryRepresentation,
                         candidatesEventsRepresentation,
-                        candidatesAudioFiles[j], 12);
+                        candidatesAudioFiles[j], frequencyOffsetInPixel);
                     foreach (var cn in candidatesRepresentation)
                     {
                         allCandidateList.Add(cn);

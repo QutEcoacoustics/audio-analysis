@@ -412,7 +412,8 @@ namespace Dong.Felt.Representations
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
                                  {
                                      IntensityThreshold = 0.5,
-                                     SmallAreaThreshold = 10,
+                                     //IntensityThreshold = 10.0,
+                                     SmallAreaThreshold = 30,
                                      BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
                                      DoNoiseRemoval = false,
                                      LargeAreaHorizontal = Default.SeparateStyle.Skip,
@@ -438,6 +439,19 @@ namespace Dong.Felt.Representations
             acousticEvents = events;          
         }
 
+        public static List<AcousticEvent> RemoveSmallEvents(List<AcousticEvent> acousticEvents, double areaThreshold)
+        {
+            var result = new List<AcousticEvent>();
+            foreach (var e in acousticEvents)
+            {
+                if (e.Oblong.Area() > areaThreshold)
+                {
+                    result.Add(e);
+                }
+            }
+            return result;
+        }
+
         public static void RidgeListToEvent(SpectrogramStandard sonogram,
             PointOfInterest[,] poiMatrix,
             out List<AcousticEvent> acousticEvents)
@@ -450,7 +464,7 @@ namespace Dong.Felt.Representations
             var aedOptions = new AedOptions(sonogram.NyquistFrequency)
             {
                 IntensityThreshold = 0.5,
-                SmallAreaThreshold = 10,
+                SmallAreaThreshold = 50,
                 BandPassFilter = Tuple.Create(500.0, 9000.0).ToOption(),
                 DoNoiseRemoval = false,
                 LargeAreaHorizontal = Default.SeparateStyle.Skip,
@@ -474,6 +488,15 @@ namespace Dong.Felt.Representations
                     return e;
                 }).ToList();
             acousticEvents = events;
+        }
+
+        // Converge the events that are too close 
+        public static List<AcousticEvent> JoinEventsToLarge(List<AcousticEvent> acousticEvents)
+        {
+            // Close here means the gap in time is within 3 pixels
+            var result = new List<AcousticEvent>();
+
+            return result;
         }
 
         public static List<AcousticEvent> SplitAcousticEvent(List<AcousticEvent> acousticEvent)

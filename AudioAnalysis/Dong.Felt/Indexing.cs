@@ -1189,7 +1189,6 @@ namespace Dong.Felt
             return result;
         }
 
-
         /// <summary>
         /// This score is calculated based on the overlap between two Gaussian masks.
         /// </summary>
@@ -1285,12 +1284,14 @@ namespace Dong.Felt
             var relevantQueryHRepresentation = GetRelevantIndexInEvents(q, q.hEventList);
             var relevantQueryPRepresentation = GetRelevantIndexInEvents(q, q.pEventList);
             var relevantQueryNRepresentation = GetRelevantIndexInEvents(q, q.nEventList);
-
+            // 12 is equal to 500 frequency
+            var frequencyOffsetRate = (Math.Abs(q.MajorEvent.Bottom - c.MajorEvent.Bottom))/12.0;
+            var similarityWeight = 1 - frequencyOffsetRate;
             // calculate score for vEvents, hEvents, pEvents, nEvents
-            var vScore = ScoreOver2Events2(relevantQueryVRepresentation, c, c.vEventList, n);
-            var hScore = ScoreOver2Events2(relevantQueryHRepresentation, c, c.hEventList, n);
-            var pScore = ScoreOver2Events2(relevantQueryPRepresentation, c, c.pEventList, n);
-            var nScore = ScoreOver2Events2(relevantQueryNRepresentation, c, c.nEventList, n);
+            var vScore = ScoreOver2Events2(relevantQueryVRepresentation, c, c.vEventList, n) * similarityWeight;
+            var hScore = ScoreOver2Events2(relevantQueryHRepresentation, c, c.hEventList, n) * similarityWeight;
+            var pScore = ScoreOver2Events2(relevantQueryPRepresentation, c, c.pEventList, n) * similarityWeight;
+            var nScore = ScoreOver2Events2(relevantQueryNRepresentation, c, c.nEventList, n) * similarityWeight;
             // Get the average score
             if (q.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
             {
@@ -1383,11 +1384,12 @@ namespace Dong.Felt
              List<EventBasedRepresentation> candidateEvents, int n)
         {
             var relevantCandidateRepresentation = GetRelevantIndexInEvents(candidate, candidateEvents);
-            var pscore = ScoreOver2EventList(queryEvents, relevantCandidateRepresentation, n);
-            var nScore = ScoreOver2EventList(relevantCandidateRepresentation, queryEvents, n);
-            var ascore = addWeightsToScores(pscore, 0.4, 0.3);
-            var rScore = addWeightsToScores(nScore, 0.4, 0.3);
-            var score = (ascore + rScore) / 2;
+            var pscore = SimilarityMatching.ScoreOver2EventList(queryEvents, relevantCandidateRepresentation, n);
+            var nScore = SimilarityMatching.ScoreOver2EventList(relevantCandidateRepresentation, queryEvents, n);
+            /// If call tuple.score(overlap, fentropy, tentropy)
+            //var ascore = addWeightsToScores(pscore, 0.4, 0.3);
+            //var rScore = addWeightsToScores(nScore, 0.4, 0.3);
+            var score = (pscore + nScore) / 2;
             return score;
         }
 

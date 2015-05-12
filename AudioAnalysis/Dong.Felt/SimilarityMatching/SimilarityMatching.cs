@@ -93,6 +93,99 @@
             return distance;
         }
 
+        public static double ScoreOver2EventRegions(RegionRepresentation q, RegionRepresentation c, int n, double weight1, double weight2)
+        {
+            var score = 0.0;
+            var relevantQueryVRepresentation = Indexing.GetRelevantIndexInEvents(q, q.vEventList);
+            var relevantQueryHRepresentation = Indexing.GetRelevantIndexInEvents(q, q.hEventList);
+            var relevantQueryPRepresentation = Indexing.GetRelevantIndexInEvents(q, q.pEventList);
+            var relevantQueryNRepresentation = Indexing.GetRelevantIndexInEvents(q, q.nEventList);
+
+            // calculate score for vEvents, hEvents, pEvents, nEvents
+            var vScore = Indexing.ScoreOver2Events2(relevantQueryVRepresentation, c, c.vEventList, n);
+            var hScore = Indexing.ScoreOver2Events2(relevantQueryHRepresentation, c, c.hEventList, n);
+            var pScore = Indexing.ScoreOver2Events2(relevantQueryPRepresentation, c, c.pEventList, n);
+            var nScore = Indexing.ScoreOver2Events2(relevantQueryNRepresentation, c, c.nEventList, n);
+            // Get the average score
+            if (q.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
+            {
+                if (q.MajorEvent.InsideRidgeOrientation == 0)
+                {
+                    score = vScore * weight1 + hScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 1)
+                {
+                    score = hScore * weight1 + vScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 2)
+                {
+                    score = pScore * weight1 + vScore * weight2 + (hScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 3)
+                {
+                    score = nScore * weight1 + vScore * weight2 + (hScore + pScore) * weight2 / 2.0;
+                }
+            }
+            else
+            {
+                score = (vScore + hScore + pScore + nScore) / q.NotNullEventListCount;
+            }
+            return score;
+        }
+
+        // N is count of histogram, max is the total number of frequencybins
+        public static double SimilarityWeight(int n, double max, double real)
+        {
+            var result = 0.0;
+            var histogramUnit = n / max;
+            if (real == 0.0)
+            {
+                result = 1.0;
+            }
+            else
+            {
+                result = Math.Floor((1 - real) / histogramUnit) * histogramUnit;
+            }
+            
+            return result;
+        }
+
+        public static double ScoreOver2EventList(List<EventBasedRepresentation> events1,
+            List<EventBasedRepresentation> events2, int n)
+        {
+            var overlapScore = 0.0;            
+            if (events1.Count > 0 && events2.Count > 0)
+            {
+                foreach (var q in events1)
+                {
+                    // find the N cloest event to compare
+                    var nClosestEventList = Indexing.FindNCloestEvents(events2, q, n);
+                    var index = Indexing.FindMaximumScoreEvent(nClosestEventList, q);
+                    // Another check on frame offset
+                    var frameCheck = Indexing.OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
+                    var subScore = 0.0;
+                    if (frameCheck)
+                    {
+                        var leftAnchor = nClosestEventList[index].Left;
+                        var qLeft = leftAnchor;
+                        var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                            qLeft,
+                            q.Bottom,
+                            qLeft + q.Width,
+                            q.Bottom + q.Height,
+                            nClosestEventList[index].Left,
+                            nClosestEventList[index].Bottom,
+                            nClosestEventList[index].Left + nClosestEventList[index].Width,
+                            nClosestEventList[index].Bottom + nClosestEventList[index].Height);
+                        subScore = ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;                       
+                    }
+                    overlapScore += subScore;
+                }
+                overlapScore /= events1.Count;
+            }
+            var result = overlapScore;
+            return result;
+        }
         /// <summary>
         /// According to the relationship of distance and similarityScore, the farer the distance between two feature vectors,
         /// the less similarityScore can be obtained. 
