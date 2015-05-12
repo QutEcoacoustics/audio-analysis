@@ -133,7 +133,7 @@ namespace Dong.Felt
             var cols = spectrogram.Data.GetLength(0);
             var M = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, rows, cols);
             var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(M, 3, 2);
-            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(filterIsolatedRidges, rows, cols, 3, 1.0);
+            var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(filterIsolatedRidges, rows, cols, 5, 1.4);
             return joinedRidges;
         }
 
@@ -753,9 +753,10 @@ namespace Dong.Felt
                     }
                 }
             }
-            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);            
-            poiList = prunedPoiList;
+            //var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);            
+            //poiList = prunedPoiList;
         }
+
 
         /// <summary>
         /// Simplified version of ridge detection.

@@ -110,6 +110,7 @@ namespace Dong.Felt.ResultsOutput
             }
         }
 
+
         /// <summary>
         /// Matching step 3
         /// Summarize all the matching csv files into one file(outputFile)
@@ -131,6 +132,31 @@ namespace Dong.Felt.ResultsOutput
                     finalOutputResult.Add(subCandicatesList[0]);
                 }
                 CSVResults.CandidateListToCSV(new FileInfo(outputFile), finalOutputResult);
+            }
+        }
+
+        /// <summary>
+        /// Read the similarity score at rank 1 and rank 5.  
+        /// The output csv files changed the score, if they found the match. 
+        /// </summary>
+        public static void AutomatedSimilarityScoreSelection(DirectoryInfo inputDirectory, string outputFile)
+        {
+            var csvFiles = Directory.GetFiles(inputDirectory.FullName, "*.csv", SearchOption.AllDirectories);
+            var csvFileCount = csvFiles.Count();
+            //var resultList = CSVResults.CsvToCandidatesList(new FileInfo(groundTruthFile));
+            var candidatesList = new List<Candidates>();
+            for (int i = 0; i < csvFileCount; i++)
+            {
+                var subCandicatesList = CSVResults.CsvToCandidatesList(new FileInfo(csvFiles[i]));
+                var candidatesCount = subCandicatesList.Count();
+                var candidate = new Candidates();
+                if (candidatesCount >= 5)
+                {
+                    candidate.Score = subCandicatesList[1].Score;
+                    candidate.SourceFilePath = csvFiles[i];
+                    candidatesList.Add(candidate);
+                }
+                CSVResults.CandidateListToCSV(new FileInfo(outputFile), candidatesList);
             }
         }
 
