@@ -174,7 +174,7 @@ namespace Dong.Felt.Representations
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                 
-                if (ep.Area >= 10)
+                if (ep.Area >= 30)
                 {
                     ep.InsideRidgeOrientation = 0;
                     ep.TimeScale = timeScale;
@@ -192,7 +192,7 @@ namespace Dong.Felt.Representations
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);
                
-                if (ep.Area >= 10)
+                if (ep.Area >= 30)
                 {
                     ep.InsideRidgeOrientation = 1;
                     ep.TimeScale = timeScale;
@@ -209,7 +209,7 @@ namespace Dong.Felt.Representations
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);               
-                if (ep.Area >= 6)
+                if (ep.Area >= 10)
                 {
                     ep.InsideRidgeOrientation = 2;
                     ep.TimeScale = timeScale;
@@ -226,7 +226,7 @@ namespace Dong.Felt.Representations
             {
                 var ep = new EventBasedRepresentation(timeScale, freqScale,
                     e.MaxFreq, e.MinFreq, e.TimeStart, e.TimeEnd);               
-                if (ep.Area >= 6)
+                if (ep.Area >= 10)
                 {
                     ep.InsideRidgeOrientation = 3;
                     ep.TimeScale = timeScale;
