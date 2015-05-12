@@ -361,18 +361,20 @@ namespace AnalysisPrograms
             // using the expected duration, each call to analyze will always produce the same number of results
             // round, we expect perfect numbers, warn if not
             double subsegmentsInSegment = segmentDuration / subsegmentDuration;
-            int subsegmentCount = (int)Math.Ceiling(segmentDuration / subsegmentDuration);
+            int subsegmentCount = (int)Math.Round(segmentDuration / subsegmentDuration);
             const double WarningThreshold = 0.01; // 10%
             double fraction = subsegmentsInSegment - subsegmentCount;
             if (Math.Abs(fraction) > WarningThreshold)
             {
                 Log.Warn(
                     string.Format(
-                        "The IndexCalculationDuration ({0}) does not fit well into the provided segment ({1}). This means a partial result has been added, {2} results will be calculated",
+                        "The IndexCalculationDuration ({0}) does not fit well into the provided segment ({1}). This means a partial result has been {3}, {2} results will be calculated",
                         subsegmentDuration,
                         segmentDuration,
-                        subsegmentCount));
+                        subsegmentCount,
+                        fraction >= 0.5 ? "added" : "removed"));
             }
+            Log.Trace(subsegmentCount.ToString() + " sub segments will be calculated");
 
             analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
             analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
