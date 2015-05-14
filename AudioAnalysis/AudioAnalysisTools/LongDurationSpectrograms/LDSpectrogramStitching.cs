@@ -131,10 +131,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, 
-        /// that have a total duration of 24 hours. This was necesarry to deal with Jasoni Wimmer's new regime of doing 24 hour recordings 
+        /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings 
         /// in blocks of 6 hours. 
         /// </summary>
-        public static void ConcatenateSpectralIndexFiles()
+        public static void ConcatenateSpectralIndexFiles1()
         {
             // create an array that contains the names of csv file to be read.
             // The file names must be in the temporal order rquired for the resulting spectrogram image.
@@ -181,7 +181,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                             "_Towsey.Acoustic.Indices.csv"
                                           };
 
-            // this loop reads in all the Indices from conseqcutive csv files
+            // this loop reads in all the Indices from consecutive csv files
             foreach (string extention in fileExtentions)
             {
                 Console.WriteLine("\n\nFILE TYPE: " + extention);
@@ -254,6 +254,86 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
+
+
+        /// <summary>
+        /// This method merges the LDSpectrogram IMAGES derived from a sequence of consecutive 6-12 hour recording, 
+        /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24-hour recordings 
+        /// in shorter blocks of 3-12 hours. 
+        /// This method differes form the above in that we are concatnating already prepared images as opposed to the index.csv files.
+        /// The time scale is added in afterwards - must poverwrite the previous time scale and title bar.
+        /// </summary>
+        public static void ConcatenateSpectralIndexImages()
+        {
+            // create an array that contains the names of csv file to be read.
+            // The file names must be in the temporal order rquired for the resulting spectrogram image.
+
+            //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
+            //string fileStem =  "BYR2_20131016";
+            //string[] names = {@"BYR2_20131016_000000.wav\Towsey.Acoustic\BYR2_20131016_000000__ACI-ENT-EVN.png",
+            //                  @"BYR2_20131016_133121.wav\Towsey.Acoustic\BYR2_20131016_133121__ACI-ENT-EVN.png",
+            //                 };
+
+            //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
+            //string fileStem = "BYR2_20131017";
+            //string[] names = {@"BYR2_20131017_000000.wav\Towsey.Acoustic\BYR2_20131017_000000__ACI-ENT-EVN.png",
+            //                  @"BYR2_20131017_133121.wav\Towsey.Acoustic\BYR2_20131017_133121__ACI-ENT-EVN.png",
+            //                 };
+            string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\PRA\";
+            string fileStem = "BYR4_20131017";
+            string[] names = {@"BYR4_20131017_000000.wav\Towsey.Acoustic\BYR4_20131017_000000__ACI-ENT-EVN.png",
+                              @"BYR4_20131017_064544.wav\Towsey.Acoustic\BYR4_20131017_064544__ACI-ENT-EVN.png",
+                              @"BYR4_20131017_133128.wav\Towsey.Acoustic\BYR4_20131017_133128__ACI-ENT-EVN.png",
+                              @"BYR4_20131017_201713.wav\Towsey.Acoustic\BYR4_20131017_201713__ACI-ENT-EVN.png",
+                             };
+
+            string opDir = @"C:\SensorNetworks\Output\Mangalam_BDVA2015";
+
+            // ###############################################################
+            // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
+            int sampleRate = 22050;
+            int frameWidth = 256;
+            int nyquist    = sampleRate / 2;
+            int herzInterval = 1000;
+            TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
+            double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
+            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
+            TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
+            // ###############################################################
+
+            List<Image> imageList = new List<Image>();
+            // this loop reads in all the file names
+            foreach (string name in names)
+            {
+                FileInfo fi = new FileInfo(topLevelDirectory + name);
+                Console.WriteLine("Reading file: " + fi.Name);
+                Image image = ImageTools.ReadImage2Bitmap(fi.FullName);
+                imageList.Add(image);
+            } //end of all file names
+
+            Image spgmImage = ImageTools.CombineImagesInLine(imageList);
+            int imageWidth  = spgmImage.Width;
+            int imageHeight = spgmImage.Height;
+
+
+            //Draw the title bar
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageWidth);
+            //Draw the x-axis time scale bar
+            int trackHeight = 20;
+            TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
+
+               //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
+            Graphics gr = Graphics.FromImage(spgmImage);
+            //gr.Clear(Color.Black);
+            gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
+            gr.DrawImage(timeBmp, 0, 20); //draw in the top spectrogram
+            gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
+
+            spgmImage.Save(Path.Combine(opDir, fileStem + "." + colorMap + ".png"));
+        }
 
 
     }

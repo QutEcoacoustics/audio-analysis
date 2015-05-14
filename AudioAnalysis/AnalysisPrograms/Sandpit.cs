@@ -55,7 +55,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
 
-            if (true)  // 
+            if (false)  // 
             {
                 CubeHelix.DrawTestImage();
                 LoggedConsole.WriteLine("FINSIHED");
@@ -152,16 +152,20 @@ namespace AnalysisPrograms
             if (false)  // concatenating spectrogram images with gaps between them.
             {
                 LDSpectrogramStitching.StitchPartialSpectrograms();
+                LDSpectrogramStitching.StitchPartialSpectrograms();
 
                 Log.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
             }
+
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
             // problem is that Jason cuts them up into 6 hour blocks.
-            if (false)
+            if (true)
             {
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles();
+                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1();
+                //LDSpectrogramStitching.ConcatenateSpectralIndexImages();
+                LDSpectrogramClusters.ExtractSOMClusters();
             } // end if (true)
 
 
