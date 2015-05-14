@@ -2687,6 +2687,17 @@ namespace TowseyLibrary
         /// Stacks the passed images one on top of the other. 
         /// Assumes that all images have the same width.
         /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public static Image CombineImagesInLine(List<Image> list)
+        {
+            return CombineImagesInLine(list.ToArray());
+        }
+
+        /// <summary>
+        /// Stacks the passed images one on top of the other. 
+        /// Assumes that all images have the same width.
+        /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
         public static Image CombineImagesInLine(Image[] array)
