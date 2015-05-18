@@ -123,6 +123,7 @@
     <Compile Include="AcousticEvents.cs" />
     <Compile Include="Candidates.cs" />
     <Compile Include="Clustering.cs" />
+    <Compile Include="CompactCandidates.cs" />
     <Compile Include="Configuration\CompressSpectrogramConfig.cs" />
     <Compile Include="Configuration\DistanceFuncConfiguration.cs" />
     <Compile Include="Configuration\DrawSpectrogramConfiguration.cs" />
