@@ -193,7 +193,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             int clusterCount = 27;
             List<Pen> pens = ImageTools.GetColorPalette(clusterCount);
+            Pen whitePen = new Pen(Color.White);
             Pen blackPen = new Pen(Color.Black);
+            //SizeF stringSize = new SizeF();
+            Font stringFont = new Font("Arial", 12, FontStyle.Bold);
+            //Font stringFont = new Font("Tahoma", 9);
 
 
             // ###############################################################
@@ -205,11 +209,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
             double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            string title = String.Format("Clusters derived from SOM of acoustic indices)  {0}", fileStem);
             TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
             TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
             int trackheight = 20;
             // ###############################################################
+
+            // read in the assignment of cluster numbers to cluster LABEL
+
+            string[] clusterLabel = { "A","B","C","D","E","F","G","H","I", "J","K","L","M","N","O", "P", "Q", "R", "S","T","U","V","W","X", "Y","Z","@" };
 
             // read the data file
             List<string> lines = FileTools.ReadTextFile(clusterFile);
@@ -242,10 +250,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // this loop re
             int opColumn = 0;
-            for (int id = 0; id <27; id++)
+            for (int id = 0; id < clusterCount; id++)
             {
                 int sortID = sortOrder[id];
-                Console.WriteLine("Reading CLUSTER: " + sortID);
+                Console.WriteLine("Reading CLUSTER: " + (sortID+1) + "  Label=" + clusterLabel[sortID]);
                 
 
                 for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
@@ -258,25 +266,32 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         Rectangle rectangle = new Rectangle(lineNumber, 0, 1, imageHt);
                         Bitmap column = ipImage.Clone(rectangle, ipImage.PixelFormat);
                         gr.DrawImage(column, opColumn, 0);
-                        gr.DrawLine(pens[clusterID-1], opColumn, imageHt - trackheight, opColumn, imageHt);
+                        gr.DrawLine(pens[id], opColumn, trackheight, opColumn, trackheight + trackheight);
+                        gr.DrawLine(pens[id], opColumn, imageHt - trackheight, opColumn, imageHt);
                         opColumn++;
                     }
 
                     //FileInfo fi = new FileInfo(topLevelDirectory + name);
                     //Console.WriteLine("Reading file: " + fi.Name);
-                } 
-                gr.DrawLine(blackPen, opColumn-1, imageHt - trackheight, opColumn-1, imageHt);
+                }
+
+                if (id >= clusterCount - 1) break;
+                gr.DrawLine(whitePen, opColumn - 1, 0, opColumn - 1, imageHt - trackheight -1);
+                gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
+                gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
+                gr.DrawString(clusterLabel[sortID], stringFont, Brushes.Black, new PointF(opColumn - 16, imageHt - 19));
             }
 
 
             ////Draw the title bar
-            //Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageWidth);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageWidth);
+            gr.DrawImage(titleBar, 0, 0);
             ////Draw the x-axis time scale bar
             //int trackHeight = 20;
             //TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
             //Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
 
-            //   //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
+            //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
             //Graphics gr = Graphics.FromImage(spgmImage);
             ////gr.Clear(Color.Black);
             //gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
