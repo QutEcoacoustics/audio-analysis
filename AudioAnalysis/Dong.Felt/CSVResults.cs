@@ -127,6 +127,11 @@ namespace Dong.Felt
             Csv.WriteToCsv(file, candidates);
         }
 
+        public static void CompactCandidateListToCSV(FileInfo file, List<CompactCandidates> candidates)
+        {
+            Csv.WriteToCsv(file, candidates);
+        }
+
         public static void SCCandidateListToCSV(FileInfo file, List<SongScopeCandidates> candidates)
         {
             Csv.WriteToCsv(file, candidates);

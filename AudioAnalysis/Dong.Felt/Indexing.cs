@@ -288,6 +288,28 @@ namespace Dong.Felt
             return results;
         }
 
+        public static List<Candidates> ExtractCandidateRegion(Query query,
+            int neighbourhoodLength,
+            string audioFileName,
+            SpectrogramStandard spectrogram, double frameDuration)
+        {
+            var results = new List<Candidates>();            
+            var colsCount = spectrogram.Data.GetLength(0);
+            for (int colIndex = 0; colIndex < colsCount; colIndex += neighbourhoodLength)
+            {
+                var startColIndex = colIndex;
+                var endColIndex = colIndex + neighbourhoodLength;
+                var startTime = frameDuration * colIndex;
+                if (endColIndex <= colsCount)
+                {
+                    var candidateItem = new Candidates(0.0, startTime, query.duration, 0.0, 0.0, audioFileName);
+                    results.Add(candidateItem);
+                }                
+            }
+            return results;
+        }
+
+
         public static List<RegionRepresentation> ExtractCandiRegionRepreFromAudioStList(SpectrogramStandard spectrogram,
             string audioFileName, List<PointOfInterest> stList, RegionRepresentation queryRepresentation)
         {
