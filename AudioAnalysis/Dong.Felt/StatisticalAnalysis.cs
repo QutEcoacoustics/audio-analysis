@@ -31,6 +31,21 @@
             }
         }
 
+        public static List<double> NormalizeMFCCData(List<double> mfccs)
+        {
+            var result = new List<double>();
+
+            var min = mfccs.Min();
+            var max = mfccs.Max();
+
+            foreach (var m in mfccs)
+            {
+                var temp = (m - min)/(max - min);
+                result.Add(temp);
+            }
+            return result;
+        }
+
         /// <summary>
         /// The get centroid point. It returns the centroid point among a bunch of points. 
         /// </summary>

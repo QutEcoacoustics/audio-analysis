@@ -58,6 +58,27 @@ namespace Dong.Felt
             return result;
         }
 
+        public static List<MFCC> CsvToMFCC(FileInfo file)
+        {
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);
+            var results = new List<MFCC>();
+            foreach (var csvRow in lines1)
+            {                
+                var mfccItem = new MFCC();
+                for (var i = 0; i < csvRow.Count(); i++)
+                {
+                    if (csvRow[i] != "")
+                    {
+                        mfccItem.MFCCoefficients.Add(double.Parse(csvRow[i]));
+                    }
+                }
+                results.Add(mfccItem);
+            }
+            return results;
+        }
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToNeighbourhoodRepresentation(FileInfo file)
         {
             return Csv.ReadFromCsv<RidgeDescriptionNeighbourhoodRepresentation>(file).ToList();
@@ -140,6 +161,11 @@ namespace Dong.Felt
         public static List<Candidates> CsvToCandidatesList(FileInfo candidatesCsvfile)
         {
             return Csv.ReadFromCsv<Candidates>(candidatesCsvfile).ToList();
+        }
+
+        public static List<CompactCandidates> CsvToCompactCandidatesList(FileInfo candidatesCsvfile)
+        {
+            return Csv.ReadFromCsv<CompactCandidates>(candidatesCsvfile).ToList();
         }
 
         public static List<SongScopeCandidates> CsvToSCCandidatesList(FileInfo candidatesCsvfile)
