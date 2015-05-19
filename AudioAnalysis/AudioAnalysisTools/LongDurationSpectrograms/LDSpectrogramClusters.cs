@@ -181,15 +181,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             // create an array that contains the names of csv file to be read.
             // The file names must be in the temporal order rquired for the resulting spectrogram image.
-            
-            //string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\BYR2_20131016.ACI-ENT-CVR.png";
-            string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000__ACI-ENT-EVN.png";
             string opDir = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\";
-            //string fileStem = @"BYR2_20131016";
-            string fileStem = @"SERF-SE_20131013";
-            string opFileName = fileStem + "SOMClusters.png";
 
+            //string fileStem = @"BYR2_20131016";
+            //string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\BYR2_20131016.ACI-ENT-EVN.png";
+            //string clusterFile = opDir + "SE 13 Oct - Cluster-node list.csv";
+
+            //string fileStem = @"BYR2_20131017";
+            //string inputImagePath = opDir + fileStem + ".ACI-ENT-EVN.png";
+            //string clusterFile = opDir + "BY2-17Oct - node_clus_map.csv";
+
+            string fileStem = @"SERF-SE_20101013";
+            string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\SERF-SE_20101013.ACI-ENT-EVN.png";
             string clusterFile = opDir + "SE 13 Oct - Cluster-node list.csv";
+            
+            string opFileName = fileStem + "SOMClusters.png";
 
             int clusterCount = 27;
             List<Pen> pens = ImageTools.GetColorPalette(clusterCount);
@@ -208,8 +214,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int herzInterval = 1000;
             TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
             double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-            string title = String.Format("Clusters derived from SOM of acoustic indices)  {0}", fileStem);
+            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            string title = String.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
             TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
             TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
             int trackheight = 20;
@@ -226,6 +232,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             //read in the image
             FileInfo fi = new FileInfo(inputImagePath);
+            if (!fi.Exists) Console.WriteLine("\n\n >>>>>>>> FILE DOES NOT EXIST >>>>>>: " + fi.Name);
+
             Console.WriteLine("Reading file: " + fi.Name);
             Bitmap ipImage = ImageTools.ReadImage2Bitmap(fi.FullName);
             int imageWidth = ipImage.Width;
