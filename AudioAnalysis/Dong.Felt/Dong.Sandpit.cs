@@ -122,8 +122,7 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    IndexGenerate(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength, config,
-            outputDirectory.FullName, tempDirectory, weight1, weight2);
+                    MFCCBasedMatching(queryInputDirectory, inputDirectory.FullName, rank, outputDirectory.FullName);
                 }
                 else if (action == "processOne")
                 {
@@ -761,25 +760,8 @@
                 Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
             } // end of for searching the query folder
             Log.Info("# finish reading the query csv files and audio files one by one");
-        }
+        }       
 
-        /// <summary>
-        /// This one works well for ridge detection and histogram of gradients, it is designed for neighbourhood representation as well, 
-        /// but it aims to merge ridges derived from compressed spectrogram into original spectrogram  .
-        /// </summary>
-        /// <param name="queryFilePath"></param>
-        /// <param name="inputFileDirectory"></param>
-        /// <param name="neighbourhoodLength"></param>
-        /// <param name="ridgeConfig"></param>
-        /// <param name="compressConfig"></param>
-        /// <param name="gradientConfig"></param>
-        /// <param name="config"></param>
-        /// <param name="rank"></param>
-        /// <param name="featurePropSet"></param>
-        /// <param name="outputPath"></param>
-        /// <param name="tempDirectory"></param>
-        /// <param name="weight1"></param>
-        /// <param name="weight2"></param>
         public static void IndexGenerate(string queryFilePath, string inputFileDirectory, int neighbourhoodLength,
             SonogramConfig config,
             string outputPath, DirectoryInfo tempDirectory, double weight1, double weight2)
@@ -793,63 +775,77 @@
             Log.Info("# read the query csv files and audio files");
             var queryCsvFiles = Directory.GetFiles(constructed, "*.csv", SearchOption.AllDirectories);
             var csvFilesCount = queryCsvFiles.Count();
-            //var result = new List<Candidates>();
             var newCandidateList = new List<CompactCandidates>();
-            /// this loop is used for searching query folder.
             for (int i = 0; i < csvFilesCount; i++)
-            {
-                //var queryCsvFile = new FileInfo(queryCsvFiles[i]);
-                //var queryAduioFiles = Directory.GetFiles(constructed, "*.wav", SearchOption.AllDirectories);
-                //var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, queryAduioFiles[i]);              
-                //var secondToMillionSecondUnit = 1000;
-                //var spectrogramConfig = new SpectrogramConfiguration
-                //{
-                //    FrequencyScale = spectrogram.FBinWidth,
-                //    TimeScale = (1 - config.WindowOverlap) * spectrogram.FrameDuration * secondToMillionSecondUnit,
-                //    NyquistFrequency = spectrogram.NyquistFrequency,
-                //};
-                //var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram,
-                //    spectrogramConfig);
-                ////3. Ranking the candidates - calculate the distance and output the matched acoustic events.
-                //if (!Directory.Exists(inputFileDirectory))
-                //{
-                //    throw new DirectoryNotFoundException(string.Format("Could not find directory for numbered audio files {0}.", inputFileDirectory));
-                //}
-                //Log.Info("# read all the training/test audio files");
-                //var candidatesAudioFiles = Directory.GetFiles(inputFileDirectory, @"*.wav", SearchOption.AllDirectories);
-                //var audioFilesCount = candidatesAudioFiles.Count();
-                //var candidatesList = new List<Candidates>();
-                //for (int j = 0; j < audioFilesCount; j++)
-                //{
-                //    Log.Info("# read each training/test audio file");
-                //    /// 2. Read the candidates 
-                //    var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);                   
-                //    var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
-                //    var cols1 = candidateSpectrogram.Data.GetLength(0);
-                //    var candidatesRegionList = Indexing.ExtractCandidateRegion(query,
-                //        neighbourhoodLength,
-                //        candidatesAudioFiles[j],
-                //        candidateSpectrogram, spectrogramConfig.TimeScale);
-                //    foreach (var c in candidatesRegionList)
-                //    {
-                //        candidatesList.Add(c);
-                //    }                   
-                //}// end of the loop for candidates
-                //Log.InfoFormat("All potential candidates: {0}", candidatesList.Count);
-                //var outputDirectory = new FileInfo(outputPath + queryCsvFiles[i].ToFileInfo().Name);
-                //CSVResults.CandidateListToCSV(outputDirectory, candidatesList);
+            {          
                 var queryEvent = CSVResults.CsvToAcousticEvent(new FileInfo(queryCsvFiles[i]));
-                
                 var newSouceFile = (Path.ChangeExtension(queryCsvFiles[i], ".wav")).ToFileInfo().Name;
-                var item = new CompactCandidates(queryEvent.TimeStart*1000, queryEvent.Duration*1000, newSouceFile);
+                var item = new CompactCandidates(queryEvent.TimeStart * 1000, queryEvent.Duration * 1000, newSouceFile);
                 newCandidateList.Add(item);
-                
-               // Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
+                // Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, csvFilesCount, (i + 1) / (double)csvFilesCount);
             } // end of for searching the query folder
             var outputFile = outputPath + queryCsvFiles[0].ToFileInfo().Name;
             CSVResults.CompactCandidateListToCSV(new FileInfo(outputFile), newCandidateList);
             Log.Info("# finish reading the query csv files and audio files one by one");
         }
+
+        public static void MFCCBasedMatching(string queryFilePath, string inputFileDirectory, int rank, string outputPath)
+        {
+            /// Read query MFCC
+            /// Step 1 read query file
+            var queryFileName = "query.csv";
+            var constructed = Path.GetFullPath(inputFileDirectory + queryFilePath);
+            var queryCsvFile = Path.Combine(constructed, queryFileName);
+            var compactCandidateList = CSVResults.CsvToCompactCandidatesList(new FileInfo(queryCsvFile));           
+            var queryMFCCFileName = "queryMFCC.csv";
+            var queryMFCCFile = Path.Combine(constructed, queryMFCCFileName);
+            /// Step 2 read query MFCC file
+            var queryMFCCList = CSVResults.CsvToMFCC(new FileInfo(queryMFCCFile));
+            var combinedQueryMFCCs = MFCC.CombineMFCCfeatures(compactCandidateList, queryMFCCList);
+
+            /// Read candidate MFCC
+            Log.Info("# read all the training/test audio files");
+            var candidatesCsvFilePath = Path.Combine(inputFileDirectory, "CandidatesToJie");
+            var candidatesCsvFiles = Directory.GetFiles(candidatesCsvFilePath, @"*.csv", SearchOption.TopDirectoryOnly);
+            var candidatesMFCCFilePath = Path.Combine(inputFileDirectory, "CandidatesMFCC");
+            var candidatesMFCCFiles = Directory.GetFiles(candidatesMFCCFilePath, @"*.csv", SearchOption.TopDirectoryOnly);
+            
+            var candidatesLists = new List<Tuple<List<MFCC>, string>>();
+            for (var i = 0; i < candidatesCsvFiles.Count(); i++)
+            {
+                var candidatesList = CSVResults.CsvToCompactCandidatesList(new FileInfo(candidatesCsvFiles[i]));
+                var candidatesMFCCList = CSVResults.CsvToMFCC(new FileInfo(candidatesMFCCFiles[i]));
+                var combinedCandidatesMFCCs = MFCC.CombineMFCCfeatures(candidatesList, candidatesMFCCList);
+                var item = Tuple.Create(combinedCandidatesMFCCs,candidatesCsvFiles[i].ToFileInfo().Name);
+                candidatesLists.Add(item);
+            }
+
+            // matching          
+            for (int j = 0; j < combinedQueryMFCCs.Count(); j++)
+            {
+                var audioFileName = (new FileInfo(combinedQueryMFCCs[j].audioFile)).Name;
+                var candidateList = new List<Candidates>();
+                foreach (var c in candidatesLists)
+                {
+                    if (audioFileName == c.Item2)
+                    {
+                        candidateList = SimilarityMatching.CandidateCalculation(combinedQueryMFCCs[j], c.Item1);
+                        candidateList = candidateList.OrderBy(x => x.Score).ToList();
+                    }
+                    var topRank = new List<Candidates>();
+                    if (candidateList.Count >= rank)
+                    {
+                        for (int k = 0; k < rank; k++)
+                        {
+                            topRank.Add(candidateList[k]);
+                        }
+                    }
+                    var outputFilePath = outputPath + combinedQueryMFCCs[j].audioFile + "topMatch.csv";
+                    CSVResults.CandidateListToCSV(new FileInfo(outputFilePath), topRank);
+                }            
+            }           
+        }
+
         /// <summary>
         /// This method is designed for retrieval algorithm based on AED. 
         /// AED is used for cluster ridges to events to be compared rather than neighbourhood representation. 

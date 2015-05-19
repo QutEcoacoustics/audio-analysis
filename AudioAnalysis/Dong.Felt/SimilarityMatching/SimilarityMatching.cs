@@ -8,6 +8,7 @@
     using Representations;
     using Dong.Felt.Features;
     using System.Globalization;
+using System.IO;
 
 
     enum MatchIndex//public enum MatchIndex
@@ -38,6 +39,27 @@
         #endregion
 
         #region Public Methods
+
+        public static List<Candidates> CandidateCalculation(MFCC query, List<MFCC> candidates)
+        {
+            var results = new List<Candidates>();
+            foreach (var c in candidates)
+            {
+                var distance = DistanceFor2MFCCs(query, c);
+                var audioFile = Path.ChangeExtension(c.audioFile,".wav");
+                var item = new Candidates(distance, c.StartTime, c.EndTime - c.StartTime, 0.0, 0.0, audioFile);
+                results.Add(item);
+            }
+            return results;
+        }
+
+        public static double DistanceFor2MFCCs(MFCC a, MFCC b)
+        {
+            var normalisedMFCCsA = StatisticalAnalysis.NormalizeMFCCData(a.MFCCoefficients);
+            var normalisedMFCCsB = StatisticalAnalysis.NormalizeMFCCData(b.MFCCoefficients);
+            var distance = Distance.AvgDistanceForLists(normalisedMFCCsA, normalisedMFCCsB);           
+            return distance;
+        }
 
         public static double DistanceForOrientationHistogram(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
         {
