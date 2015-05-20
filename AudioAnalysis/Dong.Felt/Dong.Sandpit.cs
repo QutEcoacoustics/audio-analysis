@@ -122,7 +122,9 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    MFCCBasedMatching(queryInputDirectory, inputDirectory.FullName, rank, outputDirectory.FullName);
+                    //MFCCBasedMatching(queryInputDirectory, inputDirectory.FullName, rank, outputDirectory.FullName);
+                    DrawSpectrogramForTopMatches(outputDirectory.FullName, inputDirectory.FullName, rank, config,
+           ridgeConfig, tempDirectory);
                 }
                 else if (action == "processOne")
                 {
@@ -796,8 +798,8 @@
             var queryFileName = "query.csv";
             var constructed = Path.GetFullPath(inputFileDirectory + queryFilePath);
             var queryCsvFile = Path.Combine(constructed, queryFileName);
-            var compactCandidateList = CSVResults.CsvToCompactCandidatesList(new FileInfo(queryCsvFile));           
-            var queryMFCCFileName = "queryMFCC.csv";
+            var compactCandidateList = CSVResults.CsvToCompactCandidatesList(new FileInfo(queryCsvFile));
+            var queryMFCCFileName = "queryDDMFCC.csv";
             var queryMFCCFile = Path.Combine(constructed, queryMFCCFileName);
             /// Step 2 read query MFCC file
             var queryMFCCList = CSVResults.CsvToMFCC(new FileInfo(queryMFCCFile));
@@ -807,7 +809,7 @@
             Log.Info("# read all the training/test audio files");
             var candidatesCsvFilePath = Path.Combine(inputFileDirectory, "CandidatesToJie");
             var candidatesCsvFiles = Directory.GetFiles(candidatesCsvFilePath, @"*.csv", SearchOption.TopDirectoryOnly);
-            var candidatesMFCCFilePath = Path.Combine(inputFileDirectory, "CandidatesMFCC");
+            var candidatesMFCCFilePath = Path.Combine(inputFileDirectory, "CandidatesDDMFCC");
             var candidatesMFCCFiles = Directory.GetFiles(candidatesMFCCFilePath, @"*.csv", SearchOption.TopDirectoryOnly);
             
             var candidatesLists = new List<Tuple<List<MFCC>, string>>();
@@ -843,9 +845,28 @@
                     var outputFilePath = outputPath + combinedQueryMFCCs[j].audioFile + "topMatch.csv";
                     CSVResults.CandidateListToCSV(new FileInfo(outputFilePath), topRank);
                 }            
-            }           
+            }
+            
         }
 
+        public static void DrawSpectrogramForTopMatches(string inputDirectory, string outputPath, int rank, SonogramConfig config, 
+            RidgeDetectionConfiguration ridgeConfig,
+            DirectoryInfo tempDirectory)
+        {
+            var candidatesCsvFiles = Directory.GetFiles(inputDirectory, @"*.csv", SearchOption.TopDirectoryOnly);
+            var candidatesFileCount = candidatesCsvFiles.Count();
+            for (var i = 0; i < candidatesFileCount; i++)
+            {
+                if (candidatesCsvFiles[i] != null)
+                {
+                    DrawSpectrogram.DrawingCandiOutputSpectrogram(candidatesCsvFiles[i], outputPath,
+                        inputDirectory, rank,
+                        config, ridgeConfig, 
+                        tempDirectory);
+                }
+                Log.InfoFormat("{0}/{1} ({2:P}) queries have been done", i + 1, candidatesFileCount, (i + 1) / (double)candidatesFileCount);
+            }
+        }
         /// <summary>
         /// This method is designed for retrieval algorithm based on AED. 
         /// AED is used for cluster ridges to events to be compared rather than neighbourhood representation. 
