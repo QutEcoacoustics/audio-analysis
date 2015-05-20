@@ -258,14 +258,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // this loop re
             int opColumn = 0;
+            int clusterStartColumn = 0;
             for (int id = 0; id < clusterCount; id++)
             {
                 int sortID = sortOrder[id];
                 Console.WriteLine("Reading CLUSTER: " + (sortID+1) + "  Label=" + clusterLabel[sortID]);
-                
 
                 for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
                 {
+                    if (lineNumber == 0) clusterStartColumn = lineNumber;
+
                     string[] words = lines[lineNumber].Split(',');
                     int clusterID = Int32.Parse(words[2]);
                     if ((clusterID-1) == sortID)
@@ -287,7 +289,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 gr.DrawLine(whitePen, opColumn - 1, 0, opColumn - 1, imageHt - trackheight -1);
                 gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
                 gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
-                gr.DrawString(clusterLabel[sortID], stringFont, Brushes.Black, new PointF(opColumn - 16, imageHt - 19));
+
+                int location = clusterStartColumn + (opColumn - clusterStartColumn) / 2;
+                gr.DrawString(clusterLabel[sortID], stringFont, Brushes.Black, new PointF(location, imageHt - 19));
             }
 
 
