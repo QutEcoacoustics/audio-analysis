@@ -1,14 +1,25 @@
-﻿namespace AnalysisBase
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AnalysisCoordinator.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Prepares, runs and completes analyses.
+//   *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace AnalysisBase
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+
     using log4net;
-    using System.Diagnostics;
 
     /// <summary>
     /// Prepares, runs and completes analyses.
@@ -352,6 +363,7 @@
 
             localCopyOfSettings.AudioFile = preparedFilePath;
             localCopyOfSettings.SegmentStartOffset = start;
+            localCopyOfSettings.SegmentDuration = end - start;
 
             string fileName = Path.GetFileNameWithoutExtension(preparedFile.OriginalFile.Name);
 
@@ -628,7 +640,7 @@
 
         private DirectoryInfo GetInstanceDirTempElseOutput(AnalysisSettings settings)
         {
-            if (settings.AnalysisBaseTempDirectory != null && settings.AnalysisInstanceTempDirectory != null)
+            if (settings.AnalysisBaseTempDirectory != null && settings.AnalysisInstanceTempDirectory != null && !this.saveIntermediateWavFiles)
             {
                 return settings.AnalysisInstanceTempDirectory;
             }

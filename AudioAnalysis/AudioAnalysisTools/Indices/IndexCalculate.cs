@@ -50,6 +50,8 @@ namespace AudioAnalysisTools.Indices
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private static bool warned = false;
+
         /// <summary>
         /// a set of parameters derived from ini file.
         /// </summary>
@@ -94,18 +96,23 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="recording">an audio recording</param>
         /// <param name="analysisSettings"></param>
+        /// <param name="subsegmentOffsetTimeSpan">
+        ///     The start time of the required subsegment relative to start of SOURCE audio recording. 
+        ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
+        /// </param>
+        /// <param name="indexCalculationDuration"></param>
+        /// <param name="bgNoiseNeighborhood"></param>
+        /// <param name="indicesPropertiesConfig"></param>
         /// <param name="offset"></param>
         /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
         /// <param name="int LowFreqBound">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
-        /// <param name="subsegmentOffsetTimeSpan">
-        /// The start time of the required subsegment relative to start of SOURCE audio recording. 
-        /// i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
-        /// </param>
         /// <returns></returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
-        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, TimeSpan subsegmentOffsetTimeSpan, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood)
+        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, 
+            TimeSpan subsegmentOffsetTimeSpan, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, 
+            FileInfo indicesPropertiesConfig)
         {
             string recordingFileName = recording.FileName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
@@ -114,7 +121,6 @@ namespace AudioAnalysisTools.Indices
             TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
             var config = analysisSettings.Configuration;
-            var indicesPropertiesConfig = IndexProperties.Find(config, analysisSettings.ConfigFile);
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
             // get frame parameters for the analysis
@@ -163,14 +169,32 @@ namespace AudioAnalysisTools.Indices
             if (bgnSampleEnd >= signalLength) bgnSampleEnd = signalLength - 1;
             int bgnSubsegmentSampleCount = bgnSampleEnd - bgnSampleStart + 1;
 
+
+            // minimum samples needed to calculate data
+            // this value was chosen somewhat arbitrarily
+            int minnimumViableDuration = frameSize * 8;
+            
             // set the SUBSEGMENT recording = total segment if its length >= 60 seconds
             AudioRecording subsegmentRecording = recording;
             if (indexCalculationDuration < recordingSegmentDuration)
             {
+                var end = sampleStart + subsegmentSampleCount;
+                if (end > signalLength && end - signalLength < minnimumViableDuration)
+                {
+                    // back track so at least we can fill a whole result
+                    // this is equivalent to setting overlap for only one frame.
+                    // this is an effectively silent correction
+                    var oldStart = sampleStart;
+                    sampleStart = signalLength - subsegmentSampleCount;
+                    
+                    Logger.Trace("Backtracking to fill missing data from imperect audio cuts because not enough samples available. " + (oldStart - sampleStart) + " samples overlap.");
+                }
+
                 double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, sampleStart, subsegmentSampleCount);
-                Acoustics.Tools.Wav.WavReader wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }
+
             // EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
 
@@ -180,7 +204,7 @@ namespace AudioAnalysisTools.Indices
             if (bgnSubsegmentSampleCount <= signalLength)
             {
                 double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, bgnSampleStart, bgnSubsegmentSampleCount);
-                Acoustics.Tools.Wav.WavReader wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 bgnSubsegmentRecording = new AudioRecording(wr);
             }
             // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
@@ -331,10 +355,16 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.EntropyPeaks = 1 - AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin);
 
             // vii: calculate RAIN and CICADA indices.
-            Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
+            if (!warned)
+            {
+                Logger.Warn("Rain and cicada index caculation is disabled");
+                warned = true;
+            }
 
-            summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
-            summaryIndexValues.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
+            ////Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
+
+            ////summaryIndexValues.RainIndex = dict[InitialiseIndexProperties.keyRAIN];
+            ////summaryIndexValues.CicadaIndex = dict[InitialiseIndexProperties.keyCICADA];
 
 
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################           

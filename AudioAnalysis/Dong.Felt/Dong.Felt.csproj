@@ -123,6 +123,7 @@
     <Compile Include="AcousticEvents.cs" />
     <Compile Include="Candidates.cs" />
     <Compile Include="Clustering.cs" />
+    <Compile Include="CompactCandidates.cs" />
     <Compile Include="Configuration\CompressSpectrogramConfig.cs" />
     <Compile Include="Configuration\DistanceFuncConfiguration.cs" />
     <Compile Include="Configuration\DrawSpectrogramConfiguration.cs" />
@@ -141,6 +142,7 @@
     <Compile Include="Preprocessing\AudioPreprosessing.cs" />
     <Compile Include="Representations\ClusterAnalysis.cs" />
     <Compile Include="Representations\EventBasedRepresentation.cs" />
+    <Compile Include="Representations\MFCC.cs" />
     <Compile Include="Representations\NeighbourhoodRepresentationOutput.cs" />
     <Compile Include="Representations\RegionRrepresentation.cs" />
     <Compile Include="Representations\RidgeDescriptionRegionRepresentation.cs" />
@@ -157,6 +159,7 @@
     <Compile Include="ResultsOutput\MathingResultsAnalysis.cs" />
     <Compile Include="ResultsOutput\OutputResults.cs" />
     <Compile Include="SimilarityMatching\SimilarityMatching.cs" />
+    <Compile Include="SongScopeCandidates.cs" />
     <Compile Include="SpectrogramDrawing\DrawSpectrogram.cs" />
     <Compile Include="StatisticalAnalysis.cs" />
     <Compile Include="PointOfInterest\StructureTensor.cs" />

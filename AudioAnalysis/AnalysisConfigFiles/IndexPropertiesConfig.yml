@@ -318,30 +318,30 @@ SptDensity:
 #  Units: "s"
 #  IncludeInComboIndex: false
 #  ComboWeight: 0.0
-RainIndex:
-  Name: Rain Index
-  Comment: "Rain score calculated every 10 sec and 6 values averaged over the minute."
-  DataType: double
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 1.0
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-CicadaIndex:
-  Name: Cicada Index
-  Comment: "Cicada score calculated every 10 sec and 6 values averaged over the minute."
-  DataType: double
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0
-  NormMax: 1.0
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+#RainIndex:
+#  Name: Rain Index
+#  Comment: "Rain score calculated every 10 sec and 6 values averaged over the minute."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 1.0
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+#CicadaIndex:
+#  Name: Cicada Index
+#  Comment: "Cicada score calculated every 10 sec and 6 values averaged over the minute."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 1.0
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
 EventsTotal:
   Name: Event Count
   Comment: "The total count of acoustic events per minute of recording."

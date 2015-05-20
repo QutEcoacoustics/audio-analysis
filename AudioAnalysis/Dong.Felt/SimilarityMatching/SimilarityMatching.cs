@@ -8,6 +8,7 @@
     using Representations;
     using Dong.Felt.Features;
     using System.Globalization;
+using System.IO;
 
 
     enum MatchIndex//public enum MatchIndex
@@ -38,6 +39,27 @@
         #endregion
 
         #region Public Methods
+
+        public static List<Candidates> CandidateCalculation(MFCC query, List<MFCC> candidates)
+        {
+            var results = new List<Candidates>();
+            foreach (var c in candidates)
+            {
+                var distance = DistanceFor2MFCCs(query, c);
+                var audioFile = Path.ChangeExtension(c.audioFile,".wav");
+                var item = new Candidates(distance, c.StartTime, c.EndTime - c.StartTime, 0.0, 0.0, audioFile);
+                results.Add(item);
+            }
+            return results;
+        }
+
+        public static double DistanceFor2MFCCs(MFCC a, MFCC b)
+        {
+            var normalisedMFCCsA = StatisticalAnalysis.NormalizeMFCCData(a.MFCCoefficients);
+            var normalisedMFCCsB = StatisticalAnalysis.NormalizeMFCCData(b.MFCCoefficients);
+            var distance = Distance.AvgDistanceForLists(normalisedMFCCsA, normalisedMFCCsB);           
+            return distance;
+        }
 
         public static double DistanceForOrientationHistogram(RidgeNeighbourhoodFeatureVector instance, RidgeNeighbourhoodFeatureVector template)
         {
@@ -93,6 +115,99 @@
             return distance;
         }
 
+        public static double ScoreOver2EventRegions(RegionRepresentation q, RegionRepresentation c, int n, double weight1, double weight2)
+        {
+            var score = 0.0;
+            var relevantQueryVRepresentation = Indexing.GetRelevantIndexInEvents(q, q.vEventList);
+            var relevantQueryHRepresentation = Indexing.GetRelevantIndexInEvents(q, q.hEventList);
+            var relevantQueryPRepresentation = Indexing.GetRelevantIndexInEvents(q, q.pEventList);
+            var relevantQueryNRepresentation = Indexing.GetRelevantIndexInEvents(q, q.nEventList);
+
+            // calculate score for vEvents, hEvents, pEvents, nEvents
+            var vScore = Indexing.ScoreOver2Events2(relevantQueryVRepresentation, c, c.vEventList, n);
+            var hScore = Indexing.ScoreOver2Events2(relevantQueryHRepresentation, c, c.hEventList, n);
+            var pScore = Indexing.ScoreOver2Events2(relevantQueryPRepresentation, c, c.pEventList, n);
+            var nScore = Indexing.ScoreOver2Events2(relevantQueryNRepresentation, c, c.nEventList, n);
+            // Get the average score
+            if (q.NotNullEventListCount == 4 && ((weight1 + weight2) > 0.5))
+            {
+                if (q.MajorEvent.InsideRidgeOrientation == 0)
+                {
+                    score = vScore * weight1 + hScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 1)
+                {
+                    score = hScore * weight1 + vScore * weight2 + (pScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 2)
+                {
+                    score = pScore * weight1 + vScore * weight2 + (hScore + nScore) * weight2 / 2.0;
+                }
+                if (q.MajorEvent.InsideRidgeOrientation == 3)
+                {
+                    score = nScore * weight1 + vScore * weight2 + (hScore + pScore) * weight2 / 2.0;
+                }
+            }
+            else
+            {
+                score = (vScore + hScore + pScore + nScore) / q.NotNullEventListCount;
+            }
+            return score;
+        }
+
+        // N is count of histogram, max is the total number of frequencybins
+        public static double SimilarityWeight(int n, double max, double real)
+        {
+            var result = 0.0;
+            var histogramUnit = n / max;
+            if (real == 0.0)
+            {
+                result = 1.0;
+            }
+            else
+            {
+                result = Math.Floor((1 - real) / histogramUnit) * histogramUnit;
+            }
+            
+            return result;
+        }
+
+        public static double ScoreOver2EventList(List<EventBasedRepresentation> events1,
+            List<EventBasedRepresentation> events2, int n)
+        {
+            var overlapScore = 0.0;            
+            if (events1.Count > 0 && events2.Count > 0)
+            {
+                foreach (var q in events1)
+                {
+                    // find the N cloest event to compare
+                    var nClosestEventList = Indexing.FindNCloestEvents(events2, q, n);
+                    var index = Indexing.FindMaximumScoreEvent(nClosestEventList, q);
+                    // Another check on frame offset
+                    var frameCheck = Indexing.OverFrameOffset(q.Left, nClosestEventList[index].Left, 0, 10);
+                    var subScore = 0.0;
+                    if (frameCheck)
+                    {
+                        var leftAnchor = nClosestEventList[index].Left;
+                        var qLeft = leftAnchor;
+                        var overlap = StatisticalAnalysis.EventOverlapInPixel(
+                            qLeft,
+                            q.Bottom,
+                            qLeft + q.Width,
+                            q.Bottom + q.Height,
+                            nClosestEventList[index].Left,
+                            nClosestEventList[index].Bottom,
+                            nClosestEventList[index].Left + nClosestEventList[index].Width,
+                            nClosestEventList[index].Bottom + nClosestEventList[index].Height);
+                        subScore = ((double)overlap / q.Area + (double)overlap / nClosestEventList[index].Area) / 2.0;                       
+                    }
+                    overlapScore += subScore;
+                }
+                overlapScore /= events1.Count;
+            }
+            var result = overlapScore;
+            return result;
+        }
         /// <summary>
         /// According to the relationship of distance and similarityScore, the farer the distance between two feature vectors,
         /// the less similarityScore can be obtained. 
@@ -367,7 +482,7 @@
             return result;
         }
 
-        public static double EuclideanDistanceScore(RegionRerepresentation query, RegionRerepresentation candidate,
+        public static double EuclideanDistanceScore(RegionRepresentation query, RegionRepresentation candidate,
             double matchedDistanceThreshold, double weight)
         {
             var result = 0.0;
@@ -456,7 +571,7 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate, double weight1, double weight2)
+        public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRepresentation> query, List<RegionRepresentation> candidate, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -492,7 +607,7 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static double WeightedDistanceScoreRegionRepresentation3(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate,
+        public static double WeightedDistanceScoreRegionRepresentation3(List<RegionRepresentation> query, List<RegionRepresentation> candidate,
             double weight1, double weight2, double weight3, double weight4)
         {
             var result = 0.0;
@@ -550,8 +665,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature8HoGBased(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidate, int poiCountThreshold,double weight1, double weight2)
+        public static double DistanceFeature8HoGBased(List<RegionRepresentation> query, 
+            List<RegionRepresentation> candidate, int poiCountThreshold,double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -641,8 +756,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature9Representation(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature9Representation(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -692,8 +807,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature10Calculation(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold)
+        public static double DistanceFeature10Calculation(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -737,8 +852,8 @@
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature12Based(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature12Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -829,8 +944,8 @@
             return result;
         }
 
-        public static double DistanceFeature14Based(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature14Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -889,8 +1004,8 @@
             return result;
         }
 
-        public static double DistanceFeature16Based(List<RegionRerepresentation> query,
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)       
+        public static double DistanceFeature16Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)       
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -958,8 +1073,8 @@
             return result;
         }
 
-        public static double DistanceFeature4RidgeBased(List<RegionRerepresentation> query, 
-            List<RegionRerepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        public static double DistanceFeature4RidgeBased(List<RegionRepresentation> query, 
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -1031,7 +1146,7 @@
             return result;
         }
      
-        public static double DistanceHoGRepresentation(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate)
+        public static double DistanceHoGRepresentation(List<RegionRepresentation> query, List<RegionRepresentation> candidate)
         {
             var result = 0.0;
             if (query != null && candidate != null)
@@ -1067,7 +1182,7 @@
         /// <param name="weight1"></param>
         /// <param name="weight2"></param>
         /// <returns></returns>
-        public static double WeightedDistanceScoreRegionRepresentation4(List<RegionRerepresentation> query, List<RegionRerepresentation> candidate,
+        public static double WeightedDistanceScoreRegionRepresentation4(List<RegionRepresentation> query, List<RegionRepresentation> candidate,
             double weight1, double weight2, double weight3, double weight4, double weight5, double weight6)
         {
             var result = 0.0;

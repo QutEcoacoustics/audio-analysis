@@ -28,7 +28,7 @@ let testMatrixMap2 () =
     let m = Math.Matrix.ofList [[1.0]; [3.0]]
     let n = Math.Matrix.ofList [[1.0]; [1.0]]
     let r = Math.Matrix.ofList [[2.0]; [4.0]]
-    Assert.Equal(r, matrixMap2 (+) m n)
+    Assert.Equal<matrix>(r, matrixMap2 (+) m n)
     
 [<Fact>]
 let testMatrixMapi2Unzip () =

@@ -47,7 +47,7 @@ namespace Dong.Felt.Preprocessing
         /// <returns></returns>
         public static SpectrogramStandard AudioToSpectrogram(SonogramConfig config, string audioFilePath)
         {          
-            var recording = new AudioRecording(audioFilePath);
+            var recording = new AudioRecording(audioFilePath);            
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             return spectrogram;
         }

@@ -413,7 +413,12 @@
             Infof "Starting AED analysis of test file (using config: IntensityThreshold=%A, SmallAreaThreshold=%A)" aedConfig.IntensityThreshold aedConfig.SmallAreaThreshold
 
             let aedEvents = 
-                AcousticEventDetection.detectEventsMinor (float aedConfig.IntensityThreshold) (int aedConfig.SmallAreaThreshold) (0.0, float spectrogram.NyquistFrequency) true spectrogram.Data
+                let options = new AedOptions(
+                                float spectrogram.NyquistFrequency, 
+                                intensityThreshold=(float aedConfig.IntensityThreshold), 
+                                smallAreaThreshold=(int aedConfig.SmallAreaThreshold), 
+                                doNoiseRemoval=true)
+                AcousticEventDetection.detectEventsMinor options spectrogram.Data
                 |> Seq.map (GetAcousticEvents.getBounds >> toFloatRect >> addDimensions px px)
 
             let lengthOfPois = Seq.length aedEvents 

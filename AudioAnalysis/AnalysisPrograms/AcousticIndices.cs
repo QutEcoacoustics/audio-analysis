@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.Serialization;
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
@@ -305,39 +306,43 @@ namespace AnalysisPrograms
                 Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + bgNoiseNeighborhood.ToString() + ")");
             }
 
-            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood);
+            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig);
         }
 
+        [Serializable]
         private class AcousticIndicesParsedConfiguration
         {
-            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood)
+            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile)
             {
                 this.TileOutput = tileOutput;
                 this.IndexCalculationDuration = indexCalculationDuration;
                 this.BgNoiseNeighborhood = bgNoiseNeighborhood;
+                this.IndexPropertiesFile = indexPropertiesFile;
             }
 
             public bool TileOutput { get; private set; }
 
             /// <summary>
-            /// Gets or sets the duration of the sub-segment for which indices are calculated. 
+            /// Gets the duration of the sub-segment for which indices are calculated. 
             /// Default = 60 seconds i.e. same duration as the Segment.
             /// </summary>
             public TimeSpan IndexCalculationDuration { get; private set; }
 
             /// <summary>
-            /// Gets or sets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
+            /// Gets the amount of audio either side of the required subsegment from which to derive an estimate of background noise. 
             /// Units = seconds
-            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighbourhood = 10 seconds) 
+            /// As an example: IF (IndexCalculationDuration = 1 second) AND (BGNNeighborhood = 10 seconds) 
             ///                THEN BG noise estimate will be derived from 21 seconds of audio centred on the subsegment.
             ///                In case of edge effects, the BGnoise neighborhood will be truncated to start or end of the audio segment (typically expected to be one minute long).
             /// </summary>
             public TimeSpan BgNoiseNeighborhood { get; private set; }
+
+            public FileInfo IndexPropertiesFile { get; private set; }
         }
 
         public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
-            AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalyzerSpecificConfiguration;
+            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalyzerSpecificConfiguration;
 
             var audioFile = analysisSettings.AudioFile;
             var recording = new AudioRecording(audioFile.FullName);
@@ -347,34 +352,60 @@ namespace AnalysisPrograms
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             double recordingDuration = recording.Duration().TotalSeconds;
-            TimeSpan ts = acousticIndicesParsedConfiguration.IndexCalculationDuration;
-            double subsegmentDuration = ts.TotalSeconds;
+            double subsegmentDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds;
             
-            int subsegmentCount = Math.Max((int)Math.Floor(recordingDuration / subsegmentDuration), 1);
+            // intentional possible null ref, throw if not null
+            double segmentDuration = analysisSettings.SegmentDuration.Value.TotalSeconds;
+            double audioCuttingError = subsegmentDuration - segmentDuration;
+            
+            // using the expected duration, each call to analyze will always produce the same number of results
+            // round, we expect perfect numbers, warn if not
+            double subsegmentsInSegment = segmentDuration / subsegmentDuration;
+            int subsegmentCount = (int)Math.Round(segmentDuration / subsegmentDuration);
+            const double WarningThreshold = 0.01; // 10%
+            double fraction = subsegmentsInSegment - subsegmentCount;
+            if (Math.Abs(fraction) > WarningThreshold)
+            {
+                Log.Warn(
+                    string.Format(
+                        "The IndexCalculationDuration ({0}) does not fit well into the provided segment ({1}). This means a partial result has been {3}, {2} results will be calculated",
+                        subsegmentDuration,
+                        segmentDuration,
+                        subsegmentCount,
+                        fraction >= 0.5 ? "added" : "removed"));
+            }
+            Log.Trace(subsegmentCount.ToString() + " sub segments will be calculated");
 
             analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
             analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
 
-            List<Plot> trackScores = new List<Plot>(subsegmentCount);
-            List<SpectralTrack> tracks = new List<SpectralTrack>(subsegmentCount);
+            var trackScores = new List<Plot>(subsegmentCount);
+            var tracks = new List<SpectralTrack>(subsegmentCount);
 
             // calculate indices for each subsegment
             for (int i = 0; i < subsegmentCount; i++)
             {
-
                 var subsegmentOffset = (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero)  + TimeSpan.FromSeconds(i * subsegmentDuration);
 
                 /* ###################################################################### */
 
-                var indexCalculateResult = IndexCalculate.Analysis(recording, analysisSettings, subsegmentOffset, acousticIndicesParsedConfiguration.IndexCalculationDuration, acousticIndicesParsedConfiguration.BgNoiseNeighborhood);
-
+                var indexCalculateResult = IndexCalculate.Analysis(
+                    recording,
+                    analysisSettings,
+                    subsegmentOffset,
+                    acousticIndicesParsedConfiguration.IndexCalculationDuration,
+                    acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                    acousticIndicesParsedConfiguration.IndexPropertiesFile);
                 
                 /* ###################################################################### */
 
                 analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
                 trackScores.AddRange(indexCalculateResult.TrackScores);
-                tracks.AddRange(indexCalculateResult.Tracks);
+                if (indexCalculateResult.Tracks != null)
+                {
+                    tracks.AddRange(indexCalculateResult.Tracks);
+                }
             }
 
             if (analysisSettings.SummaryIndicesFile != null)
@@ -397,14 +428,15 @@ namespace AnalysisPrograms
             bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
             if (saveSonogramData || analysisSettings.ImageFile != null) 
             {
-                SonogramConfig sonoConfig = new SonogramConfig(); // default values config
+                var sonoConfig = new SonogramConfig(); // default values config
                 sonoConfig.SourceFName = recording.FilePath;
                 sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
                 sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
                 sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
-                //sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
-                //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+                ////sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
+                ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
                 var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
 
@@ -467,11 +499,10 @@ namespace AnalysisPrograms
 
         public void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment, EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results)
         {
-            AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
+            var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
 
             var sourceAudio = inputFileSegment.OriginalFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
-            var configFile = settings.ConfigFile;
             bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
             int frameWidth = 512;
@@ -517,7 +548,8 @@ namespace AnalysisPrograms
             }
             else
             {
-                FileInfo indicesPropertiesConfig = IndexProperties.Find(settings.Configuration, settings.ConfigFile);
+                FileInfo indicesPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
+
                 // gather settings for rendering false color spectrograms
                 var config = new LdSpectrogramConfig
                 {

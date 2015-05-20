@@ -314,6 +314,85 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("\n##### FINISHED FILE ############################\n");
         }
 
+
+
+        /// <summary>
+        /// This method was written 9th March 2015 to process a dataset of some 1000 x 5 second recordings.
+        /// The dataset was originally prepared by Meriem for use in her Master's thesis.
+        /// The data is being processed to produce grayscale spectrogram images for use by Mangalam.
+        /// She will classify them using a CNN.
+        /// Note: NO SNR statistics are calculated. All reocrdings must be in single level directory.
+        /// </summary>
+        public static void ProcessMeriemsDataset()
+        {
+            //if (arguments == null)
+            //{
+            //    arguments = Dev();
+            //}
+
+            //if (!arguments.Output.Exists)
+            //{
+            //    arguments.Output.Create();
+            //}
+
+            const string Title = "# PRE-PROCESS SHORT AUDIO RECORDINGS FOR Convolutional DNN";
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine(Title);
+            LoggedConsole.WriteLine(date);
+            //LoggedConsole.WriteLine("# Input .csv file: " + arguments.Source.Name);
+            //LoggedConsole.WriteLine("# Configure  file: " + arguments.Config.Name);
+            //LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
+
+
+            //bool verbose = arguments.Verbose;
+            bool verbose = true;
+
+            // 1. set up the necessary files
+            //FileInfo csvFileInfo = arguments.Source;
+            //FileInfo configFile = arguments.Config;
+            //DirectoryInfo output = arguments.Output;
+            DirectoryInfo inputDirInfo  = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MeriemDataSet\1016 Distinct files");
+            FileInfo         configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml");
+            DirectoryInfo outputDirInfo = new DirectoryInfo(@"C:\SensorNetworks\Output\ConvDNN\MeriemDataset\");
+
+            // 2. get the config dictionary
+            var configDict = GetConfigurationForConvCNN(configFile);
+            // print out the parameters
+            if (verbose)
+            {
+                LoggedConsole.WriteLine("\nPARAMETERS");
+                foreach (var kvp in configDict)
+                {
+                    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
+                }
+            }
+
+            int fileCount = 0;
+            FileInfo[] inputFiles = inputDirInfo.GetFiles();
+            foreach (FileInfo file in inputFiles)
+            {
+                LoggedConsole.Write(".");
+                if (!file.Exists) continue;
+                fileCount++;
+
+                // need to set up the config with file names
+                configDict[ConfigKeys.Recording.Key_RecordingFileName] = file.FullName;
+                configDict[ConfigKeys.Recording.Key_RecordingCallName] = Path.GetFileNameWithoutExtension(file.FullName);
+                // reset the frame size
+                configDict["FrameLength"] = "512";
+
+                //AudioToSonogramResult result = GenerateSpectrogramImages(file, configDict, outputDirInfo);
+                GenerateSpectrogramImages(file, configDict, outputDirInfo);
+                fileCount++;
+            } // end foreach()
+
+            LoggedConsole.WriteLine("\nFile Count =" + fileCount);
+            LoggedConsole.WriteLine("\n##### FINISHED ############################\n");
+        }
+
+
+
+
         private static Dictionary<string, string> GetConfigurationForConvCNN(FileInfo configFile)
         {
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -638,6 +717,7 @@ namespace AnalysisPrograms
 
         public static AudioToSonogramResult GenerateSpectrogramImages(FileInfo sourceRecording, Dictionary<string, string> configDict, DirectoryInfo outputDirectory)
         {
+            // the source name was set up in the Analyse() method. But it could also be obtained directly form recording.
             string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
             sourceName = Path.GetFileNameWithoutExtension(sourceName);
 
@@ -697,6 +777,8 @@ namespace AnalysisPrograms
 
             // 3) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+            // remove the DC bin
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
 
             // draw decibel spectrogram unannotated
             FileInfo outputImage2 = new FileInfo(Path.Combine(outputDirectory.FullName, sourceName + ".deciBel.bmp"));

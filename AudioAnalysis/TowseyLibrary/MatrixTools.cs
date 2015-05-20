@@ -15,9 +15,28 @@ using MathNet.Numerics.LinearAlgebra.Generic;
 
 namespace TowseyLibrary
 {
+    using System.Diagnostics;
+
     public class MatrixTools
     {
-        private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\"; 
+        private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
+
+        public static void PrintMatrix(double[,] matrix)
+        {
+            var rowLength = matrix.GetLength(1);
+            for (var i = 0; i < matrix.GetLength(0); i++)
+            {
+                var row = new StringBuilder(rowLength * 6);
+
+                for (int j = 0; j < rowLength; j++)
+                {
+                    row.Append(matrix[i, j]);
+                    row.Append(" | ");
+                }
+
+                Debug.WriteLine(rowLength);
+            }
+        }
 
         static void Main()
         {

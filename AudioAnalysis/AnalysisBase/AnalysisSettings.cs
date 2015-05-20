@@ -14,6 +14,7 @@ namespace AnalysisBase
     using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
+    using System.Runtime.Serialization;
 
     using Acoustics.Shared;
 
@@ -193,6 +194,14 @@ namespace AnalysisBase
         public TimeSpan SegmentOverlapDuration { get; set; }
 
         /// <summary>
+        /// Gets or sets the ideal duration of audio for the segment being analyzed.
+        /// This number represents what was requested for cutting whereas the actual
+        /// duration of audio provided by <c>AudioFile</c> may differ slightly due to
+        /// inaccuracies in cutting audio.
+        /// </summary>
+        public TimeSpan? SegmentDuration { get; set; }
+
+        /// <summary>
         /// Gets or sets the minimum audio file duration the analysis can process.
         /// This is the min duration without including overlap. Overlap will be added.
         /// This should be set to an initial value by an analysis.
@@ -252,7 +261,8 @@ namespace AnalysisBase
         /// <summary>
         /// Get or sets an object that can be used to store arbitrary configuration or options.
         /// This is useful for passing information between BeforeAnalyze and Analyze.
-        /// DO NOT STORE MUTABLE STATE IN THIS OBJECT
+        /// DO NOT STORE MUTABLE STATE IN THIS OBJECT.
+        /// The object provided must be serializable!
         /// </summary>
         public object AnalyzerSpecificConfiguration { get; set; }
 
