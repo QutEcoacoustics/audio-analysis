@@ -58,6 +58,27 @@ namespace Dong.Felt
             return result;
         }
 
+        public static List<MFCC> CsvToMFCC(FileInfo file)
+        {
+            var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
+            var header = lines.Take(1).ToList();
+            var lines1 = lines.Skip(1);
+            var results = new List<MFCC>();
+            foreach (var csvRow in lines1)
+            {                
+                var mfccItem = new MFCC();
+                for (var i = 0; i < csvRow.Count(); i++)
+                {
+                    if (csvRow[i] != "")
+                    {
+                        mfccItem.MFCCoefficients.Add(double.Parse(csvRow[i]));
+                    }
+                }
+                results.Add(mfccItem);
+            }
+            return results;
+        }
+
         public static List<RidgeDescriptionNeighbourhoodRepresentation> CSVToNeighbourhoodRepresentation(FileInfo file)
         {
             return Csv.ReadFromCsv<RidgeDescriptionNeighbourhoodRepresentation>(file).ToList();
@@ -112,7 +133,7 @@ namespace Dong.Felt
         /// </summary>
         /// <param name="file"></param>
         /// <param name="ridgeRegion"></param>
-        public static void RegionRepresentationListToCSV(FileInfo file, List<RegionRerepresentation> ridgeRegion)
+        public static void RegionRepresentationListToCSV(FileInfo file, List<RegionRepresentation> ridgeRegion)
         {
             Csv.WriteToCsv(file, ridgeRegion);
         }
@@ -127,11 +148,31 @@ namespace Dong.Felt
             Csv.WriteToCsv(file, candidates);
         }
 
+        public static void CompactCandidateListToCSV(FileInfo file, List<CompactCandidates> candidates)
+        {
+            Csv.WriteToCsv(file, candidates);
+        }
+
+        public static void SCCandidateListToCSV(FileInfo file, List<SongScopeCandidates> candidates)
+        {
+            Csv.WriteToCsv(file, candidates);
+        }
+
         public static List<Candidates> CsvToCandidatesList(FileInfo candidatesCsvfile)
         {
             return Csv.ReadFromCsv<Candidates>(candidatesCsvfile).ToList();
         }
-      
+
+        public static List<CompactCandidates> CsvToCompactCandidatesList(FileInfo candidatesCsvfile)
+        {
+            return Csv.ReadFromCsv<CompactCandidates>(candidatesCsvfile).ToList();
+        }
+
+        public static List<SongScopeCandidates> CsvToSCCandidatesList(FileInfo candidatesCsvfile)
+        {
+            return Csv.ReadFromCsv<SongScopeCandidates>(candidatesCsvfile).ToList();
+        }
+
         public static List<Tuple<double, double, double>> CSVToSimilarityDistanceSocre(FileInfo file)
         {
             var lines = File.ReadAllLines(file.FullName).Select(i => i.Split(','));
@@ -146,24 +187,6 @@ namespace Dong.Felt
                 results.Add(Tuple.Create(distance, regionTimePostion, regionFrequencyPostion));
             }
             return results;
-        }
-
-        public static void BatchProcess(string fileDirectoryPath, SpectrogramConfiguration spectrogramConfig)
-        {
-            string[] fileEntries = Directory.GetFiles(fileDirectoryPath);
-
-            var fileCount = fileEntries.Count();
-            for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
-            {
-                var poi = new List<PointOfInterest>();
-                var poiList = new POISelection(poi);
-                var ridgeLength = 5;
-                var magnitudeThreshold = 5.5;
-                poiList.SelectPointOfInterestFromAudioFile(fileEntries[fileIndex], ridgeLength, magnitudeThreshold);
-                var filterPoi = POISelection.FilterPointsOfInterest(poiList.poiList, poiList.RowsCount, poiList.ColsCount);               
-                var file = new FileInfo(fileEntries[fileIndex] + "fileIndex.csv");
-                PointOfInterestListToCSV(file, filterPoi);
-            }
         }
 
         public static void ReadSimilarityDistanceToCSV(List<Tuple<double, double, double>> scoreList, string outputFilePath)

@@ -17,7 +17,7 @@ DisplayColumns: count,avAmp-dB
 
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramFiles: false
+SaveSonogramImages: false
 #DoNoiseReduction: true
 #BgNoiseThreshold: 3.0
 ...

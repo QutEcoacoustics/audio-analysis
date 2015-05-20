@@ -55,6 +55,10 @@ source('output.R')
 source('user.input.R')
 source('indices.R')
 source('lines.R')
+source('paths.R')
+source('label.events.R')
+source('short.indices.R')
+
 
 
 SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {

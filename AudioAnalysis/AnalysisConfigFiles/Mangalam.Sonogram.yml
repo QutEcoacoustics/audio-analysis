@@ -44,7 +44,7 @@ SaveIntermediateWavFiles: false
 # Output spectrogram csv
 SaveIntermediateCsvFiles: true
 # Output sonogram (composite) images
-SaveSonogramFiles: true
+SaveSonogramImages: true
 ParallelProcessing: false
 ...
 

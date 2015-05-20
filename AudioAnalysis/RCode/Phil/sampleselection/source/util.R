@@ -42,8 +42,8 @@ SliceStft <- function (bounds, spectro, get.bounds = FALSE) {
     
     
     
-    left.col <- TimeToColNum(start.time, spectro$frames.per.sec)
-    right.col <- TimeToColNum(start.time + duration, spectro$frames.per.sec)
+    left.col <- TimeToColNum(start.time, spectro$frames.per.sec, ncol(spectro$vals))
+    right.col <- TimeToColNum(start.time + duration, spectro$frames.per.sec, ncol(spectro$vals))
     top.row <- FrequencyToRowNum(top.f, spectro$hz.per.bin)
     bottom.row <- FrequencyToRowNum(bottom.f, spectro$hz.per.bin)
     if (get.bounds) {
@@ -198,7 +198,7 @@ FrequencyToRowNum <- function (f, hz.per.bin) {
     return(row.num)
 }
 
-TimeToColNum <- function (t, frames.per.second) {
+TimeToColNum <- function (t, frames.per.second, max) {
     # returns out the column number of an stft matrix at 
     # a given number of seconds from the start
     # 
@@ -210,11 +210,15 @@ TimeToColNum <- function (t, frames.per.second) {
     # Returns:
     #   Int
     
-    # ceil is used because column 1 is the 1st (left most) column. anything 
+    # ceil is used because column 1 is the 1st (left most) column. 
     col.num <- ceiling(frames.per.second * t)
     if (col.num == 0) {
         # if time is exactly zero, column number should still be 1
         col.num <- 1
+    } else if (col.num > max) {
+        # due to some inaccuracies, events which finish very close to the edge might end up
+        # being calculated 1 frame too far
+        col.num <- max
     }
     return(col.num)
 }
@@ -282,6 +286,25 @@ MinToTime <- function (min, midnight.is.1st.min = FALSE) {
     return(paste(h, m, '00', sep = ':'))
 }
 
+TimeToMin <- function (time.string) {
+    # given a time string or a date time string,
+    # will return the minute of the day
+    # probably a faster way with built in time functions
+    # will only work for the formast yyyy-MM-dd hh:mm:ss
+    
+    date.width <- 11
+    is.time <- nchar(time.string) == 8
+    is.datetime <- nchar(time.string) == date.width+8
+    m <- h <- rep(NA, length(time.string))
+    m[is.time] <- substr(time.string[is.time], 4, 5)
+    m[is.datetime] <- substr(time.string[is.datetime], date.width+4, date.width+5)
+    h[is.time] <- substr(time.string[is.time], 1, 2)
+    h[is.datetime] <- substr(time.string[is.datetime], date.width+1, date.width+2)
+    return(as.integer(h)  * 60 + as.integer(m))  
+}
+
+
+
 
 FixDate <- function (date) {
     require('stringr')
@@ -316,13 +339,12 @@ OrderBy <- function (df, col, decreasing = FALSE) {
     return(df)
 }
 
-Truncate <- function (v, num) {
-    if (length(v) > num) {
+Truncate <- function (v, num = NA) {
+    if (is.numeric(num) && length(v) > num) {
         return(v[1:num])
     } else {
         return(v)
     }
-    
 }
 
 ExplodeDatetime <- function (datetime) {
@@ -552,5 +574,58 @@ SampleAtLeastOne <- function (pool, num, prob = NULL, at.least.one.of = NULL) {
 # i.e if the x is a vector of length 1 is a single number treats is at 1:(x[1])
 sample.vec <- function(x, ...) x[sample(length(x), ...)]
 
+HumanReadableTime <- function (secs, suffix = NULL) {
+    # for a given number of seconds,
+    # returns a string showing the number of hours, mins and seconds
+    # for brevity, will ommit seconds if hours > 1
+    secs <- round(secs)
+    
+    m.s  <- secs %% 3600
+    h <- (secs - m.s) / 3600
+    s <- m.s %% 60
+    m <- (m.s - s) / 60
+
+    
+    if (h > 0) {
+        str <- paste0(h, 'h ', m, 'm')
+    } else if (m > 0) {
+        str <- paste0( m, 'm ', s, 's')
+    } else {
+        str <- paste0(s, 'secs') 
+    }
+    
+    if (! is.null(suffix)) {
+        str <- paste(str, suffix)
+    }
+    
+    return(str)
+    
+}
 
 
+AreNumbersEqual <- function (nums, tol = .Machine$double.eps) {
+   return(max(nums) - min(nums) < tol)
+}
+
+LastBlock <- function (vals) {
+    # given a vector of values, will return the indexes of
+    # the last value and a continuous run of the same values from the end
+    # eg c(1,2,1,2,3,2,2,3,2,3,3,3) will return c(10,11,12) because the last value (12) is 3
+    # and values 10 and 11 next to it are also 3
+    
+    vals.r <- rev(vals)
+    last <- vals.r[1]
+    from <- match(TRUE, vals.r != last)
+    if (is.na(from)) {
+        return(1:length(vals)) 
+    }
+    
+    to <- length(vals)
+    from <- to - from + 2
+    
+    return(from:to)
+    
+    
+}
+
+SampleFromVector <- function(x, ...) x[sample.int(length(x), ...)]
