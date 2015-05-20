@@ -62,7 +62,7 @@ SecondToMillionSecondUnit: 1000
 Weight1: 0.2
 Weight2: 0.8
 
-Rank: 100
+Rank: 5
 
 # For neighbourhood representation 
 #FeaturePropertySet: [FeaturePropSet1, FeaturePropSet2, FeaturePropSet3]
