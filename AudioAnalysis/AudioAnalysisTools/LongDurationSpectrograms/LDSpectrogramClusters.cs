@@ -195,9 +195,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\SERF-SE_20101013.ACI-ENT-EVN.png";
             string clusterFile = opDir + "SE 13 Oct - Cluster-node list.csv";
             
-            string opFileName = fileStem + "SOMClusters.png";
+            string opFileName = fileStem + ".SOMClusters.png";
 
-            int clusterCount = 27;
+            int clusterCount = 27;  // from fuzzy c-clustering
+            int nodeCount    = 100; // from the 10x10 SOM
             List<Pen> pens = ImageTools.GetColorPalette(clusterCount);
             Pen whitePen = new Pen(Color.White);
             Pen blackPen = new Pen(Color.Black);
@@ -255,48 +256,72 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Tuple<int[], int[]> tuple = DataTools.SortArray(clusterHistogram);
             int[] sortOrder = tuple.Item1;
 
-
             // this loop re
             int opColumn = 0;
             int clusterStartColumn = 0;
             for (int id = 0; id < clusterCount; id++)
             {
                 int sortID = sortOrder[id];
+
+                // create node array to store column images for this cluster
+                List<Bitmap>[] nodeArray = new List<Bitmap>[nodeCount];
+                for (int n = 0; n < nodeCount; n++) nodeArray[n] = new List<Bitmap>();
+
+
+
                 Console.WriteLine("Reading CLUSTER: " + (sortID+1) + "  Label=" + clusterLabel[sortID]);
 
+                // read through the entire list of minutes
                 for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
                 {
-                    if (lineNumber == 0) clusterStartColumn = lineNumber;
+                    if (lineNumber == 0) clusterStartColumn = opColumn;
 
                     string[] words = lines[lineNumber].Split(',');
-                    int clusterID = Int32.Parse(words[2]);
-                    if ((clusterID-1) == sortID)
+                    int clusterID = Int32.Parse(words[2]) - 1; // -1 because matlab arrays start at 1.
+                    int nodeID    = Int32.Parse(words[1]) - 1;
+                    if ((clusterID) == sortID)
                     {
                         // get image column
                         Rectangle rectangle = new Rectangle(lineNumber, 0, 1, imageHt);
                         Bitmap column = ipImage.Clone(rectangle, ipImage.PixelFormat);
+
+                        nodeArray[nodeID].Add(column);
+                    }
+                }
+                           
+                // cycle through the nodes and get the column images.
+                // the purpose is to draw the column images in order of node number
+                for (int n = 0; n < nodeCount; n++) 
+                {
+                    int imageCount = nodeArray[n].Count;
+                    if (nodeArray[n].Count == 0) continue;
+
+                    for (int i=0; i<imageCount; i++)
+                    {
+                        Bitmap column = nodeArray[n][i];
                         gr.DrawImage(column, opColumn, 0);
                         gr.DrawLine(pens[id], opColumn, trackheight, opColumn, trackheight + trackheight);
                         gr.DrawLine(pens[id], opColumn, imageHt - trackheight, opColumn, imageHt);
                         opColumn++;
                     }
+                    //gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt - 10);
+                }
 
                     //FileInfo fi = new FileInfo(topLevelDirectory + name);
                     //Console.WriteLine("Reading file: " + fi.Name);
-                }
 
                 if (id >= clusterCount - 1) break;
                 gr.DrawLine(whitePen, opColumn - 1, 0, opColumn - 1, imageHt - trackheight -1);
                 gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
                 gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
 
-                int location = clusterStartColumn + (opColumn - clusterStartColumn) / 2;
-                gr.DrawString(clusterLabel[sortID], stringFont, Brushes.Black, new PointF(location, imageHt - 19));
+                int location = opColumn - (opColumn - clusterStartColumn) / 2;
+                gr.DrawString(clusterLabel[sortID], stringFont, Brushes.Black, new PointF(location-10, imageHt - 19));
             }
 
 
             ////Draw the title bar
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageWidth);
+            Image titleBar = DrawTitleBarOfClusterSpectrogram(title, imageWidth);
             gr.DrawImage(titleBar, 0, 0);
             ////Draw the x-axis time scale bar
             //int trackHeight = 20;
@@ -311,6 +336,31 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
 
             opImage.Save(Path.Combine(opDir, opFileName));
+        }
+
+        public static Image DrawTitleBarOfClusterSpectrogram(string title, int width)
+        {
+            Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 12, FontStyle.Bold);
+            //Font stringFont = new Font("Tahoma", 9);
+            SizeF stringSize = new SizeF();
+
+            int X = 4;
+            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
+
+            stringSize = g.MeasureString(title, stringFont);
+            X += (stringSize.ToSize().Width + 70);
+
+            string text = string.Format("(c) QUT.EDU.AU");
+            stringSize = g.MeasureString(text, stringFont);
+            int X2 = width - stringSize.ToSize().Width - 2;
+            if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0);//draw upper boundary
+            return bmp;
         }
 
 
