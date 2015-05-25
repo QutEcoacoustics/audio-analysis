@@ -13,6 +13,7 @@ namespace AnalysisPrograms
 #endif
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.Diagnostics.Contracts;
     using System.Globalization;
@@ -211,7 +212,7 @@ namespace AnalysisPrograms
             {
                 // print entire usage
 
-                LoggedConsole.WriteLine(ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions));
+                LoggedConsole.WriteLine(ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions).ToString());
             }
             else if (usageStyle == Usages.Single)
             {
@@ -222,7 +223,7 @@ namespace AnalysisPrograms
                 else
                 {
                     var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { actionName });
-                    LoggedConsole.WriteLine(usage);
+                    LoggedConsole.WriteLine(usage.ToString());
                 }
             }
             else if (usageStyle == Usages.ListAvailable)
@@ -243,7 +244,8 @@ namespace AnalysisPrograms
             else if (usageStyle == Usages.NoAction)
             {
                 var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { "list", "help" });
-                LoggedConsole.WriteLine(usage);
+
+                LoggedConsole.WriteLine(usage.ToString());
             }
             else
             {
