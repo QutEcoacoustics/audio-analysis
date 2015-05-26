@@ -115,9 +115,6 @@ namespace AnalysisPrograms
                                SegmentMinDuration = TimeSpan.FromSeconds(20), 
                                SegmentMediaType = MediaTypes.MediaTypeWav, 
                                SegmentOverlapDuration = TimeSpan.Zero, 
-                               
-                               // TODO: retrieve from app config after merge
-                               SegmentTargetSampleRate = 22050
                            };
             }
         }

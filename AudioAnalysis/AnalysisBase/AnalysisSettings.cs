@@ -54,6 +54,10 @@ namespace AnalysisBase
         {
             this.ConfigDict = new Dictionary<string, string>();
             this.SegmentTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate;
+            this.SegmentMaxDuration = TimeSpan.FromMinutes(1);
+            this.SegmentMinDuration = TimeSpan.FromSeconds(20);
+            this.SegmentMediaType = MediaTypes.MediaTypeWav;
+            this.SegmentOverlapDuration = TimeSpan.Zero;
         }
 
         /// <summary>

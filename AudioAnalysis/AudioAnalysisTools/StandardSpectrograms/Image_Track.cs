@@ -962,7 +962,7 @@
 
             int hour;
             int min = (int)startOffset.TotalMinutes - 1;
-            int XaxisScale = (int)gridInterval.TotalMinutes;
+            var XaxisScale = gridInterval.TotalMinutes;
             Pen whitePen = new Pen(Color.White);
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
@@ -972,7 +972,7 @@
                 min++;
                 if (min % XaxisScale != 0) continue;
                 g.DrawLine(whitePen, x, 0, x, trackHeight);
-                hour = min / XaxisScale;
+                hour = (int)Math.Round(min / XaxisScale);
                 if (hour >= 24)
                 {
                     min = 0;
