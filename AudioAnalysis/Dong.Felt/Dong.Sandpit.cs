@@ -122,9 +122,11 @@
                     //AudioPreprosessing.BatchSpectrogramGenerationFromAudio(inputDirectory, config,
                     //    scores, acousticEventlist, eventThreshold);
                     //AudioNeighbourhoodRepresentation(inputDirectory, config, ridgeConfig, neighbourhoodLength, featurePropertySet);
-                    //MFCCBasedMatching(queryInputDirectory, inputDirectory.FullName, rank, outputDirectory.FullName);
-                    DrawSpectrogramForTopMatches(outputDirectory.FullName, inputDirectory.FullName, rank, config,
-           ridgeConfig, tempDirectory);
+                    //MFCCBasedMatching(queryInputDirectory, inputDirectory.FullName, rank, outputDirectory.FullName);           
+                    MatchingBatchProcess2(queryInputDirectory, inputDirectory.FullName, neighbourhoodLength,
+                        ridgeConfig, compressConfig, gradientConfig, config, rank, featurePropertySet, 
+                        outputDirectory.FullName, tempDirectory,
+                        weight1, weight2);
                 }
                 else if (action == "processOne")
                 {
@@ -391,7 +393,7 @@
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram,
                     spectrogramConfig, compressConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                queryNhRepresentationList, queryAduioFiles[i], spectrogram);
+                queryNhRepresentationList, queryAduioFiles[i]);
 
                 /// To get all the candidates  
                 var candidatesList = new List<RegionRepresentation>();
@@ -610,8 +612,11 @@
                 var queryCsvFile = new FileInfo(queryCsvFiles[i]);
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram,
                     spectrogramConfig);
-                var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                queryNhRepresentationList, queryAduioFiles[i], spectrogram);
+                // The line below is for original algorithm. 
+                //var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
+                //queryNhRepresentationList, queryAduioFiles[i]);
+                var queryRepresentation = Indexing.ExtractQRegionReprFromNhRepreList(query, neighbourhoodLength,
+                queryNhRepresentationList, queryAduioFiles[i]);
 
                 //var poiCountInquery = StatisticalAnalysis.CountPOIInEvent(queryRepresentation);
                 //var nhCountInquery = StatisticalAnalysis.CountNhInEvent(queryRepresentation);
