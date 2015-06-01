@@ -51,7 +51,7 @@ namespace Dong.Felt
         }
 
         /// <summary>
-        /// To extract query region representation from an audio file which contains the query. 
+        /// To extract query region representation from a list of nhRepr of the query audio file. 
         /// </summary>
         /// <param name="query"></param>
         /// <param name="ridgeNeighbourhood"></param>
@@ -60,8 +60,7 @@ namespace Dong.Felt
         /// returns a list of region representation, each region represtation contains a ridge nh representation and some derived property. 
         /// </returns>
         public static List<RegionRepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
-            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
-            SpectrogramStandard spectrogram)
+            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName)
         {
             var nhCountInRow = query.maxNhRowIndex;
             var nhCountInColumn = query.maxNhColIndex;
@@ -95,6 +94,93 @@ namespace Dong.Felt
                 maxColIndex = nhStartColIndex + nhColsCount;
             }
 
+            for (int rowIndex = nhStartRowIndex; rowIndex < maxRowIndex; rowIndex++)
+            {
+                for (int colIndex = nhStartColIndex; colIndex < maxColIndex; colIndex++)
+                {
+                    tempResult.Add(ridgeNeighbourhood[rowIndex, colIndex]);
+                }
+            }
+            // The top left nh frequency and frame index will be the index of a region representation. 
+            for (int i = 0; i < tempResult.Count; i++)
+            {
+                var frequencyIndex = tempResult[0].FrequencyIndex;
+                var frameIndex = tempResult[0].FrameIndex;
+                var rowIndexInRegion = i / nhColsCount;
+                var colIndexInRegion = i % nhColsCount;
+                var regionItem = new RegionRepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount,
+                    rowIndexInRegion, colIndexInRegion, audioFileName);
+                results.Add(regionItem);
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// To extract query region representation from a list of nhRepr of the query audio file.
+        /// This version is to add buffer zone to the query so that small patterns can be differenciated with large patterns. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="ridgeNeighbourhood"></param>
+        /// <param name="audioFileName"></param>
+        /// <returns>
+        /// returns a list of region representations, each region represtation contains a ridge nh representation and some derived property. 
+        /// </returns>
+        public static List<RegionRepresentation> ExtractQRegionReprFromNhRepreList(Query query, int neighbourhoodLength,
+            List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName)
+        {
+            var nhCountInRow = query.maxNhRowIndex;
+            var nhCountInColumn = query.maxNhColIndex;
+            var ridgeNeighbourhood = StatisticalAnalysis.NhListToArray(nhRepresentationList, nhCountInRow, nhCountInColumn);
+            var results = new List<RegionRepresentation>();
+            var nhRowsCount = query.nhCountInRow;
+            var nhColsCount = query.nhCountInColumn;
+            var nhStartRowIndex = query.nhStartRowIndex;
+            var nhStartColIndex = query.nhStartColIndex;
+            var tempResult = new List<RidgeDescriptionNeighbourhoodRepresentation>();
+            var maxRowIndex = 0;
+            var maxColIndex = 0;
+            if (nhStartRowIndex + nhRowsCount > nhCountInRow)
+            {
+                maxRowIndex = nhCountInRow;
+                query.nhCountInRow--;
+                nhRowsCount--;
+            }
+            else
+            {
+                maxRowIndex = nhStartRowIndex + nhRowsCount;
+            }
+            if (nhStartColIndex + nhColsCount > nhCountInColumn)
+            {
+                maxColIndex = nhCountInColumn;
+                query.nhCountInColumn--;
+                nhColsCount--;
+            }
+            else
+            {
+                maxColIndex = nhStartColIndex + nhColsCount;
+            }
+
+            //if (nhStartRowIndex - 1 >= 0)
+            //{
+            //    nhStartRowIndex -= 1;
+            //    query.nhCountInRow++;
+            //}
+            //if (maxRowIndex + 1 <= nhCountInRow)
+            //{
+            //    maxRowIndex += 1;
+            //    query.nhCountInRow++;
+            //}
+            //if (nhStartColIndex - 1 >= 0)
+            //{
+            //    nhStartColIndex -= 1;
+            //    query.nhCountInColumn++;
+            //}
+            //if (maxColIndex + 1 <= nhCountInColumn)
+            //{
+            //    maxColIndex += 1;
+            //    query.nhCountInColumn++;
+            //}
+           
             for (int rowIndex = nhStartRowIndex; rowIndex < maxRowIndex; rowIndex++)
             {
                 for (int colIndex = nhStartColIndex; colIndex < maxColIndex; colIndex++)

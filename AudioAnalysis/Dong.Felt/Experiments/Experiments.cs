@@ -61,7 +61,7 @@ namespace Dong.Felt.Experiments
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram,
                     spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                    NormalizedNhRepresentationList, queryAudioFilePath, spectrogram);
+                    NormalizedNhRepresentationList, queryAudioFilePath);
                 var queryOutputFile = new FileInfo(queryRepresenationCsvPath);
                 CSVResults.RegionRepresentationListToCSV(queryOutputFile, queryRepresentation);
                 // regionRepresentation 
@@ -161,7 +161,7 @@ namespace Dong.Felt.Experiments
                 var query = Query.QueryRepresentationFromQueryInfo(queryCsvFile, neighbourhoodLength, spectrogram,
                     spectrogramConfig);
                 var queryRepresentation = Indexing.ExtractQueryRegionRepresentationFromAudioNhRepresentations(query, neighbourhoodLength,
-                queryNhRepresentationList, queryAduioFiles[i], spectrogram);
+                queryNhRepresentationList, queryAduioFiles[i]);
                 var queryTempFile = new FileInfo(queryCsvFiles[i]);
                 var tempFileName = featurePropSet + queryTempFile.Name + "-matched candidates.csv";
                 var matchedCandidateCsvFileName = outputPath + tempFileName;

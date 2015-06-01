@@ -2122,7 +2122,7 @@ namespace Dong.Felt.Representations
             }
             return result; 
         }
-
+      
         public static List<RidgeDescriptionNeighbourhoodRepresentation> FromAudioFilePointOfInterestList(List<PointOfInterest> poiList,
             int rowsCount, int colsCount, int neighbourhoodLength, string featurePropertySet,
             SpectrogramConfiguration spectrogramConfig, CompressSpectrogramConfig compressConfig)
