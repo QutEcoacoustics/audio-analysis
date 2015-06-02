@@ -160,26 +160,26 @@ namespace Dong.Felt
                 maxColIndex = nhStartColIndex + nhColsCount;
             }
 
-            //if (nhStartRowIndex - 1 >= 0)
-            //{
-            //    nhStartRowIndex -= 1;
-            //    query.nhCountInRow++;
-            //}
-            //if (maxRowIndex + 1 <= nhCountInRow)
-            //{
-            //    maxRowIndex += 1;
-            //    query.nhCountInRow++;
-            //}
-            //if (nhStartColIndex - 1 >= 0)
-            //{
-            //    nhStartColIndex -= 1;
-            //    query.nhCountInColumn++;
-            //}
-            //if (maxColIndex + 1 <= nhCountInColumn)
-            //{
-            //    maxColIndex += 1;
-            //    query.nhCountInColumn++;
-            //}
+            if (nhStartRowIndex - 1 >= 0)
+            {
+                nhStartRowIndex -= 1;
+                query.nhCountInRow++;
+            }
+            if (maxRowIndex + 1 <= nhCountInRow)
+            {
+                maxRowIndex += 1;
+                query.nhCountInRow++;
+            }
+            if (nhStartColIndex - 1 >= 0)
+            {
+                nhStartColIndex -= 1;
+                query.nhCountInColumn++;
+            }
+            if (maxColIndex + 1 <= nhCountInColumn)
+            {
+                maxColIndex += 1;
+                query.nhCountInColumn++;
+            }
            
             for (int rowIndex = nhStartRowIndex; rowIndex < maxRowIndex; rowIndex++)
             {
@@ -193,15 +193,27 @@ namespace Dong.Felt
             {
                 var frequencyIndex = tempResult[0].FrequencyIndex;
                 var frameIndex = tempResult[0].FrameIndex;
-                var rowIndexInRegion = i / nhColsCount;
-                var colIndexInRegion = i % nhColsCount;
-                var regionItem = new RegionRepresentation(tempResult[i], frequencyIndex, frameIndex, nhRowsCount, nhColsCount,
+                var rowIndexInRegion = i / query.nhCountInColumn;
+                var colIndexInRegion = i % query.nhCountInColumn;
+                var regionItem = new RegionRepresentation(tempResult[i], frequencyIndex, frameIndex, query.nhCountInRow, 
+                    query.nhCountInColumn,
                     rowIndexInRegion, colIndexInRegion, audioFileName);
                 results.Add(regionItem);
             }
             return results;
         }
 
+        /// <summary>
+        /// This version is to extract query region repre from a bunch of nh representation. 
+        /// This is done by specifying the query bounds through query csv files.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="neighbourhoodLength"></param>
+        /// <param name="nhRepresentationList"></param>
+        /// <param name="audioFileName"></param>
+        /// <param name="spectrogram"></param>
+        /// <param name="compressConfig"></param>
+        /// <returns></returns>
         public static List<RegionRepresentation> ExtractQueryRegionRepresentationFromAudioNhRepresentations(Query query, int neighbourhoodLength,
             List<RidgeDescriptionNeighbourhoodRepresentation> nhRepresentationList, string audioFileName,
             SpectrogramStandard spectrogram, CompressSpectrogramConfig compressConfig)
@@ -394,7 +406,6 @@ namespace Dong.Felt
             }
             return results;
         }
-
 
         public static List<RegionRepresentation> ExtractCandiRegionRepreFromAudioStList(SpectrogramStandard spectrogram,
             string audioFileName, List<PointOfInterest> stList, RegionRepresentation queryRepresentation)
