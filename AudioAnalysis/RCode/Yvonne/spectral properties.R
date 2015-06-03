@@ -6,14 +6,11 @@ sourceDir <- "C:\Work\Output"
 
 myFiles <- list.files(path=sourceDir, full.names=TRUE,
                       pattern="*.wav")
+source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\sort.Filename.R")
+myFiles <- sort.Filename(myFiles)
+
 fileCount <- length(myFiles)
 
-#for(i in 1:1){   #fileCount){
-i<-1
- #       for (j in 1:1){
-j<-1
-                #Spectral properties
-                #b<-cutw(a,from=((j-1)*60),to=(j*60),output="Wave")
 getSpectralProperties<-function(file){
                 print("starting file")
                 wavFile <- readWave(file)               
