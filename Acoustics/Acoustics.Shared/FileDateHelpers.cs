@@ -72,7 +72,7 @@ namespace Acoustics.Shared
                     if (stringDate.EndsWith("Z", StringComparison.InvariantCultureIgnoreCase))
                     {
                         var parseFormat = format.ParseFormat.Replace("zzz", "Z");
-                        DateTimeOffset.ParseExact(
+                        fileDate = DateTimeOffset.ParseExact(
                             stringDate,
                             parseFormat,
                             CultureInfo.InvariantCulture,
