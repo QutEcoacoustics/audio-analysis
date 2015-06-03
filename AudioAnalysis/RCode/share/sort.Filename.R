@@ -1,4 +1,4 @@
-sort.Filename <- function(filename){
+sort.filename <- function(filename){
   index <- numeric()
   for(i in 1:length(filename)){
     index[i] <- sub(".*_([[:digit:]]+).*", "\\1", filename[i])
