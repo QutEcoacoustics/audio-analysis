@@ -6,6 +6,11 @@ sourceDir <- "C:\Work\Output"
 
 myFiles <- list.files(path=sourceDir, full.names=TRUE,
                       pattern="*.wav")
+
+# To Yvonne, the following will work if the working directory is the same as
+# the directory that contains `spectral properties.R`. Relative paths are better 
+# than absolute paths in this case.
+#source("..\\shared\\sort.Filename.R")
 source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\sort.Filename.R")
 myFiles <- sort.Filename(myFiles)
 
