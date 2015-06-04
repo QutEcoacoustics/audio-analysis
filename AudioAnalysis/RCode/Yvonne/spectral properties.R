@@ -1,5 +1,5 @@
 #################################################################
-# This code reads in separate 1 minute wave files and calculates 
+# This code reads in 1 minute wave files and calculates basic 
 # spectral properties using seewave
 #################################################################
 library(seewave)
@@ -76,7 +76,6 @@ allProperties<-cbind(acousticCompIndex, zeroCrossingRate,
                      temporalEntropy,spectralProperties)
 
 allProperties<-data.frame(allProperties)
-str(allProperties)
 View(allProperties)
 
 ######## PLOTTING ##############################
@@ -87,7 +86,7 @@ plot(c(1:60),zeroCrossingRate, ylab="Zero crossing rate")
 plot(c(1:60),temporalEntropy, ylab="Temporal entropy")
 plot(c(1:60),sd, ylab="Standard deviation")
 ###########
-plot(c(1:60),median)
+plot(c(1:60),median, ylab="median frequency")
 plot(c(1:60),sem,ylab="standard error of mean")
 plot(c(1:60),IQR, ylab="interquartile range")
 plot(c(1:60),cent, ylab="spectral centroid")
@@ -96,3 +95,9 @@ plot(c(1:60),skewness)
 plot(c(1:60),kurtosis)
 plot(c(1:60),sfm, ylab="spectral flatness")
 plot(c(1:60),sh, ylab="spectral entropy")
+##########
+plot(c(1:60),mean, ylab="mean frequency (Hz)")
+plot(c(1:60),Q25)
+plot(c(1:60),Q75)
+plot(c(1:60),IQR, ylab="interquartile range")
+###########
