@@ -2,13 +2,15 @@ AR.dataPreprocess <- function (filepath){
   species <- read.csv(filepath)
   species <- species[ , 4:ncol(species)]
   
-  #make zeros to NA and non-zeros to one
-  index1 <- which(species == 0, arr.ind = TRUE)
-  species[index1] <- 'no'
-  index2 <- which(species > 0, arr.ind = TRUE)
-  species[index2] <- 'yes'
-  species <- apply(species, 2, as.factor)
-  species[index1] <- NA
+  #convert non-zeros to 1
+  index <- which(species > 0, arr.ind = TRUE)
+  species[index] <- 1
+  species <- apply(species, 2, factor)
+  species <- data.frame(species)
+  
+  #convert zeros to missing values
+  index <- which(species == 0, arr.ind = TRUE)
+  species[index] <- NA
   
   return(species)
   
