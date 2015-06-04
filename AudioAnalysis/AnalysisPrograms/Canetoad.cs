@@ -108,9 +108,9 @@ namespace AnalysisPrograms
                     //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
                     //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_619min.wav";
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
+                    @"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
-                    @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
+                    //@"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
@@ -434,6 +434,8 @@ namespace AnalysisPrograms
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
+            double boundaryBetweenAdvert_ReleaseDuration = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
+            minDuration = 1.0;
             double[] scores; // predefinition of score array
             List<AcousticEvent> events;
             double[,] hits;
@@ -456,6 +458,9 @@ namespace AnalysisPrograms
                     {
                         ae.SegmentStartOffset = segmentStartOffset;
                         ae.SegmentDuration = recordingDuration;
+                        ae.Name = "ReleaseCall";
+                        if (ae.Duration >= boundaryBetweenAdvert_ReleaseDuration) 
+                            ae.Name = "AdvertsCall";
                     });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
@@ -467,7 +472,7 @@ namespace AnalysisPrograms
                            Events = events, 
                            RecordingDuration = recordingDuration
                        };
-        }
+        } // Analysis()
 
         private static Image DrawSonogram(
             BaseSonogram sonogram, 
