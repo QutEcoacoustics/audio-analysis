@@ -259,6 +259,7 @@ namespace AnalysisPrograms
             Contract.Requires(unhandledExceptionEventArgs != null);
             Contract.Requires(unhandledExceptionEventArgs.ExceptionObject != null);
 
+            const string FatalMessage = "FATAL ERROR:\n\t";
 
             var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
             ExceptionLookup.ExceptionStyle style;
@@ -269,12 +270,12 @@ namespace AnalysisPrograms
             // if found, print message only if usage printing disabled
             if (found && !style.PrintUsage)
             {
-                // this branch prints the message but supresses the stack trace
-                LoggedConsole.WriteFatalLine("FATAL:\n\t", ex);
+                // this branch prints the message but suppresses the stack trace
+                LoggedConsole.WriteFatalLine(FatalMessage, ex);
             }
             else if (found && ex.GetType() != typeof(Exception))
             {
-                // print usage, if exception is recognised
+                // print usage, if exception is recognized
                 // --
                 // attempt to retrieve action
                 string action = null;
@@ -307,7 +308,7 @@ namespace AnalysisPrograms
                 }
                 else
                 {
-                    PrintUsage(ex.Message, Usages.Single, action ?? string.Empty);
+                    PrintUsage(FatalMessage + ex.Message, Usages.Single, action ?? string.Empty);
                 }
             }
             else

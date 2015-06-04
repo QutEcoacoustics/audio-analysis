@@ -41,7 +41,7 @@ namespace AudioAnalysisTools
                 {
                     "TimeStart", "TimeEnd", "MinFreq", "MaxFreq",
                     "FreqRange", "IsMelscale", "FrameOffset",
-                    "FramesPerSecond", "Name", "Name2", "ScoreComment",
+                    "FramesPerSecond", "Name2", "ScoreComment",
                     "ScoreNormalised", "Score_MaxPossible",
                     "Score_MaxInEvent", "Score_TimeOfMaxInEvent",
                     "Score2Name", "Score2", "Periodicity", "DominantFreq",
