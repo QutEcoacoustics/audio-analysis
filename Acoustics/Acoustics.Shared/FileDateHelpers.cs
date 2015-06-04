@@ -62,37 +62,51 @@ namespace Acoustics.Shared
 
         private static bool ParseFileDateTimeBase(string filename, DateVariants format, out DateTimeOffset fileDate, TimeSpan? offsetHint)
         {
-            var match = Regex.Match(filename, format.Regex);
-            fileDate = new DateTimeOffset();
+                var match = Regex.Match(filename, format.Regex);
+                fileDate = new DateTimeOffset();
 
-            if (match.Success)
-            {
-                var stringDate = match.Groups[format.ParseGroup].Value;
+                if (match.Success)
+                {
+                    var stringDate = match.Groups[format.ParseGroup].Value;
 
-                if (stringDate.EndsWith("Z", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    DateTimeOffset.ParseExact(stringDate, format.ParseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-                }
-                else if (format.ParseTimeZone)
-                {
-                    fileDate = DateTimeOffset.ParseExact(stringDate, format.ParseFormat, CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    var date = DateTime.ParseExact(stringDate, format.ParseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal);
-
-                    if (offsetHint == null)
+                    if (stringDate.EndsWith("Z", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        throw new ArgumentException("Do not know how to parse date {0} - specify a timezone offset hint explicitly".Format2(stringDate));
+                        var parseFormat = format.ParseFormat.Replace("zzz", "Z");
+                        fileDate = DateTimeOffset.ParseExact(
+                            stringDate,
+                            parseFormat,
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal);
+                    }
+                    else if (format.ParseTimeZone)
+                    {
+                        fileDate = DateTimeOffset.ParseExact(
+                            stringDate,
+                            format.ParseFormat,
+                            CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        fileDate = new DateTimeOffset(date, offsetHint.Value);
+                        var date = DateTime.ParseExact(
+                            stringDate,
+                            format.ParseFormat,
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeLocal);
+
+                        if (offsetHint == null)
+                        {
+                            throw new ArgumentException(
+                                "Do not know how to parse date {0} - specify a timezone offset hint explicitly".Format2(
+                                    stringDate));
+                        }
+                        else
+                        {
+                            fileDate = new DateTimeOffset(date, offsetHint.Value);
+                        }
                     }
                 }
-            }
 
-            return match.Success;
+                return match.Success;
         }
 
         private static bool FilenameHasDateTimeBase(string filename, string regex)
