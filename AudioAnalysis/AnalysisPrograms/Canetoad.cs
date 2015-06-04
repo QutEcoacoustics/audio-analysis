@@ -109,7 +109,8 @@ namespace AnalysisPrograms
                     //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_619min.wav";
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
-                    @"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
+                    @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";

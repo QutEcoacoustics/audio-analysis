@@ -1,17 +1,29 @@
 library(seewave)
 library(tuneR)
-setwd("C:\\Work")
+setwd("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\Yvonne")
 
-sourceDir <- "C:\Work\Output"
+sourceDir <- "C:\\Work\\Output"
 
 myFiles <- list.files(path=sourceDir, full.names=TRUE,
                       pattern="*.wav")
+<<<<<<< HEAD
+source("..\\shared\\sort.Filename.R")#changed to sort.filenames
+
+myFiles <- sort.Filename(myFiles)# changed to sort.filenames
+=======
+
+# To Yvonne, the following will work if the working directory is the same as
+# the directory that contains `spectral properties.R`. Relative paths are better 
+# than absolute paths in this case.
+#source("..\\shared\\sort.Filename.R")
 source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\sort.Filename.R")
 myFiles <- sort.Filename(myFiles)
+>>>>>>> origin/master
 
 fileCount <- length(myFiles)
 
-getSpectralProperties<-function(file){
+# Spectral properties function
+getSpectralProperties <- function(file){
                 print("starting file")
                 wavFile <- readWave(file)               
                 meanSp <- meanspec(wavFile, f=22050,plot=FALSE)
@@ -19,30 +31,58 @@ getSpectralProperties<-function(file){
                 return(result.prop)
 }
 
-spectralProperites <- lapply(myFiles[1:2], getSpectralProperties)
+spectralProperties <- sapply(myFiles[1:60], getSpectralProperties,
+                             USE.NAMES=FALSE)
+spectralProperties <- aperm(spectralProperties) # transpose array
 
-all.spectral.prop<-rbind(spectralProperites[[1]],spectralProperites[[2]])
+View(spectralProperties)
 
-#Acoustic complexity index
-result.aci<-ACI(wavFile)
-                #Zero crossing rate
-                result.zcr<-zcr(wavFile,plot=F,wl=NULL)
-                #Temporal entropy
-                envb<-env(wavFile,f=22050,plot=FALSE)
-                result.th<-th(envb)
-                #save results
-                mean.result<-c(mean.result,result.prop$mean)
-                th.result<-(c(th.result,result.th))
-                zcr.result<-(c(zcr.result,result.zcr))
-                #aci.result<-c(aci.result,result.aci)
-                #th.result<-c(th.result,result.th)
-                #zcr.result<-c(zcr.result,result.zcr)
- 
-#}
-#}
+#Acoustic complexity index function
+getACI <- function(file){
+        print("starting file")
+        wavFile <- readWave(file)               
+        result.aci<-ACI(wavFile)
+        return(result.aci)
+}
 
+acousticCompIndex <- sapply(myFiles[1:60], getACI,
+                             USE.NAMES=FALSE)
 
-wav.1<-readWave(myfiles[1])
+View(acousticCompIndex)
+
+#Zero crossing rate
+getZCR <- function(file){
+        print("starting file")
+        wavFile <- readWave(file)               
+        result.zcr<-zcr(wavFile,plot=F,wl=NULL)
+        return(result.zcr)
+}
+
+zeroCrossingRate <- sapply(myFiles[1:60], getZCR,
+                            USE.NAMES=FALSE)
+
+View(zeroCrossingRate)
+
+#Temporal entropy
+getTempEntropy <- function(file){
+        print("starting file")
+        wavFile <- readWave(file) 
+        envb<-env(wavFile,f=22050,plot=FALSE)
+        result.th<-th(envb)
+        return(result.th)
+}
+
+temporalEntropy <- sapply(myFiles[1:60], getTempEntropy,
+                           USE.NAMES=FALSE)
+
+View(temporalEntropy)
+
+allProperties<-cbind(acousticCompIndex, zeroCrossingRate, 
+                     temporalEntropy,spectralProperties)
+
+View(allProperties)
+
+#wav.1<-readWave(myfiles[1])
 #wav.2<-readWave(myfiles[2])
 #wav.3<-readWave(myfiles[3])
 #wav.4<-readWave(myfiles[4])
