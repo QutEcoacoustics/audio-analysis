@@ -78,3 +78,21 @@ allProperties<-cbind(acousticCompIndex, zeroCrossingRate,
 allProperties<-data.frame(allProperties)
 str(allProperties)
 View(allProperties)
+
+######## PLOTTING ##############################
+par(mfcol=c(2,2)) # set layout
+par(mar=c(4.1, 4.6, 1.6, 2.1)) # set margins
+plot(c(1:60),acousticCompIndex, ylab="Acoustic complexity index")
+plot(c(1:60),zeroCrossingRate, ylab="Zero crossing rate")
+plot(c(1:60),temporalEntropy, ylab="Temporal entropy")
+plot(c(1:60),sd, ylab="Standard deviation")
+###########
+plot(c(1:60),median)
+plot(c(1:60),sem,ylab="standard error of mean")
+plot(c(1:60),IQR, ylab="interquartile range")
+plot(c(1:60),cent, ylab="spectral centroid")
+###########
+plot(c(1:60),skewness)
+plot(c(1:60),kurtosis)
+plot(c(1:60),sfm, ylab="spectral flatness")
+plot(c(1:60),sh, ylab="spectral entropy")
