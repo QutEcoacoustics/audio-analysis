@@ -1,6 +1,6 @@
 library(arules)
 
-rules <- apriori(species, parameter=list(minlen=2, supp=0.01, conf=0.9, maxlen=10), control=list(verbose=FALSE)))
+rules <- apriori(species, parameter=list(minlen=2, supp=0.01, conf=0.8, maxlen=10), control=list(verbose=FALSE))
 
 rules.sorted <- sort(rules, by='lift')
 
