@@ -1,12 +1,12 @@
 #################################################################
-# This code reads in 1 minute wave files and calculates basic 
-# spectral properties using seewave
+# This code reads one minute wave files and calculates the 
+# spectral properties available in seewave
 #################################################################
 library(seewave)
 library(tuneR)
 setwd("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\Yvonne")
 
-sourceDir <- "C:\\Work\\Output"
+sourceDir <- "C:\\Work\\Output\\Wet Eucalypt\\Output48"
 
 myFiles <- list.files(path=sourceDir, full.names=TRUE,
                       pattern="*.wav")
@@ -17,11 +17,25 @@ myFiles <- sort.Filename(myFiles)# changed to sort.filenames
 
 fileCount <- length(myFiles)
 
-# Spectral properties function
+######## TEMPORAL ENTROPY ##############################
+getTempEntropy <- function(file){
+        print("starting file")
+        wavFile <- readWave(file) 
+        envb<-env(wavFile,f=22050,plot=FALSE)
+        result.th<-th(envb)
+        return(result.th)
+}
+
+temporalEntropy <- sapply(myFiles[1:60], getTempEntropy,
+                          USE.NAMES=FALSE)
+
+#View(temporalEntropy)
+
+######## SPECTRAL PROPERTIES ##############################
 getSpectralProperties <- function(file){
                 print("starting file")
                 wavFile <- readWave(file)               
-                meanSp <- meanspec(wavFile, f=22050,plot=FALSE)
+                meanSp <- meanspec(wavFile, f=22050, plot=FALSE)
                 result.prop <- specprop(meanSp)
                 return(result.prop)
 }
@@ -30,9 +44,9 @@ spectralProperties <- sapply(myFiles[1:60], getSpectralProperties,
                              USE.NAMES=FALSE)
 spectralProperties <- aperm(spectralProperties) # transpose array
 
-View(spectralProperties)
+#View(spectralProperties)
 
-#Acoustic complexity index function
+######## ACOUSTIC COMPLEXITY INDEX ##############################
 getACI <- function(file){
         print("starting file")
         wavFile <- readWave(file)               
@@ -42,10 +56,9 @@ getACI <- function(file){
 
 acousticCompIndex <- sapply(myFiles[1:60], getACI,
                              USE.NAMES=FALSE)
+#View(acousticCompIndex)
 
-View(acousticCompIndex)
-
-#Zero crossing rate
+######## ZERO CROSSING RATE ##############################
 getZCR <- function(file){
         print("starting file")
         wavFile <- readWave(file)               
@@ -56,31 +69,24 @@ getZCR <- function(file){
 zeroCrossingRate <- sapply(myFiles[1:60], getZCR,
                             USE.NAMES=FALSE)
 
-View(zeroCrossingRate)
+print ("finished calculating the zero crossing rate")
 
-#Temporal entropy
-getTempEntropy <- function(file){
-        print("starting file")
-        wavFile <- readWave(file) 
-        envb<-env(wavFile,f=22050,plot=FALSE)
-        result.th<-th(envb)
-        return(result.th)
-}
+#View(zeroCrossingRate)
 
-temporalEntropy <- sapply(myFiles[1:60], getTempEntropy,
-                           USE.NAMES=FALSE)
-
-View(temporalEntropy)
-
+######## ALL PROPERTIES ##############################
 allProperties<-cbind(acousticCompIndex, zeroCrossingRate, 
                      temporalEntropy,spectralProperties)
 
 allProperties<-data.frame(allProperties)
 View(allProperties)
 
+######## WRITE MATRIX ##############################
+library(MASS)
+write.matrix(allProperties,file="output48WE.csv",sep=",")
 ######## PLOTTING ##############################
 par(mfcol=c(2,2)) # set layout
 par(mar=c(4.1, 4.6, 1.6, 2.1)) # set margins
+attach(allProperties)
 plot(c(1:60),acousticCompIndex, ylab="Acoustic complexity index")
 plot(c(1:60),zeroCrossingRate, ylab="Zero crossing rate")
 plot(c(1:60),temporalEntropy, ylab="Temporal entropy")
@@ -100,4 +106,4 @@ plot(c(1:60),mean, ylab="mean frequency (Hz)")
 plot(c(1:60),Q25)
 plot(c(1:60),Q75)
 plot(c(1:60),IQR, ylab="interquartile range")
-###########
+########### END OF CODE ##############
