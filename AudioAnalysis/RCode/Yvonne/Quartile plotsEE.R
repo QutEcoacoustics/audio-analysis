@@ -1,8 +1,7 @@
-setwd("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\Yvonne\\Eastern Eucalypt")
+setwd("C:\\Work\\CSV files\\Eastern Eucalypt")
 
 myFiles <- list.files(full.names=TRUE,pattern="*.csv")
 length<-length(myFiles)
-
 
 for(i in 1:length) {
         assign(paste("propertiesEE",i, sep=""),read.csv(myFiles[i]))
@@ -40,6 +39,10 @@ par(mar=c(1.6, 3.1, 0.4, 1.8)) # set margins
 #plot(c(0:119),c(propertiesEE1$Q75,propertiesEE2$Q75), 
 #     ylab="",ylim=c(0,7500),
 #     xlab="",type="l",xaxt='n',yaxt='n',col="blue")
+#par(new=TRUE)
+#plot(c(0:119),c(propertiesWE1$cent,propertiesWE2$cent), 
+#     ylab="",ylim=c(0,7500),
+#     xlab="",type="l",xaxt='n',yaxt='n',col="pink")
 #legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),          
  #      col=c(1,2,4),lty = 1,cex=0.9,bty="n",horiz=TRUE,
   #     x.intersp=0.8,text.width=c(4.2 ,4.2))
@@ -61,6 +64,10 @@ par(new=TRUE)
 plot(c(0:119),c(propertiesEE3$Q75,propertiesEE4$Q75), 
      ylab="",ylim=c(0,7500),
      xlab="",type="l",xaxt='n',yaxt='n',col="blue")
+par(new=TRUE)
+plot(c(0:119),c(propertiesEE3$cent,propertiesEE4$cent), 
+     ylab="",ylim=c(0,7500),
+     xlab="",type="l",xaxt='n',yaxt='n',col="pink")
 legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),          
        col=c(1,2,4),lty = 1,cex=0.9,bty="n",horiz=TRUE,
        x.intersp=0.8,text.width=c(4.2, 4.2))
@@ -82,6 +89,10 @@ par(new=TRUE)
 plot(c(0:119),c(propertiesEE5$Q75,propertiesEE6$Q75), 
      ylab="",ylim=c(0,7500),
      xlab="",type="l",xaxt='n',yaxt='n',col="blue")
+par(new=TRUE)
+plot(c(0:119),c(propertiesEE5$cent,propertiesEE6$cent), 
+     ylab="",ylim=c(0,7500),
+     xlab="",type="l",xaxt='n',yaxt='n',col="pink")
 legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),          
        col=c(1,2,4),lty = 1,cex=0.9,bty="n",horiz=TRUE,
        x.intersp=0.8,text.width=c(4.2 ,4.2))
@@ -106,6 +117,10 @@ par(new=TRUE)
 plot(c(0:119),c(propertiesEE7$Q75,propertiesEE8$Q75), 
      ylab="",ylim=c(0,7500),
      xlab="",type="l",xaxt='n',yaxt='n',col="blue")
+par(new=TRUE)
+plot(c(0:119),c(propertiesEE7$cent,propertiesEE8$cent), 
+     ylab="",ylim=c(0,7500),
+     xlab="",type="l",xaxt='n',yaxt='n',col="pink")
 legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),          
        col=c(1,2,4),lty = 1,cex=0.9,bty="n",horiz=TRUE,
        x.intersp=0.8,text.width=c(4.2, 4.2))
@@ -569,3 +584,17 @@ mtext(side=4,myFiles[47],line=-1.80, font=1, cex=0.7,
       outer=TRUE,at=0.185)
 
 #########################################
+plot(c(0:119),c(propertiesEE5$acousticCompIndex,propertiesEE6$acousticCompIndex), 
+     ylab="Frequency (Hz)",ylim=c(148,162),xaxt='n',col=1,
+     xlab="1:37 to 3:37 pm on 22 March 2015",type="l",
+     mgp = c(1.5, 0.5, 0),cex=0.9)
+par(new=TRUE)
+plot(c(0:119),c(propertiesEE5$zeroCrossingRate,propertiesEE6$zeroCrossingRate), 
+     ylab="Frequency (Hz)",ylim=c(0,0.3),xaxt='n',col=2,
+     xlab="1:37 to 3:37 pm on 22 March 2015",type="l",
+     mgp = c(1.5, 0.5, 0),cex=0.9)
+par(new=TRUE)
+plot(c(0:119),c(propertiesEE5$kurtosis,propertiesEE6$kurtosis), 
+     ylab="Frequency (Hz)",ylim=c(0,100),xaxt='n',col=3,
+     xlab="1:37 to 3:37 pm on 22 March 2015",type="l",
+     mgp = c(1.5, 0.5, 0),cex=0.9)

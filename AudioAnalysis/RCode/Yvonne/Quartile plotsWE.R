@@ -1,4 +1,4 @@
-setwd("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\Yvonne\\Wet Eucalypt")
+setwd("C:\\Work\\CSV files\\Wet Eucalypt")
 
 myFiles <- list.files(full.names=TRUE,pattern="*.csv")
 length<-length(myFiles)
@@ -39,6 +39,10 @@ par(new=TRUE)
 plot(c(0:119),c(propertiesWE1$Q75,propertiesWE2$Q75), 
      ylab="",ylim=c(0,7500),
      xlab="",type="l",xaxt='n',yaxt='n',col="blue")
+par(new=TRUE)
+plot(c(0:119),c(propertiesWE1$cent,propertiesWE2$cent), 
+     ylab="",ylim=c(0,7500),
+     xlab="",type="l",xaxt='n',yaxt='n',col="pink")
 axis(side=1,at=positions,labels=timeLabels1)
 mtext(side=4,myFiles[1],line=-1.8, font=1, cex=0.7, 
       outer=TRUE,at=0.85)
@@ -62,6 +66,10 @@ par(new=TRUE)
 plot(c(0:119),c(propertiesWE3$Q75,propertiesWE4$Q75), 
      ylab="",ylim=c(0,7500),
      xlab="",type="l",xaxt='n',yaxt='n',col="blue")
+par(new=TRUE)
+plot(c(0:119),c(propertiesWE3$cent,propertiesWE4$cent), 
+     ylab="",ylim=c(0,7500),
+     xlab="",type="l",xaxt='n',yaxt='n',col="pink")
 axis(side=1,at=positions,labels=timeLabels2)
 mtext(side=4,myFiles[3],line=-1.80, font=1, cex=0.7, 
       outer=TRUE,at=0.515)
@@ -72,7 +80,6 @@ abline(h=6000,lwd=0.5,lty=2)
 legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),          
        col=c(1,2,4),lty = 1,cex=0.9,bty="n",horiz=TRUE,
        x.intersp=0.8,text.width=c(4.2 ,4.2))
-
 #############################################
 plot(c(0:119),c(propertiesWE5$Q25,propertiesWE6$Q25), 
      ylab="Frequency (Hz)",ylim=c(0,7500),xaxt='n',xlab="",
@@ -86,6 +93,10 @@ par(new=TRUE)
 plot(c(0:119),c(propertiesWE5$Q75,propertiesWE6$Q75), 
      ylab="",ylim=c(0,7500),
      xlab="",type="l",xaxt='n',yaxt='n',col="blue")
+par(new=TRUE)
+plot(c(0:119),c(propertiesWE5$cent,propertiesWE6$cent), 
+     ylab="",ylim=c(0,7500),
+     xlab="",type="l",xaxt='n',yaxt='n',col="pink")
 axis(side=1,at=positions,labels=timeLabels3)
 mtext(side=4,myFiles[5],line=-1.80, font=1, cex=0.7, 
       outer=TRUE,at=0.185)
@@ -93,9 +104,9 @@ abline(h=0,lwd=0.1,lty=2)
 abline(h=2000,lwd=0.1,lty=2)
 abline(h=4000,lwd=0.1,lty=2)
 abline(h=6000,lwd=0.5,lty=2)
-legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),          
+legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),
        col=c(1,2,4),lty = 1,cex=0.9,bty="n",horiz=TRUE,
-       x.intersp=0.8,text.width=c(4.2 ,4.2))
+       x.intersp=0.8,text.width=c(4.2,4.2))
 
 ###### Q25 GRAPH SET 2#################################
 par(mfrow=c(3,1)) # set layout

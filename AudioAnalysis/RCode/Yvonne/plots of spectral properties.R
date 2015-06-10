@@ -236,20 +236,6 @@ plot(c(0:119),c(properties17$mean,properties18$mean),
 abline(v=16)
 #########################################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 par(mfrow=c(3,1)) # set layout
 par(mar=c(4.1, 4.6, 1.6, 2.1)) # set margins
 ########### ACOUSTIC COMPLEXITY INDEX ##############
