@@ -509,6 +509,8 @@ namespace AnalysisPrograms
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
             int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
+            //NOTE: The value for FrameStep is used only when calculating a standard spectrogram
+            //      FrameStep is NOT used when calculating Summary and Spectral indices.
 
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
