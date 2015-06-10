@@ -46,7 +46,9 @@ namespace AudioAnalysisTools.Indices
         // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
         public static int DefaultLowFreqBound = 500;
 
-        public static int DefaultMidFreqBound = 3500;
+        public static int DefaultMidFreqBound = 4000;
+
+        public static int DefaultHighFreqBound = 8010;
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -139,6 +141,7 @@ namespace AudioAnalysisTools.Indices
             double freqBinWidth = recording.Nyquist / (double)freqBinCount;
             int LowFreqBound = (int?)config[AnalysisKeys.LowFreqBound] ?? IndexCalculate.DefaultLowFreqBound;
             int MidFreqBound = (int?)config[AnalysisKeys.MidFreqBound] ?? IndexCalculate.DefaultMidFreqBound;
+            int HihFreqBound = (int?)config[AnalysisKeys.HighFreqBound] ?? IndexCalculate.DefaultHighFreqBound;
 
             // get TimeSpans and durations
             TimeSpan subsegmentTimeSpan = indexCalculationDuration;
@@ -293,11 +296,13 @@ namespace AudioAnalysisTools.Indices
             // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI 
             spectra.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
 
-            // calculate the bin id of boundary between low & mid frequency bins. This is to avoid low freq bins that contain anthrophony.
+            // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that contain anthropophony.
             int lowerBinBound = (int)Math.Ceiling(LowFreqBound / dspOutput1.FreqBinWidth);
-
-            // calculate reduced spectral width.
-            int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
+            // calculate bin id of upper boundary of bird-band. This is to avoid high freq artefacts due to mp3 compression.
+            int higherBinBound = (int)Math.Ceiling(HihFreqBound / dspOutput1.FreqBinWidth);
+            // calculate number of freq bins in the reduced bird-band.
+            //int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
+            int reducedFreqBinCount = higherBinBound - lowerBinBound;
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
             // original sample rate can be anything 11.0-44.1 kHz.
@@ -338,13 +343,10 @@ namespace AudioAnalysisTools.Indices
             ////DataTools.writeBarGraph(modalValues);
 
 
-            // v: ENTROPY OF AVERAGE & VARIANCE SPECTRA - at this point the spectrogram is a noise reduced amplitude spectrogram
-            //     Then reverse the values i.e. calculate 1-Hs and 1-Hv and 1- Hp for energy concentration
+            // v: ENTROPY OF AVERAGE SPECTRUM & VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
             var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, reducedFreqBinCount);
-
-            // ENTROPY of spectral averages
+            // ENTROPY of spectral averages - Reverse the values i.e. calculate 1-Hs and 1-Hv and 1-Hp for energy concentration
             summaryIndexValues.AvgEntropySpectrum = 1 - tuple.Item1;
-
             // ENTROPY of spectral variances
             summaryIndexValues.VarianceEntropySpectrum = 1 - tuple.Item2;
    
@@ -352,7 +354,8 @@ namespace AudioAnalysisTools.Indices
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
-            summaryIndexValues.EntropyPeaks = 1 - AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, nyquistBin);
+            double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, higherBinBound);
+            summaryIndexValues.EntropyPeaks = 1 - entropyOfPeaksSpectrum;
 
             // vii: calculate RAIN and CICADA indices.
             if (!warned)

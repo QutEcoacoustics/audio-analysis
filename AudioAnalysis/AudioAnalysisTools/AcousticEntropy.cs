@@ -35,7 +35,15 @@ namespace AudioAnalysisTools
             return tenSp;
         }
 
-
+        /// <summary>
+        /// Calculates two SUMMARY INDICES - two different measures of spectral entropy.
+        /// 1. the entropy of the average spectrum in the passed amplitude spectrogram.
+        /// 2. the entropy of the variance spectrum derived from the passed amplitude spectrogram.
+        /// </summary>
+        /// <param name="amplitudeSpectrogram">matrix</param>
+        /// <param name="lowerBinBound">lower bin bound to be included in calculation of summary index</param>
+        /// <param name="reducedFreqBinCount">total bin count to be included in calculation of summary index</param>
+        /// <returns>two doubles</returns>
         public static Tuple<double, double> CalculateSpectralEntropies(double[,] amplitudeSpectrogram, int lowerBinBound, int reducedFreqBinCount)
         {
             // iv: ENTROPY OF AVERAGE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
@@ -59,15 +67,16 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// CALCULATES THE ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
+        /// Only spectral peaks between the lowerBinBound and the upperBinBound will be included in calculation.
         /// </summary>
         /// <param name="amplitudeSpectrogram"></param>
         /// <param name="lowerBinBound"></param>
-        /// <param name="reducedFreqBinCount"></param>
+        /// <param name="upperBinBound"></param>
         /// <returns></returns>
-        public static double CalculateEntropyOfSpectralPeaks(double[,] amplitudeSpectrogram, int lowerBinBound, int nyquistBin)
+        public static double CalculateEntropyOfSpectralPeaks(double[,] amplitudeSpectrogram, int lowerBinBound, int upperBinBound)
         {
             //     First extract High band SPECTROGRAM which is now noise reduced
-            var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            var midBandSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, upperBinBound - 1);
             var tuple_AmplitudePeaks = SpectrogramTools.HistogramOfSpectralPeaks(midBandSpectrogram);
             double entropyOfPeakFreqDistr = DataTools.Entropy_normalised(tuple_AmplitudePeaks.Item1);
             if (Double.IsNaN(entropyOfPeakFreqDistr)) entropyOfPeakFreqDistr = 1.0;
