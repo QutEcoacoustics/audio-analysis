@@ -20,7 +20,7 @@ namespace Dong.Felt.SpectrogramDrawing
         public static Image DrawSonogram(BaseSonogram sonogram, List<double> scores, List<AcousticEvent> acousticEvent,
             double eventThreshold, List<PointOfInterest> poiList)
         {
-            bool doHighlightSubband = true; bool add1kHzLines = true;
+            bool doHighlightSubband = true; bool add1kHzLines = false;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0, 0.0, 0));
@@ -197,7 +197,15 @@ namespace Dong.Felt.SpectrogramDrawing
                 ///This one is for structure tensor
                 //var xCoordinate = poi.Point.X;
                 //var yCoordinate = poi.Point.Y;
-                spectrogram.Data[yCoordinate, cols - xCoordinate] = 20.0;
+                //if (xCoordinate >= rows)
+                //{
+                //    xCoordinate = rows -1;
+                //}
+                //if (yCoordinate >= cols)
+                //{
+                //    yCoordinate = cols - 1;
+                //} 
+                spectrogram.Data[yCoordinate, cols - xCoordinate-1] = 20.0;
             }
             for (int r = 0; r < rows; r++)
             {
