@@ -47,9 +47,10 @@ par(new=TRUE)
 plot(c(0:119),c(data7,data8), 
      ylab="",ylim=c(0,7500),
      xlab="",type="l",xaxt='n',yaxt='n',col="pink")
-legend("topright",inset=c(-0.0,-0.02),legend = c("Q25","Median","Q75"),          
-       col=c(1,2,4),lty = 1,cex=1.0,bty="n",horiz=TRUE,
-       x.intersp=0.8,text.width=c(4.2, 4.2))
+legend("topright",inset=c(0.04,0.0),
+       legend = c("Q25","Median","Q75","Centroid"),          
+       col=c(1,2,4,"pink"),lty = 1,cex=1.0,bty="n",horiz=TRUE,
+       x.intersp=0.8,text.width=c(4.2, 4.2, 4.2))
 axis(side=1,at=positions,labels=timeLab, mgp=c(1.8,0.5,0))
 mtext(side=4, fileName ,line=-1.80, font=1, cex=1.0,
       outer=TRUE,at=pos)
@@ -97,18 +98,18 @@ par(mar=c(4.3, 4.6, 0.7, 2.1)) # set margins
 plotQuartile (propertiesEE9$Q25, propertiesEE10$Q25,
               propertiesEE9$median, propertiesEE10$median,
               propertiesEE9$Q75,propertiesEE10$Q75,
-              propertiesEE9$cent, propertiesEE10$cent,pos1, myFiles[9],
-              timeLabels4)
+              propertiesEE9$cent, propertiesEE10$cent,pos1, 
+              myFiles[9], timeLabels4)
 plotQuartile (propertiesEE11$Q25, propertiesEE12$Q25,
               propertiesEE11$median, propertiesEE12$median,
               propertiesEE11$Q75, propertiesEE12$Q75,
-              propertiesEE11$cent, propertiesEE12$cent,pos2, myFiles[11],
-              timeLabels5)
+              propertiesEE11$cent, propertiesEE12$cent,pos2, 
+              myFiles[11], timeLabels5)
 plotQuartile (propertiesEE13$Q25, propertiesEE14$Q25,
               propertiesEE13$median, propertiesEE14$median,
               propertiesEE13$Q75, propertiesEE14$Q75,
-              propertiesEE13$cent, propertiesEE14$cent,pos3, myFiles[13],
-              timeLabels6)
+              propertiesEE13$cent, propertiesEE14$cent,pos3, 
+              myFiles[13], timeLabels6)
 dev.off()
 
 png(
@@ -124,16 +125,97 @@ par(mar=c(4.3, 4.6, 0.7, 2.1)) # set margins
 plotQuartile (propertiesEE15$Q25, propertiesEE16$Q25,
               propertiesEE15$median, propertiesEE16$median,
               propertiesEE15$Q75, propertiesEE16$Q75,
-              propertiesEE15$cent, propertiesEE16$cent,pos1, myFiles[15],
-              timeLabels7)
+              propertiesEE15$cent, propertiesEE16$cent,pos1, 
+              myFiles[15], timeLabels7)
 plotQuartile (propertiesEE17$Q25, propertiesEE18$Q25,
               propertiesEE17$median, propertiesEE18$median,
               propertiesEE17$Q75, propertiesEE18$Q75,
-              propertiesEE17$cent, propertiesEE18$cent,pos2, myFiles[17],
-              timeLabels8)
+              propertiesEE17$cent, propertiesEE18$cent,pos2, 
+              myFiles[17], timeLabels8)
 plotQuartile (propertiesEE19$Q25, propertiesEE20$Q25,
               propertiesEE19$median, propertiesEE20$median,
               propertiesEE19$Q75, propertiesEE20$Q75,
-              propertiesEE19$cent, propertiesEE20$cent, pos3, myFiles[19],
-              timeLabels9)
+              propertiesEE19$cent, propertiesEE20$cent, pos3, 
+              myFiles[19], timeLabels9)
+dev.off()
+
+png(
+  "EE4.png",
+  width     = 3.25,
+  height    = 3.25,
+  units     = "in",
+  res       = 1200,
+  pointsize = 4
+)
+par(mfrow=c(3,1)) # set layout
+par(mar=c(4.3, 4.6, 0.7, 2.1)) # set margins
+plotQuartile (propertiesEE21$Q25, propertiesEE22$Q25,
+              propertiesEE21$median, propertiesEE22$median,
+              propertiesEE21$Q75, propertiesEE22$Q75,
+              propertiesEE21$cent, propertiesEE22$cent, pos1, 
+              myFiles[21], timeLabels10)
+plotQuartile (propertiesEE23$Q25, propertiesEE24$Q25,
+              propertiesEE23$median, propertiesEE24$median,
+              propertiesEE23$Q75, propertiesEE24$Q75,
+              propertiesEE23$cent, propertiesEE24$cent,pos2, 
+              myFiles[23], timeLabels11)
+plotQuartile (propertiesEE25$Q25, propertiesEE26$Q25,
+              propertiesEE25$median, propertiesEE26$median,
+              propertiesEE25$Q75, propertiesEE26$Q75,
+              propertiesEE25$cent, propertiesEE26$cent,pos3, 
+              myFiles[25], timeLabels12)
+dev.off()
+
+png(
+  "EE5.png",
+  width     = 3.25,
+  height    = 3.25,
+  units     = "in",
+  res       = 1200,
+  pointsize = 4
+)
+par(mfrow=c(3,1)) # set layout
+par(mar=c(4.3, 4.6, 0.7, 2.1)) # set margins
+plotQuartile (propertiesEE27$Q25, propertiesEE28$Q25,
+              propertiesEE27$median, propertiesEE28$median,
+              propertiesEE27$Q75,propertiesEE28$Q75,
+              propertiesEE27$cent, propertiesEE28$cent,pos1, 
+              myFiles[27], timeLabels1)
+plotQuartile (propertiesEE29$Q25, propertiesEE30$Q25,
+              propertiesEE29$median, propertiesEE30$median,
+              propertiesEE29$Q75, propertiesEE30$Q75,
+              propertiesEE29$cent, propertiesEE30$cent,pos2, 
+              myFiles[29], timeLabels2)
+plotQuartile (propertiesEE31$Q25, propertiesEE32$Q25,
+              propertiesEE31$median, propertiesEE32$median,
+              propertiesEE31$Q75, propertiesEE32$Q75,
+              propertiesEE31$cent, propertiesEE32$cent,pos3, 
+              myFiles[31], timeLabels3)
+dev.off()
+
+png(
+  "EE6.png",
+  width     = 3.25,
+  height    = 3.25,
+  units     = "in",
+  res       = 1200,
+  pointsize = 4
+)
+par(mfrow=c(3,1)) # set layout
+par(mar=c(4.3, 4.6, 0.7, 2.1)) # set margins
+plotQuartile (propertiesEE33$Q25, propertiesEE34$Q25,
+              propertiesEE33$median, propertiesEE34$median,
+              propertiesEE33$Q75, propertiesEE34$Q75,
+              propertiesEE33$cent, propertiesEE34$cent,pos1, 
+              myFiles[33], timeLabels4)
+plotQuartile (propertiesEE35$Q25, propertiesEE36$Q25,
+              propertiesEE35$median, propertiesEE36$median,
+              propertiesEE35$Q75, propertiesEE36$Q75,
+              propertiesEE35$cent, propertiesEE36$cent,pos2, 
+              myFiles[35], timeLabels5)
+plotQuartile (propertiesEE37$Q25, propertiesEE38$Q25,
+              propertiesEE37$median, propertiesEE38$median,
+              propertiesEE37$Q75, propertiesEE38$Q75,
+              propertiesEE37$cent, propertiesEE38$cent, pos3, 
+              myFiles[37], timeLabels6)
 dev.off()
