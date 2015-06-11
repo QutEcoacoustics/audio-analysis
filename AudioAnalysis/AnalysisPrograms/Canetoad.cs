@@ -108,9 +108,10 @@ namespace AnalysisPrograms
                     //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
                     //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_619min.wav";
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    @"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
-                    //@"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
+                    @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
+                    //@"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
@@ -458,9 +459,18 @@ namespace AnalysisPrograms
                     {
                         ae.SegmentStartOffset = segmentStartOffset;
                         ae.SegmentDuration = recordingDuration;
-                        ae.Name = "ReleaseCall";
-                        if (ae.Duration >= boundaryBetweenAdvert_ReleaseDuration) 
-                            ae.Name = "AdvertsCall";
+                        ae.Name = "AdvertsCall";
+                        if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
+                        { ae.Name = "ReleaseCall";
+                            if (ae.Score < (eventThreshold + 0.3))
+                            { ae.Name = "Short Oscil"; }
+                        }
+
+                        // remove release call if its score is too low.
+                        //if ((ae.Name == "ReleaseCall") && (ae.Score < (eventThreshold + 0.3)))
+                        //{ ae = null; }
+                        //{ events.Remove(ae); } 
+                        
                     });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
