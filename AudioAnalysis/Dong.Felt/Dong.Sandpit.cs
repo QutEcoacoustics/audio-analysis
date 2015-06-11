@@ -270,31 +270,35 @@
                     var poiList = new List<PointOfInterest>();
                     double eventThreshold = 0.5; // dummy variable - not used                 
 
-                    var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
-                    var cols = spectrogram.Data.GetLength(0);
-                    poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                    var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
-                    var addCompressedRidges = POISelection.AddCompressedRidges(
-                        config,
-                        audioFiles[i],
-                        ridgeConfig,
-                        featurePropSet,
-                        compressConfig,
-                        filterRidges);
-                    var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, spectrogram.Data, rows, cols);
-                    //var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
-                    var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(poiMatrix, rows, cols, 3, 1.0);
-                    //var dividedRidges = POISelection.POIListDivision(joinedRidges);
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, joinedRidges, out acousticEventlist);
-                    var resultEvent = ClusterAnalysis.RemoveSmallEvents(acousticEventlist, 30);
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, resultEvent, eventThreshold, null);
+                    //var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
+                    //var cols = spectrogram.Data.GetLength(0);
+                    //poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                    poiList = POISelection.Post8DirGradient(spectrogram, gradientConfig);
+                    //var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
+                    //var addCompressedRidges = POISelection.AddCompressedRidges(
+                    //    config,
+                    //    audioFiles[i],
+                    //    ridgeConfig,
+                    //    featurePropSet,
+                    //    compressConfig,
+                    //    filterRidges);
+                    //var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(addCompressedRidges, spectrogram.Data, rows, cols);
+                    ////var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
+                    //var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(poiMatrix, rows, cols, 3, 1.0);
+                    ////var dividedRidges = POISelection.POIListDivision(joinedRidges);
+                    //ClusterAnalysis.RidgeListToEvent(spectrogram, joinedRidges, out acousticEventlist);
+                    //var resultEvent = ClusterAnalysis.RemoveSmallEvents(acousticEventlist, 30);
+                    var spectrogramData = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
+                        spectrogram.Data.GetLength(1));
+                    spectrogram.Data = spectrogramData;
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);                
                     Bitmap bmp = (Bitmap)image;
                     //foreach (PointOfInterest poi in joinedRidges)
                     //{
                     //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
                     //}
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- filter false ridges.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- noise removal.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);

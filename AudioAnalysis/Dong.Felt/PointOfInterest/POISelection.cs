@@ -753,8 +753,8 @@ namespace Dong.Felt
                     }
                 }
             }
-            //var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);            
-            //poiList = prunedPoiList;
+            var prunedPoiList = ImageAnalysisTools.PruneAdjacentTracks(poiList, rows, cols);
+            poiList = prunedPoiList;
         }
 
 
@@ -887,9 +887,7 @@ namespace Dong.Felt
                         double av, sd;
                         NormalDist.AverageAndSD(subM2, out av, out sd);
                         double localThreshold = sd * 0.9;
-                        if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;
-                        //double localThreshold = 1.5 * av;
-                        //if (subM2[halfLength + offset, halfLength + offset] < localThreshold) continue;
+                        if (subM2[halfLength + offset, halfLength + offset] - av < localThreshold) continue;                       
                         var orientation = (int)Math.Round((direction * 8) / Math.PI);
                         hits[r, c] = (byte)(orientation + 1);
                         newMatrix[r, c] = magnitude;
