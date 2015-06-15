@@ -6,14 +6,14 @@ library(seewave)
 library(tuneR)
 setwd("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\Yvonne")
 
-sourceDir <- "C:\\Work\\Output\\Wet Eucalypt\\Output48"
+sourceDir <- "C:\\Work\\Output\\Eastern Eucalypt\\Output66EE"
 
 myFiles <- list.files(path=sourceDir, full.names=TRUE,
                       pattern="*.wav")
 
-source("..\\shared\\sort.Filename.R")#changed to sort.filenames
+source("..\\shared\\sort.Filename.R")
 
-myFiles <- sort.Filename(myFiles)# changed to sort.filenames
+myFiles <- sort.Filename(myFiles)
 
 fileCount <- length(myFiles)
 
@@ -26,7 +26,7 @@ getTempEntropy <- function(file){
         return(result.th)
 }
 
-temporalEntropy <- sapply(myFiles[1:60], getTempEntropy,
+temporalEntropy <- sapply(myFiles[1:fileCount], getTempEntropy,
                           USE.NAMES=FALSE)
 
 #View(temporalEntropy)
@@ -40,7 +40,7 @@ getSpectralProperties <- function(file){
                 return(result.prop)
 }
 
-spectralProperties <- sapply(myFiles[1:60], getSpectralProperties,
+spectralProperties <- sapply(myFiles[1:fileCount], getSpectralProperties,
                              USE.NAMES=FALSE)
 spectralProperties <- aperm(spectralProperties) # transpose array
 
@@ -54,7 +54,7 @@ getACI <- function(file){
         return(result.aci)
 }
 
-acousticCompIndex <- sapply(myFiles[1:60], getACI,
+acousticCompIndex <- sapply(myFiles[1:fileCount], getACI,
                              USE.NAMES=FALSE)
 #View(acousticCompIndex)
 
@@ -66,7 +66,7 @@ getZCR <- function(file){
         return(result.zcr)
 }
 
-zeroCrossingRate <- sapply(myFiles[1:60], getZCR,
+zeroCrossingRate <- sapply(myFiles[1:fileCount], getZCR,
                             USE.NAMES=FALSE)
 
 print ("finished calculating the zero crossing rate")
@@ -82,28 +82,29 @@ View(allProperties)
 
 ######## WRITE MATRIX ##############################
 library(MASS)
-write.matrix(allProperties,file="output48WE.csv",sep=",")
+write.matrix(allProperties,file="output66EE.csv",sep=",")
+
 ######## PLOTTING ##############################
 par(mfcol=c(2,2)) # set layout
 par(mar=c(4.1, 4.6, 1.6, 2.1)) # set margins
 attach(allProperties)
-plot(c(1:60),acousticCompIndex, ylab="Acoustic complexity index")
-plot(c(1:60),zeroCrossingRate, ylab="Zero crossing rate")
-plot(c(1:60),temporalEntropy, ylab="Temporal entropy")
-plot(c(1:60),sd, ylab="Standard deviation")
+#plot(c(1:fileCount),acousticCompIndex, ylab="Acoustic complexity index")
+#plot(c(1:fileCount),zeroCrossingRate, ylab="Zero crossing rate")
+#plot(c(1:fileCount),temporalEntropy, ylab="Temporal entropy")
+#plot(c(1:fileCount),sd, ylab="Standard deviation")
 ###########
-plot(c(1:60),median, ylab="median frequency")
-plot(c(1:60),sem,ylab="standard error of mean")
-plot(c(1:60),IQR, ylab="interquartile range")
-plot(c(1:60),cent, ylab="spectral centroid")
+#plot(c(1:fileCount),median, ylab="median frequency")
+#plot(c(1:fileCount),sem,ylab="standard error of mean")
+#plot(c(1:fileCount),IQR, ylab="interquartile range")
+#plot(c(1:fileCount),cent, ylab="spectral centroid")
 ###########
-plot(c(1:60),skewness)
-plot(c(1:60),kurtosis)
-plot(c(1:60),sfm, ylab="spectral flatness")
-plot(c(1:60),sh, ylab="spectral entropy")
+#plot(c(1:fileCount),skewness)
+#plot(c(1:fileCount),kurtosis)
+#plot(c(1:fileCount),sfm, ylab="spectral flatness")
+#plot(c(1:fileCount),sh, ylab="spectral entropy")
 ##########
-plot(c(1:60),mean, ylab="mean frequency (Hz)")
-plot(c(1:60),Q25)
-plot(c(1:60),Q75)
-plot(c(1:60),IQR, ylab="interquartile range")
+plot(c(1:fileCount),mean, ylab="mean frequency (Hz)")
+plot(c(1:fileCount),Q25)
+plot(c(1:fileCount),Q75)
+plot(c(1:fileCount),IQR, ylab="interquartile range")
 ########### END OF CODE ##############
