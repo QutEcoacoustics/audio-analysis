@@ -53,9 +53,9 @@ namespace AnalysisPrograms
 
         public const string AnalysisName = "Canetoad";
 
-        ////public const int RESAMPLE_RATE = 22050;
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-        public const int ResampleRate = 17640;
+        public const int RESAMPLE_RATE = 17640;
+        //public const int RESAMPLE_RATE = 22050;
 
         #endregion
 
@@ -70,8 +70,8 @@ namespace AnalysisPrograms
                                SegmentMaxDuration = TimeSpan.FromMinutes(1), 
                                SegmentMinDuration = TimeSpan.FromSeconds(30), 
                                SegmentMediaType = MediaTypes.MediaTypeWav, 
-                               SegmentOverlapDuration = TimeSpan.Zero, 
-                               SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                               SegmentOverlapDuration = TimeSpan.Zero,
+                               SegmentTargetSampleRate = RESAMPLE_RATE
                            };
             }
         }
@@ -110,8 +110,8 @@ namespace AnalysisPrograms
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
                     //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
-                    @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
-                    //@"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
+                    //@"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
+                    @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
@@ -240,8 +240,8 @@ namespace AnalysisPrograms
                 // Process entire file
                 AudioFilePreparer.PrepareFile(
                     arguments.Source, 
-                    tempF, 
-                    new AudioUtilityRequest { TargetSampleRate = ResampleRate }, 
+                    tempF,
+                    new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, 
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
@@ -251,7 +251,7 @@ namespace AnalysisPrograms
                     tempF, 
                     new AudioUtilityRequest
                         {
-                            TargetSampleRate = ResampleRate, 
+                            TargetSampleRate = RESAMPLE_RATE, 
                             OffsetStart = start, 
                             OffsetEnd = start.Add(duration)
                         }, 
