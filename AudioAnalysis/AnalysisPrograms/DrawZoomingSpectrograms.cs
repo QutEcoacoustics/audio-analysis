@@ -92,18 +92,16 @@ namespace AnalysisPrograms
             // string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
             // zoomable spectrograms
-
             // string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
 
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            string ipdir =
-                @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200ms.EclipseFarmstay";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200ms.EclipseFarmstay";
 
-            // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages2";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
 
             var ipDir = new DirectoryInfo(ipdir);
             var opDir = new DirectoryInfo(opdir);
