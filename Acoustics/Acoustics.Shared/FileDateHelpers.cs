@@ -28,11 +28,11 @@ namespace Acoustics.Shared
                 new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, false, 2),                                                         new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false,  2), 
 
                 // valid: prefix_20140101-235959+10.mp3, a_00000000-000000+00.a, a_99999999-999999+9999.dnsb48364JSFDSD
-                new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})([+-]\d{2,4}))\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, true, 2),
+                new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})(([+-]\d{2,4}|Z))).*\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, true, 2),
                                                          
                 // ISO8601-ish (supports a file compatible variant of ISO8601)
                 // valid: prefix_20140101T235959+10.mp3, a_00000000T000000+00.a, a_99999999T999999+9999.dnsb48364JSFDSD
-                new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})([+-]\d{2,4}))\.([a-zA-Z0-9]+)$", AppConfigHelper.Iso8601FileCompatibleDateFormat, true, 2),
+                new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(([+-]\d{2,4}|Z))).*\.([a-zA-Z0-9]+)", AppConfigHelper.Iso8601FileCompatibleDateFormat, true, 2),
 
                 // valid: SERF_20130314_000021_000.wav, a_20130314_000021_a.a, a_99999999_999999_a.dnsb48364JSFDSD
                 new DateVariants(@"(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2}Z?))_(.*?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false, 2)
