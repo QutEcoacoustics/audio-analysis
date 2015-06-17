@@ -72,7 +72,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
-            double frameStepInSeconds     = indexGeneration.FrameStep / (double)indexGeneration.SampleRate;
+            double frameStepInSeconds     = indexGeneration.FrameStep / (double)indexGeneration.SampleRateResampled;
             TimeSpan frameScale = TimeSpan.FromTicks((long)Math.Round(frameStepInSeconds * 10000000));
             int[] compressionFactor = { 1, 2, 5 };
             int maxCompression = compressionFactor[compressionFactor.Length - 1];

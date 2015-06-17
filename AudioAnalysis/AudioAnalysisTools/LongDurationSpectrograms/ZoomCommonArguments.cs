@@ -70,8 +70,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="indexDistributionsFile"></param>
         public static void CheckForNeededFiles(DirectoryInfo indicesDirectory, out FileInfo indexGenerationDataFile, out FileInfo indexDistributionsFile)
         {
-            indexGenerationDataFile = indicesDirectory.GetFiles(IndexGenerationData.FileNameFragment).Single();
-            indexDistributionsFile = indicesDirectory.GetFiles(IndexDistributions.IndexStatisticsFilenameFragment).Single();
+            indexDistributionsFile = indicesDirectory.GetFiles("*" + IndexDistributions.IndexStatisticsFilenameFragment + "*").Single();
+            indexGenerationDataFile = indicesDirectory.GetFiles("*" + IndexGenerationData.FileNameFragment + "*").Single();
         }
     }
 }

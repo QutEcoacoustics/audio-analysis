@@ -519,7 +519,10 @@ namespace AnalysisPrograms
             // this data can then be used by post-process analyses
             var indexConfigData = new IndexGenerationData()
                                       {
-                                          SampleRate = sampleRate,
+                                          RecordingType  = inputFileSegment.OriginalFile.Extension,
+                                          RecordingStart = inputFileSegment.OriginalFileStartDate ?? DateTimeOffset.MinValue,
+                                          SampleRateOriginal = (int)inputFileSegment.OriginalFileSampleRate,
+                                          SampleRateResampled = sampleRate,
                                           FrameWidth = frameWidth,
                                           FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
                                           IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
@@ -542,6 +545,12 @@ namespace AnalysisPrograms
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
+
+            //################################################################ TO BE REWORKED
+            var sb = WriteIndexInformation(indexConfigData, basename);
+            string path = Path.Combine(resultsDirectory.FullName, (basename + ".IndexInformation.txt"));
+            FileTools.WriteTextFile(path, sb.ToString());
+            //################################################################ TO BE REWORKED
 
             // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
             if (acousticIndicesParsedConfiguration.IndexCalculationDuration != TimeSpan.FromSeconds(60.0))
@@ -645,6 +654,58 @@ namespace AnalysisPrograms
             }
 
             return image.GetImage();
+        }
+
+
+
+        public static System.Text.StringBuilder WriteIndexInformation(IndexGenerationData indexConfigData, string fileStem)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("#####################################################################################");
+            sb.AppendLine("PARAMETER SETTINGS USED TO OBTAIN THE SUMMARY AND SPECTRAL INDICES IN THIS DIRECTORY.\n");
+            sb.AppendLine("RESULTS OBTAINED WITH CODE CLASS: AnalysisPrograms.AnalyseLongRecording");
+            sb.AppendLine("Activity:       audio2csv");
+            sb.AppendLine("AnalysisType:   Towsey.Acoustic");
+            sb.AppendFormat("Recording Name: {0}\n", fileStem);
+            sb.AppendFormat("Recording Type: {0}\n", indexConfigData.RecordingType);
+            sb.AppendLine("Recording Date: is absolute date and time of day at which the recording started.");
+            sb.AppendLine("                This value will be valid ONLY if it is correctly encoded in file name. Otherwise DEFAULT=UTC.MinValue.");
+            sb.AppendFormat("Recording Date: {0}\n", indexConfigData.RecordingStart.Date);
+            sb.AppendFormat("MinuteOffset: {0}\n", indexConfigData.MinuteOffset);
+            sb.AppendLine("");
+            sb.AppendLine("The csv files in this output can be used to construct:");
+            sb.AppendLine("                      1. long-duration false-colour spectrograms");
+            sb.AppendLine("                      2. a focused stack of zooming false-colour spectrograms");
+            sb.AppendLine("                      3. the tiles for zooming false-colour spectrograms");
+            sb.AppendLine("");
+            sb.AppendFormat("Sample rate of the original recording:    {0}\n", indexConfigData.SampleRateOriginal);
+            sb.AppendFormat("Resample rate for calculation of indices: {0}\n", indexConfigData.SampleRateResampled);
+            sb.AppendLine("");
+            sb.AppendLine("IndexCalculationDuration is the Timespan (in seconds) over which summary and spectral indices are calculated.");
+            sb.AppendFormat("IndexCalculationDuration: {0}\n", indexConfigData.IndexCalculationDuration.TotalSeconds);
+            sb.AppendLine("");
+            sb.AppendLine("FrameWidth is used without overlap to calculate the spectral indices. Typical value=512");
+            sb.AppendFormat("FrameWidth: {0}\n", indexConfigData.FrameWidth);
+            sb.AppendLine("FrameStep is used ONLY when calculating standard spectrograms for zoomed in views.");
+            sb.AppendLine("          To achieve alignment with Spectral Index Spectrograms must set value = 441");
+            sb.AppendFormat("FrameStep: {0}\n", indexConfigData.FrameStep);
+            sb.AppendLine("BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.");
+            sb.AppendLine("   Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.");
+            sb.AppendLine("   The  BG noise interval is not extended beyond start or end of recording segment.");
+            sb.AppendLine("   Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.");
+            sb.AppendFormat("BGNoiseNeighbourhood: {0}\n", indexConfigData.BGNoiseNeighbourhood);
+            sb.AppendLine("");
+            sb.AppendLine("The following parameters are typically used for the generation of long duration spectrograms from these indices:");
+            sb.AppendLine("The following two RGB colour-map combinations have become standard but can be changed");
+            sb.AppendLine("ColourMap1: BGN-AVG-CVR");
+            sb.AppendLine("ColourMap2: ACI-ENT-EVN");
+            sb.AppendLine("BackgroundFilterCoeff is used to adjust colour contrast of false-colour images. Default = 0.75.");
+            sb.AppendFormat("BackgroundFilterCoeff: {0}\n", indexConfigData.BackgroundFilterCoeff);
+            sb.AppendLine(""); 
+            sb.AppendLine("XAxisTicInterval for a 60sec Index calculation duration, is one hour or 60 minutes.");
+            sb.AppendLine("YAxisTicInterval for all spectrograms (standard or long-duration) is 1kHz.");
+            sb.AppendLine("##################################################################################");
+            return sb;
         }
 
 
