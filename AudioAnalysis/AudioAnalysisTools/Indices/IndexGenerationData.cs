@@ -1,55 +1,74 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="IndexGenerationData.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools.Indices
 {
+    using System;
+
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     public class IndexGenerationData
     {
+        /// <summary>
+        /// Gets or sets the configuration options used to draw long duration spectrograms
+        /// </summary>
+        public LdSpectrogramConfig LongDurationSpectrogramConfig { get; set; }
+
         public const string FileNameFragment = "IndexGenerationData";
 
         public IndexGenerationData()
         {
-            //these are default values only. Must be reset if different
+            /* Ant: 
+             *  I Disabled these defaults. They do not make sense.
+             *  The index generation data is NOT valid if it is missing values.
+             *  That is not an error that should be automatically compensated for.
+             *  Left the code in for clarity.
+             *  
+            // these are default values only. Must be reset if different
             this.RecordingType = "undefined";
             this.IndexCalculationDuration = TimeSpan.FromMinutes(1.0);
             this.SampleRateOriginal  = SpectrogramConstants.SAMPLE_RATE;
             this.SampleRateResampled = SpectrogramConstants.SAMPLE_RATE;
-            this.RecordingStart       = DateTimeOffset.MinValue;
+            this.RecordingStartDate       = DateTimeOffset.MinValue;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
-            this.FrameWidth   = SpectrogramConstants.FRAME_WIDTH;
-            this.FrameStep    = SpectrogramConstants.FRAME_WIDTH;
+            this.FrameLength   = SpectrogramConstants.FRAME_LENGTH;
+            this.FrameStep    = SpectrogramConstants.FRAME_LENGTH;
             this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            */
         }
 
         /// <summary>
-        /// 
+        /// The extension of the original audio file.
         /// </summary>
         public string RecordingType { get; set; }
 
         /// <summary>
-
-        /// <summary>
-        /// 
+        /// BackgroundFilterCoeff is used to adjust colour contrast of false-colour images. Default = 0.75.
         /// </summary>
         public double BackgroundFilterCoeff { get; set; }
 
         /// <summary>
         ///  default value for frame width from which spectrogram was derived.
         /// </summary>
-        public int FrameWidth { get; set; }
+        public int FrameLength { get; set; }
 
         /// <summary>
         ///  default value for frame step from which spectrogram was derived. There may be overlap.
         /// </summary>
         public int FrameStep { get; set; }
-        public DateTimeOffset RecordingStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date the audio was recorded. Originally parsed from the file name by <c>FileDateHelpers</c>.
+        /// </summary>
+        public DateTimeOffset? RecordingStartDate { get; set; }
+
         public TimeSpan MinuteOffset { get; set; }
          
         public int SampleRateOriginal { get; set; }
+
         public int SampleRateResampled { get; set; }
 
         /// <summary>

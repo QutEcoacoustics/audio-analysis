@@ -348,7 +348,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     spectrogramMatrices.Add(keys[i], matrix);
-                    //this.FrameWidth = freqBinCount * 2;
+                    //this.FrameLength = freqBinCount * 2;
                 }
                 else
                 {

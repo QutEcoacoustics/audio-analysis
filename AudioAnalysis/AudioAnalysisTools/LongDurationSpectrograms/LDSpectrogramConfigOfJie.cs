@@ -58,7 +58,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.IndexCalculationDuration = TimeSpan.FromMinutes(1.0);
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
-            this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
+            this.FrameWidth = SpectrogramConstants.FRAME_LENGTH;
             this.ColourMap1 = SpectrogramConstants.RGBMap_BGN_AVG_EVN;
             this.ColourMap2 = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
             this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;        
