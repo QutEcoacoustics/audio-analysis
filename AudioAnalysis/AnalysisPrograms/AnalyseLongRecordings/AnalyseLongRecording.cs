@@ -342,7 +342,7 @@ Output  to  directory: {1}
         {
             if (args.WhenExitCopyConfig)
             {
-                args.Config.CopyTo(Path.Combine(args.Output.FullName, args.Config.Name));
+                args.Config.CopyTo(Path.Combine(args.Output.FullName, args.Config.Name), true);
             }
 
             if (args.WhenExitCopyLog)
@@ -350,7 +350,7 @@ Output  to  directory: {1}
                 var logDirectory = ConfigFile.LogFolder;
                 var logFile = Path.Combine(logDirectory, "log.txt");
 
-                File.Copy(logFile, Path.Combine(args.Output.FullName, "log.txt"));
+                File.Copy(logFile, Path.Combine(args.Output.FullName, "log.txt"), true);
             }
         }
     }

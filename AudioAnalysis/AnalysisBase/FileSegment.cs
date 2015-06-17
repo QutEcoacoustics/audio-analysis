@@ -47,12 +47,11 @@ namespace AnalysisBase
             this.fileDateRequired = fileDateRequired;
             this.OriginalFile = originalFile;
             
-
+            this.triedToParseDate = true;
+            this.fileStartDate = this.AudioFileStart();
+            
             if (this.fileDateRequired)
-            {
-                this.triedToParseDate = true;
-                this.fileStartDate = this.AudioFileStart();
-
+                {
                 if (!this.fileStartDate.HasValue)
                 {
                     throw new InvalidFileDateException(
