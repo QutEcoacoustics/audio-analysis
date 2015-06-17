@@ -6,6 +6,7 @@ using System.Text;
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System.Diagnostics;
+    using System.Diagnostics.Contracts;
     using System.IO;
 
     using Acoustics.Shared;
@@ -48,6 +49,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="indicesDirectory"></param>
         public void CheckForNeededFiles(DirectoryInfo indicesDirectory)
         {
+            Contract.Requires(indicesDirectory != null);
+
             FileInfo indexDistributionsFile;
             FileInfo indexGenerationDataFile;
             CheckForNeededFiles(indicesDirectory, out indexGenerationDataFile, out indexDistributionsFile);
@@ -61,8 +64,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// read in required files
-        /// we expect a valid indices output directory (the input directory in this action)
+        /// Read in required files.
+        /// We expect a valid indices output directory (the input directory in this action)
         /// to contain a IndexDistributions.json and a IndexGenerationData.json file
         /// </summary>
         /// <param name="indicesDirectory"></param>

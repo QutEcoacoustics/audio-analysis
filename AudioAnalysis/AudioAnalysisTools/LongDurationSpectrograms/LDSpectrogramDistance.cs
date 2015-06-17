@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR; 
 
         // default value - from which spectrogram was derived
-        private static int frameWidth = SpectrogramConstants.FRAME_WIDTH;
+        private static int frameWidth = SpectrogramConstants.FRAME_LENGTH;
 
         // assume recording starts at zero minute of day i.e. midnight
         private static TimeSpan minuteOffset = SpectrogramConstants.MINUTE_OFFSET;

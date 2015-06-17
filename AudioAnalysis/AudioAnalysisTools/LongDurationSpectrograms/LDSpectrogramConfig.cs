@@ -62,6 +62,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public TimeSpan XAxisTicInterval { get; set; }
 
+        /// <summary>
+        /// In seconds, the horizontal spacing between vertical grid lines for the x-Axis
+        /// </summary>
+        /// <param name="sampleRate"></param>
+        /// <param name="frameWidth"></param>
+        /// <returns></returns>
         public double CalculateYAxisTickInterval(double sampleRate, double frameWidth)
         {
              // convert 1000 Hz to a freq bin interval.
@@ -69,6 +75,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return (int)Math.Round(this.yAxisTicInterval / freqBinWidth);
         }
 
+        /// <summary>
+        /// In hertz, the vertical spacing between horizontal grid lines for the y-Axis
+        /// </summary>
         public int YAxisTicInterval
         {
             get

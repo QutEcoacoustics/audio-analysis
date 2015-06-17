@@ -81,7 +81,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             this.BackgroundFilter = 1.0; // default value = no filtering
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE; // default recording starts at midnight
-            this.FrameWidth = SpectrogramConstants.FRAME_WIDTH; // default value - from which spectrogram was derived
+            this.FrameWidth = SpectrogramConstants.FRAME_LENGTH; // default value - from which spectrogram was derived
             this.XTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default = one minute spectra and hourly time lines
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
         }
@@ -168,7 +168,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             this.BackgroundFilter = 1.0;
             this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
-            this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
+            this.FrameWidth = SpectrogramConstants.FRAME_LENGTH;
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
             // set the X and Y axis scales for the spectrograms 
             this.XTicInterval = Xscale; 
@@ -181,7 +181,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             this.BackgroundFilter = 1.0;
             this.SampleRate = indexGenerationData.SampleRateResampled;
-            this.FrameWidth = indexGenerationData.FrameWidth;
+            this.FrameWidth = indexGenerationData.FrameLength;
             this.StartOffset = indexGenerationData.MinuteOffset;
             // set the X and Y axis scales for the spectrograms 
             this.IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;

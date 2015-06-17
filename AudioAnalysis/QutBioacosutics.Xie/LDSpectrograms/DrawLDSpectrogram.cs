@@ -153,7 +153,7 @@ namespace QutBioacosutics.Xie.LDSpectrograms
             TimeSpan minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
             TimeSpan xScale = (TimeSpan?)configuration.XAxisTicInterval ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
             int sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE;
-            int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH;
+            int frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH;
 
 
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);

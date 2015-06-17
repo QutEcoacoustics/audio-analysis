@@ -59,6 +59,12 @@ Output  to  directory: {1}
                 arguments = Dev();
             }
 
+            // optionally copy logs / config to make results easier to understand
+            if (arguments.WhenExitCopyConfig || arguments.WhenExitCopyLog)
+            {
+                AppDomain.CurrentDomain.ProcessExit += (sender, args) => { Cleanup(arguments); };
+            }
+
             LoggedConsole.WriteLine("# PROCESS LONG RECORDING");
             LoggedConsole.WriteLine("# DATE AND TIME: " + DateTime.Now);
 
@@ -325,6 +331,27 @@ Output  to  directory: {1}
             }
 
             return analyser;
+        }
+
+
+        /// <summary>
+        /// Generic organization of resources after a run
+        /// </summary>
+        /// <param name="args"></param>
+        private static void Cleanup(AnalyseLongRecording.Arguments args)
+        {
+            if (args.WhenExitCopyConfig)
+            {
+                args.Config.CopyTo(Path.Combine(args.Output.FullName, args.Config.Name));
+            }
+
+            if (args.WhenExitCopyLog)
+            {
+                var logDirectory = ConfigFile.LogFolder;
+                var logFile = Path.Combine(logDirectory, "log.txt");
+
+                File.Copy(logFile, Path.Combine(args.Output.FullName, "log.txt"));
+            }
         }
     }
 }
