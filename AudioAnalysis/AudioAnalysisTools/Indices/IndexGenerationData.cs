@@ -13,12 +13,24 @@ namespace AudioAnalysisTools.Indices
 
         public IndexGenerationData()
         {
+            //these are default values only. Must be reset if different
+            this.RecordingType = "undefined";
             this.IndexCalculationDuration = TimeSpan.FromMinutes(1.0);
-            this.SampleRate = SpectrogramConstants.SAMPLE_RATE;
+            this.SampleRateOriginal  = SpectrogramConstants.SAMPLE_RATE;
+            this.SampleRateResampled = SpectrogramConstants.SAMPLE_RATE;
+            this.RecordingStart       = DateTimeOffset.MinValue;
             this.MinuteOffset = SpectrogramConstants.MINUTE_OFFSET;
-            this.FrameWidth = SpectrogramConstants.FRAME_WIDTH;
+            this.FrameWidth   = SpectrogramConstants.FRAME_WIDTH;
+            this.FrameStep    = SpectrogramConstants.FRAME_WIDTH;
             this.BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string RecordingType { get; set; }
+
+        /// <summary>
 
         /// <summary>
         /// 
@@ -34,10 +46,11 @@ namespace AudioAnalysisTools.Indices
         ///  default value for frame step from which spectrogram was derived. There may be overlap.
         /// </summary>
         public int FrameStep { get; set; }
-
+        public DateTimeOffset RecordingStart { get; set; }
         public TimeSpan MinuteOffset { get; set; }
-
-        public int SampleRate { get; set; }
+         
+        public int SampleRateOriginal { get; set; }
+        public int SampleRateResampled { get; set; }
 
         /// <summary>
         /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed. 

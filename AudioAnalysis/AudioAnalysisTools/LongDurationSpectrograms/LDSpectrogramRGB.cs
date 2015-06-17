@@ -180,7 +180,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public LDSpectrogramRGB(LdSpectrogramConfig config, IndexGenerationData indexGenerationData, string colourMap)
         {
             this.BackgroundFilter = 1.0;
-            this.SampleRate = indexGenerationData.SampleRate;
+            this.SampleRate = indexGenerationData.SampleRateResampled;
             this.FrameWidth = indexGenerationData.FrameWidth;
             this.StartOffset = indexGenerationData.MinuteOffset;
             // set the X and Y axis scales for the spectrograms 

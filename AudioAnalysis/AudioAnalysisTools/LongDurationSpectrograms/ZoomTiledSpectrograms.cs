@@ -117,7 +117,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             CubeHelix cch = CubeHelix.GetCubeHelix();
             Image spectrogramImage = cch.DrawMatrixWithoutNormalisation(frameData);
 
-            int nyquist = indexGeneration.SampleRate / 2;
+            int nyquist = indexGeneration.SampleRateResampled / 2;
             int herzInterval = 1000;
             string title = string.Format("ZOOM SCALE={0}ms/pixel ", frameScale.TotalMilliseconds);
             Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, spectrogramImage.Width);

@@ -61,8 +61,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
 
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Italy.Acoustic.Parallel.yml";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
@@ -81,7 +81,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                                     //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
                                     //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
                                     //Output = @"C:\SensorNetworks\Output\Test\AfterAnthonyRefactor7".ToDirectoryInfo()
-                                    Output = @"C:\SensorNetworks\Output\Frogs\Canetoad".ToDirectoryInfo()
+                                    //Output = @"C:\SensorNetworks\Output\Frogs\Canetoad".ToDirectoryInfo()
+                                    Output = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices".ToDirectoryInfo()
                                     //Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms".ToDirectoryInfo()
                                 };
 
