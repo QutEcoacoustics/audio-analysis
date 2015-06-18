@@ -6,7 +6,7 @@ library(seewave)
 library(tuneR)
 setwd("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\Yvonne")
 
-sourceDir <- "C:\\Work\\Output\\Eastern Eucalypt\\Output66EE"
+sourceDir <- "C:\\Work\\Output\\Eastern Eucalypt\\Output86EE"
 
 myFiles <- list.files(path=sourceDir, full.names=TRUE,
                       pattern="*.wav")
@@ -82,7 +82,7 @@ View(allProperties)
 
 ######## WRITE MATRIX ##############################
 library(MASS)
-write.matrix(allProperties,file="output66EE.csv",sep=",")
+write.matrix(allProperties,file="output86EE.csv",sep=",")
 
 ######## PLOTTING ##############################
 par(mfcol=c(2,2)) # set layout

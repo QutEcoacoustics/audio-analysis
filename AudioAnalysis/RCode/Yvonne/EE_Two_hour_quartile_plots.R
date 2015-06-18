@@ -125,12 +125,12 @@ plotQuartile (propertiesEE51$Q25, propertiesEE52$Q25,
               propertiesEE51$Q75, propertiesEE52$Q75,
               propertiesEE51$cent, propertiesEE52$cent, pos2, 
               myFiles[51], timeLabels2)
-#par(new=TRUE)
-#plotQuartile (propertiesEE75$Q25, propertiesEE76$Q25,
- #             propertiesEE75$median, propertiesEE76$median,
-  #            propertiesEE75$Q75, propertiesEE76$Q75,
-   #           propertiesEE75$cent, propertiesEE76$cent, pos2, 
-    #          myFiles[75], timeLabels2)
+par(new=TRUE)
+plotQuartile (propertiesEE75$Q25, propertiesEE76$Q25,
+              propertiesEE75$median, propertiesEE76$median,
+              propertiesEE75$Q75, propertiesEE76$Q75,
+              propertiesEE75$cent, propertiesEE76$cent, pos2, 
+              myFiles[75], timeLabels2)
 #par(new=TRUE)
 #plotQuartile (propertiesEE99$Q25, propertiesEE100$Q25,
  #             propertiesEE99$median, propertiesEE100$median,
@@ -167,12 +167,12 @@ plotQuartile (propertiesEE53$Q25, propertiesEE54$Q25,
               propertiesEE53$Q75, propertiesEE54$Q75,
               propertiesEE53$cent, propertiesEE54$cent, pos3, 
               myFiles[53], timeLabels3)
-#par(new=TRUE)
-#plotQuartile (propertiesEE77$Q25, propertiesEE78$Q25,
- #             propertiesEE77$median, propertiesEE78$median,
-  #            propertiesEE77$Q75,propertiesEE78$Q75,
-   #           propertiesEE77$cent, propertiesEE78$cent, pos3, 
-    #          myFiles[77], timeLabels3)
+par(new=TRUE)
+plotQuartile (propertiesEE77$Q25, propertiesEE78$Q25,
+              propertiesEE77$median, propertiesEE78$median,
+              propertiesEE77$Q75,propertiesEE78$Q75,
+              propertiesEE77$cent, propertiesEE78$cent, pos3, 
+              myFiles[77], timeLabels3)
 #par(new=TRUE)
 #plotQuartile (propertiesEE101$Q25, propertiesEE102$Q25,
  #             propertiesEE101$median, propertiesEE102$median,
@@ -208,12 +208,12 @@ plotQuartile (propertiesEE55$Q25, propertiesEE56$Q25,
               propertiesEE55$Q75, propertiesEE56$Q75,
               propertiesEE55$cent, propertiesEE56$cent, pos1, 
               myFiles[55], timeLabels4)
-#par(new=TRUE)
-#plotQuartile (propertiesEE79$Q25, propertiesEE80$Q25,
- #             propertiesEE79$median, propertiesEE80$median,
-  #            propertiesEE79$Q75, propertiesEE80$Q75,
-   #           propertiesEE79$cent, propertiesEE80$cent, pos1, 
-    #          myFiles[79], timeLabels4)
+par(new=TRUE)
+plotQuartile (propertiesEE79$Q25, propertiesEE80$Q25,
+              propertiesEE79$median, propertiesEE80$median,
+              propertiesEE79$Q75, propertiesEE80$Q75,
+              propertiesEE79$cent, propertiesEE80$cent, pos1, 
+              myFiles[79], timeLabels4)
 #par(new=TRUE)
 #plotQuartile (propertiesEE103$Q25, propertiesEE104$Q25,
  #             propertiesEE103$median, propertiesEE104$median,
