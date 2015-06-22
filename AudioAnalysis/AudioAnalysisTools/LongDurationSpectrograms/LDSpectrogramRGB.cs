@@ -1034,21 +1034,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
 
-        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan startOffset, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval, DateTimeOffset? dateTimeOffset = null)
+        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan startTimeAbs, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval, DateTimeOffset? dateTimeOffset = null)
         {
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
-            
+            // following line is debug purposes only
+            startTimeAbs = startTimeAbs + TimeSpan.FromMinutes(30);
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
             }
 
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startTimeAbs, fullDuration, xAxisTicInterval, nyquist, herzInterval);
 
             int trackHeight = 20;
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startOffset, bmp1.Width, trackHeight);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startTimeAbs, bmp1.Width, trackHeight);
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -1320,14 +1321,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
             string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
 
-            double backgroundFilterCoeff = indexGenerationData.BackgroundFilterCoeff;
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
 
             var cs1 = new LDSpectrogramRGB(config, indexGenerationData, colorMap1);
             string fileStem = basename;
             
             cs1.FileName = fileStem;
-            cs1.BackgroundFilter = backgroundFilterCoeff;
+            cs1.BackgroundFilter = indexGenerationData.BackgroundFilterCoeff;
+
+            // calculate start time by combining DatetimeOffset with minute offset.
+            cs1.StartOffset = indexGenerationData.MinuteOffset;
+            if (indexGenerationData.RecordingStartDate.HasValue)
+            {
+                DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
+                cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
+            }
 
             // Get and set the dictionary of index properties
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigPath);
@@ -1380,11 +1388,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             Image image1;
             Image image1NoChrome;
-            CreateSpectrogramFromSpectralIndices(cs1, colorMap1, indexGenerationData.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image1, out image1NoChrome);
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap1, returnChromelessImages, outputDirectory).Decompose(out image1, out image1NoChrome);
 
             Image image2;
             Image image2NoChrome;
-            CreateSpectrogramFromSpectralIndices(cs1, colorMap2, indexGenerationData.MinuteOffset, fileStem, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap2, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
 
             // read high amplitude and clipping info into an image
             Image imageX;
@@ -1428,7 +1436,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                        : null;
         }
 
-        private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, TimeSpan minuteOffset, string fileStem, bool returnChromelessImages, DirectoryInfo outputDirectory)
+        private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, bool returnChromelessImages, DirectoryInfo outputDirectory)
         {
             const int HertzInterval = 1000;
             int nyquist = cs1.SampleRate / 2;
@@ -1444,14 +1452,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
 
             // then pass that image into chromer
-            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", cs1.FileName, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
 
-            //TODO TODO TODO 
-
-            DateTimeOffset? dateTimeOffset = null;
-            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval, dateTimeOffset);
-            var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap, "png");
+            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1.StartOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
+            var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");
             image.Save(outputPath);
             return Tuple.Create(image, imageNoChrome);
         }

@@ -891,25 +891,40 @@
         /// It could be generalised for any time track.
         /// </summary>
         /// <param name="fullDuration">time span of entire time track to be drawn</param>
-        /// <param name="startTime">time at start of track </param>
+        /// <param name="startTimeAbs">time at start of track </param>
         /// <param name="trackWidth">X pixel dimension</param>
         /// <param name="trackHeight">Y pixel dimension</param>
         /// <returns></returns>
-        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startTime, int trackWidth, int trackHeight)
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startTimeAbs, int trackWidth, int trackHeight)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
 
-            int roundedStartSeconds = (int)Math.Ceiling(startTime.TotalSeconds);
-            while ((roundedStartSeconds % 5) != 0)
-            {
-                roundedStartSeconds++;
-            }
-            TimeSpan roundedStartTime = TimeSpan.FromSeconds(roundedStartSeconds);
-            TimeSpan offsetTime = roundedStartTime - startTime;
             double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)trackWidth;
-            int pixelStartOffset = (int)(offsetTime.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
+
+            //int roundedStartSeconds = (int)Math.Ceiling(startTime.TotalSeconds);
+            //while ((roundedStartSeconds % 5) != 0)
+            //{
+            //    roundedStartSeconds++;
+            //}
+            //TimeSpan roundedStartTime = TimeSpan.FromSeconds(roundedStartSeconds);
+
+            int roundedStartMinutes = (int)Math.Round(startTimeAbs.TotalMinutes);
+            TimeSpan roundedStartTime = TimeSpan.FromMinutes(roundedStartMinutes);
+
+            int roundedStartHours = roundedStartTime.Hours;
+            if (roundedStartTime.Minutes > 0)
+            {
+                roundedStartHours = (int)Math.Ceiling(roundedStartTime.TotalHours);
+            }
+
+            TimeSpan ticStartTime = TimeSpan.FromHours(roundedStartHours);
+            TimeSpan ticStartOffset = ticStartTime - roundedStartTime;
+            int pixelStartOffset = (int)(ticStartOffset.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
+
+            //TimeSpan offsetTime = roundedStartTime - roundedStartTime;
+            //int pixelStartOffset = (int)(offsetTime.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
 
             TimeSpan xAxisTicInterval = CalculateGridInterval(fullDuration, trackWidth);
 
@@ -933,7 +948,8 @@
 
                     TimeSpan absoluteTS = roundedStartTime + elapsedTimeSpan;
                     TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(Math.Round(absoluteTS.TotalSeconds));
-                    string time = String.Format("{0}", roundedTimeSpan);
+                    //string time = String.Format("{0}", roundedTimeSpan);
+                    string time = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
                     g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 1)); //draw time
                 }
             }
