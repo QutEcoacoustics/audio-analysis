@@ -18,7 +18,7 @@ SpectralFrameScale:
     - 0.02
 MaxTilesPerSuperTile: 12
 UseDistributionsForNormalization: false
-LDSpectrogramConfig:
+LdSpectrogramConfig:
     ColorMap1: "BGN-POW-CVR"
     ColorMap2: "ACI-ENT-EVN" 
     # minutes

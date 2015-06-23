@@ -211,6 +211,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             } 
 
             Image LDSpectrogram = cs1.DrawBlendedFalseColourSpectrogram("NEGATIVE", colorMap1, colorMap2, blendWt1, blendWt2);
+            if (LDSpectrogram == null )
+            {
+                LoggedConsole.WriteErrorLine("Null Image of LDSpectrogram @ line 216 of class ZoomFocusedSpectrograms.cs");
+            }
+
             Graphics g2 = Graphics.FromImage(LDSpectrogram);
 
             // draw focus time on image

@@ -98,7 +98,7 @@ namespace AnalysisPrograms
             // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60ms.EclipseFarmstay";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200ms.EclipseFarmstay";
 
             string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages2";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
@@ -112,8 +112,12 @@ namespace AnalysisPrograms
                            SourceDirectory = ipDir,
                            Output = opDir,
                            SpectrogramTilingConfig =
-                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json"
-                               .ToFileInfo(),
+                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml".ToFileInfo(),
+                               //@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
+
+                           // draw a focused multi-resolution pyramid of images
+                           ZoomAction = Arguments.ZoomActionType.Focused,
+                           FocusMinute = 16,
                        };
         }
 
@@ -161,8 +165,6 @@ namespace AnalysisPrograms
             {
                 case Arguments.ZoomActionType.Focused:
                     // draw a focused multi-resolution pyramid of images
-                    // TimeSpan focalTime = TimeSpan.Zero;
-                    // TimeSpan focalTime = TimeSpan.FromMinutes(16);
                     TimeSpan focalTime;
                     if (arguments.FocusMinute.HasValue)
                     {
