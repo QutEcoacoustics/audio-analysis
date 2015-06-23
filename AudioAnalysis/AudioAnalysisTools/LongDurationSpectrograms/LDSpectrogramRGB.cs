@@ -659,6 +659,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             if (!this.ContainsMatrixForKeys(colorMap1) || !this.ContainsMatrixForKeys(colorMap2))
             {
+                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawBlendedFalseColourSpectrogram() line 662");
+                LoggedConsole.WriteLine("         There is no Matrix for one or more spectral indices.");
+                LoggedConsole.WriteLine("         Null image returned");
                 return null;
             }
 
@@ -1038,8 +1041,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
-            // following line is debug purposes only
-            startTimeAbs = startTimeAbs + TimeSpan.FromMinutes(30);
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
@@ -1386,6 +1387,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
 
+
+            // following line is debug purposes only
+            cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
+
+
             Image image1;
             Image image1NoChrome;
             CreateSpectrogramFromSpectralIndices(cs1, colorMap1, returnChromelessImages, outputDirectory).Decompose(out image1, out image1NoChrome);
@@ -1454,7 +1460,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // then pass that image into chromer
             string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", cs1.FileName, colorMap);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
-
             image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1.StartOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
             var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");
             image.Save(outputPath);
