@@ -98,9 +98,9 @@ namespace AnalysisPrograms
             // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200ms.EclipseFarmstay";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\EclipseFarmstay.200ms\Towsey.Acoustic";
 
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages2";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\FocalZoomImage";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
 
             var ipDir = new DirectoryInfo(ipdir);
@@ -117,7 +117,7 @@ namespace AnalysisPrograms
 
                            // draw a focused multi-resolution pyramid of images
                            ZoomAction = Arguments.ZoomActionType.Focused,
-                           FocusMinute = 16,
+                           FocusMinute = 60,
                        };
         }
 
@@ -149,7 +149,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + arguments.SpectrogramTilingConfig);
             LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
             LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
-            LoggedConsole.WriteLine();
 
             var common = new ZoomCommonArguments();
 
@@ -158,8 +157,12 @@ namespace AnalysisPrograms
             Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
             common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 
-            // get the indexDistributions and the indexGenerationData
+            // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
             common.CheckForNeededFiles(arguments.SourceDirectory);
+
+            LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
+            LoggedConsole.WriteLine();
+
 
             switch (arguments.ZoomAction)
             {

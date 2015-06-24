@@ -917,16 +917,16 @@
 
             // if low resolution time scale round to nearest minute
             if (xAxisPixelDurationInMilliseconds > 10000)
-            {            
+            {
                 int roundedStartMinutes = (int)Math.Round(startTimeAbs.TotalMinutes);
                 roundedStartTime = TimeSpan.FromMinutes(roundedStartMinutes);
             }
 
             int roundedStartHours = roundedStartTime.Hours;
-            if (roundedStartTime.Minutes > 0)
-            {
-                roundedStartHours = (int)Math.Ceiling(roundedStartTime.TotalHours);
-            }
+            //if (roundedStartTime.Minutes > 0)
+            //{
+            //    roundedStartHours = (int)Math.Ceiling(roundedStartTime.TotalHours);
+            //}
 
             TimeSpan ticStartTime = TimeSpan.FromHours(roundedStartHours);
             TimeSpan ticStartOffset = ticStartTime - roundedStartTime;
