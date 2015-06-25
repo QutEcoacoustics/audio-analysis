@@ -28,6 +28,18 @@ rm(fileContents)
 #all.summary.indices
 #View(all.summary.indices)
 
+### GENERATE A LIST OF DATES AND TIMES ##############
+date.time.list <-NULL
+
+for (i in 1:length) {
+  pathName<- paste(sub("*.wav","\\1", myFiles[i]),sep="")
+  date.time.list <- c(date.time.list, pathName)
+}
+
+dates <- substr(date.time.list, 1, 8)
+times <- substr(date.time.list, 10, 16)
+###################################
+
 write.csv(all.summary.indices,
           file=paste("Towsey_Summary_Indices",
           sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
