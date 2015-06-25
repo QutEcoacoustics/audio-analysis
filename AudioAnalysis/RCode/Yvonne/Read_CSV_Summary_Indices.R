@@ -13,14 +13,21 @@ length<-length(myFiles)
 
 folder <- "D:\\Work\\Data\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
 
+### GENERATE A LIST OF DATES AND TIMES ##############
+dates <- subsstr(myFiles, 1, 8)
+times <- substr(myFiles, 10, 15)
 ### SUMMARY INDICES ###########################
 all.summary.indices<-NULL
 
 for (i in 1:length) {
-pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
+pathName <- (paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
   sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.Indices.csv", 
   sep =""))
 assign(paste("fileContents"), read.csv(pathName))
+numberRows <- nrow(fileContents)
+dateOfRecord <- dates[i]
+timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+fileContents <- cbind(fileContents,dateOfRecord,timeOfRecord)
 all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -28,9 +35,6 @@ rm(fileContents)
 #all.summary.indices
 #View(all.summary.indices)
 
-### GENERATE A LIST OF DATES AND TIMES ##############
-dates <- substr(myFiles, 1, 8)
-times <- substr(myFiles, 10, 15)
 ###################################
 write.csv(all.summary.indices,
           file=paste("Towsey_Summary_Indices",
