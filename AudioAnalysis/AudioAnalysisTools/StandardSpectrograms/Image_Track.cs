@@ -909,14 +909,14 @@
 
             // round up to nearest 5 second mark
             int roundedStartSeconds = (int)Math.Ceiling(startTimeAbs.TotalSeconds);
-            while ((roundedStartSeconds % 5) != 0)
-            {
-                roundedStartSeconds++;
-            }
+            //while ((roundedStartSeconds % 5) != 0)
+            //{
+            //    roundedStartSeconds++;
+            //}
             TimeSpan roundedStartTime = TimeSpan.FromSeconds(roundedStartSeconds);
 
             // if low resolution time scale round to nearest minute
-            if (xAxisPixelDurationInMilliseconds > 10000)
+            if (xAxisPixelDurationInMilliseconds > 1000)
             {
                 int roundedStartMinutes = (int)Math.Round(startTimeAbs.TotalMinutes);
                 roundedStartTime = TimeSpan.FromMinutes(roundedStartMinutes);
@@ -955,7 +955,7 @@
                     TimeSpan absoluteTS = roundedStartTime + elapsedTimeSpan;
                     TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(Math.Round(absoluteTS.TotalSeconds));
                     string time = ":";
-                    if (xAxisPixelDurationInMilliseconds <=10000 ) 
+                    if (xAxisPixelDurationInMilliseconds <=1000 ) 
                         time = String.Format("{0}", roundedTimeSpan);
                     else
                         time = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
