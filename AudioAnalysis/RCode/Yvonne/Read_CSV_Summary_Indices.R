@@ -25,9 +25,13 @@ pathName <- (paste(folder, myFiles[i], "\\Towsey.Acoustic\\",
   sep =""))
 assign(paste("fileContents"), read.csv(pathName))
 numberRows <- nrow(fileContents)
-dateOfRecord <- dates[i]
-timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
-fileContents <- cbind(fileContents,dateOfRecord,timeOfRecord)
+dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                      (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                      (substr(times[i],3,4)), sep="")
+dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+#dateOfRecord <- dates[i]
+#timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
 all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -48,7 +52,16 @@ for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
          sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.ACI.csv", 
          sep =""))
+  
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -69,6 +82,14 @@ for (i in 1:length) {
               sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.BGN.csv", 
               sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -89,6 +110,14 @@ for (i in 1:length) {
               sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.CVR.csv", 
               sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -109,6 +138,14 @@ for (i in 1:length) {
               sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.DIF.csv", 
               sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -129,6 +166,14 @@ for (i in 1:length) {
               sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.ENT.csv", 
               sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -149,6 +194,14 @@ for (i in 1:length) {
               sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.EVN.csv", 
               sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -169,6 +222,14 @@ for (i in 1:length) {
                    sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.POW.csv", 
                    sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -189,6 +250,14 @@ for (i in 1:length) {
                    sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.SPT.csv", 
                    sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
@@ -209,6 +278,14 @@ for (i in 1:length) {
                    sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.SUM.csv", 
                    sep =""))
   assign(paste("fileContents"), read.csv(pathName))
+  numberRows <- nrow(fileContents)
+  dateTimeOfRecord  <- paste((substr(dates[i], 1, 4)), "-", (substr(dates[i],5,6)), "-",
+                             (substr(dates[i],7,8)), " ", (substr(times[i],1,2)), ":", 
+                             (substr(times[i],3,4)), sep="")
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+  #dateOfRecord <- dates[i]
+  #timeOfRecord <- paste((substr(times[i],1,2)),":",(substr(times[i],3,4)),sep="")
+  fileContents <- cbind(fileContents,dateTimeOfRecordSequence)
   all.summary.indices <- rbind(all.summary.indices, fileContents)
 }
 
