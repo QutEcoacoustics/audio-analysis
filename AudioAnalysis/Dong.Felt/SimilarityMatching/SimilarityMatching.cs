@@ -562,40 +562,6 @@ using System.IO;
             }
             return result;
         }
-        /// <summary>
-        /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
-        /// based on the sum of sub-region in the process of calculation.
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidate"></param>
-        /// <param name="weight1"></param>
-        /// <param name="weight2"></param>
-        /// <returns></returns>
-        public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRepresentation> query, List<RegionRepresentation> candidate, double weight1, double weight2)
-        {
-            var result = 0.0;
-            if (query != null && candidate != null)
-            {
-                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
-                //var nhSum1 = 0.0;
-                var nhSum2 = 0.0;
-                for (int index = 0; index < nhCount; index++)
-                {
-
-                    var queryMagnitude = query[index].magnitude;
-                    var queryOrientation = query[index].orientation;
-                    var candidateMagnitude = candidate[index].magnitude;
-                    var candidateOrientation = candidate[index].orientation;
-
-                    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
-                    var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);
-                    nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
-
-                }
-                result = nhSum2;
-            }
-            return result;
-        }
 
         /// <summary>
         /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
@@ -657,6 +623,42 @@ using System.IO;
             }
             return result;
         }
+
+        /// <summary>
+        /// This weighted Euclidean distance function is little bit different from the one below this method. The distance result is obtained 
+        /// based on the sum of sub-region in the process of calculation.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <returns></returns>
+        public static double WeightedDistanceScoreRegionRepresentation2(List<RegionRepresentation> query, List<RegionRepresentation> candidate, double weight1, double weight2)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
+                //var nhSum1 = 0.0;
+                var nhSum2 = 0.0;
+                for (int index = 0; index < nhCount; index++)
+                {
+
+                    var queryMagnitude = query[index].magnitude;
+                    var queryOrientation = query[index].orientation;
+                    var candidateMagnitude = candidate[index].magnitude;
+                    var candidateOrientation = candidate[index].orientation;
+
+                    var orientationDifference = Math.Abs(queryOrientation - candidateOrientation);
+                    var magnitudeDifference = Math.Abs(queryMagnitude - candidateMagnitude);
+                    nhSum2 += Math.Sqrt(weight1 * Math.Pow(magnitudeDifference, 2) + weight2 * Math.Pow(orientationDifference, 2));
+
+                }
+                result = nhSum2;
+            }
+            return result;
+        }
+
 
         /// <summary>
         /// This version is used for calculating distance based on feature set 6.
@@ -944,6 +946,33 @@ using System.IO;
             return result;
         }
 
+        /// <summary>
+        /// This version is used for calculating distance based on feature set 12 HoG 8 (count based) + feature 9.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <param name="poiCountThreshold"></param>
+        /// <returns></returns>
+        public static double DistanceFeature21Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate)    
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {             
+                var queryFV = FeatureExtraction.ExtractColRowRidge(query);
+                var candidateFV = FeatureExtraction.ExtractColRowRidge(candidate);
+                var fvLength = queryFV[0];
+                for (int index = 0; index < fvLength; index++)
+                {                  
+                    var fBitDiff = Math.Abs(queryFV[index] - candidateFV[index]);                   
+                    var euclideanDistance = Math.Sqrt(Math.Pow(Convert.ToDouble(fBitDiff), 2.0));
+                        result += euclideanDistance;
+                }              
+                result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
+            }
+            return result;
+        }
+
         public static double DistanceFeature14Based(List<RegionRepresentation> query,
             List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
         {
@@ -1073,79 +1102,8 @@ using System.IO;
             return result;
         }
 
-        public static double DistanceFeature4RidgeBased(List<RegionRepresentation> query, 
-            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
-        {
-            var result = 0.0;
-            if (query != null && candidate != null)
-            {
-                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow;
-                var hOrientationPOIHistDiff = 0.0;
-                var pDOrientationPOIHistDiff = 0.0;
-                var vOrientationPOIHistDiff = 0.0;
-                var nDOrientationPOIHistDiff = 0.0;
-                //var pOICountPercentageDiff = Math.Abs(queryPOICountPercentage - candidatePOICountPercentage);
-                var columnEnergyEntropyDiff = 0.0;
-                var rowEnergyEntropyDiff = 0.0;
-                var maxHPOIHistDiff = 1.0;
-                var maxPPOIHistDiff = 1.0;
-                var maxVPOIHistDiff = 1.0;
-                var maxNPOIHistDiff = 1.0;
-                var maxColEnergyEntroDiff = 1.0;
-                var maxRowEnergyEntroDiff = 1.0;
-                var matchedNhCount = 0;
-                for (int index = 0; index < nhCount; index++)
-                {
-                    // to check whether they match
-                    if (query[index].POICount <= poiCountThreshold && candidate[index].POICount <= poiCountThreshold)
-                    {
-                        result += weight1;
-                        matchedNhCount++;
-                    }
-                    else if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
-                    {
-                        matchedNhCount++;
-                        var queryHOrientationPOIHistogram = query[index].HOrientationPOIHistogram;
-                        var queryPDOrientationPOIHistogram = query[index].PDOrientationPOIHistogram;
-                        var queryVOrientationPOIHistogram = query[index].VOrientationPOIHistogram;
-                        var queryNDOrientationPOIHistogram = query[index].NDOrientationPOIHistogram;
-                        var queryPOICountPercentage = query[index].POICountPercentage;
-                        var queryColumnEnergyEntropy = query[index].ColumnEnergyEntropy;
-                        var queryRowEnergyEntropy = query[index].RowEnergyEntropy;
+        
 
-                        var candidateHOrientationPOIHistogram = candidate[index].HOrientationPOIHistogram;
-                        var candidatePDOrientationPOIHistogram = candidate[index].PDOrientationPOIHistogram;
-                        var candidateVOrientationPOIHistogram = candidate[index].VOrientationPOIHistogram;
-                        var candidateNDOrientationPOIHistogram = candidate[index].NDOrientationPOIHistogram;
-                        
-                        var candidateColumnEnergyEntropy = candidate[index].ColumnEnergyEntropy;
-                        var candidateRowEnergyEntropy = candidate[index].RowEnergyEntropy;
-                        hOrientationPOIHistDiff = Math.Abs(queryHOrientationPOIHistogram - candidateHOrientationPOIHistogram);
-                        pDOrientationPOIHistDiff = Math.Abs(queryPDOrientationPOIHistogram - candidatePDOrientationPOIHistogram);
-                        vOrientationPOIHistDiff = Math.Abs(queryVOrientationPOIHistogram - candidateVOrientationPOIHistogram);
-                        nDOrientationPOIHistDiff = Math.Abs(queryNDOrientationPOIHistogram - candidateNDOrientationPOIHistogram);
-                        
-                        columnEnergyEntropyDiff = Math.Abs(queryColumnEnergyEntropy - candidateColumnEnergyEntropy);
-                        rowEnergyEntropyDiff = Math.Abs(queryRowEnergyEntropy - candidateRowEnergyEntropy);
-
-                        var euclideanDistance = Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
-                                          + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
-                                          + Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
-                        //var mahattenDistance = hOrientationPOIHistDiff + pDOrientationPOIHistDiff + vOrientationPOIHistDiff
-                        //    + nDOrientationPOIHistDiff + columnEnergyEntropyDiff + rowEnergyEntropyDiff;
-                        var maxDistance = Math.Sqrt(maxHPOIHistDiff + maxPPOIHistDiff + maxVPOIHistDiff +
-                            maxNPOIHistDiff + maxColEnergyEntroDiff + maxRowEnergyEntroDiff);
-                        result += weight2 * (1 - euclideanDistance / maxDistance);
-                    }
-                }
-                var matchedPercentage = matchedNhCount / (double)nhCount;
-                var averageSimilarityScore = result / matchedNhCount;
-                result =  matchedPercentage * averageSimilarityScore;
-                result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
-            }
-            return result;
-        }
-     
         public static double DistanceHoGRepresentation(List<RegionRepresentation> query, List<RegionRepresentation> candidate)
         {
             var result = 0.0;
@@ -1169,6 +1127,77 @@ using System.IO;
                     }
                     result += sum;
                 }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// This distance measure is based on feature prop 5 where each nh is represented by 6 values: hH, hV, hP, hD, eF, eT.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidate"></param>
+        /// <param name="poiCountThreshold"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <returns></returns>
+        public static double DistanceFeatureProp5Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate, int poiCountThreshold, double weight1, double weight2)
+        {
+            var result = 0.0;
+            if (query != null && candidate != null)
+            {
+                var nhCount = query[0].NhCountInCol * query[0].NhCountInRow; 
+                var maxHPOIHistDiff = 1.0;
+                var maxPPOIHistDiff = 1.0;
+                var maxVPOIHistDiff = 1.0;
+                var maxNPOIHistDiff = 1.0;
+                var maxColEnergyEntroDiff = 1.0;
+                var maxRowEnergyEntroDiff = 1.0;
+                var matchedNhCount = 0;
+                for (int index = 0; index < nhCount; index++)
+                {
+                    // if the case is against the two following conditions, then result = 0.0, so it has no effect on final result.  
+                    // to check whether they are null neighbourhood
+                    if (query[index].POICount <= poiCountThreshold && candidate[index].POICount <= poiCountThreshold)
+                    {
+                        result += weight1;
+                        matchedNhCount++;
+                    }
+                    // to check whether both of them contain ridges
+                    else if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
+                    {
+                        matchedNhCount++;
+                        var hOrientationPOIHistDiff = Math.Abs(query[index].HOrientationPOIHistogram
+                            - candidate[index].HOrientationPOIHistogram);
+                        var pDOrientationPOIHistDiff = Math.Abs(query[index].PDOrientationPOIHistogram
+                            - candidate[index].PDOrientationPOIHistogram);
+                        var vOrientationPOIHistDiff = Math.Abs(query[index].VOrientationPOIHistogram
+                            - candidate[index].VOrientationPOIHistogram);
+                        var nDOrientationPOIHistDiff = Math.Abs(query[index].NDOrientationPOIHistogram
+                            - candidate[index].NDOrientationPOIHistogram);
+                        var columnEnergyEntropyDiff = Math.Abs(query[index].ColumnEnergyEntropy
+                            - candidate[index].ColumnEnergyEntropy);
+                        var rowEnergyEntropyDiff = Math.Abs(query[index].RowEnergyEntropy
+                            - candidate[index].RowEnergyEntropy);
+
+                        var euclideanDistance = Math.Sqrt(Math.Pow(hOrientationPOIHistDiff, 2) + Math.Pow(pDOrientationPOIHistDiff, 2)
+                                          + Math.Pow(vOrientationPOIHistDiff, 2) + Math.Pow(nDOrientationPOIHistDiff, 2)
+                                          + Math.Pow(columnEnergyEntropyDiff, 2) + Math.Pow(rowEnergyEntropyDiff, 2));
+                        //var mahattenDistance = hOrientationPOIHistDiff + pDOrientationPOIHistDiff + vOrientationPOIHistDiff
+                        //    + nDOrientationPOIHistDiff + columnEnergyEntropyDiff + rowEnergyEntropyDiff;
+                        var maxDistance = Math.Sqrt(maxHPOIHistDiff
+                            + maxPPOIHistDiff
+                            + maxVPOIHistDiff
+                            + maxNPOIHistDiff
+                            + maxColEnergyEntroDiff
+                            + maxRowEnergyEntroDiff);
+                        result += weight2 * (1 - euclideanDistance / maxDistance);
+                    }                    
+                }
+                var matchedPercentage = matchedNhCount / (double)nhCount;
+                var averageSimilarityScore = result / matchedNhCount;
+                result = matchedPercentage * averageSimilarityScore;
+                result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
             }
             return result;
         }
@@ -1231,7 +1260,6 @@ using System.IO;
         /// <returns>
         /// The final out is sum of subdistance for each sub-region(neighbourhood) in candidate or query. 
         /// </returns>
-        
         public static double SimilarityScoreOfDifferentWeights(List<RidgeNeighbourhoodFeatureVector> potentialEvent, List<RidgeNeighbourhoodFeatureVector> query)
         {
             var result = 0.0;
@@ -1377,6 +1405,37 @@ using System.IO;
 
         }
 
+        /// <summary>
+        /// This distance calculation method will be based on 6 values feature vector. 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="candidates"></param>
+        /// <param name="weight1"></param>
+        /// <param name="weight2"></param>
+        /// <param name="weight3"></param>
+        /// <param name="weight4"></param>
+        /// <returns></returns>
+        public static List<Candidates> WeightedEuclideanDistCalculation3(List<RegionRepresentation> query, List<RegionRepresentation> candidates,
+            double weight1, double weight2, double weight3, double weight4, double weight5, double weight6)
+        {
+            var result = new List<Candidates>();
+            var tempRegionList = new List<RegionRepresentation>();
+            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
+            var candidatesCount = candidates.Count;
+            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            {
+                // The frequencyDifference is a problem. 
+                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
+                var duration = tempRegionList[0].Duration.TotalMilliseconds;
+                var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation4(query, tempRegionList, weight1, weight2,
+                    weight3, weight4, weight5, weight6);
+                var item = new Candidates(distance, tempRegionList[0].FrameIndex,
+                        duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
+                        tempRegionList[0].SourceAudioFile);
+                result.Add(item);
+            }
+            return result;
+        }
         #endregion
     }
 }
