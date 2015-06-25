@@ -47,6 +47,8 @@ namespace Dong.Felt.Representations
         public const string FeaturePropSet19 = "FeaturePropSet19";
         // FeatureSet 20 is calculated based on Histogram of ridges at 8 directions magnitude based plus entropy.
         public const string FeaturePropSet20 = "FeaturePropSet20";
+        // FeatureSet 21 is calculated based on counts of ridges at each column or row with the width of nh length.
+        public const string FeaturePropSet21 = "FeaturePropSet21";
 
         #region Properties
 
@@ -2314,7 +2316,8 @@ namespace Dong.Felt.Representations
                             // 4 directional ridges count based
                             ridgeNeighbourhoodRepresentation.FeatureSet4Representation(subMatrix, row, col, spectrogramConfig);
                         }
-                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5)
+                        if (featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+                            featurePropertySet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21)
                         {
                             ridgeNeighbourhoodRepresentation.FeatureSet5Representation(subMatrix, row, col,
                                 spectrogramConfig);

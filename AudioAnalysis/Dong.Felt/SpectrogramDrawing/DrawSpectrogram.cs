@@ -606,7 +606,7 @@ namespace Dong.Felt.SpectrogramDrawing
             }
 
             // to do : modify the rank to rank + 1 after MFCC calculation
-            for (int i = 0; i < rank; i++)
+            for (int i = 0; i <= rank; i++)
             {
                 /// because the query always come from first place.                   
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
