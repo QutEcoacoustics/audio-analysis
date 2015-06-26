@@ -151,7 +151,9 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 ||
-                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22
+
                 )
             {
                 result = PostRidgeDetection4Dir(spectrogram, ridgeConfig);
