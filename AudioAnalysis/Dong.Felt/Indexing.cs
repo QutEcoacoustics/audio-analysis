@@ -546,7 +546,8 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20 ||
-                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21)
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22)
             {               
                 result = Indexing.Feature5EuclideanDist2(query, candidates,
                     weight1, weight2, featurePropSet);
@@ -850,6 +851,10 @@ namespace Dong.Felt
                 if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21)
                 {
                     distance = SimilarityMatching.DistanceFeature21Based(query, c);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22)
+                {
+                    distance = SimilarityMatching.DistanceFeature22Based(query, c);
                 }
                 var duration = c[0].Duration.TotalMilliseconds;
                 var item = new Candidates(distance, c[0].FrameIndex,

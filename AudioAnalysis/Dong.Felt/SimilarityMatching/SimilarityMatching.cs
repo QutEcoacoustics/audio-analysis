@@ -945,29 +945,54 @@ using System.IO;
             }
             return result;
         }
+        // Feature Prop 21 aims to calculate features from the entire nh width of row or col.
+        public static double DistanceFeature21Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate)    
+        {
+            var result = 0.0;
+            // the maximum ridge count in nh is 22. 
+            var maxDistance = 22;
+            var score = 0.0;
+            if (query != null && candidate != null)
+            {             
+                var queryFV = FeatureExtraction.ExtractColRowRidge(query);
+                var candidateFV = FeatureExtraction.ExtractColRowRidge(candidate);
+                var fvLength = queryFV.Count;
+                for (int index = 0; index < fvLength; index++)
+                {                  
+                    var fBitDiff = Math.Abs(queryFV[index] - candidateFV[index]);                   
+                    var euclideanDistance = Math.Sqrt(Math.Pow(Convert.ToDouble(fBitDiff), 2.0));
+                    // Normalise the distance to range of (0 - 1)
+                    score += 1 - euclideanDistance / maxDistance;
+                }
+                result = score / fvLength; 
+                result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
+            }
+            return result;
+        }
 
         /// <summary>
-        /// This version is used for calculating distance based on feature set 12 HoG 8 (count based) + feature 9.
+        /// This is more complex than feature prop 21, it calculates 4 histogram features from entire nh width of row or col.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidate"></param>
         /// <param name="poiCountThreshold"></param>
         /// <returns></returns>
-        public static double DistanceFeature21Based(List<RegionRepresentation> query,
-            List<RegionRepresentation> candidate)    
+        public static double DistanceFeature22Based(List<RegionRepresentation> query,
+            List<RegionRepresentation> candidate)
         {
             var result = 0.0;
+            var subScore = 0.0;
             if (query != null && candidate != null)
-            {             
-                var queryFV = FeatureExtraction.ExtractColRowRidge(query);
-                var candidateFV = FeatureExtraction.ExtractColRowRidge(candidate);
-                var fvLength = queryFV[0];
+            {
+                var queryFV = FeatureExtraction.ExtractHistoColRowRidge(query);
+                var candidateFV = FeatureExtraction.ExtractHistoColRowRidge(candidate);
+                var fvLength = queryFV.Count;
                 for (int index = 0; index < fvLength; index++)
-                {                  
-                    var fBitDiff = Math.Abs(queryFV[index] - candidateFV[index]);                   
-                    var euclideanDistance = Math.Sqrt(Math.Pow(Convert.ToDouble(fBitDiff), 2.0));
-                        result += euclideanDistance;
-                }              
+                {
+                    subScore+= Distance.EucliDistanceForDoubleLists(queryFV[index], candidateFV[index]);                  
+                }
+                result = subScore / fvLength;
                 result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
             }
             return result;
@@ -1153,20 +1178,22 @@ using System.IO;
                 var maxNPOIHistDiff = 1.0;
                 var maxColEnergyEntroDiff = 1.0;
                 var maxRowEnergyEntroDiff = 1.0;
-                var matchedNhCount = 0;
+                var matchedNullNhCount = 0;
+                var matchedNotNullNhCount = 0;
+                var realScore = 0.0;
                 for (int index = 0; index < nhCount; index++)
                 {
                     // if the case is against the two following conditions, then result = 0.0, so it has no effect on final result.  
                     // to check whether they are null neighbourhood
                     if (query[index].POICount <= poiCountThreshold && candidate[index].POICount <= poiCountThreshold)
                     {
-                        result += weight1;
-                        matchedNhCount++;
+                        realScore += weight1;
+                        matchedNullNhCount++;
                     }
                     // to check whether both of them contain ridges
                     else if (query[index].POICount > poiCountThreshold && candidate[index].POICount > poiCountThreshold)
                     {
-                        matchedNhCount++;
+                        matchedNotNullNhCount++;
                         var hOrientationPOIHistDiff = Math.Abs(query[index].HOrientationPOIHistogram
                             - candidate[index].HOrientationPOIHistogram);
                         var pDOrientationPOIHistDiff = Math.Abs(query[index].PDOrientationPOIHistogram
@@ -1191,12 +1218,12 @@ using System.IO;
                             + maxNPOIHistDiff
                             + maxColEnergyEntroDiff
                             + maxRowEnergyEntroDiff);
-                        result += weight2 * (1 - euclideanDistance / maxDistance);
+                        realScore += weight2 * (1 - euclideanDistance / maxDistance);
                     }                    
                 }
-                var matchedPercentage = matchedNhCount / (double)nhCount;
-                var averageSimilarityScore = result / matchedNhCount;
-                result = matchedPercentage * averageSimilarityScore;
+                var maxScore = weight1 * matchedNullNhCount + weight2 * matchedNotNullNhCount;
+                var matchedPercentage = (matchedNullNhCount +  matchedNotNullNhCount )/ (double)nhCount;
+                result = matchedPercentage * (realScore / maxScore);
                 result = Convert.ToDouble(result.ToString("F03", CultureInfo.InvariantCulture));
             }
             return result;
