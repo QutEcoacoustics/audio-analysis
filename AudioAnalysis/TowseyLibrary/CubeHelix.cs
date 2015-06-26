@@ -119,6 +119,51 @@ public class CubeHelix
             this.ColourPallette = pallette;
         }
 
+        /// <summary>
+        /// Draws matrix without normalising the values in the matrix.
+        /// Assumes some form of normalisation already done.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public int GetColorID(double value)
+        {
+            int colourID = (int)Math.Floor(value * this.maxPalletteIndex);
+
+            if (colourID < 0) return 0;
+            if (colourID > maxPalletteIndex) return maxPalletteIndex;
+            return colourID;
+        }
+
+
+        /// <summary>
+        /// Draws matrix without normalising the values in the matrix.
+        /// Assumes some form of normalisation already done.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public Color GetColorFromPallette(double value)
+        {
+            int colourID = (int)Math.Floor(value * this.maxPalletteIndex);
+
+            if (colourID < 0) { colourID = 0; }
+            else
+            { if (colourID > maxPalletteIndex) colourID = maxPalletteIndex; }
+            return this.ColourPallette[colourID];
+        }
+
+        /// <summary>
+        /// Draws matrix without normalising the values in the matrix.
+        /// Assumes some form of normalisation already done.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public Color GetColorFromPallette(int colourID)
+        {
+            return this.ColourPallette[colourID];
+        }
+
+
+
         public void TestImage(string path)
         {
             int width = maxPalletteSize;
@@ -133,6 +178,9 @@ public class CubeHelix
             }
             image.Save(path);
         }
+
+
+
 
         /// <summary>
         /// Draws matrix without normalising the values in the matrix.
@@ -240,13 +288,14 @@ public class CubeHelix
 
         public static CubeHelix GetCubeHelix()
     {
-        //Hsl colorARgb = new Hsl(300, 0.5, 0.0);
-        //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0);
+        //Hsl colorARgb = new Hsl(300, 0.5, 0.0); // DEFAULT - used prior to 26 June 2015
+        //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0); // DEFAULT - used prior to 26 June 2015
         Hsl colorARgb = new Hsl();
-        colorARgb.H = 300;
+        colorARgb.H = 280;
         colorARgb.S = 0.5;
-        colorARgb.L = 0.0;
+        colorARgb.L = 0.05;
         Hsl colorBRgb = new Hsl();
+        //colorBRgb.H = -240;
         colorBRgb.H = -240;
         colorBRgb.S = 0.5;
         colorBRgb.L = 1.0;

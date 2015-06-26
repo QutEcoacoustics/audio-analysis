@@ -28,14 +28,6 @@ BGNoiseNeighbourhood: 5
 # FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
 FrameLength: 512
 
-# Frame step. units=samples
-# NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
-#       FrameStep is NOT used when calculating Summary and Spectral indices.
-#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required. 
-#       The value 441 should not be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
-# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-FrameStep: 441
-
 # Resample rate must be 2 X the desired Nyquist
 # ResampleRate: 17640
 ResampleRate: 22050
@@ -51,8 +43,19 @@ SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 
 # SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
+# Next two parameters are used only when creating images for zooming spectrograms.
+# Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
 SaveSonogramData: true
+# Frame step. units=samples
+# NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
+#       FrameStep is NOT used when calculating Summary and Spectral indices.
+#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required. 
+#       The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
+# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
+FrameStep: 441
+
+# One-minute spectrograms can be saved in any analysis task.
 SaveSonogramImages: false
 
 DisplayCsvImage: false
@@ -73,7 +76,7 @@ TileImageOutput: false
 #     prefix_20140101T235959+Z.mp3
 #     prefix_20140101-235959+1000.mp3
 #     prefix_20140101-235959+Z.mp3
-RequireDateInFilename: false
+RequireDateInFilename: true
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 EventThreshold: 0.2

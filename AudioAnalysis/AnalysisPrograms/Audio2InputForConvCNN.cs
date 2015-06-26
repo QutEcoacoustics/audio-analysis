@@ -835,39 +835,6 @@ namespace AnalysisPrograms
             return result;
         }
 
-
-     
-
-        /// <summary>
-        /// A FALSE-COLOUR VERSION OF DECIBEL SPECTROGRAM
-        /// ###################################### UNFINISHED
-        /// </summary>
-        /// <param name="dbSpectrogramData">the sonogram data (NOT noise reduced) </param>
-        /// <param name="nrSpectrogramData"></param>
-        /// <returns></returns>
-        public static System.Drawing.Image DrawStandardSpectrogramInFalseColour(Dictionary<string, string> configDict, double[,] dbSpectrogramData)
-        {
-            var amplitudeSpectrogram = new double[100, 100];
-            // default values config
-            SonogramConfig sonoConfig = new SonogramConfig(configDict);
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            sonoConfig.NoiseReductionParameter = 3;
-            var sonogram = new SpectrogramStandard(sonoConfig, amplitudeSpectrogram);
-            // keep the sonogram data for later use
-            double[,] nrSpectrogramData = sonogram.Data;
-
-
-            double ridgeThreshold = 2.5;
-            double[,] matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
-            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
-
-            string title = "DECIBEL SPECTROGRAM - Colour annotated";
-            //var image = sonogram.GetColourDecibelSpectrogramFullyAnnotated(title, dbSpectrogramData, nrSpectrogramData, hits);
-            Image image = SpectrogramTools.CreateFalseColourDecibelSpectrogram(dbSpectrogramData, nrSpectrogramData, hits);
-            //image = this.GetImageFullyAnnotated(image, title); // line 298 in class BaseSonogram
-            return image;
-        }
-
     }
 
 
