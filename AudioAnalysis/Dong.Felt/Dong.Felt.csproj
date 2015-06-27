@@ -136,10 +136,12 @@
     <Compile Include="Distance.Tools.cs" />
     <Compile Include="Dong.Sandpit.cs" />
     <Compile Include="Experiments\Experiments.cs" />
+    <Compile Include="Features\FeatureExtraction.cs" />
     <Compile Include="Features\Features.cs" />
     <Compile Include="Features\Ridge.cs" />
     <Compile Include="Indexing.cs" />
     <Compile Include="Preprocessing\AudioPreprosessing.cs" />
+    <Compile Include="Registration\TemplateAllignment.cs" />
     <Compile Include="Representations\ClusterAnalysis.cs" />
     <Compile Include="Representations\EventBasedRepresentation.cs" />
     <Compile Include="Representations\MFCC.cs" />

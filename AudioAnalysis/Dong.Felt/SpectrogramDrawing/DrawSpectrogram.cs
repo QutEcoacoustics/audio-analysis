@@ -23,8 +23,8 @@ namespace Dong.Felt.SpectrogramDrawing
             bool doHighlightSubband = true; bool add1kHzLines = false;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0, 0.0, 0));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, 0.0, 0.0, 0));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if ((acousticEvent != null) && (acousticEvent.Count > 0))
             {
                 image.AddEvents(acousticEvent, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
@@ -37,7 +37,7 @@ namespace Dong.Felt.SpectrogramDrawing
             bool doHighlightSubband = false; bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            //image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
+            image.AddTrack(Image_Track.GetSimilarityScoreTrack(scores.ToArray(), 0.0, scores.Max(), 0.0, 13));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 
             return image.GetImage();
@@ -110,7 +110,7 @@ namespace Dong.Felt.SpectrogramDrawing
             RectangleF rectf2 = new RectangleF(10, height - 15, 70, 30);
             Graphics g = Graphics.FromImage(bmp);
             g.DrawString(similarityScore.ToString(), new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf2);
-            g.DrawString(audioFileName, new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf1);
+            //g.DrawString(audioFileName, new Font("Tahoma", 7, FontStyle.Bold), Brushes.Black, rectf1);
             g.Flush();
             return bmp;
         }
@@ -606,13 +606,12 @@ namespace Dong.Felt.SpectrogramDrawing
             }
 
             // to do : modify the rank to rank + 1 after MFCC calculation
-            for (int i = 0; i < rank; i++)
+            for (int i = 0; i <= rank; i++)
             {
                 /// because the query always come from first place.                   
                 var spectrogram = AudioPreprosessing.AudioToSpectrogram(config, improvedAudioFiles[i]);
-                var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);
-                //var ridges = POISelection.PostRidgeDetection8Dir(spectrogram, ridgeConfig);               
                 /// To show the ridges on the spectrogram. 
+                var ridges = POISelection.PostRidgeDetection4Dir(spectrogram, ridgeConfig);               
                 var scores = new List<double>();
                 scores.Add(0.0);
                 double eventThreshold = 0.5; // dummy variable - not used  
@@ -638,7 +637,8 @@ namespace Dong.Felt.SpectrogramDrawing
                     queryAcousticEvent.Duration = queryAcousticEvent.Duration;
                     queryAcousticEvent.TimeEnd = startTime + queryAcousticEvent.Duration;
                     queryAcousticEvent.BorderColour = Color.Crimson;
-                    acousticEventlistForQuery.Add(queryAcousticEvent);                   
+                    acousticEventlistForQuery.Add(queryAcousticEvent);
+                    scores.Add(candidates[i].Score);
                     Image image = DrawSonogram(spectrogram, scores, acousticEventlistForQuery,
                         eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;
@@ -659,7 +659,7 @@ namespace Dong.Felt.SpectrogramDrawing
                         candidates[i].MinFrequency, candidates[i].MaxFrequency);
                     candAcousticEvent.BorderColour = Color.Green;
                     acousticEventlistForCandidate.Add(candAcousticEvent);
-                    //Image image = ImageAnalysisTools.DrawSonogram(spectrogram, scores, acousticEventlistForCandidate, eventThreshold, null);
+                    scores.Add(candidates[i].Score);
                     Image image = DrawSonogram(spectrogram, scores, acousticEventlistForCandidate,
                         eventThreshold, null);
                     Bitmap bmp = (Bitmap)image;

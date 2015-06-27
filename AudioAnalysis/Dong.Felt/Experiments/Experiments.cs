@@ -92,7 +92,7 @@ namespace Dong.Felt.Experiments
                     var weight5 = 1;
                     var weight6 = 1;
                     /// To calculate the distance
-                    var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesRegionList, weight1, weight2,
+                    var candidateDistanceList = SimilarityMatching.WeightedEuclideanDistCalculation3(queryRepresentation, candidatesRegionList, weight1, weight2,
                         weight3, weight4, weight5, weight6);
                     //var candidateDistanceList = Indexing.WeightedEuclideanDistCalculation(queryRepresentation, candidatesRegionList, weight1, weight2);
                     var simiScoreCandidatesList = StatisticalAnalysis.ConvertDistanceToSimilarityScore(candidateDistanceList);
