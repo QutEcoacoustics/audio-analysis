@@ -1,4 +1,5 @@
-setwd("C:\\Work\\CSV files\\Eastern Eucalypt")
+#setwd("C:\\Work\\CSV files\\Eastern Eucalypt")
+setwd("C:\\Work\\CSV files\\Wet Eucalypt")
 
 myFiles <- list.files(full.names=TRUE,pattern="*.csv")
 length<-length(myFiles)
@@ -7,6 +8,23 @@ for(i in 1:length) {
   assign(paste("propertiesEE",i, sep=""),read.csv(myFiles[c(i)]))
 }
 
+spec.properties <- NULL
+for(i in 1:length) {
+  assign(paste("properties"),read.csv(myFiles[c(i)]))
+  spec.properties <- rbind(spec.properties, properties)
+}
+
+plot(spec.properties$Q75)
+plot(spec.properties$Q25)
+plot(spec.properties$temporalEntropy)
+plot(spec.properties$mean)
+plot(spec.properties$IQR)
+plot(spec.properties$acousticCompIndex)
+plot(spec.properties$skewness) 
+plot(spec.properties$sfm) #spectral flatness
+plot(spec.properties$zeroCrossingRate) 
+plot(spec.properties$sh) # spectral entropy
+plot(spec.properties$sd)
 ########### PLOTTING VARIABLES ##############
 positions<-c(8,68,128,188,248,308,368)
 timeLabels1<-c("1:45 pm","2:45","3.45","4.45","5.45","6.45","7.45")
