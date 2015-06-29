@@ -128,15 +128,25 @@
             // assume both a and b have the same length
             var distance = 0.0;
             for (var i = 0; i < a.Count(); i++)
-            {
-                if (a[i] != null && b[i] != null)
-                {
-                    var subdistance = Math.Sqrt(Math.Pow((a[i] - b[i]), 2.0));
-                    distance += subdistance;
-                }
+            {              
+                var subdistance = Math.Sqrt(Math.Pow((a[i] - b[i]), 2.0));
+                distance += subdistance;               
             }
             var result = distance / a.Count();
             return result;
         }
+
+        public static double EucliDistanceForDoubleLists(List<double> a, List<double> b)
+        {
+            // assume both a and b have the same length
+            var distance = 0.0;
+            for (var i = 0; i < a.Count(); i++)
+            {
+                var subdistance = Math.Sqrt(Math.Pow((a[i] - b[i]), 2.0));
+                distance += subdistance;
+            }            
+            return distance;
+        }
+
     }
 }
