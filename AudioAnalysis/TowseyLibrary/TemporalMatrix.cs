@@ -292,8 +292,12 @@ namespace TowseyLibrary
                 {
                     rowIndex = r / compressionFactor;
                     for (int i = 0; i < compressionFactor; i++)
+                    {
                         tempArray[i] = matrix[r + i, c];
-                    newMatrix[rowIndex, c] = tempArray.Average();
+                    }
+                    //newMatrix[rowIndex, c] = (tempArray.Average() + tempArray.Max()) / (double)2.0;
+                    //newMatrix[rowIndex, c] = tempArray.Average();
+                    newMatrix[rowIndex, c] = tempArray.Max();
                 }
             }
             return newMatrix;

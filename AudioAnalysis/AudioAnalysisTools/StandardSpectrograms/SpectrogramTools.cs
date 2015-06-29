@@ -383,6 +383,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             
             // get the colour cube helix 
             var cch = CubeHelix.GetCubeHelix();
+            //Color[] palette = GetCyanSpectrumPalette();
 
             for (int y = 0; y < height; y++) //over all freq bins
             {
@@ -418,6 +419,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                             //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
 
                             int colourID = cch.GetColorID(nrSpectrogramNorm[x, y]);
+                            //int colourID = (int)Math.Round(nrSpectrogramNorm[x, y] * 255); 
+
 
                             // get colour for noise reduced portion
                             // superimpose ridge detection
@@ -430,9 +433,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
                                 //colour = ridgeColours[hits[x, y] - 1];
                                 //colour = Color.White;
                                 //colour = cch.GetColorFromPallette(colourID);
-                                colourID++;
-                                if (colourID > cch.maxPalletteIndex) colourID = cch.maxPalletteIndex;
+                                colourID +=2;
+                                if (colourID > 255) colourID = 255;
+                                //if (colourID > cch.maxPalletteIndex) colourID = cch.maxPalletteIndex;
                             }
+                            //colour = palette[colourID];
                             colour = cch.GetColorFromPallette(colourID);
                         }
                         image.SetPixel(x, height - y - 1, colour);
@@ -443,6 +448,25 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             return image;
         }
+
+
+        public static Color[] GetCyanSpectrumPalette()
+        {
+            int count = 256 - 1;
+            Color[] palette = new Color[256];
+            for (int i = 0; i <= count; i++)
+            {
+                double value = i / (double)count;
+                int R = (int)Math.Round(value * value * value * count);
+                //int G = i;
+                int B = i;
+                int G = (int)Math.Round(Math.Sqrt(value) * count); 
+                //int B = (int)Math.Round(value * value * count); 
+                palette[i] = Color.FromArgb(255, R, G, B);
+            }
+            return palette;
+        }
+
 
         public static Image CreateFalseColourAmplitudeSpectrogram(double[,] spectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
