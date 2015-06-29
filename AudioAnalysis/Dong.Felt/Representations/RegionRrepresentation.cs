@@ -371,73 +371,8 @@ namespace Dong.Felt.Representations
             }
         }
 
-        /// <summary>
-        /// This method aims to extract candidate region representation according to the provided
-        /// marquee of the queryRepresentation.
-        /// </summary>
-        /// <param name="queryRepresentations"></param>
-        /// <param name="candidateEventList"></param>
-        /// <param name="centroidFreqOffset"> 
-        /// </param>
-        /// <returns></returns>
-        public static List<RegionRepresentation> ExtractAcousticEventList(SpectrogramStandard spectrogram,
-            RegionRepresentation queryRepresentations,
-            List<List<EventBasedRepresentation>> candidateEventList, string file, int centroidFreqOffset)
-        {
-            var result = new List<RegionRepresentation>();
-
-            //var bottomCentroid = queryRepresentations.MajorEvent.Bottom + queryRepresentations.MajorEvent.Width / 2;
-            var bottomCentroid = queryRepresentations.MajorEvent.Bottom;
-            var orientationType = queryRepresentations.MajorEvent.InsideRidgeOrientation;
-            var maxFreq = spectrogram.Configuration.FreqBinCount;
-            var maxFrame = spectrogram.FrameCount;
-
-            var potentialCandidatesStart = new List<EventBasedRepresentation>();
-            foreach (var c in candidateEventList[orientationType])
-            {
-                //var cBottomCentroi = c.Bottom + c.Width / 2;
-                var cBottomCentroi = c.Bottom;
-                if (Math.Abs(cBottomCentroi - bottomCentroid) < centroidFreqOffset)
-                {
-                    potentialCandidatesStart.Add(c);
-                }
-            }           
-            foreach (var pc in potentialCandidatesStart)
-            {
-                var maxFreqPixelIndex = queryRepresentations.topToBottomLeftVertex + pc.Bottom;
-                var minFreqPixelIndex = pc.Bottom - queryRepresentations.bottomToBottomLeftVertex + 1;
-                var startTimePixelIndex = pc.Left - queryRepresentations.leftToBottomLeftVertex;
-                var endTimePixelIndex = queryRepresentations.rightToBottomLeftVertex + pc.Left;
-
-                if (StatisticalAnalysis.checkBoundary(minFreqPixelIndex, startTimePixelIndex, maxFreq, maxFrame)
-                    && StatisticalAnalysis.checkBoundary(maxFreqPixelIndex, endTimePixelIndex, maxFreq, maxFrame))
-                {
-                    var allEvents = EventBasedRepresentation.AddSelectedEventLists(candidateEventList, minFreqPixelIndex, maxFreqPixelIndex, startTimePixelIndex, 
-                    endTimePixelIndex, maxFreq, maxFrame);
-                    if (allEvents[orientationType].Count > 0)
-                    {
-                        var candidateRegionRepre = new RegionRepresentation(allEvents, file);
-                        candidateRegionRepre.MajorEvent = pc;
-                        candidateRegionRepre.topToBottomLeftVertex = maxFreqPixelIndex - pc.Bottom;
-                        candidateRegionRepre.bottomToBottomLeftVertex = pc.Bottom - minFreqPixelIndex;
-                        candidateRegionRepre.leftToBottomLeftVertex = pc.Left - startTimePixelIndex;
-                        candidateRegionRepre.rightToBottomLeftVertex = endTimePixelIndex - pc.Left;
-                        candidateRegionRepre.TopInPixel = maxFreqPixelIndex;
-                        candidateRegionRepre.BottomInPixel = minFreqPixelIndex;
-                        candidateRegionRepre.LeftInPixel = startTimePixelIndex;
-                        candidateRegionRepre.RightInPixel = endTimePixelIndex;
-                        candidateRegionRepre.NotNullEventListCount = NotNullListCount(
-                        candidateRegionRepre.vEventList,
-                        candidateRegionRepre.hEventList,
-                        candidateRegionRepre.pEventList,
-                        candidateRegionRepre.nEventList);
-                        result.Add(candidateRegionRepre);
-                    }                  
-                }                
-            }
-            return result;
-        }
-    
+        
+        
         /// <summary>
         /// This representation is derived on eventRepresentations. 
         /// </summary>
