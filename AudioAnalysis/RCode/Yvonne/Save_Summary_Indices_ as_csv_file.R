@@ -21,8 +21,13 @@ myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
 length<-length(myFiles)
 
 ### GENERATE A LIST OF DATES AND TIMES ##############
-dates <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\1', myFiles)
-times <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\2', myFiles)
+source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\Yvonne\\dateTime_function.R")
+dt <- dateTime(myFiles)
+dates <- dt[,1]
+times <- dt[,2]
+  
+#dates <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\1', myFiles)
+#times <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\2', myFiles)
 
 ### SUMMARY INDICES ###########################
 all.indices <- NULL
@@ -59,7 +64,7 @@ rm(fileContents)
 library(chron)
 dts <- dates (c(as.character(all.indices$rec.date)),
               format = c(dates = "d-m-y"))
-ref.dts <- dates (c(as.character(all.indices$rec.date[1])),
+ref.date <- dates (c(as.character(all.indices$rec.date[1])),
               format = c(dates = "d-m-y"))
 hms <- times(c(as.character(all.indices$rec.time)))
 hrs <- hours(hms)
@@ -74,7 +79,7 @@ minute.of.day <- hrs*60 + m
 # generate an absolute minutes reference from start
 # allowing data with missing sections to be plotted
 for (i in 1:a) {
-  reference <- (((dts[i] - ref.dts) * (max(minute.of.day)+1)) + (minute.of.day[i]) - minute.of.day[1])
+  reference <- (((dts[i] - ref.date) * (max(minute.of.day)+1)) + (minute.of.day[i]) - minute.of.day[1])
   time.since.start <- c(time.since.start, reference[1])
 }
   
