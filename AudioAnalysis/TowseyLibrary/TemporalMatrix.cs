@@ -285,6 +285,12 @@ namespace TowseyLibrary
             var newMatrix = new double[compressedLength, colCount];
             double[] tempArray = new double[compressionFactor];
             int step = compressionFactor - 1;
+            double average = 0.0;
+            double difference = 0.0;
+            int maxCompressionFactor = 6;
+            double relativeCompression = compressionFactor / (double)maxCompressionFactor;
+            if (relativeCompression > 1.0) relativeCompression = 1.0;
+
             for (int c = 0; c < colCount; c++)
             {
                 int rowIndex = 0;
@@ -295,9 +301,9 @@ namespace TowseyLibrary
                     {
                         tempArray[i] = matrix[r + i, c];
                     }
-                    //newMatrix[rowIndex, c] = (tempArray.Average() + tempArray.Max()) / (double)2.0;
-                    //newMatrix[rowIndex, c] = tempArray.Average();
-                    newMatrix[rowIndex, c] = tempArray.Max();
+                    average = tempArray.Average();
+                    difference = tempArray.Max() - average;
+                    newMatrix[rowIndex, c] = average + (difference * relativeCompression);
                 }
             }
             return newMatrix;
