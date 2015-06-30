@@ -24,7 +24,8 @@ plot(spec.properties$skewness)
 plot(spec.properties$sfm) #spectral flatness
 plot(spec.properties$zeroCrossingRate) 
 plot(spec.properties$sh) # spectral entropy
-plot(spec.properties$sd)
+plot(spec.properties$sd) # standard deviation
+
 ########### PLOTTING VARIABLES ##############
 positions<-c(8,68,128,188,248,308,368)
 timeLabels1<-c("1:45 pm","2:45","3.45","4.45","5.45","6.45","7.45")

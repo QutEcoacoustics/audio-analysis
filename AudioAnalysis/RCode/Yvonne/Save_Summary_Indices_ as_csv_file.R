@@ -21,8 +21,8 @@ myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
 length<-length(myFiles)
 
 ### GENERATE A LIST OF DATES AND TIMES ##############
-dates <- substr(myFiles, 1,8)
-times <- substr(myFiles, 10,15)
+dates <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\1', myFiles)
+times <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\2', myFiles)
 
 ### SUMMARY INDICES ###########################
 all.indices <- NULL
