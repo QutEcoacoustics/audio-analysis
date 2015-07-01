@@ -14,8 +14,11 @@ namespace Acoustics.Shared
     using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
+
+    using log4net;
 
     public class FileDateHelpers
     {
@@ -25,7 +28,8 @@ namespace Acoustics.Shared
                 new DateVariants(@".*_(\d{8}_\d{6}Z?)\..+", AppConfigHelper.StandardDateFormatSm2, false, 1), 
 
                 // valid: prefix_20140101_235959.mp3, a_00000000_000000.a, a_99999999_999999.dnsb48364JSFDSD, prefix_20140101_235959Z.mp3
-                new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, false, 2),                                                         new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false,  2), 
+                new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, false, 2),
+                new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})Z?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false,  2), 
 
                 // valid: prefix_20140101-235959+10.mp3, a_00000000-000000+00.a, a_99999999-999999+9999.dnsb48364JSFDSD
                 new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})(([+-]\d{2,4}|Z))).*\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormat, true, 2),
@@ -35,8 +39,10 @@ namespace Acoustics.Shared
                 new DateVariants(@"^(.*)((\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(([+-]\d{2,4}|Z))).*\.([a-zA-Z0-9]+)", AppConfigHelper.Iso8601FileCompatibleDateFormat, true, 2),
 
                 // valid: SERF_20130314_000021_000.wav, a_20130314_000021_a.a, a_99999999_999999_a.dnsb48364JSFDSD
-                new DateVariants(@"(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2}Z?))_(.*?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false, 2)
+                new DateVariants(@"(.*)((\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})Z?)_(.*?)\.([a-zA-Z0-9]+)$", AppConfigHelper.StandardDateFormatSm2, false, 2)
             };
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static bool FileNameContainsDateTime(string fileName)
         {
@@ -98,9 +104,13 @@ namespace Acoustics.Shared
 
                         if (offsetHint == null)
                         {
+                            Log.Warn("File date parse cannot parse date {0} - a timezone offset hint was not provided to the function for a date format with no timezone information".Format2(stringDate));
+                            return false;
+
                             throw new ArgumentException(
                                 "Do not know how to parse date {0} - specify a timezone offset hint explicitly".Format2(
-                                    stringDate));
+                                    stringDate),
+                                "offsetHint");
                         }
                         else
                         {
@@ -139,7 +149,7 @@ namespace Acoustics.Shared
 
     public class InvalidFileDateException : Exception
     {
-        private string options;
+        private readonly string options;
 
         public InvalidFileDateException(string message)
             : base(message)
