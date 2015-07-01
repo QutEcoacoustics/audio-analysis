@@ -4,22 +4,22 @@
 # This file is used with Plot_Towsey_Summary_Indices.R
 
 ######## You may wish to change these ###################### 
-setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt")
-#setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt")
+#setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt")
+setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt")
 
-sourceDir <- "E:\\Data\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\" 
-#sourceDir <- "E:\\Data\\Data 22 to 27 March 2015 Woondum Eastern Eucalypt\\"
+#sourceDir <- "E:\\Data\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\" 
+sourceDir <- "E:\\Data\\Data 22 to 27 March 2015 Woondum Eastern Eucalypt\\"
 
-folder <- "E:\\Work\\Data\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
-#folder <- "E:\\Work\\Data\\2015Mar31-134325 - Yvonne, Towsey.Indices, ICD=60, #17\\Yvonne\\Eastern Euclalypt\\"
+#folder <- "E:\\Work\\Data\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
+folder <- "E:\\Work\\Data\\2015Mar31-134325 - Yvonne, Towsey.Indices, ICD=60, #17\\Yvonne\\Eastern Euclalypt\\"
 
 ###################################
-myFiles <- read.csv("mapping.csv")[,2]
-
 #myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
-      # obtain a list of the original wave files
+# obtain a list of the original wave files
 
 #write.csv(myFiles, file=paste("mapping.csv"))
+
+myFiles <- read.csv("mapping.csv")[,2]
 
 length <- length(myFiles)
 

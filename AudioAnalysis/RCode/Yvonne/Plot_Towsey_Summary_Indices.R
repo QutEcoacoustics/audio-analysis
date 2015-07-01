@@ -14,6 +14,7 @@ indices <- read.csv("Towsey_Summary_Indices 20150322_113743 to 20150327_103745 .
 #Sensor <- read.csv("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\Sensorfile\\Sensor file 15_March 2015 to 20_March_2015.csv",header = TRUE)
 Sensor <- read.csv("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\Sensorfile\\Sensor file 22_March 2015 to 27_March_2015.csv",header = TRUE)
 
+location <- "Data 22 to 27  March 2015 Woondum - Eastern Eucalypt"
 # Also check the "Set up time and date positons and labels"
 
 ###### Determine number of days and minutes per day in recording ##########
@@ -64,6 +65,8 @@ plot.indices <- function(file, heading, label) {
   axis(4, ylim=c(min(Sensor$Temperature), max(Sensor$Temperature)),
        lwd=1.8, line = line, mgp = c(3,0.4,0))
   mtext(side=4, "Temperature (C)", 1.8, cex = 2.8)
+  mtext(side = 3, location, cex = 2)
+  mtext(side = 3, line = -2,"-------- Temperature", cex=2)
 }
 
 ######## Print Background Noise plot ###############
