@@ -359,23 +359,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return image;
         }
 
-
-        public static Image CreateFalseColourDecibelSpectrogramForZooming(double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
+        /// <summary>
+        /// Creates a false-coloured spectrogram from spectral frame data.
+        /// That is, uses normal spectrogram data but draws the raw data in red and then superimposes the noise reduced decibel data
+        /// Also uses the spectral "hits" data for highlighting the spectrogram.
+        /// ### IMPORTANT WARNING!!!! THIS METHOD ASSUMES THAT BOTH SPECTRAL MATRICES HAVE BEEN NORMALISED IN [0,1].
+        /// </summary>
+        /// <param name="dbSpectrogramNorm"></param>
+        /// <param name="nrSpectrogramNorm"></param>
+        /// <param name="hits"></param>
+        /// <returns></returns>
+        public static Image CreateFalseColourDecibelSpectrogramForZooming(double[,] dbSpectrogramNorm, double[,] nrSpectrogramNorm, byte[,] hits)
         {
-            double truncateMin = -100.0;
-            double truncateMax = -30.0;
-            double filterCoefficient = 0.75;
-            double[,] dbSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(dbSpectrogramData, truncateMin, truncateMax, filterCoefficient);
-            truncateMin = 0;
-            truncateMax = 50;
-            double[,] nrSpectrogramNorm = SpectrogramTools.NormaliseSpectrogramMatrix(nrSpectrogramData, truncateMin, truncateMax, filterCoefficient);
-            //nrSpectrogramNorm = DataTools.normalise(nrSpectrogramNorm);
-            nrSpectrogramNorm = MatrixTools.boundMatrix(nrSpectrogramNorm, 0.0, 0.9);
-            nrSpectrogramNorm = MatrixTools.SquareRootOfValues(nrSpectrogramNorm);
-            nrSpectrogramNorm = DataTools.normalise(nrSpectrogramNorm);
-
-            int width  = dbSpectrogramData.GetLength(0);
-            int height = dbSpectrogramData.GetLength(1);
+            int width  = dbSpectrogramNorm.GetLength(0);
+            int height = dbSpectrogramNorm.GetLength(1);
             Bitmap image = new Bitmap(width, height);
             Color colour;
             //Hsv myHsv;
@@ -443,8 +440,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         image.SetPixel(x, height - y - 1, colour);
                     }
             }//end over all freq bins
-
-            //image.Save(@"C:\SensorNetworks\Output\Sonograms\TEST3.png", ImageFormat.Png);
 
             return image;
         }

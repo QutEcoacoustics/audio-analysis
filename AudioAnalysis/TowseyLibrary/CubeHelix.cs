@@ -286,23 +286,29 @@ public class CubeHelix
             cch.TestImage(path);
         }
 
+        /// <summary>
+        /// This HSL values in this method have been set specially for use with the high-resolution zooming spectrograms.
+        /// There are limits to the values that can be used. 
+        /// The purpose for chaning the default values was to increase the colour saturation.
+        /// </summary>
+        /// <returns></returns>
         public static CubeHelix GetCubeHelix()
-    {
-        //Hsl colorARgb = new Hsl(300, 0.5, 0.0); // DEFAULT - used prior to 26 June 2015
-        //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0); // DEFAULT - used prior to 26 June 2015
-        Hsl colorARgb = new Hsl();
-        colorARgb.H = 280;
-        colorARgb.S = 0.5;
-        colorARgb.L = 0.05;
-        Hsl colorBRgb = new Hsl();
-        //colorBRgb.H = -240;
-        colorBRgb.H = -240;
-        colorBRgb.S = 0.5;
-        colorBRgb.L = 1.0;
+        {
+            //Hsl colorARgb = new Hsl(300, 0.5, 0.0); // DEFAULT - used prior to 26 June 2015
+            //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0); // DEFAULT - used prior to 26 June 2015
+            Hsl colorARgb = new Hsl();
+            colorARgb.H = 300;
+            colorARgb.S = 0.85;
+            colorARgb.L = 0.1;
+            Hsl colorBRgb = new Hsl();
+            //colorBRgb.H = -240;
+            colorBRgb.H = -240;
+            colorBRgb.S = 0.5;
+            colorBRgb.L = 1.0;
                 
-        var cch = new CubeHelix(colorARgb, colorBRgb);
-        cch.SetDefaultCubeHelix();
-        return cch;
+            var cch = new CubeHelix(colorARgb, colorBRgb);
+            cch.SetDefaultCubeHelix();
+            return cch;
         }
 
 
