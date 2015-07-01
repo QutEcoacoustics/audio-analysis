@@ -42,20 +42,23 @@ namespace AnalysisBase
 
         }
 
-        public FileSegment(FileInfo originalFile, bool fileDateRequired)
+        public FileSegment(FileInfo originalFile, bool fileDateRequired, bool tryParseFileDate = false)
         {
             this.fileDateRequired = fileDateRequired;
             this.OriginalFile = originalFile;
-            
-            this.triedToParseDate = true;
-            this.fileStartDate = this.AudioFileStart();
-            
-            if (this.fileDateRequired)
+
+            if (fileDateRequired || tryParseFileDate)
+            {
+                this.triedToParseDate = true;
+                this.fileStartDate = this.AudioFileStart();
+
+                if (this.fileDateRequired)
                 {
-                if (!this.fileStartDate.HasValue)
-                {
-                    throw new InvalidFileDateException(
-                        "A file date is required but one has not been successfully parsed");
+                    if (!this.fileStartDate.HasValue)
+                    {
+                        throw new InvalidFileDateException(
+                            "A file date is required but one has not been successfully parsed");
+                    }
                 }
             }
         }
@@ -165,11 +168,11 @@ namespace AnalysisBase
         private DateTimeOffset? AudioFileStart()
         {
             DateTimeOffset parsedDate;
-            var fileDateFound = FileDateHelpers.FileNameContainsDateTime(this.OriginalFile.Name, out parsedDate);
+            bool fileDateFound = FileDateHelpers.FileNameContainsDateTime(this.OriginalFile.Name, out parsedDate);
 
             if (fileDateFound)
             {
-                Log.Debug("Parsed file start date as " + parsedDate.ToString("O"));
+                Log.Info("Parsed file start date as " + parsedDate.ToString("O"));
                 return parsedDate;
             }
 
