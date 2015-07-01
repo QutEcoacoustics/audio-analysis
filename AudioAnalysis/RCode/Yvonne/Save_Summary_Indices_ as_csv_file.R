@@ -13,19 +13,22 @@ sourceDir <- "E:\\Data\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\"
 folder <- "E:\\Work\\Data\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
 #folder <- "E:\\Work\\Data\\2015Mar31-134325 - Yvonne, Towsey.Indices, ICD=60, #17\\Yvonne\\Eastern Euclalypt\\"
 
-####################################
+###################################
+myFiles <- read.csv("mapping.csv")[,2]
 
-myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
+#myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
       # obtain a list of the original wave files
 
-length<-length(myFiles)
+#write.csv(myFiles, file=paste("mapping.csv"))
+
+length <- length(myFiles)
 
 ### GENERATE A LIST OF DATES AND TIMES ##############
 source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\dateTime_function.R")
 dt <- dateTime(myFiles)
 dates <- dt[,1]
 times <- dt[,2]
-  
+
 #dates <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\1', myFiles)
 #times <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\2', myFiles)
 
