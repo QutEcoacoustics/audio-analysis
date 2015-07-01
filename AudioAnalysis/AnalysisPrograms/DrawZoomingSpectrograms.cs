@@ -86,22 +86,18 @@ namespace AnalysisPrograms
             // string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic";
             // string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
 
-            // exclude the analysis type from file name i.e. "Indices"
-            // string ipFileName = "BYR4_20131029_Towsey.Acoustic";
-            // string ipdir = @"Y:\Results\2014Nov28-083415 - False Color, Mt Byron PRA, For Jason\to upload\Mt Byron\PRA\report\joined\BYR4_20131029.mp3\Towsey.Acoustic";
-            // string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
-
-            // zoomable spectrograms
-            // string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
-
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\EclipseFarmstay.200ms\Towsey.Acoustic";
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\EclipseFarmstay.200ms\Towsey.Acoustic";
 
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\FocalZoomImage";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramTileZoom\TiledImages";
+
+            // ################ TEST a colour scheme for the high resolution frame spectrograms.
+            //var cch = TowseyLibrary.CubeHelix.GetCubeHelix();
+            //cch.TestImage(Path.Combine(opdir, "testImageCubeHelix4.png"));
 
             var ipDir = new DirectoryInfo(ipdir);
             var opDir = new DirectoryInfo(opdir);
@@ -116,8 +112,9 @@ namespace AnalysisPrograms
                                //@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
 
                            // draw a focused multi-resolution pyramid of images
-                           ZoomAction = Arguments.ZoomActionType.Focused,
-                           FocusMinute = 60,
+                           ZoomAction = Arguments.ZoomActionType.Tile,
+                           //ZoomAction = Arguments.ZoomActionType.Focused,
+                           //FocusMinute = 60,
                        };
         }
 
