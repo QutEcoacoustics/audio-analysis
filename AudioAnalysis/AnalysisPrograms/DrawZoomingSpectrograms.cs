@@ -90,10 +90,13 @@ namespace AnalysisPrograms
             // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\EclipseFarmstay.200ms\Towsey.Acoustic";
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
+
+            string ipdir = @"C:\SensorNetworks\Output\BristleBird\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImageBristleBird";
 
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramTileZoom\TiledImages";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramTileZoom\TiledImages";
 
             // ################ TEST a colour scheme for the high resolution frame spectrograms.
             //var cch = TowseyLibrary.CubeHelix.GetCubeHelix();
@@ -112,9 +115,9 @@ namespace AnalysisPrograms
                                //@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
 
                            // draw a focused multi-resolution pyramid of images
-                           ZoomAction = Arguments.ZoomActionType.Tile,
-                           //ZoomAction = Arguments.ZoomActionType.Focused,
-                           //FocusMinute = 60,
+                           //ZoomAction = Arguments.ZoomActionType.Tile,
+                           ZoomAction = Arguments.ZoomActionType.Focused,
+                           FocusMinute = 17,
                        };
         }
 
