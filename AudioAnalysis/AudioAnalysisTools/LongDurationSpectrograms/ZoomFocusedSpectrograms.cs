@@ -128,7 +128,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-
+        /// <summary>
+        /// This method can add in absolute time if you want.
+        /// Currently commented out - see below.
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="indexGenerationData"></param>
+        /// <param name="indexProperties"></param>
+        /// <param name="focalTime"></param>
+        /// <param name="dataScale"></param>
+        /// <param name="imageScale"></param>
+        /// <param name="imageWidth"></param>
+        /// <param name="spectra"></param>
+        /// <param name="basename"></param>
+        /// <returns></returns>
         public static Image DrawIndexSpectrogramAtScale(
             LdSpectrogramConfig config,
             IndexGenerationData indexGenerationData, 
@@ -218,9 +231,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (config != null) herzInterval = config.YAxisTicInterval;
             string title = string.Format("ZOOM SCALE={0}s/pixel   Image duration={1} ",  imageScale.TotalSeconds, spectrogramDuration);
 
-            Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, LDSpectrogram.Width);
             //add chrome
-            startTime += recordingStartTime;
+            // NEXT LINE USED ONLY IF WANT ABSOLUTE TIME
+            //startTime += recordingStartTime;
+            Image titleBar = ZoomFocusedSpectrograms.DrawTitleBarOfZoomSpectrogram(title, LDSpectrogram.Width);
             LDSpectrogram = ZoomFocusedSpectrograms.FrameZoomSpectrogram(
                 LDSpectrogram, 
                 titleBar, 
@@ -361,7 +375,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return LDSpectrogram;
         }
 
-
+        /// <summary>
+        /// This method can add in the absolute recording start time. However currently disabled. 
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="indexGenerationData"></param>
+        /// <param name="startTimeOfData"></param>
+        /// <param name="compressionFactor"></param>
+        /// <param name="frameData"></param>
+        /// <param name="indexData"></param>
+        /// <param name="focalTime"></param>
+        /// <param name="frameScale"></param>
+        /// <param name="imageWidth"></param>
+        /// <returns></returns>
         public static Image DrawFrameSpectrogramAtScale(LdSpectrogramConfig config, IndexGenerationData indexGenerationData, TimeSpan startTimeOfData, int compressionFactor,
                                                         List<double[]> frameData, double[,] indexData, TimeSpan focalTime, TimeSpan frameScale, int imageWidth)
         {
@@ -412,8 +438,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string title = string.Format("ZOOM SCALE={0}ms/pixel   Image duration={1} ", imageScale.TotalMilliseconds, imageDuration);
             Image titleBar = DrawTitleBarOfZoomSpectrogram(title, spectrogramImage.Width);
 
-            // add the recording start time - obtained from info in file name
-            startTime += recordingStartTime;
+            // add the recording start time ONLY IF WANT ABSOLUTE TIME SCALE - obtained from info in file name
+            // startTime += recordingStartTime;
             spectrogramImage = FrameZoomSpectrogram(spectrogramImage, titleBar, startTime, imageScale, config.XAxisTicInterval, nyquist, herzInterval);
 
 
