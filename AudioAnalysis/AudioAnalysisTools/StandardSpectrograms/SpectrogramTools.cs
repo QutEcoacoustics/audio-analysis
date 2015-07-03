@@ -377,7 +377,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Color colour;
             //Hsv myHsv;
             //Rgb myRgb;
-            
+
+            // get red scale pallette
+            var rsp = new CubeHelix("redscale");
             // get the colour cube helix 
             var cch = CubeHelix.GetCubeHelix();
             //Color[] palette = GetCyanSpectrumPalette();
@@ -388,12 +390,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     {
                         // normalise and bound the value - use min bound, max and 255 image intensity range
                         double dbValue = dbSpectrogramNorm[x, y];
-                        //int c1 = 255 - (int)Math.Floor(255.0 * dbValue); // white background
-                        int c1 = (int)Math.Floor(255.0 * dbValue); // black background
-                        if (c1 < 0) c1 = 0;
-                        else
-                            if (c1 > 255) c1 = 255;
-                        colour = Color.FromArgb(c1, 0, 0);
+                        colour = rsp.GetColorFromPallette(dbValue);
+                        ////int c1 = 255 - (int)Math.Floor(255.0 * dbValue); // white background
+                        //int c1 = (int)Math.Floor(255.0 * dbValue); // black background
+                        //if (c1 < 0) c1 = 0;
+                        //else
+                        //    if (c1 > 255) c1 = 255;
+                        //colour = Color.FromArgb(c1, 0, 0);
 
                         if (nrSpectrogramNorm[x, y] > 0)
                         {

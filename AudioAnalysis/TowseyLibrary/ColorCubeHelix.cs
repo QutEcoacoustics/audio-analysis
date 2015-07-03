@@ -17,6 +17,7 @@ namespace TowseyLibrary
     {
         public const string Default = "default";
         public const string Grayscale = "grayscale";
+        public const string RedScale  = "redscale";
         public const int MaxPaletteSize = 256;
         private readonly int maxPaletteIndex = MaxPaletteSize - 1;
         private readonly Color[] colorPalette;

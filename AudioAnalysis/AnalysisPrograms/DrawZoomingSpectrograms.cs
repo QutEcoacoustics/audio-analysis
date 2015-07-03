@@ -90,17 +90,22 @@ namespace AnalysisPrograms
             // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
 
-            string ipdir = @"C:\SensorNetworks\Output\BristleBird\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImageBristleBird";
+            // ECLIPSE FARMSTAY
+            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+
+            //BRISTLE BIRD
+            //string ipdir = @"C:\SensorNetworks\Output\BristleBird\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImageBristleBird";
 
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramTileZoom\TiledImages";
 
             // ################ TEST a colour scheme for the high resolution frame spectrograms.
-            //var cch = TowseyLibrary.CubeHelix.GetCubeHelix();
-            //cch.TestImage(Path.Combine(opdir, "testImageCubeHelix4.png"));
+            //var cch = new TowseyLibrary.CubeHelix("redscale");
+            //cch.TestImage(Path.Combine(opdir, "testImageRedScale1.png"));
+            // ################ TEST a colour scheme for the high resolution frame spectrograms.
 
             var ipDir = new DirectoryInfo(ipdir);
             var opDir = new DirectoryInfo(opdir);
@@ -118,6 +123,7 @@ namespace AnalysisPrograms
                            //ZoomAction = Arguments.ZoomActionType.Tile,
                            ZoomAction = Arguments.ZoomActionType.Focused,
                            FocusMinute = 17,
+                           //FocusMinute = 60,
                        };
         }
 
