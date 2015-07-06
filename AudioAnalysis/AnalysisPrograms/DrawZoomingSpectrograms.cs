@@ -103,8 +103,12 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramTileZoom\TiledImages";
 
             // ################ TEST a colour scheme for the high resolution frame spectrograms.
-            //var cch = new TowseyLibrary.CubeHelix("redscale");
-            //cch.TestImage(Path.Combine(opdir, "testImageRedScale1.png"));
+            var cch = TowseyLibrary.CubeHelix.GetCubeHelix();
+            cch.TestImage(Path.Combine(opdir, "testImageColorHelixScale.png"));
+            var rsp = new TowseyLibrary.CubeHelix("redscale");
+            rsp.TestImage(Path.Combine(opdir, "testImageRedScale1.png"));
+            var csp = new TowseyLibrary.CubeHelix("cyanscale");
+            csp.TestImage(Path.Combine(opdir, "testImageCyanScale1.png"));
             // ################ TEST a colour scheme for the high resolution frame spectrograms.
 
             var ipDir = new DirectoryInfo(ipdir);
@@ -122,8 +126,8 @@ namespace AnalysisPrograms
                            // draw a focused multi-resolution pyramid of images
                            //ZoomAction = Arguments.ZoomActionType.Tile,
                            ZoomAction = Arguments.ZoomActionType.Focused,
-                           FocusMinute = 17,
-                           //FocusMinute = 60,
+                           //FocusMinute = 17,
+                           FocusMinute = 60,
                        };
         }
 
