@@ -375,69 +375,29 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int height = dbSpectrogramNorm.GetLength(1);
             Bitmap image = new Bitmap(width, height);
             Color colour;
-            //Hsv myHsv;
-            //Rgb myRgb;
 
             // get red scale pallette
             var rsp = new CubeHelix("redscale");
             // get the colour cube helix 
             var cch = CubeHelix.GetCubeHelix();
-            //Color[] palette = GetCyanSpectrumPalette();
+            //var csp = new CubeHelix("cyanscale");
 
             for (int y = 0; y < height; y++) //over all freq bins
             {
                     for (int x = 0; x < width; x++) //for pixels in the line
                     {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
-                        double dbValue = dbSpectrogramNorm[x, y];
-                        colour = rsp.GetColorFromPallette(dbValue);
-                        ////int c1 = 255 - (int)Math.Floor(255.0 * dbValue); // white background
-                        //int c1 = (int)Math.Floor(255.0 * dbValue); // black background
-                        //if (c1 < 0) c1 = 0;
-                        //else
-                        //    if (c1 > 255) c1 = 255;
-                        //colour = Color.FromArgb(c1, 0, 0);
-
-                        if (nrSpectrogramNorm[x, y] > 0)
+                        colour = rsp.GetColorFromPallette(dbSpectrogramNorm[x, y]);
+                        
+                        if (nrSpectrogramNorm[x, y] > 0.15)
                         {
-                            //// use HSV colour space
-                            //int bottomColour = 30;    // to avoid using the reds
-                            //int topColour    = 320;   // to avoid using the magentas
-                            //int hueRange = topColour - bottomColour;
-                            //int hue = bottomColour + (int)Math.Floor(hueRange * nrSpectrogramNorm[x, y]);
-
-                            //double saturation = 1.0;
-                            ////double saturation = 0.75 + (nrSpectrogramNorm[x, y] * 0.25);
-                            ////double saturation = nrSpectrogramNorm[x, y] * 0.5;
-                            ////double saturation = (1 - nrSpectrogramNorm[x, y]) * 0.5;
-
-                            //double value = 1.0;
-                            ////double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
-
-                            //myHsv = new Hsv { H = hue, S = saturation, V = value };
-                            //myRgb = myHsv.To<Rgb>();
-                            //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
-
-                            int colourID = cch.GetColorID(nrSpectrogramNorm[x, y]);
-                            //int colourID = (int)Math.Round(nrSpectrogramNorm[x, y] * 255); 
-
-
                             // get colour for noise reduced portion
+                            int colourID = cch.GetColorID(nrSpectrogramNorm[x, y]);
                             // superimpose ridge detection
                             if (hits[x, y] > 0)
                             {
-                                //value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
-                                //myHsv = new Hsv { H = 260, S = saturation, V = value };
-                                //myRgb = myHsv.To<Rgb>();
-                                //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
-                                //colour = ridgeColours[hits[x, y] - 1];
-                                //colour = Color.White;
-                                //colour = cch.GetColorFromPallette(colourID);
-                                colourID +=2;
+                                colourID +=20;
                                 if (colourID > 255) colourID = 255;
-                                //if (colourID > cch.maxPalletteIndex) colourID = cch.maxPalletteIndex;
                             }
-                            //colour = palette[colourID];
                             colour = cch.GetColorFromPallette(colourID);
                         }
                         image.SetPixel(x, height - y - 1, colour);

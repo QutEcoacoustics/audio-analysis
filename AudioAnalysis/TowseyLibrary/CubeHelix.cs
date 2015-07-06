@@ -50,7 +50,12 @@ public class CubeHelix
                         {
                             this.SetRedScalePallette();
                         }
-                    else
+                        else
+                            if (mode.Equals(ColorCubeHelix.CyanScale))
+                            {
+                                this.SetCyanScalePallette();
+                            }
+                            else
                     {
                         LoggedConsole.WriteErrorLine("WARNING: {0} is UNKNOWN COLOUR PALLETTE!", mode);
                     }
@@ -142,8 +147,28 @@ public class CubeHelix
                 pallette[c] = Color.FromArgb(R, G, B);
             }
             this.ColourPallette = pallette;
-        }    
+        }
 
+
+        /// <summary>
+        /// used for drawing the background noise in zooming spectrograms
+        /// </summary>
+        public void SetCyanScalePallette()
+        {
+            int maxPalletteIndex = maxPalletteSize - 1;
+            var pallette = new Color[maxPalletteSize];
+            for (int c = 0; c < maxPalletteSize; c++)
+            {
+                double value = c / (double)maxPalletteIndex;
+                //int R = 0;
+                int R = (int)Math.Floor(255.0 * value * value * value * value);
+                int G = (int)Math.Floor(255.0 * Math.Pow(value, 0.75));
+                //int G = 0;
+                int B = (int)Math.Floor(255.0 * value * value);
+                pallette[c] = Color.FromArgb(R, G, B);
+            }
+            this.ColourPallette = pallette;
+        }
 
         /// <summary>
         /// Draws matrix without normalising the values in the matrix.
