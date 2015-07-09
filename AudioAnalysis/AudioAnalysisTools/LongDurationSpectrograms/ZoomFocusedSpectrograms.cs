@@ -83,17 +83,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
+            int[] compressionFactor = { 8, 4, 2, 1 };
+            int compressionCount = compressionFactor.Length;
             sw = Stopwatch.StartNew();
             double frameStepInSeconds = indexGeneration.FrameStep / (double)indexGeneration.SampleRateResampled;
             TimeSpan frameScale = TimeSpan.FromTicks((long)Math.Round(frameStepInSeconds * 10000000));
             if (zoomConfig.SpectralFrameScale != null)
             {
                 imageScales = zoomConfig.SpectralFrameScale;
+                // TODO: CONVERT IMAGE scales into Compression factors.
+                compressionCount = imageScales.Length;
+                compressionFactor = new int[compressionCount];
+                compressionFactor[compressionCount-1] = 1;
+                double denom = imageScales[compressionCount - 1];
+                for (int i = 0; i < compressionCount-1; i++)
+                    compressionFactor[i] = (int)Math.Round(imageScales[i] / denom);
             }
 
-            // TODO: CONVERT IMAGE scales into Compression factors.
-            int[] compressionFactor = { 5, 4, 2, 1 };
-            int compressionCount = compressionFactor.Length;
             int maxCompression   = compressionFactor[0];
             TimeSpan maxImageDuration = TimeSpan.FromTicks(maxCompression * imageWidth * frameScale.Ticks);
 
