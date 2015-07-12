@@ -1,5 +1,5 @@
 random.pair <- function(species){
-  set.seed(as.numeric(Sys.time()) %% 1000)
+#   set.seed(as.numeric(Sys.time()) %% 1000)
   
   birdNames <- names(species)
   sequence <- 1:length(birdNames)
