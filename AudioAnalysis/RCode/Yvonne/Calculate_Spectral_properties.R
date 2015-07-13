@@ -53,7 +53,7 @@ fileNames <- NULL
 folder.names <- read.csv("mapping.csv")[ ,2]
 length <- length(folder.names)
 
-for (i in 1:length) {
+for (i in 1:2) {
   pathName <- paste(folder, folder.names[i], "\\", sep = "")
   print(pathName)
   folder.contents <- list.files(full.names = FALSE, pattern = "*.wav", 
@@ -77,13 +77,15 @@ for (i in 1:length) {
   spectralProperties <- aperm(spectralProperties) # transpose array
   spectProperties <- rbind(spectProperties, spectralProperties)
 }
+
 ######## ALL PROPERTIES ##############################
 allProperties <- NULL #178
 allProperties <- cbind(temEntropy, acoustCompIndex, ZCRate, 
-                  spectProperties, fileNames) 
-  
+                  spectProperties, fileNames)
+
 allProperties <- data.frame(allProperties)
 View(allProperties)
+
 ######## WRITE MATRIX ##############################
 library(MASS)
 write.matrix(allProperties, file="Seewave_spectral_Properties.csv", sep=",")
