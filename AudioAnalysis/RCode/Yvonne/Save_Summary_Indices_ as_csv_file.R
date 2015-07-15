@@ -4,22 +4,33 @@
 # This file is used with Plot_Towsey_Summary_Indices.R
 
 ######## You may wish to change these ###################### 
-setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt")
+#setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt")
 #setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt")
+setwd("C:\\Work\\CSV files\\2015Jul01-120417\\GympieNP")
+#setwd("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3")
+#setwd("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3")
 
-sourceDir <- "E:\\Data\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\" 
+#sourceDir <- "E:\\Data\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\" 
 #sourceDir <- "E:\\Data\\Data 22 to 27 March 2015 Woondum Eastern Eucalypt\\"
-
-folder <- "E:\\Work\\Data\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
+sourceDir <- "E:\\Data\\Gympie NP\\22 to 28 June 2015 Gympie NP 12.12.15 Card1a\\"
+#sourceDir <- "E:\\Data\\Woondum3\\22 to 28 June 2015 Woondum3 Card2a\\"
+#sourceDir <- "E:\\Data\\Data 28 June to 5 July 2015 Gympie NP Card 3a\\"
+  
+#folder <- "E:\\Work\\Data\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
 #folder <- "E:\\Work\\Data\\2015Mar31-134325 - Yvonne, Towsey.Indices, ICD=60, #17\\Yvonne\\Eastern Euclalypt\\"
+folder <- "E:\\Work\\Data\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\GympieNP\\"
+#folder <- "E:\\Work\\Data\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\Woondum3\\"
 
+location <- "Gympie NP "
+#location <- "Woondum3" 
+  
 ###################################
+myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
+# obtain a list of the original wave files
+
+write.csv(myFiles, file=paste("mapping.csv"))
+
 myFiles <- read.csv("mapping.csv")[,2]
-
-#myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
-      # obtain a list of the original wave files
-
-#write.csv(myFiles, file=paste("mapping.csv"))
 
 length <- length(myFiles)
 
@@ -40,7 +51,7 @@ rec.time <- NULL
 
 for (i in 1:length) {
   pathName <- (paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-    sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.Indices.csv", 
+    sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.Indices.csv", 
     sep =""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -90,7 +101,7 @@ all.indices <- cbind(all.indices, minute.of.day, time.since.start)
 
 ###### SUMMARY INDICES #############################
 write.csv(all.indices,
-          file=paste("Towsey_Summary_Indices",
+          file=paste("Towsey_Summary_Indices_", location,
           sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
           myFiles[length]),".csv"))
 
@@ -99,7 +110,7 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-         sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.ACI.csv", 
+         sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.ACI.csv", 
          sep =""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -110,17 +121,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
-write.csv(all.indices,
-    file=paste("Towsey.Acoustic.ACI",
+write.csv(all.indices, file=paste("Towsey.Acoustic.ACI", location, 
       sub("*.wav", "\\1", myFiles[1]), "to", sub("*.wav","\\1", 
-      myFiles[length]), ".csv"))
+      myFiles[length]), ".csv", sep =""))
 
 ### SPECTRAL INDEX FOR BACKGROUND ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.BGN.csv", 
+              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.BGN.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -132,16 +142,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.BGN",
+          file=paste("Towsey.Acoustic.BGN", location, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-              myFiles[length]),".csv"))
+              myFiles[length]),".csv", sep =""))
 
 ### SPECTRAL INDEX FOR COVER ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.CVR.csv", 
+              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.CVR.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -153,16 +163,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.CVR",
+          file=paste("Towsey.Acoustic.CVR", location, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-              myFiles[length]),".csv"))
+              myFiles[length]),".csv", sep =""))
 
 ### SPECTRAL INDEX FOR DIF ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.DIF.csv", 
+              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.DIF.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -174,16 +184,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.DIF",
+          file=paste("Towsey.Acoustic.DIF", location, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-              myFiles[length]),".csv"))
+              myFiles[length]),".csv", sep =""))
 
 ### SPECTRAL INDEX FOR ENT ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.ENT.csv", 
+              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.ENT.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -195,16 +205,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.ENT",
+          file=paste("Towsey.Acoustic.ENT", location, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-              myFiles[length]),".csv"))
+              myFiles[length]),".csv", sep =""))
 
 ### SPECTRAL INDEX FOR EVN ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.EVN.csv", 
+              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.EVN.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -216,16 +226,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.EVN",
+          file=paste("Towsey.Acoustic.EVN", location, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-              myFiles[length]),".csv"))
+              myFiles[length]),".csv", sep =""))
 
 ### SPECTRAL INDEX FOR POW ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.POW.csv", 
+                   sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.POW.csv", 
                    sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -237,16 +247,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.POW",
+          file=paste("Towsey.Acoustic.POW", location, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-              myFiles[length]),".csv"))
+              myFiles[length]),".csv", sep =""))
 
 ### SPECTRAL INDEX FOR SPT ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.SPT.csv", 
+                   sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.SPT.csv", 
                    sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -258,16 +268,16 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.SPT",
+          file=paste("Towsey.Acoustic.SPT", location, 
                     sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-                    myFiles[length]),".csv"))
+                    myFiles[length]),".csv", sep =""))
 
 ### SPECTRAL INDEX FOR SUM ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.SUM.csv", 
+                   sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.SUM.csv", 
                    sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
@@ -279,6 +289,6 @@ all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.SUM",
+          file=paste("Towsey.Acoustic.SUM", location, 
                 sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-                myFiles[length]),".csv"))
+                myFiles[length]),".csv", sep =""))
