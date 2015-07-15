@@ -1,4 +1,4 @@
-find.freq.range <- function(frequency.range, threshold){
+calculate.freq.range <- function(frequency.range, threshold){
   cutoff.amp <- max(frequency.range) * threshold
   available.range <- which(frequency.range >= cutoff.amp, arr.ind=TRUE)
   lower.freq <- available.range[1] * 11025 / 256
