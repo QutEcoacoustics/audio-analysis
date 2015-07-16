@@ -91,9 +91,14 @@ namespace AnalysisPrograms
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
 
-            // ECLIPSE FARMSTAY
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
+            // KOALA RECORDING AT ST BEES
+            string ipdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices\Towsey.Acoustic";
             string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+
+
+            // ECLIPSE FARMSTAY
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
 
             //BRISTLE BIRD
             //string ipdir = @"C:\SensorNetworks\Output\BristleBird\Towsey.Acoustic";
@@ -127,7 +132,7 @@ namespace AnalysisPrograms
                            //ZoomAction = Arguments.ZoomActionType.Tile,
                            ZoomAction = Arguments.ZoomActionType.Focused,
                            //FocusMinute = 17,
-                           FocusMinute = 60,
+                           FocusMinute = 61,
                        };
         }
 
