@@ -158,10 +158,12 @@
 
                     ///Automatic check
                     //OutputResults.ChangeCandidateFileName(inputDirectory);
-                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\First experiment datasets-six species\GroundTruth\GroundTruth-trainingData.csv";
+                    //var goundTruthFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\GroundTruth\GroundTruth-trainingData.csv";
                     //OutputResults.AutomatedMatchingAnalysis(inputDirectory, goundTruthFile);
+                    //var outputFile = @"C:\XUEYAN\PHD research work\Fourth experiment-Gaussian Masks\Output\SimilarityScore-top1.csv";
+                    //OutputResults.MatchingSummary(inputDirectory, outputFile);
                     //OutputResults.CSVMatchingAnalysisOfSongScope(inputDirectory, goundTruthFile);
-                    //var outputFile = @"C:\XUEYAN\PHD research work\Third experiment-AED\Output\SimilarityScore-top1.csv";
+                    
                     //OutputResults.AutomatedSimilarityScoreSelection(inputDirectory, outputFile); 
                     //OutputResults.SplitFiles(inputDirectory, inputDirectory);
                     //var rate = OutputResults.ClassificationStatistics(inputDirectory, 5);
@@ -284,22 +286,45 @@
                     //    compressConfig,
                     //    filterRidges);
                     var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(filterRidges, spectrogram.Data, rows, cols);
-                    ////var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
-                    var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(poiMatrix, rows, cols, 11, 3.0);
-                    ////var dividedRidges = POISelection.POIListDivision(joinedRidges);
-                    //ClusterAnalysis.RidgeListToEvent(spectrogram, joinedRidges, out acousticEventlist);
-                    //var resultEvent = ClusterAnalysis.RemoveSmallEvents(acousticEventlist, 30);
+                    //var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
+                    var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(poiMatrix, rows, cols, 5, 1.4);
+                    var dividedRidges = POISelection.POIListDivision(joinedRidges);
+                    var acousticEventList0 = new List<AcousticEvent>();
+                    var acousticEventList1 = new List<AcousticEvent>();
+                    var acousticEventList2 = new List<AcousticEvent>();
+                    var acousticEventList3 = new List<AcousticEvent>();
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventList0);
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[1], out acousticEventList1);
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[2], out acousticEventList2);
+                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[3], out acousticEventList3);
+                    foreach (var e in acousticEventList0)
+                    {
+                        acousticEventlist.Add(e);
+                    }
+                    foreach (var e in acousticEventList1)
+                    {
+                        acousticEventlist.Add(e);
+                    }
+                    foreach (var e in acousticEventList2)
+                    {
+                        acousticEventlist.Add(e);
+                    }
+                    foreach (var e in acousticEventList3)
+                    {
+                        acousticEventlist.Add(e);
+                    }
+                    var resultEvent = ClusterAnalysis.RemoveSmallEvents(acousticEventlist, 30);
                     //var spectrogramData = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
                     //    spectrogram.Data.GetLength(1));
                     //spectrogram.Data = spectrogramData;
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);                
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, resultEvent, eventThreshold, null);                
                     Bitmap bmp = (Bitmap)image;
-                    foreach (PointOfInterest poi in joinedRidges)
-                    {
-                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    }
+                    //foreach (PointOfInterest poi in joinedRidges)
+                    //{
+                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    //}
                     var FileName = new FileInfo(audioFiles[i]);
-                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- Gaussian blur-size-11.png");
+                    string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- event detection on ridges.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
                     image = (Image)bmp;
                     image.Save(annotatedImagePath);
@@ -592,12 +617,13 @@
                     TimeScale = (1 - config.WindowOverlap) * spectrogram.FrameDuration * secondToMillionSecondUnit,
                     NyquistFrequency = spectrogram.NyquistFrequency,
                 };
-                var queryRidges = POISelection.AddBackCompressedRidges(
-                    config,
-                    queryAduioFiles[i],
-                    ridgeConfig,
-                    compressConfig,
-                    featurePropSet);
+                var queryRidges = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
+                //var queryRidges = POISelection.AddBackCompressedRidges(
+                //    config,
+                //    queryAduioFiles[i],
+                //    ridgeConfig,
+                //    compressConfig,
+                //    featurePropSet);
                 var queryGradients = POISelection.GradientPoiSelection(spectrogram, gradientConfig, featurePropSet);
                 var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                 var cols = spectrogram.Data.GetLength(0);
@@ -640,18 +666,18 @@
                     Log.Info("# read each training/test audio file");
                     /// 2. Read the candidates 
                     var candidateSpectrogram = AudioPreprosessing.AudioToSpectrogram(config, candidatesAudioFiles[j]);
-                    //var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
-                    var improvedCandidateridges = POISelection.AddBackCompressedRidges(
-                    config,
-                    candidatesAudioFiles[j],
-                    ridgeConfig,
-                    compressConfig,
-                    featurePropSet);
+                    var candidateRidges = POISelection.RidgePoiSelection(candidateSpectrogram, ridgeConfig, featurePropSet);
+                    //var improvedCandidateridges = POISelection.AddBackCompressedRidges(
+                    //config,
+                    //candidatesAudioFiles[j],
+                    //ridgeConfig,
+                    //compressConfig,
+                    //featurePropSet);
                     var candidateGradients = POISelection.GradientPoiSelection(candidateSpectrogram, gradientConfig, featurePropSet);
 
                     var rows1 = candidateSpectrogram.Data.GetLength(1) - 1;
-                    var cols1 = candidateSpectrogram.Data.GetLength(0);                    
-                    var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(improvedCandidateridges,
+                    var cols1 = candidateSpectrogram.Data.GetLength(0);
+                    var ridgeCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromRidgePOIList(candidateRidges,
                         rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
                     var gradientCNhRepresentationList = RidgeDescriptionNeighbourhoodRepresentation.FromGradientPOIList(candidateGradients,
                         rows1, cols1, neighbourhoodLength, featurePropSet, spectrogramConfig);
