@@ -3,8 +3,17 @@ source('C:/Work/GitHub/audio-analysis/AudioAnalysis/RCode/Liang/association rule
 
 species.names <- names(species)
 maximum.frequency <- numeric()
-for(i in 1:length(species)){
+missed.species <- character()
+
+for(i in 1:length(species.names)){
+  #match the species names to its frequency information
   species.frequency <- match.species4freq(species.names[i])
-  species.maximum.frequency <- which.max(species.frequency) * 11025 / 256
-  maximum.frequency <- c(maximum.frequency, species.maximum.frequency)
+  if(is.character(species.frequency)){
+    missed.species <- c(missed.species, species.frequency)
+    next
+  }
+  else{
+    species.maximum.frequency <- which.max(species.frequency) * 11025 / 256
+    maximum.frequency <- c(maximum.frequency, species.maximum.frequency)
+  }
 }

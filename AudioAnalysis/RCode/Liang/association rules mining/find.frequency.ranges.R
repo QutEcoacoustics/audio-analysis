@@ -4,15 +4,22 @@ source('C:/Work/GitHub/audio-analysis/AudioAnalysis/RCode/Liang/association rule
 
 species.names <- names(species)
 freq.ranges <- numeric()
+threshold <- 0.1
+missed.species <- character()
+
 for(i in 1:length(species.names)){
   #find the frequency information
   species.frequency <- match.species4freq(species.names[i])
+  if(is.character(species.frequency)){
+    missed.species <- c(missed.species, species.frequency)
+    next
+  }
+  else{
+    #find the minimum and maximum frequency
+    species.range <- calculate.freq.range(species.frequency, threshold)
+    range <- species.range[[2]] - species.range[[1]]
   
-  #find the minimum and maximum frequency
-  threshold <- 0.3
-  species.range <- calculate.freq.range(species.frequency, threshold)
-  range <- species.range[[2]] - species.range[[1]]
-  
-  #calculate the overlappling frequency
-  freq.ranges <- c(freq.ranges, range)
+    #calculate the overlappling frequency
+    freq.ranges <- c(freq.ranges, range)
+  }
 }
