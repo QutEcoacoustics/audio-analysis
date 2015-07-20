@@ -1,47 +1,49 @@
-###########################################################################
-# 10 July 2015
-# This code will take more than 20 minutes to run - the number of combinations
-# are listed below:
-# n = 4 or 13 (2380) combinations         # n = 5 or 12 (6188)
-# n = 6 or 11 (12376)                     # n = 7 or 10 (19448)
-# n = 8 or 9 (24310).
-# This code determines the best combination of variables for a set number 
-# of variables and prints out the kmeansObj$betweenss/kmeansObj$totss value
-
-### Please set the following values ######################################
-
-n = 9 # number of variables
-k = 30 # number of cluster centrers (k value in kmeans)
-
-##########################################################################
+#  Date: 17 July 2015
+#  R version:  3.2.1 
+#  This file calculates the Principal Component Analysis and plots the
+#  result
+#
+########## You may wish to change these ###########################
 #setwd("C:\\Work\\CSV files\\Woondum1\\2015_03_15\\")
 #setwd("C:\\Work\\CSV files\\Woondum2\\2015_03_22\\")
-setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
-#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
+setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_07_05\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_07_05\\")
 
 #indices <- read.csv("Towsey_Summary_Indices_Woondum1 20150315_133427to20150320_153429.csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum2 20150322_113743to20150327_103745.csv", header=T)
-indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
-#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
+indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
 
-date <- "20150622"   #indices$rec.date[1]
+# Gympie NP1 22_06_15
+#xlim <- c(-0.015, 0.035)
+#ylim = c(-0.017,0.0001)
+# Gympie NP1 28_06_15
+#xlim <- c(-0.015, 0.028)
+#ylim = c(-0.008,0.0001)
+# Woondum3 21_06_15
+#xlim <- c(-0.017, 0.02)
+#ylim = c(-0.008,0.01)
+# Woondum3 28_06_15
+xlim <- c(-0.017, 0.02)
+ylim = c(-0.001,0.009)
+
 site <- indices$site[1]
 date <- indices$rec.date[1]
-
+################ Normalise data ####################################
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
 }
 
 normIndices <- indices
 # normalise variable columns
-#normIndices[,2]  <- normalise(indices[,2],  0, 2)     # HighAmplitudeIndex
-#normIndices[,3]  <- normalise(indices[,3],  0, 1)     # ClippingIndex
+normIndices[,2]  <- normalise(indices[,2],  0, 2)     # HighAmplitudeIndex
+normIndices[,3]  <- normalise(indices[,3],  0, 1)     # ClippingIndex
 normIndices[,4]  <- normalise(indices[,4], -50, -10)  # AverageSignalAmplitude
 normIndices[,5]  <- normalise(indices[,5], -50, -10)  # BackgroundNoise
 normIndices[,6]  <- normalise(indices[,6],  0, 50)    # Snr
@@ -59,7 +61,7 @@ normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyPeaks
 normIndices[,18] <- normalise(indices[,18], 0, 22)    # SptDensity
 
 # adjust values greater than 1 or less than 0
-for (j in 4:18){
+for (j in 2:18){
   for (i in 1:length(normIndices[,j])) {
     if (normIndices[i,j] > 1) {
       normIndices[i,j] = 1
@@ -71,24 +73,26 @@ for (j in 4:18){
     }
   }
 }
+######### PCA biplot #####################################
+file <- paste("Principal Component Analysis_", site, 
+              "_", date, ".png", sep = "")
+png(
+  file,
+  width     = 200,
+  height    = 200,
+  units     = "mm",
+  res       = 1200,
+  pointsize = 4
+)
 
-################################################
-library(caTools)
-combinations <- combs(5:17, n) 
+par(mar =c(2,2,4,2), cex.axis = 2.5)
+PCAofIndices<- prcomp(normIndices[ ,4:18])
+biplot(PCAofIndices, col=c("transparent", "red"), 
+       cex=c(0.08,2.5), ylim = ylim, 
+       xlim = xlim)
+mtext(side = 3, line = 2, paste("Principal Component Analysis prcomp ",
+              site, date, sep = " "), cex = 2.5)
+PCAofIndices$center
 
-ratio <- NULL
-library(stats)
-for (i in 1:(length(combinations)/n)) {
-    dataFrame <- normIndices[,c(combinations[i,c(1:n)])]
-    print(paste("starting", i, sep = ""))
-    kmeansObj <- kmeans(dataFrame, centers=k)
-    r <- kmeansObj$betweenss/kmeansObj$totss
-    ratio <- c(ratio, r)  
-}
-
-c <- cbind(combinations, ratio)
-best <- c[(which.max(c[,(n+1)])),1:(n+1)]
-a <- paste("Number of combinations", (length(combinations)/n), sep = " ")
-b <- paste("The best combination is", best)
-write.table(c(a,b), file = paste("Best_combinations_", site, "_", n, "_", k, ".csv",
-              sep=""), sep = ",", col.names = NA, qmethod = "double")
+dev.off()
+#################################################

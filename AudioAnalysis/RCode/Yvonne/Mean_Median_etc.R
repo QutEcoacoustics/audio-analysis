@@ -1,15 +1,23 @@
+# 7 July 2015
+# Calculates the min,q25,median,q75,max,mean,mode,standardDev,range
+# and states the normalised minimum and maximum values 
+
 #setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\")
 #setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\")
-#setwd("C:\\Work\\CSV files\\2015Jul01-120417\\GympieNP\\")
-setwd("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 
 #indices <- read.csv("Towsey_summary_indices 20150315_133427 to 20150320_153429 .csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices 20150322_113743 to 20150327_103745 .csv", header=T)
-#indices <- read.csv("Towsey_Summary_Indices 20150622_000000 to 20150628_064559 .csv",header = T)
-indices <- read.csv("Towsey_Summary_Indices 20150622_000000 to 20150628_133139 .csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv",header = T)
+indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
 
-name <- "Woondum3"
-date <- "2015June22"
+site <- indices$site[1]
+date <- indices$rec.date[1]
 #plot(indices[,12])
 mean        <- numeric()
 median      <- numeric()
@@ -20,7 +28,6 @@ min         <- numeric()
 q25         <- numeric()
 q75         <- numeric()
 range       <- numeric()
-bxPlotStats <- numeric()
 all.stats   <- numeric()
 
 rowNames    <-  c("AvgSignalAmplitude",       #4th column
@@ -38,6 +45,7 @@ rowNames    <-  c("AvgSignalAmplitude",       #4th column
                   "VarianceEntropySpectrum", #16
                   "EntropyPeaks",            #17
                   "SptDensity")              #18
+                  
 
 Mode <- function (x){
   ux <- unique(x)
@@ -46,7 +54,7 @@ Mode <- function (x){
 
 for (i in 4:18) {
 m <- mean(indices[,i])
-average <- c(mean, m)
+mean <- c(mean, m)
 md <- median(indices[,i])
 median <- c(median, md)
 mo <- Mode(indices[,i])
@@ -66,36 +74,30 @@ q75 <- c(q75, svn5th)
 rge <- range(indices[,i])
 rge1 <- rge[2]-rge[1]
 range <- c(range, rge1)
-bxpl <- boxplot.stats(indices[,i])
-bxpl <- bxpl$stats
-dim(bxpl) <- c(1,5)
-bxPlotStats <- rbind(bxPlotStats, bxpl)
 }
 
-normalisedValues <- array(c(-50,-10,
-                            -50,-10,
-                              0,50,
-                              0,30,
-                              0,1,
-                              0,5,
-                              0,0.5,
-                              0,0.5,
-                              0,0.5,
-                              0.4,0.7,
-                              0,0.5,
-                              0,1,
-                              0,1,
-                              0,1,
-                              0,2), dim=c(2,15))
+normalisedValues <- array(c(-50, -10,
+                            -50, -10,
+                              0, 50,
+                              3, 20,
+                              0, 1,
+                              0, 5,
+                              0, 0.5,
+                              0, 0.5,
+                              0, 0.5,
+                              0.4, 0.7,
+                              0, 0.6,
+                              0, 0.8,
+                              0, 1,
+                              0, 1,
+                              0, 22), dim=c(2,15))
 
 normValues <- aperm(normalisedValues)
 dim(bxPlotStats) <- c(15,5)
 
-all.stats <- cbind(rowNames, min, q25, median, q75, max, average, 
-                   mode, standardDev, range, bxPlotStats, normValues)
+all.stats <- cbind(rowNames, min, q25, median, q75, max, mean, 
+                   mode, standardDev, range, normValues)
 
-#write.table(all.stats, 'all.stats.txt', col.names = NA)
-
-write.table(all.stats, file = paste("Statistics_matrix_", name, "_", date, 
+write.table(all.stats, file = paste("Statistics_matrix_", site, "_", date, 
                               ".csv", sep=""), sep = ",", qmethod = "double",
                               col.names = NA)

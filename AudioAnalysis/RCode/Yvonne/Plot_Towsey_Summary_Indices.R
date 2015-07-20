@@ -1,89 +1,108 @@
-##################################################################
-#  26 June 2015
+#  Date: 26 June 2015
 #  R version:  3.2.1 
 #  This file plots the indices in the csv file created by the code 
 #  Save_Summary_Indices_ as_csv_file.R
 #
 ########## You may wish to change these ###########################
-#setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\")
-#setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\")
-setwd("C:\\Work\\CSV files\\2015Jul01-120417\\GympieNP\\")
-#setwd("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3\\")
+#setwd("C:\\Work\\CSV files\\Woondum1\\2015_03_15\\")
+#setwd("C:\\Work\\CSV files\\Woondum2\\2015_03_22\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
+setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_07_05\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_07_05\\")
 
-#indices <- read.csv("Towsey_summary_indices 20150315_133427 to 20150320_153429 .csv", header=T)
-#indices <- read.csv("Towsey_Summary_Indices 20150322_113743 to 20150327_103745 .csv", header=T)
-indices <- read.csv("Towsey_Summary_Indices 20150622_000000 to 20150628_064559 .csv",header = T)
-#indices <- read.csv("Towsey_Summary_Indices 20150622_000000 to 20150628_133139 .csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum1 20150315_133427to20150320_153429.csv", header=T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum2 20150322_113743to20150327_103745.csv", header=T)
+#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
+indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
 
-#Sensor <- read.csv("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\Sensorfile\\Sensor file 15_March 2015 to 20_March_2015.csv", header = TRUE)
-#Sensor <- read.csv("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\Sensorfile\\Sensor file 22_March 2015 to 27_March_2015.csv",header = TRUE)
-Sensor <- read.csv("C:\\Work\\CSV files\\2015Jul01-120417\\GympieNP\\Sensor file 22_to 28_June_2015_GympieNP.csv", header = T)
-#Sensor <- read.csv("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3\\Sensor file 22_to 28_June_2015_Woondum3.csv", header = T)
+#Sensor <- read.csv("Sensor file_Woondum1_2015_03_15.csv", header = TRUE)
+#Sensor <- read.csv("Sensor file_Woondum2_2015_03_22.csv", header = TRUE)
+#Sensor <- read.csv(paste(".", "\\", "Sensor file_Gympie NP1_2015_06_21.csv", sep = ""), header = T)
+#Sensor <- read.csv(paste(".", "\\", "Sensor file_Woondum3_2015_06_21.csv", sep = ""), header = T)
+#Sensor <- read.csv(paste(".", "\\", "Sensor file_Gympie NP1_2015_06_28.csv", sep = ""), header = T)
+Sensor <- read.csv(paste(".", "\\", "Sensor file_Woondum3_2015_06_28.csv", sep = ""), header = T)
+#Sensor <- read.csv(paste(".", "\\", "Sensor file_Gympie NP1_2015_07_05.csv", sep = ""), header = T)
+#Sensor <- read.csv(paste(".", "\\", "Sensor file_Woondum3_2015_07_05.csv", sep = ""), header = T)
 
-#location <- "Data 15 to 20 March 2015 Woondum - Wet Eucalypt"
-#location <- "Data 22 to 27  March 2015 Woondum - Eastern Eucalypt"
-location <- "Data 22 to 28  June 2015 - Gympie National Park"
-#location <- "Data 22 to 28  June 2015 Woondum - Woondum 3"
+site <- indices$site[1]
 
-# Also check the "Set up time and date positions and labels"
-
-###### Determine number of days and minutes per day in recording ##########
-
-number.of.days <- length(unique(indices$rec.date))
-min.per.day <- table(indices$rec.date)
+###### Create a list of the number of minutes per day used to plot colours ##########
 counter <- NULL
-for (i in 1:number.of.days) {
-  no.min.per.day <- c(min.per.day[[i]])
-  counter <- c(counter, no.min.per.day)
+list <- 0
+endTime <- length(indices$rec.time)
+mn <-indices[grep("\\<0\\>", indices$minute.of.day),]
+min.per.day <- NULL
+for (k in 1:length(mn$rec.time)) {
+  m <- mn$X[k]
+  list <- c(list, m)
 }
+list <- c(list, endTime)
+
+for (j in 1:(length(mn$rec.time)+1)) {
+  diff <- list[j+1] - list[j]
+  d <- c(min.per.day, diff)
+  counter <- c(counter, d)
+}
+# adjust first and last counter by one
+counter[1] <- counter[1]-1
+counter[length(mn$rec.time)] <- counter[length(mn$rec.time)]+1
 
 ######## Create day identification for different colours in plot #############
+
+number.of.days <- length(unique(indices$rec.date))
 day <- NULL
-for (i in 1:number.of.days) {
-  id <- rep(paste(LETTERS[i]), counter[i])
-  day <- c(day, id)
-}
+
+if (counter[1]==0) 
+  for (i in 1:(number.of.days+1)) {
+    id <- rep(LETTERS[i], counter[i])
+    day <- c(day, id)
+  }
+
+if (counter[1] > 0) 
+  for (i in 1:(number.of.days)) {
+    id <- rep(LETTERS[i], counter[i])
+    day <- c(day, id)
+  }
 
 indices <- cbind(indices, day)
 
-########### Set up time and date positons and labels #############  
-n <- 60 ## Change this figure to match length of the files 
-h <- 6  ## Sets the plot hour interval
-offset <- 0 # 264 for Wet Eucalypt # required if time starts away from hour interval set
-#timePos   <- seq((offset), nrow(indices), by = ((n-1)*h)) # 59 minutes per 
-timePos   <- seq((offset), nrow(indices), by = 360) # for 24 hour files
-# hour work out the reference by repeating to subtract 360 until < 
-# 360 then subtract this number from 360.  Adjust this number by 
-# subtracting absolute of |60/n|.  Or read in minute of day reference
-# and use this as the index.
-#timeLabel <- substr(indices$rec.time, 1,5) 
-#timeLabel <- timeLabel[seq(offset, nrow(indices), by = ((n-1)*h))]
+######## Create references for plotting dates and times ################
+
+timeRef <- indices$minute.of.day[1]
+offset <- 0 - timeRef 
+
+timePos   <- seq((offset), (nrow(indices)+359), by = 360) # 359 ensures timelabels to end
 timeLabel <- c("00:00","6:00","12:00","18:00")
 timeLabel <- rep(timeLabel, length.out=(length(timePos))) 
-#datePos   <- seq(720, nrow(indices), by = (1440-1440/n)) # 59 minutes per hour per day for hour files)
-datePos   <- c(seq(720, nrow(indices), by= 1440)) # for 24 hour files 
+
+datePos <- c(seq((offset+720), nrow(indices)+1500, by = 1440))
 dateLabel <- unique(substr(indices$rec.date, 1,10))
 dateLabel <- dateLabel[1:length(datePos)]
-#rm(h,n)
 
 ########## Plot indices function ###############
 
 plot.indices <- function(file, heading, label) {
   par(mar = c(3.1, 3.6, 3.6, 3.6), cex.axis = 0.7, cex = 3)
   plot(file, xaxt = 'n', xlab = "", type = 'p',
-       cex.lab = 0.9, col = indices$day, mgp = c(1.8,0.5,0), 
+       cex.lab = 0.9, col = indices$day, mgp = c(1.8, 0.5, 0), 
        main = heading, cex = 0.2, ylab = label, cex.main = 1.15)
-  axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8,0.5,0), 
+  axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8, 0.5, 0), 
        cex.axis = 0.7)
-  axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4,1.8,0),
+  axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
        tick = FALSE)
   par(new=TRUE) # allows another plot to be printed
-  plot(Sensor$Temperature, type = 'l', xaxt = 'n', yaxt = 'n', 
-       ylab = "")
-  axis(4, ylim=c(min(Sensor$Temperature), max(Sensor$Temperature)),
-       lwd=1.8, line = line, mgp = c(3,0.4,0))
+  plot(Sensor$Temperature, type = 'l', xaxt = 'n', yaxt = 'n',
+       ylab = "", ylim=c(min(Sensor$Temperature), max(Sensor$Temperature)))
+  axis(side = 4, ylim=c(min(Sensor$Temperature), max(Sensor$Temperature)),
+       line = line, mgp = c(3,0.4,0))
   mtext(side=4, "Temperature (C)", 1.8, cex = 2.8)
-  mtext(side = 3, location, cex = 2)
+  mtext(side = 3, paste(site, indices$rec.date[1], "to",
+       indices$rec.date[length(indices$rec.date)], sep =" "), cex = 2)
   mtext(side = 3, line = -1,"_______ Temperature     ", cex=2, adj=1)
 }
 
@@ -98,7 +117,7 @@ png(
   pointsize = 4
 )
 
-file<-indices$BackgroundNoise
+file <- indices$BackgroundNoise
 plot.indices(file, "Background Noise", "Background Noise (dB)")
 
 dev.off()
@@ -115,7 +134,7 @@ png(
 )
 
 file <- indices$AvgSignalAmplitude
-plot.indices(file,"Average Signal Amplitude", "Average Signal Amplitude (dB)")
+plot.indices(file, "Average Signal Amplitude", "Average Signal Amplitude (dB)")
 
 dev.off()
 
@@ -326,37 +345,3 @@ file <- indices$SptDensity
 plot.indices(file,"Spectral Density", "Spectral Density")
 
 dev.off()
-
-######## Print Rain Index plot ###############
-
-png(
-  "RainIndex.png",
-  width     = 320,
-  height    = 85,
-  units     = "mm",
-  res       = 1200,
-  pointsize = 4
-)
-
-file <- indices$RainIndex
-plot.indices(file,"Rain Index", "Rain Index")
-
-dev.off()
-
-######## Print Cicada Index plot ###############
-
-png(
-  "CicadaIndex.png",
-  width     = 320,
-  height    = 85,
-  units     = "mm",
-  res       = 1200,
-  pointsize = 4
-)
-
-file <- indices$CicadaIndex
-plot.indices(file,"Cicada Index", "Cicada Index")
-
-dev.off()
-
-####################################################
