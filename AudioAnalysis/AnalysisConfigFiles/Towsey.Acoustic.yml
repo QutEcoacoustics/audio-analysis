@@ -15,7 +15,7 @@ SegmentOverlap: 0
 
 # IndexCalculationDuration: units=seconds (default=60 seconds; use 0.2 for zooming spectrogram tiles)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 0.2
+IndexCalculationDuration: 60.0
 
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
@@ -46,7 +46,7 @@ SaveIntermediateCsvFiles: false
 # Next two parameters are used only when creating images for zooming spectrograms.
 # Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-SaveSonogramData: true
+SaveSonogramData: false
 # Frame step. units=samples
 # NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
 #       FrameStep is NOT used when calculating Summary and Spectral indices.
@@ -76,7 +76,7 @@ TileImageOutput: false
 #     prefix_20140101T235959+Z.mp3
 #     prefix_20140101-235959+1000.mp3
 #     prefix_20140101-235959+Z.mp3
-RequireDateInFilename: true
+RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 EventThreshold: 0.2

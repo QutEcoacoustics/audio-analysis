@@ -45,7 +45,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DirectoryInfo outputDirectory,
             ZoomCommonArguments common)
         {
-            const bool SaveSuperTiles = true;
+            const bool SaveSuperTiles = false;
 
             Log.Info("Begin Draw Super Tiles");
 

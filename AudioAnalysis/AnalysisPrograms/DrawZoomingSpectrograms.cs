@@ -245,7 +245,7 @@ namespace AnalysisPrograms
             public DirectoryInfo Output { get; set; }
 
             [ArgDescription(
-                "The source directory of files ouput from Towsey.Acoustic (the Index analysis) to operate on")]
+                "The source directory of files output from Towsey.Acoustic (the Index analysis) to operate on")]
             [Production.ArgExistingDirectory]
             [ArgPosition(2)]
             [ArgRequired]
