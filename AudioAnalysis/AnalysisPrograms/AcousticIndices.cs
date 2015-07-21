@@ -509,8 +509,18 @@ namespace AnalysisPrograms
             frameWidth = settings.Configuration[AnalysisKeys.FrameLength] ?? frameWidth;
             int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
-            //NOTE: The value for FrameStep is used only when calculating a standard spectrogram
-            //      FrameStep is NOT used when calculating Summary and Spectral indices.
+
+            // gather settings for rendering false color spectrograms
+            var ldSpectrogramConfig = new LdSpectrogramConfig
+            {
+                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+            };
+
+            /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram
+             * FrameStep is NOT used when calculating Summary and Spectral indices.
+             */
 
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
@@ -519,13 +529,17 @@ namespace AnalysisPrograms
             // this data can then be used by post-process analyses
             var indexConfigData = new IndexGenerationData()
                                       {
-                                          SampleRate = sampleRate,
-                                          FrameWidth = frameWidth,
+                                          RecordingType  = inputFileSegment.OriginalFile.Extension,
+                                          RecordingStartDate = inputFileSegment.OriginalFileStartDate,
+                                          SampleRateOriginal = (int)inputFileSegment.OriginalFileSampleRate,
+                                          SampleRateResampled = sampleRate,
+                                          FrameLength = frameWidth,
                                           FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
                                           IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
                                           BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                                           MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
-                                          BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF
+                                          BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
+                                          LongDurationSpectrogramConfig = ldSpectrogramConfig
                                       };
             var icdPath = FilenameHelpers.AnalysisResultName(
                 resultsDirectory,
@@ -534,8 +548,8 @@ namespace AnalysisPrograms
                 "json");
             Json.Serialise(icdPath.ToFileInfo(), indexConfigData);
 
-            // gather spectra to form spectrograms.  Assume same spectra in all analyser results
-            // this is the most effcient way to do this
+            // gather spectra to form spectrograms.  Assume same spectra in all analyzer results
+            // this is the most efficient way to do this
             // gather up numbers and strings store in memory, write to disk one time
             // this method also AUTOMATICALLY SORTS because it uses array indexing
             var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
@@ -552,19 +566,12 @@ namespace AnalysisPrograms
             {
                 FileInfo indicesPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
 
-                // gather settings for rendering false color spectrograms
-                var config = new LdSpectrogramConfig
-                {
-                    XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                    ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                    ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
-                };
-
+                // Actually draw false color / long duration spectrograms
                 Tuple<Image, string>[] images =
                     LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                         inputDirectory: resultsDirectory,
                         outputDirectory: resultsDirectory,
-                        ldSpectrogramConfig: config,
+                        ldSpectrogramConfig: ldSpectrogramConfig,
                         indexPropertiesConfigPath: indicesPropertiesConfig,
                         indexGenerationData: indexConfigData, 
                         basename: basename, 
@@ -609,7 +616,7 @@ namespace AnalysisPrograms
             var tilingProfile = new AbsoluteDateTilingProfile(fileStem, analysisTag, tilingStartDate, TileHeight, TileWidth);
 
             // pad out image so it produces a whole number of tiles
-            // this solves the asymetric right padding of short audio files
+            // this solves the asymmetric right padding of short audio files
             var width = (int)(Math.Ceiling(image.Width / Scale) * Scale);
             var tiler = new Tiler(outputDirectory, tilingProfile, Scale, width, 1.0, image.Height);
 
@@ -629,7 +636,7 @@ namespace AnalysisPrograms
             {
                 foreach (Plot plot in scores)
                 {
-                    //assumes data normalised in 0,1
+                    // assumes data normalized in 0,1
                     image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
                 }
             }
@@ -646,8 +653,6 @@ namespace AnalysisPrograms
 
             return image.GetImage();
         }
-
-
 
         public AnalysisSettings DefaultSettings
         {

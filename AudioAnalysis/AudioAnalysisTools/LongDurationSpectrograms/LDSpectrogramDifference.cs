@@ -19,7 +19,7 @@ namespace AudioAnalysisTools
         private static TimeSpan minuteOffset = SpectrogramConstants.MINUTE_OFFSET;  // assume recording starts at zero minute of day i.e. midnight
         private static TimeSpan xScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;  // assume one minute spectra and hourly time lines
         private static int sampleRate = SpectrogramConstants.SAMPLE_RATE;      // default value - after resampling
-        private static int frameWidth = SpectrogramConstants.FRAME_WIDTH;      // default value - from which spectrogram was derived
+        private static int frameWidth = SpectrogramConstants.FRAME_LENGTH;      // default value - from which spectrogram was derived
 
         private static string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR; //CHANGE default RGB mapping here.
         private static double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF; //must be value <=1.0
@@ -56,7 +56,7 @@ namespace AudioAnalysisTools
             minuteOffset = (TimeSpan?)configuration.MinuteOffset ?? SpectrogramConstants.MINUTE_OFFSET;   // default = zero minute of day i.e. midnight
             xScale =   (TimeSpan?)configuration.X_Scale ?? SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default is one minute spectra i.e. 60 per hour
             sampleRate = (int?)configuration.SampleRate ?? SpectrogramConstants.SAMPLE_RATE; 
-            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_WIDTH; 
+            frameWidth = (int?)configuration.FrameWidth ?? SpectrogramConstants.FRAME_LENGTH; 
 
             DrawDifferenceSpectrogram(new DirectoryInfo(ipdir), new FileInfo(ipFileName1), new FileInfo(ipFileName2), new DirectoryInfo(opdir));
         }

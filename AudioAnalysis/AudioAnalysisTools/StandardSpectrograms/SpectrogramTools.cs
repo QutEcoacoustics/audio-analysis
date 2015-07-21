@@ -307,57 +307,124 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             for (int y = 0; y < height; y++) //over all freq bins
             {
-                    for (int x = 0; x < width; x++) //for pixels in the line
+                for (int x = 0; x < width; x++) //for pixels in the line
+                {
+                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    double dbValue = dbSpectrogramNorm[x, y];
+                    int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
+                    //int c1 = (int)Math.Floor(255.0 * dbValue);
+                    if (c1 < 0) c1 = 0;
+                    else
+                        if (c1 > 255) c1 = 255;
+                    colour = Color.FromArgb(c1, c1, c1);
+
+                    if (nrSpectrogramNorm[x, y] > 0)
                     {
-                        // normalise and bound the value - use min bound, max and 255 image intensity range
-                        double dbValue = dbSpectrogramNorm[x, y];
-                        int c1 = 255 - (int)Math.Floor(255.0 * dbValue); //original version
-                        //int c1 = (int)Math.Floor(255.0 * dbValue);
-                        if (c1 < 0) c1 = 0;
-                        else
-                            if (c1 > 255) c1 = 255;
-                        colour = Color.FromArgb(c1, c1, c1);
+                        // use HSV colour space
+                        int bottomColour = 30;    // to avoid using the reds
+                        int topColour = 320;   // to avoid using the magentas
+                        int hueRange = topColour - bottomColour;
+                        int hue = bottomColour + (int)Math.Floor(hueRange * nrSpectrogramNorm[x, y]);
 
-                        if (nrSpectrogramNorm[x, y] > 0)
+                        double saturation = 1.0;
+                        //double saturation = 0.75 + (nrSpectrogramNorm[x, y] * 0.25);
+                        //double saturation = nrSpectrogramNorm[x, y] * 0.5;
+                        //double saturation = (1 - nrSpectrogramNorm[x, y]) * 0.5;
+
+                        double value = 1.0;
+                        //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
+
+                        myHsv = new Hsv { H = hue, S = saturation, V = value };
+                        myRgb = myHsv.To<Rgb>();
+                        colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+
+
+                        // get colour for noise reduced portion
+                        // superimpose ridge detection
+                        if (hits[x, y] > 0)
                         {
-                            // use HSV colour space
-                            int bottomColour = 30;    // to avoid using the reds
-                            int topColour    = 320;   // to avoid using the magentas
-                            int hueRange = topColour - bottomColour;
-                            int hue = bottomColour + (int)Math.Floor(hueRange * nrSpectrogramNorm[x, y]);
-
-                            double saturation = 1.0;
-                            //double saturation = 0.75 + (nrSpectrogramNorm[x, y] * 0.25);
-                            //double saturation = nrSpectrogramNorm[x, y] * 0.5;
-                            //double saturation = (1 - nrSpectrogramNorm[x, y]) * 0.5;
-
-                            double value = 1.0;
-                            //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
-
-                            myHsv = new Hsv { H = hue, S = saturation, V = value };
-                            myRgb = myHsv.To<Rgb>();
-                            colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
-
-
-                            // get colour for noise reduced portion
-                            // superimpose ridge detection
-                            if (hits[x, y] > 0)
-                            {
-                                //value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
-                                //myHsv = new Hsv { H = 260, S = saturation, V = value };
-                                //myRgb = myHsv.To<Rgb>();
-                                //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
-                                colour = ridgeColours[hits[x, y] - 1];
-                            }
+                            //value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
+                            //myHsv = new Hsv { H = 260, S = saturation, V = value };
+                            //myRgb = myHsv.To<Rgb>();
+                            //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                            colour = ridgeColours[hits[x, y] - 1];
                         }
-                        image.SetPixel(x, height - y - 1, colour);
                     }
+                    image.SetPixel(x, height - y - 1, colour);
+                }
             }//end over all freq bins
 
             //image.Save(@"C:\SensorNetworks\Output\Sonograms\TEST3.png", ImageFormat.Png);
 
             return image;
         }
+
+        /// <summary>
+        /// Creates a false-coloured spectrogram from spectral frame data.
+        /// That is, uses normal spectrogram data but draws the raw data in red and then superimposes the noise reduced decibel data
+        /// Also uses the spectral "hits" data for highlighting the spectrogram.
+        /// ### IMPORTANT WARNING!!!! THIS METHOD ASSUMES THAT BOTH SPECTRAL MATRICES HAVE BEEN NORMALISED IN [0,1].
+        /// </summary>
+        /// <param name="dbSpectrogramNorm"></param>
+        /// <param name="nrSpectrogramNorm"></param>
+        /// <param name="hits"></param>
+        /// <returns></returns>
+        public static Image CreateFalseColourDecibelSpectrogramForZooming(double[,] dbSpectrogramNorm, double[,] nrSpectrogramNorm, byte[,] hits)
+        {
+            int width  = dbSpectrogramNorm.GetLength(0);
+            int height = dbSpectrogramNorm.GetLength(1);
+            Bitmap image = new Bitmap(width, height);
+            Color colour;
+
+            // get red scale pallette
+            var rsp = new CubeHelix("redscale");
+            // get the colour cube helix 
+            var cch = CubeHelix.GetCubeHelix();
+            //var csp = new CubeHelix("cyanscale");
+
+            for (int y = 0; y < height; y++) //over all freq bins
+            {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        colour = rsp.GetColorFromPallette(dbSpectrogramNorm[x, y]);
+                        
+                        if (nrSpectrogramNorm[x, y] > 0.15)
+                        {
+                            // get colour for noise reduced portion
+                            int colourID = cch.GetColorID(nrSpectrogramNorm[x, y]);
+                            // superimpose ridge detection
+                            if (hits[x, y] > 0)
+                            {
+                                colourID +=20;
+                                if (colourID > 255) colourID = 255;
+                            }
+                            colour = cch.GetColorFromPallette(colourID);
+                        }
+                        image.SetPixel(x, height - y - 1, colour);
+                    }
+            }//end over all freq bins
+
+            return image;
+        }
+
+
+        public static Color[] GetCyanSpectrumPalette()
+        {
+            int count = 256 - 1;
+            Color[] palette = new Color[256];
+            for (int i = 0; i <= count; i++)
+            {
+                double value = i / (double)count;
+                int R = (int)Math.Round(value * value * value * count);
+                //int G = i;
+                int B = i;
+                int G = (int)Math.Round(Math.Sqrt(value) * count); 
+                //int B = (int)Math.Round(value * value * count); 
+                palette[i] = Color.FromArgb(255, R, G, B);
+            }
+            return palette;
+        }
+
 
         public static Image CreateFalseColourAmplitudeSpectrogram(double[,] spectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {

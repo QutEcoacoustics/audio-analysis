@@ -343,25 +343,25 @@ namespace AnalysisPrograms
             }
         }
 
-        private static void PrintAggregateException(Exception ex, ref StringBuilder innerExcpetions, int depth = 0)
+        private static void PrintAggregateException(Exception ex, ref StringBuilder innerExceptions, int depth = 0)
         {
             var depthString = "==".PadLeft(depth * 2, '=');
-            //innerExcpetions = innerExcpetions ?? new StringBuilder();
+            //innerExceptions = innerExceptions ?? new StringBuilder();
 
             if (ex is AggregateException)
             {
                 var aex = (AggregateException)ex;
                  
-                //innerExcpetions.AppendLine("Writing detailed information about inner exceptions!");
+                //innerExceptions.AppendLine("Writing detailed information about inner exceptions!");
 
                 foreach (var exception in aex.InnerExceptions)
                 {
-                    //innerExcpetions.AppendLine();
-                    Log.Fatal("\n\n" + depthString +  "> Inner exception:", exception);
+                    //innerExceptions.AppendLine();
+                    Log.Fatal("\n\n" + depthString + "> Inner exception:", exception);
 
 
                     if (exception is AggregateException) {
-                        PrintAggregateException(exception, ref innerExcpetions, depth++);
+                        PrintAggregateException(exception, ref innerExceptions, depth++);
                     }
                 }
             }
