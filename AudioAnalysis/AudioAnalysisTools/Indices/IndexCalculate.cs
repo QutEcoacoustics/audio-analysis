@@ -182,7 +182,11 @@ namespace AudioAnalysisTools.Indices
             if (indexCalculationDuration < recordingSegmentDuration)
             {
                 var end = sampleStart + subsegmentSampleCount;
-                if (end > signalLength && end - signalLength < minnimumViableDuration)
+
+                // if completely outside of available audio
+                // or if end falls outside of audio
+                if (sampleStart > signalLength ||
+                    (end > signalLength && (signalLength - sampleStart) < minnimumViableDuration))
                 {
                     // back track so at least we can fill a whole result
                     // this is equivalent to setting overlap for only one frame.
@@ -223,9 +227,8 @@ namespace AudioAnalysisTools.Indices
 
 
 
-            // initialise a result object in which to store SummaryIndexValues and SpectralIndexValues etc.
-            // var result = new IndexCalculateResult(subsegmentTimeSpan, freqBinCount, indexProperties, analysisSettings.SegmentStartOffset.Value);
-            var result = new IndexCalculateResult(analysisSettings, freqBinCount, indexProperties, indexCalculationDuration, subsegmentOffsetTimeSpan);
+            // initialize a result object in which to store SummaryIndexValues and SpectralIndexValues etc.
+            var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, subsegmentOffsetTimeSpan);
 
 
             // (A) ################################## EXTRACT SUMMARY INDICES FROM THE SIGNAL WAVEFORM ##################################
@@ -241,6 +244,7 @@ namespace AudioAnalysisTools.Indices
             
             // average high ampl rate per second
             summaryIndexValues.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentSecondsDuration;
+
             // average clip rate per second
             summaryIndexValues.ClippingIndex = dspOutput1.ClipCount / subsegmentSecondsDuration;
 

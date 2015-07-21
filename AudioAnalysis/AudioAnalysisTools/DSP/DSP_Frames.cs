@@ -64,10 +64,13 @@ namespace AudioAnalysisTools.DSP
                 throw new ArgumentException("Frame Step must be <=" + frameSize);
 
             int overlap = frameSize - frameStep;
-            int framecount = (dataLength - overlap) / frameStep; //this truncates residual samples
+            int framecount = (dataLength - overlap) / frameStep; // this truncates residual samples
             if (framecount < 2)
-                //throw new ArgumentException("Signal must produce at least two frames!");
-                return null;
+            {
+                // NOTE: this exception was reenabled by Anthony because returning null makes it difficult to track down bugs
+                throw new ArgumentException("Signal must produce at least two frames!");
+                //return null;
+            }
 
             int offset = 0;
             int[,] frames = new int[framecount, 2]; //col 0 =start; col 1 =end

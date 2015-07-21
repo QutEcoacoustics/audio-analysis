@@ -717,7 +717,7 @@ namespace AnalysisPrograms
 
         public static AudioToSonogramResult GenerateSpectrogramImages(FileInfo sourceRecording, Dictionary<string, string> configDict, DirectoryInfo outputDirectory)
         {
-            // the source name was set up in the Analyse() method. But it could also be obtained directly form recording.
+            // the source name was set up in the Analyse() method. But it could also be obtained directly from recording.
             string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
             sourceName = Path.GetFileNameWithoutExtension(sourceName);
 
@@ -836,6 +836,7 @@ namespace AnalysisPrograms
         }
 
     }
+
 
 
     /// <summary>
