@@ -231,7 +231,7 @@ namespace AudioAnalysisTools.Indices
             // (A) ################################## EXTRACT SUMMARY INDICES FROM THE SIGNAL WAVEFORM ##################################
             // average absolute value over the minute recording
             // double[] avAbsolute = dspOutput1.Average; 
-            double[] signalEnvelope = dspOutput1.Envelope;
+            double[] signalEnvelope  = dspOutput1.Envelope;
             double avgSignalEnvelope = signalEnvelope.Average();
 
 
@@ -285,13 +285,19 @@ namespace AudioAnalysisTools.Indices
             // average event duration in milliseconds - no longer calculated
             //summaryIndexValues.AvgEventDuration = activity.avEventDuration;
 
+            // Note that the spectrogram has had the DC bin removed. i.e. has only 256 columns.
+            double[,] amplitudeSpectrogram = dspOutput1.amplitudeSpectrogram; // get amplitude spectrogram.
+            int nyquistBin = dspOutput1.NyquistBin;
+
+            // (A2) ################## CALCULATE  NDSI (Normalised difference soundscape Index) FROM THE AMPLITUDE SPECTROGRAM #################
+            var tuple3 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(amplitudeSpectrogram);
+            // get item 1 which the Power Spectral Density.
+            summaryIndexValues.NDSI = SpectrogramTools.CalculateNDSI(tuple3.Item1, sampleRate);
+
 
             // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ################################## 
             var spectra = result.SpectralIndexValues;
 
-            // Note that the spectrogram has had the DC bin removed. i.e. has only 256 columns.
-            double[,] amplitudeSpectrogram = dspOutput1.amplitudeSpectrogram; // get amplitude spectrogram.
-            int nyquistBin = dspOutput1.NyquistBin;
 
             // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI 
             spectra.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
@@ -345,17 +351,19 @@ namespace AudioAnalysisTools.Indices
 
             // v: ENTROPY OF AVERAGE SPECTRUM & VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
             var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, reducedFreqBinCount);
-            // ENTROPY of spectral averages - Reverse the values i.e. calculate 1-Hs and 1-Hv and 1-Hp for energy concentration
-            summaryIndexValues.AvgEntropySpectrum = 1 - tuple.Item1;
-            // ENTROPY of spectral variances
-            summaryIndexValues.VarianceEntropySpectrum = 1 - tuple.Item2;
+            // ENTROPY of spectral averages - Reverse the values i.e. calculate 1-Hs and 1-Hv, and 1-Hcov for energy concentration
+            summaryIndexValues.EntropyOfAverageSpectrum = 1 - tuple.Item1;
+            // ENTROPY of spectrum of Variance values
+            summaryIndexValues.EntropyOfVarianceSpectrum = 1 - tuple.Item2;
+            // ENTROPY of spectrum of CoeffOfvariance values
+            summaryIndexValues.EntropyOfVarianceSpectrum = 1 - tuple.Item3;
    
 
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
             double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, higherBinBound);
-            summaryIndexValues.EntropyPeaks = 1 - entropyOfPeaksSpectrum;
+            summaryIndexValues.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
             // vii: calculate RAIN and CICADA indices.
             if (!warned)
@@ -383,7 +391,10 @@ namespace AudioAnalysisTools.Indices
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBGN);
             nhThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold);
-            var tuple2 = SpectrogramTools.CalculateSpectralAvAndVariance(deciBelSpectrogram);
+            // ########################
+            // ######################## IMPORTANT - I THINK THERE IS AN ERROR HERE! NEED TO THINK THIS THROUGH. 
+            //                                       SHOULD NOT PASS dB spectrogram to this method. 
+            var tuple2 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(deciBelSpectrogram);
             spectra.POW = tuple2.Item1;
 
 
@@ -396,7 +407,6 @@ namespace AudioAnalysisTools.Indices
             summaryIndexValues.HighFreqCover = spActivity.highFreqBandCover;
             summaryIndexValues.MidFreqCover  = spActivity.midFreqBandCover;
             summaryIndexValues.LowFreqCover  = spActivity.lowFreqBandCover;
-
 
 
             // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
