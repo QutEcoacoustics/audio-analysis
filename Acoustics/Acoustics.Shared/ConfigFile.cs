@@ -13,6 +13,7 @@ namespace Acoustics.Shared
         private static readonly string ExecutingAssemblyPath = System.Reflection.Assembly.GetEntryAssembly().Location;
         private static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
         private static readonly string ConfigFolder = Path.Combine(ExecutingAssemblyDirectory, "ConfigFiles");
+        public static readonly string LogFolder = Path.Combine(ExecutingAssemblyDirectory, "Logs");
 
         public static FileInfo ResolveConfigFile(FileInfo file, params DirectoryInfo[] searchPaths)
         {
