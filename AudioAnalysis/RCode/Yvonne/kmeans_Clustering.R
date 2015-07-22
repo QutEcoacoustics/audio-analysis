@@ -113,7 +113,7 @@ dateLabel <- dateLabel[1:length(datePos)]
 
 ##########################################################
 png(
-  "Cluster plot.png",
+  "Cluster plot_rain.png",
   width     = 400,
   height    = 85,
   units     = "mm",
@@ -147,7 +147,7 @@ axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
 mtext(paste(site, "_", round(r, 3), "%", sep = " "), side=4)
 abline(v = 0, lwd=1.5, lty = 3)
 
-offset <- indices$minute.of.day[1]
+#offset <- indices$minute.of.day[1]
 
 abline(v = 1440-offset, lwd=1.5, lty = 3)
 abline(v = 2880-offset, lwd=1.5, lty = 3)
@@ -155,44 +155,65 @@ abline(v = 4320-offset, lwd=1.5, lty = 3)
 abline(v = 5760-offset, lwd=1.5, lty = 3)
 abline(v = 7200-offset, lwd=1.5, lty = 3)
 abline(v = 8640-offset, lwd=1.5, lty = 3)
-abline(v = 360-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 420-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 480-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 540-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 600-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 660-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 720-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 780-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 840-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 900-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 960-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1020-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1080-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1140-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1200-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1260-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1320-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1380-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 1440-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 2040-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 2100-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 2160-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 3600-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 5040-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 6480-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 7920-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 9360-offset, lwd=1.5, lty = 3, col = "grey")
-abline(v = 5040-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 360-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 420-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 480-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 540-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 600-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 660-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 720-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 780-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 840-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 900-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 960-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1020-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1080-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1140-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1200-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1260-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1320-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1380-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 1440-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 2040-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 2100-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 2160-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 3600-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 5040-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 6480-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 7920-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 9360-offset, lwd=1.5, lty = 3, col = "grey")
+#abline(v = 5040-offset, lwd=1.5, lty = 3, col = "grey")
 ########################
 # Text labels
-textLabels <- read.csv("Label_text_Gympie NP1_22_06_15.csv", header = TRUE)
-for (l in 1:length(textLabels$min)){
-  if (textLabels$ref[l] == 1){
-    abline(v = textLabels$min[l]-offset, lwd=0.2, lty = 3, 
+textLabels <- read.csv("Textfiles_GympieNP1_.csv", 
+                       header = TRUE)
+#textLabels <- read.csv("Label_text_Gympie NP1_22_06_15.csv", 
+#header = TRUE)
+for (l in 1:length(textLabels$des)) {
+  if (textLabels$ref[l] == "8") {
+    abline(v = textLabels$start[l], lwd=0.2, lty = 3, 
            col = "blue")
-    mtext(side = 1, line = -15+m, paste(textLabels$des[l]), 
-          at = textLabels$min[m]+1, col = "blue", cex = 0.5)
+    #mtext(side = 1, line = -15+m, paste(textLabels$des[l]), 
+     #     at = textLabels$min[l]+1, col = "blue", cex = 0.5)
   }
+  if (textLabels$ref[l] == "1") {
+    abline(v = textLabels$start[l], lwd=0.2, lty = 3, 
+           col = "red")
+    mtext(side = 1, line = -15+m, paste(textLabels$des[l]), 
+         at = textLabels$min[l]+1, col = "blue", cex = 0.5)
+  }
+  if (textLabels$ref[l] == "3") {
+    abline(v = textLabels$start[l], lwd=0.2, lty = 3, 
+           col = "magenta")
+    mtext(side = 1, line = -15+m, paste(textLabels$des[l]), 
+          at = textLabels$min[l]+1, col = "blue", cex = 0.5)
+  }
+}
+dev.off()
+
+
+
+
   if (textLabels$ref[l] == 2){
     abline(v = textLabels$min[l]-offset, lwd=0.2, lty = 3, 
            col = "red")

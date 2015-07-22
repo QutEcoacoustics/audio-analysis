@@ -8,8 +8,8 @@
 #setwd("C:\\Work\\CSV files\\Woondum2\\2015_03_22\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
-#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
-setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
+setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_07_05\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_07_05\\")
 
@@ -17,27 +17,39 @@ setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 #indices <- read.csv("Towsey_Summary_Indices_Woondum2 20150322_113743to20150327_103745.csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
-#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
-indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
+indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
 
 # Gympie NP1 22_06_15
-#xlim <- c(-0.015, 0.035)
-#ylim = c(-0.017,0.0001)
+#xlim <- c(-0.012, 0.033)
+#ylim = c(-0.005,0.02)
 # Gympie NP1 28_06_15
-#xlim <- c(-0.015, 0.028)
-#ylim = c(-0.008,0.0001)
+xlim <- c(-0.017, 0.025)
+ylim = c(-0.008,0.008)
 # Woondum3 21_06_15
 #xlim <- c(-0.017, 0.02)
 #ylim = c(-0.008,0.01)
 # Woondum3 28_06_15
-xlim <- c(-0.017, 0.02)
-ylim = c(-0.001,0.009)
+#xlim <- c(-0.017, 0.02)
+#ylim = c(-0.001,0.009)
 
 site <- indices$site[1]
 date <- indices$rec.date[1]
 ################ Normalise data ####################################
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
+}
+
+entropy_cov <- indices[,16]/indices[,15] # Entropy of the coefficient of variance
+entropy_cov <- normalise(entropy_cov, 0,25)
+
+for (i in 1:length(entropy_cov)) {
+  if (entropy_cov[i] > 1) {
+    entropy_cov[i] = 1
+  }
+  if(entropy_cov[i] < 0) {
+    entropy_cov[i] =0
+  }
 }
 
 normIndices <- indices
@@ -55,11 +67,10 @@ normIndices[,11] <- normalise(indices[,11], 0, 0.5)   # MidFreqCover
 normIndices[,12] <- normalise(indices[,12], 0, 0.5)   # LowFreqCover
 normIndices[,13] <- normalise(indices[,13], 0.4, 0.7) # AcousticComplexity
 normIndices[,14] <- normalise(indices[,14], 0, 0.6)   # TemporalEntropy
-normIndices[,15] <- normalise(indices[,15], 0, 0.8)     # AvgEntropySpectrum
+normIndices[,15] <- normalise(indices[,15], 0, 0.8)   # AvgEntropySpectrum
 normIndices[,16] <- normalise(indices[,16], 0, 1)     # VarianceEntropySpectrum
 normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyPeaks
 normIndices[,18] <- normalise(indices[,18], 0, 22)    # SptDensity
-
 # adjust values greater than 1 or less than 0
 for (j in 2:18){
   for (i in 1:length(normIndices[,j])) {
@@ -73,6 +84,10 @@ for (j in 2:18){
     }
   }
 }
+
+# Select which indices to consider
+normIndices <- cbind(normIndices[,c(5,7,9,10,11,12,13,14,15,17)], entropy_cov)
+  
 ######### PCA biplot #####################################
 file <- paste("Principal Component Analysis_", site, 
               "_", date, ".png", sep = "")
@@ -86,7 +101,7 @@ png(
 )
 
 par(mar =c(2,2,4,2), cex.axis = 2.5)
-PCAofIndices<- prcomp(normIndices[ ,4:18])
+PCAofIndices<- prcomp(normIndices)
 biplot(PCAofIndices, col=c("transparent", "red"), 
        cex=c(0.08,2.5), ylim = ylim, 
        xlim = xlim)
