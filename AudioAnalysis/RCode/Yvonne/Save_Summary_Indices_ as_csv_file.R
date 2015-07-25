@@ -4,44 +4,71 @@
 # This file is used with Plot_Towsey_Summary_Indices.R
 
 ######## You may wish to change these ###################### 
-#setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt")
-#setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt")
-setwd("C:\\Work\\CSV files\\2015Jul01-120417\\GympieNP")
-#setwd("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3")
-#setwd("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3")
+#setwd("C:\\Work\\CSV files\\Woondum1\\2015_03_15\\")
+setwd("C:\\Work\\CSV files\\Woondum2\\2015_03_22\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 
-#sourceDir <- "E:\\Data\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\" 
-#sourceDir <- "E:\\Data\\Data 22 to 27 March 2015 Woondum Eastern Eucalypt\\"
-sourceDir <- "E:\\Data\\Gympie NP\\22 to 28 June 2015 Gympie NP 12.12.15 Card1a\\"
-#sourceDir <- "E:\\Data\\Woondum3\\22 to 28 June 2015 Woondum3 Card2a\\"
-#sourceDir <- "E:\\Data\\Data 28 June to 5 July 2015 Gympie NP Card 3a\\"
-  
-#folder <- "E:\\Work\\Data\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
-#folder <- "E:\\Work\\Data\\2015Mar31-134325 - Yvonne, Towsey.Indices, ICD=60, #17\\Yvonne\\Eastern Euclalypt\\"
-folder <- "E:\\Work\\Data\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\GympieNP\\"
-#folder <- "E:\\Work\\Data\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\Woondum3\\"
+#sourceDir <- "F:\\Cooloola\\2015_03_15\\20150322_20150320_Woondum1\\"
+sourceDir <- "F:\\Cooloola\\2015_03_22\\20150322_20150327_Woondum2\\"
+#sourceDir <- "F:\\Cooloola\\2015_06_21\\20150622_20150628_GympieNP\\"
+#sourceDir <- "F:\\Cooloola\\2015_06_21\\20150622_20150628_Woondum3\\"
+#sourceDir <- "F:\\Cooloola\\2015_06_28\\20150628_20150705_GympieNP\\"
+#sourceDir <- "F:\\Cooloola\\2015_06_28\\20150628_20150705_Woondum3\\"
+#sourceDir <- "F:\\Cooloola\\2015_07_05\\20150705_20150712_GympieNP\\"
+#sourceDir <- "F:\\Cooloola\\2015_07_05\\20150705_20150712_Woondum3\\"
 
-location <- "Gympie NP "
-#location <- "Woondum3" 
-  
+#folder <- "F:\\Indices\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
+folder <- "F:\\Indices\\2015Mar31-134325 - Yvonne, Towsey.Indices, ICD=60, #17\\Yvonne\\Eastern Euclalypt\\"
+#folder <- "F:\\Indices\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\GympieNP\\"
+#folder <- "F:\\Indices\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\Woondum3\\"
+#folder <- "F:\\Indices\\2015Jul10-163333 - Yvonne, Indices, ICD=60.0, #40\\Yvonne\\Cooloola\\2015July5\\GympieNP\\"
+#folder <- "F:\\Indices\\2015Jul10-163333 - Yvonne, Indices, ICD=60.0, #40\\Yvonne\\Cooloola\\2015July5\\Woondum3\\"
+
+#site <- "Woondum1 "
+#latitude <- "Latitude"
+#longitude <- "Longitude"
+#elevation <- "m"
+
+site <- "Woondum2 "
+latitude <- "Latitude"
+longitude <- "Longitude"
+elevation <- "m"
+
+#site <- "Gympie NP1 "
+#latitude <- "Latitude 26deg 3min 49.6sec"
+#longitude <- "Longitude 152deg 42min 42.3sec"
+#elevation <- "225m"
+
+#site <- "Woondum3 "
+#latitude <- "Latitude 26deg 16min 41.7sec"
+#longitude <- "Longitude 152deg 47min 51.4sec"
+#elevation <- "118m"
+
 ###################################
-myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
 # obtain a list of the original wave files
+myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
 
-write.csv(myFiles, file=paste("mapping.csv"))
+mapping <- cbind(myFiles, latitude, longitude, elevation)
+write.csv(mapping, file=paste("Mapping", site, date, ".csv", sep = "_"))
 
-myFiles <- read.csv("mapping.csv")[,2]
+myFiles <- read.csv(file=paste("Mapping", site, date, ".csv", sep = "_"))[,2]
 
 length <- length(myFiles)
 
 ### GENERATE A LIST OF DATES AND TIMES ##############
 source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\dateTime_function.R")
 dt <- dateTime(myFiles)
+dtd <- strptime(dt, "%Y%m%d %H%M%S")
 dates <- dt[,1]
 times <- dt[,2]
 
 #dates <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\1', myFiles)
 #times <- sub('.*([[:digit:]]{8})_([[:digit:]]{6}).*','\\2', myFiles)
+
+date <- dates[1]
 
 ### SUMMARY INDICES ###########################
 all.indices <- NULL
@@ -51,24 +78,33 @@ rec.time <- NULL
 
 for (i in 1:length) {
   pathName <- (paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-    sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.Indices.csv", 
-    sep =""))
+                     sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.Indices.csv", 
+                     sep =""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   dateTimeOfRecord  <- paste((substr(dates[i], 1,4)), "-", (substr(dates[i], 5,6)), "-",
-    (substr(dates[i], 7,8)), " ", (substr(times[i], 1,2)), ":", 
-    (substr(times[i], 3,4)), sep="")
-  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len=numberRows, by="min"))
+                            (substr(dates[i], 7,8)), " ", (substr(times[i], 1,2)), ":",
+                            (substr(times[i], 3,4)), ":", (substr(times[i], 5,6)), sep = "")
+  #dateTimeOfRecord <- dtd[i]
+  #dateTimeOfRecordSequence <- c(dtd[i], dtd[i] + 60 * (1:numberRows-1))
+  dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), len = numberRows, by="min"))
   rec.date1 <- paste(substr(dateTimeOfRecordSequence, 9,10),
                      substr(dateTimeOfRecordSequence, 5,7), "-",
                      substr(dateTimeOfRecordSequence, 1,4), sep = "")
+  #rec.date1 <- format(dtd[i], "%b %d, %Y")
   rec.date <- c(rec.date, rec.date1)
   rec.time1 <- paste(substr(dateTimeOfRecordSequence, 12,24))
   rec.time <- c(rec.time,rec.time1)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time)
+length1 <- length(rec.date)
+site1 <- rep(site, length1)
+latitude <- rep(latitude, length1)
+longitude <- rep(longitude, length1)
+elevation <- rep(elevation, length1)
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                longitude, elevation)
 rm(fileContents)
 
 ######## CREATE MINUTE REFERENCE ########################
@@ -101,27 +137,28 @@ all.indices <- cbind(all.indices, minute.of.day, time.since.start)
 
 ###### SUMMARY INDICES #############################
 write.csv(all.indices,
-          file=paste("Towsey_Summary_Indices_", location,
+          file=paste("Towsey_Summary_Indices_", site,
           sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
-          myFiles[length]),".csv"))
+          myFiles[length]),".csv", sep = ""))
 
 ### SPECTRAL INDEX FOR ACI ###########################
 all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-         sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.ACI.csv", 
+         sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.ACI.csv", 
          sep =""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
-write.csv(all.indices, file=paste("Towsey.Acoustic.ACI", location, 
+write.csv(all.indices, file=paste("Towsey.Acoustic.ACI_", site, 
       sub("*.wav", "\\1", myFiles[1]), "to", sub("*.wav","\\1", 
       myFiles[length]), ".csv", sep =""))
 
@@ -130,19 +167,21 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.BGN.csv", 
+              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.BGN.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
+
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.BGN", location, 
+          file=paste("Towsey.Acoustic.BGN_", site, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
               myFiles[length]),".csv", sep =""))
 
@@ -151,19 +190,20 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.CVR.csv", 
+              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.CVR.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.CVR", location, 
+          file=paste("Towsey.Acoustic.CVR_", site, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
               myFiles[length]),".csv", sep =""))
 
@@ -172,19 +212,20 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.DIF.csv", 
+              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.DIF.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.DIF", location, 
+          file=paste("Towsey.Acoustic.DIF_", site, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
               myFiles[length]),".csv", sep =""))
 
@@ -193,19 +234,20 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.ENT.csv", 
+              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.ENT.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.ENT", location, 
+          file=paste("Towsey.Acoustic.ENT_", site, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
               myFiles[length]),".csv", sep =""))
 
@@ -214,19 +256,20 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.EVN.csv", 
+              sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.EVN.csv", 
               sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.EVN", location, 
+          file=paste("Towsey.Acoustic.EVN_", site, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
               myFiles[length]),".csv", sep =""))
 
@@ -235,19 +278,20 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.POW.csv", 
+                   sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.POW.csv", 
                    sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.POW", location, 
+          file=paste("Towsey.Acoustic.POW_", site, 
               sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
               myFiles[length]),".csv", sep =""))
 
@@ -256,19 +300,20 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.SPT.csv", 
+                   sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.SPT.csv", 
                    sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.SPT", location, 
+          file=paste("Towsey.Acoustic.SPT_", site, 
                     sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
                     myFiles[length]),".csv", sep =""))
 
@@ -277,18 +322,19 @@ all.indices<-NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), "__Towsey.Acoustic.SUM.csv", 
+                   sub("*.wav","\\1", myFiles[i]), "_Towsey.Acoustic.SUM.csv", 
                    sep = ""))
   assign(paste("fileContents"), read.csv(pathName))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
 
-all.indices <- cbind(all.indices, rec.date, rec.time, minute.of.day,
+all.indices <- cbind(all.indices, rec.date, rec.time, site, latitude, 
+                     longitude, elevation, minute.of.day,
                      time.since.start)
 rm(fileContents)
 
 write.csv(all.indices,
-          file=paste("Towsey.Acoustic.SUM", location, 
+          file=paste("Towsey.Acoustic.SUM_", site, 
                 sub("*.wav","\\1", myFiles[1]),"to", sub("*.wav","\\1", 
                 myFiles[length]),".csv", sep =""))

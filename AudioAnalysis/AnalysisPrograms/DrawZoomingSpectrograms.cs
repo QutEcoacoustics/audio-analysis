@@ -86,24 +86,35 @@ namespace AnalysisPrograms
             // string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic";
             // string opdir = @"C:\SensorNetworks\Output\Test\Test_04May2014\SERF_SE_2010Oct17_SpectralIndices";
 
-            // exclude the analysis type from file name i.e. "Indices"
-            // string ipFileName = "BYR4_20131029_Towsey.Acoustic";
-            // string ipdir = @"Y:\Results\2014Nov28-083415 - False Color, Mt Byron PRA, For Jason\to upload\Mt Byron\PRA\report\joined\BYR4_20131029.mp3\Towsey.Acoustic";
-            // string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
-
-            // zoomable spectrograms
-
-            // string ipFileName = "TEST_TUITCE_20091215_220004_Towsey.Acoustic"; //exclude the analysis type from file name i.e. "Indices"
-
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.OneSecondIndices";
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
-            string ipdir =
-                @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200ms.EclipseFarmstay";
 
-            // string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\TiledImages";
+            // KOALA RECORDING AT ST BEES
+            string ipdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+
+
+            // ECLIPSE FARMSTAY
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+
+            //BRISTLE BIRD
+            //string ipdir = @"C:\SensorNetworks\Output\BristleBird\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImageBristleBird";
+
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramTileZoom\TiledImages";
+
+            // ################ TEST a colour scheme for the high resolution frame spectrograms.
+            //var cch = TowseyLibrary.CubeHelix.GetCubeHelix();
+            //cch.TestImage(Path.Combine(opdir, "testImageColorHelixScale.png"));
+            //var rsp = new TowseyLibrary.CubeHelix("redscale");
+            //rsp.TestImage(Path.Combine(opdir, "testImageRedScale1.png"));
+            //var csp = new TowseyLibrary.CubeHelix("cyanscale");
+            //csp.TestImage(Path.Combine(opdir, "testImageCyanScale1.png"));
+            // ################ TEST a colour scheme for the high resolution frame spectrograms.
 
             var ipDir = new DirectoryInfo(ipdir);
             var opDir = new DirectoryInfo(opdir);
@@ -114,8 +125,14 @@ namespace AnalysisPrograms
                            SourceDirectory = ipDir,
                            Output = opDir,
                            SpectrogramTilingConfig =
-                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json"
-                               .ToFileInfo(),
+                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml".ToFileInfo(),
+                               //@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
+
+                           // draw a focused multi-resolution pyramid of images
+                           //ZoomAction = Arguments.ZoomActionType.Tile,
+                           ZoomAction = Arguments.ZoomActionType.Focused,
+                           //FocusMinute = 17,
+                           FocusMinute = 61,
                        };
         }
 
@@ -147,7 +164,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + arguments.SpectrogramTilingConfig);
             LoggedConsole.WriteLine("# Input Directory             : " + arguments.SourceDirectory);
             LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
-            LoggedConsole.WriteLine();
 
             var common = new ZoomCommonArguments();
 
@@ -156,15 +172,17 @@ namespace AnalysisPrograms
             Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
             common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 
-            // get the indexDistributions and the indexGenerationData
+            // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
             common.CheckForNeededFiles(arguments.SourceDirectory);
+
+            LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
+            LoggedConsole.WriteLine();
+
 
             switch (arguments.ZoomAction)
             {
                 case Arguments.ZoomActionType.Focused:
                     // draw a focused multi-resolution pyramid of images
-                    // TimeSpan focalTime = TimeSpan.Zero;
-                    // TimeSpan focalTime = TimeSpan.FromMinutes(16);
                     TimeSpan focalTime;
                     if (arguments.FocusMinute.HasValue)
                     {
@@ -227,7 +245,7 @@ namespace AnalysisPrograms
             public DirectoryInfo Output { get; set; }
 
             [ArgDescription(
-                "The source directory of files ouput from Towsey.Acoustic (the Index analysis) to operate on")]
+                "The source directory of files output from Towsey.Acoustic (the Index analysis) to operate on")]
             [Production.ArgExistingDirectory]
             [ArgPosition(2)]
             [ArgRequired]
