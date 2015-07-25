@@ -794,7 +794,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //    FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
         //    // Initialise the default Yaml Config file
         //    var config = new LdSpectrogramConfig("null", inputDirInfo, opDir); // default values have been set
-        //    int totalFreqBins = config.FrameWidth / 2; 
+        //    int totalFreqBins = config.FrameLength / 2; 
         //    // write the yaml file to config
         //    config.WriteConfigToYaml(fiSpectrogramConfig);
 
@@ -852,7 +852,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //        TimeSpan minuteOffset = configuration.MinuteOffset;   // default = zero minute of day i.e. midnight
         //        TimeSpan xScale = configuration.XAxisTicInterval; // default is one minute spectra i.e. 60 per hour
         //        int sampleRate = configuration.SampleRate;
-        //        int frameWidth = configuration.FrameWidth;
+        //        int frameWidth = configuration.FrameLength;
 
         //        var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap2);
         //        cs1.FileName = configuration.FileName;

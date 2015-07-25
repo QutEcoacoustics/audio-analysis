@@ -1,41 +1,61 @@
 ---
+# Summary: Calculates acoustic indices
+#
+# The csv files this analysis outputs can be used to construct:
+#     1. long-duration false-color spectrograms
+#     2. a focused stack of zooming false-color spectrograms
+#     3. the tiles for zooming false-color spectrograms
+#
+#
+
 AnalysisName: Towsey.Acoustic
 #SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
 SegmentDuration: 1
 SegmentOverlap: 0
 
-# IndexCalculationDuration: units=seconds (default=60 seconds)
+# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.2 for zooming spectrogram tiles)
+# The Timespan (in seconds) over which summary and spectral indices are calculated
 IndexCalculationDuration: 60.0
+
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
+# BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
+#    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
+#    The  BG noise interval is not extended beyond start or end of recording segment.
+#    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
 BGNoiseNeighbourhood: 5
 
-#FRAME LENGTH and FRAME STEP in samples.
+# FRAME LENGTH. units=samples
+# FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
 FrameLength: 512
-# NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
-#       FrameStep is NOT used when calculating Summary and Spectral indices.
-#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required. 
-#       The value 441 should not be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
-FrameStep: 441
-#Resample rate must be 2 X the desired Nyquist
-#ResampleRate: 17640
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
 ResampleRate: 22050
+
 #Default values in code are LowFreqBound=500Hz & MidFreqBound=4000
 LowFreqBound: 500
 MidFreqBound: 4000
-# DO NOT leave spaces in the following list
-#DisplayColumns: Clipping,bg-dB,snr-dB,activeSnr-dB,activity,segCount,avSegDur,hfCover,mfCover,lfCover,AcComplexity,H[temporal],H[spectral],clusterCount,avClustDur,3gramCount,av3gramRepetition,SpPkTracks/Sec,SpPkTracks%Dur,rain
-#indices NOT displayed:  avAmp-dB,H[spectralVar],cicada
-#DisplayColumns: Clipping,bg-dB,snr-dB,activity,segCount,AcComplexity,hfCover,mfCover,lfCover,H[temporal],H[spectral],SpPkTracks/Sec,clusterCount,rain,cicada
-#indices NOT displayed:avAmp-dB,activeSnr-dB,avSegDur,H[spectralMax],H[spectralVar],avClustDur,3gramCount,av3gramRepetition,SpPkTracks%Dur
-DisplayWeightedIndices: false
 
+DisplayWeightedIndices: false
 
 # SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 
 # SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
+# Next two parameters are used only when creating images for zooming spectrograms.
+# Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
+# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
 SaveSonogramData: false
+# Frame step. units=samples
+# NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
+#       FrameStep is NOT used when calculating Summary and Spectral indices.
+#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required. 
+#       The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
+# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
+FrameStep: 441
+
+# One-minute spectrograms can be saved in any analysis task.
 SaveSonogramImages: false
 
 DisplayCsvImage: false
@@ -49,6 +69,13 @@ ParallelProcessing: false
 TileImageOutput: false
 
 # if true, an unambiguous date time must be provided in the source file's name.
+# if true, an exception will be thrown if no such date is found
+# if false, and a valid date is still found in file name, it will still be parsed
+# supports formats like:
+#     prefix_20140101T235959+1000.mp3
+#     prefix_20140101T235959+Z.mp3
+#     prefix_20140101-235959+1000.mp3
+#     prefix_20140101-235959+Z.mp3
 RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'

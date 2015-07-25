@@ -2,60 +2,51 @@
 // <copyright file="SummaryIndexValues.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
-// <summary>
-//   This class is used to store the values of all indices regardless of type.
-//   They are stored in dictionaries in order to make them accessible by key without having to write a special method each time a new index is created.
-//   SOme of the functionality is in the parent class IndexBase.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
 namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
-    using System.Security;
 
+    using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using CsvHelper.Configuration;
 
     using Fasterflect;
 
-    using MathNet.Numerics.LinearAlgebra.Complex32.Solvers.Iterative;
-
-    using NeuralNets;
-
     using TowseyLibrary;
-    using AnalysisBase;
 
     public class IndexCalculateResult
     {
-        //public IndexCalculateResult(TimeSpan wavDuration, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan startOffset)
-        public IndexCalculateResult(AnalysisSettings analysisSettings, int freqBinCount, Dictionary<string, IndexProperties> indexProperties, TimeSpan indexCalculationDuration, TimeSpan subsegmentOffset)
+        public IndexCalculateResult(
+            int freqBinCount, 
+            Dictionary<string, IndexProperties> indexProperties, 
+            TimeSpan indexCalculationDuration, 
+            TimeSpan subsegmentOffset)
         {
-            TimeSpan wavDuration = indexCalculationDuration; // subsegment TimeSpan
-            //TimeSpan startOffset = analysisSettings.SegmentStartOffset.Value; // offset from beginning of source audio
+            TimeSpan durationOfResult = indexCalculationDuration; // subsegment TimeSpan
+
+            // TimeSpan startOffset = analysisSettings.SegmentStartOffset.Value; // offset from beginning of source audio
             TimeSpan subsegmentOffsetFromStartOfSource = subsegmentOffset; // offset from beginning of source audio
 
             this.Hits = null;
             this.Tracks = null;
             this.TrackScores = new List<Plot>();
 
-            this.SummaryIndexValues = new SummaryIndexValues(wavDuration, indexProperties)
+            this.SummaryIndexValues = new SummaryIndexValues(durationOfResult, indexProperties)
                                           {
                                               // give the results object an offset value so it can be sorted. 
-                                              StartOffset = subsegmentOffsetFromStartOfSource,
-                                              SegmentDuration = wavDuration
+                                              StartOffset =
+                                                  subsegmentOffsetFromStartOfSource,
+                                              SegmentDuration =
+                                                  durationOfResult
                                           };
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties)
                                            {
-                                              // give the results object an offset value so it can be sorted. 
-                                              StartOffset = subsegmentOffsetFromStartOfSource,
-                                              SegmentDuration = wavDuration
+                                               // give the results object an offset value so it can be sorted. 
+                                               StartOffset =
+                                                   subsegmentOffsetFromStartOfSource, 
+                                               SegmentDuration =
+                                                   durationOfResult
                                            };
         }
 
@@ -98,8 +89,7 @@ namespace AudioAnalysisTools.Indices
 
         // Commented out on 2nd Feb 2015.
         // AvgEventDuration is no longer accurately calculated now that estimating it on subsegments of < 1 second duration.
-        //public TimeSpan AvgEventDuration { get; set; }
-
+        // public TimeSpan AvgEventDuration { get; set; }
         public double HighFreqCover { get; set; }
 
         public double MidFreqCover { get; set; }
@@ -116,17 +106,16 @@ namespace AudioAnalysisTools.Indices
 
         public double EntropyPeaks { get; set; }
 
-        //meaningless when calculated over short
-        //public int ClusterCount { get; set; }
+        // meaningless when calculated over short
+        // public int ClusterCount { get; set; }
 
-        //public TimeSpan AvgClusterDuration { get; set; }
+        // public TimeSpan AvgClusterDuration { get; set; }
 
-        //public int ThreeGramCount { get; set; }
+        // public int ThreeGramCount { get; set; }
 
-        //public double SptPerSecond { get; set; }
+        // public double SptPerSecond { get; set; }
 
-        //public TimeSpan AvgSptDuration { get; set; }
-        
+        // public TimeSpan AvgSptDuration { get; set; }
         public double SptDensity { get; set; }
 
         public double RainIndex { get; set; }
@@ -134,7 +123,6 @@ namespace AudioAnalysisTools.Indices
         public double CicadaIndex { get; set; }
 
         private static Dictionary<string, Func<SummaryIndexValues, object>> CachedSelectors { get; set; }
-
 
         public SummaryIndexValues()
         {
@@ -152,7 +140,7 @@ namespace AudioAnalysisTools.Indices
                 // don't bother with slow reflection if the default is 0.0
                 if (kvp.Value.IsSpectralIndex || kvp.Value.DefaultValue == default(double))
                 {
-                    continue;    
+                    continue;
                 }
 
                 this.SetPropertyValue(kvp.Key, kvp.Value.DefaultValueCasted);
@@ -179,7 +167,9 @@ namespace AudioAnalysisTools.Indices
                 var key = keyValuePair.Key;
                 var selector = keyValuePair.Value;
 
-                CachedSelectorsInternal.Add(keyValuePair.Key, spectrumBase  => selector((SpectralIndexValues)spectrumBase));
+                CachedSelectorsInternal.Add(
+                    keyValuePair.Key, 
+                    spectrumBase => selector((SpectralIndexValues)spectrumBase));
             }
         }
 
@@ -197,7 +187,6 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-
                 double[] initArray = (new double[spectrumLength]).FastFill(kvp.Value.DefaultValue);
 
                 // WARNING: Potential throw site
@@ -207,15 +196,14 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-
         /// <summary>
         /// Used to check that the keys in the indexProperties dictionary corerspond to Properties in the SpectralIndexValues class.
         /// Call this method before entering a loop because do not want the error message at every iteration through loop.
         /// </summary>
-        /// <param name="indexProperties"></param>
+        /// <param name="indexProperties">
+        /// </param>
         public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
         {
-
             var siv = new SpectralIndexValues();
             double[] dummyArray = null;
 
@@ -229,7 +217,8 @@ namespace AudioAnalysisTools.Indices
                 var success = siv.TrySetPropertyValue(kvp.Key, dummyArray);
                 if (!success)
                 {
-                    LoggedConsole.WriteWarnLine("### WARNING: The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
+                    LoggedConsole.WriteWarnLine(
+                        "### WARNING: The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
                 }
             }
         }
@@ -260,8 +249,7 @@ namespace AudioAnalysisTools.Indices
 
         public double[] SUM { get; set; }
 
-        //public double[] CLS { get; set; }
-
+        // public double[] CLS { get; set; }
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
         {
             return CachedSelectors;
