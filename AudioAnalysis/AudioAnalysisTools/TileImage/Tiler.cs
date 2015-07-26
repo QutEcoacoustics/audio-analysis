@@ -30,7 +30,8 @@ namespace AudioAnalysisTools.TileImage
         private readonly SortedSet<Layer> calculatedLayers;
         private readonly DirectoryInfo outputDirectory;
         private readonly TilingProfile profile;
-        private readonly Dictionary<double, HashSet<Tuple<int, int>>> tileHistory = new Dictionary<double, HashSet<Tuple<int, int>>>();
+        private readonly Dictionary<double, HashSet<Tuple<int, int>>> superTileHistory = new Dictionary<double, HashSet<Tuple<int, int>>>();
+        private readonly Dictionary<string, Tuple<bool, bool>> tileNameHistory = new Dictionary<string, Tuple<bool, bool>>();
 
         #endregion
 
@@ -131,6 +132,9 @@ namespace AudioAnalysisTools.TileImage
         /// <summary>
         /// Split one large image (a super tile) into smaller tiles.
         ///     The super tile needs to be aligned within the layer first
+        /// NOTE: If a tile spans multiple supertiles,
+        /// it will paint forward/backward by using either the end of the current segment and the start
+        /// of the next segment or the end of the previous segment and the start of the current segment.
         /// </summary>
         /// <param name="current">
         /// The super tile currently being operated on.
@@ -189,7 +193,7 @@ namespace AudioAnalysisTools.TileImage
             var deltaTileEdgeSuperTileY = superTileOffsetInLayerY - startTileEdgeY;
             var superTileRectangle = new Rectangle(xOffset, yOffset, width, height);
 
-            if (previous == null && (startTileEdgeX % this.profile.TileWidth) !=  0)
+            if (previous == null && (startTileEdgeX % this.profile.TileWidth) != 0)
             {
                 throw new InvalidOperationException("A non-aligned super tile, with no previous tile has been requested to be drawn, this means a fragment of the supertile will not been drawn.");
             }
@@ -212,11 +216,6 @@ namespace AudioAnalysisTools.TileImage
                     // Note: best case: Neutral X Bias
                     // Note: no support for anything other than Neutral y Bias
 
-                    // make destination image
-                    var tileImage = new Bitmap(
-                        this.profile.TileWidth,
-                        this.profile.TileHeight,
-                        PixelFormat.Format32bppArgb);
 
                     // determine how to paint it
                     // supertile relative
@@ -224,6 +223,19 @@ namespace AudioAnalysisTools.TileImage
                         superTileLeft = layerLeft - (paddingX);
                     int layerTop = (j * this.profile.TileHeight) + startTileEdgeY,
                         superTileTop = layerTop - (paddingY);
+
+                    // construct the resulting name of the tile to produced
+                    string name = this.profile.GetFileBaseName(
+                        this.calculatedLayers,
+                        layer,
+                        new Point(layerLeft, layerTop));
+
+
+                    // make destination image
+                    var tileImage = new Bitmap(
+                        this.profile.TileWidth,
+                        this.profile.TileHeight,
+                        PixelFormat.Format32bppArgb);
 
                     using (Graphics tileGraphics = Graphics.FromImage(tileImage))
                     {
@@ -236,8 +248,45 @@ namespace AudioAnalysisTools.TileImage
                                              };
                         ImageComponent[] fragments = GetImageParts(superTileRectangle, subsection);
 
+                        // check if this tiler has already written this tile
+                        var renderedBefore = this.tileNameHistory.ContainsKey(name);
+                        if (renderedBefore)
+                        {
+                            // if the exact whole image is being drawn again, throw exception
+                            // otherwise continue, do not draw image again
+                            if (fragments.Length == 1)
+                            {
+                                if (fragments[0].XBias != TileBias.Neutral)
+                                {
+                                    throw new InvalidOperationException(
+                                        "This program is really not working at all - this should never happen");
+                                }
+
+                                throw new DuplicateTileException(name, current);
+                            }
+
+                            var holes = this.tileNameHistory[name];
+                            if ((holes.Item1 && previous == null) || (holes.Item2 && next == null))
+                            {
+                                // if the tile was previously rendered with missing fragments
+                                // then this is a duplicate
+                                throw new DuplicateTileException(name, current);
+                            }
+                            else
+                            {
+                                // otherwise, tile should have been fully rendered
+                                // skip
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // true if it is possible that an adjacent supertile is missing
+                            this.tileNameHistory.Add(name, Tuple.Create(previous == null,  next == null));
+                        }
+
                         // now paint on destination image
-                        // 3 possible sources: nothing (transparent), current, next image (along X-axis)
+                        // 4 possible sources: nothing (transparent), current, next image (along X-axis), previous image (along x-axis)
                         foreach (ImageComponent imageComponent in fragments)
                         {
                             if (imageComponent.YBias != TileBias.Neutral)
@@ -262,11 +311,21 @@ namespace AudioAnalysisTools.TileImage
 
                             if (imageComponent.XBias == TileBias.Negative)
                             {
-                                // No-op - the default background for the tile is transparent,
-                                // no need to paint that again
-
-                                // also remember, we do not draw from previous super tiles
-                                // thus we don't need access to previous tile image
+                                // two cases here: edge of layer (paint transparent padding)
+                                // or grab previous section from image
+                                if (previous == null)
+                                {
+                                    // start of stream, paint transparency
+                                    // default background for the tile is transparent,
+                                    // no need to paint that again
+                                }
+                                else
+                                {
+                                    // paint a fraction from the previous image
+                                    // here, we shift the co-ordinate system one-super-tile's width right
+                                    sourceRect.X = sourceRect.X + width;
+                                    tileGraphics.DrawImage(previous.Image, destRect, sourceRect, GraphicsUnit.Pixel);
+                                }
                             }
                             else if (imageComponent.XBias == TileBias.Positive)
                             {
@@ -281,6 +340,8 @@ namespace AudioAnalysisTools.TileImage
                                 else
                                 {
                                     // paint a fraction from the next image
+                                    // here, we shift the co-ordinate system one-super-tile's width left
+                                    sourceRect.X = sourceRect.X - width;
                                     tileGraphics.DrawImage(next.Image, destRect, sourceRect, GraphicsUnit.Pixel);
                                 }
                             }
@@ -293,10 +354,6 @@ namespace AudioAnalysisTools.TileImage
                     }
 
                     // write tile to disk
-                    string name = this.profile.GetFileBaseName(
-                        this.calculatedLayers,
-                        layer,
-                        new Point(layerLeft, layerTop));
                     string outputTilePath = this.OutputDirectory.CombineFile(name + ".png").FullName;
                     Log.Debug("Saving tile: " + outputTilePath);
                     tileImage.Save(outputTilePath);
@@ -401,10 +458,10 @@ namespace AudioAnalysisTools.TileImage
         private void CheckForTileDuplication(ISuperTile superTile)
         {
 
-            if (this.tileHistory.ContainsKey(superTile.Scale))
+            if (this.superTileHistory.ContainsKey(superTile.Scale))
             {
                 var offsets = Tuple.Create(superTile.OffsetX, superTile.OffsetY);
-                if (this.tileHistory[superTile.Scale].Contains(offsets))
+                if (this.superTileHistory[superTile.Scale].Contains(offsets))
                 {
                     var tileDetails = "Scale: {0}, OffsetX: {1}, OffsetY: {2}".Format(
                         superTile.Scale,
@@ -415,12 +472,12 @@ namespace AudioAnalysisTools.TileImage
                 }
                 else
                 {
-                    this.tileHistory[superTile.Scale].Add(offsets);
+                    this.superTileHistory[superTile.Scale].Add(offsets);
                 }
             }
             else
             {
-                this.tileHistory.Add(superTile.Scale, new HashSet<Tuple<int, int>>());
+                this.superTileHistory.Add(superTile.Scale, new HashSet<Tuple<int, int>>());
             }
         }
 
@@ -633,5 +690,18 @@ namespace AudioAnalysisTools.TileImage
         }
 
         #endregion
+    }
+
+    public class DuplicateTileException : Exception
+    {
+        public string Name { get; private set; }
+
+        public ISuperTile Current { get; private set; }
+
+        public DuplicateTileException(string name, ISuperTile current)
+        {
+            this.Name = name;
+            this.Current = current;
+        }
     }
 }
