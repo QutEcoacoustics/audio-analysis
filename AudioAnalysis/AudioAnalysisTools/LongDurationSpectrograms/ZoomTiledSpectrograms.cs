@@ -77,6 +77,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             IEnumerable<double> allImageScales = imageScales.Concat(imageScales2);
+            Log.Info("Tiling at scales: " + allImageScales.Aggregate(string.Empty, (s, d) => s + d.ToString() + ", "));
 
             var namingPattern = new PanoJsTilingProfile();
 
@@ -156,8 +157,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
 
-
-// */
             // ####################### DRAW ZOOMED-IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
 
@@ -165,27 +164,55 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var segmentDurationInSeconds = (int)zoomConfig.SegmentDuration.TotalSeconds;
 
             var minuteCount = (int)Math.Ceiling(dataDuration.TotalMinutes);
+
+            // window the standard spectrogram generation so that we can provide adjacent supertiles to the
+            // tiler, so that bordering / overlapping tiles (for cases where tile size != multiple of supertile size)
+            // don't render partial tiles (i.e. bad/partial rendering of image)
+
+            // this is the function generator
+            // use of Lazy means results will only be evaluated once
+            // and only when needed. This is useful for sliding window.
+            Func<int, Lazy<TimeOffsetSingleLayerSuperTile[]>> generateStandardSpectrogramGenerator = (minuteToLoad) =>
+                {
+                    return new Lazy<TimeOffsetSingleLayerSuperTile[]>(() =>
+                        {
+                            Log.Info("Starting generation for minute: " + minuteToLoad);
+
+
+                            var superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
+                                inputDirectory,
+                                ldsConfig,
+                                indexProperties,
+                                zoomConfig,
+                                minuteToLoad,
+                                imageScales2,
+                                fileStem,
+                                indexGeneration);
+
+                            return superTilingResults;
+                        });
+                };
+
+            Lazy<TimeOffsetSingleLayerSuperTile[]> previous = null;
+            Lazy<TimeOffsetSingleLayerSuperTile[]> current = null;
+            Lazy<TimeOffsetSingleLayerSuperTile[]> next = null;
             for (int minute = 0; minute < minuteCount; minute++)
             {
-                Log.Info("Starting minute: " + minute);
+                Log.Trace("Starting loop for minute" + minute);
 
-                TimeOffsetSingleLayerSuperTile[] superTilingResults = DrawSuperTilesFromSingleFrameSpectrogram(
-                    inputDirectory,
-                    ldsConfig,
-                    indexProperties,
-                    zoomConfig,
-                    minute,
-                    imageScales2,
-                    fileStem,
-                    indexGeneration);
+                // shift each value back
+                previous = current;
+                current = next ?? generateStandardSpectrogramGenerator(minute);
 
+                next = minute + 1 < minuteCount ? generateStandardSpectrogramGenerator(minute + 1) : null;
+                
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
 
                 // set SaveSuperTiles=false when want the tiler to save the images
                 if (SaveSuperTiles)
                 {
                     // below saving of images is for debugging only.
-                    foreach (TimeOffsetSingleLayerSuperTile superTile in superTilingResults)
+                    foreach (TimeOffsetSingleLayerSuperTile superTile in current.Value)
                     {
                         string outputName = string.Format(
                             "{0}_scale-{2:f2}_supertile-minute-{1}.png",
@@ -197,19 +224,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
                 else
                 {
-                    // finally tile the output
-                    Log.Debug("Begin tile production for minute: " + minute);
-                    tiler.TileMany(superTilingResults);
-                    Log.Debug("Begin tile production for minute: " + minute);
+                    // for each scale level of the results
+                    for (int i = 0; i < current.Value.Length; i++)
+                    {
+                        // finally tile the output
+                        Log.Debug("Begin tile production for minute: " + minute);
+                        tiler.Tile(
+                            previous == null ? null : previous.Value[i],
+                            current.Value[i],
+                            next == null ? null : next.Value[i]);
+                        Log.Debug("Begin tile production for minute: " + minute);
+                    }
+                    
                 }
             }
 
             Log.Info("Tiling complete");
         }
 
-        
-        
-        
         /// <summary>
         /// THis method is a way of getting the acoustic index data at 0.2 second resolution to have some influence on the
         ///     frame spectrograms at 0.02s resolution.
