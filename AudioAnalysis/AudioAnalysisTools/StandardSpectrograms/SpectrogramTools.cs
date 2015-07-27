@@ -501,6 +501,29 @@ namespace AudioAnalysisTools.StandardSpectrograms
             process.Run(args, output.DirectoryName);
         }
 
+        public static double[] CalculateAvgSpectrumFromSpectrogram(double[,] spectrogram)
+        {
+            int frameCount = spectrogram.GetLength(0);
+            int freqBinCount = spectrogram.GetLength(1);
+            double[] avgSpectrum = new double[freqBinCount];   // for average  of the spectral bins
+            //double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
+            //double[] covSpectrum = new double[freqBinCount];   // for coeff of variance of the spectral bins
+            for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
+            {
+                var freqBin = new double[frameCount];          // set up an array to take all values in a freq bin i.e. column of matrix
+                for (int r = 0; r < frameCount; r++)
+                {
+                    freqBin[r] = spectrogram[r, j];  
+                }
+                double av, sd;
+                NormalDist.AverageAndSD(freqBin, out av, out sd);
+                avgSpectrum[j] = av; // store average of the bin
+                //varSpectrum[j] = sd * sd; // store var of the bin
+                //covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
+            }
+            return avgSpectrum;
+        } 
+
 
 
         /// <summary>
@@ -511,21 +534,23 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// It is the standard method used now to calculate a PSD. 
         /// Welch's method splits time series into overlapping segments and windows them.
         /// It is the windowing that makes Welche's method different. Normally overlap windows because windows decay at edges and therefore loss of info. 
-        /// Can now do FFT. Does not need to be FFT, but if so then widnow must be power of 2. 
-        /// Square the FFT coefficients >>>> energy. Then everage. Averaging reduces the variance. 
+        /// Can now do FFT. Does not need to be FFT, but if so then window must be power of 2. 
+        /// Square the FFT coefficients >>>> energy. Then take average in each frquncy bin. Averaging reduces the variance. 
         /// Welch's method is an improvement on the standard periodogram spectrum estimating method and on Bartlett's method, 
         /// in that it reduces noise in the estimated power spectra in exchange for reducing the frequency resolution.
         /// The end result is an array of power measurements vs. frequency "bin".
-
+        /// 
+        /// As well as calculating the power spectrum also calcuate a spectrum of the variance and a spectrum of the Coeff of Variation = var/mean.
         /// </summary>
         /// <param name="amplitudeSpectrogram">this is an amplitude spectrum. Must square values to get power</param>
         /// <returns></returns>
-        public static Tuple<double[], double[]> CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(double[,] amplitudeSpectrogram)
+        public static Tuple<double[], double[], double[]> CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(double[,] amplitudeSpectrogram)
         {
             int frameCount = amplitudeSpectrogram.GetLength(0);
             int freqBinCount = amplitudeSpectrogram.GetLength(1);
             double[] avgSpectrum = new double[freqBinCount];   // for average  of the spectral bins
             double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
+            double[] covSpectrum = new double[freqBinCount];   // for coeff of variance of the spectral bins
             for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
             {
                 var freqBin = new double[frameCount];          // set up an array to take all values in a freq bin i.e. column of matrix
@@ -537,9 +562,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 NormalDist.AverageAndSD(freqBin, out av, out sd);
                 avgSpectrum[j] = av; // store average of the bin
                 varSpectrum[j] = sd * sd; // store var of the bin
+                covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
             }
-            return System.Tuple.Create(avgSpectrum, varSpectrum);
-        } // CalculateSpectralAvAndVariance()
+            return System.Tuple.Create(avgSpectrum, varSpectrum, covSpectrum);
+        } // CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram()
 
 
         /// <summary>

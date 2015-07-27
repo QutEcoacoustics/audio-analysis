@@ -40,7 +40,7 @@ namespace AudioAnalysisTools
         /// Each of them is derived from the frames of the passed amplitude spectrogram.
         /// 1. the entropy of the average spectrum.
         /// 2. the entropy of the variance spectrum.
-        /// 3. the entropy of the Coeff of Variance spectrum.
+        /// 3. the entropy of the Coeff of Variation spectrum.
         /// </summary>
         /// <param name="amplitudeSpectrogram">matrix</param>
         /// <param name="lowerBinBound">lower bin bound to be included in calculation of summary index</param>
@@ -68,13 +68,13 @@ namespace AudioAnalysisTools
                 if (averageSpectrum[i] > 0.0) coeffOfVarSpectrum[i] = varianceSpectrum[i] / averageSpectrum[i];
                 else                          coeffOfVarSpectrum[i] = 1.0;
             }
-            double entropyOfCoeffOfVarianceSpectrum = DataTools.Entropy_normalised(coeffOfVarSpectrum);   // ENTROPY of Coeff Of Variance spectrum
-            if (double.IsNaN(entropyOfVarianceSpectrum)) entropyOfCoeffOfVarianceSpectrum = 1.0;
+            double entropyOfCoeffOfVarSpectrum = DataTools.Entropy_normalised(coeffOfVarSpectrum);   // ENTROPY of Coeff Of Variance spectrum
+            if (double.IsNaN(entropyOfVarianceSpectrum)) entropyOfCoeffOfVarSpectrum = 1.0;
 
             // DataTools.writeBarGraph(indices.varianceSpectrum);
             // Log.WriteLine("H(Spectral Variance) =" + HSpectralVar);
 
-            return Tuple.Create(entropyOfAvSpectrum, entropyOfVarianceSpectrum, entropyOfCoeffOfVarianceSpectrum);
+            return Tuple.Create(entropyOfAvSpectrum, entropyOfVarianceSpectrum, entropyOfCoeffOfVarSpectrum);
         } // CalculateSpectralEntropies()
 
 

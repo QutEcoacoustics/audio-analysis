@@ -240,9 +240,9 @@ namespace AudioAnalysisTools.Indices
             SummaryIndexValues summaryIndexValues = result.SummaryIndexValues;
             
             // average high ampl rate per second
-            summaryIndexValues.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentSecondsDuration;
+            result.SummaryIndexValues.HighAmplitudeIndex = dspOutput1.MaxAmplitudeCount / subsegmentSecondsDuration;
             // average clip rate per second
-            summaryIndexValues.ClippingIndex = dspOutput1.ClipCount / subsegmentSecondsDuration;
+            result.SummaryIndexValues.ClippingIndex = dspOutput1.ClipCount / subsegmentSecondsDuration;
 
             // Following deals with case where the signal waveform is continuous flat with values < 0.001. Has happened!! 
             // Although signal appears zero, this condition is required
@@ -329,7 +329,7 @@ namespace AudioAnalysisTools.Indices
 
             // remove low freq band of ACI spectrum and store average ACI value
             double[] reducedAciSpectrum = DataTools.Subarray(aciSpectrum, lowerBinBound, reducedFreqBinCount);
-            summaryIndexValues.AcousticComplexity = reducedAciSpectrum.Average();
+            result.SummaryIndexValues.AcousticComplexity = reducedAciSpectrum.Average();
 
             // iii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
             double[] temporalEntropySpectrum = AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram);
@@ -356,7 +356,7 @@ namespace AudioAnalysisTools.Indices
             // ENTROPY of spectrum of Variance values
             summaryIndexValues.EntropyOfVarianceSpectrum = 1 - tuple.Item2;
             // ENTROPY of spectrum of CoeffOfvariance values
-            summaryIndexValues.EntropyOfVarianceSpectrum = 1 - tuple.Item3;
+            summaryIndexValues.EntropyOfCoVSpectrum = 1 - tuple.Item3;
    
 
 
@@ -391,11 +391,7 @@ namespace AudioAnalysisTools.Indices
             deciBelSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, spectralDecibelBGN);
             nhThreshold = 2.0; // SPECTRAL dB THRESHOLD for smoothing background
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold);
-            // ########################
-            // ######################## IMPORTANT - I THINK THERE IS AN ERROR HERE! NEED TO THINK THIS THROUGH. 
-            //                                       SHOULD NOT PASS dB spectrogram to this method. 
-            var tuple2 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(deciBelSpectrogram);
-            spectra.POW = tuple2.Item1;
+            spectra.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
 
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
