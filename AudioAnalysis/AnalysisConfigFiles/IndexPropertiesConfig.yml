@@ -460,8 +460,8 @@ EVN:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.1
-  NormMax: 5.0
+  NormMin: 0.0
+  NormMax: 8.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
