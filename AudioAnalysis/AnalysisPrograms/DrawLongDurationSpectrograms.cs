@@ -56,7 +56,7 @@ namespace AnalysisPrograms
             //[ArgPosition(1)]
             public FileInfo IndexPropertiesConfig { get; set; }
 
-            [ArgDescription("Config file specifing directory containing indices.csv files and other parameters.")]
+            [ArgDescription("Config file specifying directory containing indices.csv files and other parameters.")]
             [Production.ArgExistingFile(Extension = ".yml")]
             //[ArgPosition(1)]
             public FileInfo SpectrogramConfigPath { get; set; }
@@ -125,6 +125,12 @@ namespace AnalysisPrograms
             //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+            //string ipFileName = "Farmstay_ECLIPSE3_20121114-060001+1000_TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
 
             // zoomable spectrograms
             //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
@@ -135,11 +141,8 @@ namespace AnalysisPrograms
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
-            //Write the default Yaml Config file for producing long duration spectrograms and place in the op directory
-            var config = new LdSpectrogramConfig(); // default values have been set
-            FileInfo fiSpectrogramConfig = new FileInfo(Path.Combine(opDir.FullName, "LDSpectrogramConfig.yml"));
-            config.WriteConfigToYaml(fiSpectrogramConfig);
-
+            FileInfo fiSpectrogramConfig = null;
+            //FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml");
 
             return new Arguments
             {
@@ -165,18 +168,27 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine(date);
                     LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
                     LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
-                    LoggedConsole.WriteLine("");
+                    LoggedConsole.WriteLine();
                 }
-
             }
 
-            var config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
 
             FileInfo indexGenerationDataFile;
             FileInfo indexDistributionsFile;
             ZoomCommonArguments.CheckForNeededFiles(arguments.InputDataDirectory, out indexGenerationDataFile, out indexDistributionsFile);
             var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
             var indexDistributionsData = IndexDistributions.Deserialize(indexDistributionsFile);
+
+            // this config can be found in IndexGenerationData. If config argument not specified, simply take it from icd file
+            LdSpectrogramConfig config;
+            if (arguments.SpectrogramConfigPath == null)
+            {
+                config = indexGenerationData.LongDurationSpectrogramConfig;
+            }
+            else
+            {
+                config = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
+            }
 
             string originalBaseName;
             string[] otherSegments;

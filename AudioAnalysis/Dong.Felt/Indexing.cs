@@ -10,6 +10,7 @@ namespace Dong.Felt
     using System.IO;
     using Dong.Felt.Configuration;
     using Dong.Felt.Features;
+    using Dong.Felt.Registration;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools;
     using TowseyLibrary;
@@ -180,7 +181,7 @@ namespace Dong.Felt
                 maxColIndex += 1;
                 query.nhCountInColumn++;
             }
-           
+
             for (int rowIndex = nhStartRowIndex; rowIndex < maxRowIndex; rowIndex++)
             {
                 for (int colIndex = nhStartColIndex; colIndex < maxColIndex; colIndex++)
@@ -195,7 +196,7 @@ namespace Dong.Felt
                 var frameIndex = tempResult[0].FrameIndex;
                 var rowIndexInRegion = i / query.nhCountInColumn;
                 var colIndexInRegion = i % query.nhCountInColumn;
-                var regionItem = new RegionRepresentation(tempResult[i], frequencyIndex, frameIndex, query.nhCountInRow, 
+                var regionItem = new RegionRepresentation(tempResult[i], frequencyIndex, frameIndex, query.nhCountInRow,
                     query.nhCountInColumn,
                     rowIndexInRegion, colIndexInRegion, audioFileName);
                 results.Add(regionItem);
@@ -357,7 +358,7 @@ namespace Dong.Felt
             var nhRowsCount = query.nhCountInRow;
             var nhColsCount = query.nhCountInColumn;
             var nhStartRowIndex = query.nhStartRowIndex;
-           
+
             for (int colIndex = 0; colIndex < colsCount; colIndex++)
             {
                 if (StatisticalAnalysis.checkBoundary(nhStartRowIndex + nhRowsCount - 1, colIndex + nhColsCount - 1, rowsCount, colsCount))
@@ -391,7 +392,7 @@ namespace Dong.Felt
             string audioFileName,
             SpectrogramStandard spectrogram, double frameDuration)
         {
-            var results = new List<Candidates>();            
+            var results = new List<Candidates>();
             var colsCount = spectrogram.Data.GetLength(0);
             for (int colIndex = 0; colIndex < colsCount; colIndex += neighbourhoodLength)
             {
@@ -402,7 +403,7 @@ namespace Dong.Felt
                 {
                     var candidateItem = new Candidates(0.0, startTime, query.duration, 0.0, 0.0, audioFileName);
                     results.Add(candidateItem);
-                }                
+                }
             }
             return results;
         }
@@ -520,7 +521,7 @@ namespace Dong.Felt
             var result = new List<Candidates>();
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet1)
             {
-                result = WeightedEuclideanDistance(query, candidates,
+                result = Indexing.WeightedEuclideanDistance(query, candidates,
                     weight1, weight2);
             }
             if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet2)
@@ -544,15 +545,16 @@ namespace Dong.Felt
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18 ||
                 featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
-                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
-            {
-                //candidateDistanceList = Indexing.Feature5EuclideanDist(queryRepresentation, candidatesList);
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21 ||
+                featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22)
+            {               
                 result = Indexing.Feature5EuclideanDist2(query, candidates,
                     weight1, weight2, featurePropSet);
             }
             return result;
         }
-
+        
         public static List<Candidates> WeightedEuclideanDistance(List<RegionRepresentation> query,
             List<RegionRepresentation> candidates, double weight1, double weight2)
         {
@@ -650,37 +652,7 @@ namespace Dong.Felt
             return result;
         }
 
-        /// <summary>
-        /// This distance calculation method will be based on 6 values feature vector. 
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="candidates"></param>
-        /// <param name="weight1"></param>
-        /// <param name="weight2"></param>
-        /// <param name="weight3"></param>
-        /// <param name="weight4"></param>
-        /// <returns></returns>
-        public static List<Candidates> WeightedEuclideanDistCalculation3(List<RegionRepresentation> query, List<RegionRepresentation> candidates,
-            double weight1, double weight2, double weight3, double weight4, double weight5, double weight6)
-        {
-            var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
-            {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                var distance = SimilarityMatching.WeightedDistanceScoreRegionRepresentation4(query, tempRegionList, weight1, weight2,
-                    weight3, weight4, weight5, weight6);
-                var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                        duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                        tempRegionList[0].SourceAudioFile);
-                result.Add(item);
-            }
-            return result;
-        }
+        
 
         // this function is used for calculating the distance based on HOG features. 
         public static List<Candidates> HoGEuclideanDist(List<RegionRepresentation> query, List<RegionRepresentation> candidates)
@@ -733,7 +705,7 @@ namespace Dong.Felt
                 if (notNullNhCount >= 0.1 * nhCountInRegion)
                 {
                     var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = SimilarityMatching.DistanceFeature4RidgeBased(query, tempRegionList, 2, weight1,
+                    var distance = SimilarityMatching.DistanceFeatureProp5Based(query, tempRegionList, 2, weight1,
                         weight2);
                     var item = new Candidates(distance, tempRegionList[0].FrameIndex,
                             duration, tempRegionList[0].FrequencyIndex, tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
@@ -747,101 +719,71 @@ namespace Dong.Felt
 
         /// <summary>
         /// Euclidean Distance calculation for feature5. 
-        /// This version aims to reduce the amount of potential candidates to be compared. on average, 100 candidates will be chosen for each 1 minute recording.
+        /// This version is on compressed spectrogram.
         /// </summary>
         /// <param name="query"></param>
         /// <param name="candidates"></param>
         /// <returns></returns>
         public static List<Candidates> Feature5EuclideanDist2(List<RegionRepresentation> query,
-            List<RegionRepresentation> candidates, double weight1, double weight2, string featurePropSet,
+            List<RegionRepresentation> candidateRegionList, double weight1, double weight2, string featurePropSet,
             CompressSpectrogramConfig compressConfig)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            var candidates = TemplateAllignment.SearchCandidatesRegionBased(query, candidateRegionList, 0.5);
+            foreach (var c in candidates)
             {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var matchedNotNullNhCount = 0;
-                var notNullNhCountInQ = 0;
-                var nhCountInRegion = tempRegionList.Count;
-                for (int index = 0; index < nhCountInRegion; index++)
+                var distance = 100.0;
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
                 {
-                    if (tempRegionList.Count == query.Count)
-                    {
-                        if (query[index].POICount != 0)
-                        {
-                            notNullNhCountInQ++;
-                            if (tempRegionList[index].POICount != 0)
-                            {
-                                matchedNotNullNhCount++;
-                            }
-                        }
-                    }
+                    distance = SimilarityMatching.DistanceFeatureProp5Based(query, c, 2, weight1,
+                        weight2);
                 }
-                //if (matchedNotNullNhCount > 0.3 * notNullNhCountInQ)
-                if (matchedNotNullNhCount > 0.5 * notNullNhCountInQ)
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
                 {
-                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = 100.0;
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
-                    {
-                        distance = SimilarityMatching.DistanceFeature4RidgeBased(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
-                    {
-                        distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
-                    {
-                        distance = SimilarityMatching.DistanceFeature9Representation(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
-                    {
-                        distance = SimilarityMatching.DistanceFeature10Calculation(query, tempRegionList, 2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
-                    {
-                        distance = SimilarityMatching.DistanceFeature12Based(query, tempRegionList, 2, weight1, weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15)
-                    {
-                        distance = SimilarityMatching.DistanceFeature14Based(query, tempRegionList, 2, weight1, weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
-                    {
-                        distance = SimilarityMatching.DistanceFeature16Based(query, tempRegionList, 2, weight1, weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
-                    {
-                        distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    var minFrequency = tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange;
-                    if (minFrequency < 0)
-                    {
-                        minFrequency = 0.0;
-                    }
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex / compressConfig.TimeCompressRate,
-                            duration, tempRegionList[0].FrequencyIndex / compressConfig.FreqCompressRate,
-                            minFrequency / compressConfig.FreqCompressRate,
-                            tempRegionList[0].SourceAudioFile);
+                    distance = SimilarityMatching.DistanceFeature8HoGBased(query, c, 2, weight1,
+                        weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
+                {
+                    distance = SimilarityMatching.DistanceFeature9Representation(query, c, 2, weight1,
+                        weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                {
+                    distance = SimilarityMatching.DistanceFeature10Calculation(query, c, 2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
+                {
+                    distance = SimilarityMatching.DistanceFeature12Based(query, c, 2, weight1, weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15)
+                {
+                    distance = SimilarityMatching.DistanceFeature14Based(query, c, 2, weight1, weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                {
+                    distance = SimilarityMatching.DistanceFeature16Based(query, c, 2, weight1, weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                {
+                    distance = SimilarityMatching.DistanceFeature8HoGBased(query, c, 2, weight1,
+                        weight2);
+                }
+                var duration = c[0].Duration.TotalMilliseconds;
+                var item = new Candidates(distance, c[0].FrameIndex / compressConfig.TimeCompressRate,
+                            duration, c[0].FrequencyIndex / compressConfig.FreqCompressRate,
+                            (c[0].FrequencyIndex - c[0].FrequencyRange) / compressConfig.FreqCompressRate,
+                            c[0].SourceAudioFile);
                     result.Add(item);
-                }
             }
             return result;
         }
@@ -854,89 +796,72 @@ namespace Dong.Felt
         /// <param name="candidates"></param>
         /// <returns></returns>
         public static List<Candidates> Feature5EuclideanDist2(List<RegionRepresentation> query,
-            List<RegionRepresentation> candidates, double weight1, double weight2, string featurePropSet)
+            List<RegionRepresentation> candidateRegionList, double weight1, double weight2, string featurePropSet)
         {
             var result = new List<Candidates>();
-            var tempRegionList = new List<RegionRepresentation>();
-            var regionCountInAcandidate = query[0].NhCountInCol * query[0].NhCountInRow;
-            var candidatesCount = candidates.Count;
-            for (int i = 0; i < candidatesCount; i += regionCountInAcandidate)
+            var candidates = TemplateAllignment.SearchCandidatesRegionBased(query, candidateRegionList, 0.5);
+            foreach (var c in candidates)
             {
-                // The frequencyDifference is a problem. 
-                tempRegionList = StatisticalAnalysis.SubRegionFromRegionList(candidates, i, regionCountInAcandidate);
-                var matchedNotNullNhCount = 0;
-                var notNullNhCountInQ = 0;
-                var nhCountInRegion = tempRegionList.Count;
-                for (int index = 0; index < nhCountInRegion; index++)
+                var distance = 100.0;
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
                 {
-                    if (tempRegionList.Count == query.Count)
-                    {
-                        if (query[index].POICount != 0)
-                        {
-                            notNullNhCountInQ++;
-                            if (tempRegionList[index].POICount != 0)
-                            {
-                                matchedNotNullNhCount++;
-                            }
-                        }
-                    }
+                    distance = SimilarityMatching.DistanceFeatureProp5Based(query, c, 2, weight1,
+                        weight2);
                 }
-                //if (matchedNotNullNhCount > 0.3 * notNullNhCountInQ)
-                if (matchedNotNullNhCount > 0.5 * notNullNhCountInQ)
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
                 {
-                    var duration = tempRegionList[0].Duration.TotalMilliseconds;
-                    var distance = 100.0;
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet5 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet11)
-                    {
-                        distance = SimilarityMatching.DistanceFeature4RidgeBased(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet6 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet8)
-                    {
-                        distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
-                    {
-                        distance = SimilarityMatching.DistanceFeature9Representation(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
-                    {
-                        distance = SimilarityMatching.DistanceFeature10Calculation(query, tempRegionList, 2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
-                    {
-                        distance = SimilarityMatching.DistanceFeature12Based(query, tempRegionList, 2, weight1, weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15)
-                    {
-                        distance = SimilarityMatching.DistanceFeature14Based(query, tempRegionList, 2, weight1, weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
-                        featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
-                    {
-                        distance = SimilarityMatching.DistanceFeature16Based(query, tempRegionList, 2, weight1, weight2);
-                    }
-                    if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
-                    {
-                        distance = SimilarityMatching.DistanceFeature8HoGBased(query, tempRegionList, 2, weight1,
-                            weight2);
-                    }
-                    var item = new Candidates(distance, tempRegionList[0].FrameIndex,
-                            duration, tempRegionList[0].FrequencyIndex,
-                            tempRegionList[0].FrequencyIndex - tempRegionList[0].FrequencyRange,
-                            tempRegionList[0].SourceAudioFile);
-                    result.Add(item);
+                    distance = SimilarityMatching.DistanceFeature8HoGBased(query, c, 2, weight1,
+                        weight2);
                 }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet9)
+                {
+                    distance = SimilarityMatching.DistanceFeature9Representation(query, c, 2, weight1,
+                        weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet10)
+                {
+                    distance = SimilarityMatching.DistanceFeature10Calculation(query, c, 2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet12 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet13 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet19 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet20)
+                {
+                    distance = SimilarityMatching.DistanceFeature12Based(query, c, 2, weight1, weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet3 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet4 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet14 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet15)
+                {
+                    distance = SimilarityMatching.DistanceFeature14Based(query, c, 2, weight1, weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet16 ||
+                    featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet17)
+                {
+                    distance = SimilarityMatching.DistanceFeature16Based(query, c, 2, weight1, weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet18)
+                {
+                    distance = SimilarityMatching.DistanceFeature8HoGBased(query, c, 2, weight1,
+                        weight2);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet21)
+                {
+                    distance = SimilarityMatching.DistanceFeature21Based(query, c);
+                }
+                if (featurePropSet == RidgeDescriptionNeighbourhoodRepresentation.FeaturePropSet22)
+                {
+                    distance = SimilarityMatching.DistanceFeature22Based(query, c);
+                }
+                var duration = c[0].Duration.TotalMilliseconds;
+                var item = new Candidates(distance, c[0].FrameIndex,
+                        duration, c[0].FrequencyIndex,
+                        c[0].FrequencyIndex - c[0].FrequencyRange,
+                        c[0].SourceAudioFile);
+                result.Add(item);
             }
             return result;
         }
@@ -1326,7 +1251,7 @@ namespace Dong.Felt
             {
                 var pScore = ScoreOver2GauMasks(queryRepresentation, c, n, weight1, weight2);
                 var nScore = ScoreOver2GauMasks(c, queryRepresentation, n, weight1, weight2);
-                var score = (pScore + nScore ) /2;
+                var score = (pScore + nScore) / 2;
                 // Create a candidate item
                 var timeScale = c.MajorEvent.TimeScale;
                 var freqScale = c.MajorEvent.FreqScale;
@@ -1385,7 +1310,7 @@ namespace Dong.Felt
                 {
                     score = nScore * weight1 + vScore * weight2 + (hScore + pScore) * weight2 / 2.0;
                 }
-            }              
+            }
             else
             {
                 var notNullListCount = RegionRepresentation.NotNullListCount(relevantQueryVRepresentation, relevantQueryHRepresentation,
@@ -1404,7 +1329,7 @@ namespace Dong.Felt
             var relevantQueryPRepresentation = GetRelevantIndexInEvents(q, q.pEventList);
             var relevantQueryNRepresentation = GetRelevantIndexInEvents(q, q.nEventList);
             // 12 is equal to 500 frequency
-            var frequencyOffsetRate = (Math.Abs(q.MajorEvent.Bottom - c.MajorEvent.Bottom))/12.0;
+            var frequencyOffsetRate = (Math.Abs(q.MajorEvent.Bottom - c.MajorEvent.Bottom)) / 12.0;
             var similarityWeight = 1 - frequencyOffsetRate;
             // calculate score for vEvents, hEvents, pEvents, nEvents
             var vScore = ScoreOver2Events2(relevantQueryVRepresentation, c, c.vEventList, n) * similarityWeight;

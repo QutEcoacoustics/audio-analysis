@@ -31,6 +31,11 @@ namespace Acoustics.Shared
             }
         }
 
+        /// <summary>
+        /// Warning: do not use this format to print dates as strings - it will include a colon in the time zone offset :-(
+        /// </summary>
+        public const string Iso8601FileCompatibleDateFormat = "yyyyMMddTHHmmsszzz";
+
         public const string StandardDateFormatUtc = "yyyyMMdd-HHmmssZ";
 
         public static string FileDateFormatUtc

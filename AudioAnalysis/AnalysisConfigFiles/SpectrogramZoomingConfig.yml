@@ -8,19 +8,22 @@ SpectralIndexScale:
     - 24
     - 12
     - 6
+    - 4
     - 2
     - 1
     - 0.6
+    - 0.4
     - 0.2
 SpectralFrameScale: 
-    - 0.1
+    - 0.16
+    - 0.08
     - 0.04
     - 0.02
 MaxTilesPerSuperTile: 12
 UseDistributionsForNormalization: false
-LDSpectrogramConfig:
-    ColorMap1: "BGN-POW-CVR"
-    ColorMap2: "ACI-ENT-EVN" 
+LdSpectrogramConfig:
+    ColorMap1: "ACI-ENT-EVN" 
+    ColorMap2: "BGN-POW-EVN"
     # minutes
     XAxisTicInterval: 60
     # Hertz

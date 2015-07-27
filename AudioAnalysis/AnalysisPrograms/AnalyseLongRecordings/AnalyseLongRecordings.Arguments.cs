@@ -19,6 +19,13 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     {
         public class Arguments : SourceConfigOutputDirArguments, IArgClassValidator
         {
+            public Arguments()
+            {
+#if DEBUG
+                this.WhenExitCopyLog = true;
+                this.WhenExitCopyConfig = true;
+#endif
+            }
 
             [ArgDescription("A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).")]
             [Production.ArgExistingDirectory]
@@ -44,6 +51,22 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                     throw new InvalidStartOrEndException("Start offset must be less than end offset.");
                 }
             }
+
+            [ArgDescription("If true, attempts to copy the executable's log file to output directory. If it can't determine an output directory, it copies to the working directory.")]
+#if DEBUG
+            [DefaultValue(true)]
+#else
+        [DefaultValue(false)]
+#endif
+            public bool WhenExitCopyLog { get; set; }
+
+            [ArgDescription("If true, attempts to copy the executable's config file to output directory. If it can't determine an output directory, it copies to the working directory. If it can't find a config file, nothing is copied")]
+#if DEBUG
+            [DefaultValue(true)]
+#else
+        [DefaultValue(false)]
+#endif
+            public bool WhenExitCopyConfig { get; set; }
         }
     }
 }
