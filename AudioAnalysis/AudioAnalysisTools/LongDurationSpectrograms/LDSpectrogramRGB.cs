@@ -1337,6 +1337,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
                 cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
             }
+            // following line is debug purposes only
+            //cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
 
             // Get and set the dictionary of index properties
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigPath);
@@ -1384,13 +1386,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             cs1.IndexStats = indexDistributions;
 
-
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
-
-
-            // following line is debug purposes only
-            cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
-
 
             Image image1;
             Image image1NoChrome;

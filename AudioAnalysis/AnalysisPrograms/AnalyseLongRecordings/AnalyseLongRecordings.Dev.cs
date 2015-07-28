@@ -76,8 +76,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string outputPath    = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages2";
 
             // ST BEES KOALA RECORDING TWO HOURS
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\WESTKNOLL_20140905-001853+1000.wav";
-            string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\WESTKNOLL_20140905-001853+1000.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices";
 
             // EASTERN BRISTLE BIRD
             //string recordingPath = @"F:\SensorNetworks\WavFiles\EasternBristlebird\CURRUMBIN_20150529-142503+1000.wav";

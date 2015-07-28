@@ -461,7 +461,7 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 8.0
+  NormMax: 5.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -485,7 +485,7 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 10.0
+  NormMax: 9.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
