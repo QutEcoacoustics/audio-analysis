@@ -141,8 +141,8 @@ namespace AnalysisPrograms
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
-            FileInfo fiSpectrogramConfig = null;
-            //FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml");
+            //FileInfo fiSpectrogramConfig = null;
+            FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
 
             return new Arguments
             {
@@ -187,7 +187,8 @@ namespace AnalysisPrograms
             }
             else
             {
-                config = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
+                config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+                //config = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
             }
 
             string originalBaseName;
