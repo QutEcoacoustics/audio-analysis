@@ -160,16 +160,28 @@ namespace AnalysisPrograms
                 System.Environment.Exit(0);
             }
 
+
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
             // problem is that Jason cuts them up into 6 hour blocks.
-            if (true)
+            if (false)
             {
                 LDSpectrogramStitching.ConcatenateSpectralIndexFiles1();
                 //LDSpectrogramStitching.ConcatenateSpectralIndexImages();
-                LDSpectrogramClusters.ExtractSOMClusters();
+                //LDSpectrogramClusters.ExtractSOMClusters();
             } // end if (true)
 
 
+
+            // concatenating csv files of spectral indices
+            if (true)
+            {
+                //string path = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\20150704_unnamed\20150704_132321_Day1.wav\Towsey.Acoustic";
+                string path = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
+
+                //string[] keys = {"ACI", "TEN", "CVR", "BGN", "AVG", "VAR"};
+                string[] keys = {"ACI", "ENT", "EVN", "BGN", "POW"};
+                var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, keys);            
+            }
 
 
             // experiments with clustering the spectra within spectrograms
