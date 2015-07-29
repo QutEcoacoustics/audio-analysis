@@ -213,3 +213,5 @@ FakesAssemblies/
 *.Rhistory
 *.Rproj.user
 
+.Rproj.user
+*.RData
