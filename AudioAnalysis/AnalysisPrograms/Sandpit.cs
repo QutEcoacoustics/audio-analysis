@@ -164,7 +164,7 @@ namespace AnalysisPrograms
             // problem is that Jason cuts them up into 6 hour blocks.
             if (true)
             {
-                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1();
+                LDSpectrogramStitching.ConcatenateSpectralIndexFiles1();
                 //LDSpectrogramStitching.ConcatenateSpectralIndexImages();
                 LDSpectrogramClusters.ExtractSOMClusters();
             } // end if (true)

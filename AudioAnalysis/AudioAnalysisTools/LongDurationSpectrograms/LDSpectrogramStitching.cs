@@ -141,9 +141,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
             string fileStem = "SERF_20130401";
             string[] names = {"SERF_20130401_000025_000",
-                                  "SERF_20130401_064604_000",
-                                  "SERF_20130401_133143_000",
-                                  "SERF_20130401_201721_000",
+                              "SERF_20130401_064604_000",
+                              "SERF_20130401_133143_000",
+                              "SERF_20130401_201721_000",
                                       };
             //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
             //string fileStem = "SERF_20130619";
@@ -153,33 +153,109 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //                  "SERF_20130619_201730_000",
             //                      };
 
+            string outputDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
+
+            string colorMap1 = "ACI-TEN-CVR";
+            string colorMap2 = "BGN-AVG-VAR";
+            //string colorMap2 = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
 
             // ###############################################################
             // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
             int sampleRate = 17640;
             int frameWidth = 256;
+            int nyquist = sampleRate / 2;
+            int herzInterval = 1000;
             // ###############################################################
 
 
-            string[] level2Dirs = {names[0]+".wav",
-                                       names[1]+".wav",
-                                       names[2]+".wav",
-                                       names[3]+".wav",
-                                      };
+            FileInfo[] paths = ConcatenateSpectralIndexFiles(topLevelDirectory, fileStem, names);
+
+
+
+
+
+            //Tuple<Image, string>[] tuple =  LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+            //DirectoryInfo inputDirectory,
+            //DirectoryInfo outputDirectory,
+            //LdSpectrogramConfig ldSpectrogramConfig,
+            //FileInfo indexPropertiesConfigPath,
+            //IndexGenerationData indexGenerationData,
+            //string basename,
+            //string analysisType,
+            //Dictionary<string, double[,]> indexSpectrograms = null,
+            //SummaryIndexBase[] summaryIndices = null,
+            //Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
+            //bool returnChromelessImages = false);
+
+
+
+            TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
+            TimeSpan xScale = TimeSpan.FromMinutes(60);
+            double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
+            cs1.FileName = fileStem;
+            cs1.ColorMode = "NEGATIVE";
+            cs1.BackgroundFilter = backgroundFilterCoeff;
+            var dirInfo = new DirectoryInfo(topLevelDirectory);
+            cs1.ColorMap = colorMap1;
+            //string[] defaultKeys = { "ACI", "AVG", "BGN", "CVR", "TEN", "VAR" };
+            cs1.SetSpectralIndexProperties(null); // will set the default index keys
+            cs1.ReadCSVFiles(dirInfo, fileStem); // reads all known indices files
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                Console.WriteLine("There are no spectrogram matrices in the dictionary.");
+                return;
+            }
+            //cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem);
+            Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap1);
+
+            string title = String.Format("{1} >> FALSE-COLOUR SPECTROGRAM of {0}", fileStem, colorMap1);
+            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
+
+            cs1.ColorMap = colorMap2;
+            Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap2);
+            title = String.Format("{1} >> FALSE-COLOUR SPECTROGRAM of {0}", fileStem, colorMap2);
+            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
+            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
+
+
+            Image[] images = new Image[2];
+            images[0] = image1;
+            images[1] = image2;
+            images[0].Save(Path.Combine(outputDirectory, fileStem + "." + colorMap1 + ".png"));
+            images[1].Save(Path.Combine(outputDirectory, fileStem + "." + colorMap2 + ".png"));
+            Image image3 = ImageTools.CombineImagesVertically(images);
+            image3.Save(Path.Combine(outputDirectory, fileStem + ".2MAPS.png"));
+        }
+
+        /// <summary>
+        /// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, 
+        /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings 
+        /// in blocks of 6 hours. 
+        /// </summary>
+        public static FileInfo[] ConcatenateSpectralIndexFiles(string topLevelDirectory, string fileStem, string[] names)
+        {
+            string[] level2Dirs = { names[0]+".wav",
+                                    names[1]+".wav",
+                                    names[2]+".wav",
+                                    names[3]+".wav",
+                                  };
             string level3Dir = "Towsey.Acoustic";
-            string[] dirNames = {topLevelDirectory+@"\"+level2Dirs[0]+@"\"+level3Dir,
-                                     topLevelDirectory+@"\"+level2Dirs[1]+@"\"+level3Dir,
-                                     topLevelDirectory+@"\"+level2Dirs[2]+@"\"+level3Dir,
-                                     topLevelDirectory+@"\"+level2Dirs[3]+@"\"+level3Dir
-                                    };
+            string[] dirNames = {   topLevelDirectory+@"\"+level2Dirs[0]+@"\"+level3Dir,
+                                    topLevelDirectory+@"\"+level2Dirs[1]+@"\"+level3Dir,
+                                    topLevelDirectory+@"\"+level2Dirs[2]+@"\"+level3Dir,
+                                    topLevelDirectory+@"\"+level2Dirs[3]+@"\"+level3Dir
+                                };
             string[] fileExtentions = { ".ACI.csv",
-                                            ".AVG.csv",
-                                            ".BGN.csv",
-                                            ".CVR.csv",
-                                            ".TEN.csv",
-                                            ".VAR.csv",
-                                            "_Towsey.Acoustic.Indices.csv"
-                                          };
+                                        ".AVG.csv",
+                                        ".BGN.csv",
+                                        ".CVR.csv",
+                                        ".TEN.csv",
+                                        ".VAR.csv",
+                                        "_Towsey.Acoustic.Indices.csv"
+                                        };
+            var paths = new List<FileInfo>();
 
             // this loop reads in all the Indices from consecutive csv files
             foreach (string extention in fileExtentions)
@@ -204,53 +280,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
                     lines.AddRange(ipLines);
                 }
-                string opFileName = fileStem + extention;
+                string opFileName = fileStem + "__Towsey.Acoustic" + extention;
                 string opPath = Path.Combine(topLevelDirectory, opFileName);
                 FileTools.WriteTextFile(opPath, lines, false);
 
-
-
+                paths.Add(new FileInfo(opPath));
             } //end of all file extentions
 
-            TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
-            TimeSpan xScale = TimeSpan.FromMinutes(60);
-            double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
-            cs1.FileName = fileStem;
-            cs1.ColorMode = colorMap;
-            cs1.BackgroundFilter = backgroundFilterCoeff;
-            var dirInfo = new DirectoryInfo(topLevelDirectory);
-            cs1.ReadCSVFiles(dirInfo, fileStem); // reads all known indices files
-            if (cs1.GetCountOfSpectrogramMatrices() == 0)
-            {
-                Console.WriteLine("There are no spectrogram matrices in the dictionary.");
-                return;
-            }
-            cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem);
-
-            colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-            Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-
-            int nyquist = cs1.SampleRate / 2;
-            int herzInterval = 1000;
-
-            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-            image1.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
-
-            colorMap = "BGN-AVG-VAR";
-            Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
-            title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-            titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-            image2.Save(Path.Combine(dirInfo.FullName, fileStem + "." + colorMap + ".png"));
-            Image[] array = new Image[2];
-            array[0] = image1;
-            array[1] = image2;
-            Image image3 = ImageTools.CombineImagesVertically(array);
-            image3.Save(Path.Combine(dirInfo.FullName, fileStem + ".2MAPS.png"));
+            return paths.ToArray();
         }
 
 

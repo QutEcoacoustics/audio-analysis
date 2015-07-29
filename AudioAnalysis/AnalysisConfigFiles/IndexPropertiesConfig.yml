@@ -485,7 +485,7 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 9.0
+  NormMax: 7.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices

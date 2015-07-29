@@ -210,11 +210,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-
+        /// <summary>
+        /// This method sets default indeces to use if passed Dictionary = null.
+        /// This may not be a good idea. Trying it out. Maybe better to crash! 
+        /// </summary>
+        /// <param name="_spectralIndexProperties"></param>
         public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> _spectralIndexProperties)
         {
-            this.spectralIndexProperties = _spectralIndexProperties;
-            this.spectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
+            //string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the NEW default i.e. since July 2015
+            string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLD default i.e. used in 2014
+            this.spectrogramKeys = keys;
+            if ((_spectralIndexProperties != null) && ((_spectralIndexProperties.Count > 0)))
+            {
+                this.spectralIndexProperties = _spectralIndexProperties;
+                this.spectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
+            }
         }
 
 
@@ -1319,8 +1329,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             LdSpectrogramConfig config = ldSpectrogramConfig;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
-            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+            string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
 
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
             
