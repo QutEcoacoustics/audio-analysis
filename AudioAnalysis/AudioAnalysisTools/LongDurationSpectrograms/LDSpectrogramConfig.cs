@@ -7,10 +7,9 @@
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
-
     using Acoustics.Shared;
-
     using YamlDotNet.Serialization;
 
     /// <summary>
@@ -112,6 +111,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             Yaml.Serialise(path, this);
         }
+
+
+        public string[] GetKeys()
+        {
+            var keys = new List<string>(); 
+            if((this.ColorMap1 != null) && (this.ColorMap1.Length == 11))
+            {
+                string[] codes = this.ColorMap1.Split('-');
+                foreach (string str in codes) keys.Add(str);
+                codes = this.ColorMap2.Split('-');
+                foreach (string str in codes)
+                {
+                    if(! keys.Contains(str)) keys.Add(str);
+                }
+            }
+            return keys.ToArray();
+        }
+
         #endregion
     }
 }

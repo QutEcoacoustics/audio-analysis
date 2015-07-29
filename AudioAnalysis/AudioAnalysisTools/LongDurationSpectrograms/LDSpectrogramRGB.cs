@@ -248,7 +248,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if (File.Exists(path))
                 {
                     int freqBinCount;
-                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(path, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     this.spectrogramMatrices.Add(this.spectrogramKeys[i], matrix);
                     this.FrameWidth = freqBinCount * 2;
@@ -281,59 +281,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return allOk;
         }
 
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
-        {
-            string[] keys = indexKeys.Split('-');
-            return ReadSpectrogramCSVFiles(ipdir, fileName, keys, out freqBinCount);
-        }
-
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys, out int freqBinCount)
-        {
-            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
-            string warning = null;
-            freqBinCount = 256; // the default
-            for (int key = 0; key < keys.Length; key++)
-            {
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
-                if (File.Exists(path))
-                {
-                    int binCount;
-                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out binCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    dict.Add(keys[key], matrix);
-                    freqBinCount = binCount;
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()";
-                    }
-
-                    warning += string.Format("\n      {0} File does not exist: {1}", keys[key], path);
-                }
-            }
-
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
-
-            if (dict.Count != 0)
-            {
-                return dict;
-            }
-
-            LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()");
-            LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
-
-            return dict;
-        }
 
         public bool ReadStandardDeviationSpectrogramCSVs(DirectoryInfo ipdir, string fileName)
         {
             int freqBinCount;
-            this.spgr_StdDevMatrices = LDSpectrogramRGB.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
+            this.spgr_StdDevMatrices = IndexMatrices.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
             this.FrameWidth = freqBinCount * 2;
             if (this.spgr_StdDevMatrices == null)
             {
@@ -348,19 +300,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return true;
         }
 
-
-
-        public static double[,] ReadSpectrogram(string csvPath, out int binCount)
-        {
-            // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
-            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers 
-            // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
-
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1); 
-            return matrix;
-        }
 
 
         public double[,] GetSpectrogramMatrix(string key)
@@ -1391,7 +1330,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 if (indexDistributions == null)
                 {
-                    throw new InvalidOperationException("Cannot proceed without index distribution data");
+                    //throw new InvalidOperationException("Cannot proceed without index distribution data");
                 }
             }
             cs1.IndexStats = indexDistributions;

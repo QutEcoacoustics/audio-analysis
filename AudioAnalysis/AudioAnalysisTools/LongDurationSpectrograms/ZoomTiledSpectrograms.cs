@@ -99,7 +99,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string[] keys = indexProperties.Keys.ToArray();
 
             Stopwatch timer = Stopwatch.StartNew();
-            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(
                 inputDirectory,
                 fileStem + "__" + analysisType,
                 keys);
