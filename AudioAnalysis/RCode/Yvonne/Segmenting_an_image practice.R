@@ -11,62 +11,44 @@ clusters <- vec$unname.kmeansObj.cluster.
 
 clusterlist <- list()
 
-#for (i in 1:30) {
-#  assign(paste("cluster",i,sep=""), grep(paste("\\<", i,"\\>", sep=""), clusters))
-# 
-#}
-
+#######################################################
 # make rasterRBG from a 24 hour spectrogram
 library(raster)
 #setwd("F:\\Indices\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\GympieNP\\20150622_000000.wav\\Towsey.Acoustic\\")
 #setwd("F:\\Indices\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\Woondum3\\20150622_000000.wav\\Towsey.Acoustic\\")
 b1 <- "20150622_000000__2Maps_full.png"
 b <- brick(b1, package="raster")
-d <- brick(b1, package="raster")
+sourceImage <- brick(b1, package="raster")
+e <- extent(0, 1469, 0, 632)
 b2 <- brick(b1, package="raster")
-
-#b2[] <- 1:ncell(b)
-
-length2 <- 1
-
-#for (i in 1:30) {
-#  length <- sum(cluster30 <= 1440)
-# for (j in seq_along(cluster29[1:length])) {
-#    b2[(length2*632+1):((length2+1)*632)] <- c[(cluster29[j]*632):((cluster29[j]+1)*632-1)]
-#    length2 <- length2 + 1
-#  }  
-#}
+# Make an empty brickRaster with extra columns for white lines
+# and three layers
+s <- brick(s, nrows=632, ncols=1469, nl=3, package="raster")
 
 png(filename = "Image 22 June 2015.png",
     width = 1440, height = 632, units = "px", pointsize = 12,
     res = NA, family = "", restoreConsole = TRUE)
 
 length2 <- 1
+clusterOrder <- c("24","25","10","26","30","5","9","29",
+                  "27","11","12","28","14","16","3","20",
+                  "8","2","4","7","18","6","23","19","22",
+                  "21","17","13","1","15")
 
 for (i in 1:30) {
-  cur.minute.list <- which(clusters == i)
+  cur.minute.list <- which(clusters == clusterOrder[i])
   length <- sum(cur.minute.list <= 1440)
   if (length > 0) {
     for (j in 1:length) { 
-      t <- getValuesBlock(sourceImage, row=1, nrows=632, 
+      replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=632, 
                     col=cur.minute.list[j], ncols=1)
-      # write some code below that extracts out exactly the same as t above
-      # r <- sourceImage[1:632, 18]
-      b2[1:632, length2] <- t
+      s[1:632, length2] <- replacementBlock
+      #s[c(1:30,316:345), length2] <- colours[i,]   # 13 pixels high block of colour
       length2 <- length2 + 1
     }    
   }
+  length2 <- length2 + 1
 }
 
-plotRGB(b2)
+plotRGB(s)
 dev.off()
-
-t <- getValuesBlock(sourceImage, row=1, nrows=632, col=18, ncols=1)
-t <- t[,1:3]
-# write some code below that extracts out exactly the same as t above
-r <- sourceImage[1:632, 18]
-
-dev.off()
-
-#plotRGB(b2)
-

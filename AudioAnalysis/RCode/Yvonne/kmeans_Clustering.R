@@ -4,15 +4,15 @@
 
 #setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\")
 #setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\")
-#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
-setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 
 #indices <- read.csv("Towsey_summary_indices 20150315_133427 to 20150320_153429 .csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices 20150322_113743 to 20150327_103745 .csv", header=T)
-#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
-indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
+indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
 
@@ -129,7 +129,8 @@ length2 <- length(normIndices$X)
 
 length <- length(indices$rec.date)
 dataFrame <- normIndices[length1:length2, indicesRef]  # best eleven variables
-kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 20)
+kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 20,
+                    nstart = 30)
 normIndices <- cbind(normIndices, unname(kmeansObj$cluster))
 plot(dataFrame, col=kmeansObj$cluster)
 r <- (kmeansObj$betweenss*100/kmeansObj$totss)
