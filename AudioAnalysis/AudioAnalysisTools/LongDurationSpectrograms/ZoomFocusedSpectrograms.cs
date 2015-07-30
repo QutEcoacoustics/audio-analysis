@@ -56,7 +56,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             var sw = Stopwatch.StartNew();
             string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "SUM", "SPT" };
-            Dictionary<string, double[,]> spectra = ZoomFocusedSpectrograms.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
             sw.Stop();
             LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
 
@@ -304,7 +304,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // compress spectrograms to correct scale
             if (scalingFactor > 1)
             {
-                spectralSelection = ZoomFocusedSpectrograms.CompressIndexSpectrograms(
+                spectralSelection = IndexMatrices.CompressIndexSpectrograms(
                     spectralSelection,
                     imageScale,
                     dataScale);
@@ -470,136 +470,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return image;
         }
 
-
-        public static Dictionary<string, double[,]> ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
-        {
-            string warning = null;
-
-            Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                DateTime now1 = DateTime.Now;
-
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
-                if (File.Exists(path))
-                {
-                    int freqBinCount;
-                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    spectrogramMatrices.Add(keys[i], matrix);
-                    //this.FrameLength = freqBinCount * 2;
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadCSVFiles()";
-                    }
-
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
-                }
-
-                DateTime now2 = DateTime.Now;
-                TimeSpan et = now2 - now1;
-                LoggedConsole.WriteLine("Time to read spectral index file <" + keys[i] + "> = " + et.TotalSeconds + " seconds");
-            }
-
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
-
-            if (spectrogramMatrices.Count == 0)
-            {
-                LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadCSVFiles()");
-                LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
-            }
-
-            return spectrogramMatrices;
-        }
-
-        /// <summary>
-        /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and required image scale.
-        /// In all cases, the compression is done by taking the average
-        /// </summary>
-        /// <param name="spectra"></param>
-        /// <param name="imageScale"></param>
-        /// <param name="dataScale"></param>
-        /// <returns></returns>
-        public static Dictionary<string, double[,]> CompressIndexSpectrograms(Dictionary<string, double[,]> spectra, TimeSpan imageScale, TimeSpan dataScale)
-        {
-            int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
-            var compressedSpectra = new Dictionary<string, double[,]>();
-            int step = scalingFactor - 1;
-            foreach (string key in spectra.Keys)
-            {
-                double[,] matrix = spectra[key];
-                int rowCount = matrix.GetLength(0);
-                int colCount = matrix.GetLength(1);
-                int compressedLength = (colCount / scalingFactor);
-                var newMatrix = new double[rowCount, compressedLength];
-                double[] tempArray = new double[scalingFactor];
-
-                // the ENTROPY matrix requires separate calculation
-                if ((key == "ENT") && (scalingFactor > 1))
-                {
-                    matrix = spectra["SUM"];
-                    for (int r = 0; r < rowCount; r++)
-                    {
-                        int colIndex = 0;
-                        for (int c = 0; c <= colCount - scalingFactor; c += step)
-                        {
-                            colIndex = c / scalingFactor;
-                            for (int i = 0; i < scalingFactor; i++)
-                            {
-                                // square the amplitude to give energy
-                                tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
-                            }
-                            double entropy = DataTools.Entropy_normalised(tempArray);
-                            if (Double.IsNaN(entropy)) entropy = 1.0;
-                            newMatrix[r, colIndex] = 1 - entropy;
-                        }
-                    }
-                }
-                else 
-                // THE ACI matrix requires separate calculation
-                if ((key == "ACI") && (scalingFactor > 1))
-                {
-                    double[] DIFArray = new double[scalingFactor];
-                    double[] SUMArray = new double[scalingFactor];
-                    for (int r = 0; r < rowCount; r++)
-                    {
-                        int colIndex = 0;
-                        for (int c = 0; c <= colCount - scalingFactor; c += step)
-                        {
-                            colIndex = c / scalingFactor;
-                            for (int i = 0; i < scalingFactor; i++)
-                            {
-                                DIFArray[i] = spectra["DIF"][r, c + i];
-                                SUMArray[i] = spectra["SUM"][r, c + i];
-                            }
-                            newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
-                        }
-                    }
-                }
-                else // average all other spectral indices
-                {
-                    matrix = spectra[key];
-                    for (int r = 0; r < rowCount; r++)
-                    {
-                        int colIndex = 0;
-                        for (int c = 0; c <= colCount - scalingFactor; c += step)
-                        {
-                            colIndex = c / scalingFactor;
-                            for (int i = 0; i < scalingFactor; i++) tempArray[i] = matrix[r, c + i];
-                            newMatrix[r, colIndex] = tempArray.Average();
-                        }
-                    }
-                }
-                compressedSpectra[key] = newMatrix;
-            }
-            return compressedSpectra;
-        }
 
 
         public static List<double[]> ReadFrameData(DirectoryInfo dataDir, string fileStem, TimeSpan starttime, TimeSpan maxDuration, SuperTilingConfig tilingConfig)

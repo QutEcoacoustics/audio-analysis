@@ -568,34 +568,96 @@ namespace AudioAnalysisTools.StandardSpectrograms
             process.Run(args, output.DirectoryName);
         }
 
-
-
-        /// <summary>
-        /// Returns AVERAGE POWER SPECTRUM and VARIANCE OF POWER SPECTRUM
-        /// Have been passed the amplitude spectrum but square amplitude values to get power or energy.
-        /// </summary>
-        /// <param name="spectrogram">this is an amplitude spectrum. Must square values to get power</param>
-        /// <returns></returns>
-        public static Tuple<double[], double[]> CalculateSpectralAvAndVariance(double[,] spectrogram)
+        public static double[] CalculateAvgSpectrumFromSpectrogram(double[,] spectrogram)
         {
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
             double[] avgSpectrum = new double[freqBinCount];   // for average  of the spectral bins
-            double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
+            //double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
+            //double[] covSpectrum = new double[freqBinCount];   // for coeff of variance of the spectral bins
             for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
             {
                 var freqBin = new double[frameCount];          // set up an array to take all values in a freq bin i.e. column of matrix
                 for (int r = 0; r < frameCount; r++)
                 {
-                    freqBin[r] = spectrogram[r, j] * spectrogram[r, j];  //convert amplitude to energy or power.
+                    freqBin[r] = spectrogram[r, j];  
+                }
+                double av, sd;
+                NormalDist.AverageAndSD(freqBin, out av, out sd);
+                avgSpectrum[j] = av; // store average of the bin
+                //varSpectrum[j] = sd * sd; // store var of the bin
+                //covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
+            }
+            return avgSpectrum;
+        } 
+
+
+
+        /// <summary>
+        /// Returns AVERAGE POWER SPECTRUM (PSD) and VARIANCE OF POWER SPECTRUM. 
+        /// Have been passed the amplitude spectrum but square amplitude values to get power or energy.
+        /// 
+        /// This method assumes that the psased amplitude spectrogram has been prepared according to method of P.D. Welch.
+        /// It is the standard method used now to calculate a PSD. 
+        /// Welch's method splits time series into overlapping segments and windows them.
+        /// It is the windowing that makes Welche's method different. Normally overlap windows because windows decay at edges and therefore loss of info. 
+        /// Can now do FFT. Does not need to be FFT, but if so then window must be power of 2. 
+        /// Square the FFT coefficients >>>> energy. Then take average in each frquncy bin. Averaging reduces the variance. 
+        /// Welch's method is an improvement on the standard periodogram spectrum estimating method and on Bartlett's method, 
+        /// in that it reduces noise in the estimated power spectra in exchange for reducing the frequency resolution.
+        /// The end result is an array of power measurements vs. frequency "bin".
+        /// 
+        /// As well as calculating the power spectrum also calcuate a spectrum of the variance and a spectrum of the Coeff of Variation = var/mean.
+        /// </summary>
+        /// <param name="amplitudeSpectrogram">this is an amplitude spectrum. Must square values to get power</param>
+        /// <returns></returns>
+        public static Tuple<double[], double[], double[]> CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(double[,] amplitudeSpectrogram)
+        {
+            int frameCount = amplitudeSpectrogram.GetLength(0);
+            int freqBinCount = amplitudeSpectrogram.GetLength(1);
+            double[] avgSpectrum = new double[freqBinCount];   // for average  of the spectral bins
+            double[] varSpectrum = new double[freqBinCount];   // for variance of the spectral bins
+            double[] covSpectrum = new double[freqBinCount];   // for coeff of variance of the spectral bins
+            for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
+            {
+                var freqBin = new double[frameCount];          // set up an array to take all values in a freq bin i.e. column of matrix
+                for (int r = 0; r < frameCount; r++)
+                {
+                    freqBin[r] = amplitudeSpectrogram[r, j] * amplitudeSpectrogram[r, j];  //convert amplitude to energy or power.
                 }
                 double av, sd;
                 NormalDist.AverageAndSD(freqBin, out av, out sd);
                 avgSpectrum[j] = av; // store average of the bin
                 varSpectrum[j] = sd * sd; // store var of the bin
+                covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
             }
-            return System.Tuple.Create(avgSpectrum, varSpectrum);
-        } // CalculateSpectralAvAndVariance()
+            return System.Tuple.Create(avgSpectrum, varSpectrum, covSpectrum);
+        } // CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram()
+
+
+        /// <summary>
+        /// This method assumes P.D. Welch's method has been used to calculate a PSD. 
+        /// See method above: CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram()
+        /// </summary>
+        /// <param name="PSD"></param>
+        /// <param name="nyquist"></param>
+        /// <returns></returns>
+        public static double CalculateNDSI(double[] PSD, int samplerate)
+        {
+            int nyquist = samplerate / 2;
+            int binCount = PSD.Length;
+            double binWidth = nyquist / (double)binCount;
+            // skip lower 1kHz bin;
+            int countOf1kHbin = (int)Math.Floor(1000 / binWidth);
+            int countOf2kHbin = (int)Math.Floor(2000 / binWidth);
+            int countOf8kHbin = (int)Math.Floor(8000 / binWidth);
+            double anthropoEnergy = 0.0;
+            for (int i = countOf1kHbin; i < countOf2kHbin; i++) anthropoEnergy += PSD[i];
+            double biophonyEnergy = 0.0;
+            for (int i = countOf2kHbin; i < countOf8kHbin; i++) biophonyEnergy += PSD[i];
+            double NDSI = (biophonyEnergy - anthropoEnergy) / (biophonyEnergy + anthropoEnergy);
+            return NDSI;
+        }
 
 
 

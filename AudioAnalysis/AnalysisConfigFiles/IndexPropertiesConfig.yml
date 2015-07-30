@@ -210,8 +210,8 @@ TemporalEntropy:
   Units: ""
   IncludeInComboIndex: true
   ComboWeight: 0.3
-AvgEntropySpectrum:
-  Name: 1-H[spectral avg]
+EntropyOfAverageSpectrum:
+  Name: 1-H[avg spectrum]
   Comment: "1-H[spectral avg] is a measure of concentration of acoustic energy in the average spectrum over one minute."
   DataType: double
   DefaultValue: 0.0
@@ -222,8 +222,8 @@ AvgEntropySpectrum:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-VarianceEntropySpectrum:
-  Name: 1-H[spectral var]
+EntropyOfVarianceSpectrum:
+  Name: 1-H[var spectrum]
   Comment: "1-H[spectral var] is a measure of concentration of acoustic energy in the variance spectrum over one minute."
   DataType: double
   DefaultValue: 0.0
@@ -234,9 +234,21 @@ VarianceEntropySpectrum:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-EntropyPeaks:
-  Name: 1-H[peak freq]
+EntropyOfPeaksSpectrum:
+  Name: 1-H[peak freq spectrum]
   Comment: "1-H[peak freq] is a measure of concentration of peak frequencies over one minute."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+EntropyOfCoVSpectrum:
+  Name: 1-H[CoV spectrum]
+  Comment: "1-H[CoV sp] is a measure of concentration of energy in the Coeff of Variance Spectrum."
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
@@ -342,6 +354,16 @@ SptDensity:
 #  Units: ""
 #  IncludeInComboIndex: false
 #  ComboWeight: 0.0
+NDSI:
+  Name: NDSI
+  Comment: "Normalised Difference Soundscape Index) calculated from PSD - originated from Stuart Gage."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -1.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
 EventsTotal:
   Name: Event Count
   Comment: "The total count of acoustic events per minute of recording."
@@ -439,7 +461,7 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 8.0
+  NormMax: 5.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -463,7 +485,7 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 70.0
+  NormMax: 7.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices

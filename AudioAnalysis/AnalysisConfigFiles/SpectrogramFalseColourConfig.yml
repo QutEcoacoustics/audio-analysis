@@ -1,0 +1,14 @@
+---
+# This config can be used to control the drawing of long duration false-colour Spectrograms
+# It should NOT contain index related configuration data
+# It should NOT contain dynamic data (like file names or analysis types)
+
+ColorMap1: "ACI-ENT-EVN" 
+ColorMap2: "BGN-POW-EVN"
+# minutes x-axis scale
+XAxisTicInterval: 60
+
+# Hertz y-axis scale
+YAxisTicInterval: 1000
+
+...

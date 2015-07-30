@@ -101,8 +101,13 @@ namespace TowseyLibrary
         //***************************************************************************
 
 
-
-        public static double[,] ConcatenateMatrixRows(double[,] M1, double[,] M2)
+        /// <summary>
+        /// This method appears not to work!!
+        /// </summary>
+        /// <param name="M1"></param>
+        /// <param name="M2"></param>
+        /// <returns></returns>
+        public static double[,] ConcatenateMatrixRows(double[,] M1, double[,] M2, int dummy)
         {
             Matrix<double> MN1 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M1);
             Matrix<double> MN2 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M2);
@@ -110,6 +115,38 @@ namespace TowseyLibrary
             return MN1.ToArray();
         }
 
+        /// <summary>
+        /// Method assumes that the column count for two matrices is the same
+        /// </summary>
+        /// <param name="M1"></param>
+        /// <param name="M2"></param>
+        /// <returns></returns>
+        public static double[,] ConcatenateMatrixRows(double[,] M1, double[,] M2)
+        {
+            int colCount = M1.GetLength(1);
+            int m1RowCount = M1.GetLength(0);
+            int m2RowCount = M2.GetLength(0);
+
+            var opMatrix = new double[m1RowCount + m2RowCount, colCount];
+            for (int r = 0; r < m1RowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    opMatrix[r, c] = M1[r, c];
+                }
+            }
+
+            for (int r = 0; r < m2RowCount; r++)
+            {
+                int row = m1RowCount + r;
+                for (int c = 0; c < colCount; c++)
+                {
+                    opMatrix[row, c] = M2[r, c];
+                }
+            }
+
+            return opMatrix;
+        }
 
         /// <summary>
         /// Subtract matrix m2 from matrix m1

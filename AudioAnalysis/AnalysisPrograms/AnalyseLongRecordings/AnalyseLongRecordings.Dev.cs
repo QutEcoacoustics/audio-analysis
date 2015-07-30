@@ -52,6 +52,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             // TUI TERRACE RECORDINGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
+            //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Eclipse2012\Farmstay_ECLIPSE3_20121114_060001TEST.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
             //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
             //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
@@ -62,6 +65,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
+
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\Canetoad";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices";
 
@@ -72,8 +76,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string outputPath    = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages2";
 
             // ST BEES KOALA RECORDING TWO HOURS
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\WESTKNOLL_20140905-001853+1000.wav";
-            string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\WESTKNOLL_20140905-001853+1000.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices";
 
             // EASTERN BRISTLE BIRD
             //string recordingPath = @"F:\SensorNetworks\WavFiles\EasternBristlebird\CURRUMBIN_20150529-142503+1000.wav";
@@ -96,7 +100,12 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                                 {
                                     Source = recordingPath.ToFileInfo(),
                                     Config = configPath.ToFileInfo(),
-                                    Output = outputPath.ToDirectoryInfo()
+                                    //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
+                                    //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
+                                    Output = @"C:\SensorNetworks\Output\Test\Test2".ToDirectoryInfo()
+                                    //Output = @"C:\SensorNetworks\Output\Frogs\Canetoad".ToDirectoryInfo()
+                                    //Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms".ToDirectoryInfo()
+
                                 };
 
             if (!arguments.Source.Exists)

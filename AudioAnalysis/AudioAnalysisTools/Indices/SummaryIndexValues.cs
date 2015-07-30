@@ -100,11 +100,13 @@ namespace AudioAnalysisTools.Indices
 
         public double TemporalEntropy { get; set; }
 
-        public double AvgEntropySpectrum { get; set; }
+        public double EntropyOfAverageSpectrum { get; set; }
 
-        public double VarianceEntropySpectrum { get; set; }
+        public double EntropyOfVarianceSpectrum { get; set; }
 
-        public double EntropyPeaks { get; set; }
+        public double EntropyOfPeaksSpectrum { get; set; }
+
+        public double EntropyOfCoVSpectrum { get; set; }
 
         // meaningless when calculated over short
         // public int ClusterCount { get; set; }
@@ -115,7 +117,11 @@ namespace AudioAnalysisTools.Indices
 
         // public double SptPerSecond { get; set; }
 
-        // public TimeSpan AvgSptDuration { get; set; }
+        //public TimeSpan AvgSptDuration { get; set; }
+
+		/// Normalised difference soundscape Index
+        public double NDSI { get; set; }
+
         public double SptDensity { get; set; }
 
         public double RainIndex { get; set; }

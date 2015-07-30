@@ -117,17 +117,20 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
 
             // false-colour spectrograms
-            //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200ms.EclipseFarmstay";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
+            //string ipFileName = "TEST_Farmstay_ECLIPSE3_20121114-060001+1000"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
+            string ipdir = @"C:\SensorNetworks\Output\Test\Test2\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\Test\Test2";
 
             // false-colour spectrograms
+            //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string ipFileName = "Farmstay_ECLIPSE3_20121114-060001+1000_TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
-            string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
 
             // zoomable spectrograms
             //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
@@ -138,8 +141,8 @@ namespace AnalysisPrograms
             DirectoryInfo ipDir = new DirectoryInfo(ipdir);
             DirectoryInfo opDir = new DirectoryInfo(opdir);
 
-            FileInfo fiSpectrogramConfig = null;
-            //FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml");
+            //FileInfo fiSpectrogramConfig = null;
+            FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
 
             return new Arguments
             {
@@ -184,7 +187,8 @@ namespace AnalysisPrograms
             }
             else
             {
-                config = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
+                config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+                //config = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
             }
 
             string originalBaseName;
