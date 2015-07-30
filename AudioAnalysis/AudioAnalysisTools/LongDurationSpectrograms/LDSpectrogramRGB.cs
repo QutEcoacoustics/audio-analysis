@@ -243,12 +243,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // TODO: this string constant is dodgy... but should never change... fix me when broken :-)
                 const string analysisType = "Towsey.Acoustic";
-                var path = FilenameHelpers.AnalysisResultName(ipdir, fileName, analysisType + "." + keys[i], "csv"); 
+                var path = FilenameHelpers.AnalysisResultName(ipdir, fileName, analysisType + "." + keys[i], "csv");
+                var file = new FileInfo(path);
                 //string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
                 if (File.Exists(path))
                 {
                     int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(path, out freqBinCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     this.spectrogramMatrices.Add(this.spectrogramKeys[i], matrix);
                     this.FrameWidth = freqBinCount * 2;

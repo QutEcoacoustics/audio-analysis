@@ -107,13 +107,50 @@ namespace TowseyLibrary
         /// <param name="M1"></param>
         /// <param name="M2"></param>
         /// <returns></returns>
-        public static double[,] ConcatenateMatrixRows(double[,] M1, double[,] M2, int dummy)
+        //public static double[,] ConcatenateMatrixRows(double[,] M1, double[,] M2, int dummy)
+        //{
+        //    Matrix<double> MN1 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M1);
+        //    Matrix<double> MN2 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M2);
+        //    MN1.Append(MN2);
+        //    return MN1.ToArray();
+        //}
+
+        /// <summary>
+        /// This method assumes that the column count for each matrix in list is identical
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public static double[,] ConcatenateMatrixRows(List<double[,]> list)
         {
-            Matrix<double> MN1 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M1);
-            Matrix<double> MN2 = MathNet.Numerics.LinearAlgebra.Double.DenseMatrix.OfArray(M2);
-            MN1.Append(MN2);
-            return MN1.ToArray();
+            int colCount = list[0].GetLength(1);
+            int rowCount = 0;
+
+            for (int m = 0; m < list.Count; m++)
+            {
+                rowCount += list[m].GetLength(0);
+            }
+
+            var opMatrix = new double[rowCount, colCount];
+            int thisRowID = 0;
+
+            // loop through the matrices
+            for (int m = 0; m < list.Count; m++)
+            {
+                int rows = list[m].GetLength(0);
+                // the rows of each matrix
+                for (int r = 0; r < rows; r++)
+                {                    
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        opMatrix[thisRowID, c] = list[m][r, c];
+                    }
+                    thisRowID++;
+                }
+            }
+            return opMatrix;
         }
+
+
 
         /// <summary>
         /// Method assumes that the column count for two matrices is the same

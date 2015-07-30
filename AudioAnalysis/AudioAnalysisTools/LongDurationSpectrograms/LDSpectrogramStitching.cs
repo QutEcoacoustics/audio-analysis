@@ -325,6 +325,61 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
+        /// <summary>
+        /// This method merges all files of acoustic indices derived from a sequence of consecutive 1/2 to 6 hour recordings, 
+        /// that have a total duration of 24 hours. This was necessary to deal with the new regime of doing 24 hour recordings 
+        /// in conseutive short segments. 
+        /// </summary>
+        public static void ConcatenateSpectralIndexFiles2(DirectoryInfo topLevelDirectory, 
+                                                          DirectoryInfo metaDataDir,
+                                                          string fileStem, 
+                                                          Dictionary<string, double[,]> indexSpectrograms,
+                                                          DateTimeOffset startTime,
+                                                          DirectoryInfo opDir)
+        {
+            string analysisType = "Towsey.Acoustic";
+
+            var ldSpectrogramConfig = new LdSpectrogramConfig
+            {
+                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                YAxisTicInterval = 1000,
+                //ColorMap1 = "ACI-TEN-CVR",
+                //ColorMap2 = "BGN-AVG-VAR",
+                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
+            };
+            //string[] keys = ldSpectrogramConfig.GetKeys();
+
+            var indexPropertiesConfigPath = Path.Combine(metaDataDir.FullName, "IndexPropertiesOLDConfig.yml");
+            FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
+
+            var icdPath = Path.Combine(metaDataDir.FullName, fileStem + "__" + IndexGenerationData.FileNameFragment + ".json");
+            //var icdPath = FilenameHelpers.
+            FileInfo icdFileInfo = icdPath.ToFileInfo();
+            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(icdFileInfo);
+            indexGenerationData.RecordingStartDate = startTime;
+
+            Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null;
+            SummaryIndexBase[] summaryIndices = null;
+            bool returnChromelessImages = false;
+
+            Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+            topLevelDirectory,
+            opDir,
+            ldSpectrogramConfig,
+            indexPropertiesConfigFileInfo,
+            indexGenerationData,
+            fileStem,
+            analysisType,
+            indexSpectrograms,
+            summaryIndices,
+            indexDistributions,
+            returnChromelessImages);
+
+        }
+
+
+
 
         /// <summary>
         /// This method merges the LDSpectrogram IMAGES derived from a sequence of consecutive 6-12 hour recording, 
