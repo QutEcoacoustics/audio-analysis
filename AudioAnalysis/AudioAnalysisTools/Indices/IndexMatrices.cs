@@ -1,14 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="IndexMatrices.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the IndexMatrices type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools.Indices
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
+
+    using TowseyLibrary;
+
     public static class IndexMatrices
     {
+
+        public static void test()
+        {
+            var matrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(""));
+        }
 
 
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string[] keys)
@@ -38,8 +56,11 @@ namespace AudioAnalysisTools.Indices
 
             if (!dirInfo.Exists)
             {
-                LoggedConsole.WriteFatalLine("DIRECTORY DOES NOT EXIST", new Exception("FATAL ERROR"));
+                var directoryNotFoundException = new DirectoryNotFoundException(path);
+                LoggedConsole.WriteFatalLine("DIRECTORY DOES NOT EXIST", directoryNotFoundException);
+                throw directoryNotFoundException;
             }
+
             var list = new List<string>();
             FileInfo[] files = dirInfo.GetFiles(pattern, SearchOption.AllDirectories);
             if ((files == null) || (files.Length == 0))
