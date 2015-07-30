@@ -210,11 +210,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-
+        /// <summary>
+        /// This method sets default indeces to use if passed Dictionary = null.
+        /// This may not be a good idea. Trying it out. Maybe better to crash! 
+        /// </summary>
+        /// <param name="_spectralIndexProperties"></param>
         public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> _spectralIndexProperties)
         {
-            this.spectralIndexProperties = _spectralIndexProperties;
-            this.spectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
+            //string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the NEW default i.e. since July 2015
+            string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLD default i.e. used in 2014
+            this.spectrogramKeys = keys;
+            if ((_spectralIndexProperties != null) && ((_spectralIndexProperties.Count > 0)))
+            {
+                this.spectralIndexProperties = _spectralIndexProperties;
+                this.spectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
+            }
         }
 
 
@@ -238,7 +248,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 if (File.Exists(path))
                 {
                     int freqBinCount;
-                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out freqBinCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(path, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     this.spectrogramMatrices.Add(this.spectrogramKeys[i], matrix);
                     this.FrameWidth = freqBinCount * 2;
@@ -271,59 +281,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return allOk;
         }
 
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
-        {
-            string[] keys = indexKeys.Split('-');
-            return ReadSpectrogramCSVFiles(ipdir, fileName, keys, out freqBinCount);
-        }
-
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys, out int freqBinCount)
-        {
-            Dictionary<string, double[,]> dict = new Dictionary<string, double[,]>();
-            string warning = null;
-            freqBinCount = 256; // the default
-            for (int key = 0; key < keys.Length; key++)
-            {
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
-                if (File.Exists(path))
-                {
-                    int binCount;
-                    double[,] matrix = LDSpectrogramRGB.ReadSpectrogram(path, out binCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    dict.Add(keys[key], matrix);
-                    freqBinCount = binCount;
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()";
-                    }
-
-                    warning += string.Format("\n      {0} File does not exist: {1}", keys[key], path);
-                }
-            }
-
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
-
-            if (dict.Count != 0)
-            {
-                return dict;
-            }
-
-            LoggedConsole.WriteLine("WARNING: from method LDSpectrogramRGB.ReadSpectrogramCSVFiles()");
-            LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
-
-            return dict;
-        }
 
         public bool ReadStandardDeviationSpectrogramCSVs(DirectoryInfo ipdir, string fileName)
         {
             int freqBinCount;
-            this.spgr_StdDevMatrices = LDSpectrogramRGB.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
+            this.spgr_StdDevMatrices = IndexMatrices.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
             this.FrameWidth = freqBinCount * 2;
             if (this.spgr_StdDevMatrices == null)
             {
@@ -338,19 +300,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return true;
         }
 
-
-
-        public static double[,] ReadSpectrogram(string csvPath, out int binCount)
-        {
-            // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
-            binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers 
-            // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
-
-            // remove left most column - consists of index numbers
-            matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1); 
-            return matrix;
-        }
 
 
         public double[,] GetSpectrogramMatrix(string key)
@@ -1319,8 +1268,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             LdSpectrogramConfig config = ldSpectrogramConfig;
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
-            string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
-            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+            string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
+            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
 
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
             
@@ -1337,6 +1286,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
                 cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
             }
+            // following line is debug purposes only
+            //cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
 
             // Get and set the dictionary of index properties
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigPath);
@@ -1379,18 +1330,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 if (indexDistributions == null)
                 {
-                    throw new InvalidOperationException("Cannot proceed without index distribution data");
+                    //throw new InvalidOperationException("Cannot proceed without index distribution data");
                 }
             }
             cs1.IndexStats = indexDistributions;
 
-
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
-
-
-            // following line is debug purposes only
-            cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
-
 
             Image image1;
             Image image1NoChrome;

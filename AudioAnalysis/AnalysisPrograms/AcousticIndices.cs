@@ -510,12 +510,14 @@ namespace AnalysisPrograms
             int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
 
-            // gather settings for rendering false color spectrograms
+            // Gather settings for rendering false color spectrograms
+            // NOTE: Use EVN (event count) in both spectorgrams. CVR (cover) is too highly correlated with POW.
             var ldSpectrogramConfig = new LdSpectrogramConfig
             {
                 XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                ColorMap2 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap1 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
+                //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
             };
 
             /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram
