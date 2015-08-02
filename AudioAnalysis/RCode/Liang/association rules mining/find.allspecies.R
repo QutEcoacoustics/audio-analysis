@@ -1,14 +1,14 @@
 #find all unique species names over all hitmaps
-
+find.allspecies <- function(folder){
 #search for all relevant files
-folder <- "C:\\Work\\myfile\\SERF_callCount_20sites"
+# folder <- "C:\\Work\\myfile\\SERF_callCount_20sites"
 pattern <- "hitmaps*"
 filename <- list.files(folder, pattern, no..=TRUE)
 
 #find species names in each file, save as a list
 species.names <- list()
 for(i in 1:length(filename)){
-  species <- read.csv(paste(folder, "\\", filename[i], sep=""))
+  species <- read.csv(paste(folder, "\\", filename[i], sep=""), check.names=FALSE)
   species <- species[, 4:ncol(species)]
   species.names[[i]] <- names(species)
 }
@@ -24,3 +24,5 @@ for(i in 2:length(filename)){
   }
 }
 all.species.names <- sort(all.species.names)
+return(all.species.names)
+}
