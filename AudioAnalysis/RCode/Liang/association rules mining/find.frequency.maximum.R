@@ -12,7 +12,7 @@ for(i in 1:length(species.names)){
     next
   }
   else{
-    species.maximum.frequency <- which.max(species.frequency) * 11025 / 256
+    species.maximum.frequency <- which.max(species.frequency) #* 11025 / 256
     maximum.frequency <- c(maximum.frequency, species.maximum.frequency)
   }
 }
