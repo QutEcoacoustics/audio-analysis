@@ -648,7 +648,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             AudioAnalysisTools.StandardSpectrograms.SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
             int trackHeight = 20;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startOffset, bmp1.Width, trackHeight);
+
+            DateTimeOffset dto = new DateTimeOffset();
+            dto.Add(startOffset);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, dto, bmp1.Width, trackHeight);
             int imageHt = bmp1.Height + titleBar.Height + trackHeight;
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
