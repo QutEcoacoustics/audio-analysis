@@ -10,6 +10,7 @@ using TowseyLibrary;
 using AudioAnalysisTools;
 using AudioAnalysisTools.Indices;
 using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.LongDurationSpectrograms;
 using AudioAnalysisTools.DSP;
 using AudioAnalysisTools.WavTools;
 using Acoustics.Shared;
@@ -17,8 +18,6 @@ using Acoustics.Shared;
 namespace AnalysisPrograms
 {
     using PowerArgs;
-    using AudioAnalysisTools.LongDurationSpectrograms;
-    using System.Text.RegularExpressions;
 
 
     /// <summary>
@@ -176,47 +175,23 @@ namespace AnalysisPrograms
             // concatenating csv files of spectral indices
             if (true)
             {
-                //string path = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\20150704_unnamed\20150704_132321_Day1.wav\Towsey.Acoustic";
-                string path = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
-                var dataDir = new DirectoryInfo(path);
+                // top level directory
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
+                //string opFileStem = "TNC_Iwarame_20150704_BAR32";
+                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_33\";
+                string opFileStem = "TNC_Iwarame_20150704_BAR33";
 
-                string metadataDir = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
-                // string outputDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
-                // string outputDirectory = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
-                var metaDataDir = new DirectoryInfo(metadataDir);
+                var dataDir = new DirectoryInfo(dataPath);
 
-                string outputDirectory = @"C:\SensorNetworks\Output\Test\Test3";
-                // string outputDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
+                string indexPropertiesConfigPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml";
+                FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
+
                 // string outputDirectory = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
+                string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
                 var opDir = new DirectoryInfo(outputDirectory);
 
-                // 20150704_173000_Day1__Towsey.Acoustic.ACI.csv
-                string fileStem = "TNC_20150704";
 
-                //string[] keys = {"ACI", "TEN", "CVR", "BGN", "AVG", "VAR"};
-                string[] keys = {"ACI", "ENT", "EVN", "BGN", "POW"};
-                var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, keys);
-
-                // get first file name and get the start time.
-                string pattern = "*ACI.csv";
-                FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
-
-                pattern = @"2015\d\d\d\d_\d\d\d\d\d\d_";
-                Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
-                Match m = r.Match(files[0].Name); // get name of first file
-
-                Group group = m.Groups[0];
-                string[] array = group.ToString().Split('_');
-                int year = Int32.Parse(array[0].Substring(0, 4));
-                int mnth = Int32.Parse(array[0].Substring(4, 2));
-                int day  = Int32.Parse(array[0].Substring(6, 2));
-                int hour = Int32.Parse(array[1].Substring(0, 2));
-                int min  = Int32.Parse(array[1].Substring(2, 2));
-                int sec  = Int32.Parse(array[1].Substring(4, 2));
-                DateTimeOffset dto = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
-
-
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, metaDataDir, fileStem, dictionary, dto, opDir);
+                LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
             }
 
 

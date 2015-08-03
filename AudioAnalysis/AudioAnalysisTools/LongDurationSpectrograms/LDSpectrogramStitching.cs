@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using TowseyLibrary;
 using AnalysisBase.ResultBases;
 using Acoustics.Shared;
@@ -330,12 +331,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// that have a total duration of 24 hours. This was necessary to deal with the new regime of doing 24 hour recordings 
         /// in conseutive short segments. 
         /// </summary>
-        public static void ConcatenateSpectralIndexFiles2(DirectoryInfo topLevelDirectory, 
-                                                          DirectoryInfo metaDataDir,
-                                                          string fileStem, 
-                                                          Dictionary<string, double[,]> indexSpectrograms,
-                                                          DateTimeOffset startTime,
-                                                          DirectoryInfo opDir)
+        public static void ConcatenateSpectralIndexFiles2(DirectoryInfo topLevelDirectory,
+                                                          FileInfo indexPropertiesConfigFileInfo,
+                                                          DirectoryInfo opDir,
+                                                          string opFileStem)
         {
             string analysisType = "Towsey.Acoustic";
 
@@ -348,15 +347,36 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
             };
-            //string[] keys = ldSpectrogramConfig.GetKeys();
+            // string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW" };
+            string[] keys = ldSpectrogramConfig.GetKeys();
+            string path = topLevelDirectory.FullName;
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, keys);
 
-            var indexPropertiesConfigPath = Path.Combine(metaDataDir.FullName, "IndexPropertiesOLDConfig.yml");
-            FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
+            // get first file name
+            string pattern = "*ACI.csv";
+            FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, pattern);
 
-            var icdPath = Path.Combine(metaDataDir.FullName, fileStem + "__" + IndexGenerationData.FileNameFragment + ".json");
-            //var icdPath = FilenameHelpers.
-            FileInfo icdFileInfo = icdPath.ToFileInfo();
-            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(icdFileInfo);
+            // get the IndexGenerationData file from the first directory
+            DirectoryInfo firstDirectory = files[0].Directory;
+            pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
+            FileInfo igdFile = IndexMatrices.GetFilesInDirectory(firstDirectory.FullName, pattern).Single();
+            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFile);
+
+            // get the start time from the first file in sort list.
+            // SOME UNNECESARRY CODE????? Anthony has this one already done?????
+            pattern = @"20\d\d\d\d\d\d_\d\d\d\d\d\d_";
+            Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
+            Match m = r.Match(files[0].Name); // get name of first file
+
+            Group group = m.Groups[0];
+            string[] array = group.ToString().Split('_');
+            int year = Int32.Parse(array[0].Substring(0, 4));
+            int mnth = Int32.Parse(array[0].Substring(4, 2));
+            int day = Int32.Parse(array[0].Substring(6, 2));
+            int hour = Int32.Parse(array[1].Substring(0, 2));
+            int min = Int32.Parse(array[1].Substring(2, 2));
+            int sec = Int32.Parse(array[1].Substring(4, 2));
+            DateTimeOffset startTime = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
             indexGenerationData.RecordingStartDate = startTime;
 
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null;
@@ -369,16 +389,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             ldSpectrogramConfig,
             indexPropertiesConfigFileInfo,
             indexGenerationData,
-            fileStem,
+            opFileStem,
             analysisType,
-            indexSpectrograms,
+            dictionary,
             summaryIndices,
             indexDistributions,
             returnChromelessImages);
-
         }
-
-
 
 
         /// <summary>

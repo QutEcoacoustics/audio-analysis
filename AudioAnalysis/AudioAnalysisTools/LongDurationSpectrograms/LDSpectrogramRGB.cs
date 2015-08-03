@@ -215,14 +215,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// This may not be a good idea. Trying it out. Maybe better to crash! 
         /// </summary>
         /// <param name="_spectralIndexProperties"></param>
-        public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> _spectralIndexProperties)
+        public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> dictionaryOfSpectralIndexProperties)
         {
-            //string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the NEW default i.e. since July 2015
-            string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLD default i.e. used in 2014
+            string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the NEW default i.e. since July 2015
+            //string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLD default i.e. used in 2014
             this.spectrogramKeys = keys;
-            if ((_spectralIndexProperties != null) && ((_spectralIndexProperties.Count > 0)))
+            if ((dictionaryOfSpectralIndexProperties != null) && ((dictionaryOfSpectralIndexProperties.Count > 0)))
             {
-                this.spectralIndexProperties = _spectralIndexProperties;
+                this.spectralIndexProperties = dictionaryOfSpectralIndexProperties;
                 this.spectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
             }
         }
@@ -345,7 +345,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// Call this method if already have a dictionary of Matrix spectorgrams and wish to loae directly
+        /// Call this method if already have a dictionary of Matrix spectorgrams and wish to load directly
         /// For example, call this method from AnalyseLongRecordings.
         /// </summary>
         /// <param name="dictionary"></param>
@@ -421,7 +421,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="opFileName"></param>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
         {
-            this.DrawGreyScaleSpectrograms(opdir, opFileName, this.spectrogramKeys);
+            // string[] keys = LdSpectrogramConfig.GetKeys(this.ColorMap);
+            string[] keys = this.spectrogramKeys;
+            this.DrawGreyScaleSpectrograms(opdir, opFileName, keys);
         }
 
         /// <summary>
@@ -1336,7 +1338,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             cs1.IndexStats = indexDistributions;
 
-            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
+            // draw gray scale spectrogram for each index.
+            string[] keys = colorMap1.Split('-');
+            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+            keys = colorMap2.Split('-');
+            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+
 
             Image image1;
             Image image1NoChrome;

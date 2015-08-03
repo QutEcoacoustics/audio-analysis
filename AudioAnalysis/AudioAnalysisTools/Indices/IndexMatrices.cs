@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.Indices
             {
                 DateTime now1 = DateTime.Now;
                 string pattern = "*" + key + ".csv";
-                FileInfo[] files = GetFilesInDirectory(path, pattern);
+                FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
 
                 var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
@@ -52,7 +52,14 @@ namespace AudioAnalysisTools.Indices
             return spectrogramMatrices;
         }
 
-
+        /// <summary>
+        /// Returns a sorted list of file paths, sorted on file name.
+        /// IMPORTANT: Sorts on alphanumerics, NOT on time. 
+        ///            Make sure file name is correctly formatted if intend to sort for time.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
         public static FileInfo[] GetFilesInDirectory(string path, string pattern)
         {
             var dirInfo = new DirectoryInfo(path);

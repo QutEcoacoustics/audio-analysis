@@ -116,6 +116,8 @@ namespace TowseyLibrary
         //}
 
         /// <summary>
+        /// TODO: This method concatenates time-sequence data but does not check that the files are in temporal sequence. 
+        ///       Nor does it check for temporal gaps.
         /// This method assumes that the column count for each matrix in list is identical
         /// </summary>
         /// <param name="list"></param>
