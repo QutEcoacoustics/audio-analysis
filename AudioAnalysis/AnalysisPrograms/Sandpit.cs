@@ -176,10 +176,10 @@ namespace AnalysisPrograms
             if (true)
             {
                 // top level directory
-                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
-                //string opFileStem = "TNC_Iwarame_20150704_BAR32";
-                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_33\";
-                string opFileStem = "TNC_Iwarame_20150704_BAR33";
+                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
+                string opFileStem = "TNC_Iwarame_20150704_BAR32";
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_33\";
+                //string opFileStem = "TNC_Iwarame_20150704_BAR33";
 
                 var dataDir = new DirectoryInfo(dataPath);
 
@@ -189,7 +189,6 @@ namespace AnalysisPrograms
                 // string outputDirectory = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
                 string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
                 var opDir = new DirectoryInfo(outputDirectory);
-
 
                 LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
             }

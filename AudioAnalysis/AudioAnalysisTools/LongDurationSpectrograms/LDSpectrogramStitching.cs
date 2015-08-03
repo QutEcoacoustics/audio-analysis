@@ -465,7 +465,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //Draw the x-axis time scale bar
             int trackHeight = 20;
             TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, null, imageWidth, trackHeight);
 
                //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
             Graphics gr = Graphics.FromImage(spgmImage);

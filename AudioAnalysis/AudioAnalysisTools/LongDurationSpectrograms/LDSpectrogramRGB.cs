@@ -89,6 +89,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
+        /// The date and time at which the current LDspectrogram starts
+        /// </summary>
+        public DateTimeOffset RecordingStartDate { get; set; }
+
+
+        /// <summary>
         /// The time at which the current LDspectrogram starts.
         /// </summary>
         public TimeSpan StartOffset { get; set; }
@@ -490,7 +496,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, nyquist, herzInterval);
             const int trackHeight = 20;
             TimeSpan timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.StartOffset, bmp.Width, trackHeight);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
             var array = new Image[2];
             array[0] = bmp;
             array[1] = timeBmp;
@@ -989,32 +995,36 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
 
-        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan startTimeAbs, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval, DateTimeOffset? dateTimeOffset = null)
+        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, LDSpectrogramRGB cs, int nyquist, int herzInterval)
         {
+            TimeSpan xAxisPixelDuration = cs.IndexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
-
-            if (dateTimeOffset.HasValue)
-            {
-                // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
-            }
-
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startTimeAbs, fullDuration, xAxisTicInterval, nyquist, herzInterval);
 
             int trackHeight = 20;
             int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startTimeAbs, bmp1.Width, trackHeight);
+            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
+            Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
+
+            DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
+            if (dateTimeOffset.HasValue)
+            {
+                // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
+                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
+            }
+
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, TimeSpan.Zero, fullDuration, cs.XTicInterval, nyquist, herzInterval);
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
             int offset = 0;
             gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
-            offset += timeBmp.Height;
-            gr.DrawImage(timeBmp, 0, offset); //draw
+            offset += timeBmp1.Height;
+            gr.DrawImage(timeBmp1, 0, offset); //draw
             offset += titleBar.Height;
             gr.DrawImage(bmp1, 0, offset); //draw
             offset += bmp1.Height;
-            gr.DrawImage(timeBmp, 0, offset); //draw
+            gr.DrawImage(timeBmp2, 0, offset); //draw
             return compositeBmp;
         }
 
@@ -1051,13 +1061,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
-            Pen pen = new Pen(Color.White);
-            Font stringFont = new Font("Arial", 9);
+            //Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9, FontStyle.Bold);
             //Font stringFont = new Font("Tahoma", 9);
             SizeF stringSize = new SizeF();
 
-            int X = 4;
-            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
+            int X = 2;
+            g.DrawString(title, stringFont, Brushes.White, new PointF(X, 3));
 
             stringSize = g.MeasureString(title, stringFont);
             X += (stringSize.ToSize().Width + 70);
@@ -1287,7 +1297,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (indexGenerationData.RecordingStartDate.HasValue)
             {
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
-                cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
+                cs1.RecordingStartDate = dto;
+                if (dto != null) cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
             }
             // following line is debug purposes only
             //cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
@@ -1411,9 +1422,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
 
             // then pass that image into chromer
-            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", cs1.FileName, colorMap);
+            string title = string.Format("<{0}> FALSE-COLOUR SPECTROGRAM of file {1}       (time x kHz)", colorMap, cs1.FileName);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
-            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1.StartOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
+            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1, nyquist, HertzInterval);
             var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");
             image.Save(outputPath);
             return Tuple.Create(image, imageNoChrome);

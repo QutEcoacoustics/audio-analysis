@@ -899,7 +899,7 @@
         /// <param name="trackWidth">X pixel dimension</param>
         /// <param name="trackHeight">Y pixel dimension</param>
         /// <returns></returns>
-        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, TimeSpan startTimeAbs, int trackWidth, int trackHeight)
+        public static Bitmap DrawTimeTrack(TimeSpan fullDuration, DateTimeOffset? dateTime, int trackWidth, int trackHeight)
         {
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
@@ -907,6 +907,14 @@
 
             double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)trackWidth;
 
+            TimeSpan startTimeAbs = TimeSpan.Zero;
+            //DateTime date;
+            if (dateTime != null)
+            {
+                DateTimeOffset dto = (DateTimeOffset)dateTime;
+                startTimeAbs = dto.TimeOfDay;
+                //date = ((DateTimeOffset)dateTime).DateTime.Date;
+            }
             // round up to nearest 5 second mark
             int roundedStartSeconds = (int)Math.Ceiling(startTimeAbs.TotalSeconds);
             //while ((roundedStartSeconds % 5) != 0)
@@ -954,12 +962,23 @@
 
                     TimeSpan absoluteTS = roundedStartTime + elapsedTimeSpan;
                     TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(Math.Round(absoluteTS.TotalSeconds));
-                    string time = ":";
-                    if (xAxisPixelDurationInMilliseconds <=1000 ) 
-                        time = String.Format("{0}", roundedTimeSpan);
+                    string timeStr = ":";
+                    if (xAxisPixelDurationInMilliseconds <= 1000)
+                    {
+                        timeStr = String.Format("{0}", roundedTimeSpan);
+                    }
                     else
-                        time = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
-                    g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 1)); //draw time
+                        if (roundedTimeSpan.Hours == 0.0)
+                        {
+                            timeStr = "midnight";
+                            dateTime += roundedTimeSpan;
+                            timeStr = String.Format("{0}", ((DateTimeOffset)dateTime).DateTime.Date.ToShortDateString());
+                        }
+                        else
+                        {
+                            timeStr = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
+                        }
+                    g.DrawString(timeStr, stringFont, Brushes.White, new PointF(tickPosition, 1)); //draw time
                 }
             }
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
@@ -1012,6 +1031,71 @@
             g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
             return bmp;
         }
+
+        public static Bitmap DrawTimeRelativeTrack(TimeSpan fullDuration, int trackWidth, int trackHeight)
+        {
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+
+            double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)trackWidth;
+
+            TimeSpan startTime = TimeSpan.Zero;
+
+            TimeSpan xAxisTicInterval = CalculateGridInterval(fullDuration, trackWidth);
+
+            Pen whitePen = new Pen(Color.White);
+            //Pen grayPen = new Pen(Color.Gray);
+            Font stringFont = new Font("Arial", 8);
+
+            int rows = bmp.Height;
+            int cols = bmp.Width;
+
+            // draw first time entry
+            string time = "HHmm";
+            if (xAxisPixelDurationInMilliseconds < 60000)
+            {
+                g.DrawString(time, stringFont, Brushes.White, new PointF(0, 3)); //draw time
+            }
+            else
+            {
+                g.DrawString("Hours", stringFont, Brushes.White, new PointF(0, 3)); //draw time
+            }
+
+            // for columns, draw in X-axis lines
+            int xPixelInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            int halfInterval = xPixelInterval / 2;
+            int halfheight = trackHeight / 3;
+            for (int x = 1; x < cols; x++)
+            {
+                if (x % halfInterval == 0)
+                    g.DrawLine(whitePen, x, 0, x, halfheight);
+
+                if (x % xPixelInterval == 0)
+                {
+                    int tickPosition = x;
+                    g.DrawLine(whitePen, tickPosition, 0, tickPosition, trackHeight);
+                    TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * tickPosition);
+                    if (xAxisPixelDurationInMilliseconds <= 1000)
+                    {
+                        time = String.Format("{0}", elapsedTimeSpan);
+                    }
+                    else if (xAxisPixelDurationInMilliseconds < 60000)
+                    {
+                        time = String.Format("{0:d2}{1:d2}", elapsedTimeSpan.Hours, elapsedTimeSpan.Minutes);
+                    }
+                    else 
+                    {
+                        time = String.Format("{0:f0}", elapsedTimeSpan.TotalHours);
+                    }
+                    g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 2)); //draw time
+                }
+            }
+            g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
+            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            return bmp;
+        }
+
 
         public static TimeSpan CalculateGridInterval(TimeSpan totalDuration, int width)
         {
