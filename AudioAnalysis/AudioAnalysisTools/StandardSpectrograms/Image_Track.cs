@@ -885,22 +885,30 @@
 
         
         /// <summary>
-        /// IMPORTANT: THIS TIME SCALE METHOD WAS REWORKED ON 23 June 2015.
-        /// IT CONTAINS BUGS THAT WILL NEED TO BE FIXED FOR ZOOMING SPECTROGRAMS
-        /// It is likely that rounding the tic marks to 'nice' numbers is not a good idea.
+        /// IMPORTANT: THIS TIME SCALE METHOD WAS REWORKED ON 23 June 2015 and on 3 August 2015.
+        /// IT POSSIBLY CONTAINS BUGS THAT WILL NEED TO BE FIXED FOR ZOOMING SPECTROGRAMS
+        /// It is possible that rounding the tic marks to 'nice' numbers is not a good idea.
         /// 
         /// Returns a bitmap of a time scale.
         /// Interval between tic marks is calculated automatically.
-        /// THis method is used for long duration spectrograms.
+        /// This method is used for long duration spectrograms.
         /// It could be generalised for any time track.
         /// </summary>
         /// <param name="fullDuration">time span of entire time track to be drawn</param>
-        /// <param name="startTimeAbs">time at start of track </param>
+        /// <param name="dateTime">date and time at start of the track </param>
         /// <param name="trackWidth">X pixel dimension</param>
         /// <param name="trackHeight">Y pixel dimension</param>
         /// <returns></returns>
         public static Bitmap DrawTimeTrack(TimeSpan fullDuration, DateTimeOffset? dateTime, int trackWidth, int trackHeight)
         {
+            // if null date time then just send back relative 
+            if (dateTime == null)
+            {
+                return DrawTimeRelativeTrack(fullDuration, trackWidth, trackHeight);
+            }
+
+            DateTime date = ((DateTimeOffset)dateTime).DateTime.Date; 
+
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
@@ -908,33 +916,18 @@
             double xAxisPixelDurationInMilliseconds = fullDuration.TotalMilliseconds / (double)trackWidth;
 
             TimeSpan startTimeAbs = TimeSpan.Zero;
-            //DateTime date;
-            if (dateTime != null)
-            {
-                DateTimeOffset dto = (DateTimeOffset)dateTime;
-                startTimeAbs = dto.TimeOfDay;
-                //date = ((DateTimeOffset)dateTime).DateTime.Date;
-            }
-            // round up to nearest 5 second mark
-            int roundedStartSeconds = (int)Math.Ceiling(startTimeAbs.TotalSeconds);
-            //while ((roundedStartSeconds % 5) != 0)
-            //{
-            //    roundedStartSeconds++;
-            //}
-            TimeSpan roundedStartTime = TimeSpan.FromSeconds(roundedStartSeconds);
+            DateTimeOffset dto = (DateTimeOffset)dateTime;
+            startTimeAbs = dto.TimeOfDay;
 
-            // if low resolution time scale round to nearest minute
+            // round start time to nearest second or minute depending on the scale. If low resolution, round to nearest minute
+            int roundedStartSeconds = (int)Math.Ceiling(startTimeAbs.TotalSeconds);
+            TimeSpan roundedStartTime = TimeSpan.FromSeconds(roundedStartSeconds);
             if (xAxisPixelDurationInMilliseconds > 1000)
             {
                 int roundedStartMinutes = (int)Math.Round(startTimeAbs.TotalMinutes);
                 roundedStartTime = TimeSpan.FromMinutes(roundedStartMinutes);
             }
-
             int roundedStartHours = roundedStartTime.Hours;
-            //if (roundedStartTime.Minutes > 0)
-            //{
-            //    roundedStartHours = (int)Math.Ceiling(roundedStartTime.TotalHours);
-            //}
 
             TimeSpan ticStartTime = TimeSpan.FromHours(roundedStartHours);
             TimeSpan ticStartOffset = ticStartTime - roundedStartTime;
@@ -946,39 +939,46 @@
             //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 8);
 
-                        int rows = bmp.Height;
+            int rows = bmp.Height;
             int cols = bmp.Width;
 
             // for columns, draw in X-axis lines
             int xPixelInterval = (int)Math.Round((xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds));
+            int halfInterval = xPixelInterval / 2;
+            int halfheight = trackHeight / 3;
             for (int x = 0; x < (cols - pixelStartOffset); x++)
             {
-
                 if (x % xPixelInterval == 0)
                 {
                     int tickPosition = x + pixelStartOffset;
                     g.DrawLine(whitePen, tickPosition, 0, tickPosition, trackHeight);
+                    g.DrawLine(whitePen, tickPosition + halfInterval, 0, tickPosition + halfInterval, halfheight);
+
                     TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * tickPosition);
 
                     TimeSpan absoluteTS = roundedStartTime + elapsedTimeSpan;
                     TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(Math.Round(absoluteTS.TotalSeconds));
-                    string timeStr = ":";
+                    string timeStr = "0000";
                     if (xAxisPixelDurationInMilliseconds <= 1000)
                     {
                         timeStr = String.Format("{0}", roundedTimeSpan);
                     }
                     else
-                        if (roundedTimeSpan.Hours == 0.0)
+                    if ((roundedTimeSpan.Hours == 0.0)&&(roundedTimeSpan.Minutes == 0.0))
+                    {
+                        g.DrawLine(whitePen, tickPosition+1, 0, tickPosition+1, trackHeight);
+                        if (tickPosition > 0) g.DrawLine(whitePen, tickPosition - 1, 0, tickPosition - 1, trackHeight);
+                        if (date.Year > 2000)
                         {
-                            timeStr = "midnight";
-                            dateTime += roundedTimeSpan;
-                            timeStr = String.Format("{0}", ((DateTimeOffset)dateTime).DateTime.Date.ToShortDateString());
+                            date += roundedTimeSpan;
+                            timeStr = String.Format("{0}", date.ToShortDateString());
                         }
-                        else
-                        {
-                            timeStr = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
-                        }
-                    g.DrawString(timeStr, stringFont, Brushes.White, new PointF(tickPosition, 1)); //draw time
+                    }
+                    else
+                    {
+                        timeStr = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
+                    }
+                    g.DrawString(timeStr, stringFont, Brushes.White, new PointF(tickPosition, 3)); //draw time
                 }
             }
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary

@@ -133,6 +133,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
+        ///         /// SHOULD BE DEPRACATED!
         /// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, 
         /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings 
         /// in blocks of 6 hours. 
@@ -216,54 +217,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             indexDistributions,
             returnChromelessImages);
 
-
-
-            //TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
-            //TimeSpan xScale = TimeSpan.FromMinutes(60);
-            //double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            //var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
-            //cs1.FileName = fileStem;
-            //cs1.ColorMode = "NEGATIVE";
-            //cs1.BackgroundFilter = backgroundFilterCoeff;
-            //var dirInfo = new DirectoryInfo(topLevelDirectory);
-            //cs1.ColorMap = colorMap1;
-            ////string[] defaultKeys = { "ACI", "AVG", "BGN", "CVR", "TEN", "VAR" };
-            //cs1.SetSpectralIndexProperties(null); // will set the default index keys
-
-            //cs1.LoadSpectrogramDictionary(indexSpectrograms);
-            ////cs1.ReadCSVFiles(dirInfo, fileStem); // reads all known indices files
-            //if (cs1.GetCountOfSpectrogramMatrices() == 0)
-            //{
-            //    Console.WriteLine("There are no spectrogram matrices in the dictionary.");
-            //    return;
-            //}
-            ////cs1.DrawGreyScaleSpectrograms(dirInfo, fileStem);
-            //Image image1 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap1);
-
-            //string title = String.Format("{1} >> FALSE-COLOUR SPECTROGRAM of {0}", fileStem, colorMap1);
-            //Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            //image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-
-            //cs1.ColorMap = colorMap2;
-            //Image image2 = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap2);
-            //title = String.Format("{1} >> FALSE-COLOUR SPECTROGRAM of {0}", fileStem, colorMap2);
-            //titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image2.Width);
-            //image2 = LDSpectrogramRGB.FrameLDSpectrogram(image2, titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
-
-
-            //Image[] images = new Image[2];
-            //images[0] = image1;
-            //images[1] = image2;
-            //images[0].Save(Path.Combine(outputDirectory, fileStem + "." + colorMap1 + ".png"));
-            //images[1].Save(Path.Combine(outputDirectory, fileStem + "." + colorMap2 + ".png"));
-            //Image image3 = ImageTools.CombineImagesVertically(images);
-            //image3.Save(Path.Combine(outputDirectory, fileStem + ".2MAPS.png"));
         }
 
 
 
 
         /// <summary>
+        ///         /// SHOULD BE DEPRACATED!
         /// This method merges all files of acoustic indices derived from a sequence of consecutive 6 hour recording, 
         /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings 
         /// in blocks of 6 hours. 
@@ -327,9 +287,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
+        /// MOST RECENT METHOD TO CONCATENATE INDEX.CSV FILES - August 2015.
         /// This method merges all files of acoustic indices derived from a sequence of consecutive 1/2 to 6 hour recordings, 
         /// that have a total duration of 24 hours. This was necessary to deal with the new regime of doing 24 hour recordings 
         /// in conseutive short segments. 
+        /// IMPORTANT NOTE: THIS METHOD DOES NOT CHECK FOR TEMPORAL GAPS BETWEEN THE STITCHED CSV FILES!
+        ///                 SEE METHOD ABOVE WHICH DOES CHECK -- StitchPartialSpectrograms()
         /// </summary>
         public static void ConcatenateSpectralIndexFiles2(DirectoryInfo topLevelDirectory,
                                                           FileInfo indexPropertiesConfigFileInfo,
@@ -352,7 +315,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string path = topLevelDirectory.FullName;
             var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, keys);
 
-            // get first file name
+            // get first file name from sorted list
             string pattern = "*ACI.csv";
             FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, pattern);
 
@@ -362,8 +325,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo igdFile = IndexMatrices.GetFilesInDirectory(firstDirectory.FullName, pattern).Single();
             IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFile);
 
-            // get the start time from the first file in sort list.
-            // SOME UNNECESARRY CODE????? Anthony has this one already done?????
+            // Get the start time from the first file in sort list.
+            // UNNECESARRY CODE????? Anthony has this one already done somewhere else!!!!!!!!!!!!!!!!!!
             pattern = @"20\d\d\d\d\d\d_\d\d\d\d\d\d_";
             Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
             Match m = r.Match(files[0].Name); // get name of first file
@@ -399,11 +362,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
+        /// SHOULD BE DEPRACATED!
         /// This method merges the LDSpectrogram IMAGES derived from a sequence of consecutive 6-12 hour recording, 
         /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24-hour recordings 
         /// in shorter blocks of 3-12 hours. 
-        /// This method differes form the above in that we are concatnating already prepared images as opposed to the index.csv files.
-        /// The time scale is added in afterwards - must poverwrite the previous time scale and title bar.
+        /// This method differs from the above in that we are concatnating already prepared images as opposed to the index.csv files.
+        /// The time scale is added in afterwards - must over-write the previous time scale and title bar.
         /// </summary>
         public static void ConcatenateSpectralIndexImages()
         {
@@ -467,7 +431,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
             Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, null, imageWidth, trackHeight);
 
-               //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
+            //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
             Graphics gr = Graphics.FromImage(spgmImage);
             //gr.Clear(Color.Black);
             gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
