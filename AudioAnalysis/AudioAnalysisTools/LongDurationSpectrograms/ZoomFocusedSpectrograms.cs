@@ -220,7 +220,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // now chrome spectrogram
             Graphics g2 = Graphics.FromImage(LDSpectrogram);
 
-            // draw focus time on image
+            // draw red line at focus time
             if (focalTime != TimeSpan.Zero)
             {
                 Pen pen = new Pen(Color.Red);
@@ -235,7 +235,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 nyquist = indexGenerationData.SampleRateResampled / 2;
             int herzInterval = 1000;
             if (config != null) herzInterval = config.YAxisTicInterval;
-            string title = string.Format("ZOOM SCALE={0}s/pixel   Image duration={1} ",  imageScale.TotalSeconds, spectrogramDuration);
+            string title = string.Format("SCALE={0}s/px.  Duration={1} ",  imageScale.TotalSeconds, spectrogramDuration);
 
             //add chrome
             // NEXT LINE USED ONLY IF WANT ABSOLUTE TIME
@@ -649,10 +649,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             AudioAnalysisTools.StandardSpectrograms.SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startOffset, fullDuration, xAxisTicInterval, nyquist, herzInterval);
             int trackHeight = 20;
 
+            // put start offset into a datetime object.
             DateTimeOffset dto = new DateTimeOffset();
-            dto.Add(startOffset);
+            dto = dto + startOffset;
             Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, dto, bmp1.Width, trackHeight);
-            int imageHt = bmp1.Height + titleBar.Height + trackHeight;
+            int imageHt = bmp1.Height + titleBar.Height + trackHeight +1;
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
