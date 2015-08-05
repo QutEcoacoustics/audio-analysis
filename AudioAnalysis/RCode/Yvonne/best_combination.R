@@ -10,7 +10,7 @@
 
 ### Please set the following values ######################################
 
-n = 9 # number of variables
+n = 8 # number of variables
 k = 30 # number of cluster centrers (k value in kmeans)
 
 ##########################################################################
@@ -40,8 +40,6 @@ normalise <- function (x, xmin, xmax) {
 
 normIndices <- indices
 # normalise variable columns
-#normIndices[,2]  <- normalise(indices[,2],  0, 2)     # HighAmplitudeIndex
-#normIndices[,3]  <- normalise(indices[,3],  0, 1)     # ClippingIndex
 normIndices[,4]  <- normalise(indices[,4], -50, -10)  # AverageSignalAmplitude
 normIndices[,5]  <- normalise(indices[,5], -50, -10)  # BackgroundNoise
 normIndices[,6]  <- normalise(indices[,6],  0, 50)    # Snr
@@ -59,7 +57,7 @@ normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyPeaks
 normIndices[,18] <- normalise(indices[,18], 0, 22)    # SptDensity
 
 # adjust values greater than 1 or less than 0
-for (j in 4:18){
+for (j in 4:18) {
   for (i in 1:length(normIndices[,j])) {
     if (normIndices[i,j] > 1) {
       normIndices[i,j] = 1
@@ -74,11 +72,12 @@ for (j in 4:18){
 
 ################################################
 library(caTools)
-combinations <- combs(5:17, n) 
+combinations <- combs(4:18, n) 
 
 ratio <- NULL
 library(stats)
 for (i in 1:(length(combinations)/n)) {
+    set.seed(1364)
     dataFrame <- normIndices[,c(combinations[i,c(1:n)])]
     print(paste("starting", i, sep = ""))
     kmeansObj <- kmeans(dataFrame, centers=k)
@@ -90,5 +89,5 @@ c <- cbind(combinations, ratio)
 best <- c[(which.max(c[,(n+1)])),1:(n+1)]
 a <- paste("Number of combinations", (length(combinations)/n), sep = " ")
 b <- paste("The best combination is", best)
-write.table(c(a,b), file = paste("Best_combinations_", site, "_", n, "_", k, ".csv",
+write.table(c, file = paste("Best_combinations_", site, date, "_", n, "_", k, ".csv",
               sep=""), sep = ",", col.names = NA, qmethod = "double")

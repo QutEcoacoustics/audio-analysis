@@ -18,7 +18,7 @@ setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
-indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
+indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv", header = T)
 
 #Sensor <- read.csv("Sensor file_Woondum1_2015_03_15.csv", header = TRUE)
 #Sensor <- read.csv("Sensor file_Woondum2_2015_03_22.csv", header = TRUE)

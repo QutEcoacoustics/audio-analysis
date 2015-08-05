@@ -1,3 +1,52 @@
+
+# Create a colourBlock
+col <- c(255,128,128,
+         255,255,128,
+         128,255,128,
+         0,255,128,
+         128,255,255,
+         0,128,255,
+         255,128,192,
+         255,0,0,
+         255,255,0,
+         0,128,192,
+         128,128,192,
+         128,0,0,
+         255,192,255,
+         0,128,0,
+         128,0,0,
+         0,255,255,
+         255,128,64,
+         0,0,160,
+         0,255,0,
+         128,0,128,
+         0,128,128,
+         128,0,255,
+         0,64,128,
+         128,64,0,
+         128,128,255,
+         128,128,0,
+         128,0,64,
+         128,128,128,
+         255,0,128,
+         192,192,192)
+
+dim(col) <- c(3, 30)
+col <- t(col)
+colours <- NULL
+#for (i in 1:30) {
+colours <- col2 <- rep(col,38)
+dim(colours) <- c(3, 1140)
+colours <- t(colours)
+
+#  colours <- c(colours, col2)
+#}
+e <- extent(0, 30, 0, 38)
+colourBlock <- brick(nrows=38, ncols=30, nl=3)
+colourBlock <- setValues(colourBlock, colours)
+
+
+
 [1] "white"                "aliceblue"            "antiquewhite"        
 [4] "antiquewhite1"        "antiquewhite2"        "antiquewhite3"       
 [7] "antiquewhite4"        "aquamarine"           "aquamarine1"         

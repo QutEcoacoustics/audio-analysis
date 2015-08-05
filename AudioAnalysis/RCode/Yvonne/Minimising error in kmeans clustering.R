@@ -71,23 +71,35 @@ for (j in 2:18) {
 #}
 
 ##############################################
-indicesRef <- c(5,7,9,10,11,12,13,14,15,17) 
-dataFrame <- normIndices[1:length(normIndices$X),indicesRef]
+#indicesRef <- c(5,9,11,13,14,15,17) 
+#***#***#***#***#***#***#***
+indicesRef <- c(5,9,11,13,14,15,17)
+length1 <- 0
+length2 <- length(normIndices$X)
+dataFrame <- normIndices[length1:length2, indicesRef]  
+#############################################
+
+#indicesRef <- c(5,7,9,10,11,12,13,14,15,17) 
+#dataFrame <- normIndices[1:length(normIndices$X),indicesRef]
 
 errorRatio <- NULL
 errorList <- NULL
+withinSS <- NULL
 
-for (i in 1:2000) {
+for (i in 1:6000) {
   #set.seed(random[i])
   set.seed(i)
   kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 500, 
                       nstart = 1)
   R <- 100 - (kmeansObj$betweenss*100/kmeansObj$totss)
   errorRatio <- c(errorRatio, R)
+  with <- kmeansObj$tot.withinss
+  withinSS <- c(withinSS, with)
 }
 
-errorList <- cbind(random, errorRatio)
-min(errorList[,2])
+ref <- 1:6000
+errorList <- cbind(ref, errorRatio, withinSS)
+min(errorRatio)
 
-write.csv(errorList, (file=paste("Minimum_error_run2", 
-                         site, ".csv", sep = "")))
+write.csv(errorList, (file=paste("Minimum_error_indices_5,9,11,13,14,15,17", 
+                      site, ".csv", sep = "")))
