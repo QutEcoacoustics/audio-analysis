@@ -176,10 +176,23 @@ namespace AnalysisPrograms
             if (true)
             {
                 // top level directory
-                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
-                string opFileStem = "TNC_Iwarame_20150704_BAR32";
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
+                //string opFileStem = "TNC_Iwarame_20150704_BAR32";
+
                 //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_33\";
                 //string opFileStem = "TNC_Iwarame_20150704_BAR33";
+
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_35\";
+                //string opFileStem = "TNC_Iwarame_20150704_BAR35";
+
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_7-7-15\BAR\BAR_59\";
+                //string opFileStem = "TNC_Iwarame_20150707_BAR59";
+
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_9-7-15\BAR\BAR_79\";
+                //string opFileStem = "TNC_Iwarame_20150709_BAR79";
+
+                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_5-7-15\BAR\BAR_43\";
+                string opFileStem = "TNC_Yavera_20150705_BAR43";
 
                 var dataDir = new DirectoryInfo(dataPath);
 
