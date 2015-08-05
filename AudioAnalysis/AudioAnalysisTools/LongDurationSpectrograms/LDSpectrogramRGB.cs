@@ -1000,8 +1000,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan xAxisPixelDuration = cs.IndexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
-            int trackHeight = 20;
-            int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
+            int trackHeight = 18;
+            int imageHt = titleBar.Height + trackHeight + bmp1.Height + trackHeight + 1;
             Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
             Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
 
@@ -1019,7 +1019,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             gr.Clear(Color.Black);
             int offset = 0;
             gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
-            offset += timeBmp1.Height;
+            offset = timeBmp1.Height;
             gr.DrawImage(timeBmp1, 0, offset); //draw
             offset += titleBar.Height;
             gr.DrawImage(bmp1, 0, offset); //draw
@@ -1044,7 +1044,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             stringSize = g.MeasureString(title, stringFont);
             X += (stringSize.ToSize().Width + 70);
-            string text = string.Format("(c) QUT.EDU.AU");
+            string text = string.Format("SCALE:(time x kHz)     (c) QUT.EDU.AU");
             stringSize = g.MeasureString(text, stringFont);
             int X2 = width - stringSize.ToSize().Width - 2;
             if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
@@ -1070,14 +1070,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             g.DrawString(title, stringFont, Brushes.White, new PointF(X, 3));
 
             stringSize = g.MeasureString(title, stringFont);
-            X += (stringSize.ToSize().Width + 70);
+            X += (stringSize.ToSize().Width + 300);
             //g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
 
             //stringSize = g.MeasureString(text, stringFont);
             //X += (stringSize.ToSize().Width + 1);
             g.DrawImage(colourChart, X, 1);
 
-            string text = string.Format("(c) QUT.EDU.AU");
+            string text = string.Format("SCALE:(time x kHz)        (c) QUT.EDU.AU");
             stringSize = g.MeasureString(text, stringFont);
             int X2 = width - stringSize.ToSize().Width - 2;
             if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
@@ -1420,9 +1420,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // create a normal image with chrome
             Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            string startTime = string.Format("{0:d2}{1:d2}h", cs1.StartOffset.Hours, cs1.StartOffset.Minutes);
 
             // then pass that image into chromer
-            string title = string.Format("<{0}> FALSE-COLOUR SPECTROGRAM of file {1}       (time x kHz)", colorMap, cs1.FileName);
+            string title = string.Format("<{0}> SPECTROGRAM  of \"{1}\".     Starts at {2}", colorMap, cs1.FileName, startTime);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
             image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1, nyquist, HertzInterval);
             var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");

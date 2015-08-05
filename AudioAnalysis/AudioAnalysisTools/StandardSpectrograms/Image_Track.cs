@@ -907,7 +907,7 @@
                 return DrawTimeRelativeTrack(fullDuration, trackWidth, trackHeight);
             }
 
-            DateTime date = ((DateTimeOffset)dateTime).DateTime.Date; 
+            DateTime startDate = ((DateTimeOffset)dateTime).DateTime.Date; 
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
@@ -936,7 +936,7 @@
             TimeSpan xAxisTicInterval = CalculateGridInterval(fullDuration, trackWidth);
 
             Pen whitePen = new Pen(Color.White);
-            //Pen grayPen = new Pen(Color.Gray);
+            Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 8);
 
             int rows = bmp.Height;
@@ -968,10 +968,10 @@
                     {
                         g.DrawLine(whitePen, tickPosition+1, 0, tickPosition+1, trackHeight);
                         if (tickPosition > 0) g.DrawLine(whitePen, tickPosition - 1, 0, tickPosition - 1, trackHeight);
-                        if (date.Year > 2000)
+                        if (startDate.Year > 2000)
                         {
-                            date += roundedTimeSpan;
-                            timeStr = String.Format("{0}", date.ToShortDateString());
+                            DateTime today = startDate + roundedTimeSpan;
+                            timeStr = String.Format("{0}", today.ToShortDateString());
                         }
                     }
                     else
@@ -982,7 +982,8 @@
                 }
             }
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
-            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            //g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            g.DrawLine(grayPen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
             return bmp;
         }
 
@@ -1045,7 +1046,7 @@
             TimeSpan xAxisTicInterval = CalculateGridInterval(fullDuration, trackWidth);
 
             Pen whitePen = new Pen(Color.White);
-            //Pen grayPen = new Pen(Color.Gray);
+            Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 8);
 
             int rows = bmp.Height;
@@ -1092,7 +1093,7 @@
                 }
             }
             g.DrawLine(whitePen, 0, 0, trackWidth, 0);//draw upper boundary
-            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
+            g.DrawLine(grayPen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
             return bmp;
         }
 
