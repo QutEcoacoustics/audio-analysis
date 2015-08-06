@@ -118,7 +118,7 @@
     <Content Include="ExcelResultsSummationTemplate.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="bin\Debug\ExcelResultsComputationTemplate.xlsx">
+    <Content Include="..\FELT\ExcelResultsComputationTemplate.xlsx">
       <Link>ExcelResultsComputationTemplate.xlsx</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
