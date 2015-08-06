@@ -112,21 +112,36 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Yaml.Serialise(path, this);
         }
 
-
         public string[] GetKeys()
         {
+            return GetKeys(this.ColorMap1, this.ColorMap2);
+        }
+
+
+        public static string[] GetKeys(string colorMap1, string colorMap2)
+        {
             var keys = new List<string>(); 
-            if((this.ColorMap1 != null) && (this.ColorMap1.Length == 11))
+            if((colorMap1 != null) && (colorMap1.Length == 11))
             {
-                string[] codes = this.ColorMap1.Split('-');
+                string[] codes = colorMap1.Split('-');
                 foreach (string str in codes) keys.Add(str);
-                codes = this.ColorMap2.Split('-');
+                codes = colorMap2.Split('-');
                 foreach (string str in codes)
                 {
                     if(! keys.Contains(str)) keys.Add(str);
                 }
             }
             return keys.ToArray();
+        }
+
+        public static string[] GetKeys(string colorMap)
+        {
+            string[] keys = null;
+            if ((colorMap != null) && (colorMap.Length == 11))
+            {
+                keys = colorMap.Split('-');
+            }
+            return keys;
         }
 
         #endregion

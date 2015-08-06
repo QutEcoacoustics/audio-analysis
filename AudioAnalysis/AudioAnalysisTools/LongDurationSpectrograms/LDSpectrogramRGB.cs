@@ -89,6 +89,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
+        /// The date and time at which the current LDspectrogram starts
+        /// </summary>
+        public DateTimeOffset RecordingStartDate { get; set; }
+
+
+        /// <summary>
         /// The time at which the current LDspectrogram starts.
         /// </summary>
         public TimeSpan StartOffset { get; set; }
@@ -215,14 +221,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// This may not be a good idea. Trying it out. Maybe better to crash! 
         /// </summary>
         /// <param name="_spectralIndexProperties"></param>
-        public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> _spectralIndexProperties)
+        public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> dictionaryOfSpectralIndexProperties)
         {
-            //string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the NEW default i.e. since July 2015
-            string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLD default i.e. used in 2014
+            string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the NEW default i.e. since July 2015
+            //string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLD default i.e. used in 2014
             this.spectrogramKeys = keys;
-            if ((_spectralIndexProperties != null) && ((_spectralIndexProperties.Count > 0)))
+            if ((dictionaryOfSpectralIndexProperties != null) && ((dictionaryOfSpectralIndexProperties.Count > 0)))
             {
-                this.spectralIndexProperties = _spectralIndexProperties;
+                this.spectralIndexProperties = dictionaryOfSpectralIndexProperties;
                 this.spectrogramKeys = this.spectralIndexProperties.Keys.ToArray();
             }
         }
@@ -243,12 +249,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // TODO: this string constant is dodgy... but should never change... fix me when broken :-)
                 const string analysisType = "Towsey.Acoustic";
-                var path = FilenameHelpers.AnalysisResultName(ipdir, fileName, analysisType + "." + keys[i], "csv"); 
+                var path = FilenameHelpers.AnalysisResultName(ipdir, fileName, analysisType + "." + keys[i], "csv");
+                var file = new FileInfo(path);
                 //string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
                 if (File.Exists(path))
                 {
                     int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(path, out freqBinCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     this.spectrogramMatrices.Add(this.spectrogramKeys[i], matrix);
                     this.FrameWidth = freqBinCount * 2;
@@ -344,7 +351,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// Call this method if already have a dictionary of Matrix spectorgrams and wish to loae directly
+        /// Call this method if already have a dictionary of Matrix spectorgrams and wish to load directly
         /// For example, call this method from AnalyseLongRecordings.
         /// </summary>
         /// <param name="dictionary"></param>
@@ -420,7 +427,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="opFileName"></param>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
         {
-            this.DrawGreyScaleSpectrograms(opdir, opFileName, this.spectrogramKeys);
+            // string[] keys = LdSpectrogramConfig.GetKeys(this.ColorMap);
+            string[] keys = this.spectrogramKeys;
+            this.DrawGreyScaleSpectrograms(opdir, opFileName, keys);
         }
 
         /// <summary>
@@ -487,7 +496,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, xAxisPixelDuration, nyquist, herzInterval);
             const int trackHeight = 20;
             TimeSpan timeScale = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.StartOffset, bmp.Width, trackHeight);
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, this.RecordingStartDate, bmp.Width, trackHeight);
             var array = new Image[2];
             array[0] = bmp;
             array[1] = timeBmp;
@@ -986,32 +995,36 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
 
-        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, TimeSpan startTimeAbs, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, int nyquist, int herzInterval, DateTimeOffset? dateTimeOffset = null)
+        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, LDSpectrogramRGB cs, int nyquist, int herzInterval)
         {
+            TimeSpan xAxisPixelDuration = cs.IndexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
 
+            int trackHeight = 18;
+            int imageHt = titleBar.Height + trackHeight + bmp1.Height + trackHeight + 1;
+            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
+            Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
+
+            DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
+                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
             }
 
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, startTimeAbs, fullDuration, xAxisTicInterval, nyquist, herzInterval);
-
-            int trackHeight = 20;
-            int imageHt = bmp1.Height + trackHeight + trackHeight + trackHeight;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, startTimeAbs, bmp1.Width, trackHeight);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, TimeSpan.Zero, fullDuration, cs.XTicInterval, nyquist, herzInterval);
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
             int offset = 0;
             gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
-            offset += timeBmp.Height;
-            gr.DrawImage(timeBmp, 0, offset); //draw
+            offset = timeBmp1.Height;
+            gr.DrawImage(timeBmp1, 0, offset); //draw
             offset += titleBar.Height;
             gr.DrawImage(bmp1, 0, offset); //draw
             offset += bmp1.Height;
-            gr.DrawImage(timeBmp, 0, offset); //draw
+            gr.DrawImage(timeBmp2, 0, offset); //draw
             return compositeBmp;
         }
 
@@ -1031,7 +1044,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             stringSize = g.MeasureString(title, stringFont);
             X += (stringSize.ToSize().Width + 70);
-            string text = string.Format("(c) QUT.EDU.AU");
+            string text = string.Format("SCALE:(time x kHz)     (c) QUT.EDU.AU");
             stringSize = g.MeasureString(text, stringFont);
             int X2 = width - stringSize.ToSize().Width - 2;
             if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
@@ -1048,23 +1061,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
-            Pen pen = new Pen(Color.White);
-            Font stringFont = new Font("Arial", 9);
+            //Pen pen = new Pen(Color.White);
+            Font stringFont = new Font("Arial", 9, FontStyle.Bold);
             //Font stringFont = new Font("Tahoma", 9);
             SizeF stringSize = new SizeF();
 
-            int X = 4;
-            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
+            int X = 2;
+            g.DrawString(title, stringFont, Brushes.White, new PointF(X, 3));
 
             stringSize = g.MeasureString(title, stringFont);
-            X += (stringSize.ToSize().Width + 70);
+            X += (stringSize.ToSize().Width + 300);
             //g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
 
             //stringSize = g.MeasureString(text, stringFont);
             //X += (stringSize.ToSize().Width + 1);
             g.DrawImage(colourChart, X, 1);
 
-            string text = string.Format("(c) QUT.EDU.AU");
+            string text = string.Format("SCALE:(time x kHz)        (c) QUT.EDU.AU");
             stringSize = g.MeasureString(text, stringFont);
             int X2 = width - stringSize.ToSize().Width - 2;
             if (X2 > X) g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
@@ -1284,7 +1297,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (indexGenerationData.RecordingStartDate.HasValue)
             {
                 DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
-                cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
+                cs1.RecordingStartDate = dto;
+                if (dto != null) cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
             }
             // following line is debug purposes only
             //cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
@@ -1335,7 +1349,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             cs1.IndexStats = indexDistributions;
 
-            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem);
+            // draw gray scale spectrogram for each index.
+            string[] keys = colorMap1.Split('-');
+            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+            keys = colorMap2.Split('-');
+            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+
 
             Image image1;
             Image image1NoChrome;
@@ -1401,11 +1420,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // create a normal image with chrome
             Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            string startTime = string.Format("{0:d2}{1:d2}h", cs1.StartOffset.Hours, cs1.StartOffset.Minutes);
 
             // then pass that image into chromer
-            string title = string.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", cs1.FileName, colorMap);
+            string title = string.Format("<{0}> SPECTROGRAM  of \"{1}\".     Starts at {2}", colorMap, cs1.FileName, startTime);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
-            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1.StartOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, HertzInterval);
+            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1, nyquist, HertzInterval);
             var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");
             image.Save(outputPath);
             return Tuple.Create(image, imageNoChrome);
