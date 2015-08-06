@@ -191,8 +191,12 @@ namespace AnalysisPrograms
                 //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_9-7-15\BAR\BAR_79\";
                 //string opFileStem = "TNC_Iwarame_20150709_BAR79";
 
-                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_5-7-15\BAR\BAR_43\";
-                string opFileStem = "TNC_Yavera_20150705_BAR43";
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_8-7-15\BAR\BAR_64\";
+                //string opFileStem = "TNC_Yavera_20150708_BAR64";
+
+                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_13\";
+                string opFileStem = "TNC_Musiamunat_20150703_BAR13";
+                
 
                 var dataDir = new DirectoryInfo(dataPath);
 
