@@ -10,6 +10,7 @@ using TowseyLibrary;
 using AudioAnalysisTools;
 using AudioAnalysisTools.Indices;
 using AudioAnalysisTools.StandardSpectrograms;
+using AudioAnalysisTools.LongDurationSpectrograms;
 using AudioAnalysisTools.DSP;
 using AudioAnalysisTools.WavTools;
 using Acoustics.Shared;
@@ -17,7 +18,6 @@ using Acoustics.Shared;
 namespace AnalysisPrograms
 {
     using PowerArgs;
-    using AudioAnalysisTools.LongDurationSpectrograms;
 
 
     /// <summary>
@@ -175,12 +175,35 @@ namespace AnalysisPrograms
             // concatenating csv files of spectral indices
             if (true)
             {
-                //string path = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\20150704_unnamed\20150704_132321_Day1.wav\Towsey.Acoustic";
-                string path = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
+                // top level directory
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
+                //string opFileStem = "TNC_Iwarame_20150704_BAR32";
 
-                //string[] keys = {"ACI", "TEN", "CVR", "BGN", "AVG", "VAR"};
-                string[] keys = {"ACI", "ENT", "EVN", "BGN", "POW"};
-                var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, keys);            
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_33\";
+                //string opFileStem = "TNC_Iwarame_20150704_BAR33";
+
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_35\";
+                //string opFileStem = "TNC_Iwarame_20150704_BAR35";
+
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_7-7-15\BAR\BAR_59\";
+                //string opFileStem = "TNC_Iwarame_20150707_BAR59";
+
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_9-7-15\BAR\BAR_79\";
+                //string opFileStem = "TNC_Iwarame_20150709_BAR79";
+
+                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_5-7-15\BAR\BAR_43\";
+                string opFileStem = "TNC_Yavera_20150705_BAR43";
+
+                var dataDir = new DirectoryInfo(dataPath);
+
+                string indexPropertiesConfigPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml";
+                FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
+
+                // string outputDirectory = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
+                string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
+                var opDir = new DirectoryInfo(outputDirectory);
+
+                LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
             }
 
 

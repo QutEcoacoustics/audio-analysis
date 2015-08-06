@@ -37,19 +37,29 @@ namespace AudioAnalysisTools.Indices
             {
                 DateTime now1 = DateTime.Now;
                 string pattern = "*" + key + ".csv";
-                FileInfo[] files = GetFilesInDirectory(path, pattern);
+                FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
 
                 var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
+                m = MatrixTools.MatrixRotate90Anticlockwise(m);
+                spectrogramMatrices.Add(key, m);
+
+                
                 DateTime now2 = DateTime.Now;
                 TimeSpan et = now2 - now1;
                 LoggedConsole.WriteLine("Time to read <" + key + "> spectral index files = " + et.TotalSeconds + " seconds");
-                spectrogramMatrices.Add(key, m);
             }
 
             return spectrogramMatrices;
         }
 
-
+        /// <summary>
+        /// Returns a sorted list of file paths, sorted on file name.
+        /// IMPORTANT: Sorts on alphanumerics, NOT on time. 
+        ///            Make sure file name is correctly formatted if intend to sort for time.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
         public static FileInfo[] GetFilesInDirectory(string path, string pattern)
         {
             var dirInfo = new DirectoryInfo(path);
@@ -87,16 +97,12 @@ namespace AudioAnalysisTools.Indices
                 if (file.Exists)
                 {
                     int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(file.FullName, out freqBinCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
                     list.Add(matrix);
                 }
             }
 
-            var M = list[0];
-            for (int i = 1; i < list.Count; i++)
-            {
-                M = MatrixTools.ConcatenateMatrixRows(M, list[i]);
-            }
+            var M = MatrixTools.ConcatenateMatrixRows(list);
 
 
             if (warning != null)
@@ -108,10 +114,12 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-        public static double[,] ReadSpectrogram(string csvPath, out int binCount)
+        public static double[,] ReadSpectrogram(FileInfo csvPath, out int binCount)
         {
+            //TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor;
+            //double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvPath, dimensionality);
             // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath);
+            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
             binCount = matrix.GetLength(1) - 1; // -1 because first bin is the index numbers 
             // calculate the window/frame that was used to generate the spectra. This value is only used to place grid lines on the final images
 
@@ -131,20 +139,20 @@ namespace AudioAnalysisTools.Indices
                 DateTime now1 = DateTime.Now;
 
                 // get the path containing keys[i]
-                string path = null;
+                FileInfo file = null;
                 for (int p = 0; p < paths.Length; p++)
                 {
                     if (paths[p].Name.Contains(keys[i]))
                     {
-                        path = paths[p].FullName;
+                        file = paths[p];
                         break;
                     }
                 }
 
-                if (File.Exists(path))
+                if (file.Exists)
                 {
                     int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(path, out freqBinCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     spectrogramMatrices.Add(keys[i], matrix);
                 }
@@ -155,7 +163,7 @@ namespace AudioAnalysisTools.Indices
                         warning = "\nWARNING: from method IndexMatrices.ReadCSVFiles()";
                     }
 
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
+                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
                 }
 
                 DateTime now2 = DateTime.Now;
@@ -188,11 +196,11 @@ namespace AudioAnalysisTools.Indices
             {
                 DateTime now1 = DateTime.Now;
 
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
-                if (File.Exists(path))
+                FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv"));
+                if (file.Exists)
                 {
                     int freqBinCount;
-                    double[,] matrix = ReadSpectrogram(path, out freqBinCount);
+                    double[,] matrix = ReadSpectrogram(file, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     spectrogramMatrices.Add(keys[i], matrix);
                     //this.FrameLength = freqBinCount * 2;
@@ -204,7 +212,7 @@ namespace AudioAnalysisTools.Indices
                         warning = "\nWARNING: from method IndexMatrices.ReadCSVFiles()";
                     }
 
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], path);
+                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
                 }
 
                 DateTime now2 = DateTime.Now;
@@ -322,11 +330,11 @@ namespace AudioAnalysisTools.Indices
             freqBinCount = 256; // the default
             for (int key = 0; key < keys.Length; key++)
             {
-                string path = Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv");
-                if (File.Exists(path))
+                var file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv"));
+                if (file.Exists)
                 {
                     int binCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(path, out binCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out binCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     dict.Add(keys[key], matrix);
                     freqBinCount = binCount;
@@ -338,7 +346,7 @@ namespace AudioAnalysisTools.Indices
                         warning = "\nWARNING: from method IndexMatrices.ReadSpectrogramCSVFiles()";
                     }
 
-                    warning += string.Format("\n      {0} File does not exist: {1}", keys[key], path);
+                    warning += string.Format("\n      {0} File does not exist: {1}", keys[key], file.FullName);
                 }
             }
 

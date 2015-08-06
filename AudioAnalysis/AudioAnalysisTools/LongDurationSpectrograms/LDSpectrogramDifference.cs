@@ -113,11 +113,11 @@ namespace AudioAnalysisTools
             int herzInterval = 1000;
             string title = String.Format("DIFFERENCE SPECTROGRAM where {0} > {1}.      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[0].Width);
-            images[0] = LDSpectrogramRGB.FrameLDSpectrogram(images[0], titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
+            images[0] = LDSpectrogramRGB.FrameLDSpectrogram(images[0], titleBar, cs1, nyquist, herzInterval);
 
             title = String.Format("DIFFERENCE SPECTROGRAM where {1} > {0}      (scale:hours x kHz)       (colour: R-G-B={2})", ipFileName1, ipFileName2, cs1.ColorMode);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, images[1].Width);
-            images[1] = LDSpectrogramRGB.FrameLDSpectrogram(images[1], titleBar, minuteOffset, cs1.IndexCalculationDuration, cs1.XTicInterval, nyquist, herzInterval);
+            images[1] = LDSpectrogramRGB.FrameLDSpectrogram(images[1], titleBar, cs1, nyquist, herzInterval);
             Image combinedImage = ImageTools.CombineImagesVertically(images);
             string opFileName = ipFileName1 +"-"+ ipFileName2 + ".Difference.png";
             combinedImage.Save(Path.Combine(opdir.FullName, opFileName));
