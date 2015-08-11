@@ -205,9 +205,11 @@ namespace AnalysisPrograms
 
                 // string outputDirectory = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
                 string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
-                var opDir = new DirectoryInfo(outputDirectory);
+                // var opDir = new DirectoryInfo(outputDirectory);
+                var opDir = dataDir;
 
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
             }
 
 

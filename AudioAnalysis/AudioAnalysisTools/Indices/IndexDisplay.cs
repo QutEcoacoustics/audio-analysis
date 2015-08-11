@@ -41,7 +41,8 @@
             return DrawSummaryIndices.DrawImageOfSummaryIndices(dictIP, csvFile, title);
         }
 
-        /// <summary>
+
+                /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
         /// <param name="listOfIndexProperties"></param>
@@ -56,6 +57,20 @@
             }
 
             Dictionary<string, double[]> dictionaryOfCsvFile = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+            return DrawSummaryIndices.DrawImageOfSummaryIndices(listOfIndexProperties, dictionaryOfCsvFile, title);
+        }
+
+
+        /// <summary>
+        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// </summary>
+        /// <param name="listOfIndexProperties"></param>
+        /// <param name="dt"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, 
+                                                       Dictionary<string, double[]> dictionaryOfCsvFile, string title)
+        {
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); // to translate past keys into current keys
 
 
