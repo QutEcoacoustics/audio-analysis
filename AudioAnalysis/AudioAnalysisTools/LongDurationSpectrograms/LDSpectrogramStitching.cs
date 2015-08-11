@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using TowseyLibrary;
 using AnalysisBase.ResultBases;
 using Acoustics.Shared;
+using Acoustics.Shared.Csv;
 
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
@@ -359,6 +360,87 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             indexDistributions,
             returnChromelessImages);
         }
+
+
+
+        /// <summary>
+        /// MOST RECENT METHOD TO CONCATENATE SUMMARY INDEX.CSV FILES - August 2015.
+        /// This method merges all files of acoustic indices derived from a sequence of consecutive 1/2 to 6 hour recordings, 
+        /// that have a total duration of 24 hours. This was necessary to deal with the new regime of doing 24 hour recordings 
+        /// in conseutive short segments. 
+        /// </summary>
+        public static void ConcatenateSummaryIndexFiles(DirectoryInfo topLevelDirectory,
+                                                          FileInfo indexPropertiesConfig,
+                                                          DirectoryInfo opDir,
+                                                          string opFileStem)
+        {
+            string ImagefileExt = "png";
+
+            //20150704_143000_Day1__Towsey.Acoustic.Indices
+            string analysisType = "__Towsey.Acoustic.Indices.csv";
+            string pattern = "*" + analysisType;
+
+            var ldSpectrogramConfig = new LdSpectrogramConfig
+            {
+                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                YAxisTicInterval = 1000,
+                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
+            };
+            string path = topLevelDirectory.FullName;
+
+            FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
+            var summaryDataTuple  = IndexMatrices.GetSummaryIndexFilesAndConcatenate(files);
+            string[] headers = summaryDataTuple.Item1;
+            double[,] summaryIndices = summaryDataTuple.Item2;
+            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
+
+
+            var indicesFile    = FilenameHelpers.AnalysisResultName(topLevelDirectory, opFileStem, "Indices", "csv");
+            var indicesCsvfile = new FileInfo(indicesFile);
+            //serialiseFunc(indicesFile, results);
+            //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
+            CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
+
+            // get the IndexGenerationData file from the first directory
+            DirectoryInfo firstDirectory = files[0].Directory;
+            pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
+            FileInfo igdFile = IndexMatrices.GetFilesInDirectory(firstDirectory.FullName, pattern).Single();
+            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFile);
+
+            // Get the start time from the first file in sort list.
+            // UNNECESARRY CODE????? Anthony has this one already done somewhere else!!!!!!!!!!!!!!!!!!
+            pattern = @"20\d\d\d\d\d\d_\d\d\d\d\d\d_";
+            Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
+            Match m = r.Match(files[0].Name); // get name of first file
+
+            Group group = m.Groups[0];
+            string[] array = group.ToString().Split('_');
+            int year = Int32.Parse(array[0].Substring(0, 4));
+            int mnth = Int32.Parse(array[0].Substring(4, 2));
+            int day = Int32.Parse(array[0].Substring(6, 2));
+            int hour = Int32.Parse(array[1].Substring(0, 2));
+            int min = Int32.Parse(array[1].Substring(2, 2));
+            int sec = Int32.Parse(array[1].Substring(4, 2));
+            DateTimeOffset startTime = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
+            indexGenerationData.RecordingStartDate = startTime;
+
+            //Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null;
+            //SummaryIndexBase[] summaryIndices = null;
+
+            //string fileName = Path.GetFileNameWithoutExtension(fileNameBase);
+            string fileName = opFileStem;
+            string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+            Bitmap tracksImage =
+                DrawSummaryIndices.DrawImageOfSummaryIndices(
+                    IndexProperties.GetIndexProperties(indexPropertiesConfig),
+                    dictionaryOfCsvColumns,
+                    imageTitle);
+            var imagePath = FilenameHelpers.AnalysisResultName(topLevelDirectory, fileName, "Indices", ImagefileExt);
+            tracksImage.Save(imagePath);
+        }
+
+
 
 
         /// <summary>

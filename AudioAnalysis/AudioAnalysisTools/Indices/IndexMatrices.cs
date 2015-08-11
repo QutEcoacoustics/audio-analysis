@@ -29,6 +29,103 @@ namespace AudioAnalysisTools.Indices
         }
 
 
+        public static Dictionary<string, double[]> ConvertCsvData2DictionaryOfColumns(string[] headers, double[,] M)
+        {
+            Dictionary<string, double[]> dictionaryOfCsvDataColumns = new Dictionary<string, double[]>();
+            for(int i = 0; i < headers.Length; i++)
+            {
+                dictionaryOfCsvDataColumns.Add(headers[i], MatrixTools.GetColumn(M, i));
+            }
+            return dictionaryOfCsvDataColumns;
+        }
+
+
+
+        public static Tuple<string[], double[,]> GetSummaryIndexFilesAndConcatenate(FileInfo[] files)
+        {
+            string[] headers = null;
+            var list = new List<double[,]>();
+
+            foreach (FileInfo file in files)
+            {
+                if (file.Exists)
+                {
+                    Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(file.FullName);
+                    headers = tuple.Item1.ToArray();
+                    //double[,] matrix = IndexMatrices.ReadSummaryIndicesFromFile(file);
+                    //double[,] matrix = tuple.Item2;
+                    double[,] matrix = CreateRectangularArrayFromListOfColumnArrays(tuple.Item2);
+                    list.Add(matrix);
+                }
+            }
+
+            var M = MatrixTools.ConcatenateMatrixRows(list);
+            var opTuple = Tuple.Create(headers, M);
+            return opTuple;
+        }
+
+
+
+        static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
+        {
+            // TODO: Validation and special-casing for arrays.Count == 0
+            int minorLength = arrays[0].Length;
+            T[,] ret = new T[arrays.Count, minorLength];
+            for (int i = 0; i < arrays.Count; i++)
+            {
+                var array = arrays[i];
+                if (array.Length != minorLength)
+                {
+                    throw new ArgumentException
+                        ("All arrays must be the same length");
+                }
+                for (int j = 0; j < minorLength; j++)
+                {
+                    ret[i, j] = array[j];
+                }
+            }
+            return ret;
+        }
+
+        static T[,] CreateRectangularArrayFromListOfColumnArrays<T>(IList<T[]> arrays)
+        {
+            // TODO: Validation and special-casing for arrays.Count == 0
+            int rowCount = arrays[0].Length;
+            int colCount = arrays.Count;
+            T[,] ret = new T[rowCount, colCount];
+            for (int c = 0; c < colCount; c++)
+            {
+                var array = arrays[c];
+                if (array.Length != rowCount)
+                {
+                    throw new ArgumentException
+                        ("All arrays must be the same length");
+                }
+                for (int r = 0; r < rowCount; r++)
+                {
+                    ret[r, c] = array[r];
+                }
+            }
+            return ret;
+        }
+
+
+        public static double[,] GetSummaryIndexFilesAndConcatenate(string path, string pattern)
+        {
+                DateTime now1 = DateTime.Now;
+                FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
+
+                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
+
+                //m = MatrixTools.MatrixRotate90Anticlockwise(m);
+
+                DateTime now2 = DateTime.Now;
+                TimeSpan et = now2 - now1;
+                LoggedConsole.WriteLine("Time to read <" + pattern + "> summary index files = " + et.TotalSeconds + " seconds");
+            return m;
+        }
+
+        
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string[] keys)
         {
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
@@ -112,6 +209,17 @@ namespace AudioAnalysisTools.Indices
 
             return M;
         }
+
+
+        public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
+        {
+            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvPath.FullName);
+
+            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
+            // matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1);
+            return matrix;
+        }
+
 
 
         public static double[,] ReadSpectrogram(FileInfo csvPath, out int binCount)
