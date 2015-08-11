@@ -1,5 +1,18 @@
 # 29 July 2015
 # Distance Matrix
+#
+#  This file is #7 in the sequence:
+#  1. Save_Summary_Indices_ as_csv_file.R
+#  2. Plot_Towsey_Summary_Indices.R
+#  3. Correlation_Matrix.R
+#  4. Principal_Component_Analysis.R
+#  5. kMeans_Clustering.R
+#  6. Quantisation_error.R
+# *7. Distance_matrix.R
+#  8. Minimising_error.R
+#  9. Segmenting_image.R
+# 10. 
+
 # 
 setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
 # The cluster centers have come from kmeans Clustering
@@ -16,13 +29,13 @@ site <- "GympieNP 22 June 2015"
 as.matrix(dist(centers))
 write.table (as.matrix(dist(centers)), 
              file = paste("Distance_matrix_5,7,9,10,11,12,13,14,15,17",
-                          site, ".csv", sep = ""), sep = ",")
+             site, ".csv", sep = ""), sep = ",")
 write.table (as.matrix(dist(centers)), 
              file = paste("Distance_matrix_5,8,10,13,14,15,17",
              site, ".csv", sep = ""), sep = ",")
 write.table (as.matrix(dist(centers)), 
              file = paste("Distance_matrix_5,9,11,13,14,15,17",
-                          site, ".csv", sep = ""), sep = ",")
+             site, ".csv", sep = ""), sep = ",")
 
 # Classical multidimensional scaling of a data matrix. 
 # Also known as principal coordinates analysis (Gower, 1966).
@@ -71,5 +84,3 @@ for (i in 1:10000) {
   rand <- abs(as.integer(nextElem(it)*10000))
   random <- c(random, rand)
 }
-
-

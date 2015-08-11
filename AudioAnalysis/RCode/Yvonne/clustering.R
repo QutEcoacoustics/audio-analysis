@@ -75,7 +75,7 @@ model$tot.withinss
 
 # Scree plot
 crit <- vector()
-nk <- 1:100
+nk <- 1:45
 t <- c(5,6,7,9,10,12,13,14,17)
 for (k in nk)
 {

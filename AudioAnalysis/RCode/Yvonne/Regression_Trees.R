@@ -24,13 +24,14 @@ rt.a2 <- rpart(indices$Activity ~ .,
                data = indices[,c(3:12,14:20)], cp = 0.0015) # lowest error
 rt.a3 <- rpart(indices$AvgEntropySpectrum ~ .,
                data = indices[,c(3:12,14:20)], cp = 0.002)
-
+library(DMwR)
+library(rpart)
 #prettyTree(rt.a1, cex=2.5, branch = 1, compress = T)
-prettyTree(rt.a2, cex=4, branch = 1, compress = T)
+prettyTree(rt.a2, cex=1, branch = 1, compress = T)
 #prettyTree(rt.a3, cex=2, branch = 1, compress = T)
 #plot(rt.a2)
 #text(rt.a2, cex=3)
-#printcp(rt.a1) 
+#printcp(rt.a1)
 printcp(rt.a2)
 #printcp(rt.a3)
 

@@ -1,17 +1,32 @@
 # 9 July 2015
 # kmeans clustering using variables determined from the correlation matrix 
 # and principal component analysis
+# check out kmeansruns {fpc} because this gives a "bestk" value
+# for the optimum number of clusters
+
+#  This file is #6 in the sequence:
+#  1. Save_Summary_Indices_ as_csv_file.R
+#  2. Plot_Towsey_Summary_Indices.R
+#  3. Correlation_Matrix.R
+#  4. Principal_Component_Analysis.R
+#  5. Quantisation_error.R
+# *6. kMeans_Clustering.R
+#  7. Distance_matrix.R
+#  8. Minimising_error.R
+#  9. Segmenting_image.R
 
 #setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\")
 #setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\")
-setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 
 #indices <- read.csv("Towsey_summary_indices 20150315_133427 to 20150320_153429 .csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices 20150322_113743 to 20150327_103745 .csv", header=T)
-indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
+indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000.csv")
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
@@ -27,26 +42,26 @@ normalise <- function (x, xmin, xmax) {
 
 normIndices <- indices
 # normalise variable columns
-normIndices[,2]  <- normalise(indices[,2],  0, 2)     # HighAmplitudeIndex
-normIndices[,3]  <- normalise(indices[,3],  0, 1)     # ClippingIndex
-normIndices[,4]  <- normalise(indices[,4], -50, -10)  # AverageSignalAmplitude
-normIndices[,5]  <- normalise(indices[,5], -50, -10)  # BackgroundNoise
-normIndices[,6]  <- normalise(indices[,6],  0, 50)    # Snr
-normIndices[,7]  <- normalise(indices[,7],  3, 20)    # AvSnrofActive Frames
-normIndices[,8]  <- normalise(indices[,8],  0, 1)     # Activity 
-normIndices[,9]  <- normalise(indices[,9],  0, 5)     # EventsPerSecond
-normIndices[,10] <- normalise(indices[,10], 0, 0.5)   # HighFreqCover
-normIndices[,11] <- normalise(indices[,11], 0, 0.5)   # MidFreqCover
-normIndices[,12] <- normalise(indices[,12], 0, 0.5)   # LowFreqCover
-normIndices[,13] <- normalise(indices[,13], 0.4, 0.7) # AcousticComplexity
-normIndices[,14] <- normalise(indices[,14], 0, 0.6)   # TemporalEntropy
-normIndices[,15] <- normalise(indices[,15], 0, 0.8)   # AvgEntropySpectrum
-normIndices[,16] <- normalise(indices[,16], 0, 1)     # VarianceEntropySpectrum
-normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyPeaks
-normIndices[,18] <- normalise(indices[,18], 0, 22)    # SptDensity
+normIndices[,4]  <- normalise(indices[,4], -50,-10)    # AverageSignalAmplitude
+normIndices[,5]  <- normalise(indices[,5], -50,-10)    # BackgroundNoise
+normIndices[,6]  <- normalise(indices[,6],  0,  50)    # Snr
+normIndices[,7]  <- normalise(indices[,7],  3,  20)    # AvSnrofActive Frames
+normIndices[,8]  <- normalise(indices[,8],  0,  1)     # Activity 
+normIndices[,9]  <- normalise(indices[,9],  0,  5)     # EventsPerSecond
+normIndices[,10] <- normalise(indices[,10], 0,  0.5)   # HighFreqCover
+normIndices[,11] <- normalise(indices[,11], 0,  0.5)   # MidFreqCover
+normIndices[,12] <- normalise(indices[,12], 0,  0.5)   # LowFreqCover
+normIndices[,13] <- normalise(indices[,13], 0.4,0.7)   # AcousticComplexity
+normIndices[,14] <- normalise(indices[,14], 0,  0.6)   # TemporalEntropy
+normIndices[,15] <- normalise(indices[,15], 0,  0.8)   # EntropyOfAverageSpectrum
+normIndices[,16] <- normalise(indices[,16], 0,  1)     # EntropyOfVarianceSpectrum
+normIndices[,17] <- normalise(indices[,17], 0,  1)     # EntropyOfPeaksSpectrum
+normIndices[,18] <- normalise(indices[,18], 0,  0.7)   # EntropyOfCoVSpectrum
+normIndices[,19] <- normalise(indices[,19], -0.8, 1)   # NDSI
+normIndices[,20] <- normalise(indices[,20], 0, 22)     # SptDensity
 
 # adjust values greater than 1 or less than 0
-for (j in 2:18) {
+for (j in 4:20) {
   for (i in 1:length(normIndices[,j])) {
     if (normIndices[i,j] > 1) {
       normIndices[i,j] = 1
@@ -113,7 +128,6 @@ dateLabel <- dateLabel[1:length(datePos)]
 
 ##########################################################
 library(raster)
-setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
 colourName <- "colourBlock.png"
 colourBlock <- brick(colourName, package="raster")
 plotRGB(colourBlock)
@@ -143,8 +157,8 @@ png(
 #indicesRef <- c(5,8,10,13,14,15,17)
 #set.seed(1234)
 #***#***#***#***#***#
-
-indicesRef <- c(5,7,9,10,11,12,13,14,15,17) 
+#indicesRef <- c(5,6,8,11,12,15,17,18,19,20)
+indicesRef <- c(5,7,9,10,11,13,14,15,17,18,19) 
 #0.8878094 for k = 30, Gympie NP 22 to 28 June 2015
 set.seed(1092)
 #set.seed(1234)
@@ -153,19 +167,21 @@ length2 <- length(normIndices$X)
 
 length <- length(indices$rec.date)
 dataFrame <- normIndices[length1:length2, indicesRef]  # best eleven variables
-kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 20,
+kmeansObj <- kmeans(dataFrame, centers = 25, iter.max = 20,
                     nstart = 3)
+kmeansObj
 normIndices <- cbind(normIndices, unname(kmeansObj$cluster))
 #plot(dataFrame, col=kmeansObj$cluster)
 r <- (kmeansObj$betweenss*100/kmeansObj$totss)
 vector <- kmeansObj$cluster[length1:length2]
 normIndicesVector <- cbind(normIndices[length1:length2,],vector)
 
-length1 <- 2881
-length2 <-  5760  #length(normIndices$X)
+#length1 <- 2881
+#length2 <-  5760  #length(normIndices$X)
 vector <- kmeansObj$cluster[length1:length2]
 normIndicesVector <- cbind(normIndices[length1:length2,],vector)
 
+# The clusterOrder comes from the distance matrix
 clusterOrder <- c("29","10","21","27","2","3","19","28","11",
                   "5","17","26","12","16","15","13","6","30",
                   "25","14","20","7","4","8","23","1","18","22",
@@ -191,10 +207,8 @@ sort.Filename <- function(filenames) {
 }
 ###############################################
 plot(normIndicesVector$vector,
-     col = normIndicesVector$vector, 
-     #col = colourOrder$colours[normIndicesVector$vector], 
-     #clusterOrder],
-     #col=normIndicesVector$vector, 
+     #col = normIndicesVector$vector, 
+     col = colours[normIndicesVector$vector], 
      xaxt = 'n', xlab = " ", ylab = "Cluster reference", 
      main = paste(site, "24 to 25 June 2015", sep = " "),
      cex.main = 2)

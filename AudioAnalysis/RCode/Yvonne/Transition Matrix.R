@@ -1,7 +1,22 @@
 # 24 July 2015
 #
 # Transition Matrix and transition table
-# This follows the kmeans clustering 
+# Creates a non-symmetrical matrix which shows the number of time
+# positive transitions from one cluster to another cluster over
+# a period of time
+
+#   This file is #10 in the sequence:
+#   1. Save_Summary_Indices_ as_csv_file.R
+#   2. Plot_Towsey_Summary_Indices.R
+#   3. Correlation_Matrix.R
+#   4. Principal_Component_Analysis.R
+#   5. kMeans_Clustering.R
+#   6. Quantisation_error.R
+#   7. Distance_matrix.R
+#   8. Minimising_error.R
+#   9. Segmenting_image.R
+# *10. Transition Matrix 
+
 #
 ######## changes these values ########################
 setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")

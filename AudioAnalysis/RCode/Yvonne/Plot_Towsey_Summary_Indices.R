@@ -1,31 +1,43 @@
 #  Date: 26 June 2015
 #  R version:  3.2.1 
 #  This file plots the indices in the csv file created by the code 
-#  Save_Summary_Indices_ as_csv_file.R
-#
+
+#  This file is #2 in the sequence:
+#  1. Save_Summary_Indices_ as_csv_file.R
+# *2. Plot_Towsey_Summary_Indices.R
+#  3. Correlation_Matrix.R
+#  4. Principal_Component_Analysis.R
+#  5. kMeans_Clustering.R
+#  6. Quantisation_error.R
+#  7. Distance_matrix.R
+#  8. Minimising_error.R
+#  9. Segmenting_image.R
+
 ########## You may wish to change these ###########################
 #setwd("C:\\Work\\CSV files\\Woondum1\\2015_03_15\\")
 #setwd("C:\\Work\\CSV files\\Woondum2\\2015_03_22\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
-setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_07_05\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_07_05\\")
 
 #indices <- read.csv("Towsey_Summary_Indices_Woondum1 20150315_133427to20150320_153429.csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum2 20150322_113743to20150327_103745.csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
+indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000.csv")
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
-indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv", header = T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv", header = T)
 
 #Sensor <- read.csv("Sensor file_Woondum1_2015_03_15.csv", header = TRUE)
 #Sensor <- read.csv("Sensor file_Woondum2_2015_03_22.csv", header = TRUE)
-#Sensor <- read.csv(paste(".", "\\", "Sensor file_Gympie NP1_2015_06_21.csv", sep = ""), header = T)
+Sensor <- read.csv(paste(".", "\\", "Sensor file_Gympie NP1_2015_06_21.csv", sep = ""), header = T)
 #Sensor <- read.csv(paste(".", "\\", "Sensor file_Woondum3_2015_06_21.csv", sep = ""), header = T)
 #Sensor <- read.csv(paste(".", "\\", "Sensor file_Gympie NP1_2015_06_28.csv", sep = ""), header = T)
-Sensor <- read.csv(paste(".", "\\", "Sensor file_Woondum3_2015_06_28.csv", sep = ""), header = T)
+#Sensor <- read.csv(paste(".", "\\", "Sensor file_Woondum3_2015_06_28.csv", sep = ""), header = T)
 #Sensor <- read.csv(paste(".", "\\", "Sensor file_Gympie NP1_2015_07_05.csv", sep = ""), header = T)
 #Sensor <- read.csv(paste(".", "\\", "Sensor file_Woondum3_2015_07_05.csv", sep = ""), header = T)
 
@@ -101,7 +113,7 @@ plot.indices <- function(file, heading, label) {
   axis(side = 4, ylim=c(min(Sensor$Temperature), max(Sensor$Temperature)),
        line = line, mgp = c(3,0.4,0))
   mtext(side=4, "Temperature (C)", 1.8, cex = 2.8)
-  mtext(side = 3, paste(site, indices$rec.date[1], "to",
+  mtext(side = 3, paste(site,"corrected mic", indices$rec.date[1], "to",
        indices$rec.date[length(indices$rec.date)], sep =" "), cex = 2)
   mtext(side = 3, line = -1,"_______ Temperature     ", cex=2, adj=1)
 }
@@ -282,10 +294,10 @@ plot.indices(file,"Temporal Entropy", "Temporal Entropy")
 
 dev.off()
 
-######## Print Average Entropy Spectrum plot ###############
+######## Print Entropy of Average Spectrum plot ###############
 
 png(
-  "AverageEntropySpectrum.png",
+  "EntropyOfAverageSpectrum.png",
   width     = 320,
   height    = 85,
   units     = "mm",
@@ -293,15 +305,14 @@ png(
   pointsize = 4
 )
 
-file <- indices$AvgEntropySpectrum
-plot.indices(file,"Average Entropy Spectrum", "Average Entropy Spectrum")
+file <- indices$EntropyOfAverageSpectrum
+plot.indices(file,"Entropy of Average Spectrum", "Entropy of Average Spectrum")
 
 dev.off()
 
-######## Print Variance Entropy Spectrum plot ###############
-
+######## Print Normalised Difference Soundscape Index plot ###############
 png(
-  "VarianceEntropySpectrum.png",
+  "NormalizedDifferenceSoundscapeIndex.png",
   width     = 320,
   height    = 85,
   units     = "mm",
@@ -309,15 +320,16 @@ png(
   pointsize = 4
 )
 
-file <- indices$VarianceEntropySpectrum
-plot.indices(file,"Variance Entropy Spectrum", "Variance Entropy Spectrum")
+file <- indices$NDSI
+plot.indices(file,"Normalised Difference Soundscape Index", 
+             "Normalised Difference Soundscape Index")
 
 dev.off()
 
-######## Print Entropy Peaks plot ###############
+######## Print Entropy of Peaks Spectrum plot ###############
 
 png(
-  "EntropyPeaks.png",
+  "EntropyOfPeaksSpectrum.png",
   width     = 320,
   height    = 85,
   units     = "mm",
@@ -325,8 +337,41 @@ png(
   pointsize = 4
 )
 
-file <- indices$EntropyPeaks
-plot.indices(file,"Entropy Peaks", "Entropy Peaks")
+file <- indices$EntropyOfPeaksSpectrum
+plot.indices(file,"Entropy of Peaks Spectrum", "Entropy Peaks")
+
+dev.off()
+
+######## Print Entropy of Variance Spectrum plot ###############
+
+indices$EntropyOfCoVSpectrum
+
+png(
+  "EntropyOfVarianceSpectrum.png",
+  width     = 320,
+  height    = 85,
+  units     = "mm",
+  res       = 1200,
+  pointsize = 4
+)
+
+file <- indices$EntropyOfVarianceSpectrum
+plot.indices(file,"Entropy of Variance Spectrum", "Entropy of Variance Spectrum")
+
+dev.off()
+
+######## Print Entropy of Coefficient of Variance Spectrum plot ###############
+png(
+  "EntropyOfCoefficientOfVarianceSpectrum.png",
+  width     = 320,
+  height    = 85,
+  units     = "mm",
+  res       = 1200,
+  pointsize = 4
+)
+
+file <- indices$EntropyOfCoVSpectrum
+plot.indices(file,"Entropy of Coefficient of Variance Spectrum", "Entropy of Coefficient of Variance Spectrum")
 
 dev.off()
 

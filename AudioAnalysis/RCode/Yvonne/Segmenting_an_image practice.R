@@ -64,12 +64,12 @@ png(filename = "Image 22 June 2015b Gympie NP 5,7,9,10,11,12,13,14,15,17.png",
 length2 <- 1
 #clusterOrder <- order
 for (i in 1:30) {
-  cur.minute.list <- which(clusters == clusterOrder[i])
-  length <- sum(cur.minute.list <= 1440)
+  current.minute.list <- which(clusters == clusterOrder[i])
+  length <- sum(current.minute.list <= 1440)
   if (length > 0) {
     for (j in 1:length) { 
       replacementBlock <- getValuesBlock(sourceImage, row=1, 
-                          nrows=632, col=cur.minute.list[j], 
+                          nrows=632, col=current.minute.list[j], 
                           ncols=1)
       s[1:632, length2] <- replacementBlock
       s[1:38, length2] <- getValuesBlock(colourBlock, row=1,
@@ -103,14 +103,14 @@ png(filename = "Image 23 June 2015b GympieNP 5,7,9,10,11,12,13,14,15,17.png",
 length2 <- 1
 #clusterOrder <- order
 for (i in 1:30) {
-  cur.minute.list <- which(clusters == clusterOrder[i])
-  cur.minute.list.ref <- which((cur.minute.list > 1440) & 
-                                 (cur.minute.list <2881))
-  length <- length(cur.minute.list.ref)
+  current.minute.list <- which(clusters == clusterOrder[i])
+  current.minute.list.ref <- which((current.minute.list > 1440) & 
+                              (current.minute.list <2881))
+  length <- length(current.minute.list.ref)
     if (length > 0) {
-      for (j in seq_along(cur.minute.list.ref)) {
+      for (j in seq_along(current.minute.list.ref)) {
         replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=632, 
-                            col=(cur.minute.list[cur.minute.list.ref[j]]-1440), 
+                            col=(current.minute.list[current.minute.list.ref[j]]-1440), 
                             ncols=1)
         s[1:632, length2] <- replacementBlock
         s[1:38, length2] <- getValuesBlock(colourBlock, row=1,
@@ -145,14 +145,14 @@ png(filename = "Image 24 June 2015b Gympie NP 5,7,9,10,11,12,13,14,15,17.png",
 length2 <- 1
 #clusterOrder <- order
 for (i in 1:30) {
-  cur.minute.list <- which(clusters == clusterOrder[i])
-  cur.minute.list.ref <- which((cur.minute.list > 2881) & 
-                                 (cur.minute.list < 4320))
-  length <- length(cur.minute.list.ref)
+  current.minute.list <- which(clusters == clusterOrder[i])
+  current.minute.list.ref <- which((current.minute.list > 2881) & 
+                                 (current.minute.list < 4320))
+  length <- length(current.minute.list.ref)
   if (length > 0) {
-    for (j in seq_along(cur.minute.list.ref)) {
+    for (j in seq_along(current.minute.list.ref)) {
      replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=632, 
-                        col=(cur.minute.list[cur.minute.list.ref[j]]-2880), 
+                        col=(current.minute.list[current.minute.list.ref[j]]-2880), 
                         ncols=1)
       s[1:632, length2] <- replacementBlock
       s[1:38, length2] <- getValuesBlock(colourBlock, row=1,
@@ -187,14 +187,14 @@ png(filename = "Image 25 June 2015b GympieNP 5,7,9,10,11,12,13,14,15,17.png",
 length2 <- 1
 #clusterOrder <- order
 for (i in 1:30) {
-  cur.minute.list <- which(clusters == clusterOrder[i])
-  cur.minute.list.ref <- which((cur.minute.list > 4321) & 
-                                 (cur.minute.list < 5760))
-  length <- length(cur.minute.list.ref)
+  current.minute.list <- which(clusters == clusterOrder[i])
+  current.minute.list.ref <- which((current.minute.list > 4321) & 
+                                 (current.minute.list < 5760))
+  length <- length(current.minute.list.ref)
   if (length > 0) {
-    for (j in seq_along(cur.minute.list.ref)) {
+    for (j in seq_along(current.minute.list.ref)) {
       replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=632, 
-                      col=(cur.minute.list[cur.minute.list.ref[j]]-4320), 
+                      col=(current.minute.list[current.minute.list.ref[j]]-4320), 
                       ncols=1)
       s[1:632, length2] <- replacementBlock
       s[1:38, length2] <- getValuesBlock(colourBlock, row=1,
@@ -228,18 +228,19 @@ png(filename = "Image 26 June 2015b GympieNP 5,7,9,10,11,12,13,14,15,17.png",
 length2 <- 1
 #clusterOrder <- order
 for (i in 1:30) {
-  cur.minute.list <- which(clusters == clusterOrder[i])
-  cur.minute.list.ref <- which((cur.minute.list > 5761) & 
-                                 (cur.minute.list < 7200))
-  length <- length(cur.minute.list.ref)
+  current.minute.list <- which(clusters == clusterOrder[i])
+  current.minute.list.ref <- which((current.minute.list > 5761) & 
+                                 (current.minute.list < 7200))
+  length <- length(current.minute.list.ref)
   if (length > 0) {
-    for (j in seq_along(cur.minute.list.ref)) {
+    for (j in seq_along(current.minute.list.ref)) {
       replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=632, 
-                          col=(cur.minute.list[cur.minute.list.ref[j]]-5760), 
+                          col=(current.minute.list[current.minute.list.ref[j]]-5760), 
                           ncols=1)
       s[1:632, length2] <- replacementBlock
-      s[1:38, length2] <- getValuesBlock(colourBlock, row=1,
-                                         nrows=38, col=i, ncols = 1)
+      s[1:38, length2] <- getValuesBlock(colourBlock, 
+                            row=1,nrows=38, col=i, 
+                            ncols = 1)
       length2 <- length2 + 1
     }
   }
@@ -269,14 +270,14 @@ png(filename = "Image 26 June 2015b GympieNP 5,7,9,10,11,12,13,14,15,17.png",
 length2 <- 1
 #clusterOrder <- order
 for (i in 1:30) {
-  cur.minute.list <- which(clusters == clusterOrder[i])
-  cur.minute.list.ref <- which((cur.minute.list > 7201) & 
-                                 (cur.minute.list < 8640))
-  length <- length(cur.minute.list.ref)
+  current.minute.list <- which(clusters == clusterOrder[i])
+  current.minute.list.ref <- which((current.minute.list > 7201) & 
+                                 (current.minute.list < 8640))
+  length <- length(current.minute.list.ref)
   if (length > 0) {
-    for (j in seq_along(cur.minute.list.ref)) {
+    for (j in seq_along(current.minute.list.ref)) {
       replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=632, 
-                         col=(cur.minute.list[cur.minute.list.ref[j]]-7200), 
+                         col=(current.minute.list[current.minute.list.ref[j]]-7200), 
                          ncols=1)
       s[1:632, length2] <- replacementBlock
       s[1:38, length2] <- getValuesBlock(colourBlock, row=1,
