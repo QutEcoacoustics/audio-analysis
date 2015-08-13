@@ -68,11 +68,9 @@ lines(m.3,col="blue")
 
 plot(lhacf$acf, type='l', main='Correlogram for GympieNP',
      xlab='Lag', ylab='ACF')
-pacf(timeSeries[300:720])
+pacf(m[300:720])
 mtext(side=3,line=-3.2,font=2,cex=0.9,outer=TRUE,
       expression(bold(paste("Gympie Cluster time series"))))
-mtext(side=3,"Motor vehicle sources",line=-5,
-      font=1,outer=TRUE)
 
 # Two hour autocorrelation plots
 par(mfrow=c(1,3))
@@ -84,14 +82,19 @@ e <- acf(m[481:600],plot = T, lag.max = 3000, type='p')
 f <- acf(m[601:720],plot = T, lag.max = 3000, type='p')
 
 acf(m[721:840],plot = T,lag.max = 3000, type='p')
-acf(m[841:960],plot = T,lag.max = 3000, type='p')
-acf(m[961:1080],plot = T,lag.max = 3000, type='p',col="orange")
+acf(m[841:960],plot = T,lag.max = 3000, 
+    type='p')
+acf(m[961:1080],plot = T,lag.max = 3000, 
+    type='p',col="orange")
 par(new=T)
-acf(m[1081:1200],plot = T,lag.max = 3000, type='p',col="green")
+acf(m[1081:1200],plot = T,lag.max = 3000, 
+    type='p',col="green")
 par(new=T)
-acf(m[1201:1320],plot = T,lag.max = 3000, type='p',col="blue")
+acf(m[1201:1320],plot = T,lag.max = 3000, 
+    type='p',col="blue")
 par(new=T)
-acf(m[1321:1440],plot = T,lag.max = 3000, type='p', col="red")
+acf(m[1321:1440],plot = T,lag.max = 3000, 
+    type='p', col="red")
 
 acf(m[1441:1560],plot = T,lag.max = 3000)
 acf(m[1561:1680],plot = T,lag.max = 3000)
@@ -112,9 +115,9 @@ acf(m[1:240],plot = T,lag.max = 3000)
 acf(m[241:480],plot = T,lag.max = 3000)
 acf(m[481:720],plot = T,lag.max = 3000)
 
-acf(m[721:960],plot = T,lag.max = 3000)
-acf(m[961:1200],plot = T,lag.max = 3000)
-acf(m[1201:1440],plot = T,lag.max = 3000)
+a <-acf(m[721:960],plot = T,lag.max = 3000)
+b <- acf(m[961:1200],plot = T,lag.max = 3000)
+c <- acf(m[1201:1440],plot = T,lag.max = 3000)
 # Day 1
 par(mfrow=c(1,3))
 acf(m[1:240],plot = T,lag.max = 3000)

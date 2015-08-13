@@ -37,8 +37,8 @@ indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to201
 #xlim <- c(-0.012, 0.033)
 #ylim = c(-0.005,0.02)
 # Gympie NP1 28_06_15
-xlim <- c(-0.012, 0.035)
-ylim = c(-0.008,0.023)
+#xlim <- c(-0.025, 0.035)
+#ylim = c(-0.02,0.003)
 # Woondum3 21_06_15
 #xlim <- c(-0.017, 0.02)
 #ylim = c(-0.008,0.01)
@@ -48,6 +48,11 @@ ylim = c(-0.008,0.023)
 
 site <- indices$site[1]
 date <- indices$rec.date[1]
+
+#xlim <- c(-0.025, 0.035)
+#ylim <- c(-0.02,0.003)
+xlim <- c(-0.035,0.035)
+ylim <- c(-0.035,0.035)
 ################ Normalise data ####################################
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
@@ -65,25 +70,32 @@ normalise <- function (x, xmin, xmax) {
 #  }
 #}
 
+# Pre-processing of Temporal Entropy
+# to correct the long tail 
+indices[,14] <- sqrt(indices[,14])
+
 normIndices <- indices
+
 # normalise variable columns
+normIndices[,2]  <- normalise(indices[,2],  0, 2)     # HighAmplitudeIndex
+normIndices[,3]  <- normalise(indices[,3],  0, 1)     # ClippingIndex
 normIndices[,4]  <- normalise(indices[,4], -50,-10)    # AverageSignalAmplitude
 normIndices[,5]  <- normalise(indices[,5], -50,-10)    # BackgroundNoise
-normIndices[,6]  <- normalise(indices[,6],  0,  50)    # Snr
-normIndices[,7]  <- normalise(indices[,7],  3,  20)    # AvSnrofActive Frames
-normIndices[,8]  <- normalise(indices[,8],  0,  1)     # Activity 
-normIndices[,9]  <- normalise(indices[,9],  0,  5)     # EventsPerSecond
-normIndices[,10] <- normalise(indices[,10], 0,  0.5)   # HighFreqCover
-normIndices[,11] <- normalise(indices[,11], 0,  0.5)   # MidFreqCover
-normIndices[,12] <- normalise(indices[,12], 0,  0.5)   # LowFreqCover
+normIndices[,6]  <- normalise(indices[,6],  0, 50)    # Snr
+normIndices[,7]  <- normalise(indices[,7],  3, 10)    # AvSnrofActive Frames
+normIndices[,8]  <- normalise(indices[,8],  0, 1)     # Activity 
+normIndices[,9]  <- normalise(indices[,9],  0, 2)     # EventsPerSecond
+normIndices[,10] <- normalise(indices[,10], 0, 0.5)   # HighFreqCover
+normIndices[,11] <- normalise(indices[,11], 0, 0.5)   # MidFreqCover
+normIndices[,12] <- normalise(indices[,12], 0, 0.5)   # LowFreqCover
 normIndices[,13] <- normalise(indices[,13], 0.4,0.7)   # AcousticComplexity
-normIndices[,14] <- normalise(indices[,14], 0,  0.6)   # TemporalEntropy
-normIndices[,15] <- normalise(indices[,15], 0,  0.8)   # EntropyOfAverageSpectrum
-normIndices[,16] <- normalise(indices[,16], 0,  1)     # EntropyOfVarianceSpectrum
-normIndices[,17] <- normalise(indices[,17], 0,  1)     # EntropyOfPeaksSpectrum
-normIndices[,18] <- normalise(indices[,18], 0,  0.7)   # EntropyOfCoVSpectrum
+normIndices[,14] <- normalise(indices[,14], 0, 0.3)   # TemporalEntropy
+normIndices[,15] <- normalise(indices[,15], 0, 0.7)   # EntropyOfAverageSpectrum
+normIndices[,16] <- normalise(indices[,16], 0, 1)     # EntropyOfVarianceSpectrum
+normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyOfPeaksSpectrum
+normIndices[,18] <- normalise(indices[,18], 0, 0.7)   # EntropyOfCoVSpectrum
 normIndices[,19] <- normalise(indices[,19], -0.8, 1)   # NDSI
-normIndices[,20] <- normalise(indices[,20], 0, 22)     # SptDensity
+normIndices[,20] <- normalise(indices[,20], 0, 15)     # SptDensity
 
 # adjust values greater than 1 or less than 0
 for (j in 4:20){
@@ -99,29 +111,65 @@ for (j in 4:20){
   }
 }
 
-
 # Select which indices to consider
 #normIndices <- cbind(normIndices[,c(5,7,9,10,11,12,13,14,15,17)], entropy_cov)
-normIndices <- cbind(normIndices[,c(4:20)])  
+normIndices <- cbind(normIndices[,c(4:20)], indices[,37])  
 ######### PCA biplot #####################################
-file <- paste("Principal Component Analysis_", site, 
+#file <- paste("Principal Component Analysis_adj_ranges", site, 
+#              "_", date, ".png", sep = "")
+#png(
+#  file,
+#  width     = 200,
+#  height    = 200,
+#  units     = "mm",
+#  res       = 1200,
+#  pointsize = 4
+#)
+
+#par(mar =c(2,2,4,2), cex.axis = 2.5)
+#PCAofIndices<- prcomp(normIndices)
+#biplot(PCAofIndices, col=c("pink","blue"), 
+#       cex=c(0.5,0.9), ylim = ylim, 
+#       xlim = xlim)
+#abline(h=0,v=0)
+#mtext(side = 3, line = 2, paste("Principal Component Analysis prcomp ",
+#              site, date, sep = " "), cex = 2.5)
+
+#dev.off()
+
+file <- paste("Principal Component Analysis_adj_ranges_ggbiplot", site, 
               "_", date, ".png", sep = "")
-png(
-  file,
-  width     = 200,
-  height    = 200,
-  units     = "mm",
-  res       = 1200,
-  pointsize = 4
-)
 
-par(mar =c(2,2,4,2), cex.axis = 2.5)
-PCAofIndices<- prcomp(normIndices)
-biplot(PCAofIndices, col=c("transparent", "red"), 
-       cex=c(0.08,0.9), ylim = ylim, 
-       xlim = xlim)
-mtext(side = 3, line = 2, paste("Principal Component Analysis prcomp ",
-              site, date, sep = " "), cex = 2.5)
+library(ggbiplot)
+data(wine)
+normIndices.pca <- prcomp(normIndices[,1:17], 
+                  scale. = F)
 
-dev.off()
+# Initiate initial plot 
+#p <- NULL
+
+#p <- print(ggbiplot(normIndices.pca, obs.scale = 1, 
+#           var.scale = 1, groups = normIndices$`indices[, 37]`,
+#           ellipse = TRUE, circle = F), size = 0.3)
+#png('pca_biplot.png', width=1500,height=1500,units="px")  
+
+#g <- ggbiplot(normIndices.pca, obs.scale = 1, var.scale = 1,
+#              groups = normIndices$`indices[, 37]`, 
+#              ellipse = TRUE, circle = TRUE)
+
+####### Saving a PCA plot produced in ggplot ################
+g <- g + scale_color_discrete(name = '')
+g <- g + theme(legend.direction = 'horizontal',
+               legend.position = 'top')
+g <- g + scale_color_manual(values = c("red", "orange", "yellow", 
+                                       "green", "blue", "violet"))
+#+ geom_point(size = 0.5, shape = 5)
+print(g)
+
+# Open png device
+png('pca_biplot.png', width=800,height=800,units="px")  
+
+print(g)                                                                         # Print to png device         
+dev.off()                                                                        # Turn off device
+
 #################################################

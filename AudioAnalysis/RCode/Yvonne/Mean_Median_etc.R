@@ -5,19 +5,72 @@
 #setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\")
 #setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
-setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
 
 #indices <- read.csv("Towsey_summary_indices 20150315_133427 to 20150320_153429 .csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices 20150322_113743 to 20150327_103745 .csv", header=T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv",header = T)
-indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
+indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000.csv", header=T)
+#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
-
 site <- indices$site[1]
-date <- indices$rec.date[1]
+date <- paste(indices$rec.date[1],indices$rec.date[length(indices$rec.date)], sep = " ")
+
+################# Plot boxplots ############################
+# Plot 1 - indices ranging from 0 - 1
+file <- paste("Boxplots - Indices 8,10_19_", site, 
+              "_", date, ".png", sep = "")
+png(
+  file,
+  width     = 1200,
+  height    = 200,
+  units     = "mm",
+  res       = 400,
+  pointsize = 4
+)
+par(mar=c(4,10,4,2))
+boxplot(indices[c(8,10:18)], cex.axis=6)
+mtext(side = 3, paste(site, date, sep = " "),cex = 6)
+
+dev.off()
+
+# Plot 2
+file <- paste("Boxplots - Indices 4_5_", site, 
+              "_", date, ".png", sep = "")
+png(
+  file,
+  width     = 1200,
+  height    = 200,
+  units     = "mm",
+  res       = 400,
+  pointsize = 4
+)
+par(mar=c(4,10,4,2))
+boxplot(indices[4:5], cex.axis=6)
+mtext(side = 3, paste(site, date, sep = " "), cex = 6)
+dev.off
+
+# Plot 3
+file <- paste("Boxplots - Indices 6,7,20_", site, 
+              "_", date, ".png", sep = "")
+png(
+  file,
+  width     = 1200,
+  height    = 200,
+  units     = "mm",
+  res       = 400,
+  pointsize = 4
+)
+par(mar=c(4,10,4,2))
+boxplot(indices[c(6,7,20)], cex.axis=6)
+mtext(side = 3, paste(site, date, sep = " "), cex = 6)
+dev.off()
+
+#####################################################
 #plot(indices[,12])
 mean        <- numeric()
 median      <- numeric()
@@ -44,7 +97,9 @@ rowNames    <-  c("AvgSignalAmplitude",       #4th column
                   "AvgEntropySpectrum",      #15
                   "VarianceEntropySpectrum", #16
                   "EntropyPeaks",            #17
-                  "SptDensity")              #18
+                  "EntropyCoefic",           #18
+                  "NDSI",                    #19
+                  "SptDensity")              #20            
                   
 
 Mode <- function (x){
@@ -52,28 +107,28 @@ Mode <- function (x){
   ux[which.max(tabulate(match(x,ux)))]
 }
 
-for (i in 4:18) {
-m <- mean(indices[,i])
-mean <- c(mean, m)
-md <- median(indices[,i])
-median <- c(median, md)
-mo <- Mode(indices[,i])
-mode <- c(mode, mo)
-std <- sd(indices[,i])
-standardDev <- c(standardDev, std)
-mx <- max(indices[,i])
-max <- c(max, mx)
-mn <- min(indices[,i])
-min <- c(min, mn)
-tw5th <- quantile(indices[,i], 0.25)
-tw5th <- unname(tw5th)
-q25 <- c(q25, tw5th)
-svn5th <- quantile(indices[,i], 0.75)
-svn5th <- unname(svn5th)
-q75 <- c(q75, svn5th)
-rge <- range(indices[,i])
-rge1 <- rge[2]-rge[1]
-range <- c(range, rge1)
+for (i in 4:20) {
+    m <- mean(indices[,i])
+    mean <- c(mean, m)
+    md <- median(indices[,i])
+    median <- c(median, md)
+    mo <- Mode(indices[,i])
+    mode <- c(mode, mo)
+    std <- sd(indices[,i])
+    standardDev <- c(standardDev, std)
+    mx <- max(indices[,i])
+    max <- c(max, mx)
+    mn <- min(indices[,i])
+    min <- c(min, mn)
+    tw5th <- quantile(indices[,i], 0.25)
+    tw5th <- unname(tw5th)
+    q25 <- c(q25, tw5th)
+    svn5th <- quantile(indices[,i], 0.75)
+    svn5th <- unname(svn5th)
+    q75 <- c(q75, svn5th)
+    rge <- range(indices[,i])
+    rge1 <- rge[2]-rge[1]
+    range <- c(range, rge1)
 }
 
 normalisedValues <- array(c(-50, -10,
@@ -90,10 +145,11 @@ normalisedValues <- array(c(-50, -10,
                               0, 0.8,
                               0, 1,
                               0, 1,
-                              0, 22), dim=c(2,15))
+                              0, 0.7,
+                             -0.8, 1,
+                              0, 22), dim=c(2,17))
 
 normValues <- aperm(normalisedValues)
-dim(bxPlotStats) <- c(15,5)
 
 all.stats <- cbind(rowNames, min, q25, median, q75, max, mean, 
                    mode, standardDev, range, normValues)

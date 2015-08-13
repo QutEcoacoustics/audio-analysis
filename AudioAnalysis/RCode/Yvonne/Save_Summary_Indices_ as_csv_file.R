@@ -3,15 +3,19 @@
 # Reads in the Towsey_summary_indices an saves to csv.  
 
 #  This file is #1 in the sequence:
-# *1. Save_Summary_Indices_ as_csv_file.R
-#  2. Plot_Towsey_Summary_Indices.R
-#  3. Correlation_Matrix.R
-#  4. Principal_Component_Analysis.R
-#  5. kMeans_Clustering.R
-#  6. Quantisation_error.R
-#  7. Distance_matrix.R
-#  8. Minimising_error.R
-#  9. Segmenting_image.R
+#  *1. Save_Summary_Indices_ as_csv_file.R
+#   2. Plot_Towsey_Summary_Indices.R
+#   3. Correlation_Matrix.R
+#   4. Principal_Component_Analysis.R
+#   5. kMeans_Clustering.R
+#   6. Quantisation_error.R
+#   7. Distance_matrix.R
+#   8. Minimising_error.R
+#   9. Segmenting_image.R
+#  10. Transition Matrix    
+#  11. Cluster Time Series
+#  12. Auto-correlation
+#  13. Cross-correlation
 
 ######## You may wish to change these ###################### 
 #setwd("C:\\Work\\CSV files\\Woondum1\\2015_03_15\\")
