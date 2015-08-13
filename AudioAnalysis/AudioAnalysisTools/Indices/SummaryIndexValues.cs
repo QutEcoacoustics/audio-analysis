@@ -100,11 +100,14 @@ namespace AudioAnalysisTools.Indices
 
         public double TemporalEntropy { get; set; }
 
-        public double EntropyOfAverageSpectrum { get; set; }
+        public double EntropyOfAverageSpectrum { get; set; } // this is new more accurate name
+        public double AvgEntropySpectrum { get; set; } // this is old name for EntropyOfAverageSpectrum
 
         public double EntropyOfVarianceSpectrum { get; set; }
+        public double VarianceEntropySpectrum { get; set; }  // this is old name for EntropyOfVarianceSpectrum
 
         public double EntropyOfPeaksSpectrum { get; set; }
+        public double EntropyPeaks { get; set; } // this is old name for EntropyOfPeaksSpectrum
 
         public double EntropyOfCoVSpectrum { get; set; }
 
