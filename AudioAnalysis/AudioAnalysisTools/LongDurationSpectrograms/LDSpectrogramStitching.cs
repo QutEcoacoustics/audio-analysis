@@ -139,86 +139,86 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings 
         /// in blocks of 6 hours. 
         /// </summary>
-        public static void ConcatenateSpectralIndexFiles1()
-        {
-            // create an array that contains the names of csv file to be read.
-            // The file names must be in the temporal order rquired for the resulting spectrogram image.
-            string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
-            string fileStem = "SERF_20130401";
-            string[] names = {"SERF_20130401_000025_000",
-                              "SERF_20130401_064604_000",
-                              "SERF_20130401_133143_000",
-                              "SERF_20130401_201721_000",
-                                      };
-            //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
-            //string fileStem = "SERF_20130619";
-            //string[] names = {"SERF_20130619_000038_000",
-            //                  "SERF_20130619_064615_000",
-            //                  "SERF_20130619_133153_000",
-            //                  "SERF_20130619_201730_000",
-            //                      };
+        //public static void ConcatenateSpectralIndexFiles1()
+        //{
+        //    // create an array that contains the names of csv file to be read.
+        //    // The file names must be in the temporal order rquired for the resulting spectrogram image.
+        //    string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
+        //    string fileStem = "SERF_20130401";
+        //    string[] names = {"SERF_20130401_000025_000",
+        //                      "SERF_20130401_064604_000",
+        //                      "SERF_20130401_133143_000",
+        //                      "SERF_20130401_201721_000",
+        //                              };
+        //    //string topLevelDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19";
+        //    //string fileStem = "SERF_20130619";
+        //    //string[] names = {"SERF_20130619_000038_000",
+        //    //                  "SERF_20130619_064615_000",
+        //    //                  "SERF_20130619_133153_000",
+        //    //                  "SERF_20130619_201730_000",
+        //    //                      };
 
-            string indexPropertiesConfigPath = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01\IndexPropertiesOLDConfig.yml";
-
-
-            string outputDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
-            DirectoryInfo dirInfo = new DirectoryInfo(outputDirectory);
-
-            var ldSpectrogramConfig = new LdSpectrogramConfig
-            {
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                YAxisTicInterval = 1000,
-                ColorMap1 = "ACI-TEN-CVR",
-                ColorMap2 = "BGN-AVG-VAR",
-                //ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
-                //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
-            };
-
-            //string colorMap2 = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
-            //string[] keys = {"ACI", "TEN", "CVR", "BGN", "AVG", "VAR"};
-            string[] keys = ldSpectrogramConfig.GetKeys();
-
-            string analysisType = "Towsey.Acoustic";
-
-            // ###############################################################
-            // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
-            int sampleRate = 17640;
-            int frameWidth = 256;
-            int nyquist = sampleRate / 2;
-            int herzInterval = 1000;
-            // ###############################################################
+        //    string indexPropertiesConfigPath = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01\IndexPropertiesOLDConfig.yml";
 
 
-            FileInfo[] paths = ConcatenateSpectralIndexFiles(topLevelDirectory, fileStem, names);
-            Dictionary<string, double[,]> indexSpectrograms = IndexMatrices.ReadCSVFiles(paths, keys);
+        //    string outputDirectory = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013April01";
+        //    DirectoryInfo dirInfo = new DirectoryInfo(outputDirectory);
 
-            FileInfo indexPropertiesConfigFileInfo  = new FileInfo(indexPropertiesConfigPath);
+        //    var ldSpectrogramConfig = new LdSpectrogramConfig
+        //    {
+        //        XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+        //        YAxisTicInterval = 1000,
+        //        ColorMap1 = "ACI-TEN-CVR",
+        //        ColorMap2 = "BGN-AVG-VAR",
+        //        //ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+        //        //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
+        //        //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+        //    };
 
-            var icdPath = Path.Combine(topLevelDirectory, fileStem + "__" + IndexGenerationData.FileNameFragment + ".json"); 
-            FileInfo icdFileInfo = icdPath.ToFileInfo();
-            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(icdFileInfo);
+        //    //string colorMap2 = SpectrogramConstants.RGBMap_BGN_AVG_CVR;
+        //    //string[] keys = {"ACI", "TEN", "CVR", "BGN", "AVG", "VAR"};
+        //    string[] keys = ldSpectrogramConfig.GetKeys();
+
+        //    string analysisType = "Towsey.Acoustic";
+
+        //    // ###############################################################
+        //    // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
+        //    int sampleRate = 17640;
+        //    int frameWidth = 256;
+        //    int nyquist = sampleRate / 2;
+        //    int herzInterval = 1000;
+        //    // ###############################################################
+
+
+        //    FileInfo[] paths = ConcatenateSpectralIndexFiles(topLevelDirectory, fileStem, names);
+        //    Dictionary<string, double[,]> indexSpectrograms = IndexMatrices.ReadCSVFiles(paths, keys);
+
+        //    FileInfo indexPropertiesConfigFileInfo  = new FileInfo(indexPropertiesConfigPath);
+
+        //    var icdPath = Path.Combine(topLevelDirectory, fileStem + "__" + IndexGenerationData.FileNameFragment + ".json"); 
+        //    FileInfo icdFileInfo = icdPath.ToFileInfo();
+        //    IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(icdFileInfo);
 
 
 
-            Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null;
-            SummaryIndexBase[] summaryIndices = null;
-            bool returnChromelessImages = false;
+        //    Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null;
+        //    SummaryIndexBase[] summaryIndices = null;
+        //    bool returnChromelessImages = false;
 
-            Tuple<Image, string>[] tuple =  LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
-            dirInfo,
-            dirInfo,
-            ldSpectrogramConfig,
-            indexPropertiesConfigFileInfo,
-            indexGenerationData,
-            fileStem,
-            analysisType,
-            indexSpectrograms,
-            summaryIndices,
-            indexDistributions,
-            returnChromelessImages);
+        //    Tuple<Image, string>[] tuple =  LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+        //    dirInfo,
+        //    dirInfo,
+        //    ldSpectrogramConfig,
+        //    indexPropertiesConfigFileInfo,
+        //    indexGenerationData,
+        //    fileStem,
+        //    analysisType,
+        //    indexSpectrograms,
+        //    summaryIndices,
+        //    indexDistributions,
+        //    returnChromelessImages);
 
-        }
+        //}
 
 
 
@@ -229,66 +229,74 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24 hour recordings 
         /// in blocks of 6 hours. 
         /// </summary>
-        public static FileInfo[] ConcatenateSpectralIndexFiles(string topLevelDirectory, string fileStem, string[] names)
+        //public static FileInfo[] ConcatenateSpectralIndexFiles(string topLevelDirectory, string fileStem, string[] names)
+        //{
+        //    string[] level2Dirs = { names[0]+".wav",
+        //                            names[1]+".wav",
+        //                            names[2]+".wav",
+        //                            names[3]+".wav",
+        //                          };
+        //    string level3Dir = "Towsey.Acoustic";
+        //    string[] dirNames = {   topLevelDirectory+@"\"+level2Dirs[0]+@"\"+level3Dir,
+        //                            topLevelDirectory+@"\"+level2Dirs[1]+@"\"+level3Dir,
+        //                            topLevelDirectory+@"\"+level2Dirs[2]+@"\"+level3Dir,
+        //                            topLevelDirectory+@"\"+level2Dirs[3]+@"\"+level3Dir
+        //                        };
+        //    string[] fileExtentions = { ".ACI.csv",
+        //                                ".AVG.csv",
+        //                                ".BGN.csv",
+        //                                ".CVR.csv",
+        //                                ".TEN.csv",
+        //                                ".VAR.csv",
+        //                                "_Towsey.Acoustic.Indices.csv"
+        //                                };
+        //    var paths = new List<FileInfo>();
+
+        //    // this loop reads in all the Indices from consecutive csv files
+        //    foreach (string extention in fileExtentions)
+        //    {
+        //        Console.WriteLine("\n\nFILE TYPE: " + extention);
+
+        //        List<string> lines = new List<string>();
+
+        //        for (int i = 0; i < dirNames.Length; i++)
+        //        {
+        //            string fName = names[i] + extention;
+        //            string path = Path.Combine(dirNames[i], fName);
+        //            var fileInfo = new FileInfo(path);
+        //            Console.WriteLine(path);
+        //            if (!fileInfo.Exists)
+        //                Console.WriteLine("ABOVE FILE DOES NOT EXIST");
+
+        //            var ipLines = FileTools.ReadTextFile(path);
+        //            if (i != 0)
+        //            {
+        //                ipLines.RemoveAt(0); //remove the first line
+        //            }
+        //            lines.AddRange(ipLines);
+        //        }
+        //        string opFileName = fileStem + "__Towsey.Acoustic" + extention;
+        //        string opPath = Path.Combine(topLevelDirectory, opFileName);
+        //        FileTools.WriteTextFile(opPath, lines, false);
+
+        //        paths.Add(new FileInfo(opPath));
+        //    } //end of all file extentions
+
+        //    return paths.ToArray();
+        //}
+
+
+        public static void ConcatenateIndexFiles(DirectoryInfo dataDir, 
+                                                 FileInfo indexPropertiesConfigFileInfo, 
+                                                 DirectoryInfo opDir, 
+                                                 string opFileStem)
         {
-            string[] level2Dirs = { names[0]+".wav",
-                                    names[1]+".wav",
-                                    names[2]+".wav",
-                                    names[3]+".wav",
-                                  };
-            string level3Dir = "Towsey.Acoustic";
-            string[] dirNames = {   topLevelDirectory+@"\"+level2Dirs[0]+@"\"+level3Dir,
-                                    topLevelDirectory+@"\"+level2Dirs[1]+@"\"+level3Dir,
-                                    topLevelDirectory+@"\"+level2Dirs[2]+@"\"+level3Dir,
-                                    topLevelDirectory+@"\"+level2Dirs[3]+@"\"+level3Dir
-                                };
-            string[] fileExtentions = { ".ACI.csv",
-                                        ".AVG.csv",
-                                        ".BGN.csv",
-                                        ".CVR.csv",
-                                        ".TEN.csv",
-                                        ".VAR.csv",
-                                        "_Towsey.Acoustic.Indices.csv"
-                                        };
-            var paths = new List<FileInfo>();
-
-            // this loop reads in all the Indices from consecutive csv files
-            foreach (string extention in fileExtentions)
-            {
-                Console.WriteLine("\n\nFILE TYPE: " + extention);
-
-                List<string> lines = new List<string>();
-
-                for (int i = 0; i < dirNames.Length; i++)
-                {
-                    string fName = names[i] + extention;
-                    string path = Path.Combine(dirNames[i], fName);
-                    var fileInfo = new FileInfo(path);
-                    Console.WriteLine(path);
-                    if (!fileInfo.Exists)
-                        Console.WriteLine("ABOVE FILE DOES NOT EXIST");
-
-                    var ipLines = FileTools.ReadTextFile(path);
-                    if (i != 0)
-                    {
-                        ipLines.RemoveAt(0); //remove the first line
-                    }
-                    lines.AddRange(ipLines);
-                }
-                string opFileName = fileStem + "__Towsey.Acoustic" + extention;
-                string opPath = Path.Combine(topLevelDirectory, opFileName);
-                FileTools.WriteTextFile(opPath, lines, false);
-
-                paths.Add(new FileInfo(opPath));
-            } //end of all file extentions
-
-            return paths.ToArray();
+            LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+            LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
         }
 
-
-
         /// <summary>
-        /// MOST RECENT METHOD TO CONCATENATE INDEX.CSV FILES - August 2015.
+        /// MOST RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - August 2015.
         /// This method merges all files of acoustic indices derived from a sequence of consecutive 1/2 to 6 hour recordings, 
         /// that have a total duration of 24 hours. This was necessary to deal with the new regime of doing 24 hour recordings 
         /// in conseutive short segments. 
@@ -316,34 +324,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string path = topLevelDirectory.FullName;
             var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, keys);
 
+            // Calculate the index distribution statistics and write to a json file. Also save as png image
+            var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, topLevelDirectory, opFileStem);
+
+
             // get first file name from sorted list
             string pattern = "*ACI.csv";
             FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, pattern);
 
             // get the IndexGenerationData file from the first directory
-            DirectoryInfo firstDirectory = files[0].Directory;
-            pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
-            FileInfo igdFile = IndexMatrices.GetFilesInDirectory(firstDirectory.FullName, pattern).Single();
-            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFile);
+            IndexGenerationData indexGenerationData = GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
 
-            // Get the start time from the first file in sort list.
-            // UNNECESARRY CODE????? Anthony has this one already done somewhere else!!!!!!!!!!!!!!!!!!
-            pattern = @"20\d\d\d\d\d\d_\d\d\d\d\d\d_";
-            Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
-            Match m = r.Match(files[0].Name); // get name of first file
-
-            Group group = m.Groups[0];
-            string[] array = group.ToString().Split('_');
-            int year = Int32.Parse(array[0].Substring(0, 4));
-            int mnth = Int32.Parse(array[0].Substring(4, 2));
-            int day = Int32.Parse(array[0].Substring(6, 2));
-            int hour = Int32.Parse(array[1].Substring(0, 2));
-            int min = Int32.Parse(array[1].Substring(2, 2));
-            int sec = Int32.Parse(array[1].Substring(4, 2));
-            DateTimeOffset startTime = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
-            indexGenerationData.RecordingStartDate = startTime;
-
-            Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null;
             SummaryIndexBase[] summaryIndices = null;
             bool returnChromelessImages = false;
 
@@ -366,7 +357,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// MOST RECENT METHOD TO CONCATENATE SUMMARY INDEX.CSV FILES - August 2015.
         /// This method merges all files of acoustic indices derived from a sequence of consecutive 1/2 to 6 hour recordings, 
-        /// that have a total duration of 24 hours. This was necessary to deal with the new regime of doing 24 hour recordings 
+        /// that have arbitary duration, typically 24 hours or more. This was necessary to deal with the new regime of doing 24 hour recordings 
         /// in conseutive short segments. 
         /// </summary>
         public static void ConcatenateSummaryIndexFiles(DirectoryInfo topLevelDirectory,
@@ -374,74 +365,78 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                           DirectoryInfo opDir,
                                                           string opFileStem)
         {
-            string ImagefileExt = "png";
+            string csvFileExt = "csv";
+            string imgFileExt = "png";
 
-            //20150704_143000_Day1__Towsey.Acoustic.Indices
-            string analysisType = "__Towsey.Acoustic.Indices.csv";
-            string pattern = "*" + analysisType;
+            string pattern = "*__Towsey.Acoustic.Indices.csv";
+            string indexType = "SummaryIndices";
 
-            var ldSpectrogramConfig = new LdSpectrogramConfig
-            {
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                YAxisTicInterval = 1000,
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
-            };
-            string path = topLevelDirectory.FullName;
-
-            FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
+            FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, pattern);
             var summaryDataTuple  = IndexMatrices.GetSummaryIndexFilesAndConcatenate(files);
             string[] headers = summaryDataTuple.Item1;
             double[,] summaryIndices = summaryDataTuple.Item2;
             Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
 
+            // insert some transformed data columns
+            dictionaryOfCsvColumns.Add("SqrtTempEntropy", DataTools.SquareRootOfValues(dictionaryOfCsvColumns["TemporalEntropy"]));
 
-            var indicesFile    = FilenameHelpers.AnalysisResultName(topLevelDirectory, opFileStem, "Indices", "csv");
+            // Calculate Normalised Difference Soundscape Index if not already done
+            // caluclate two ratios for three bands.  DO NOT CHANGE THESE KEYS
+            string ndsiKey = "NDSI-LM";
+            if (!dictionaryOfCsvColumns.ContainsKey(ndsiKey))
+            {
+                dictionaryOfCsvColumns = IndexMatrices.AddNDSI_GageGauge(dictionaryOfCsvColumns, ndsiKey);
+            }
+            ndsiKey = "NDSI-MH";
+            if (!dictionaryOfCsvColumns.ContainsKey(ndsiKey))
+            {
+                dictionaryOfCsvColumns = IndexMatrices.AddNDSI_GageGauge(dictionaryOfCsvColumns, ndsiKey);
+            }
+
+            // Calculate the index distribution statistics and write to a json file. Also save as png image
+            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, topLevelDirectory, opFileStem);
+
+
+
+            var indicesFile = FilenameHelpers.AnalysisResultName(topLevelDirectory, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
             CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
 
             // get the IndexGenerationData file from the first directory
-            DirectoryInfo firstDirectory = files[0].Directory;
-            pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
-            FileInfo igdFile = IndexMatrices.GetFilesInDirectory(firstDirectory.FullName, pattern).Single();
-            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFile);
-
-            // Get the start time from the first file in sort list.
-            // UNNECESARRY CODE????? Anthony has this one already done somewhere else!!!!!!!!!!!!!!!!!!
-            pattern = @"20\d\d\d\d\d\d_\d\d\d\d\d\d_";
-            Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
-            Match m = r.Match(files[0].Name); // get name of first file
-
-            Group group = m.Groups[0];
-            string[] array = group.ToString().Split('_');
-            int year = Int32.Parse(array[0].Substring(0, 4));
-            int mnth = Int32.Parse(array[0].Substring(4, 2));
-            int day = Int32.Parse(array[0].Substring(6, 2));
-            int hour = Int32.Parse(array[1].Substring(0, 2));
-            int min = Int32.Parse(array[1].Substring(2, 2));
-            int sec = Int32.Parse(array[1].Substring(4, 2));
-            DateTimeOffset startTime = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
-            indexGenerationData.RecordingStartDate = startTime;
-
-            //Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null;
-            //SummaryIndexBase[] summaryIndices = null;
-
-            //string fileName = Path.GetFileNameWithoutExtension(fileNameBase);
-            string fileName = opFileStem;
-            string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+            IndexGenerationData indexGenerationData = GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
+            TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
+            string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
+            string imageTitle = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
             Bitmap tracksImage =
                 DrawSummaryIndices.DrawImageOfSummaryIndices(
                     IndexProperties.GetIndexProperties(indexPropertiesConfig),
+                    indexGenerationData,
                     dictionaryOfCsvColumns,
                     imageTitle);
-            var imagePath = FilenameHelpers.AnalysisResultName(topLevelDirectory, fileName, "Indices", ImagefileExt);
+            var imagePath = FilenameHelpers.AnalysisResultName(topLevelDirectory, opFileStem, indexType, imgFileExt);
             tracksImage.Save(imagePath);
         }
 
+        /// <summary>
+        /// Returns the index generation data from file in psased directory.
+        /// Assumes that the file name contains the start time in parseable pattern
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName)
+        {
+            string pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
+            FileInfo igdFile = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern).Single();
+            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFile);
 
-
+            // Get the start time from the file name.
+            DateTimeOffset startTime = IndexMatrices.GetFileStartTime(fileName);
+            indexGenerationData.RecordingStartDate = startTime;
+            return indexGenerationData;
+        }
 
         /// <summary>
         /// SHOULD BE DEPRACATED!
@@ -451,77 +446,77 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// This method differs from the above in that we are concatnating already prepared images as opposed to the index.csv files.
         /// The time scale is added in afterwards - must over-write the previous time scale and title bar.
         /// </summary>
-        public static void ConcatenateSpectralIndexImages()
-        {
-            // create an array that contains the names of csv file to be read.
-            // The file names must be in the temporal order rquired for the resulting spectrogram image.
+        //public static void ConcatenateSpectralIndexImages()
+        //{
+        //    // create an array that contains the names of csv file to be read.
+        //    // The file names must be in the temporal order rquired for the resulting spectrogram image.
 
-            //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
-            //string fileStem =  "BYR2_20131016";
-            //string[] names = {@"BYR2_20131016_000000.wav\Towsey.Acoustic\BYR2_20131016_000000__ACI-ENT-EVN.png",
-            //                  @"BYR2_20131016_133121.wav\Towsey.Acoustic\BYR2_20131016_133121__ACI-ENT-EVN.png",
-            //                 };
+        //    //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
+        //    //string fileStem =  "BYR2_20131016";
+        //    //string[] names = {@"BYR2_20131016_000000.wav\Towsey.Acoustic\BYR2_20131016_000000__ACI-ENT-EVN.png",
+        //    //                  @"BYR2_20131016_133121.wav\Towsey.Acoustic\BYR2_20131016_133121__ACI-ENT-EVN.png",
+        //    //                 };
 
-            //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
-            //string fileStem = "BYR2_20131017";
-            //string[] names = {@"BYR2_20131017_000000.wav\Towsey.Acoustic\BYR2_20131017_000000__ACI-ENT-EVN.png",
-            //                  @"BYR2_20131017_133121.wav\Towsey.Acoustic\BYR2_20131017_133121__ACI-ENT-EVN.png",
-            //                 };
-            string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\PRA\";
-            string fileStem = "BYR4_20131017";
-            string[] names = {@"BYR4_20131017_000000.wav\Towsey.Acoustic\BYR4_20131017_000000__ACI-ENT-EVN.png",
-                              @"BYR4_20131017_064544.wav\Towsey.Acoustic\BYR4_20131017_064544__ACI-ENT-EVN.png",
-                              @"BYR4_20131017_133128.wav\Towsey.Acoustic\BYR4_20131017_133128__ACI-ENT-EVN.png",
-                              @"BYR4_20131017_201713.wav\Towsey.Acoustic\BYR4_20131017_201713__ACI-ENT-EVN.png",
-                             };
+        //    //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
+        //    //string fileStem = "BYR2_20131017";
+        //    //string[] names = {@"BYR2_20131017_000000.wav\Towsey.Acoustic\BYR2_20131017_000000__ACI-ENT-EVN.png",
+        //    //                  @"BYR2_20131017_133121.wav\Towsey.Acoustic\BYR2_20131017_133121__ACI-ENT-EVN.png",
+        //    //                 };
+        //    string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\PRA\";
+        //    string fileStem = "BYR4_20131017";
+        //    string[] names = {@"BYR4_20131017_000000.wav\Towsey.Acoustic\BYR4_20131017_000000__ACI-ENT-EVN.png",
+        //                      @"BYR4_20131017_064544.wav\Towsey.Acoustic\BYR4_20131017_064544__ACI-ENT-EVN.png",
+        //                      @"BYR4_20131017_133128.wav\Towsey.Acoustic\BYR4_20131017_133128__ACI-ENT-EVN.png",
+        //                      @"BYR4_20131017_201713.wav\Towsey.Acoustic\BYR4_20131017_201713__ACI-ENT-EVN.png",
+        //                     };
 
-            string opDir = @"C:\SensorNetworks\Output\Mangalam_BDVA2015";
+        //    string opDir = @"C:\SensorNetworks\Output\Mangalam_BDVA2015";
 
-            // ###############################################################
-            // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
-            int sampleRate = 22050;
-            int frameWidth = 256;
-            int nyquist    = sampleRate / 2;
-            int herzInterval = 1000;
-            TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
-            double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-            string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-            TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
-            TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
-            // ###############################################################
+        //    // ###############################################################
+        //    // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
+        //    int sampleRate = 22050;
+        //    int frameWidth = 256;
+        //    int nyquist    = sampleRate / 2;
+        //    int herzInterval = 1000;
+        //    TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
+        //    double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+        //    string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
+        //    string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
+        //    TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
+        //    TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
+        //    // ###############################################################
 
-            List<Image> imageList = new List<Image>();
-            // this loop reads in all the file names
-            foreach (string name in names)
-            {
-                FileInfo fi = new FileInfo(topLevelDirectory + name);
-                Console.WriteLine("Reading file: " + fi.Name);
-                Image image = ImageTools.ReadImage2Bitmap(fi.FullName);
-                imageList.Add(image);
-            } //end of all file names
+        //    List<Image> imageList = new List<Image>();
+        //    // this loop reads in all the file names
+        //    foreach (string name in names)
+        //    {
+        //        FileInfo fi = new FileInfo(topLevelDirectory + name);
+        //        Console.WriteLine("Reading file: " + fi.Name);
+        //        Image image = ImageTools.ReadImage2Bitmap(fi.FullName);
+        //        imageList.Add(image);
+        //    } //end of all file names
 
-            Image spgmImage = ImageTools.CombineImagesInLine(imageList);
-            int imageWidth  = spgmImage.Width;
-            int imageHeight = spgmImage.Height;
+        //    Image spgmImage = ImageTools.CombineImagesInLine(imageList);
+        //    int imageWidth  = spgmImage.Width;
+        //    int imageHeight = spgmImage.Height;
 
 
-            //Draw the title bar
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageWidth);
-            //Draw the x-axis time scale bar
-            int trackHeight = 20;
-            TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, null, imageWidth, trackHeight);
+        //    //Draw the title bar
+        //    Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageWidth);
+        //    //Draw the x-axis time scale bar
+        //    int trackHeight = 20;
+        //    TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
+        //    Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, null, imageWidth, trackHeight);
 
-            //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
-            Graphics gr = Graphics.FromImage(spgmImage);
-            //gr.Clear(Color.Black);
-            gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
-            gr.DrawImage(timeBmp, 0, 20); //draw in the top spectrogram
-            gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
+        //    //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
+        //    Graphics gr = Graphics.FromImage(spgmImage);
+        //    //gr.Clear(Color.Black);
+        //    gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
+        //    gr.DrawImage(timeBmp, 0, 20); //draw in the top spectrogram
+        //    gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
 
-            spgmImage.Save(Path.Combine(opDir, fileStem + "." + colorMap + ".png"));
-        }
+        //    spgmImage.Save(Path.Combine(opDir, fileStem + "." + colorMap + ".png"));
+        //}
 
 
     }

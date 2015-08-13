@@ -1338,7 +1338,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // Stats are useful because needed if drawing difference spectrograms etc.     
             if (indexDistributions == null)
             {
-                indexDistributions = IndexDistributions.ReadIndexDistributionStatistics(inputDirectory, fileStem);
+                indexDistributions = IndexDistributions.ReadSpectralIndexDistributionStatistics(inputDirectory, fileStem);
                 // cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
                 Log.Fatal("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
 

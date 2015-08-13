@@ -165,7 +165,7 @@ namespace AnalysisPrograms
             // problem is that Jason cuts them up into 6 hour blocks.
             if (false)
             {
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles1();
+                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
                 //LDSpectrogramStitching.ConcatenateSpectralIndexImages();
                 //LDSpectrogramClusters.ExtractSOMClusters();
             } // end if (true)
@@ -208,8 +208,8 @@ namespace AnalysisPrograms
                 // var opDir = new DirectoryInfo(outputDirectory);
                 var opDir = dataDir;
 
-                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
-                LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                LDSpectrogramStitching.ConcatenateIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+
             }
 
 
