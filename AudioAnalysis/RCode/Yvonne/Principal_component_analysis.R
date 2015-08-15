@@ -47,7 +47,9 @@ indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to201
 #ylim = c(-0.001,0.009)
 
 site <- indices$site[1]
-date <- indices$rec.date[1]
+date <- paste(indices$rec.date[1], 
+        indices$rec.date[length(indices$rec.date)],
+        sep = "_")
 
 #xlim <- c(-0.025, 0.035)
 #ylim <- c(-0.02,0.003)
@@ -141,7 +143,6 @@ file <- paste("Principal Component Analysis_adj_ranges_ggbiplot", site,
               "_", date, ".png", sep = "")
 
 library(ggbiplot)
-data(wine)
 normIndices.pca <- prcomp(normIndices[,1:17], 
                   scale. = F)
 
@@ -153,23 +154,65 @@ normIndices.pca <- prcomp(normIndices[,1:17],
 #           ellipse = TRUE, circle = F), size = 0.3)
 #png('pca_biplot.png', width=1500,height=1500,units="px")  
 
-#g <- ggbiplot(normIndices.pca, obs.scale = 1, var.scale = 1,
-#              groups = normIndices$`indices[, 37]`, 
-#              ellipse = TRUE, circle = TRUE)
+#### Plotting Principal Component Plots with base plotting system
+png('pca_plot PC2_PC3.png', width=1500, height=1200, units="px") # change name  
+first <- 2  # change this!!! to match PC# 
+second <- 3  # change this!!! to match PC#
+PrinComp1 <- "PC2"
+PrinComp2 <- "PC3"
+arrowScale <- 0.75 # increase/decrease this to adjust arrow length
+summ <- summary(normIndices.pca)
+rotate <- unname(summ$rotation)
+labels <- names(normIndices[1:length(summ$center)])
 
-####### Saving a PCA plot produced in ggplot ################
-g <- g + scale_color_discrete(name = '')
-g <- g + theme(legend.direction = 'horizontal',
-               legend.position = 'top')
+mainHeader <- paste (site, date, PrinComp1, PrinComp2, sep=" ")
+normIndices <- within(normIndices, levels(`indices[, 37]`) <- c("red","orange","yellow","green","blue","violet"))
+par(mar=c(6,6,4,4))
+plot(normIndices$PC2,normIndices$PC3,  # Change these!!!!! 
+     col=as.character(normIndices$`indices[, 37]`), 
+     cex=1.2, type='p', pch=19, main=mainHeader, 
+     xlab=paste(PrinComp1," (", 
+                round(summ$importance[first*3-1]*100,2),"%)", sep=""),
+     ylab=paste(PrinComp2," (",  
+                round(summ$importance[second*3-1]*100,2),"%)", sep=""),
+     cex.lab=2, cex.axis=1.2, cex.main=2)
+hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
+           "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
+legend('topright', hours, pch=19, col=c('red','orange','yellow',
+                                        'green','blue','violet'), bty='n', cex=2)
+for (i in 1:length(labels)) {
+  arrows(0,0, rotate[i,first]*arrowScale, 
+         rotate[i,second]*arrowScale, col=1, lwd=1.6)  
+  text(rotate[i,first]*arrowScale*1.1, 
+       rotate[i,second]*arrowScale*1.1, 
+       paste(labels[i]), cex=1.6)
+}
+abline (v=0, h=0, lty=2)
+dev.off()
+
+####### An Alternative - Saving a PCA plot produced in ggplot ################
+g <- ggbiplot(normIndices.pca, obs.scale = 1, var.scale = 1,
+              groups = normIndices$`indices[, 37]`, 
+              ellipse = TRUE, circle = TRUE,
+              varname.size=20,
+              labels=normIndices$`indices[, 37]`,
+              labels.size = 10)
 g <- g + scale_color_manual(values = c("red", "orange", "yellow", 
                                        "green", "blue", "violet"))
-#+ geom_point(size = 0.5, shape = 5)
+g <- g + theme_classic()
+g <- g + theme(legend.direction = 'horizontal',
+               legend.position = 'top')
+g <- g + theme(axis.text=element_text(size=40),
+        axis.title=element_text(size=40,face="bold"))
+g <- g + geom_hline(yintercept = 0)
+g <- g + geom_vline(xintercept = 0)
+g <- g +  theme(legend.text = element_text(size=50))
 print(g)
 
 # Open png device
-png('pca_biplot.png', width=800,height=800,units="px")  
+png('pca_biplot.png', width=3000, height=3000,
+    units="px")  
 
-print(g)                                                                         # Print to png device         
-dev.off()                                                                        # Turn off device
+print(g)    # Print to png device         
+dev.off()
 
-#################################################
