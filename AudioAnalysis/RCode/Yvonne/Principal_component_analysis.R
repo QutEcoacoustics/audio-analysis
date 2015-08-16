@@ -72,7 +72,7 @@ normalise <- function (x, xmin, xmax) {
 #  }
 #}
 
-# Pre-processing of Temporal Entropy
+# Pre-processing transformation of Temporal Entropy
 # to correct the long tail 
 indices[,14] <- sqrt(indices[,14])
 
@@ -138,13 +138,76 @@ normIndices <- cbind(normIndices[,c(4:20)], indices[,37])
 #              site, date, sep = " "), cex = 2.5)
 
 #dev.off()
+#### Preparing the dataframe ###############################
+normIndices.pca <- prcomp(normIndices[,1:17], 
+                          scale. = F)
+normIndices$PC1 <- normIndices.pca$x[,1]
+sum(normIndices$PC1)
+normIndices$PC2 <- normIndices.pca$x[,2]
+normIndices$PC3 <- normIndices.pca$x[,3]
+normIndices$PC4 <- normIndices.pca$x[,4]
+normIndices$PC5 <- normIndices.pca$x[,5]
+normIndices$PC6 <- normIndices.pca$x[,6]
+normIndices$PC7 <- normIndices.pca$x[,7]
+normIndices$PC8 <- normIndices.pca$x[,8]
+normIndices$PC9 <- normIndices.pca$x[,9]
+normIndices$PC10 <- normIndices.pca$x[,10]
+plot(normIndices.pca)
 
+#fooPlot <- function(x, main, ...) {
+#  if(missing(main))
+#    main <- deparse(substitute(x))
+#  plot(x, main = main, ...)
+#}
+
+#  set.seed(42)
+#dat <- data.frame(x = rnorm(1:10), y = rnorm(1:10))
+#fooPlot(dat, col = "red")
+
+#### Plotting Principal Component Plots with base plotting system
+# change file name when necessary
+#png('pca_plot PC2_PC3.png', width=1500, height=1200, units="px") 
+PrinComp_X_axis <- "PC2"
+PrinComp_Y_axis <- "PC3"
+first <- 2  # change this and values in plot function below!!! to match PC# 
+second <- 3  # change this!!! to match PC#
+arrowScale <- 0.75 # increase/decrease this to adjust arrow length
+summ <- summary(normIndices.pca)
+rotate <- unname(summ$rotation)
+labels <- names(normIndices[1:length(summ$center)])
+
+mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
+normIndices <- within(normIndices, levels(`indices[, 37]`) <- c("red","orange","yellow","green","blue","violet"))
+par(mar=c(6,6,4,4))
+plot(normIndices$PC2,normIndices$PC3,  # Change these!!!!! 
+     col=as.character(normIndices$`indices[, 37]`), 
+     cex=1.2, type='p', pch=19, main=mainHeader, 
+     xlab=paste(PrinComp_X_axis," (", 
+                round(summ$importance[first*3-1]*100,2),"%)", sep=""),
+     ylab=paste(PrinComp_Y_axis," (",  
+                round(summ$importance[second*3-1]*100,2),"%)", sep=""),
+     cex.lab=2, cex.axis=1.2, cex.main=2)
+hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
+           "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
+for (i in 1:length(labels)) {
+  arrows(0,0, rotate[i,first]*arrowScale, 
+         rotate[i,second]*arrowScale, col=1, lwd=1.6)  
+  text(rotate[i,first]*arrowScale*1.1, 
+       rotate[i,second]*arrowScale*1.1, 
+       paste(labels[i]), cex=1.6)
+}
+abline (v=0, h=0, lty=2)
+legend('topright', hours, pch=19, col=c('red','orange','yellow',
+        'green','blue','violet'), bty='n', cex=2)
+dev.off()
+
+####### An Alternative - Saving a PCA plot produced in ggplot ################
 file <- paste("Principal Component Analysis_adj_ranges_ggbiplot", site, 
               "_", date, ".png", sep = "")
 
 library(ggbiplot)
 normIndices.pca <- prcomp(normIndices[,1:17], 
-                  scale. = F)
+                          scale. = F)
 
 # Initiate initial plot 
 #p <- NULL
@@ -154,43 +217,6 @@ normIndices.pca <- prcomp(normIndices[,1:17],
 #           ellipse = TRUE, circle = F), size = 0.3)
 #png('pca_biplot.png', width=1500,height=1500,units="px")  
 
-#### Plotting Principal Component Plots with base plotting system
-png('pca_plot PC2_PC3.png', width=1500, height=1200, units="px") # change name  
-first <- 2  # change this!!! to match PC# 
-second <- 3  # change this!!! to match PC#
-PrinComp1 <- "PC2"
-PrinComp2 <- "PC3"
-arrowScale <- 0.75 # increase/decrease this to adjust arrow length
-summ <- summary(normIndices.pca)
-rotate <- unname(summ$rotation)
-labels <- names(normIndices[1:length(summ$center)])
-
-mainHeader <- paste (site, date, PrinComp1, PrinComp2, sep=" ")
-normIndices <- within(normIndices, levels(`indices[, 37]`) <- c("red","orange","yellow","green","blue","violet"))
-par(mar=c(6,6,4,4))
-plot(normIndices$PC2,normIndices$PC3,  # Change these!!!!! 
-     col=as.character(normIndices$`indices[, 37]`), 
-     cex=1.2, type='p', pch=19, main=mainHeader, 
-     xlab=paste(PrinComp1," (", 
-                round(summ$importance[first*3-1]*100,2),"%)", sep=""),
-     ylab=paste(PrinComp2," (",  
-                round(summ$importance[second*3-1]*100,2),"%)", sep=""),
-     cex.lab=2, cex.axis=1.2, cex.main=2)
-hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
-           "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
-legend('topright', hours, pch=19, col=c('red','orange','yellow',
-                                        'green','blue','violet'), bty='n', cex=2)
-for (i in 1:length(labels)) {
-  arrows(0,0, rotate[i,first]*arrowScale, 
-         rotate[i,second]*arrowScale, col=1, lwd=1.6)  
-  text(rotate[i,first]*arrowScale*1.1, 
-       rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=1.6)
-}
-abline (v=0, h=0, lty=2)
-dev.off()
-
-####### An Alternative - Saving a PCA plot produced in ggplot ################
 g <- ggbiplot(normIndices.pca, obs.scale = 1, var.scale = 1,
               groups = normIndices$`indices[, 37]`, 
               ellipse = TRUE, circle = TRUE,
