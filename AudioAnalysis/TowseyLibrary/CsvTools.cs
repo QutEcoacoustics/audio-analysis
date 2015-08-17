@@ -210,52 +210,41 @@ namespace TowseyLibrary
  */ 
  
         //#######################################################################################
-        //WRITE A CSV FILE FROM A TABLE
-         public static void DataTable2CSV(DataTable dt, string strFilePath)
+        //WRITE A CSV FILE FROM A MATRIX and headers
+        public static void WriteMatrix2CSV(double[,] M, string[] headers, FileInfo opFile)
          {
-            if (dt == null) return;
-            Type[] types = DataTableTools.GetColumnTypes(dt);
-
-            // Create the CSV file to which grid data will be exported.
-            StreamWriter sw = new StreamWriter(strFilePath, false);
-
-            // First we will write the headers.
-            //DataTable dt = m_dsProducts.Tables[0];
-
-            int iColCount = dt.Columns.Count;
-            for (int i = 0; i < iColCount; i++)
+            if (M == null) return;
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            if (colCount != headers.Length)
             {
-                sw.Write(dt.Columns[i]);
-                if (i < iColCount - 1) sw.Write(","); 
+                Exception e = new Exception();
+                LoggedConsole.WriteFatalLine("", e);
+                return;
             }
 
+
+            StreamWriter sw = new StreamWriter(opFile.FullName, false);
+
+            // First we will write the headers.
+            sw.Write(headers[0]);
+            for (int i = 1; i < colCount; i++)
+            {
+                sw.Write("," + headers[i]);
+            }
             sw.Write(sw.NewLine);
 
             // Now write all the rows.
-            foreach (DataRow dr in dt.Rows)
+            for (int r = 0; r < rowCount; r++)
             {
-                for (int i = 0; i < iColCount; i++)
+                string str = String.Format("{0:f4}", M[r, 0]);
+                sw.Write(str);
+                for (int c = 1; c < colCount; c++)
                 {
-                    if (!Convert.IsDBNull(dr[i]))
+                    if (!Convert.IsDBNull(M[r,c]))
                     {
-                        if (types[i] == typeof(double))
-                        {
-                            string str = String.Format("{0:f4}", dr[i]);
-                            sw.Write(str);
-                        }
-                        else
-                            if (types[i] == typeof(TimeSpan))
-                            {
-                                TimeSpan ts = (TimeSpan)dr[i];
-                                string str = String.Format("{0:f4}", ts.TotalSeconds);
-                                sw.Write(str);
-                            }
-                            else
-                                sw.Write(dr[i].ToString());
-                    }
-                    if (i < iColCount - 1)
-                    {
-                        sw.Write(",");
+                        str = String.Format("{0:f4}", M[r, c]);
+                        sw.Write("," + str);
                     }
                 }
                 sw.Write(sw.NewLine);
@@ -263,6 +252,58 @@ namespace TowseyLibrary
             sw.Close();
         } // DataTable2CSV()
 
+         //WRITE A CSV FILE FROM A TABLE
+         public static void DataTable2CSV(DataTable dt, string strFilePath)
+         {
+             if (dt == null) return;
+             Type[] types = DataTableTools.GetColumnTypes(dt);
+
+             // Create the CSV file to which grid data will be exported.
+             StreamWriter sw = new StreamWriter(strFilePath, false);
+
+             // First we will write the headers.
+             //DataTable dt = m_dsProducts.Tables[0];
+
+             int iColCount = dt.Columns.Count;
+             for (int i = 0; i < iColCount; i++)
+             {
+                 sw.Write(dt.Columns[i]);
+                 if (i < iColCount - 1) sw.Write(",");
+             }
+
+             sw.Write(sw.NewLine);
+
+             // Now write all the rows.
+             foreach (DataRow dr in dt.Rows)
+             {
+                 for (int i = 0; i < iColCount; i++)
+                 {
+                     if (!Convert.IsDBNull(dr[i]))
+                     {
+                         if (types[i] == typeof(double))
+                         {
+                             string str = String.Format("{0:f4}", dr[i]);
+                             sw.Write(str);
+                         }
+                         else
+                             if (types[i] == typeof(TimeSpan))
+                             {
+                                 TimeSpan ts = (TimeSpan)dr[i];
+                                 string str = String.Format("{0:f4}", ts.TotalSeconds);
+                                 sw.Write(str);
+                             }
+                             else
+                                 sw.Write(dr[i].ToString());
+                     }
+                     if (i < iColCount - 1)
+                     {
+                         sw.Write(",");
+                     }
+                 }
+                 sw.Write(sw.NewLine);
+             }
+             sw.Close();
+         } // DataTable2CSV()
 
 
 
@@ -360,7 +401,15 @@ namespace TowseyLibrary
                 words = lines[r].Split(',');
                 for (int c = 0; c < columnCount; c++)
                 {
-                    values[c][r - 1] = Double.Parse(words[c]);
+                    double value = 0.0;
+                    if (Double.TryParse(words[c], out value))
+                    {
+                        values[c][r - 1] = value;
+                    }
+                    else 
+                    {
+                        values[c][r - 1] = 0.0;
+                    }
                 }
             }
 

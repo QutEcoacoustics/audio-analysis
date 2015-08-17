@@ -21,8 +21,10 @@ namespace AudioAnalysisTools.Indices
 
     public static class IndexDistributions
     {
-        public const string IndexStatisticsFilenameFragment    = "IndexStatistics";
-        public const string IndexDistributionsFilenameFragment = "IndexDistributions";
+        public const string SummaryIndexStatisticsFilenameFragment     = "SummaryIndexStatistics";
+        public const string SummaryIndexDistributionsFilenameFragment  = "SummaryIndexDistributions";
+        public const string SpectralIndexStatisticsFilenameFragment    = "SpectralIndexStatistics";
+        public const string SpectralIndexDistributionsFilenameFragment = "SpectralIndexDistributions";
 
         // This constant sets the upper percentile bound for RGB normalisation (0-255) of spectral indices.
         // The relevant distribution is derived from the index distribution statistics file.
@@ -45,6 +47,8 @@ namespace AudioAnalysisTools.Indices
             public int UpperPercentileBin { get; set; }
 
             public int[] Distribution { get; set; }
+
+            public int Count { get; set; }
 
             //public double GetValueOfThresholdPercentile()
             //{
@@ -73,9 +77,9 @@ namespace AudioAnalysisTools.Indices
 
         }
 
-        public static Dictionary<string, SpectralStats> ReadIndexDistributionStatistics(DirectoryInfo opDir, string fileStem)
-        {           
-            FileInfo statsFile = new FileInfo(GetStatsPath(opDir, fileStem));
+        public static Dictionary<string, SpectralStats> ReadSummaryIndexDistributionStatistics(DirectoryInfo opDir, string fileStem)
+        {
+            FileInfo statsFile = new FileInfo(GetSummaryStatsPath(opDir, fileStem));
             if (!statsFile.Exists)
             {
                 return null;
@@ -84,7 +88,18 @@ namespace AudioAnalysisTools.Indices
             return Deserialize(statsFile);
         }
 
-        public static Dictionary<string, SpectralStats> WriteIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo outputDirectory, string fileStem)
+        public static Dictionary<string, SpectralStats> ReadSpectralIndexDistributionStatistics(DirectoryInfo opDir, string fileStem)
+        {           
+            FileInfo statsFile = new FileInfo(GetSpectralStatsPath(opDir, fileStem));
+            if (!statsFile.Exists)
+            {
+                return null;
+            }
+
+            return Deserialize(statsFile);
+        }
+
+        public static Dictionary<string, SpectralStats> WriteSpectralIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo outputDirectory, string fileStem)
         {
             // to accumulate the images
             int width = 100;  // pixels 
@@ -116,17 +131,67 @@ namespace AudioAnalysisTools.Indices
                                 { "mode", stats.Mode },
                                 { "sd",   stats.StandardDeviation},
                                 { IndexDistributions.UPPER_PERCENTILE_LABEL,  value},
+                                { "count",  stats.Count},
                             },
                             width,
                             height));
                 }
             }
 
-            FileInfo statsFile = new FileInfo(GetStatsPath(outputDirectory, fileStem));
+            FileInfo statsFile = new FileInfo(GetSpectralStatsPath(outputDirectory, fileStem));
             Json.Serialise(statsFile, indexDistributionStatistics);
 
             Image image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
-            string imagePath = GetImagePath(outputDirectory, fileStem);
+            string imagePath = GetSpectralImagePath(outputDirectory, fileStem);
+            image3.Save(imagePath);
+
+            return indexDistributionStatistics;
+        }
+
+
+        public static Dictionary<string, SpectralStats> WriteSummaryIndexDistributionStatistics(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
+        {
+            // to accumulate the images
+            int width = 100;  // pixels 
+            int height = 100; // pixels
+            var imageList = new List<Image>();
+            Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();
+
+            string[] indexKeys = summaryIndices.Keys.ToArray();
+
+            foreach (string key in indexKeys)
+            {
+                if (summaryIndices.ContainsKey(key))
+                {
+                    double[] array = summaryIndices[key];
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                    indexDistributionStatistics.Add(key, stats); // add index statistics
+                    double value = stats.GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+
+                    imageList.Add(
+                        ImageTools.DrawHistogram(
+                            key,
+                            stats.Distribution,
+                            stats.UpperPercentileBin,
+                            new Dictionary<string, double>()
+                            {
+                                { "min",  stats.Minimum },
+                                { "max",  stats.Maximum },
+                                { "mode", stats.Mode },
+                                { "sd",   stats.StandardDeviation},
+                                { IndexDistributions.UPPER_PERCENTILE_LABEL,  value},
+                                { "count",  stats.Count},
+                            },
+                            width,
+                            height));
+                }
+            }
+
+            FileInfo statsFile = new FileInfo(GetSummaryStatsPath(outputDirectory, fileStem));
+            Json.Serialise(statsFile, indexDistributionStatistics);
+
+            Image image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
+            string imagePath = GetSummaryImagePath(outputDirectory, fileStem);
             image3.Save(imagePath);
 
             return indexDistributionStatistics;
@@ -157,10 +222,15 @@ namespace AudioAnalysisTools.Indices
         public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] M, int binCount, int upperPercentile)
         {
             double[] values = DataTools.Matrix2Array(M);
+            return GetModeAndOneTailedStandardDeviation(values, binCount, upperPercentile);
+        }
+
+        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[] values, int binCount, int upperPercentile)
+        {
             const bool DisplayHistogram = false;
             double min, max, mode, SD;
             DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
-            int[] histogram = Histogram.Histo(M, binCount);
+            int[] histogram = Histogram.Histo(values, binCount);
 
             return new SpectralStats()
             {
@@ -169,18 +239,29 @@ namespace AudioAnalysisTools.Indices
                 Mode = mode,
                 StandardDeviation = SD,
                 UpperPercentile = upperPercentile,
-                Distribution = histogram
+                Distribution = histogram,
+                Count = values.Length
             };
         }
 
-        public static string GetStatsPath(DirectoryInfo outputDirectory, string fileStem)
+        public static string GetSummaryStatsPath(DirectoryInfo outputDirectory, string fileStem)
         {
-            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, IndexStatisticsFilenameFragment, "json");
+            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SummaryIndexStatisticsFilenameFragment, "json");
         }
 
-        public static string GetImagePath(DirectoryInfo outputDirectory, string fileStem)
+        public static string GetSummaryImagePath(DirectoryInfo outputDirectory, string fileStem)
         {
-            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, IndexDistributionsFilenameFragment, "png");
+            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SummaryIndexDistributionsFilenameFragment, "png");
+        }
+
+        public static string GetSpectralStatsPath(DirectoryInfo outputDirectory, string fileStem)
+        {
+            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SpectralIndexStatisticsFilenameFragment, "json");
+        }
+
+        public static string GetSpectralImagePath(DirectoryInfo outputDirectory, string fileStem)
+        {
+            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SpectralIndexDistributionsFilenameFragment, "png");
         }
 
         public static Dictionary<string, SpectralStats> Deserialize(FileInfo file)

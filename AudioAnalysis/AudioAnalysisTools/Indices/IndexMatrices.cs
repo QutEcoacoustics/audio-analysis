@@ -14,10 +14,9 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
     using System.Linq;
     using System.Text;
-
+    using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-
     using TowseyLibrary;
 
     public static class IndexMatrices
@@ -29,6 +28,103 @@ namespace AudioAnalysisTools.Indices
         }
 
 
+        public static Dictionary<string, double[]> ConvertCsvData2DictionaryOfColumns(string[] headers, double[,] M)
+        {
+            Dictionary<string, double[]> dictionaryOfCsvDataColumns = new Dictionary<string, double[]>();
+            for(int i = 0; i < headers.Length; i++)
+            {
+                dictionaryOfCsvDataColumns.Add(headers[i], MatrixTools.GetColumn(M, i));
+            }
+            return dictionaryOfCsvDataColumns;
+        }
+
+
+
+        public static Tuple<string[], double[,]> GetSummaryIndexFilesAndConcatenate(FileInfo[] files)
+        {
+            string[] headers = null;
+            var list = new List<double[,]>();
+
+            foreach (FileInfo file in files)
+            {
+                if (file.Exists)
+                {
+                    Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(file.FullName);
+                    headers = tuple.Item1.ToArray();
+                    //double[,] matrix = IndexMatrices.ReadSummaryIndicesFromFile(file);
+                    //double[,] matrix = tuple.Item2;
+                    double[,] matrix = CreateRectangularArrayFromListOfColumnArrays(tuple.Item2);
+                    list.Add(matrix);
+                }
+            }
+
+            var M = MatrixTools.ConcatenateMatrixRows(list);
+            var opTuple = Tuple.Create(headers, M);
+            return opTuple;
+        }
+
+
+
+        static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
+        {
+            // TODO: Validation and special-casing for arrays.Count == 0
+            int minorLength = arrays[0].Length;
+            T[,] ret = new T[arrays.Count, minorLength];
+            for (int i = 0; i < arrays.Count; i++)
+            {
+                var array = arrays[i];
+                if (array.Length != minorLength)
+                {
+                    throw new ArgumentException
+                        ("All arrays must be the same length");
+                }
+                for (int j = 0; j < minorLength; j++)
+                {
+                    ret[i, j] = array[j];
+                }
+            }
+            return ret;
+        }
+
+        static T[,] CreateRectangularArrayFromListOfColumnArrays<T>(IList<T[]> arrays)
+        {
+            // TODO: Validation and special-casing for arrays.Count == 0
+            int rowCount = arrays[0].Length;
+            int colCount = arrays.Count;
+            T[,] ret = new T[rowCount, colCount];
+            for (int c = 0; c < colCount; c++)
+            {
+                var array = arrays[c];
+                if (array.Length != rowCount)
+                {
+                    throw new ArgumentException
+                        ("All arrays must be the same length");
+                }
+                for (int r = 0; r < rowCount; r++)
+                {
+                    ret[r, c] = array[r];
+                }
+            }
+            return ret;
+        }
+
+
+        public static double[,] GetSummaryIndexFilesAndConcatenate(string path, string pattern)
+        {
+                DateTime now1 = DateTime.Now;
+                FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
+
+                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
+
+                //m = MatrixTools.MatrixRotate90Anticlockwise(m);
+
+                DateTime now2 = DateTime.Now;
+                TimeSpan et = now2 - now1;
+                LoggedConsole.WriteLine("Time to read <" + pattern + "> summary index files = " + et.TotalSeconds + " seconds");
+            return m;
+        }
+
+        
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string[] keys)
         {
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
@@ -39,9 +135,24 @@ namespace AudioAnalysisTools.Indices
                 string pattern = "*" + key + ".csv";
                 FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
 
-                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
+                //var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
+                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(files);
+                
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
+
+                // add another matrix with square root of values for lop-sided distributions
+                if (key == "POW")
+                {
+                    string newKey = "Sqrt" + key;
+                    spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
+                }
+                // add another matrix with square root of values for lop-sided distributions
+                if (key == "ENT")
+                {
+                    string newKey = "Sqrt" + key;
+                    spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
+                }
 
                 
                 DateTime now2 = DateTime.Now;
@@ -84,6 +195,77 @@ namespace AudioAnalysisTools.Indices
         }
 
 
+        public static DateTimeOffset GetFileStartTime(string fileName)
+        {
+            // Get the start time from the file name.
+            // UNNECESARRY CODE????? Anthony has this one already done somewhere else!!!!!!!!!!!!!!!!!!
+            string pattern = @"20\d\d\d\d\d\d_\d\d\d\d\d\d_";
+            Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
+            Match m = r.Match(fileName);
+
+            Group group = m.Groups[0];
+            string[] array = group.ToString().Split('_');
+            int year = Int32.Parse(array[0].Substring(0, 4));
+            int mnth = Int32.Parse(array[0].Substring(4, 2));
+            int day = Int32.Parse(array[0].Substring(6, 2));
+            int hour = Int32.Parse(array[1].Substring(0, 2));
+            int min = Int32.Parse(array[1].Substring(2, 2));
+            int sec = Int32.Parse(array[1].Substring(4, 2));
+            DateTimeOffset startTime = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
+
+            return startTime;
+        }
+
+
+
+        public static double[,] ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(FileInfo[] paths)
+        {
+            string warning = null;
+
+            var list = new List<double[,]>();
+            int rowCount = 0;
+            int passedMinutes = 0;
+            int matrixLength = 0; ;
+            DateTimeOffset startTime = IndexMatrices.GetFileStartTime(paths[0].Name);
+            DateTimeOffset finalTime = startTime;
+
+            // get the path containing keys[i]
+            foreach (FileInfo file in paths)
+            {
+                if (file.Exists)
+                {
+                    int freqBinCount;
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
+                    matrixLength = matrix.GetLength(0);
+
+                    DateTimeOffset thisDTO = IndexMatrices.GetFileStartTime(file.Name);
+                    var passedTime = thisDTO - startTime;
+                    passedMinutes = (int)Math.Round(passedTime.TotalMinutes);
+                    if (rowCount != passedMinutes)
+                    {
+                        LoggedConsole.WriteLine("WARNING from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
+                        LoggedConsole.WriteLine("        Cumulative Matrix Row Count does not tally with Elapsed Minutes in File Name.");
+                        LoggedConsole.WriteLine("        Matrix Row Count = "+ rowCount + ".    Elapsed Minutes = " + passedMinutes);
+                    };
+
+                    list.Add(matrix);
+                    rowCount += matrix.GetLength(0);
+                }
+            }
+
+            var M = MatrixTools.ConcatenateMatrixRows(list);
+
+            LoggedConsole.WriteLine("ELAPSED TIME CHECK from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
+            LoggedConsole.WriteLine("                  Final Matrix Row Count = " + M.GetLength(0));
+            LoggedConsole.WriteLine("                  Cumulative  File Times = " + (passedMinutes + matrixLength) + " minutes");
+
+            if (warning != null)
+            {
+                LoggedConsole.WriteLine(warning);
+            }
+
+            return M;
+        }
 
         public static double[,] ReadAndConcatenateSpectrogramCSVFiles(FileInfo[] paths)
         {
@@ -112,6 +294,17 @@ namespace AudioAnalysisTools.Indices
 
             return M;
         }
+
+
+        public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
+        {
+            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvPath.FullName);
+
+            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
+            // matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1);
+            return matrix;
+        }
+
 
 
         public static double[,] ReadSpectrogram(FileInfo csvPath, out int binCount)
@@ -364,6 +557,49 @@ namespace AudioAnalysisTools.Indices
             LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
 
             return dict;
+        }
+
+
+        public static Dictionary<string, double[]> AddNDSI_GageGauge(Dictionary<string, double[]> dictionaryOfCsvColumns, string newKey)
+        {
+            string highKey = "HighFreqCover";
+            string midKey  = "MidFreqCover";
+            string lowKey  = "LowFreqCover";
+            if (newKey.EndsWith("-LM"))
+            {
+                if (!dictionaryOfCsvColumns.ContainsKey(midKey)) return null;
+                if (!dictionaryOfCsvColumns.ContainsKey(lowKey)) return null;
+                double[] midArray = dictionaryOfCsvColumns[midKey];
+                double[] lowArray = dictionaryOfCsvColumns[lowKey];
+                if (lowArray.Length != midArray.Length) return null;
+
+                var array = new double[lowArray.Length];
+                for (int i = 0; i < lowArray.Length; i++)
+                {
+                    array[i] = (midArray[i] - lowArray[i]) / (midArray[i] + lowArray[i]);
+                }
+
+                dictionaryOfCsvColumns.Add(newKey, array);
+            }
+            else if (newKey.EndsWith("-MH"))
+            {
+                if (!dictionaryOfCsvColumns.ContainsKey(midKey)) return null;
+                if (!dictionaryOfCsvColumns.ContainsKey(highKey)) return null;
+                double[] midArray  = dictionaryOfCsvColumns[midKey];
+                double[] highArray = dictionaryOfCsvColumns[highKey];
+                if (highArray.Length != midArray.Length) return null;
+
+                var array = new double[highArray.Length];
+                for (int i = 0; i < highArray.Length; i++)
+                {
+                    array[i] = (highArray[i] - midArray[i]) / (highArray[i] + midArray[i]);
+                }
+
+                dictionaryOfCsvColumns.Add(newKey, array);
+            }
+
+
+            return dictionaryOfCsvColumns;
         }
 
 

@@ -41,7 +41,8 @@
             return DrawSummaryIndices.DrawImageOfSummaryIndices(dictIP, csvFile, title);
         }
 
-        /// <summary>
+
+                /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
         /// <param name="listOfIndexProperties"></param>
@@ -55,7 +56,24 @@
                 return null;
             }
 
+            IndexGenerationData indexGenerationData = null;
+
             Dictionary<string, double[]> dictionaryOfCsvFile = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+            return DrawSummaryIndices.DrawImageOfSummaryIndices(listOfIndexProperties, indexGenerationData, dictionaryOfCsvFile, title);
+        }
+
+
+        /// <summary>
+        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// </summary>
+        /// <param name="listOfIndexProperties"></param>
+        /// <param name="dt"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, 
+                                                       IndexGenerationData indexGenerationData,    
+                                                       Dictionary<string, double[]> dictionaryOfCsvFile, string title)
+        {
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); // to translate past keys into current keys
 
 
@@ -103,11 +121,25 @@
 
             //set up the composite image parameters
             int X_offset = 2;
+            int graphWidth = X_offset + scaleLength;
             int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = TrackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, title);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, imageWidth, TrackHeight, "Time (hours)");
+            //Bitmap time1Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
+            TimeSpan xAxisPixelDuration = indexGenerationData.IndexCalculationDuration;
+            TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
+            Bitmap time1Bmp = Image_Track.DrawTimeRelativeTrack(fullDuration, graphWidth, TrackHeight);
+
+            //indexGenerationData.RecordingStartDate.
+            //Bitmap time2Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
+            Bitmap time2Bmp = time1Bmp;
+            DateTimeOffset? dateTimeOffset = indexGenerationData.RecordingStartDate;
+            if (dateTimeOffset.HasValue)
+            {
+                // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
+                time2Bmp = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, TrackHeight);
+            }
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -118,14 +150,14 @@
                 int Y_offset = 0;
                 gr.DrawImage(titleBmp, X_offset, Y_offset); //draw in the top title
                 Y_offset += TrackHeight;
-                gr.DrawImage(timeBmp, X_offset, Y_offset); //draw in the top time scale
+                gr.DrawImage(time1Bmp, X_offset, Y_offset); //draw in the top time scale
                 Y_offset += TrackHeight;
                 for (int i = 0; i < listOfBitmaps.Count; i++)
                 {
                     gr.DrawImage(listOfBitmaps[i], X_offset, Y_offset);
                     Y_offset += TrackHeight;
                 }
-                gr.DrawImage(timeBmp, X_offset, Y_offset); //draw in bottom time scale
+                gr.DrawImage(time2Bmp, X_offset, Y_offset); //draw in bottom time scale
             }
             return compositeBmp;
         }
