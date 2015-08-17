@@ -557,7 +557,7 @@ namespace AnalysisPrograms
             var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
-            var indexDistributions = IndexDistributions.WriteIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
+            var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
 
             // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
             if (acousticIndicesParsedConfiguration.IndexCalculationDuration != TimeSpan.FromSeconds(60.0))

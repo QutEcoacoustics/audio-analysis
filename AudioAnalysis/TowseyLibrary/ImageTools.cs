@@ -2433,8 +2433,17 @@ namespace TowseyLibrary
             for (int s = 0; s < statKeys.Length; s++)
             {
                 int Y = s * 12; // 10 = height of line of text
-                string str = String.Format("{0}={1:f3}", statKeys[s], statistics[statKeys[s]]);
-                g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid1, Y));
+                string str = "null";
+                if (statKeys[s] == "count")
+                {
+                    str = String.Format("{0}={1:f0}", statKeys[s], statistics[statKeys[s]]);
+                }
+                else
+                {
+                    str = String.Format("{0}={1:f3}", statKeys[s], statistics[statKeys[s]]);
+                }
+
+                g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid2, Y));
             }
 
             for (int b = 0; b < histogram.Length; b++)

@@ -165,7 +165,7 @@ namespace AnalysisPrograms
             // problem is that Jason cuts them up into 6 hour blocks.
             if (false)
             {
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles1();
+                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
                 //LDSpectrogramStitching.ConcatenateSpectralIndexImages();
                 //LDSpectrogramClusters.ExtractSOMClusters();
             } // end if (true)
@@ -191,8 +191,12 @@ namespace AnalysisPrograms
                 //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_9-7-15\BAR\BAR_79\";
                 //string opFileStem = "TNC_Iwarame_20150709_BAR79";
 
-                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_5-7-15\BAR\BAR_43\";
-                string opFileStem = "TNC_Yavera_20150705_BAR43";
+                //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_8-7-15\BAR\BAR_64\";
+                //string opFileStem = "TNC_Yavera_20150708_BAR64";
+
+                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_13\";
+                string opFileStem = "TNC_Musiamunat_20150703_BAR13";
+                
 
                 var dataDir = new DirectoryInfo(dataPath);
 
@@ -201,9 +205,11 @@ namespace AnalysisPrograms
 
                 // string outputDirectory = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
                 string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
-                var opDir = new DirectoryInfo(outputDirectory);
+                // var opDir = new DirectoryInfo(outputDirectory);
+                var opDir = dataDir;
 
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles2(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                LDSpectrogramStitching.ConcatenateIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+
             }
 
 
