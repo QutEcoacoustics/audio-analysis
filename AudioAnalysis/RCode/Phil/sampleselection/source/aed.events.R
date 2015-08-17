@@ -491,24 +491,6 @@ CreateEventAndFeaturesSubset <- function () {
 
 
 
-# bug: sometimes returns events and features with different number of rows!
-GetEventsAndFeatures <- function () {
-    events <- ReadOutput('events')
-    event.features <- ReadOutput('features')
-#    rating.features <- ReadOutput('rating.features')  
-    # remove event.id.column from features table
-#    drop.cols <- names(event.features$data) %in% c('event.id')
-
-    if (! setequal(events$data$event.id, event.features$data$event.id)) {
-        stop('chosen features and events have different event ids')
-    }
-
-#    event.features$data <- event.features$data[!drop.cols]
-#    drop.cols <- names(rating.features$data) %in% c('event.id')
-#    rating.features$data <- rating.features$data[!drop.cols]
-#     return (list(events = events, event.features = event.features, rating.features = rating.features))
-    return (list(events = events, event.features = event.features))
-}
 
 
 

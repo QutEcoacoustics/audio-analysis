@@ -6,7 +6,7 @@ paths <- list(
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
               '/Users/n8933464/Documents/sample_selection_output/cache'),
-    indices.1.sec = c("/Users/n8933464/Documents/SERF/indices_1_sec/TaggedRecordings")
+    indices.1.sec = c("/Users/n8933464/Documents/SERF/indices_1_sec")
     )
     
 
@@ -29,7 +29,8 @@ Path <- function (path.name) {
         path <- paths[[path.name]][first.match]
         return(path)
     } else {
-        stop(paste("path for", path.name,"doesn't exist"))
+        msg1 <- paste('defined paths for', path.name, "don't exist. ", paste(paths[[path.name]], collapse = ", "))
+        stop(msg1)
     }
 
 }

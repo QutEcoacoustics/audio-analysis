@@ -117,11 +117,11 @@ ReadTargetTagsFromDb <- function (fields = c('start_date',
 
 
 
-ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE) {
+ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE, species.id = FALSE) {
     # does a database query with the supplied constraints
     require('RMySQL')
     sites <- MapSites(sites)    
-    where.statement <- WhereStatement(sites, start.date.time, end.date.time, no.duplicates, reference.tags)
+    where.statement <- WhereStatement(sites, start.date.time, end.date.time, no.duplicates, reference.tags, species.id)
     # construct SQL statement
     sql.statement <- paste(
         "SELECT",
@@ -142,16 +142,10 @@ ReadTagsFromDb <- function (fields, sites = NULL, start.date.time = NULL, end.da
     
 }
 
-WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE) {
+WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time = NULL, no.duplicates = TRUE, reference.tags = FALSE, species.id = NULL) {
     
     where.statement <- "WHERE species_id > 0"
     quote = "'"
-    if (!substr(start.date.time, 1, 1) == "'" || substr(start.date.time, 1, 1) == "'") {
-        start.date.time <- paste0(quote, start.date.time, quote)
-    }
-    if (!substr(end.date.time, 1, 1) == "'" || substr(end.date.time, 1, 1) == "'") {
-        end.date.time <- paste0(quote, end.date.time, quote)
-    }
     
     if (!is.null(sites)) {
         # convert vector of sites to comma separated list of 
@@ -161,10 +155,16 @@ WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time 
     }
     
     if (!is.null(start.date.time)) {
+        if (!substr(start.date.time, 1, 1) == "'" || substr(start.date.time, 1, 1) == "'") {
+            start.date.time <- paste0(quote, start.date.time, quote)
+        }
         where.statement <- c(where.statement, paste0("start_date_time >= ", start.date.time))
     }
     
     if (!is.null(end.date.time)) {
+        if (!substr(end.date.time, 1, 1) == "'" || substr(end.date.time, 1, 1) == "'") {
+            end.date.time <- paste0(quote, end.date.time, quote)
+        }
         where.statement <- c(where.statement, paste0("start_date_time <= ", end.date.time))
     }  
     
@@ -175,6 +175,11 @@ WhereStatement <- function (sites = NULL, start.date.time = NULL, end.date.time 
     if (reference.tags) {
         where.statement <- c(where.statement, paste0("reference_tag > 0"))
     }
+    
+    if (!is.null(species.id)) {
+        where.statement <- c(where.statement, paste0('species_id = ', species.id))
+    }
+    
     
     where.statement <- paste(where.statement, collapse = " AND ")
     
@@ -204,6 +209,10 @@ MapSites <- function (sites, to.db = TRUE) {
     # site names in the database are sometimes different from how we label them
     # in this system. This function converts between the names before and after
     # making database queries
+    
+    if (is.null(sites)) {
+        return(NULL)
+    }
     
     r.vals <- c('NE', 'NW', 'SE', 'SW')
     db.vals <- c('NE', 'NW', 'SE', 'SW Backup')
@@ -289,6 +298,36 @@ ReadTagsFromDb.test <- function () {
     
     View(result)
     
+    
+}
+
+GetSpeciesList <- function () {
+    # Gets a list of species ids and species names
+    
+    require('RMySQL')
+    
+    con <- ConnectToDb()
+    
+    # all species
+    #sql.statement <- "SELECT id, common_name FROM species"
+    
+    # conditions on tags
+    sql.statement <- paste('SELECT tags.species_id as id, species.common_name as name FROM tags',
+                           'JOIN species',
+                           'ON species.id = tags.species_id',
+                           'WHERE tags.species_id IS NOT NULL',
+                           'GROUP BY tags.species_id')
+    
+    
+    
+    res <- dbSendQuery(con, statement = sql.statement)
+    data <- fetch(res, n = - 1)
+    dbClearResult(res)
+    dbDisconnect(con)
+    Report(5, 'query complete')
+    return(data)   
+        
+
     
 }
 

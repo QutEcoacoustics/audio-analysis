@@ -1,7 +1,8 @@
 ClusterEvents <- function (num.groups = 'auto', 
                            num.events = NA, 
                            save.dendrogram = FALSE, 
-                           method = 'complete') {
+                           method = 'complete',
+                           select.features.and.weights = FALSE) {
     # clusters events found in g.events.path
     # based on the features found in g.features.path
     # g.features.path must have the same number of rows as g.events.path
@@ -33,15 +34,23 @@ ClusterEvents <- function (num.groups = 'auto',
     # get user input for which features to use in clustering. 
     # replace the 'event.id' column (which is not a feature), with 'all'
     # to use all features
-    feature.options <- colnames(event.features$data)
-    feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE, config.setting = 'features.for.clustering')  
-    params$features <- feature.options[feature.choices]
-    # use only the chosen features
-    event.features$data <- event.features$data[, feature.choices]
-    weights <- GetFeatureWeights(event.features$data)
-    params$weights <- weights
+    
+    if (select.features.and.weights) {
+        feature.options <- colnames(event.features$data)
+        feature.choices <- GetMultiUserchoice(feature.options, 'features to use for clustering and internal distance', default = 'all', all = TRUE, config.setting = 'features.for.clustering')
+        params$features <- feature.options[feature.choices]
+        # use only the chosen features
+        event.features$data <- event.features$data[, feature.choices]
+        weights <- GetFeatureWeights(event.features$data)
+        params$weights <- weights
+        
+    } else {
+        weights <- rep(1, ncol(event.features$data))
+        
+    }
     
     dependencies = list(events = events$version, features = event.features$version)
+
     
     num.clusters <- GetNumClusters()
     
@@ -62,6 +71,37 @@ ClusterEvents <- function (num.groups = 'auto',
     
 }
 
+# bug: sometimes returns events and features with different number of rows!
+GetEventsAndFeatures <- function () {
+    # gets the events and features data frames from saved output
+    # TODO: 'events' could be aed events or segment.events. need to modify output functions to allow for this
+    # TODO: 'features' might have a number of different names, such as 'features', 'TDCCs'. update output functions to allow this
+    # TODO: let more than one feature set be chosen and appended together for clustering (checking that they have identical event ids and dependencies)
+    
+    
+    
+    events <- ReadOutput(c('events','segment.events'))
+    events.dependencies <- list()
+    events.dependencies[[events$name]] <- events$version
+    event.features <- ReadOutput(c('features','TDCCs'), dependencies = events.dependencies)
+    #    rating.features <- ReadOutput('rating.features')  
+    # remove event.id.column from features table
+    #    drop.cols <- names(event.features$data) %in% c('event.id')
+    
+    if (! setequal(events$data$event.id, event.features$data$event.id)) {
+        stop('chosen features and events have different event ids')
+    } else {
+        # remove event.id column, since we also have the matching event.id 
+        # in the parallel events df
+        event.features$data <- event.features$data[,-(which(colnames(event.features$data) == 'event.id'))]
+    }
+    
+    #    event.features$data <- event.features$data[!drop.cols]
+    #    drop.cols <- names(rating.features$data) %in% c('event.id')
+    #    rating.features$data <- rating.features$data[!drop.cols]
+    #     return (list(events = events, event.features = event.features, rating.features = rating.features))
+    return (list(events = events, event.features = event.features))
+}
 
 
 CreateEventGroups.kmeans <- function (events, clustering.results) {

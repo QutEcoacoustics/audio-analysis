@@ -4,6 +4,7 @@ g.hash.dir <- file.path(g.output.parent.dir, 'hash')
 g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')
 
 
+
 g.cachepath <- c(
     '/Volumes/files/qut_data/cache'
     )
@@ -24,26 +25,55 @@ ClearAccessLog <- function () {
     g.access.log <<- list()  
 }
 SetLastAccessed <- function (name, meta.row) {
-    g.access.log[[name]] <<- meta.row  
+    g.access.log[[name]] <<- list(meta = meta.row, date.accessed = DateTime())  
 }
-GetLastAccessed <- function (name, params = NULL, dependencies = NULL, version = NULL) {
+GetLastAccessed <- function (names, params = NULL, dependencies = NULL, version = NULL) {
     # checks the last accessed log for the output type of 'name' and 
     # returns it if the params, dependencies and version match, 
     # otherwise returns false
-    if (!is.null(g.access.log[[name]])) {     
-        if (!is.null(params) && g.access.log[[name]]$params != toJSON(params)) {
-            return(FALSE)
-        } else if (!is.null(dependencies) && g.access.log[[name]]$dependencies != toJSON(dependencies)) {
-            return(FALSE)
-        } else if (!is.null(version) && g.access.log[[name]]$version != version) {
-            return(FALSE)
-        } else {
-            return(g.access.log[[name]])
-        }
-    } else {
-        return(FALSE)
+    #
+    # Args 
+    #    name: string vector
+    #    params: list
+    #    dependencies: list
+    #    version: int
+    #
+    
+    last.accessed.date <- FALSE
+    last.accessed.meta <- FALSE
+    
+    # for in list of names, check if the name is in the access log
+    # if it is, check if the supplied params, dependencies and version all match
+    # if not supplied, treat as matched
+    # if they all match, compare to see if the access date of that is the newest out of all 
+    # of the names provided. If so, record it
+    
+    for (name in names) {
+        if (!is.null(g.access.log[[name]])) {     
+            
+            params.match <- is.null(params) || g.access.log[[name]]$meta$params == toJSON(params)
+            dependencies.match <- is.null(dependencies) || g.access.log[[name]]$meta$dependencies != toJSON(dependencies)
+            version.match <- is.null(dependencies) || g.access.log[[name]]$meta$version != version
+            
+            if (params.match && dependencies.match && version.match) {
+                if (last.accessed.date == FALSE || g.access.log[[name]]$date.accessed > last.accessed.date) {
+                    last.accessed.date <- g.access.log[[name]]$date.accessed
+                    last.accessed.meta <- g.access.log[[name]]$meta
+                    last.accessed.meta$name <- name
+                }   
+            }
+            
+        } 
     }
+    
+    return(last.accessed.meta)
+    
 }
+
+
+
+
+
 
 SetLastAccessed.recursive <- function (name, version, meta = NA) {
     # given a row of meta data. Looks at the name and version of each dependency
@@ -261,6 +291,10 @@ GetType <- function (name) {
     }
 }
 
+
+
+
+
 GetOutputTypes <- function () {
     # reads the meta file and returns all the types of output that exist
     meta <- ReadMeta()
@@ -271,7 +305,16 @@ GetOutputTypes <- function () {
 }
 
 
-ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = NULL, dependencies = NULL, false.if.missing = FALSE, optional = FALSE, use.last.accessed = TRUE, version = NULL) {
+
+ReadOutput <- function (name = NULL, 
+                        purpose = NA, 
+                        include.meta = TRUE, 
+                        params = NULL, 
+                        dependencies = NULL, 
+                        false.if.missing = FALSE, 
+                        optional = FALSE, 
+                        use.last.accessed = TRUE, 
+                        version = NULL) {
     # reads the output for type 'name' 
     #
     # Args:
@@ -300,7 +343,7 @@ ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = N
     #    6) Output data-type is different depending on the name of the output, for example, binary object for clustering
     #       and and CSV for features. This is defined in the GetType function
     
-    if (is.na(name)) {
+    if (is.null(name)) {
         # if name is ommited from function call, get user input
         # this should only happen when calling directly from the commandline
         choices = GetOutputTypes()
@@ -317,22 +360,24 @@ ReadOutput <- function (name = NA, purpose = NA, include.meta = TRUE, params = N
     } else {
         meta.row <- FALSE
     }
+    
     if (!is.data.frame(meta.row) || optional) {
         meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional = optional, version = version)
         if (!is.data.frame(meta.row)) {
             return(FALSE)
         }
     }
+    
     SetLastAccessed.recursive(meta.row$name, meta.row$version)
-    type <- GetType(name)
+    type <- GetType(meta.row$name)
     if (type == 'object') {   
-        val <- (ReadObject(name, meta.row$version))
+        val <- (ReadObject(meta.row$name, meta.row$version))
     } else {
-        val <- (ReadCsv(name, meta.row$version))
+        val <- (ReadCsv(meta.row$name, meta.row$version))
     }
     if (include.meta) {
         meta <- ExpandMeta(meta.row)
-        meta$indirect.dependencies <- GetIndirectDependenciesStack(name, meta.row$version)
+        meta$indirect.dependencies <- GetIndirectDependenciesStack(meta.row$name, meta.row$version)
         meta$data <- val
         return(meta)
     } else {
@@ -526,7 +571,7 @@ WriteMeta <- function (meta) {
 
 
 
-ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = FALSE, optional = FALSE, version = NULL) {
+ChooseOutputVersion <- function (names, params, dependencies, false.if.missing = FALSE, optional = FALSE, version = NULL) {
     # gets user input to choose a version of output to read
     #
     # Args:
@@ -544,7 +589,8 @@ ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = 
     #   So that the user can choose based on the unique set of input parameters that have generated the output. 
     
     meta <- ReadMeta()
-    name.meta <- meta[meta$name == name & meta$file.exists == 1, ]
+    
+    name.meta <- meta[meta$name %in% names & meta$file.exists == 1, ]
     if (nrow(name.meta) == 0) {
         if (false.if.missing) {
             return(FALSE)
@@ -564,7 +610,6 @@ ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = 
         filter[name.meta$version != version] <- FALSE
     }
     
-
     name.meta <- name.meta[filter, ] 
     
     if (nrow(name.meta) == 0) {
@@ -573,8 +618,8 @@ ChooseOutputVersion <- function (name, params, dependencies, false.if.missing = 
         }
         stop(paste("Missing output file with specified params:", name, params))
     } 
-    choices <- sapply(name.meta$version, function (v.num) {
-        params <- GetParams.recursive(name, v.num, meta)
+    choices <- apply(name.meta, 1, function (x) {
+        params <- GetParams.recursive(x['name'], x['version'], meta)
         return(MultiParamsToString(params))
     })
     if (nrow(name.meta) == 1) {
@@ -604,7 +649,7 @@ GetParams.recursive <- function (name, v.num, meta = NA) {
     }
 
     # find the metadata for this version of the output
-    row <- meta[meta$name == name & meta$version == v.num, ]
+    row <- meta[meta$name == name & meta$version == as.numeric(v.num), ]
     # get its params from the param col, as a readable string
     params.line <- list()
     params.line[[name]] <- list(version = v.num, date = row$date, params = row$params)
@@ -668,6 +713,7 @@ ExpandMeta <- function (meta.df) {
     meta.list$params <- fromJSON(as.character(meta.df$params))
     meta.list$dependencies <- fromJSON(as.character(meta.df$dependencies))
     meta.list$date <- meta.df$date
+    meta.list$name <- meta.df$name
     return(meta.list) 
 }
 
@@ -769,7 +815,7 @@ ReadCache <- function (cache.id) {
 #            
 #         })
         if (exists('x') && class(x) == 'spectrogram') {
-            print('successfully read file from cache')
+            Report(6, 'successfully read file from cache')
             return(x)  # this is the name of the variable used when saving   
         }
     } 

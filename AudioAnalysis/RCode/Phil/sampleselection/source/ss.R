@@ -25,6 +25,14 @@
 #
 ##
 
+#require(data.table) 
+#require(dplyr) 
+#require(rattle)
+
+require('foreach')
+require('doParallel')
+
+
 
 # clear the workspace
 # flush output device. the stack can get stuck on an output file that 
@@ -39,7 +47,7 @@ options(error = traceback)
 
 source('config.R')  #must be first
 source('minutes.R')
-source('events.R')
+source('aed.events.R')
 source('features.R')
 source('cluster.R')
 source('ranking.R')
@@ -49,6 +57,7 @@ source('random.sampling.R')
 source('inspection.R')
 source('tags.R')
 source('util.R')
+source('time.R')
 source('spectrogram.R')
 source('audio.R')
 source('output.R')
@@ -58,6 +67,11 @@ source('lines.R')
 source('paths.R')
 source('label.events.R')
 source('short.indices.R')
+source('fixedwidth.R')
+source('reporting.R')
+source('tests/test.all.R')
+
+
 
 
 

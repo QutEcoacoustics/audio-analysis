@@ -1,3 +1,8 @@
+# Contains functions for creating lists of minutes for use in sample selections
+# as well as some functions to do with time
+
+
+
 GetMinuteList <- function () {
     # creates a list of minutes for the total of the entire study, 
     # giving each minute an id. 
@@ -22,27 +27,6 @@ GetMinuteList <- function () {
     
 }
 
-CreateTargetMinutes.old <- function () {
-    # creates a list of target minute ids, based on
-    # the specified start date and time, end date and time, and % of minutes to use (eg, 50% will use every 2nd minute)
-    # writes the output to csv   
-    study.min.list <- GetMinuteList()
-    target.mins <- TargetSubset.old(study.min.list)
-    if (g.percent.of.target < 100) { 
-        num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
-        to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
-        target.min.ids <- target.mins$min.id[to.include]
-    }
-    
-    # create a new output directory if there is less than 100 % of the target
-    # being used, because the random minutes will be different
-    params <- list(minute.ranges = g.minute.ranges, start.date = g.start.date, end.date = g.end.date, sites = g.sites)
-    params$study <- paste0(g.study.start.date, '-', g.study.end.date, ' ',  g.study.start.min, '-', g.study.end.min, " ", paste(g.study.sites, collapse = ",")) # include the study, because it affects the minute ids
-    
-    
-    
-    WriteOutput(target.mins, 'target.min.ids', params = params)
-}
 
 
 CreateTargetMinutesDayByDay <- function () {
@@ -69,14 +53,16 @@ GetStudyDescription <- function () {
 
     return(val)
     
-
-    
-    
-    
 }
 
 GetTargetMinutesByDay <- function (site, date, version.only = TRUE) {
     # gets the list of target minutes for the specified site and date
+    #
+    # Args:
+    #   site: string
+    #   date: string yyyy-mm-dd
+    #   version.only: boolean; if true, returns an int which is the 'target.min.ids' version
+    #                          if false, returns the read output including the data.frame of target.min.ids#
     
     target <- list()
     target[site] <- list()
@@ -92,9 +78,6 @@ GetTargetMinutesByDay <- function (site, date, version.only = TRUE) {
     } else {
         return(target.minutes)
     }
-    
-
-    
     
 }
 
@@ -219,72 +202,8 @@ GetTargetDescription <- function (target) {
 }
 
 
-GetDateParts <- function (dates) {
-    # given a set of dates, will return a list with 2 elements
-    # the part of the date that is the same (eg year, or year and month)
-    # and the part of the date that is different as a vector of length length(dates)
-    
-    # split into a matrix of nrow = length(dates) and a column for year, month and day
-    all.dates <- strsplit(dates, "-")
-    dates.matrix <- matrix(NA, nrow = length(all.dates), ncol = 3)
-    for (r in 1:length(all.dates)) {
-        dates.matrix[r,1:3]  <- as.numeric(all.dates[[r]])
-    }  
-    # find the part that is the same among all dates
-    same <- c(FALSE, FALSE, FALSE)
-    for (i in 1:3) {
-        if (abs(max(dates.matrix[,i]) - min(dates.matrix[,i])) < 0.25) {
-            same[i] <- TRUE
-        } else {
-            break()
-        }
-    }
-    prefix <- paste(dates.matrix[1,same], collapse = "-") 
-    sig <- apply(dates.matrix, 1, function (row){ 
-        paste(row[!same], collapse = "-")
-        })
-    return(list(prefix = prefix, dates = sig, selector = !same))
-}
 
 
-TargetListToDF <- function () {
-    # converts a nested list of sites and dates and ranges to 
-    # 
-    
-    
-}
-
-
-
-
-
-TargetSubset.old <- function (df) {
-    # returns a subset of the dataframe, includes only rows that 
-    # belong within sites, dates and minute ranges (1 or more pairs of start/end minutes of the day)
-    # defined in config
-    #
-    # Args:
-    #   df: data.frame; must have the columns site, date, min
-    # 
-    # Value
-    #   data.frame
-        rows.site.date <- df$site %in% g.sites & 
-            as.character(df$date) >= g.start.date & 
-            as.character(df$date) <= g.end.date
-        if (length(g.minute.ranges) %% 2 > 0) {
-            stop('g.minute.ranges must have an even number of entries')
-        }
-        start.mins <- g.minute.ranges[seq(1, length(g.minute.ranges) - 1, 2)]
-        end.mins <- g.minute.ranges[seq(2, length(g.minute.ranges), 2)]
-        rows.min <- rep(FALSE, nrow(df))
-        for (i in 1:length(start.mins)) {
-            rows.min <- rows.min | (df$min >= start.mins[i] & df$min <= end.mins[i])     
-        }
-        rows <- rows.site.date & rows.min
-  
-    return(df[rows, ])
-    
-}
 
 
 
@@ -344,35 +263,6 @@ IsWithinTargetTimes <- function (date, min, site) {
     }
 }
 
-AddMinuteIdCol.old <- function (data) {
-    # given a data frame with the columns "date", "site", and either "min" or "start.sec", 
-    # will look up the minute id for each row and add a column to the data frame
-    #
-    # Args:
-    #   data: data.frame
-    # 
-    # Value:
-    #   data.frame
-    
-    
-    cols <- colnames(data)
-    date.col <- match('date', cols)
-    site.col <- match('site', cols)
-    min.col <- match('min', cols)
-    sec.col <- match('start.sec', cols)
-    ids <- apply(as.matrix(data), 1, function (v) {
-        if (is.na(min.col)) {
-            min <- floor(as.numeric(v[sec.col]) / 60)
-        } else {
-            min <- as.numeric(v[min.col])
-        } 
-        id <- paste0(v[date.col], v[site.col], min)
-        return(id)  
-    })
-    new.data <- cbind(data, ids)
-    colnames(new.data) <- c(cols, 'min.id')
-    return(new.data) 
-}
 
 AddMinuteIdCol <- function (data) {
     # given a data frame with the columns "date", "site", and either "min" or "start.sec", 
@@ -426,35 +316,7 @@ SetMinute <- function (events, start.sec.col = "start.sec")  {
     
 }
 
-SetTime <- function (min, sec, decimal.places = 0) {
-    # given a minute of the day, and a second of the minute
-    # returns a time string eg 13:12:03
-    # min and sec can be vectors, and it will return a vector
-    
-    h <- floor(min / 60)
-    m <- min - (h * 60)
-    sec <- round(sec, decimal.places)
-    
-    # just in case it got rounded up to 60 
-    m2 <- floor(sec / 60)
-    sec <- sec - (m2 * 60)
-    m <- m + m2
-    
-    h <- sprintf('%02d', h)
-    m <- sprintf('%02d', m)
-    
-    if (decimal.places == 0) {
-        width <- 2
-    } else {
-        width <- 3 + decimal.places
-    }
-    p <- paste0('%0',width,'.',decimal.places,'f')
-    s <- sprintf(p, sec)
-    time <- paste(h, m, s, sep = ":")
-    return(time)
-    
-    
-}
+
 
 
 
@@ -462,7 +324,7 @@ CreateTargetMinutesRandom.old <- function () {
     # randomly selects a subset of the target minutes
     # abandoned because it is non-deterministic and was making 
     # it difficult to save output based on minute selection
-    # now use deterministic funciton CreateTargetMinutes
+    # now use deterministic function CreateTargetMinutes
     study.min.list <- GetMinuteList()
     target.mins <- TargetSubset(study.min.list)
     if (g.percent.of.target < 100) { 
@@ -479,3 +341,80 @@ CreateTargetMinutesRandom.old <- function () {
     WriteOutput(target.mins, 'target.min.ids')
 }
 
+CreateTargetMinutes.old <- function () {
+    # creates a list of target minute ids, based on
+    # the specified start date and time, end date and time, and % of minutes to use (eg, 50% will use every 2nd minute)
+    # writes the output to csv   
+    study.min.list <- GetMinuteList()
+    target.mins <- TargetSubset.old(study.min.list)
+    if (g.percent.of.target < 100) { 
+        num.to.include <- floor(nrow(target.mins)*g.percent.of.target/100)
+        to.include <- GetIncluded(total.num = nrow(target.mins), num.included = num.to.include, offset = 0)
+        target.min.ids <- target.mins$min.id[to.include]
+    }
+    
+    # create a new output directory if there is less than 100 % of the target
+    # being used, because the random minutes will be different
+    params <- list(minute.ranges = g.minute.ranges, start.date = g.start.date, end.date = g.end.date, sites = g.sites)
+    params$study <- paste0(g.study.start.date, '-', g.study.end.date, ' ',  g.study.start.min, '-', g.study.end.min, " ", paste(g.study.sites, collapse = ",")) # include the study, because it affects the minute ids
+    
+    WriteOutput(target.mins, 'target.min.ids', params = params)
+}
+
+TargetSubset.old <- function (df) {
+    # returns a subset of the dataframe, includes only rows that 
+    # belong within sites, dates and minute ranges (1 or more pairs of start/end minutes of the day)
+    # defined in config
+    #
+    # Args:
+    #   df: data.frame; must have the columns site, date, min
+    # 
+    # Value
+    #   data.frame
+    rows.site.date <- df$site %in% g.sites & 
+        as.character(df$date) >= g.start.date & 
+        as.character(df$date) <= g.end.date
+    if (length(g.minute.ranges) %% 2 > 0) {
+        stop('g.minute.ranges must have an even number of entries')
+    }
+    start.mins <- g.minute.ranges[seq(1, length(g.minute.ranges) - 1, 2)]
+    end.mins <- g.minute.ranges[seq(2, length(g.minute.ranges), 2)]
+    rows.min <- rep(FALSE, nrow(df))
+    for (i in 1:length(start.mins)) {
+        rows.min <- rows.min | (df$min >= start.mins[i] & df$min <= end.mins[i])     
+    }
+    rows <- rows.site.date & rows.min
+    
+    return(df[rows, ])
+    
+}
+
+AddMinuteIdCol.old <- function (data) {
+    # given a data frame with the columns "date", "site", and either "min" or "start.sec", 
+    # will look up the minute id for each row and add a column to the data frame
+    #
+    # Args:
+    #   data: data.frame
+    # 
+    # Value:
+    #   data.frame
+    
+    
+    cols <- colnames(data)
+    date.col <- match('date', cols)
+    site.col <- match('site', cols)
+    min.col <- match('min', cols)
+    sec.col <- match('start.sec', cols)
+    ids <- apply(as.matrix(data), 1, function (v) {
+        if (is.na(min.col)) {
+            min <- floor(as.numeric(v[sec.col]) / 60)
+        } else {
+            min <- as.numeric(v[min.col])
+        } 
+        id <- paste0(v[date.col], v[site.col], min)
+        return(id)  
+    })
+    new.data <- cbind(data, ids)
+    colnames(new.data) <- c(cols, 'min.id')
+    return(new.data) 
+}

@@ -249,7 +249,8 @@ CalculateFeatures <- function (event, spectro) {
     peak.vals <- apply(event_vals, 2, max)
     
     # the average peak frequency bin, allowing for amplitude of peak
-    mean.peak.f.bin <- mean(peaks * peak.vals) / sum(peak.vals)
+    mean.peak.f.bin <- mean(peaks * peak.vals) / mean(peak.vals)
+    
     features$mean.peak.f <- (mean.peak.f.bin * spectro$hz.per.bin) + event$bottom.f
     
     

@@ -12,7 +12,7 @@ TS <- function (s = NA) {
 
 Sp.CreateTargeted <- function (site, start.date, start.sec, 
                                duration, img.path = NA, rects = NULL, 
-                               audio.source.in.label = TRUE, label = NA) {
+                               audio.source.in.label = TRUE, label = NA, frame.width = 512) {
     # creates a spectrogram of audio given the start, duration and site 
     #
     # Args:
@@ -30,7 +30,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     # 2. identify whether the target spans more than 1 file
     # 3. idenify the sample number for the start and end
     
-    cache.id <- paste(site, start.date, start.sec, duration, 'spectro', sep = '.')
+    cache.id <- paste(site, start.date, start.sec, duration,frame.width, 'spectro', sep = '.')
     spec <- ReadCache(cache.id)
     
     # only cache the spectrogram without the rectangles
@@ -41,7 +41,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
         w <- Audio.Targeted(site, start.date, start.sec, duration)
         # w <- Wave(left = wav.samples, right = numeric(0), 
         #           samp.rate = samp.rate, bit = bit)
-        spec <- Sp.Create(w)
+        spec <- Sp.Create(w, frame.width = frame.width)
         WriteCache(spec, cache.id) 
     } else {
         Report(5, 'using spectrgram retrieved from cache')
@@ -65,8 +65,8 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     
 }
 
-Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 256, 
-                               smooth = TRUE, db = TRUE, filename = FALSE) {
+Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512, 
+                               smooth = TRUE, db = TRUE, filename = FALSE, use.cache = TRUE) {
 
     defaults = list(
         frame.width = 256,
@@ -91,7 +91,12 @@ Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 256,
     basepath <- BasePath(path)
     cache.id <- paste0(basepath,id, '.spectro')
     
-    spectro <- ReadCache(cache.id)
+    if (use.cache) {
+        spectro <- ReadCache(cache.id)  
+    } else {
+        spectro <- FALSE
+    }
+
     if (class(spectro) != 'spectrogram') {
         spectro <- Sp.Create(path, draw = draw, frame.width, smooth = smooth, db = db, filename = filename)
         WriteCache(spectro, cache.id) 
@@ -104,7 +109,7 @@ Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 256,
 
 
 
-Sp.Create <- function(wav, frame.width = 256, draw = FALSE, 
+Sp.Create <- function(wav, frame.width = 512, draw = FALSE, 
                       smooth = TRUE, db = TRUE, filename = FALSE) {
     # performs a stft on a mono wave file (no overlap)
     #  
@@ -122,7 +127,7 @@ Sp.Create <- function(wav, frame.width = 256, draw = FALSE,
     #   spectrogram; (custom object) each column is a time-frame, 
     #     each row is a frequency bin \n
     
-    Report('Generating spectrogram')
+    Report(5, 'Generating spectrogram')
     ptm <- proc.time()
     #read and shape the original signal\n
     TFRAME <- frame.width
@@ -174,7 +179,7 @@ Sp.Create <- function(wav, frame.width = 256, draw = FALSE,
     
     class(spectro) <- "spectrogram"
     
-    Timer(ptm, 'generating spectrogram',  len / samp.rate, 'second of audio')
+    #Timer(ptm, 'generating spectrogram',  len / samp.rate, 'second of audio')
     
     if (draw) {
         Sp.draw(spectro, filename)

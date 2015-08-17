@@ -303,7 +303,20 @@ TimeToMin <- function (time.string) {
     return(as.integer(h)  * 60 + as.integer(m))  
 }
 
-
+TimeToSec <- function (time.string) {
+    # given a time string or a date time string,
+    # will return the minute of the day
+    # probably a faster way with built in time functions
+    # will only work for the form yyyy-MM-dd hh:mm:ss
+    
+    # split space for datetime
+    time <- unlist(strsplit(time.string," "))
+    if (length(time) > 1) {
+        time <- time[2]
+    }
+    h.m.s <- unlist(strsplit(time,":"))
+    return(as.integer(h.m.s[1]) * 3600 + as.integer(h.m.s[2]) * 60 + as.numeric(h.m.s[3]))  
+}
 
 
 FixDate <- function (date) {
@@ -629,3 +642,11 @@ LastBlock <- function (vals) {
 }
 
 SampleFromVector <- function(x, ...) x[sample.int(length(x), ...)]
+
+
+ValidateParams <- function (ok, message = "Invalid Parameters") {
+    #todo: figure out how to show trace to calling function
+    if (!ok) {
+        stop(message)
+    }
+}

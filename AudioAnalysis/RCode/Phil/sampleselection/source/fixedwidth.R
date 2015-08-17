@@ -1,91 +1,230 @@
+# step 1: call MakeSegmentList to get a list of 1-second segments
+# step 2: call ExtractSDF on the segment list to get a list of spectral dynamic features
+
+
+
 MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
+    # creates a list of segments of equal length
+    #
+    # Returns:
+    #   data.frame; with cols: site, date, min, event.id, file
+    #
+    # Details:
+    #   assumes files of 10 minute length
     
     if (is.null(min.list)) {
         min.list <- ReadOutput('target.min.ids')
     }
-    min.list.per.10 <- min.list$data[min.list$data$min %% 10 == 0, ]
-    wave.path.per.10 <- rep(NA, nrow(min.list.per.10))
-    for (i in 1:length(wave.path.per.10)) {
-        wave.path.per.10[i] <- GetAudioFile(min.list.per.10$site[i], min.list.per.10$date[i], min.list.per.10$min[i])
-    }  
-    min.list$data$wave.path <- wave.path.per.10[rep(1:length(wave.path.per.10),each=10)]
+    
+    
+    # get the wave path for every minute
+    # because we know that audio files are 10 minutes long, we can shortcut by 
+    # getting the audio file for every 10th minute, then repeating the value 10 times
+    # every 10th minute of the day
+    audio.file.duration <- 10
+    min.list.per.duration <- min.list$data[min.list$data$min %% audio.file.duration == 0, ]
+    wave.path.per.duration <- rep(NA, nrow(min.list.per.duration))
+    for (i in 1:length(wave.path.per.duration)) {
+        wave.path.per.duration[i] <- GetAudioFile(min.list.per.duration$site[i], min.list.per.duration$date[i], min.list.per.duration$min[i])
+    }
+    min.list$data$wave.path <- wave.path.per.duration[rep(1:length(wave.path.per.duration),each=audio.file.duration)]
+    
     segment.list <- min.list$data[rep(1:nrow(min.list$data),each=num.per.min), ]
     segment.list$seg.num <- rep(1:num.per.min, nrow(min.list$data))
     segment.list$start.sec <- (segment.list$seg.num - 1) * (60/num.per.min)
+    
+    segment.list <- AddEventIdColumn(segment.list)
+    
+    
+    dependencies <- list('target.min.ids' = min.list$version)
+    params <- list('num.per.min' <- 60)
+    segment.list.version <- WriteOutput(x = segment.list, name = 'segment.events',params = params, dependencies = dependencies)
+    
     return(segment.list)
     
 }
 
 
-ExtractSDF <- function (segment.list) {
+ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coefficients = 16, parallel = TRUE) {
+    # extracts "spectral dynamic features" of each segemnt in segment list
+    # spectral dynamic features are fft coefficients of the spectrogram values in the time domain of each 
+    # frequency bin
+    #
+    # Args:
+    #   segment.list: data.frame;
+    #   segment.length: numeric. Number of seconds per segment. used to determine the number of frames to include
+    #   num.bands: int;
+    #   max.f, min.f: int; the spectrogram will be calculated so that frequencies between max.f and min.ft are divided up into num.fbands frequency bands
+    #   num.coefficients: how many time domain ceptral coefficients to keep. Only the first coefficients are kept with the high-frequency coefficients discarded. 
     
-    #for each segment 
-        # find the file
-        # check if it's spectrogram has been created
-        # if not
-            # create the spectrogram
-        # get the right segment of the spectrogram
-        # get transforms
-        # add to dataframe
+
+    segment.events <- ReadOutput('segment.events')
+    segment.list <- segment.events$data
+    
+    segment.length = 60 / segment.list$params$num.per.min
+    
+    files <- unique(segment.list$wave.path)
+
+    # ensure that each file appears as a single continuous run in the segment list
+    # this will make sure we can match segments to results
+    each <- nrow(segment.list) / length(files)
+    if (!isTRUE(all.equal(segment.list$wave.path, rep(files, each = each)))) {
+        stop('problem with the segment list')
+    }
+    
+    # todo: calculate this from wave length and segment length
+    num.segments.per.file <- 600
+    #todo: set 'outfile' param to get messages
+    
+    SetReportMode() # reset to console only
+    if (parallel) {
+        SetReportMode(socket = TRUE)
+        cl <- makeCluster(3)
+        registerDoParallel(cl)
+        res <- foreach(file = files, .combine='rbind', .export=ls(envir=globalenv())) %dopar% ExtractSDFForFile(file, 
+                                                                                 segments = segment.list,
+                                                                                 num.fbands = num.fbands, 
+                                                                                 max.f = max.f, 
+                                                                                 min.f = min.f, 
+                                                                                 num.coefficients = num.coefficients)  
+       
+    } else {
+        SetReportMode(socket = FALSE)
+        res <- foreach(file = files, .combine='rbind') %do% ExtractSDFForFile(file, 
+                                                                                 segments = segment.list,
+                                                                                 num.fbands = num.fbands, 
+                                                                                 max.f = max.f, 
+                                                                                 min.f = min.f, 
+                                                                                 num.coefficients = num.coefficients)
+    }
+    SetReportMode() # reset to console only
+
+    # round result to reduce size of csv
+    # todo: make this a configuration variable
+    # todo: first normalize to make sure we are rounding to significant digits
+    #       eg if the range is 0.00001 to 0.00002, then rounding like this is bad
+    res <- round(res, 4)
+    
+    res <- as.data.frame(res)
+    
+    # double check that foreach has put things back in the correct order after doparallel
+    (sum(segment.list$event.id == res$event.id) == length(segment.list$event.id))
     
     
+    
+    # colnames, eg frequency band 3 coefficient 6 will be "b03.c06"
+    feature.names <- paste(rep(paste0('b', sprintf("%02s", 1:num.fbands)), each = num.coefficients), rep(paste0('c', sprintf("%02s", 1:num.coefficients)), num.fbands), sep = ".")
+    colnames(res) <- c('event.id', feature.names)
+    cbind(segment.list[,c('event.id', 'min.id')])
+    
+    
+    
+    # output
+    
+    dependencies <- list(segment.events = segment.events$version)
+    params <- list(max.f = max.f, min.f = min.f, num.coefficients = num.coefficients)
+    WriteOutput(x = res, name = 'TDCCs', params = params, dependencies = dependencies)
+
     
 }
 
 
-ExtractSDF <- function (segment.list, segment.length = 1, num.fbands = 16, num.coefficients = 16) {
+ExtractSDFForFile <- function (path, 
+                               segments,
+                               num.fbands = 16, 
+                               max.f = 8000, 
+                               min.f = 400, 
+                               num.coefficients = 16) {
     
-    files <- unique(segment.list$wave.path)
+    # given the path to an audio file, will create a spectrogram, then split it into the appropriate 
+    # segments, then calculate TDCCs 
+    #
+    # Args:
+    #   path: string; the path to the audio file
+    #   segments: data.frame; contains column: wave.path, min.id, 
     
-    for (f in 1:length(files)) {
+    
+    cur.segments <- segments[segments$wave.path == path, ] 
+    all.files <- unique(segments$wave.path)
+    this.file <- match(path, all.files)
+    Report(5, "extracting TDCCs for events", cur.segments$event.id[1],"-", cur.segments$event.id[nrow(cur.segments)], 'in file ', this.file, 'of', length(all.files))
+    
+    # create the spectrogram
+    cur.spectro <- Sp.CreateFromFile(path, frame.width = 256)
+    
+    spectro.vals <- ReduceSpectrogram2(cur.spectro$vals, num.bands = num.fbands, min.f, max.f)
+    
+    #        cur.spectro$vals <- RemoveNoise(cur.spectro$vals)
+    segment.duration <- 1 # seconds
+    
+    # width of segment should be rounded down to the nearest power of 2 (for fft)
+    width.before <- floor(segment.duration * cur.spectro$frames.per.sec)
+    width <- RoundToPow2(width.before, floor = TRUE)
+    
+    Report(5, width.before - width, 'out of', width.before, 'time-frames were discarded to acheive power of 2')
+    
+    # TODO: update to allow different files to have different sample rates 
+    # if files are different sample rates, this will stuff everything up, because the frequency bands will represent different frequencies
+    # also, the width will represent a different length of time because of the rounding down
+    # currently we know they are all the same
+    
+    if (num.coefficients > width / 2) {
+        stop("specified segment length doesn't allow", num.coefficients, "coefficients")
+    }
+    
+    # hamming  window
+    hamming <- 0.54 - 0.46 * cos(2 * pi * c(1:width) / (width - 1))
+    
+    
+    # add the start.sec.in.file
+    start.sec.in.file <- (cur.segments$min %% 10) * 60 + cur.segments$start.sec
+    
+    # add the start.col.in.file
+    start.col.in.file <- round(start.sec.in.file * cur.spectro$frames.per.sec + 1)
+    
+    num.features <- num.fbands * num.coefficients
+    # // add one col for event.id
+    TDCCs <- matrix(NA, nrow = nrow(cur.segments), ncol = num.features + 1)
+    
+    
+    for (s in 1:nrow(cur.segments)) {
+          
+        seg <- cur.segments[s, ]
+        start.col <- start.col.in.file[s]
+        end.col <- start.col + width - 1
         
-        # create the spectrogram
-        cur.spectro <- Sp.CreateFromFile(files[f], frame.width = num.fbands*2)
-        
-#        cur.spectro$vals <- RemoveNoise(cur.spectro$vals)
-        
-        # width of segment should be rounded down to the nearest power of 2 (for fft)
-        width <- RoundToPow2(segment.length * cur.spectro$frames.per.sec, floor = TRUE)
-        
-        # hamming  window
-        hamming <- 0.54 - 0.46 * cos(2 * pi * c(1:width) / (width - 1))
-        
-        # find the segments for this file
-        segs <- segment.list$wave.path == files[f]
-        
-        # add the segment.width (number of columns)
-        seg.width <- cur.spectro$frames.per.sec * segment.length  
-        
-        # add the start.sec.in.file
-        start.sec.in.file <- (segment.list$min[segs] %% 10) * 60 + segment.list$start.sec[segs]
-        
-        # add the start.col.in.file
-        start.col.in.file <- start.sec.in.file * cur.spectro$frames.per.sec + 1
-
-        
-        for (s in 1:sum(segs)) {
+        if (end.col <= ncol(spectro.vals)) {
+            # in case some files are too short. E.g. the original 24 hour recordings finish before midnight
             
-            seg <- segment.list[segs, ][s, ]
-            start.col <- start.col.in.file[s]
-            end.col <- start.col + width - 1
-            seg.spectro <- cur.spectro$vals[,start.col:end.col]
-            
-            TDCCs <- ExtractTDCCs(seg.spectro, window = hamming, num.coefficients = num.coefficients)
-
-            
-            
+            seg.spectro <- spectro.vals[,start.col:end.col]
+            TDCCs[s,1:num.features+1] <- ExtractTDCCs(seg.spectro, window = hamming, num.coefficients = num.coefficients)  
         }
-        
         
     }
     
+    num.segments.processed <- sum(!is.na(TDCCs[,2]))
+    Report(5, 'features extracted for', num.segments.processed, '/', nrow(TDCCs), 'segments')
+    
+    # 1st col is event .id
+    TDCCs[,1] <- cur.segments$event.id
+    
+    return(TDCCs)
+    
+    
 }
 
 
-ExtractTDCCs <- function (spectro, window, num.coefficients) {
+
+
+
+ExtractTDCCs <- function (seg.spectro, window, num.coefficients) {
     # given a spectrogram that has width = window length, 
     # will do a fft on each frequency bin
     # coefficients higher than num.coefficients will be discarded
+    
+    seg.spectro <- Normalize(seg.spectro)
+    
+    width <- ncol(seg.spectro)
     
     seg.spectro <- t(seg.spectro) * window
     
@@ -134,31 +273,19 @@ RoundToPow2 <- function (x, ceil = FALSE, floor = FALSE) {
 
 RemoveNoise <- function (spectro) {
     # aggressive noise removal
-    
     # normalise
-    
     spectro <- Normalize(spectro)
-    
-    
     # for each row, calculate the median of it and it's neighbouring rows
-    
-    
-    
-    
     med <- rep(NA, nrow(spectro))
     s1 <- rbind(spectro[1,], spectro)
     s1 <- rbind(s1, s1[nrow(s1),])
     for (i in 1:(length(med))) {    
         med[i] <- median(s1[i:(i+2),], na.rm = TRUE)
     }
-    
     med <- matrix(med, nrow = nrow(spectro), ncol = ncol(spectro))
-    
     rem <- spectro < med
     spectro[rem] <- 0
-    
     return(spectro)
-    
 }
 
 test1 <- function () {

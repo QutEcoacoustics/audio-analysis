@@ -1,3 +1,7 @@
+
+
+
+
 Confirm <- function (msg, default = NULL) {
     options <- c('Yes', 'No')
     if (!is.null(default)) {    
@@ -218,7 +222,7 @@ GetValidatedFloat <- function (msg = 'Enter a number', max = NA, min = 0, defaul
 
 
 
-ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NA) { 
+ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NULL) { 
     extra <- c();
     if (!is.na(min)) {
         extra <- c(extra, paste('min', min))
@@ -227,7 +231,7 @@ ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NA) 
         extra <- c(extra, paste('max', max))
     }
     
-    if (!is.na(default)) {
+    if (!is.null(default)) {
         extra <- c(extra, paste('default', default))
     }
     
@@ -239,72 +243,4 @@ ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NA) 
 }
 
 
-
-
-
-Report <- function (level, ..., nl.before = FALSE, nl.after = TRUE) {
-    # prints output to the screen if the level is above the 
-    # global output level. 
-    #
-    # Args:
-    #   level: int; how important is this? 1 = most important
-    #   ... : strings;  concatenated to form the message
-    #   nl: boolean; whether to start at a new line
-    if (level <= g.report.level) {
-        if (nl.before) {
-            cat("\n")
-        }
-        cat(paste(c(paste(as.vector(list(...)),  collapse = " ")), collapse = ""))
-        if (nl.after) {
-            cat("\n")
-        }
-    }
-}
-
-ReportAnimated <- function (level, ..., nl.before = FALSE, nl.after = TRUE, duration = NULL, after = 4) {
-    # prints to screen, but does it one character at a time
-    if (level <= g.report.level) {
-        if (nl.before) {
-            cat("\n")
-        }
-        str <- paste(c(paste(as.vector(list(...)),  collapse = " ")), collapse = "")
-        str <- strsplit(str, '')[[1]]
-        str <- c(str, rep(".", round(after*length(str))))
-        if (is.null(duration)) {
-            sleep.for <- 0.1
-        } else {
-            sleep.for <- duration / length(str)  
-        }
-
-        for (char in str) {
-            cat(char)
-            Sys.sleep(sleep.for)
-        }
-        
-        if (nl.after) {
-            cat("\n")
-        }
-    }
-}
-
-Dot <- function(level = 5) {
-    #outputs a dot, used for feedback during long loops
-    if (level <= g.report.level) {
-        cat(".")
-    }
-}
-
-Timer <- function(prev = NULL, what = 'processing', num = NULL, per = "each") {
-    # used for reporting on the execution time of parts of the code
-    if(is.null(prev)) {
-        return(proc.time())
-    } else {
-        t <- (proc.time() - prev)[3]
-        Report(3, 'finished', what, 'in', round(t, 2), ' sec')
-        if (is.numeric(num) && num > 0) {
-            time.per.each <- round(t / num, 3)
-            Report(3, time.per.each, "per", per)
-        } 
-    }
-}
 
