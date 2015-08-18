@@ -17,11 +17,14 @@
 #  10. Transition Matrix    
 # *11. Cluster Time Series
 
-setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
 #vec <- read.csv("normIndicesClusters ,Gympie NP1 ,22-28 June 2015.csv", header=T)
 #setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
 #vec <- read.csv("normIndicesClusters ,Woondum3 ,22-28 June 2015.csv", header=T)
-vec <- read.csv("normIndicesClusters ,Gympie NP1 ,22-28 June 2015 5,9,11,13,14,15,17.csv", header = T)
+#vec <- read.csv("normIndicesClusters ,Gympie NP1 ,22-28 June 2015 5,9,11,13,14,15,17.csv", header = T)
+vec <- read.csv("Cluster_list 22-28 June 2015_5,7,9,10,11,12,13,14,15,17,18Gympie NP1 .csv", header=T)
+vec <- vec[,2]
 
 # clusters <- unname(kmeansObj$cluster)
 clusters <- vec$unname.kmeansObj.cluster.
@@ -44,10 +47,11 @@ dateLabel <- unique(substr(indices$rec.date, 1,10))
 dateLabel <- dateLabel[1:length(datePos)]
 
 #################################
-setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\TimeSeriesPlots")
-# rename file here
-n <- 15
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\TimeSeriesPlots")
+n <- 7
 interval <- 2*n + 1
+
+# rename file here
 file <- paste("Cluster Time Series_B", site, 
             "_", "interval = ",interval,".png", sep = "")
 shift <- rep(0, n)
@@ -72,9 +76,6 @@ for (i in (n+1):(length(clusters)-(n+1))) {
   }
   if (counter==1) {
       lengthOfSeries <- lengthOfSeries - 1
-  }
-  if (counter==2) {
-    lengthOfSeries <- lengthOfSeries -1
   }
   timeSeries <- c(timeSeries, lengthOfSeries)
 }

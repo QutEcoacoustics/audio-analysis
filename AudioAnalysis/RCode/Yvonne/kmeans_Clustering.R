@@ -40,25 +40,30 @@ normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
 }
 
+# Pre-processing transformation of Temporal Entropy
+# to correct the long tail 
+indices[,14] <- sqrt(indices[,14])
+
 normIndices <- indices
+
 # normalise variable columns
 normIndices[,4]  <- normalise(indices[,4], -50,-10)    # AverageSignalAmplitude
 normIndices[,5]  <- normalise(indices[,5], -50,-10)    # BackgroundNoise
-normIndices[,6]  <- normalise(indices[,6],  0,  50)    # Snr
-normIndices[,7]  <- normalise(indices[,7],  3,  20)    # AvSnrofActive Frames
-normIndices[,8]  <- normalise(indices[,8],  0,  1)     # Activity 
-normIndices[,9]  <- normalise(indices[,9],  0,  5)     # EventsPerSecond
-normIndices[,10] <- normalise(indices[,10], 0,  0.5)   # HighFreqCover
-normIndices[,11] <- normalise(indices[,11], 0,  0.5)   # MidFreqCover
-normIndices[,12] <- normalise(indices[,12], 0,  0.5)   # LowFreqCover
+normIndices[,6]  <- normalise(indices[,6],  0, 50)    # Snr
+normIndices[,7]  <- normalise(indices[,7],  3, 10)    # AvSnrofActive Frames
+normIndices[,8]  <- normalise(indices[,8],  0, 1)     # Activity 
+normIndices[,9]  <- normalise(indices[,9],  0, 2)     # EventsPerSecond
+normIndices[,10] <- normalise(indices[,10], 0, 0.5)   # HighFreqCover
+normIndices[,11] <- normalise(indices[,11], 0, 0.5)   # MidFreqCover
+normIndices[,12] <- normalise(indices[,12], 0, 0.5)   # LowFreqCover
 normIndices[,13] <- normalise(indices[,13], 0.4,0.7)   # AcousticComplexity
-normIndices[,14] <- normalise(indices[,14], 0,  0.6)   # TemporalEntropy
-normIndices[,15] <- normalise(indices[,15], 0,  0.8)   # EntropyOfAverageSpectrum
-normIndices[,16] <- normalise(indices[,16], 0,  1)     # EntropyOfVarianceSpectrum
-normIndices[,17] <- normalise(indices[,17], 0,  1)     # EntropyOfPeaksSpectrum
-normIndices[,18] <- normalise(indices[,18], 0,  0.7)   # EntropyOfCoVSpectrum
+normIndices[,14] <- normalise(indices[,14], 0, 0.3)   # TemporalEntropy
+normIndices[,15] <- normalise(indices[,15], 0, 0.7)   # EntropyOfAverageSpectrum
+normIndices[,16] <- normalise(indices[,16], 0, 1)     # EntropyOfVarianceSpectrum
+normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyOfPeaksSpectrum
+normIndices[,18] <- normalise(indices[,18], 0, 0.7)   # EntropyOfCoefOfVarSpectrum
 normIndices[,19] <- normalise(indices[,19], -0.8, 1)   # NDSI
-normIndices[,20] <- normalise(indices[,20], 0, 22)     # SptDensity
+normIndices[,20] <- normalise(indices[,20], 0, 15)     # SptDensity
 
 # adjust values greater than 1 or less than 0
 for (j in 4:20) {
@@ -142,7 +147,7 @@ for(i in 1:30) {
 }
 
 png(
-  "Cluster 24-25 June 2015 annotated .png",
+  "Cluster 22-28 June 2015 5,7,9,10,11,13,14,15,17,18.png",
   width     = 400,
   height    = 85,
   units     = "mm",
@@ -158,7 +163,8 @@ png(
 #set.seed(1234)
 #***#***#***#***#***#
 #indicesRef <- c(5,6,8,11,12,15,17,18,19,20)
-indicesRef <- c(5,7,9,10,11,13,14,15,17,18,19) 
+#indicesRef <- c(5,9,11,14,15,17,18,20)
+indicesRef <- c(5,7,9,10,11,13,14,15,17,18) 
 #0.8878094 for k = 30, Gympie NP 22 to 28 June 2015
 set.seed(1092)
 #set.seed(1234)
@@ -167,7 +173,7 @@ length2 <- length(normIndices$X)
 
 length <- length(indices$rec.date)
 dataFrame <- normIndices[length1:length2, indicesRef]  # best eleven variables
-kmeansObj <- kmeans(dataFrame, centers = 25, iter.max = 20,
+kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 20,
                     nstart = 3)
 kmeansObj
 normIndices <- cbind(normIndices, unname(kmeansObj$cluster))
@@ -481,20 +487,27 @@ plot(normIndices[c(18,16)],col=kmeansObj$cluster)
 plot(normIndices[c(18,17)],col=kmeansObj$cluster) # Entropy Peaks
 plot(normIndices[c(18,18)],col=kmeansObj$cluster)
 
-png(
-  "Clusterplot 5,9,11,13,14,15,17.png",
+############# Saving files ####################
+png(file= "Clusterplot 5_7_9_10_11_13_14_15_17_18",
   width     = 320,
   height    = 85,
   units     = "mm",
-  res       = 1200,
+  res       = 800,
   pointsize = 4
 )
+
 plot(normIndicesVector$vector,col=normIndicesVector$vector)
 dev.off()
 
 write.csv(as.matrix(kmeansObj$centers), 
-          file = paste("Cluster_centers 22-28 June 2015_5,7,9,10,11,12,13,14,15,17", site, 
+          file = paste("Cluster_centers 22-28 June 2015_5,7,9,10,11,12,13,14,15,17,18", site, 
                        ".csv", sep = ""))
+
+write.csv(unname(kmeansObj$cluster),
+          file = paste("Cluster_list 22-28 June 2015_5,7,9,10,11,12,13,14,15,17,18", 
+          site, ".csv", sep = ""))
+
+###############################################
 
 write.csv(as.matrix(kmeansObj$centers), 
              file = paste("Cluster_centers 22-28 June 2015_5,9,11,13,14,15,17", site, 
