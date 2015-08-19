@@ -35,12 +35,9 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     
     segment.list <- AddEventIdColumn(segment.list)
     
-    
     dependencies <- list('target.min.ids' = min.list$version)
-    params <- list('num.per.min' <- 60)
+    params <- list('num.per.min' = 60)
     segment.list.version <- WriteOutput(x = segment.list, name = 'segment.events',params = params, dependencies = dependencies)
-    
-    return(segment.list)
     
 }
 
@@ -103,9 +100,12 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     # todo: make this a configuration variable
     # todo: first normalize to make sure we are rounding to significant digits
     #       eg if the range is 0.00001 to 0.00002, then rounding like this is bad
-    res <- round(res, 4)
     
-    res <- as.data.frame(res)
+    
+
+    
+    res[,-1] <- round(res[,-1], 4)
+
     
     # double check that foreach has put things back in the correct order after doparallel
     (sum(segment.list$event.id == res$event.id) == length(segment.list$event.id))
@@ -115,15 +115,26 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     # colnames, eg frequency band 3 coefficient 6 will be "b03.c06"
     feature.names <- paste(rep(paste0('b', sprintf("%02s", 1:num.fbands)), each = num.coefficients), rep(paste0('c', sprintf("%02s", 1:num.coefficients)), num.fbands), sep = ".")
     colnames(res) <- c('event.id', feature.names)
-    cbind(segment.list[,c('event.id', 'min.id')])
     
+    #cbind(segment.list[,c('event.id', 'min.id')])
     
+    # remove missing audio segments from features and segments
+    contains.na <- apply(res, 1, function (x) { 
+        any(is.na(x))
+    })
+    res <- res[!contains.na,]
+    segment.list <- segment.list[!contains.na,]
     
     # output
-    
     dependencies <- list(segment.events = segment.events$version)
     params <- list(max.f = max.f, min.f = min.f, num.coefficients = num.coefficients)
     WriteOutput(x = res, name = 'TDCCs', params = params, dependencies = dependencies)
+    
+    # re-save segments without those with missing audio
+    segment.events$data <- segment.list
+    WriteStructuredOutput(segment.events)
+    
+    
 
     
 }
@@ -143,6 +154,13 @@ ExtractSDFForFile <- function (path,
     #   path: string; the path to the audio file
     #   segments: data.frame; contains column: wave.path, min.id, 
     
+    require('digest')
+    
+    cache.id <- digest(paste(path, num.fbands, max.f, min.f, num.coefficients))
+    retrieved.from.cache <- ReadCache(cache.id)
+    if (retrieved.from.cache != FALSE) {
+        return(retrieved.from.cache)
+    }
     
     cur.segments <- segments[segments$wave.path == path, ] 
     all.files <- unique(segments$wave.path)
@@ -205,8 +223,12 @@ ExtractSDFForFile <- function (path,
     num.segments.processed <- sum(!is.na(TDCCs[,2]))
     Report(5, 'features extracted for', num.segments.processed, '/', nrow(TDCCs), 'segments')
     
+    TDCCs <- as.data.frame(TDCCs)
+    
     # 1st col is event .id
     TDCCs[,1] <- cur.segments$event.id
+    
+    WriteCache(TDCCs, cache.id)
     
     return(TDCCs)
     

@@ -51,6 +51,8 @@ ClusterEvents <- function (num.groups = 'auto',
     
     dependencies = list(events = events$version, features = event.features$version)
 
+
+
     
     num.clusters <- GetNumClusters()
     
@@ -68,6 +70,8 @@ ClusterEvents <- function (num.groups = 'auto',
         WriteOutput(fit, 'clustering.HA', params = params, dependencies = dependencies)
         CreateEventGroups.HA(events$data, clustering.result)
     }
+
+    
     
 }
 
@@ -210,13 +214,19 @@ DoClusterHA <- function (df, weights = 1, method = 'complete') {
     return(fit)
 }
 
-DoClusterKmeans <- function (df, weights, num.clusters = NULL) {
+DoClusterKmeans <- function (df, weights = NULL, num.clusters = NULL) {
+    
+    
+
 
     Report(2, 'scaling features (m = ',  nrow(df), ')')
     ptm <- proc.time() 
     features <- as.matrix(scale(df))  # standardize variables
     Timer(ptm, 'scaling features')  
-    features <- t(weights * t(features))
+    if (!is.null(weights)) {
+        features <- t(weights * t(features))  
+    }
+
     if (is.null(num.clusters)) {
         num.clusters <- ReadInt('number of clusters for K Means', default = 240)     
     }
@@ -225,6 +235,9 @@ DoClusterKmeans <- function (df, weights, num.clusters = NULL) {
     for (i in 1:length(num.clusters)) {
         kmeans.results[[i]] <- kmeans(df, num.clusters[i], algorithm = "Hartigan-Wong", iter.max = 30)   
     }
+    
+    # for NA rows, assign cluster NA
+    
     
     return(kmeans.results)
     

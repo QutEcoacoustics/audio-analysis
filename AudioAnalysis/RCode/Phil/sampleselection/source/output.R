@@ -385,6 +385,26 @@ ReadOutput <- function (name = NULL,
     }
 }
 
+WriteStructuredOutput <- function (x, check.before.overwrite = TRUE) {
+    # writes output where the meta values for the output are included in the list
+    # rather than passed as separate parameters
+    # Simply takes the parameters from the list and uses them for WriteOutput
+    
+    required.params <- c('data', 'name', 'params', 'dependencies')
+    missing.items <- required.params[!required.params %in% names(x)]
+    if (length(missing.items) > 0) {
+        stop(paste('supplied output list is missing some items:', paste(missing.items, sep = ", ")))
+    }
+    
+    v.num = WriteOutput(x = x$data, name = x$name, params = x$params, dependencies = x$dependencies, check.before.overwrite = check.before.overwrite)
+    
+    
+    return(v.num)
+    
+    
+    
+}
+
 
 WriteOutput <- function (x, name, params = list(), dependencies = list(), check.before.overwrite = TRUE) {
     # writes output to a file
@@ -814,7 +834,7 @@ ReadCache <- function (cache.id) {
 #         } , finally =  {
 #            
 #         })
-        if (exists('x') && class(x) == 'spectrogram') {
+        if (exists('x')) {
             Report(6, 'successfully read file from cache')
             return(x)  # this is the name of the variable used when saving   
         }
