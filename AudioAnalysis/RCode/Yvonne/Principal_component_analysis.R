@@ -89,7 +89,7 @@ normIndices[,10] <- normalise(indices[,10], 0, 0.5)   # HighFreqCover
 normIndices[,11] <- normalise(indices[,11], 0, 0.5)   # MidFreqCover
 normIndices[,12] <- normalise(indices[,12], 0, 0.5)   # LowFreqCover
 normIndices[,13] <- normalise(indices[,13], 0.4,0.7)  # AcousticComplexity
-normIndices[,14] <- normalise(indices[,14], 0, 0.3)   # TemporalEntropy
+normIndices[,14] <- normalise(indices[,14], 0, sqrt(0.3))   # TemporalEntropy
 normIndices[,15] <- normalise(indices[,15], 0, 0.7)   # EntropyOfAverageSpectrum
 normIndices[,16] <- normalise(indices[,16], 0, 1)     # EntropyOfVarianceSpectrum
 normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyOfPeaksSpectrum
@@ -425,6 +425,7 @@ dateLabel <- dateLabel[1:length(datePos)]
 #################################
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
 
+# Smoothing using a moving average with 2 sides
 png('Flux_Time_series_GympieNP_ 22June2015_5,7,9,10,11,13,14,15,17,18.png', 
     width=2000, height=1200, units="px") 
 par(mfrow=c(6,1),cex.axis=2)
@@ -586,11 +587,11 @@ plot(flux[7201:8640],type = "l", xaxt="n")
 mtext(side=3,"GympieNP_27June2015_5,7,9,10,11,13,14,15,17,18",
       cex = 2)
 mtext(side=4,"1 min",line=-1, cex=1.4)
-flux.5 <- filter(flux[7201:8640],filter=rep(1/5,5)) # 5 minute
-flux.10 <- filter(flux[7201:8640],filter=rep(1/10,10)) # 10 minute
-flux.15 <- filter(flux[7201:8640],filter=rep(1/15,15)) # 20 minute
-flux.20 <- filter(flux[7201:8640],filter=rep(1/20,20)) # half-hourly
-flux.30 <- filter(flux[7201:8640],filter=rep(1/30,30)) # hourly
+flux.5 <- filter(flux[7201:8640], filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[7201:8640], filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[7201:8640], filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[7201:8640], filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[7201:8640], filter=rep(1/30,30)) # hourly
 lines(flux.10,col="red")
 #lines(m.2,col="purple")
 #lines(m.3,col="blue")
@@ -616,11 +617,11 @@ plot(flux[8641:10080],type = "l", xaxt="n")
 mtext(side=3,"GympieNP_28June2015_5,7,9,10,11,13,14,15,17,18",
       cex = 2)
 mtext(side=4,"1 min",line=-1, cex=1.4)
-flux.5 <- filter(flux[8641:10080],filter=rep(1/5,5)) # 5 minute
-flux.10 <- filter(flux[8641:10080],filter=rep(1/10,10)) # 10 minute
-flux.15 <- filter(flux[8641:10080],filter=rep(1/15,15)) # 20 minute
-flux.20 <- filter(flux[8641:10080],filter=rep(1/20,20)) # half-hourly
-flux.30 <- filter(flux[8641:10080],filter=rep(1/30,30)) # hourly
+flux.5 <- filter(flux[8641:10080],  filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[8641:10080], filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[8641:10080], filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[8641:10080], filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[8641:10080], filter=rep(1/30,30)) # hourly
 lines(flux.10,col="red")
 #lines(m.2,col="purple")
 #lines(m.3,col="blue")
@@ -638,3 +639,25 @@ axis(side = 1, line = 0, at = timePos, labels = timeLabel,
      mgp = c(1.8, 2, 0), cex.axis = 3)
 dev.off()
 ######################
+#An alternative way to smooth is using a modified Daniel
+#plot(kernapply(flux[7201:8640], 
+#               kernel("modified.daniell",7)),
+#               type="l")
+#plot(kernapply(flux[7201:8640], 
+#               kernel("modified.daniell",3)),
+#              type="l")
+
+# Determine full day acoustic flux vectors
+length <- length(normIndices$BackgroundNoise)
+
+flux.5.24 <- filter(flux[1:length], filter=rep(1/5,5)) # 5 minute
+flux.10.24 <- filter(flux[1:length], filter=rep(1/10,10)) # 10 minute
+flux.15.24 <- filter(flux[1:length], filter=rep(1/15,15)) # 20 minute
+flux.20.24 <- filter(flux[1:length], filter=rep(1/20,20)) # half-hourly
+flux.30.24 <- filter(flux[1:length], filter=rep(1/30,30)) # hourly
+flux.data <- cbind(flux, flux.5.24, flux.10.24, flux.15.24,
+                   flux.20.24, flux.30.24)
+file <- paste("Acoustic_flux_time_series_", site, "_", 
+             "22 to 28 June 2015", ".csv", sep="")
+write.table(flux.data, file=file, sep = ",", qmethod = "double",
+            row.names = F)
