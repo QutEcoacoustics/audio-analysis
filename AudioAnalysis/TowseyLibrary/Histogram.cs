@@ -55,7 +55,17 @@ namespace TowseyLibrary
             binWidth = range / (double)binCount;
             for (int i = 0; i < data.Length; i++)
             {
-                int id = (int)((data[i] - min) / binWidth);
+                double value = data[i];
+                int id = 0;
+                if (Double.IsNaN(value))
+                {
+                    string msg = String.Format("WARNING from Histogram.Histo():  dataValue[{0}] is NaN", i);
+                    LoggedConsole.WriteErrorLine(msg);
+                }
+                else
+                {
+                    id = (int)((value - min) / binWidth);
+                }
                 if (id >= binCount) id = binCount - 1; 
                 bins[id]++;
             }

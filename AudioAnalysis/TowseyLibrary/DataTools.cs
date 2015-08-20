@@ -2609,6 +2609,19 @@ namespace TowseyLibrary
       for (int i = 0; i < data.Length; i++) sqrtArray[i] = Math.Sqrt(data[i]);
       return sqrtArray;
   }
+
+        public static double[] LogTransform(double[] data)
+        {
+            if (data == null) return null;
+            var logArray = new double[data.Length];
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] <= 0.0) logArray[i] = 0.0;
+                else                logArray[i] = Math.Log10(1 + data[i]);
+            }
+            return logArray;
+        }
+
   public static double[] LogValues(double[] data)
   {
       if (data == null) return null;

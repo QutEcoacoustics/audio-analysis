@@ -171,9 +171,9 @@ namespace AnalysisPrograms
             } // end if (true)
 
 
-
-            // concatenating csv files of spectral indices
-            if (true)
+            // PAPUA NEW GUINEA DATA
+            // concatenating csv files of spectral and summary indices
+            if (false)
             {
                 // top level directory
                 //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
@@ -194,8 +194,8 @@ namespace AnalysisPrograms
                 //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_8-7-15\BAR\BAR_64\";
                 //string opFileStem = "TNC_Yavera_20150708_BAR64";
 
-                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_13\";
-                string opFileStem = "TNC_Musiamunat_20150703_BAR13";
+                string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
+                string opFileStem = "TNC_Musiamunat_20150703_BAR18";
                 
 
                 var dataDir = new DirectoryInfo(dataPath);
@@ -203,15 +203,49 @@ namespace AnalysisPrograms
                 string indexPropertiesConfigPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml";
                 FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
 
-                // string outputDirectory = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency";
-                string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
+                // string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
                 // var opDir = new DirectoryInfo(outputDirectory);
                 var opDir = dataDir;
-
                 LDSpectrogramStitching.ConcatenateIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
 
             }
 
+
+            // YVONNE'S DATA
+            // concatenating csv files of spectral and summary indices
+            if (true)
+            {
+                // top level directory
+                // string dataPath = @"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola";
+                string dataPath = @"Y:\YvonneResults\Cooloola#48";
+                string[] sites = { "GympieNP", "Woondum3" };
+                var dtoStart = new DateTimeOffset(2015, 6, 24, 0, 0, 0, TimeSpan.Zero);
+                string indexPropertiesConfigPath = dataPath + @"\IndexPropertiesConfig.yml";
+
+
+                var dataDir = new DirectoryInfo(dataPath);
+                FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
+
+                foreach (string site in sites)
+                {
+                    DirectoryInfo siteDir = new DirectoryInfo(Path.Combine(dataPath, site));
+                    DirectoryInfo opDir   = new DirectoryInfo(Path.Combine(dataPath, site + "_concatenatedResults"));
+                    if (!opDir.Exists) opDir.Create();
+
+                    for (int d = 0; d < 4; d++)
+                    {
+                        var thisday = dtoStart.AddDays(d);
+                        string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
+                        string opFileStem = String.Format("{0}_{1}", site, dateString);
+
+                        opDir = new DirectoryInfo(Path.Combine(dataPath, site + "_concatenatedResults", opFileStem));
+                        if (!opDir.Exists) opDir.Create();
+
+                        //LDSpectrogramStitching.ConcatenateIndexFiles(siteDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                    }
+                }
+
+            }
 
             // experiments with clustering the spectra within spectrograms
             if (false)

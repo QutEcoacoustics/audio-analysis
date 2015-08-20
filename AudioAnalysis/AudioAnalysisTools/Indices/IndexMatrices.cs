@@ -124,16 +124,24 @@ namespace AudioAnalysisTools.Indices
             return m;
         }
 
-        
+
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string[] keys)
+        {
+            string fileStemPattern = "*";
+            return GetSpectralIndexFilesAndConcatenate(path, fileStemPattern, keys);
+        }
+
+        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string fileStemPattern, string[] keys)
         {
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
 
             foreach (string key in keys)
             {
                 DateTime now1 = DateTime.Now;
-                string pattern = "*" + key + ".csv";
+                // string pattern = "*" + key + ".csv";
+                string pattern = fileStemPattern + "." + key + ".csv";
                 FileInfo[] files = IndexMatrices.GetFilesInDirectory(path, pattern);
+                if (files.Length == 0) return spectrogramMatrices;
 
                 //var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
                 var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(files);
@@ -141,20 +149,6 @@ namespace AudioAnalysisTools.Indices
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
 
-                // add another matrix with square root of values for lop-sided distributions
-                if (key == "POW")
-                {
-                    string newKey = "Sqrt" + key;
-                    spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
-                }
-                // add another matrix with square root of values for lop-sided distributions
-                if (key == "ENT")
-                {
-                    string newKey = "Sqrt" + key;
-                    spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
-                }
-
-                
                 DateTime now2 = DateTime.Now;
                 TimeSpan et = now2 - now1;
                 LoggedConsole.WriteLine("Time to read <" + key + "> spectral index files = " + et.TotalSeconds + " seconds");
@@ -199,12 +193,13 @@ namespace AudioAnalysisTools.Indices
         {
             // Get the start time from the file name.
             // UNNECESARRY CODE????? Anthony has this one already done somewhere else!!!!!!!!!!!!!!!!!!
-            string pattern = @"20\d\d\d\d\d\d_\d\d\d\d\d\d_";
+            string pattern = @"20\d\d\d\d\d\d(_|-)\d\d\d\d\d\d";
             Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
             Match m = r.Match(fileName);
 
             Group group = m.Groups[0];
-            string[] array = group.ToString().Split('_');
+            char[] separators = { '-', '_'};
+            string[] array = group.ToString().Split(separators);
             int year = Int32.Parse(array[0].Substring(0, 4));
             int mnth = Int32.Parse(array[0].Substring(4, 2));
             int day = Int32.Parse(array[0].Substring(6, 2));
@@ -294,6 +289,35 @@ namespace AudioAnalysisTools.Indices
 
             return M;
         }
+
+
+
+        public static Dictionary<string, double[,]> AddDerivedIndices(Dictionary<string, double[,]> spectrogramMatrices)
+        {
+            string key = "POW";
+            if (spectrogramMatrices.ContainsKey(key)) 
+            // add another matrix with square root and log transform  of values for lop-sided distributions
+            {
+                var m = spectrogramMatrices[key];
+                string newKey = "Sqrt" + key;
+                spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
+                newKey = "Log" + key;
+                spectrogramMatrices.Add(newKey, MatrixTools.LogTransform(m));
+            }
+
+            // add another matrix with square root and log transform of values for lop-sided distributions
+            key = "ENT";
+            if (spectrogramMatrices.ContainsKey(key))
+            {
+                var m = spectrogramMatrices[key];
+                string newKey = "Sqrt" + key;
+                spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
+                newKey = "Log" + key;
+                spectrogramMatrices.Add(newKey, MatrixTools.LogTransform(m));
+            }
+            return spectrogramMatrices;
+        }
+
 
 
         public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
