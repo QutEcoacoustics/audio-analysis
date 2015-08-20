@@ -138,7 +138,7 @@ for (j in 4:20) {
 #### Preparing the dataframe ###############################
 #normIndices.pca <- prcomp(normIndices[,1:17], 
 #                          scale. = F)
-normIndices <- normIndices[,c(5,7,9,10,11,13,14,15,17,18,37)]
+normIndices <- normIndices[,c(5,7,9,10,11,13,14,15,17,18,37,38,39,40)]
 normIndices.pca <- prcomp(normIndices[,1:10], scale. = F)
 
 normIndices$PC1 <- normIndices.pca$x[,1]
@@ -155,6 +155,17 @@ normIndices$PC10 <- normIndices.pca$x[,10]
 plot(normIndices.pca)
 biplot(normIndices.pca)
 
+# assign colours to time-periods
+normIndices <- within(normIndices, levels(fourhour.class) <- c("red","orange","yellow","green","blue","violet"))
+normIndices <- within(normIndices, levels(day.night) <- c("midnightblue","orange","yellow","green","blue"))
+normIndices <- within(normIndices, levels(nautical.twilight) <- c("midnightblue","orange"))
+normIndices <- within(normIndices, levels(hour.class) <- 
+              c("#FF0000FF","#FF4000FF","#FF8000FF","#FFBF00FF","#FFFF00FF",
+                "#BFFF00FF","#80FF00FF","#40FF00FF","#00FF00FF","#00FF40FF",
+                "#00FF80FF","#00FFBFFF","#00FFFFFF","#00BFFFFF","#0080FFFF",
+                "#0040FFFF","#0000FFFF","#4000FFFF","#8000FFFF","#BF00FFFF",
+                "#FF00FFFF","#FF00BFFF","#FF0080FF","#FF0040FF"))
+                      
 #fooPlot <- function(x, main, ...) {
 #  if(missing(main))
 #    main <- deparse(substitute(x))
@@ -167,7 +178,8 @@ biplot(normIndices.pca)
 
 #### Plotting PC1 & PC2 Principal Component Plots with base plotting system
 # change file name when necessary
-png('pca_plot PC1_PC2_selected_indices.png', width=1500, height=1200, units="px") 
+png('pca_plot PC1_PC2_selected_indices.png', width=1500, 
+    height=1200, units="px") 
 PrinComp_X_axis <- "PC1"
 PrinComp_Y_axis <- "PC2"
 first <- 1  # change this and values in plot function below!!! to match PC# 
@@ -178,13 +190,13 @@ rotate <- unname(summ$rotation)
 labels <- names(normIndices[1:length(summ$center)])
 
 mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
-normIndices <- within(normIndices, levels(hour.class) <- c("red","orange","yellow","green","blue","violet"))
 par(mar=c(6,6,4,4))
 plot(normIndices$PC1,normIndices$PC2,  # Change these!!!!! 
      col=as.character(normIndices$hour.class), 
      cex=1.2, type='p', pch=19, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
-                round(summ$importance[first*3-1]*100,2),"%)", sep=""),
+                round(summ$importance[first*3-1]*100,2),"%)", 
+                sep=""),
      ylab=paste(PrinComp_Y_axis," (",  
                 round(summ$importance[second*3-1]*100,2),"%)", sep=""),
      cex.lab=2, cex.axis=1.2, cex.main=2)
@@ -215,7 +227,6 @@ rotate <- unname(summ$rotation)
 labels <- names(normIndices[1:length(summ$center)])
 
 mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
-normIndices <- within(normIndices, levels(hour.class) <- c("red","orange","yellow","green","blue","violet"))
 par(mar=c(6,6,4,4))
 plot(normIndices$PC1,normIndices$PC3,  # Change these!!!!! 
      col=as.character(normIndices$hour.class), 
@@ -235,13 +246,16 @@ for (i in 1:length(labels)) {
        paste(labels[i]), cex=1.6)
 }
 abline (v=0, h=0, lty=2)
-legend('topright', hours, pch=19, col=c('red','orange','yellow',
-                                        'green','blue','violet'), bty='n', cex=2)
+legend('topright', hours, pch=19, 
+       col=c('red','orange','yellow',
+       'green','blue','violet'), bty='n', 
+       cex=2)
 dev.off()
 
 #### Plotting PC2 & PC3 Principal Component Plots with base plotting system
 # change file name when necessary
-png('pca_plot PC2_PC3_selected_indices.png', width=1500, height=1200, units="px") 
+png('pca_plot PC2_PC3_selected_indices.png', width=1500, 
+    height=1200, units="px") 
 PrinComp_X_axis <- "PC2"
 PrinComp_Y_axis <- "PC3"
 first <- 2  # change this and values in plot function below!!! to match PC# 
@@ -251,16 +265,24 @@ summ <- summary(normIndices.pca)
 rotate <- unname(summ$rotation)
 labels <- names(normIndices[1:length(summ$center)])
 
-mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
-normIndices <- within(normIndices, levels(hour.class) <- c("red","orange","yellow","green","blue","violet"))
+mainHeader <- paste (site, date, PrinComp_X_axis, 
+                     PrinComp_Y_axis, sep=" ")
+normIndices <- within(normIndices, levels(hour.class) 
+            <- c("red","orange","yellow","green","blue",
+                 "violet"))
+#normIndices <- within(normIndices, levels(day.night) 
+#                      <- c("red","orange","yellow","green","blue",
+#                           "violet"))
 par(mar=c(6,6,4,4))
 plot(normIndices$PC2,normIndices$PC3,  # Change these!!!!! 
      col=as.character(normIndices$hour.class), 
      cex=1.2, type='p', pch=19, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
-                round(summ$importance[first*3-1]*100,2),"%)", sep=""),
+                round(summ$importance[first*3-1]*100,2),"%)", 
+                sep=""),
      ylab=paste(PrinComp_Y_axis," (",  
-                round(summ$importance[second*3-1]*100,2),"%)", sep=""),
+                round(summ$importance[second*3-1]*100,2),"%)",
+                sep=""),
      cex.lab=2, cex.axis=1.2, cex.main=2)
 hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
            "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
@@ -272,8 +294,9 @@ for (i in 1:length(labels)) {
        paste(labels[i]), cex=1.6)
 }
 abline (v=0, h=0, lty=2)
-legend('topright', hours, pch=19, col=c('red','orange','yellow',
-                                        'green','blue','violet'), bty='n', cex=2)
+legend('topright', hours, pch=19, 
+       col=c('red','orange','yellow',
+       'green','blue','violet'), bty='n', cex=2)
 dev.off()
 ####### PCA plot in ggplot ################
 file <- paste("Principal Component Analysis_adj_ranges_ggbiplot", site, 
@@ -317,11 +340,301 @@ print(g)    # Print to png device
 dev.off()
 
 ####### 3d plot #################################
-library(car) # using car package
-scatter3d(normIndices$PC1, normIndices$PC2, normIndices$PC3, 
-          point.col=normIndices$hour.class, surface = F)
+library(rgl) # using rgl package
+colourSet1 <- c("#FF0000FF","#FF4000FF","#FF8000FF",
+                "#FFBF00FF","#FFFF00FF","#BFFF00FF")
+colourSet2 <- c("#80FF00FF","#40FF00FF","#00FF00FF",
+                "#00FF40FF","#00FF80FF","#00FFBFFF")
+colourSet3 <- c("#00FFFFFF","#00BFFFFF","#0080FFFF",
+                "#0040FFFF","#0000FFFF","#4000FFFF")
+colourSet4 <- c("#8000FFFF","#BF00FFFF","#FF00FFFF",
+                "#FF00BFFF","#FF0080FF","#FF0040FF")
 
-library(rgl)
-plot3d(normIndices$PC1, normIndices$PC2, normIndices$PC3,
-       col=normIndices$hour.class)
-segments3d()
+normIndices <- within(normIndices, levels(hour.class) <- 
+                        c(colourSet1,colourSet2, colourSet3,colourSet4))
+
+day <- c(0, 1440, 2880, 4320, 5760, 7200, 8640, 10080)
+offset <- c(0,360,720,1080)
+start <-  3600         #day[5] + offset[4] + 1   
+finish <- 3660                #length(normIndices$PC1) #day[7]-1
+start
+finish
+plot3d(normIndices$PC1[start:finish], normIndices$PC2[start:finish], 
+       normIndices$PC3[start:finish], 
+       col=adjustcolor(normIndices$hour.class, alpha.f = 0.1))
+spheres3d(normIndices$PC1[start:finish], normIndices$PC2[start:finish], 
+        normIndices$PC3[start:finish], 
+          col=adjustcolor(normIndices$hour.class, alpha.f = 0.1),
+          radius = 0.015)
+xyzCoords <- data.frame(x1= numeric(10),  y1= integer(10), 
+                      z1 = numeric(10), x2= numeric(10), 
+                      y2= integer(10),  z2 = numeric(10))
+for (i in 1:10) {
+  xyzCoords$x2[i] <- rotate[i,1]
+  xyzCoords$y2[i] <- rotate[i,2]
+  xyzCoords$z2[i] <- rotate[i,3]
+}
+# xyz co-ordinates for segments
+xyzCoords <- data.frame(x1= numeric(10),  y1= integer(10), 
+                      z1 = numeric(10), x2= numeric(10), 
+                      y2= integer(10),  z2 = numeric(10))
+for (i in 1:10) {
+  xyzCoords$x2[i] <- rotate[i,1]*0.8
+  xyzCoords$y2[i] <- rotate[i,2]*0.8
+  xyzCoords$z2[i] <- rotate[i,3]*0.8
+}
+segments3d(x=as.vector(t(xyzCoords[1:10,c(1,4)])),
+           y=as.vector(t(xyzCoords[1:10,c(2,5)])),
+           z=as.vector(t(xyzCoords[1:10,c(3,6)])), 
+           lwd=2, col= "midnightblue")
+
+#library(car) # using car package
+#scatter3d(normIndices$PC1, normIndices$PC2, normIndices$PC3, 
+#          point.col=normIndices$hour.class, surface = F)
+
+# Acoustic flux
+flux <- NULL
+
+for (i in 1:length(normIndices$BackgroundNoise))  {
+distance <- sqrt((normIndices[i,1] - normIndices[(i+1),1])^2 +
+                 (normIndices[i,2] - normIndices[(i+1),2])^2 +
+                 (normIndices[i,3] - normIndices[(i+1),3])^2 +
+                 (normIndices[i,4] - normIndices[(i+1),4])^2 +
+                 (normIndices[i,5] - normIndices[(i+1),5])^2 +
+                 (normIndices[i,6] - normIndices[(i+1),6])^2 +
+                 (normIndices[i,7] - normIndices[(i+1),7])^2 +
+                 (normIndices[i,8] - normIndices[(i+1),8])^2 +
+                 (normIndices[i,9] - normIndices[(i+1),9])^2 +
+                 (normIndices[i,10] - normIndices[(i+1),10])^2)
+flux <- c(flux, distance)
+}
+###################
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+######## Create references for plotting dates and times ################
+timeRef <- indices$minute.of.day[1]
+offset <- 0 - timeRef 
+
+timePos   <- seq((offset), (nrow(indices)+359), by = 360) # 359 ensures timelabels to end
+timeLabel <- c("00:00","6:00","12:00","18:00")
+timeLabel <- rep(timeLabel, length.out=(length(timePos))) 
+
+datePos <- c(seq((offset+720), nrow(indices)+1500, by = 1440))
+dateLabel <- unique(substr(indices$rec.date, 1,10))
+dateLabel <- dateLabel[1:length(datePos)]
+
+#################################
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+
+png('Flux_Time_series_GympieNP_ 22June2015_5,7,9,10,11,13,14,15,17,18.png', 
+    width=2000, height=1200, units="px") 
+par(mfrow=c(6,1),cex.axis=2)
+par(mar=c(0,0,0,0),oma=c(5,3,4,2))
+plot(flux[1:1440],type = "l",xaxt='n')
+mtext(side=3,"GympieNP_22June2015_5,7,9,10,11,13,14,15,17,18",
+      cex = 2)
+mtext(side=4,"1 min",line=-1,cex=1.4)
+# Trend lines using linear filters
+flux.5 <- filter(flux[1:1440],filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[1:1440],filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[1:1440],filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[1:1440],filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[1:1440],filter=rep(1/30,30)) # hourly
+lines(flux.10,col="red")
+#lines(m.2,col="purple")
+#lines(m.3,col="blue")
+plot(flux.5, xaxt="n")
+mtext(side=4,"5 min", line=-1,cex=1.4)
+plot(flux.10, xaxt="n")
+mtext(side=4,"10 min",line=-1,cex=1.4)
+plot(flux.15, xaxt="n")
+mtext(side=4,"15 min",line=-1,cex=1.4)
+plot(flux.20, xaxt='n')
+mtext(side=4,"20 min",line=-1,cex=1.4)
+plot(flux.30, xaxt='n')
+mtext(side=4,"30 min",line=-1, cex=1.4)
+axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
+     mgp = c(1.8, 2, 0), cex.axis = 3)
+dev.off()
+###########################
+png('Flux_Time_series_GympieNP_ 23June2015_5,7,9,10,11,13,14,15,17,18.png', 
+    width=2000, height=1200, units="px") 
+par(mfrow=c(6,1),cex.axis=2)
+par(mar=c(0,0,0,0),oma=c(5,3,4,2))
+plot(flux[1441:2880],type = "l", xaxt="n")
+mtext(side=4,"1 min",line=-1, cex=1.4)
+mtext(side=3,"GympieNP_23June2015_5,7,9,10,11,13,14,15,17,18",
+      cex = 2)
+
+flux.5 <- filter(flux[1441:2880],filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[1441:2880],filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[1441:2880],filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[1441:2880],filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[1441:2880],filter=rep(1/30,30)) # hourly
+lines(flux.10,col="red")
+#lines(m.2,col="purple")
+#lines(m.3,col="blue")
+plot(flux.5, xaxt="n")
+mtext(side=4,"5 min",line=-1, cex=1.4)
+plot(flux.10, xaxt="n")
+mtext(side=4,"10 min",line=-1, cex=1.4)
+plot(flux.15, xaxt='n')
+mtext(side=4,"15 min",line=-1, cex=1.4)
+plot(flux.20, xaxt="n")
+mtext(side=4,"20 min",line=-1, cex=1.4)
+plot(flux.30,xaxt="n")
+mtext(side=4,"30 min",line=-1, cex=1.4)
+axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
+     mgp = c(1.8, 2, 0), cex.axis = 3)
+dev.off()
+##############################
+png('Flux_Time_series_GympieNP_ 24June2015_5,7,9,10,11,13,14,15,17,18.png', 
+    width=2000, height=1200, units="px") 
+par(mfrow=c(6,1),cex.axis=2)
+par(mar=c(0,0,0,0),oma=c(5,3,4,2))
+plot(flux[2881:4320],type = "l", xaxt="n")
+mtext(side=4,"1 min",line=-1, cex=1.4)
+mtext(side=3,"GympieNP_24June2015_5,7,9,10,11,13,14,15,17,18",
+      cex = 2)
+
+flux.5 <- filter(flux[2881:4320],filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[2881:4320],filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[2881:4320],filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[2881:4320],filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[2881:4320],filter=rep(1/30,30)) # hourly
+lines(flux.10,col="red")
+#lines(m.2,col="purple")
+#lines(m.3,col="blue")
+plot(flux.5, xaxt="n")
+mtext(side=4,"5 min",line=-1, cex=1.4)
+plot(flux.10, xaxt="n")
+mtext(side=4,"10 min",line=-1, cex=1.4)
+plot(flux.15, xaxt="n")
+mtext(side=4,"15 min",line=-1, cex=1.4)
+plot(flux.20, xaxt="n")
+mtext(side=4,"20 min",line=-1, cex=1.4)
+plot(flux.30, xaxt="n")
+mtext(side=4,"30 min",line=-1, cex=1.4)
+axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
+     mgp = c(1.8, 2, 0), cex.axis = 3)
+dev.off()
+#################################
+png('Flux_Time_series_GympieNP_ 25June2015_5,7,9,10,11,13,14,15,17,18.png', 
+    width=2000, height=1200, units="px") 
+par(mfrow=c(6,1),cex.axis=2)
+par(mar=c(0,0,0,0),oma=c(5,3,4,2))
+plot(flux[4321:5760],type = "l", xaxt="n")
+mtext(side=3,"GympieNP_25June2015_5,7,9,10,11,13,14,15,17,18",
+      cex = 2)
+mtext(side=4,"1 min",line=-1, cex=1.4)
+flux.5 <- filter(flux[4321:5760],filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[4321:5760],filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[4321:5760],filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[4321:5760],filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[4321:5760],filter=rep(1/30,30)) # hourly
+lines(flux.10,col="red")
+#lines(m.2,col="purple")
+#lines(m.3,col="blue")
+plot(flux.5, xaxt="n")
+mtext(side=4,"5 min",line=-1, cex=1.4)
+plot(flux.10, xaxt="n")
+mtext(side=4,"10 min",line=-1, cex=1.4)
+plot(flux.15, xaxt="n")
+mtext(side=4,"15 min",line=-1, cex=1.4)
+plot(flux.20, xaxt="n")
+mtext(side=4,"20 min",line=-1, cex=1.4)
+plot(flux.30, xaxt="n")
+mtext(side=4,"30 min",line=-1, cex=1.4)
+axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
+     mgp = c(1.8, 2, 0), cex.axis = 3)
+dev.off()
+################################
+png('Flux_Time_series_GympieNP_ 26June2015_5,7,9,10,11,13,14,15,17,18.png', 
+    width=2000, height=1200, units="px") 
+par(mfrow=c(6,1),cex.axis=2)
+par(mar=c(0,0,0,0),oma=c(5,3,4,2))
+plot(flux[5761:7200],type = "l", xaxt="n")
+mtext(side=3,"GympieNP_26June2015_5,7,9,10,11,13,14,15,17,18",
+      cex = 2)
+mtext(side=4,"1 min",line=-1, cex=1.4)
+flux.5 <- filter(flux[5761:7200],filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[5761:7200],filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[5761:7200],filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[5761:7200],filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[5761:7200],filter=rep(1/30,30)) # hourly
+lines(flux.10,col="red")
+#lines(m.2,col="purple")
+#lines(m.3,col="blue")
+plot(flux.5, xaxt="n")
+mtext(side=4,"5 min",line=-1, cex=1.4)
+plot(flux.10, xaxt="n")
+mtext(side=4,"10 min",line=-1, cex=1.4)
+plot(flux.15, xaxt="n")
+mtext(side=4,"15 min",line=-1, cex=1.4)
+plot(flux.20, xaxt="n")
+mtext(side=4,"20 min",line=-1, cex=1.4)
+plot(flux.30, xaxt="n")
+mtext(side=4,"30 min",line=-1, cex=1.4)
+axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
+     mgp = c(1.8, 2, 0), cex.axis = 3)
+dev.off()
+###############################
+png('Flux_Time_series_GympieNP_ 27June2015_5,7,9,10,11,13,14,15,17,18.png', 
+    width=2000, height=1200, units="px") 
+par(mfrow=c(6,1),cex.axis=2)
+par(mar=c(0,0,0,0),oma=c(5,3,4,2))
+plot(flux[7201:8640],type = "l", xaxt="n")
+mtext(side=3,"GympieNP_27June2015_5,7,9,10,11,13,14,15,17,18",
+      cex = 2)
+mtext(side=4,"1 min",line=-1, cex=1.4)
+flux.5 <- filter(flux[7201:8640],filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[7201:8640],filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[7201:8640],filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[7201:8640],filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[7201:8640],filter=rep(1/30,30)) # hourly
+lines(flux.10,col="red")
+#lines(m.2,col="purple")
+#lines(m.3,col="blue")
+plot(flux.5, xaxt="n")
+mtext(side=4,"5 min",line=-1, cex=1.4)
+plot(flux.10, xaxt="n")
+mtext(side=4,"10 min",line=-1, cex=1.4)
+plot(flux.15, xaxt="n")
+mtext(side=4,"15 min",line=-1, cex=1.4)
+plot(flux.20, xaxt="n")
+mtext(side=4,"20 min",line=-1, cex=1.4)
+plot(flux.30, xaxt="n")
+mtext(side=4,"30 min",line=-1, cex=1.4)
+axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
+     mgp = c(1.8, 2, 0), cex.axis = 3)
+dev.off()
+#################################
+png('Flux_Time_series_GympieNP_ 28June2015_5,7,9,10,11,13,14,15,17,18.png', 
+    width=2000, height=1200, units="px") 
+par(mfrow=c(6,1),cex.axis=2)
+par(mar=c(0,0,0,0),oma=c(5,3,4,2))
+plot(flux[8641:10080],type = "l", xaxt="n")
+mtext(side=3,"GympieNP_28June2015_5,7,9,10,11,13,14,15,17,18",
+      cex = 2)
+mtext(side=4,"1 min",line=-1, cex=1.4)
+flux.5 <- filter(flux[8641:10080],filter=rep(1/5,5)) # 5 minute
+flux.10 <- filter(flux[8641:10080],filter=rep(1/10,10)) # 10 minute
+flux.15 <- filter(flux[8641:10080],filter=rep(1/15,15)) # 20 minute
+flux.20 <- filter(flux[8641:10080],filter=rep(1/20,20)) # half-hourly
+flux.30 <- filter(flux[8641:10080],filter=rep(1/30,30)) # hourly
+lines(flux.10,col="red")
+#lines(m.2,col="purple")
+#lines(m.3,col="blue")
+plot(flux.5, xaxt="n")
+mtext(side=4,"5 min",line=-1, cex=1.4)
+plot(flux.10, xaxt="n")
+mtext(side=4,"10 min",line=-1, cex=1.4)
+plot(flux.15, xaxt="n")
+mtext(side=4,"15 min",line=-1, cex=1.4)
+plot(flux.20, xaxt="n")
+mtext(side=4,"20 min",line=-1, cex=1.4)
+plot(flux.30, xaxt="n")
+mtext(side=4,"30 min",line=-1, cex=1.4)
+axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
+     mgp = c(1.8, 2, 0), cex.axis = 3)
+dev.off()
+######################
