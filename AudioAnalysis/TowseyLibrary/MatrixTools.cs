@@ -500,6 +500,21 @@ namespace TowseyLibrary
             return newM;
         }
 
+        public static double[,] LogTransform(double[,] M)
+        {
+            int rows = M.GetLength(0);
+            int cols = M.GetLength(1);
+            double[,] newM = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    if (M[i, j] <= 0.0) newM[i, j] = 0.0;
+                    else                newM[i, j] = Math.Log(1 + M[i, j]);
+                }
+            return newM;
+        }
+
         public static double[,] SquareRootOfValues(double[,] M)
         {
             int rows = M.GetLength(0);

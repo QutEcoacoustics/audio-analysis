@@ -322,10 +322,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW" };
             string[] keys = ldSpectrogramConfig.GetKeys();
             string path = topLevelDirectory.FullName;
-            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, keys);
+
+            // assume that the last 8 digits of the passed filename contain a date. 
+            string date = opFileStem.Substring(opFileStem.Length - 8);
+            string fileStemPattern = date + "*__" + analysisType;
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, fileStemPattern, keys);
+            if (dictionary.Count == 0)
+            {
+                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSpectralIndexFiles2() !!!");
+                LoggedConsole.WriteErrorLine("        An empty dictionary of spectral indices was returned !!! ");
+            }
+            // derive POW, NCDI etc
+            dictionary = IndexMatrices.AddDerivedIndices(dictionary);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
-            var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, topLevelDirectory, opFileStem);
+            var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, opDir, opFileStem);
 
 
             // get first file name from sorted list
@@ -371,7 +382,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string pattern = "*__Towsey.Acoustic.Indices.csv";
             string indexType = "SummaryIndices";
 
-            FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, pattern);
+            // assume that the last 8 digits of the passed filename contain a date. 
+            string date = opFileStem.Substring(opFileStem.Length - 8);
+            string fileStemPattern = date + pattern;
+            FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, fileStemPattern);
             var summaryDataTuple  = IndexMatrices.GetSummaryIndexFilesAndConcatenate(files);
             string[] headers = summaryDataTuple.Item1;
             double[,] summaryIndices = summaryDataTuple.Item2;
@@ -379,6 +393,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // insert some transformed data columns
             dictionaryOfCsvColumns.Add("SqrtTempEntropy", DataTools.SquareRootOfValues(dictionaryOfCsvColumns["TemporalEntropy"]));
+
+            // insert some transformed data columns
+            dictionaryOfCsvColumns.Add("LogTempEntropy", DataTools.LogTransform(dictionaryOfCsvColumns["TemporalEntropy"]));
 
             // Calculate Normalised Difference Soundscape Index if not already done
             // caluclate two ratios for three bands.  DO NOT CHANGE THESE KEYS
@@ -394,11 +411,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
-            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, topLevelDirectory, opFileStem);
+            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, opDir, opFileStem);
 
 
 
-            var indicesFile = FilenameHelpers.AnalysisResultName(topLevelDirectory, opFileStem, indexType, csvFileExt);
+            var indicesFile = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
@@ -415,7 +432,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     indexGenerationData,
                     dictionaryOfCsvColumns,
                     imageTitle);
-            var imagePath = FilenameHelpers.AnalysisResultName(topLevelDirectory, opFileStem, indexType, imgFileExt);
+            var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, imgFileExt);
             tracksImage.Save(imagePath);
         }
 
