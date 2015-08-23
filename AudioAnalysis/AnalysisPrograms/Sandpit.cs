@@ -213,7 +213,7 @@ namespace AnalysisPrograms
 
             // YVONNE'S DATA
             // concatenating csv files of spectral and summary indices
-            if (true)
+            if (false)
             {
                 // top level directory
                 // string dataPath = @"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola";
@@ -241,10 +241,52 @@ namespace AnalysisPrograms
                         opDir = new DirectoryInfo(Path.Combine(dataPath, site + "_concatenatedResults", opFileStem));
                         if (!opDir.Exists) opDir.Create();
 
-                        //LDSpectrogramStitching.ConcatenateIndexFiles(siteDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                        LDSpectrogramStitching.ConcatenateIndexFiles(siteDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
                     }
                 }
 
+            }
+
+            // testing directory serach and file search 
+            if(true)
+            {
+                string[] topLevelDirs =
+                {
+                    @"C:\temp\DirA",
+                    @"C:\temp\DirB"
+                };
+
+                string sitePattern = "Subdir2";
+                string dayPattern  = "F2*.txt";
+
+                List<string> dirList = new List<string>();
+                foreach (string dir in topLevelDirs)
+                {
+                    string[] dirs = Directory.GetDirectories(dir, sitePattern, SearchOption.AllDirectories);
+                    dirList.AddRange(dirs);
+                }
+
+                List<FileInfo> fileList = new List<FileInfo>();
+                foreach (string subdir in topLevelDirs)
+                {
+                    var files = IndexMatrices.GetFilesInDirectory(subdir, dayPattern);
+
+                    fileList.AddRange(files);
+                }
+
+                Console.WriteLine("The number of directories is {0}.", dirList.Count);
+                foreach (string dir in dirList)
+                {
+
+                    Console.WriteLine(dir);
+                }
+
+                Console.WriteLine("The number of files is {0}.", fileList.Count);
+                foreach (FileInfo file in fileList)
+                {
+
+                    Console.WriteLine(file.FullName);
+                }
             }
 
             // experiments with clustering the spectra within spectrograms
