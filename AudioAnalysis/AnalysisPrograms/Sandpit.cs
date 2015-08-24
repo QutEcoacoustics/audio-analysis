@@ -213,42 +213,42 @@ namespace AnalysisPrograms
 
             // YVONNE'S DATA
             // concatenating csv files of spectral and summary indices
-            if (false)
+            if (true)
             {
                 // top level directory
-                // string dataPath = @"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola";
-                string dataPath = @"Y:\YvonneResults\Cooloola#48";
-                string[] sites = { "GympieNP", "Woondum3" };
-                var dtoStart = new DateTimeOffset(2015, 6, 24, 0, 0, 0, TimeSpan.Zero);
-                string indexPropertiesConfigPath = dataPath + @"\IndexPropertiesConfig.yml";
+                DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
+                                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") };
+
+                string opPath   = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
+                string site = "GympieNP";
+                //string site = "Woondum3";
+                var dtoStart = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
+                string indexPropertiesConfigPath = opPath + @"\IndexPropertiesConfig.yml";
 
 
-                var dataDir = new DirectoryInfo(dataPath);
                 FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
 
-                foreach (string site in sites)
+                DirectoryInfo opDir = new DirectoryInfo(opPath);
+
+                if (!opDir.Exists) opDir.Create();
+
+                for (int d = 0; d < 5; d++)
                 {
-                    DirectoryInfo siteDir = new DirectoryInfo(Path.Combine(dataPath, site));
-                    DirectoryInfo opDir   = new DirectoryInfo(Path.Combine(dataPath, site + "_concatenatedResults"));
-                    if (!opDir.Exists) opDir.Create();
+                    var thisday = dtoStart.AddDays(d);
 
-                    for (int d = 0; d < 4; d++)
+                    LoggedConsole.WriteLine("\n\n\nCONCATENATING DAY: " + thisday.ToString()) ;
+                    int status = LDSpectrogramStitching.ConcatenateIndexFiles(dataDirs, indexPropertiesConfigFileInfo, opDir, site, thisday);
+                    if (status != 0)
                     {
-                        var thisday = dtoStart.AddDays(d);
-                        string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
-                        string opFileStem = String.Format("{0}_{1}", site, dateString);
-
-                        opDir = new DirectoryInfo(Path.Combine(dataPath, site + "_concatenatedResults", opFileStem));
-                        if (!opDir.Exists) opDir.Create();
-
-                        LDSpectrogramStitching.ConcatenateIndexFiles(siteDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                        LoggedConsole.WriteLine("\nPREMATURE TERMINATION - DAY DOES NOT EXIST: " + thisday.ToString());
+                        break;
                     }
                 }
 
             }
 
             // testing directory serach and file search 
-            if(true)
+            if(false)
             {
                 string[] topLevelDirs =
                 {

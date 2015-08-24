@@ -1004,28 +1004,43 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int imageHt = titleBar.Height + trackHeight + bmp1.Height + trackHeight + 1;
             Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
             Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
+            Bitmap suntrack = null;
 
             DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
+                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
+
+                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
+                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+                suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
             }
 
+            //draw the composite bitmap
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp1, TimeSpan.Zero, fullDuration, cs.XTicInterval, nyquist, herzInterval);
-
-            Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
-            Graphics gr = Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
-            int offset = 0;
-            gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
-            offset = timeBmp1.Height;
-            gr.DrawImage(timeBmp1, 0, offset); //draw
-            offset += titleBar.Height;
-            gr.DrawImage(bmp1, 0, offset); //draw
-            offset += bmp1.Height;
-            gr.DrawImage(timeBmp2, 0, offset); //draw
+            var imageList = new List<Image>();
+            imageList.Add(titleBar);
+            imageList.Add(timeBmp1);
+            imageList.Add(bmp1);
+            imageList.Add(timeBmp2);
+            imageList.Add(suntrack);
+            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
+
+            //Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
+            //Graphics gr = Graphics.FromImage(compositeBmp);
+            //gr.Clear(Color.Black);
+            //int offset = 0;
+            //gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
+            //offset = timeBmp1.Height;
+            //gr.DrawImage(timeBmp1, 0, offset); //draw
+            //offset += titleBar.Height;
+            //gr.DrawImage(bmp1, 0, offset); //draw
+            //offset += bmp1.Height;
+            //gr.DrawImage(timeBmp2, 0, offset); //draw
+            //return compositeBmp;
         }
 
         public static Image DrawTitleBarOfGrayScaleSpectrogram(string title, int width)

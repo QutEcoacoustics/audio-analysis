@@ -335,7 +335,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image FrameSliceOf3DSpectrogram_DayOfYear(Image bmp1, Image titleBar, int year, int dayOfYear, TimeSpan X_interval, int HerzValue, FileInfo sunriseSetData, int nyquistFreq)
         {
 
-            Bitmap suntrack = AddSunTrackToImage(bmp1.Width, sunriseSetData, dayOfYear);
+            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, sunriseSetData, dayOfYear);
 
             Graphics g = Graphics.FromImage(bmp1);
             Pen pen = new Pen(Color.White);
@@ -383,7 +383,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image FrameSliceOf3DSpectrogram_ConstantFreq(Image bmp1, Image titleBar, TimeSpan X_interval, int HerzValue, FileInfo sunriseSetData, int nyquistFreq)
         {
 
-            AddSunRiseSetLinesToImage((Bitmap)bmp1, sunriseSetData);
+            SunAndMoon.AddSunRiseSetLinesToImage((Bitmap)bmp1, sunriseSetData);
             
             Graphics g = Graphics.FromImage(bmp1);
             Pen pen = new Pen(Color.White);
@@ -467,78 +467,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // g.DrawString(title, stringFont, Brushes.White, new PointF(duration + 4, 3));
             return bmp;
-        }
-
-
-        /// <summary>
-        /// This method assumes that the argument "dayValue" will not take zero value i.e. dayValue=1 represents January 1st.
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="sunriseSetData"></param>
-        /// <param name="dayValue"></param>
-        /// <returns></returns>
-        public static Bitmap AddSunTrackToImage(int width, FileInfo sunriseSetData, int dayValue)
-        {
-            // if dayValue >= 366, then set dayValue = 365  
-            // i.e. a rough hack to deal with leap years and other astronomical catastrophes.
-            if (dayValue >= 366) dayValue = 365;
-
-            List<string> lines = FileTools.ReadTextFile(sunriseSetData.FullName);
-            int trackHeight = 10;
-            Bitmap image = new Bitmap(width, trackHeight);
-
-            // if not leap year will not have 366 days
-            if ((lines.Count-1) <= dayValue) return image;
-            
-            string[] fields = lines[dayValue].Split(',');
-            // the sunrise/sunset data has the following line format
-            // DayOfyear	Date	Astro start	Astro end	Naut start	Naut end	Civil start	Civil end	Sunrise	  Sunset
-            //    1	      1-Jan-13	3:24 AM	     8:19 PM	3:58 AM	     7:45 PM	4:30 AM	    7:13 PM	    4:56 AM	  6:47 PM
-            
-            string[] civilRiseArray = fields[6].Split(' ');
-            string[] civilSetArray  = fields[7].Split(' ');
-            civilRiseArray = civilRiseArray[0].Split(':');
-            civilSetArray = civilSetArray[0].Split(':');
-            int civilRiseMinute = (Int32.Parse(civilRiseArray[0]) * 60) + Int32.Parse(civilRiseArray[1]);
-            int civilSetMinute  = (Int32.Parse(civilSetArray[0])  * 60) + Int32.Parse(civilSetArray[1]) + 720;
-            int civilDayLength = civilSetMinute - civilRiseMinute + 1;
-
-            string[] sunriseArray = fields[8].Split(' ');
-            string[] sunsetArray = fields[9].Split(' ');
-            sunriseArray = sunriseArray[0].Split(':');
-            sunsetArray = sunsetArray[0].Split(':');
-            int sunriseMinute = (Int32.Parse(sunriseArray[0]) * 60) + Int32.Parse(sunriseArray[1]);
-            int sunsetMinute  = (Int32.Parse(sunsetArray[0])  * 60) + Int32.Parse(sunsetArray[1]) + 720;
-            int sunDayLength = sunsetMinute - sunriseMinute + 1;
-
-            Graphics g = Graphics.FromImage(image);
-            g.FillRectangle(Brushes.Coral, civilRiseMinute, 1, civilDayLength, trackHeight - 2);
-            g.FillRectangle(Brushes.Yellow,    sunriseMinute,   1, sunDayLength,   trackHeight - 2);
-            return image;
-        }
-
-        public static void AddSunRiseSetLinesToImage(Bitmap image, FileInfo sunriseSetData)
-        {
-            List<string> lines = FileTools.ReadTextFile(sunriseSetData.FullName);
-
-            for (int i = 1; i <= 365; i++) // skip header
-            {
-                string[] fields = lines[i].Split(',');
-                // the sunrise data hasthe below line format
-                // DayOfyear	Date	Astro start	Astro end	Naut start	Naut end	Civil start	Civil end	Sunrise	  Sunset
-                //    1	      1-Jan-13	3:24 AM	     8:19 PM	3:58 AM	     7:45 PM	4:30 AM	    7:13 PM	    4:56 AM	  6:47 PM
-
-                int dayOfYear = Int32.Parse(fields[0]);
-                string[] sunriseArray = fields[6].Split(' ');
-                string[] sunsetArray  = fields[7].Split(' ');
-                sunriseArray = sunriseArray[0].Split(':');
-                sunsetArray = sunsetArray[0].Split(':');
-                int sunriseMinute = (Int32.Parse(sunriseArray[0]) * 60) + Int32.Parse(sunriseArray[1]);
-                int sunsetMinute  = (Int32.Parse(sunsetArray[0])  * 60) + Int32.Parse(sunsetArray[1]) + 720;
-                image.SetPixel(sunriseMinute, dayOfYear, Color.White);
-                image.SetPixel(sunsetMinute,  dayOfYear, Color.White);
-            }
-
         }
 
         public static Image FrameSliceOf3DSpectrogram_ConstantMin(Bitmap bmp1, Image titleBar, int nyquistFreq, int minuteOfDay, FileInfo sunriseSetData)

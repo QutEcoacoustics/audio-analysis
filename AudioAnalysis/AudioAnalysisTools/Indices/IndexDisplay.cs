@@ -26,7 +26,6 @@
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
-
         /// <summary>
         /// Uses a dictionary of index properties to traw an image of summary index tracks
         /// </summary>
@@ -124,7 +123,7 @@
             int graphWidth = X_offset + scaleLength;
             int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
-            int imageHt = TrackHeight * (listOfBitmaps.Count + 3);  //+3 for title and top and bottom time tracks
+            int imageHt = TrackHeight * (listOfBitmaps.Count + 4);  //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, title);
             //Bitmap time1Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             TimeSpan xAxisPixelDuration = indexGenerationData.IndexCalculationDuration;
@@ -134,31 +133,30 @@
             //indexGenerationData.RecordingStartDate.
             //Bitmap time2Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             Bitmap time2Bmp = time1Bmp;
-            DateTimeOffset? dateTimeOffset = indexGenerationData.RecordingStartDate;
+            Bitmap suntrack = null;
+            DateTimeOffset ? dateTimeOffset = indexGenerationData.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 time2Bmp = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, TrackHeight);
+                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
+
+                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
+                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+                suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
             }
 
             //draw the composite bitmap
-            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
-            using (Graphics gr = Graphics.FromImage(compositeBmp))
+            var imageList = new List<Image>();
+            imageList.Add(titleBmp);
+            imageList.Add(time1Bmp);
+            for (int i = 0; i < listOfBitmaps.Count; i++)
             {
-                gr.Clear(Color.Black);
-
-                int Y_offset = 0;
-                gr.DrawImage(titleBmp, X_offset, Y_offset); //draw in the top title
-                Y_offset += TrackHeight;
-                gr.DrawImage(time1Bmp, X_offset, Y_offset); //draw in the top time scale
-                Y_offset += TrackHeight;
-                for (int i = 0; i < listOfBitmaps.Count; i++)
-                {
-                    gr.DrawImage(listOfBitmaps[i], X_offset, Y_offset);
-                    Y_offset += TrackHeight;
-                }
-                gr.DrawImage(time2Bmp, X_offset, Y_offset); //draw in bottom time scale
+                imageList.Add(listOfBitmaps[i]);
             }
+            imageList.Add(time2Bmp);
+            imageList.Add(suntrack);
+            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
 
