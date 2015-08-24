@@ -125,10 +125,30 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string[] keys)
+        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs, string fileStemPattern, string[] keys)
         {
-            string fileStemPattern = "*";
-            return GetSpectralIndexFilesAndConcatenate(path, fileStemPattern, keys);
+            Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
+
+            foreach (string key in keys)
+            {
+                DateTime now1 = DateTime.Now;
+                // string pattern = "*" + key + ".csv";
+                string pattern = fileStemPattern + "." + key + ".csv";
+                FileInfo[] files = IndexMatrices.GetFilesInDirectories(dirs, pattern);
+                if (files.Length == 0) return spectrogramMatrices;
+
+                //var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
+                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(files);
+
+                m = MatrixTools.MatrixRotate90Anticlockwise(m);
+                spectrogramMatrices.Add(key, m);
+
+                DateTime now2 = DateTime.Now;
+                TimeSpan et = now2 - now1;
+                LoggedConsole.WriteLine("Time to read <" + key + "> spectral index files = " + et.TotalSeconds + " seconds");
+            }
+
+            return spectrogramMatrices;
         }
 
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string fileStemPattern, string[] keys)
@@ -157,6 +177,29 @@ namespace AudioAnalysisTools.Indices
             return spectrogramMatrices;
         }
 
+
+        public static FileInfo[] GetFilesInDirectory(string path, string pattern)
+        {
+            var dirInfo = new DirectoryInfo(path);
+            if (!dirInfo.Exists)
+            {
+                var directoryNotFoundException = new DirectoryNotFoundException(path);
+                LoggedConsole.WriteFatalLine("DIRECTORY DOES NOT EXIST", directoryNotFoundException);
+                throw directoryNotFoundException;
+            }
+
+            FileInfo[] files = dirInfo.GetFiles(pattern, SearchOption.AllDirectories);
+            if ((files == null) || (files.Length == 0))
+            {
+                LoggedConsole.WriteErrorLine("No match - Empty list of files");
+            }
+
+            Array.Sort(files, (f1, f2) => f1.Name.CompareTo(f2.Name));
+
+            return files;
+        }
+
+
         /// <summary>
         /// Returns a sorted list of file paths, sorted on file name.
         /// IMPORTANT: Sorts on alphanumerics, NOT on time. 
@@ -165,27 +208,33 @@ namespace AudioAnalysisTools.Indices
         /// <param name="path"></param>
         /// <param name="pattern"></param>
         /// <returns></returns>
-        public static FileInfo[] GetFilesInDirectory(string path, string pattern)
+        public static FileInfo[] GetFilesInDirectories(DirectoryInfo[] directories, string pattern)
         {
-            var dirInfo = new DirectoryInfo(path);
+            List<FileInfo> fileList = new List<FileInfo>();
 
-            if (!dirInfo.Exists)
+            foreach (DirectoryInfo dir in directories)
             {
-                var directoryNotFoundException = new DirectoryNotFoundException(path);
-                LoggedConsole.WriteFatalLine("DIRECTORY DOES NOT EXIST", directoryNotFoundException);
-                throw directoryNotFoundException;
+                if (!dir.Exists)
+                {
+                    var directoryNotFoundException = new DirectoryNotFoundException(dir.FullName);
+                    LoggedConsole.WriteFatalLine("DIRECTORY DOES NOT EXIST", directoryNotFoundException);
+                    throw directoryNotFoundException;
+                }
+
+                var list = new List<string>();
+                FileInfo[] files = dir.GetFiles(pattern, SearchOption.AllDirectories);
+                fileList.AddRange(files);
             }
 
-            var list = new List<string>();
-            FileInfo[] files = dirInfo.GetFiles(pattern, SearchOption.AllDirectories);
-            if ((files == null) || (files.Length == 0))
+            if ((fileList == null) || (fileList.Count == 0))
             {
                 LoggedConsole.WriteErrorLine("No match - Empty list of files");
             }
-            
-            Array.Sort(files, (f1, f2) => f1.Name.CompareTo(f2.Name));
 
-            return files;
+            FileInfo[] returnList = fileList.ToArray();
+            Array.Sort(returnList, (f1, f2) => f1.Name.CompareTo(f2.Name));
+
+            return returnList;
         }
 
 
@@ -215,8 +264,6 @@ namespace AudioAnalysisTools.Indices
 
         public static double[,] ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(FileInfo[] paths)
         {
-            string warning = null;
-
             var list = new List<double[,]>();
             int rowCount = 0;
             int passedMinutes = 0;
@@ -235,13 +282,14 @@ namespace AudioAnalysisTools.Indices
 
                     DateTimeOffset thisDTO = IndexMatrices.GetFileStartTime(file.Name);
                     var passedTime = thisDTO - startTime;
-                    passedMinutes = (int)Math.Round(passedTime.TotalMinutes);
-                    if (rowCount != passedMinutes)
-                    {
-                        LoggedConsole.WriteLine("WARNING from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
-                        LoggedConsole.WriteLine("        Cumulative Matrix Row Count does not tally with Elapsed Minutes in File Name.");
-                        LoggedConsole.WriteLine("        Matrix Row Count = "+ rowCount + ".    Elapsed Minutes = " + passedMinutes);
-                    };
+                    //passedMinutes = (int)Math.Round(passedTime.TotalMinutes);
+                    passedMinutes = (int)Math.Ceiling(passedTime.TotalMinutes);
+                    //if (rowCount != passedMinutes)
+                    //{
+                    //    LoggedConsole.WriteLine("WARNING from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck("+ file.Extension + ") ");
+                    //    LoggedConsole.WriteLine("        Cumulative Matrix Row Count does not tally with Elapsed Minutes in File Name.");
+                    //    LoggedConsole.WriteLine("        Matrix Row Count = "+ rowCount + ".    Elapsed Minutes = " + passedMinutes);
+                    //};
 
                     list.Add(matrix);
                     rowCount += matrix.GetLength(0);
@@ -250,13 +298,13 @@ namespace AudioAnalysisTools.Indices
 
             var M = MatrixTools.ConcatenateMatrixRows(list);
 
-            LoggedConsole.WriteLine("ELAPSED TIME CHECK from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
-            LoggedConsole.WriteLine("                  Final Matrix Row Count = " + M.GetLength(0));
-            LoggedConsole.WriteLine("                  Cumulative  File Times = " + (passedMinutes + matrixLength) + " minutes");
-
-            if (warning != null)
+            int matrixRowCount = M.GetLength(0);
+            int totalElapsedMinutes = passedMinutes + matrixLength - 1;
+            if (matrixRowCount != totalElapsedMinutes)
             {
-                LoggedConsole.WriteLine(warning);
+                LoggedConsole.WriteLine("ERROR IN ELAPSED TIME CHECK from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
+                LoggedConsole.WriteLine("                  Final Matrix Row Count = " + M.GetLength(0));
+                LoggedConsole.WriteLine("                  Cumulative  File Times = " + (passedMinutes + matrixLength - 1) + " minutes");
             }
 
             return M;
