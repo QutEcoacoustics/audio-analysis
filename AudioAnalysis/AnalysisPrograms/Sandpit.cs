@@ -220,9 +220,14 @@ namespace AnalysisPrograms
                                              new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") };
 
                 string opPath   = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
+
+                // The recording site and its location. Site name is used for naming files
+                // The location is used only to draw the sunrise/sunset track.
                 string site = "GympieNP";
+                double? latitude = null;
+                double? longitude = null;
                 //string site = "Woondum3";
-                var dtoStart = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
+                var dtoStart = new DateTimeOffset(2015, 7, 1, 0, 0, 0, TimeSpan.Zero);
                 string indexPropertiesConfigPath = opPath + @"\IndexPropertiesConfig.yml";
 
 

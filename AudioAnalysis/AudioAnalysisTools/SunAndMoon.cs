@@ -13,19 +13,30 @@ namespace AudioAnalysisTools
         public static FileInfo BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv".ToFileInfo();
 
 
+        /// <summary>
+        /// The data for establishing the exact startDTO for the phase of moon in 2010 was obtained at the folowing website:
+        /// http://www.timeanddate.com/moon/phases/australia/brisbane
+        /// 
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         public static double GetPhaseOfMoon(DateTimeOffset dto)
         {
-            double phaseOfMoon = 0.0;
-
-            double lunarCycle = 29.53; // days
-            
-            var startDTO = new DateTimeOffset(2011, 1, 4, 12, 0, 0, TimeSpan.Zero);
+            double lunarCycle = 29.53; // one lunar cycle in days
+            // a known new moon in Brisbane
+            var startDTO = new DateTimeOffset(2010, 1, 15, 17, 11, 0, TimeSpan.Zero);
+            // the below line tests case of a known full moon PRIOR to the startDTO. 
+            // Did this to check negative cycles - It works!
+            //dto = new DateTimeOffset(2008, 7, 18, 17, 59, 0, TimeSpan.Zero); // a known full moon in Brisbane
 
             double totalElapsedDays = (dto - startDTO).TotalDays;
-
             double cycles = totalElapsedDays / lunarCycle;
+            double remainderCycle = cycles - Math.Truncate(cycles); 
 
-            return Math.IEEERemainder(cycles, 1.0);
+            if (remainderCycle < 0)
+                remainderCycle = 1 + remainderCycle;
+
+            return remainderCycle;
         }
 
 
