@@ -19,28 +19,40 @@
 ######## Autocorrelation ##########################
 
 library(forecast)
-setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\TimeSeriesPlots\\")
-# Read time-Series from Cluster time series.R
-timeSeries <- read.csv("Cluster_time_series_GympieNP 22-28 June 201522-06-2015 to 28-06-2015.csv", header=T)
+a <- NULL
 
-# Set up a time-series
-aMatrix <- matrix(timeSeries[,2], length(timeSeries[,2]), 1)
-minutesA <- msts(aMatrix, seasonal.periods=c(60,1440))
-m <- ts(matrix(minutesA, length(minutesA), 1), 
-        start = c(0,1), frequency=1)
-# Fit a structural model
-par(mfrow=c(2,2))
-(fit <- StructTS(log10(m[300:720]), type = "trend"))
-#par(mfrow = c(4, 1)) # to give appropriate aspect ratio for next plot.
-#plot(log10(m[300:720]))
-plot(cbind(fitted(fit), resids=resid(fit)), main = "GympieNP 22 June 2015")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+fluxes <- read.csv("Acoustic_flux_time_series_Gympie NP1 _22 to 28 June 2015.csv", header=T)
 
-(fit <- StructTS(log10(m[1800:2140]), type = "trend"))
-#par(mfrow = c(4, 1)) # to give appropriate aspect ratio for next plot.
-#plot(log10(m[1800:2140]))
-plot(cbind(fitted(fit), resids=resid(fit)), main = "GympieNP 23 June 2015")
+for (i in seq(121,length(fluxes$flux),60)) {
+  a <- acf(fluxes$flux[i-90:i+90],plot = T, lag.max = 180, type='p')
+}
+
+
+
 
 ################################
+#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\TimeSeriesPlots\\")
+# Read time-Series from Cluster time series.R
+#timeSeries <- read.csv("Cluster_time_series_GympieNP 22-28 June 201522-06-2015 to 28-06-2015.csv", header=T)
+
+# Set up a time-series
+#aMatrix <- matrix(timeSeries[,2], length(timeSeries[,2]), 1)
+#minutesA <- msts(aMatrix, seasonal.periods=c(60,1440))
+#m <- ts(matrix(minutesA, length(minutesA), 1), 
+#        start = c(0,1), frequency=1)
+# Fit a structural model
+#par(mfrow=c(2,2))
+#(fit <- StructTS(log10(m[300:720]), type = "trend"))
+#par(mfrow = c(4, 1)) # to give appropriate aspect ratio for next plot.
+#plot(log10(m[300:720]))
+#plot(cbind(fitted(fit), resids=resid(fit)), main = "GympieNP 22 June 2015")
+
+#(fit <- StructTS(log10(m[1800:2140]), type = "trend"))
+#par(mfrow = c(4, 1)) # to give appropriate aspect ratio for next plot.
+#plot(log10(m[1800:2140]))
+#plot(cbind(fitted(fit), resids=resid(fit)), main = "GympieNP 23 June 2015")
+# Three hour autocorrelation plots
 plot(m)
 plot(m[16:length(m)], type="l", yax.flip=TRUE, 
      xaxt="n")

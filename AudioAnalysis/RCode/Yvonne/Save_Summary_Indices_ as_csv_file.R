@@ -1,6 +1,8 @@
 # Date: 26 June 2015
 # R version: 3.2.1
 # Reads in the Towsey_summary_indices an saves to csv.  
+# Also generates plot containing an array of
+# histrograms of the indices
 
 #  This file is #1 in the sequence:
 #  *1. Save_Summary_Indices_ as_csv_file.R
@@ -18,31 +20,14 @@
 #  13. Cross-correlation
 
 ######## You may wish to change these ###################### 
-#setwd("C:\\Work\\CSV files\\Woondum1\\2015_03_15\\")
-#setwd("C:\\Work\\CSV files\\Woondum2\\2015_03_22\\")
-#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
-#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
-#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
-#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
+# Set to where the CSV files are to be saved
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_07_12")
 
-#sourceDir <- "F:\\Cooloola\\2015_03_15\\20150322_20150320_Woondum1\\"
-#sourceDir <- "F:\\Cooloola\\2015_03_22\\20150322_20150327_Woondum2\\"
-#sourceDir <- "F:\\Cooloola\\2015_06_21\\20150622_20150628_GympieNP\\"
-sourceDir <- "C:\\Work\\Data\\2015June28\\GympieNP\\"
-#sourceDir <- "F:\\Cooloola\\2015_06_21\\20150622_20150628_Woondum3\\"
-#sourceDir <- "F:\\Cooloola\\2015_06_28\\20150628_20150705_GympieNP\\"
-#sourceDir <- "F:\\Cooloola\\2015_06_28\\20150628_20150705_Woondum3\\"
-#sourceDir <- "F:\\Cooloola\\2015_07_05\\20150705_20150712_GympieNP\\"
-#sourceDir <- "F:\\Cooloola\\2015_07_05\\20150705_20150712_Woondum3\\"
+# Set sourceDir to where the wavefiles files are
+sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July19\\GympieNP\\"
 
-#folder <- "F:\\Indices\\2015Mar26-134159 - Yvonne, Towsey.Indices, ICD=60.0, #14\\Yvonne\\Wet Eucalypt\\"
-#folder <- "F:\\Indices\\2015Mar31-134325 - Yvonne, Towsey.Indices, ICD=60, #17\\Yvonne\\Eastern Euclalypt\\"
-#folder <- "F:\\Indices\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\GympieNP\\"
-folder <- "C:\\Work\\Data\\2015June28\\GympieNP\\"
-#folder <- "F:\\Indices\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\Woondum3\\"
-#folder <- "F:\\Indices\\2015Jul10-163333 - Yvonne, Indices, ICD=60.0, #40\\Yvonne\\Cooloola\\2015July5\\GympieNP\\"
-#folder <- "F:\\Indices\\2015Jul10-163333 - Yvonne, Indices, ICD=60.0, #40\\Yvonne\\Cooloola\\2015July5\\Woondum3\\"
+# Set folder to where the indices files are
+folder <- "F:\\Indices\\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\\Yvonne\\Cooloola\\2015July19\\GympieNP\\"
 
 #site <- "Woondum1 "
 #latitude <- "Latitude"
@@ -69,7 +54,7 @@ elevation <- "225m"
 source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\dateTime_function.R")
 
 # Obtain a list of the original wave files
-myFiles <- list.files(full.names=FALSE, pattern="*.wav", path=sourceDir)
+myFiles <- list.files(full.names=FALSE, pattern="*.wav$", path=sourceDir)
 
 # Call dateTime function and create lists of dates and times
 dt <- dateTime(myFiles) 
@@ -154,9 +139,118 @@ for (i in 1:a) {
                 + (minute.of.day[i]) - minute.of.day[1])
   time.since.start <- c(time.since.start, reference[1])
 }
-  
+
+fourhour.class <- NULL
+hour.class <- NULL
+hour.sequence <-c("00","01","02","03","04","05","06",
+                  "07","08","09","10","11","12","13",
+                  "14","15","16","17","18","19","20",
+                  "21","22","23","24")
+
+for(i in 1:length(rec.time)) {
+  for(j in 1:length(hour.sequence)) {
+    if(substr(rec.time[i], 1,2)=="00") {
+      fourhour.class[i] <- "A"  
+      hour.class[i] <- "A"
+    }
+    if(substr(rec.time[i], 1,2)=="01") {
+      fourhour.class[i] <- "A"
+      hour.class [i] <- "B"
+    }
+    if(substr(rec.time[i], 1,2)=="02") {
+      fourhour.class[i] <- "A"
+      hour.class [i] <- "C"
+    }
+    if(substr(rec.time[i], 1,2)=="03") {
+      fourhour.class[i] <- "A"
+      hour.class [i] <- "D"
+    }
+    if(substr(rec.time[i], 1,2)=="04") {
+      fourhour.class[i] <- "B"
+      hour.class [i] <- "E"
+    }
+    if(substr(rec.time[i], 1,2)=="05") {
+      fourhour.class[i] <- "B"
+      hour.class [i] <- "F"
+    }
+    if(substr(rec.time[i], 1,2)=="06") {
+      fourhour.class[i] <- "B"
+      hour.class [i] <- "G"
+    }
+    if(substr(rec.time[i], 1,2)=="07") {
+      fourhour.class[i] <- "B"
+      hour.class [i] <- "H"
+    }
+    if(substr(rec.time[i], 1,2)=="08") {
+      fourhour.class[i] <- "C"  
+      hour.class[i] <- "I"
+    }
+    if(substr(rec.time[i], 1,2)=="09") {
+      fourhour.class[i] <- "C"
+      hour.class [i] <- "J"
+    }
+    if(substr(rec.time[i], 1,2)=="10") {
+      fourhour.class[i] <- "C"
+      hour.class [i] <- "K"
+    }
+    if(substr(rec.time[i], 1,2)=="11") {
+      fourhour.class[i] <- "C"
+      hour.class [i] <- "L"
+    }
+    if(substr(rec.time[i], 1,2)=="12") {
+      fourhour.class[i] <- "D"
+      hour.class [i] <- "M"
+    }
+    if(substr(rec.time[i], 1,2)=="13") {
+      fourhour.class[i] <- "D"
+      hour.class [i] <- "N"
+    }
+    if(substr(rec.time[i], 1,2)=="14") {
+      fourhour.class[i] <- "D"
+      hour.class [i] <- "O"
+    }
+    if(substr(rec.time[i], 1,2)=="15") {
+      fourhour.class[i] <- "D"
+      hour.class [i] <- "P"
+    }
+    if(substr(rec.time[i], 1,2)=="16") {
+      fourhour.class[i] <- "E"  
+      hour.class[i] <- "Q"
+    }
+    if(substr(rec.time[i], 1,2)=="17") {
+      fourhour.class[i] <- "E"
+      hour.class [i] <- "R"
+    }
+    if(substr(rec.time[i], 1,2)=="18") {
+      fourhour.class[i] <- "E"
+      hour.class [i] <- "S"
+    }
+    if(substr(rec.time[i], 1,2)=="19") {
+      fourhour.class[i] <- "E"
+      hour.class [i] <- "T"
+    }
+    if(substr(rec.time[i], 1,2)=="20") {
+      fourhour.class[i] <- "F"
+      hour.class [i] <- "U"
+    }
+    if(substr(rec.time[i], 1,2)=="21") {
+      fourhour.class[i] <- "F"
+      hour.class [i] <- "V"
+    }
+    if(substr(rec.time[i], 1,2)=="22") {
+      fourhour.class[i] <- "F"
+      hour.class [i] <- "W"
+    }
+    if(substr(rec.time[i], 1,2)=="23") {
+      fourhour.class[i] <- "F"
+      hour.class [i] <- "X"
+    }
+  }
+}
+
 all.indices <- cbind(all.indices, minute.of.day, 
-                     time.since.start)
+                     time.since.start, fourhour.class,
+                     hour.class)
 
 ###### SUMMARY INDICES #############################
 write.csv(all.indices,
@@ -165,8 +259,32 @@ write.csv(all.indices,
           sub("*.wav","\\1", myFiles[length]),".csv", 
           sep = ""))
 
+indices <- read.csv(paste("Towsey_Summary_Indices_", site,
+                          sub("*.wav","\\1", myFiles[1]),"to", 
+                          sub("*.wav","\\1", myFiles[length]),".csv", 
+                          sep = ""),header = T)
+# Generate histograms of original indices
+png(
+  "Histograms_of_Indices.png",
+  width     = 320,
+  height    = 200,
+  units     = "mm",
+  res       = 1200,
+  pointsize = 4
+)
+
+par(mfrow=c(4,5)) 
+par(mar=c(4,4,4,1))
+for(i in 4:20){
+  hist(indices[,i],col="red", 
+       #main=paste("Index",i,sep = " "),
+       main=colnames(indices[i]),
+       cex.main=3, cex.axis=3,
+       xlab = "", ylab = "")}
+dev.off()
+
 ### SPECTRAL INDEX FOR ACI ###########################
-all.indices<-NULL
+all.indices <- NULL
 
 for (i in 1:length) {
   pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
@@ -179,7 +297,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices, file=paste("Towsey.Acoustic.ACI_", site, 
@@ -200,7 +319,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 
 rm(fileContents)
 
@@ -224,7 +344,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices,
@@ -247,7 +368,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices,
@@ -270,7 +392,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices,
@@ -293,7 +416,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices,
@@ -316,7 +440,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices,
@@ -339,7 +464,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices,
@@ -363,7 +489,8 @@ for (i in 1:length) {
 
 all.indices <- cbind(all.indices, rec.date, rec.time, site, 
                      latitude, longitude, elevation, 
-                     minute.of.day, time.since.start)
+                     minute.of.day, time.since.start, fourhour.class,
+                     hour.class)
 rm(fileContents)
 
 write.csv(all.indices,
@@ -371,3 +498,5 @@ write.csv(all.indices,
                 sub("*.wav","\\1", myFiles[1]),"to", 
                 sub("*.wav","\\1", myFiles[length]),
                 ".csv", sep =""))
+
+##################################

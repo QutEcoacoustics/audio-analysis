@@ -49,19 +49,19 @@ normIndices <- indices
 # normalise variable columns
 normIndices[,4]  <- normalise(indices[,4], -50,-10)    # AverageSignalAmplitude
 normIndices[,5]  <- normalise(indices[,5], -50,-10)    # BackgroundNoise
-normIndices[,6]  <- normalise(indices[,6],  0, 50)    # Snr
-normIndices[,7]  <- normalise(indices[,7],  3, 10)    # AvSnrofActive Frames
-normIndices[,8]  <- normalise(indices[,8],  0, 1)     # Activity 
-normIndices[,9]  <- normalise(indices[,9],  0, 2)     # EventsPerSecond
-normIndices[,10] <- normalise(indices[,10], 0, 0.5)   # HighFreqCover
-normIndices[,11] <- normalise(indices[,11], 0, 0.5)   # MidFreqCover
-normIndices[,12] <- normalise(indices[,12], 0, 0.5)   # LowFreqCover
+normIndices[,6]  <- normalise(indices[,6],  0, 50)     # Snr
+normIndices[,7]  <- normalise(indices[,7],  3, 10)     # AvSnrofActive Frames
+normIndices[,8]  <- normalise(indices[,8],  0, 1)      # Activity 
+normIndices[,9]  <- normalise(indices[,9],  0, 2)      # EventsPerSecond
+normIndices[,10] <- normalise(indices[,10], 0, 0.5)    # HighFreqCover
+normIndices[,11] <- normalise(indices[,11], 0, 0.5)    # MidFreqCover
+normIndices[,12] <- normalise(indices[,12], 0, 0.5)    # LowFreqCover
 normIndices[,13] <- normalise(indices[,13], 0.4,0.7)   # AcousticComplexity
-normIndices[,14] <- normalise(indices[,14], 0, 0.3)   # TemporalEntropy
-normIndices[,15] <- normalise(indices[,15], 0, 0.7)   # EntropyOfAverageSpectrum
-normIndices[,16] <- normalise(indices[,16], 0, 1)     # EntropyOfVarianceSpectrum
-normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyOfPeaksSpectrum
-normIndices[,18] <- normalise(indices[,18], 0, 0.7)   # EntropyOfCoefOfVarSpectrum
+normIndices[,14] <- normalise(indices[,14], 0, 0.3)    # TemporalEntropy
+normIndices[,15] <- normalise(indices[,15], 0, 0.7)    # EntropyOfAverageSpectrum
+normIndices[,16] <- normalise(indices[,16], 0, 1)      # EntropyOfVarianceSpectrum
+normIndices[,17] <- normalise(indices[,17], 0, 1)      # EntropyOfPeaksSpectrum
+normIndices[,18] <- normalise(indices[,18], 0, 0.7)    # EntropyOfCoefOfVarSpectrum
 normIndices[,19] <- normalise(indices[,19], -0.8, 1)   # NDSI
 normIndices[,20] <- normalise(indices[,20], 0, 15)     # SptDensity
 

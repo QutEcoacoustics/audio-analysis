@@ -33,8 +33,15 @@ indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to201
 #indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
 #indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
 
+# reset the working directory
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\standard_normalisation\\")
 # Standard normalisation and transformation of
 # AvgSnrofActiveFrames and Temporal Entropy
+new.indices <- indices[4:20]
+new.indices[4] <- log(new.indices[4])
+new.indices[11] <- log(new.indices[11])
+new.indices[1:17] <- scale(new.indices[1:17])
+boxplot(new.indices)
 
 # Gympie NP1 22_06_15
 #xlim <- c(-0.012, 0.033)
@@ -58,95 +65,20 @@ date <- paste(indices$rec.date[1],
 #ylim <- c(-0.02,0.003)
 xlim <- c(-0.035,0.035)
 ylim <- c(-0.035,0.035)
-################ Normalise data ####################################
-normalise <- function (x, xmin, xmax) {
-  y <- (x - xmin)/(xmax - xmin)
-}
-
-#entropy_cov <- indices[,16]/indices[,15] # Entropy of the coefficient of variance
-#entropy_cov <- normalise(entropy_cov, 0,25)
-
-#for (i in 1:length(entropy_cov)) {
-#  if (entropy_cov[i] > 1) {
-#    entropy_cov[i] = 1
-#  }
-#  if(entropy_cov[i] < 0) {
-#    entropy_cov[i] =0
-#  }
-#}
-
-# Pre-processing transformation of 
-# and Temporal Entropy #14 to correct the long
-# heavy tail 
-indices[,14] <- sqrt(indices[,14])
-
-normIndices <- indices
-
-# normalise variable columns
-normIndices[,4]  <- normalise(indices[,4], -50,-10)   # AverageSignalAmplitude
-normIndices[,5]  <- normalise(indices[,5], -40,-20)   # BackgroundNoise
-normIndices[,6]  <- normalise(indices[,6],  0, 50)    # Snr
-normIndices[,7]  <- normalise(indices[,7],  3, 7)     # AvSnrofActive Frames
-normIndices[,8]  <- normalise(indices[,8],  0, sqrt(1))     # Activity 
-normIndices[,9]  <- normalise(indices[,9],  0, 2)     # EventsPerSecond
-normIndices[,10] <- normalise(indices[,10], 0, 0.35)  # HighFreqCover
-normIndices[,11] <- normalise(indices[,11], 0, 0.4)   # MidFreqCover
-normIndices[,12] <- normalise(indices[,12], 0, 0.5)   # LowFreqCover
-normIndices[,13] <- normalise(indices[,13], 0.4,0.55) # AcousticComplexity
-normIndices[,14] <- normalise(indices[,14], 0, sqrt(0.3))   # TemporalEntropy
-normIndices[,15] <- normalise(indices[,15], 0, 0.7)   # EntropyOfAverageSpectrum
-normIndices[,16] <- normalise(indices[,16], 0, 1)     # EntropyOfVarianceSpectrum
-normIndices[,17] <- normalise(indices[,17], 0, 1)     # EntropyOfPeaksSpectrum
-normIndices[,18] <- normalise(indices[,18], 0, 0.7)   # EntropyOfCoVSpectrum
-normIndices[,19] <- normalise(indices[,19], -0.8, 1)  # NDSI
-normIndices[,20] <- normalise(indices[,20], 0, 15)    # SptDensity
-
-# adjust values greater than 1 or less than 0
-for (j in 4:20) {
-  for (i in 1:length(normIndices[,j])) {
-    if (normIndices[i,j] > 1) {
-      normIndices[i,j] = 1
-    }
-  }
-  for (i in 1:length(normIndices[,j])) {
-    if (normIndices[i,j] < 0) {
-      normIndices[i,j] = 0
-    }
-  }
-}
-
-# Select which indices to consider
-#normIndices <- cbind(normIndices[,c(5,7,9,10,11,12,13,14,15,17)], entropy_cov)
-######### PCA biplot #####################################
-#file <- paste("Principal Component Analysis_adj_ranges", site, 
-#              "_", date, ".png", sep = "")
-#png(
-#  file,
-#  width     = 200,
-#  height    = 200,
-#  units     = "mm",
-#  res       = 1200,
-#  pointsize = 4
-#)
-
-#par(mar =c(2,2,4,2), cex.axis = 2.5)
-#PCAofIndices<- prcomp(normIndices)
-#biplot(PCAofIndices, col=c("pink","blue"), 
-#       cex=c(0.5,0.9), ylim = ylim, 
-#       xlim = xlim)
-#abline(h=0,v=0)
-#mtext(side = 3, line = 2, paste("Principal Component Analysis prcomp ",
-#              site, date, sep = " "), cex = 2.5)
-
-#dev.off()
 #### Preparing the dataframe ###############################
 #normIndices.pca <- prcomp(normIndices[,1:17], 
 #                          scale. = F)
-normIndices <- normIndices[,c(5,7,9,10,11,13,14,15,17,18,37,38)]
-normIndices.pca <- prcomp(normIndices[,1:10], scale. = F)
+#normIndices <- new.indices[,c(1:17)] # choose if you want all indices
+normIndices <- new.indices[,c(2,4,6,7,8,10,13,14,15)]
+#normIndices <- new.indices[,c(2,4,6,7,8,10,11,12,14,15)]
+normIndices <- cbind(normIndices, indices[,c(37:38)])                           
+                          
+#normIndices.pca <- prcomp(normIndices[,1:17], scale. = F)
+normIndices.pca <- prcomp(normIndices[,1:9], scale. = F)
+summ <- summary(normIndices.pca)
+rotate <- unname(summ$rotation)
 
 normIndices$PC1 <- normIndices.pca$x[,1]
-sum(normIndices$PC1)
 normIndices$PC2 <- normIndices.pca$x[,2]
 normIndices$PC3 <- normIndices.pca$x[,3]
 normIndices$PC4 <- normIndices.pca$x[,4]
@@ -155,21 +87,23 @@ normIndices$PC6 <- normIndices.pca$x[,6]
 normIndices$PC7 <- normIndices.pca$x[,7]
 normIndices$PC8 <- normIndices.pca$x[,8]
 normIndices$PC9 <- normIndices.pca$x[,9]
-normIndices$PC10 <- normIndices.pca$x[,10]
+#normIndices$PC10 <- normIndices.pca$x[,10]
 plot(normIndices.pca)
 biplot(normIndices.pca)
+summ <- summary(normIndices.pca)
+rotate <- unname(summ$rotation)
 
 # assign colours to time-periods
 normIndices <- within(normIndices, levels(fourhour.class) <- c("red","orange","yellow","green","blue","violet"))
-normIndices <- within(normIndices, levels(day.night) <- c("midnightblue","orange","yellow","green","blue"))
-normIndices <- within(normIndices, levels(nautical.twilight) <- c("midnightblue","orange"))
+#normIndices <- within(normIndices, levels(day.night) <- c("midnightblue","orange","yellow","green","blue"))
+#normIndices <- within(normIndices, levels(nautical.twilight) <- c("midnightblue","orange"))
 normIndices <- within(normIndices, levels(hour.class) <- 
               c("#FF0000FF","#FF4000FF","#FF8000FF","#FFBF00FF","#FFFF00FF",
                 "#BFFF00FF","#80FF00FF","#40FF00FF","#00FF00FF","#00FF40FF",
                 "#00FF80FF","#00FFBFFF","#00FFFFFF","#00BFFFFF","#0080FFFF",
                 "#0040FFFF","#0000FFFF","#4000FFFF","#8000FFFF","#BF00FFFF",
                 "#FF00FFFF","#FF00BFFF","#FF0080FF","#FF0040FF"))
-                      
+
 #fooPlot <- function(x, main, ...) {
 #  if(missing(main))
 #    main <- deparse(substitute(x))
@@ -179,6 +113,28 @@ normIndices <- within(normIndices, levels(hour.class) <-
 #  set.seed(42)
 #dat <- data.frame(x = rnorm(1:10), y = rnorm(1:10))
 #fooPlot(dat, col = "red")
+######### PCA biplot #####################################
+file <- paste("Principal Component Analysis_pink", site, 
+              "_", date, ".png", sep = "")
+png(
+  file,
+  width     = 200,
+  height    = 200,
+  units     = "mm",
+  res       = 1200,
+  pointsize = 4
+)
+
+par(mar =c(2,2,4,2), cex.axis = 2.5)
+PCAofIndices<- prcomp(new.indices[,1:17])
+biplot(PCAofIndices, col=c("pink","blue"), 
+       cex=c(0.5,0.9), ylim = c(-0.04,0.04), 
+       xlim = c(-0.055,0.02))
+abline(h=0,v=0)
+mtext(side = 3, line = 2, paste("Principal Component Analysis prcomp ",
+                                site, date, sep = " "), cex = 2.5)
+
+dev.off()
 
 #### Plotting PC1 & PC2 Principal Component Plots with base plotting system
 # change file name when necessary
@@ -188,14 +144,12 @@ PrinComp_X_axis <- "PC1"
 PrinComp_Y_axis <- "PC2"
 first <- 1  # change this and values in plot function below!!! to match PC# 
 second <- 2  # change this!!! to match PC#
-arrowScale <- 1.5 # increase/decrease this to adjust arrow length
-summ <- summary(normIndices.pca)
-rotate <- unname(summ$rotation)
-labels <- names(normIndices[1:length(summ$center)])
+arrowScale <- 6 # increase/decrease this to adjust arrow length
+labels <- names(normIndices[1:9])
 
 mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
 par(mar=c(6,6,4,4))
-plot(normIndices$PC1,normIndices$PC2,  # Change these!!!!! 
+plot(normIndices$PC1,normIndices$PC2,  
      col=as.character(normIndices$fourhour.class), 
      cex=1.2, type='p', pch=19, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
@@ -207,15 +161,20 @@ plot(normIndices$PC1,normIndices$PC2,  # Change these!!!!!
 hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
            "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
 for (i in 1:length(labels)) {
-  arrows(0,0, rotate[i,first]*arrowScale, 
-         rotate[i,second]*arrowScale, col=1, lwd=1.6)  
+  #angle = atan2f(v2.x, v2.y) - atan2f(v1.x, v1.y)
+  rotate1 <- rotate[i,first]*arrowScale
+  rotate2 <- rotate[i,second]*arrowScale
+  angle <- atan2(rotate2,rotate1) - atan2(0,0)
+  rotate1 <- rotate[i,first]*arrowScale
+  rotate2 <- rotate[i,second]*arrowScale
+  arrows(0,0, rotate1, rotate2, col=1, lwd=1.6)
   text(rotate[i,first]*arrowScale*1.1, 
        rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=1.6)
+       paste(labels[i]), cex=1.6, srt=(angle))
 }
 abline (v=0, h=0, lty=2)
 legend('topright', hours, pch=19, col=c('red','orange','yellow',
-        'green','blue','violet'), bty='n', cex=2)
+                                        'green','blue','violet'), bty='n', cex=2)
 dev.off()
 
 #### Plotting PC1 & PC3 Principal Component Plots with base plotting system
@@ -225,14 +184,12 @@ PrinComp_X_axis <- "PC1"
 PrinComp_Y_axis <- "PC3"
 first <- 1  # change this and values in plot function below!!! to match PC# 
 second <- 3  # change this!!! to match PC#
-arrowScale <- 0.7 # increase/decrease this to adjust arrow length
-summ <- summary(normIndices.pca)
-rotate <- unname(summ$rotation)
+arrowScale <- 3 # increase/decrease this to adjust arrow length
 labels <- names(normIndices[1:length(summ$center)])
 
 mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
 par(mar=c(6,6,4,4))
-plot(normIndices$PC1,normIndices$PC3,  # Change these!!!!! 
+plot(normIndices$PC1,normIndices$PC3,
      col=as.character(normIndices$fourhour.class), 
      cex=1.2, type='p', pch=19, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
@@ -264,19 +221,13 @@ PrinComp_X_axis <- "PC2"
 PrinComp_Y_axis <- "PC3"
 first <- 2  # change this and values in plot function below!!! to match PC# 
 second <- 3  # change this!!! to match PC#
-arrowScale <- 0.7 # increase/decrease this to adjust arrow length
-summ <- summary(normIndices.pca)
-rotate <- unname(summ$rotation)
+arrowScale <- 3 # increase/decrease this to adjust arrow length
 labels <- names(normIndices[1:length(summ$center)])
 
 mainHeader <- paste (site, date, PrinComp_X_axis, 
                      PrinComp_Y_axis, sep=" ")
-normIndices <- within(normIndices, levels(fourhour.class) 
             <- c("red","orange","yellow","green","blue",
                  "violet"))
-#normIndices <- within(normIndices, levels(day.night) 
-#                      <- c("red","orange","yellow","green","blue",
-#                           "violet"))
 par(mar=c(6,6,4,4))
 plot(normIndices$PC2,normIndices$PC3,  # Change these!!!!! 
      col=as.character(normIndices$fourhour.class), 
@@ -307,7 +258,7 @@ file <- paste("Principal Component Analysis_adj_ranges_ggbiplot", site,
               "_", date, ".png", sep = "")
 
 library(ggbiplot)
-normIndices.pca <- prcomp(normIndices[,1:17], 
+normIndices.pca <- prcomp(normIndices[,1:10], 
                           scale. = F)
 
 # Initiate initial plot 
@@ -345,31 +296,26 @@ dev.off()
 
 ####### 3d plot #################################
 library(rgl) # using rgl package
-#colourSet1 <- c("#FF0000FF","#FF4000FF","#FF8000FF",
-#                "#FFBF00FF","#FFFF00FF","#BFFF00FF")
-#colourSet2 <- c("#80FF00FF","#40FF00FF","#00FF00FF",
-#                "#00FF40FF","#00FF80FF","#00FFBFFF")
-#colourSet3 <- c("#00FFFFFF","#00BFFFFF","#0080FFFF",
-#                "#0040FFFF","#0000FFFF","#4000FFFF")
-#colourSet4 <- c("#8000FFFF","#BF00FFFF","#FF00FFFF",
-#                "#FF00BFFF","#FF0080FF","#FF0040FF")
+colourSet1 <- c("#FF0000FF","#FF4000FF","#FF8000FF",
+                "#FFBF00FF","#FFFF00FF","#BFFF00FF")
+colourSet2 <- c("#80FF00FF","#40FF00FF","#00FF00FF",
+                "#00FF40FF","#00FF80FF","#00FFBFFF")
+colourSet3 <- c("#00FFFFFF","#00BFFFFF","#0080FFFF",
+                "#0040FFFF","#0000FFFF","#4000FFFF")
+colourSet4 <- c("#8000FFFF","#BF00FFFF","#FF00FFFF",
+                "#FF00BFFF","#FF0080FF","#FF0040FF")
 
 #normIndices <- within(normIndices, levels(fourhour.class) <- 
 #                        c(colourSet1,colourSet2, colourSet3,colourSet4))
-
-#day <- c(0, 1440, 2880, 4320, 5760, 7200, 8640, 10080)
-#offset <- c(0,360,720,1080)
-start <-  1         #day[5] + offset[4] + 1   
-finish <- length(normIndices$PC1) #day[7]-1
-start
-finish
+start <- 1
+finish <- length(normIndices$BackgroundNoise)
 plot3d(normIndices$PC1[start:finish], normIndices$PC2[start:finish], 
        normIndices$PC3[start:finish], 
        col=adjustcolor(normIndices$fourhour.class, alpha.f = 0.1))
 spheres3d(normIndices$PC1[start:finish], normIndices$PC2[start:finish], 
         normIndices$PC3[start:finish], 
           col=adjustcolor(normIndices$fourhour.class, alpha.f = 0.1),
-          radius = 0.015)
+          radius = 0.1)
 xyzCoords <- data.frame(x1= numeric(10),  y1= integer(10), 
                       z1 = numeric(10), x2= numeric(10), 
                       y2= integer(10),  z2 = numeric(10))
@@ -399,7 +345,7 @@ segments3d(x=as.vector(t(xyzCoords[1:10,c(1,4)])),
 # Acoustic flux
 flux <- NULL
 
-for (i in 1:length(normIndices$BackgroundNoise))  {
+for (i in 1:length(normIndices$BackgroundNoise)-1)  {
 distance <- sqrt((normIndices[i,1] - normIndices[(i+1),1])^2 +
                  (normIndices[i,2] - normIndices[(i+1),2])^2 +
                  (normIndices[i,3] - normIndices[(i+1),3])^2 +
@@ -408,12 +354,13 @@ distance <- sqrt((normIndices[i,1] - normIndices[(i+1),1])^2 +
                  (normIndices[i,6] - normIndices[(i+1),6])^2 +
                  (normIndices[i,7] - normIndices[(i+1),7])^2 +
                  (normIndices[i,8] - normIndices[(i+1),8])^2 +
-                 (normIndices[i,9] - normIndices[(i+1),9])^2 +
-                 (normIndices[i,10] - normIndices[(i+1),10])^2)
+                 (normIndices[i,9] - normIndices[(i+1),9])^2)
 flux <- c(flux, distance)
 }
+flux <- c(NA,flux)
+
 ###################
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\standard_normalisation\\")
 ######## Create references for plotting dates and times ################
 timeRef <- indices$minute.of.day[1]
 offset <- 0 - timeRef 
@@ -427,8 +374,6 @@ dateLabel <- unique(substr(indices$rec.date, 1,10))
 dateLabel <- dateLabel[1:length(datePos)]
 
 #################################
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
-
 # Smoothing using a moving average with 2 sides
 png('Flux_Time_series_GympieNP_ 22June2015_5,7,9,10,11,13,14,15,17,18.png', 
     width=2000, height=1200, units="px") 
@@ -460,6 +405,8 @@ mtext(side=4,"30 min",line=-1, cex=1.4)
 axis(side = 1, line = 0, at = timePos, labels = timeLabel, 
      mgp = c(1.8, 2, 0), cex.axis = 3)
 dev.off()
+
+
 ###########################
 png('Flux_Time_series_GympieNP_ 23June2015_5,7,9,10,11,13,14,15,17,18.png', 
     width=2000, height=1200, units="px") 
@@ -659,21 +606,51 @@ flux.10.24 <- filter(flux[1:length], filter=rep(1/10,10)) # 10 minute
 flux.15.24 <- filter(flux[1:length], filter=rep(1/15,15)) # 20 minute
 flux.20.24 <- filter(flux[1:length], filter=rep(1/20,20)) # half-hourly
 flux.30.24 <- filter(flux[1:length], filter=rep(1/30,30)) # hourly
-flux.data <- cbind(flux, flux.5.24, flux.10.24, flux.15.24,
+flux.data <- cbind(flux,flux.5.24, flux.10.24, flux.15.24,
                    flux.20.24, flux.30.24)
 file <- paste("Acoustic_flux_time_series_", site, "_", 
              "22 to 28 June 2015", ".csv", sep="")
 write.table(flux.data, file=file, sep = ",", qmethod = "double",
             row.names = F)
+# Set up a time-series
+library(forecast)
+aMatrix <- matrix(flux.data[,1], length(flux.data[,1]), 1)
+minutesA <- msts(aMatrix, seasonal.periods=c(60,1440))
+m <- ts(matrix(minutesA, length(minutesA), 1), 
+        start = c(0,1), frequency=1)
+m <- ts(flux.data[1:length(flux),3], frequency = 1440, 
+        start = c(1, 0)) # Day 1, minute 0
+r <- decompose(m)
+plot(r)
+plot(r$seasonal[1:1440],type='l')
+abline(v=seq(1,1441,360))
 
-require(graphics)
+phase_plane_plot <- function (
+  x, 
+  col=rainbow(length(x)-1), 
+  xlab = "x", ylab = "dx/dt", 
+  ...) {
+  plot( x[-1], diff(x), col = col, 
+        xlab = xlab, ylab = ylab, ... )
+}
+phase_plane_plot( sin(seq(0, 20*pi, length=200)), pch=16 )
+library(tseriesChaos)
+phase_plane_plot(lorenz.ts, pch=16,
+                 main = "Phase plot")
+phase_plane_plot(lorenz.ts, type="l",
+                 main = "Phase plot")
+phase_plane_plot(m[1:9200], type="p",
+                 main = "Phase plot")
+phase_plane_plot(m[910:930], type="l",
+                 main = "Phase plot")
+
 
 ## Analysis of the GympieNP data
 ## given in Belsley, Kuh and Welsch.
 lm.GY <- lm(BackgroundNoise ~ AvgSnrOfActiveFrames + EventsPerSecond 
-            + HighFreqCover + MidFreqCover + TemporalEntropy 
+            + HighFreqCover + MidFreqCover + 
             + EntropyOfAverageSpectrum + EntropyOfPeaksSpectrum 
-            + EntropyOfCoVSpectrum, data = normIndices)
+            + EntropyOfCoVSpectrum, data = new.indices)
 plot(lm.GY)
 inflm.GY <- influence.measures(lm.GY)
 which(apply(inflm.GY$is.inf, 1, any))
@@ -696,4 +673,3 @@ summary(inflm.SR) # only these
 inflm.SR          # all
 plot(rstudent(lm.SR) ~ hatvalues(lm.SR)) # recommended by some
 
-#############################
