@@ -21,13 +21,13 @@
 
 ######## You may wish to change these ###################### 
 # Set to where the CSV files are to be saved
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_07_12")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_16")
 
-# Set sourceDir to where the wavefiles files are
-sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July19\\GympieNP\\"
+# Set sourceDir to where the wavefiles files are (for mapping file)
+sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\"
 
 # Set folder to where the indices files are
-folder <- "F:\\Indices\\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\\Yvonne\\Cooloola\\2015July19\\GympieNP\\"
+folder <- "F:\\Indices\\<Insert Availae Results folder>\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\"
 
 #site <- "Woondum1 "
 #latitude <- "Latitude"
@@ -74,7 +74,7 @@ write.csv(mapping, file=paste("Mapping", site,date, ".csv", sep = "_"))
 myFiles <- read.csv(file=paste("Mapping", site, date, ".csv", sep = "_"))[,2]
 
 length <- length(myFiles)
-
+length
 ### SUMMARY INDICES ###########################
 # Read file contents of Summary Indices and collate
 all.indices <- NULL
