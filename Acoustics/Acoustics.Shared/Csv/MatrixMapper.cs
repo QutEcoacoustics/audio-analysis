@@ -22,19 +22,22 @@ namespace Acoustics.Shared
         /// 1 | 3
         /// 2 | 4
         /// </summary>
-        ColumnMajor,
+        ColumnMajor = 2,
+        Transpose = 2,
 
         /// <summary>
         /// 2 | 4
         /// 1 | 3
         /// </summary>
-        ColumnMajorFlipped,
+        ColumnMajorFlipped = 1,
+        Rotate90ClockWise = 1,
 
         /// <summary>
         /// 1 | 2
         /// 3 | 4
         /// </summary>
-        RowMajor
+        RowMajor = 0,
+        Normal = 0
     }
 
     internal abstract class MatrixMapper<TMatrix> : IEnumerable<int>
@@ -142,11 +145,6 @@ namespace Acoustics.Shared
             this.matrix = matrix;
             this.dimensionality = dimensionality;
 
-            if (dimensionality != TwoDimensionalArray.ColumnMajor && dimensionality != TwoDimensionalArray.RowMajor)
-            {
-                throw new NotImplementedException("Only ColumnMajor and RowMajor dimensionalities have been implemented");
-            }
-
             this.Rows = TwoDimensionalArray.RowMajor == dimensionality ? matrix.RowLength() : matrix.ColumnLength();
             this.Columns = TwoDimensionalArray.RowMajor == dimensionality
                                ? matrix.ColumnLength()
@@ -177,6 +175,11 @@ namespace Acoustics.Shared
                 if (this.dimensionality == TwoDimensionalArray.ColumnMajor)
                 {
                     return this.matrix[j, i];
+                }
+
+                if (this.dimensionality == TwoDimensionalArray.ColumnMajorFlipped)
+                {
+                    return this.matrix[this.Columns - 1 - j,  i];
                 }
 
                 throw new Exception();

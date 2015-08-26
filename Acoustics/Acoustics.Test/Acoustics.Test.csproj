@@ -121,6 +121,7 @@
     <Compile Include="ArrayExtensionsTests.cs" />
     <Compile Include="AudioAnalysisTools\TilerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shared\CsvTests.cs" />
     <Compile Include="Shared\YamlTests.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="Tools\AudioUtilityInfoTests.cs" />
@@ -141,6 +142,10 @@
     <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\AudioAnalysis\TowseyLibrary\TowseyLibrary.csproj">
+      <Project>{7C6831FD-F60C-4F7B-8E6A-35E850174411}</Project>
+      <Name>TowseyLibrary</Name>
     </ProjectReference>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj">
       <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
