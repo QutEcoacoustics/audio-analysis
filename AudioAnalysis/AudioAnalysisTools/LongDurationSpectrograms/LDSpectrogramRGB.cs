@@ -1307,10 +1307,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = indexGenerationData.BackgroundFilterCoeff;
-
+            
+            throw new NotImplementedException("DISABLED ON PURPOSE");
+            /*
             cs1.SiteName  = indexGenerationData.SiteName;
             cs1.Latitude  = indexGenerationData.Latitude;
-            cs1.Longitude = indexGenerationData.Longitude;
+            cs1.Longitude = indexGenerationData.Longitude;*/
 
             // calculate start time by combining DatetimeOffset with minute offset.
             cs1.StartOffset = indexGenerationData.MinuteOffset;

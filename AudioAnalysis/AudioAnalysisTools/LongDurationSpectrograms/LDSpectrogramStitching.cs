@@ -311,9 +311,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // We want to recover the indexGenerationData and insert new info
             IndexGenerationData indexGenerationData = GetIndexGenerationData(topLevelDirectories[0]);
             indexGenerationData.RecordingStartDate = dto;
+
+            throw new NotImplementedException("DISABLED ON PURPOSE");
+            /*
             indexGenerationData.SiteName = site;
             indexGenerationData.Latitude = latitude;
-            indexGenerationData.Longitude = longitude;
+            indexGenerationData.Longitude = longitude;*/
 
             SummaryIndexBase[] summaryIndices = null;
             bool returnChromelessImages = false;
@@ -532,8 +535,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // get the IndexGenerationData file from the first directory
             IndexGenerationData indexGenerationData = GetIndexGenerationData(topLevelDirectories[0]);
             indexGenerationData.RecordingStartDate  = dto;
+
+            throw new NotImplementedException("DISABLED ON PURPOSE");
+            /*
             indexGenerationData.Latitude  = latitude;
-            indexGenerationData.Longitude = longitude;
+            indexGenerationData.Longitude = longitude;*/
 
             TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
             string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
