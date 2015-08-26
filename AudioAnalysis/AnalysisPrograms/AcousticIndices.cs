@@ -511,24 +511,16 @@ namespace AnalysisPrograms
             sampleRate = settings.Configuration[AnalysisKeys.ResampleRate] ?? sampleRate;
 
             // Gather settings for rendering false color spectrograms
-            // NOTE: Use EVN (event count) in both spectorgrams. CVR (cover) is too highly correlated with POW.
-            var ldSpectrogramConfig = new LdSpectrogramConfig
-            {
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
-                //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
-            };
-
-            /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram
-             * FrameStep is NOT used when calculating Summary and Spectral indices.
-             */
+            var ldSpectrogramConfig = LdSpectrogramConfig.GetDefaultConfig();
 
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
             // output to disk (so other analysers can use the data,
             // only data - configuration settings that generated these indices
             // this data can then be used by post-process analyses
+            /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram
+             * FrameStep is NOT used when calculating Summary and Spectral indices.
+             */
             var indexConfigData = new IndexGenerationData()
                                       {
                                           RecordingType  = inputFileSegment.OriginalFile.Extension,

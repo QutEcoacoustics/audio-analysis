@@ -368,7 +368,34 @@ namespace AudioAnalysisTools.Indices
 
 
 
-        public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
+
+        public static Dictionary<string, double[]> AddDerivedIndices(Dictionary<string, double[]> summaryIndices)
+        {
+            // insert some transformed data columns
+            summaryIndices.Add("SqrtTempEntropy", DataTools.SquareRootOfValues(summaryIndices["TemporalEntropy"]));
+
+            // insert some transformed data columns
+            summaryIndices.Add("LogTempEntropy", DataTools.LogTransform(summaryIndices["TemporalEntropy"]));
+
+            // Calculate Normalised Difference Soundscape Index if not already done
+            // caluclate two ratios for three bands.  DO NOT CHANGE THESE KEYS
+            string ndsiKey = "NDSI-LM";
+            if (!summaryIndices.ContainsKey(ndsiKey))
+            {
+                summaryIndices = IndexMatrices.AddNDSI_GageGauge(summaryIndices, ndsiKey);
+            }
+            ndsiKey = "NDSI-MH";
+            if (!summaryIndices.ContainsKey(ndsiKey))
+            {
+                summaryIndices = IndexMatrices.AddNDSI_GageGauge(summaryIndices, ndsiKey);
+            }
+
+            return summaryIndices;
+        }
+
+
+
+public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
         {
             Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvPath.FullName);
 

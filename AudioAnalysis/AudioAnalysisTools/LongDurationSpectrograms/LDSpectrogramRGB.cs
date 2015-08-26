@@ -93,6 +93,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public DateTimeOffset RecordingStartDate { get; set; }
 
+        public string SiteName{ get; set; }
+
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
 
         /// <summary>
         /// The time at which the current LDspectrogram starts.
@@ -1006,16 +1010,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
             Bitmap suntrack = null;
 
+            // TODO  TODO  TODO set up system for getting sunrise and sunset. ###############################################
             DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
-                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
-
-                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
-                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
-                suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
+                suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SiteName, cs.Latitude, cs.Longitude);
             }
 
             //draw the composite bitmap
@@ -1025,7 +1026,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             imageList.Add(timeBmp1);
             imageList.Add(bmp1);
             imageList.Add(timeBmp2);
-            imageList.Add(suntrack);
+            if (suntrack != null) imageList.Add(suntrack);
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
 
@@ -1306,6 +1307,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = indexGenerationData.BackgroundFilterCoeff;
+
+            cs1.SiteName  = indexGenerationData.SiteName;
+            cs1.Latitude  = indexGenerationData.Latitude;
+            cs1.Longitude = indexGenerationData.Longitude;
 
             // calculate start time by combining DatetimeOffset with minute offset.
             cs1.StartOffset = indexGenerationData.MinuteOffset;

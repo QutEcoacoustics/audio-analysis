@@ -143,7 +143,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static void ConcatenateIndexFiles(DirectoryInfo dataDir, 
                                                  FileInfo indexPropertiesConfigFileInfo, 
                                                  DirectoryInfo opDir,
-                                                 string opFileStem)
+                                                 string opFileStem,
+                                                 double? latitude = null,
+                                                 double? longitude = null)
         {
             LDSpectrogramStitching.ConcatenateSpectralIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
             LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
@@ -163,10 +165,77 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                          FileInfo indexPropertiesConfigFileInfo,
                                          DirectoryInfo opDir,
                                          string site,
-                                         DateTimeOffset dto)
+                                         DateTimeOffset dto,
+                                         double? latitude = null,
+                                         double? longitude = null)
         {
             int returnStatus = 0;
+
+            // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
+            // Assumes that the required subdirectories have given site somewhere in their path. 
+            var dataDirectories = GetSubDirectoriesForSiteData(topLevelDataDirectories, site);
+
+            // 2. PATTERN SEARCH FOR CORRECT CSV FILES
+            // Assumes that the required files are subdirectories of given site. 
+            // Read them into a dictionary
+            string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN;
+            string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
+            string filePrefix = null;
+            // Concatenate the csv files
+            var dictionary1 = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(dataDirectories.ToArray(), filePrefix, dto, keys);
+            if (dictionary1.Count == 0)
+            {
+                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateIndexFiles() !!!");
+                LoggedConsole.WriteErrorLine("        An empty dictionary of spectral indices was returned !!! ");
+                return returnStatus = 1;
+            }
+
+            // 3. CREATE OUTPUT DIRECTORY
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+            DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, site, dateString));
+            if (!resultsDir.Exists) resultsDir.Create();
+
+
+            // 4. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
+            string opFileStem = String.Format("{0}_{1}", site, dateString);
+            TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
+            // TODO TODO TODO TODO TODO -- THERE ARE PROBLEMS WITH ORIENTATION OF THE WRITTEN FILES. COLUMNS END UP WRITTEN IN REVERSE ORDER
+            foreach (var key in keys)
+            {
+                var filename = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, key, "csv").ToFileInfo();
+                Csv.WriteMatrixToCsv(filename, dictionary1[key], orient);
+            }
+
+
+            // 5. DRAW SPECTRAL INDEX IMAGES AND SAVE IN OUTPUT DIRECTORY
+            LDSpectrogramStitching.DrawSpectralIndexFiles(dataDirectories.ToArray(), dictionary1, indexPropertiesConfigFileInfo, resultsDir, site, dto);
+
+
+            // ==========================================================================
+
+
+            // 6. PATTERN SEARCH FOR CORRECT SUMMARY CSV FILES AND READ INTO DICTIONARY
+            // Assumes that the required files are subdirectories of given site. 
+            // Read them into a dictionary - also written at same time
+            var dictionary2 = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDirectories.ToArray(), resultsDir, site, dto);
+            if (dictionary2.Count == 0)
+            {
+                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateIndexFiles() !!!");
+                LoggedConsole.WriteErrorLine("        An empty dictionary of summary indices was returned !!! ");
+                return returnStatus = 1;
+            }
+
+            // 7. DRAW SUMMARY INDEX IMAGES AND SAVE IN OUTPUT DIRECTORY
+            LDSpectrogramStitching.DrawSummaryIndexFiles(dataDirectories.ToArray(), dictionary2, indexPropertiesConfigFileInfo, resultsDir, site, dto);
+
+            return returnStatus;
+        }
+
+
+        public static DirectoryInfo[] GetSubDirectoriesForSiteData(DirectoryInfo[] topLevelDataDirectories, string site)
+        {
+            //string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
             string searchPattern = site + "*";
 
             // PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
@@ -179,24 +248,40 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             var dataDirectories = new List<DirectoryInfo>();
-            foreach(string path in dirList)
+            foreach (string path in dirList)
             {
                 dataDirectories.Add(new DirectoryInfo(path));
             }
-
-            DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, site, dateString));
-            if (!resultsDir.Exists) resultsDir.Create();
-
-
-            returnStatus = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(dataDirectories.ToArray(), indexPropertiesConfigFileInfo, resultsDir, site, dto);
-            if (returnStatus != 0)
-                return 1;
-            returnStatus = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDirectories.ToArray(),  indexPropertiesConfigFileInfo, resultsDir, site, dto);
-            if (returnStatus != 0)
-                return 1;
-            return 0;
+            return dataDirectories.ToArray();
         }
 
+
+
+        /// <summary>
+        /// Assumes that the required spectral index files can be found using search patterns that utilise the filePrefix, 
+        /// passed date, the analysis type and the passed keys.  
+        /// </summary>
+        /// <param name="topLevelDirectories"></param>
+        /// <param name="filePrefix"></param>
+        /// <param name="dto"></param>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public static Dictionary<string, double[,]> ConcatenateSpectralIndexFiles(DirectoryInfo[] topLevelDirectories,
+                                                         string filePrefix,
+                                                         DateTimeOffset dto,
+                                                         string[] keys)
+        {
+            string analysisType = "Towsey.Acoustic";
+
+            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+            string opFileStem = dateString;
+            if (filePrefix != null)
+                opFileStem = String.Format("{0}_{1}", filePrefix, dateString);
+
+            string fileStemPattern = dateString + "*__" + analysisType;
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys);
+            return dictionary;
+        }
 
 
 
@@ -205,61 +290,39 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// It is designed to deal with Yvonne's case where want to concatenate files distributed over arbitrary directories.
         /// It only merges files for the passed fixed date. i.e only 24 hours 
         /// </summary>
-        public static int ConcatenateSpectralIndexFiles(DirectoryInfo[] topLevelDirectories,
-                                                         FileInfo indexPropertiesConfigFileInfo,
-                                                         DirectoryInfo opDir,
-                                                         string site,
-                                                         DateTimeOffset dto)
+        public static void DrawSpectralIndexFiles(DirectoryInfo[] topLevelDirectories,
+                                                 Dictionary<string, double[,]> dictionary,
+                                                 FileInfo indexPropertiesConfigFileInfo,
+                                                 DirectoryInfo opDir,
+                                                 string site,
+                                                 DateTimeOffset dto,
+                                                 double? latitude = null,
+                                                 double? longitude = null)
         {
-            int returnStatus = 0;
-            string analysisType = "Towsey.Acoustic";
-
-            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-            string opFileStem = String.Format("{0}_{1}", site, dateString);
-
-
-            var ldSpectrogramConfig = new LdSpectrogramConfig
-            {
-                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
-                YAxisTicInterval = 1000,
-                //ColorMap1 = "ACI-TEN-CVR",
-                //ColorMap2 = "BGN-AVG-VAR",
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
-            };
-            // string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW" };
-            string[] keys = ldSpectrogramConfig.GetKeys();
-
-            string fileStemPattern = dateString + "*__" + analysisType;
-            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys);
-            if (dictionary.Count == 0)
-            {
-                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSpectralIndexFiles2() !!!");
-                LoggedConsole.WriteErrorLine("        An empty dictionary of spectral indices was returned !!! ");
-                return returnStatus = 1;
-            }
-            // derive POW, NCDI etc
+            // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
+            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+            string opFileStem = String.Format("{0}_{1}", site, dateString);
+
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, opDir, opFileStem);
 
-
-            // We want to recover the indexGenerationData
-            // Get first file name from sorted list and insert the correct DateTime.
-            string pattern = "*ACI.csv";
-            FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectories[0].FullName, pattern);
-            // get the IndexGenerationData file from the first directory
-            IndexGenerationData indexGenerationData = GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
+            // We want to recover the indexGenerationData and insert new info
+            IndexGenerationData indexGenerationData = GetIndexGenerationData(topLevelDirectories[0]);
             indexGenerationData.RecordingStartDate = dto;
+            indexGenerationData.SiteName = site;
+            indexGenerationData.Latitude = latitude;
+            indexGenerationData.Longitude = longitude;
 
             SummaryIndexBase[] summaryIndices = null;
             bool returnChromelessImages = false;
+            string analysisType = "Towsey.Acoustic";
 
             Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
-            topLevelDirectories[0],
+            topLevelDirectories[0], // this should not be required but it is - because things have gotten complicated !
             opDir,
-            ldSpectrogramConfig,
+            LdSpectrogramConfig.GetDefaultConfig(),
             indexPropertiesConfigFileInfo,
             indexGenerationData,
             opFileStem,
@@ -268,8 +331,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             summaryIndices,
             indexDistributions,
             returnChromelessImages);
-
-            return returnStatus;
         }
 
 
@@ -310,10 +371,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, fileStemPattern, keys);
             if (dictionary.Count == 0)
             {
-                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSpectralIndexFiles2() !!!");
+                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSpectralIndexFiles() !!!");
                 LoggedConsole.WriteErrorLine("        An empty dictionary of spectral indices was returned !!! ");
             }
-            // derive POW, NCDI etc
+
+            // now add in derived indices i.e. POW, NCDI etc
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
@@ -370,30 +432,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string[] headers = summaryDataTuple.Item1;
             double[,] summaryIndices = summaryDataTuple.Item2;
             Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
-
-            // insert some transformed data columns
-            dictionaryOfCsvColumns.Add("SqrtTempEntropy", DataTools.SquareRootOfValues(dictionaryOfCsvColumns["TemporalEntropy"]));
-
-            // insert some transformed data columns
-            dictionaryOfCsvColumns.Add("LogTempEntropy", DataTools.LogTransform(dictionaryOfCsvColumns["TemporalEntropy"]));
-
-            // Calculate Normalised Difference Soundscape Index if not already done
-            // caluclate two ratios for three bands.  DO NOT CHANGE THESE KEYS
-            string ndsiKey = "NDSI-LM";
-            if (!dictionaryOfCsvColumns.ContainsKey(ndsiKey))
+            if (dictionaryOfCsvColumns.Count == 0)
             {
-                dictionaryOfCsvColumns = IndexMatrices.AddNDSI_GageGauge(dictionaryOfCsvColumns, ndsiKey);
+                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
+                LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
             }
-            ndsiKey = "NDSI-MH";
-            if (!dictionaryOfCsvColumns.ContainsKey(ndsiKey))
-            {
-                dictionaryOfCsvColumns = IndexMatrices.AddNDSI_GageGauge(dictionaryOfCsvColumns, ndsiKey);
-            }
+
+
+            // now add in derived indices i.e. NCDI etc
+            dictionaryOfCsvColumns = IndexMatrices.AddDerivedIndices(dictionaryOfCsvColumns);
+
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, opDir, opFileStem);
-
-
 
             var indicesFile = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
@@ -418,19 +469,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static int ConcatenateSummaryIndexFiles(DirectoryInfo[] topLevelDirectories,
-                                                         FileInfo indexPropertiesConfigFileInfo,
-                                                         DirectoryInfo opDir,
-                                                         string site,
-                                                         DateTimeOffset dto)
+        public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(DirectoryInfo[] topLevelDirectories, DirectoryInfo opDir, string site, DateTimeOffset dto)
         {
-            int returnStatus = 0;
-
             string csvFileExt = "csv";
-            string imgFileExt = "png";
-
-            string pattern = "*__Towsey.Acoustic.Indices.csv";
             string indexType = "SummaryIndices";
+            string pattern = "*__Towsey.Acoustic.Indices.csv";
 
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
             string opFileStem = String.Format("{0}_{1}", site, dateString);
@@ -438,34 +481,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string fileStemPattern = dateString + pattern;
             FileInfo[] files = IndexMatrices.GetFilesInDirectories(topLevelDirectories, fileStemPattern);
 
-            if (files.Length  == 0) return 1;
+            if (files.Length == 0)
+            {
+                return null;
+            }
             var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenate(files);
             string[] headers = summaryDataTuple.Item1;
             double[,] summaryIndices = summaryDataTuple.Item2;
             Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
 
-            // insert some transformed data columns
-            dictionaryOfCsvColumns.Add("SqrtTempEntropy", DataTools.SquareRootOfValues(dictionaryOfCsvColumns["TemporalEntropy"]));
-
-            // insert some transformed data columns
-            dictionaryOfCsvColumns.Add("LogTempEntropy", DataTools.LogTransform(dictionaryOfCsvColumns["TemporalEntropy"]));
-
-            // Calculate Normalised Difference Soundscape Index if not already done
-            // caluclate two ratios for three bands.  DO NOT CHANGE THESE KEYS
-            string ndsiKey = "NDSI-LM";
-            if (!dictionaryOfCsvColumns.ContainsKey(ndsiKey))
+            if (dictionaryOfCsvColumns.Count == 0)
             {
-                dictionaryOfCsvColumns = IndexMatrices.AddNDSI_GageGauge(dictionaryOfCsvColumns, ndsiKey);
+                LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
+                LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
+                return null;
             }
-            ndsiKey = "NDSI-MH";
-            if (!dictionaryOfCsvColumns.ContainsKey(ndsiKey))
-            {
-                dictionaryOfCsvColumns = IndexMatrices.AddNDSI_GageGauge(dictionaryOfCsvColumns, ndsiKey);
-            }
-
-            // Calculate the index distribution statistics and write to a json file. Also save as png image
-            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, opDir, opFileStem);
-
 
 
             var indicesFile = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, csvFileExt);
@@ -474,8 +504,37 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
             CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
 
+            // insert some transformed data columns etc
+            dictionaryOfCsvColumns = IndexMatrices.AddDerivedIndices(dictionaryOfCsvColumns);
+
+            return dictionaryOfCsvColumns;
+        }
+
+
+        public static void DrawSummaryIndexFiles(DirectoryInfo[] topLevelDirectories,
+                                                Dictionary<string, double[]> dictionaryOfCsvColumns,
+                                                FileInfo indexPropertiesConfigFileInfo,
+                                                DirectoryInfo opDir,
+                                                string site,
+                                                DateTimeOffset dto,
+                                                double? latitude = null,
+                                                double? longitude = null)
+        {
+            string imgFileExt = "png";
+            string indexType = "SummaryIndices";
+
+            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+            string opFileStem = String.Format("{0}_{1}", site, dateString);
+
+            // Calculate the index distribution statistics and write to a json file. Also save as png image
+            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, opDir, opFileStem);
+
             // get the IndexGenerationData file from the first directory
-            IndexGenerationData indexGenerationData = GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
+            IndexGenerationData indexGenerationData = GetIndexGenerationData(topLevelDirectories[0]);
+            indexGenerationData.RecordingStartDate  = dto;
+            indexGenerationData.Latitude  = latitude;
+            indexGenerationData.Longitude = longitude;
+
             TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
             string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
             string imageTitle = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
@@ -487,8 +546,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     imageTitle);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, imgFileExt);
             tracksImage.Save(imagePath);
-
-            return returnStatus;
         }
 
 
@@ -496,103 +553,29 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// Returns the index generation data from file in psased directory.
-        /// Assumes that the file name contains the start time in parseable pattern
+        /// Returns the index generation data from file in passed directory.
         /// </summary>
         /// <param name="directory"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName)
+        public static IndexGenerationData GetIndexGenerationData(DirectoryInfo directory)
         {
             string pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
-            FileInfo igdFile = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern).Single();
-            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFile);
+            //FileInfo igdFile = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern).Single();
+            FileInfo[] igdFiles = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern);
+            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFiles[0]);
+            return indexGenerationData;
+        }
+
+        public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName)
+        {
+            var indexGenerationData = GetIndexGenerationData(directory);
 
             // Get the start time from the file name.
             DateTimeOffset startTime = IndexMatrices.GetFileStartTime(fileName);
             indexGenerationData.RecordingStartDate = startTime;
             return indexGenerationData;
         }
-
-        /// <summary>
-        /// SHOULD BE DEPRACATED!
-        /// This method merges the LDSpectrogram IMAGES derived from a sequence of consecutive 6-12 hour recording, 
-        /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24-hour recordings 
-        /// in shorter blocks of 3-12 hours. 
-        /// This method differs from the above in that we are concatnating already prepared images as opposed to the index.csv files.
-        /// The time scale is added in afterwards - must over-write the previous time scale and title bar.
-        /// </summary>
-        //public static void ConcatenateSpectralIndexImages()
-        //{
-        //    // create an array that contains the names of csv file to be read.
-        //    // The file names must be in the temporal order rquired for the resulting spectrogram image.
-
-        //    //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
-        //    //string fileStem =  "BYR2_20131016";
-        //    //string[] names = {@"BYR2_20131016_000000.wav\Towsey.Acoustic\BYR2_20131016_000000__ACI-ENT-EVN.png",
-        //    //                  @"BYR2_20131016_133121.wav\Towsey.Acoustic\BYR2_20131016_133121__ACI-ENT-EVN.png",
-        //    //                 };
-
-        //    //string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\Creek 1\";
-        //    //string fileStem = "BYR2_20131017";
-        //    //string[] names = {@"BYR2_20131017_000000.wav\Towsey.Acoustic\BYR2_20131017_000000__ACI-ENT-EVN.png",
-        //    //                  @"BYR2_20131017_133121.wav\Towsey.Acoustic\BYR2_20131017_133121__ACI-ENT-EVN.png",
-        //    //                 };
-        //    string topLevelDirectory = @"Y:\Results\2015May07-121245 - SERF MtByron SunnyCoast\Mt Byron\PRA\";
-        //    string fileStem = "BYR4_20131017";
-        //    string[] names = {@"BYR4_20131017_000000.wav\Towsey.Acoustic\BYR4_20131017_000000__ACI-ENT-EVN.png",
-        //                      @"BYR4_20131017_064544.wav\Towsey.Acoustic\BYR4_20131017_064544__ACI-ENT-EVN.png",
-        //                      @"BYR4_20131017_133128.wav\Towsey.Acoustic\BYR4_20131017_133128__ACI-ENT-EVN.png",
-        //                      @"BYR4_20131017_201713.wav\Towsey.Acoustic\BYR4_20131017_201713__ACI-ENT-EVN.png",
-        //                     };
-
-        //    string opDir = @"C:\SensorNetworks\Output\Mangalam_BDVA2015";
-
-        //    // ###############################################################
-        //    // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
-        //    int sampleRate = 22050;
-        //    int frameWidth = 256;
-        //    int nyquist    = sampleRate / 2;
-        //    int herzInterval = 1000;
-        //    TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
-        //    double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-        //    string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
-        //    string title = String.Format("FALSE-COLOUR SPECTROGRAM: {0}      (scale:hours x kHz)       (colour: R-G-B={1})", fileStem, colorMap);
-        //    TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
-        //    TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
-        //    // ###############################################################
-
-        //    List<Image> imageList = new List<Image>();
-        //    // this loop reads in all the file names
-        //    foreach (string name in names)
-        //    {
-        //        FileInfo fi = new FileInfo(topLevelDirectory + name);
-        //        Console.WriteLine("Reading file: " + fi.Name);
-        //        Image image = ImageTools.ReadImage2Bitmap(fi.FullName);
-        //        imageList.Add(image);
-        //    } //end of all file names
-
-        //    Image spgmImage = ImageTools.CombineImagesInLine(imageList);
-        //    int imageWidth  = spgmImage.Width;
-        //    int imageHeight = spgmImage.Height;
-
-
-        //    //Draw the title bar
-        //    Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, imageWidth);
-        //    //Draw the x-axis time scale bar
-        //    int trackHeight = 20;
-        //    TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
-        //    Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, null, imageWidth, trackHeight);
-
-        //    //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
-        //    Graphics gr = Graphics.FromImage(spgmImage);
-        //    //gr.Clear(Color.Black);
-        //    gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
-        //    gr.DrawImage(timeBmp, 0, 20); //draw in the top spectrogram
-        //    gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
-
-        //    spgmImage.Save(Path.Combine(opDir, fileStem + "." + colorMap + ".png"));
-        //}
 
 
     }
