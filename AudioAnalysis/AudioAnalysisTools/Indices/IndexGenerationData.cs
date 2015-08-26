@@ -65,6 +65,15 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public DateTimeOffset? RecordingStartDate { get; set; }
 
+        /// <summary>
+        /// The site at which the recording was made.
+        /// This and latitude and longitude info are put here because an instance of IndexGenerationData is used to pass 
+        /// all possible info when drawing the FC spectrogram.
+        /// </summary>
+        public string SiteName { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
         public TimeSpan MinuteOffset { get; set; }
          
         public int SampleRateOriginal { get; set; }

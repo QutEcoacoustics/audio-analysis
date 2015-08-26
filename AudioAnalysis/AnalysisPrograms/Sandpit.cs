@@ -221,13 +221,13 @@ namespace AnalysisPrograms
 
                 string opPath   = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
 
-                // The recording site and its location. Site name is used for naming files
+                // The recording siteName and its location. Site name is used for naming files
                 // The location is used only to draw the sunrise/sunset track.
-                string site = "GympieNP";
+                string siteName = "GympieNP";
                 double? latitude = null;
                 double? longitude = null;
-                //string site = "Woondum3";
-                var dtoStart = new DateTimeOffset(2015, 7, 1, 0, 0, 0, TimeSpan.Zero);
+                //string siteName = "Woondum3";
+                var dtoStart = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
                 string indexPropertiesConfigPath = opPath + @"\IndexPropertiesConfig.yml";
 
 
@@ -242,7 +242,7 @@ namespace AnalysisPrograms
                     var thisday = dtoStart.AddDays(d);
 
                     LoggedConsole.WriteLine("\n\n\nCONCATENATING DAY: " + thisday.ToString()) ;
-                    int status = LDSpectrogramStitching.ConcatenateIndexFiles(dataDirs, indexPropertiesConfigFileInfo, opDir, site, thisday);
+                    int status = LDSpectrogramStitching.ConcatenateIndexFiles(dataDirs, indexPropertiesConfigFileInfo, opDir, siteName, thisday, latitude, longitude);
                     if (status != 0)
                     {
                         LoggedConsole.WriteLine("\nPREMATURE TERMINATION - DAY DOES NOT EXIST: " + thisday.ToString());

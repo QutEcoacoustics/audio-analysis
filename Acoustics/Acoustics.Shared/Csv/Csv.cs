@@ -221,8 +221,7 @@ namespace Acoustics.Shared.Csv
         }
 
 
-        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix,
-            TwoDimensionalArray dimnesionality = TwoDimensionalArray.RowMajor)
+        public static void WriteMatrixToCsv<T>(FileInfo destination, T[,] matrix, TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor)
         {
             Contract.Requires(destination != null);
 
@@ -231,7 +230,7 @@ namespace Acoustics.Shared.Csv
             {
                 var writer = new CsvWriter(stream, DefaultConfiguration);
 
-                var transformedMatrix = new TwoDimArrayMapper<T>(matrix, dimnesionality);
+                var transformedMatrix = new TwoDimArrayMapper<T>(matrix, dimensionality);
 
                 EncodeMatrixInner(writer, transformedMatrix, true);
             }

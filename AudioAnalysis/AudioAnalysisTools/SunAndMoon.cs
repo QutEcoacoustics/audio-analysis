@@ -61,7 +61,29 @@ namespace AudioAnalysisTools
             return moon;
         }
 
-
+        /// <summary>
+        /// TODO TODO  work on this using website and javascript referred to by Anthony.
+        /// This is a quick HACK!!!!!!!
+        /// 
+        /// returns an astronomical track depending on site etc.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="dateTimeOffset"></param>
+        /// <param name="siteName"></param>
+        /// <returns></returns>
+        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, string siteName, double? latitude, double? longitude)
+        {
+            if (siteName != null) return null;
+            if ((siteName.StartsWith("Gympie")) || (siteName.StartsWith("Woondum3"))) // only works for Gympie and 
+            {
+                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
+                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
+                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+                Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
+                return suntrack;
+            }
+            return null;
+        }
 
 
 

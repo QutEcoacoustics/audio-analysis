@@ -118,6 +118,29 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
+
+
+
+        /// <summary>
+        /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because 
+        /// CVR (cover) is too highly correlated with POW.
+        /// </summary>
+        /// <returns></returns>
+        public static LdSpectrogramConfig GetDefaultConfig()
+        {
+            var ldSpectrogramConfig = new LdSpectrogramConfig
+            {
+                YAxisTicInterval = 1000,
+                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN,
+                //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+            };
+            return ldSpectrogramConfig;
+        }
+
+
+
         public static string[] GetKeys(string colorMap1, string colorMap2)
         {
             var keys = new List<string>(); 
