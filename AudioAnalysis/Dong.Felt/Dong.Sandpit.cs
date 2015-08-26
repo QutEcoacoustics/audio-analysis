@@ -288,41 +288,41 @@
                     var poiMatrix = StatisticalAnalysis.TransposePOIsToMatrix(filterRidges, spectrogram.Data, rows, cols);
                     //var filterIsolatedRidges = ImageAnalysisTools.RemoveIsolatedPoi(poiMatrix, 3, 2);
                     var joinedRidges = ClusterAnalysis.GaussianBlurOnPOI(poiMatrix, rows, cols, 5, 1.4);
-                    var dividedRidges = POISelection.POIListDivision(joinedRidges);
-                    var acousticEventList0 = new List<AcousticEvent>();
-                    var acousticEventList1 = new List<AcousticEvent>();
-                    var acousticEventList2 = new List<AcousticEvent>();
-                    var acousticEventList3 = new List<AcousticEvent>();
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventList0);
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[1], out acousticEventList1);
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[2], out acousticEventList2);
-                    ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[3], out acousticEventList3);
-                    foreach (var e in acousticEventList0)
-                    {
-                        acousticEventlist.Add(e);
-                    }
-                    foreach (var e in acousticEventList1)
-                    {
-                        acousticEventlist.Add(e);
-                    }
-                    foreach (var e in acousticEventList2)
-                    {
-                        acousticEventlist.Add(e);
-                    }
-                    foreach (var e in acousticEventList3)
-                    {
-                        acousticEventlist.Add(e);
-                    }
-                    var resultEvent = ClusterAnalysis.RemoveSmallEvents(acousticEventlist, 30);
+                    ////var dividedRidges = POISelection.POIListDivision(joinedRidges);
+                    ////var acousticEventList0 = new List<AcousticEvent>();
+                    ////var acousticEventList1 = new List<AcousticEvent>();
+                    ////var acousticEventList2 = new List<AcousticEvent>();
+                    ////var acousticEventList3 = new List<AcousticEvent>();
+                    ////ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[0], out acousticEventList0);
+                    ////ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[1], out acousticEventList1);
+                    ////ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[2], out acousticEventList2);
+                    ////ClusterAnalysis.RidgeListToEvent(spectrogram, dividedRidges[3], out acousticEventList3);
+                    ////foreach (var e in acousticEventList0)
+                    ////{
+                    ////    acousticEventlist.Add(e);
+                    ////}
+                    ////foreach (var e in acousticEventList1)
+                    ////{
+                    ////    acousticEventlist.Add(e);
+                    ////}
+                    ////foreach (var e in acousticEventList2)
+                    ////{
+                    ////    acousticEventlist.Add(e);
+                    ////}
+                    ////foreach (var e in acousticEventList3)
+                    ////{
+                    ////    acousticEventlist.Add(e);
+                    ////}
+                    ////var resultEvent = ClusterAnalysis.RemoveSmallEvents(acousticEventlist, 30);
                     //var spectrogramData = DrawSpectrogram.ShowPOIOnSpectrogram(spectrogram, poiList, spectrogram.Data.GetLength(0),
                     //    spectrogram.Data.GetLength(1));
                     //spectrogram.Data = spectrogramData;
-                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, resultEvent, eventThreshold, null);                
+                    Image image = DrawSpectrogram.DrawSonogram(spectrogram, scores, acousticEventlist, eventThreshold, null);                
                     Bitmap bmp = (Bitmap)image;
-                    //foreach (PointOfInterest poi in joinedRidges)
-                    //{
-                    //    poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
-                    //}
+                    foreach (PointOfInterest poi in joinedRidges)
+                    {
+                        poi.DrawOrientationPoint(bmp, (int)spectrogram.Configuration.FreqBinCount);
+                    }
                     var FileName = new FileInfo(audioFiles[i]);
                     string annotatedImageFileName = Path.ChangeExtension(FileName.Name, "- event detection on ridges.png");
                     string annotatedImagePath = Path.Combine(audioFileDirectory, annotatedImageFileName);
