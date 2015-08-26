@@ -71,7 +71,10 @@ namespace Acoustics.Shared.Csv
             get
             {
                 // change the defaults here if you want
-                var settings = new CsvConfiguration();
+                var settings = new CsvConfiguration()
+                                   {
+                                       HasHeaderRecord = true
+                                   };
                 foreach (var classMap in ClassMapsToRegister)
                 {
                     settings.RegisterClassMap(classMap);
@@ -159,6 +162,13 @@ namespace Acoustics.Shared.Csv
             out int columnCount)
         {
             // read header
+            if (!reader.Read())
+            {
+                rowCount = 0;
+                columnCount = 0;
+                return new List<T[]>();
+            }
+            
             var headers = reader.FieldHeaders;
             if (includeRowIndex && headers[0] != "Index")
             {
@@ -169,21 +179,24 @@ namespace Acoustics.Shared.Csv
                 throw new CsvHelperException("Did not expect an index header and there was one");
             }
 
-            columnCount = headers.Length;
+            var rowIndex = includeRowIndex ? 1 : 0;
+            columnCount = headers.Length - rowIndex;
             var csvRows = new List<T[]>(1440);
 
             rowCount = 0;
-            while (reader.Read())
+            do
             {
                 var row = new T[columnCount];
-                for (int i = includeRowIndex ? 1 : 0; i < columnCount; i++)
+
+                for (int i = rowIndex; i <= columnCount; i++)
                 {
-                    row[i] = reader.GetField<T>(i);
+                    row[i - rowIndex] = reader.GetField<T>(i);
                 }
 
                 csvRows.Add(row);
                 rowCount++;
             }
+            while (reader.Read());
 
             return csvRows;
         }
@@ -193,7 +206,7 @@ namespace Acoustics.Shared.Csv
         {
             int rowCount;
             int columnCount;
-            var csvRows = DecodeMatrix<T>(reader, includeRowIndex, out columnCount, out rowCount);
+            var csvRows = DecodeMatrix<T>(reader, includeRowIndex, out rowCount, out columnCount);
 
             var result = dimensionality == TwoDimensionalArray.RowMajor
                 ? new T[rowCount, columnCount]
@@ -211,6 +224,9 @@ namespace Acoustics.Shared.Csv
                             break;
                         case TwoDimensionalArray.ColumnMajor:
                             result[j, i] = row[j];
+                            break;
+                        case TwoDimensionalArray.ColumnMajorFlipped:
+                            result[columnCount - 1 - j, i] = row[j];
                             break;
                         default:
                             throw new NotImplementedException("Other dimensionalities not implemented");
