@@ -48,7 +48,8 @@
         /// <param name="dt"></param>
         /// <param name="title"></param>
         /// <returns></returns>
-        public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, FileInfo csvFile, string title)
+        public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, FileInfo csvFile, 
+                                                       string titleText, SiteDescription siteDescription = null)
         {
             if (!csvFile.Exists)
             {
@@ -58,7 +59,8 @@
             IndexGenerationData indexGenerationData = null;
 
             Dictionary<string, double[]> dictionaryOfCsvFile = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
-            return DrawSummaryIndices.DrawImageOfSummaryIndices(listOfIndexProperties, indexGenerationData, dictionaryOfCsvFile, title);
+            return DrawSummaryIndices.DrawImageOfSummaryIndices(listOfIndexProperties, indexGenerationData, dictionaryOfCsvFile, 
+                                                                titleText, siteDescription);
         }
 
 
@@ -67,11 +69,13 @@
         /// </summary>
         /// <param name="listOfIndexProperties"></param>
         /// <param name="dt"></param>
-        /// <param name="title"></param>
+        /// <param name="titleText"></param>
         /// <returns></returns>
         public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, 
                                                        IndexGenerationData indexGenerationData,    
-                                                       Dictionary<string, double[]> dictionaryOfCsvFile, string title)
+                                                       Dictionary<string, double[]> dictionaryOfCsvFile, 
+                                                       string titleText,
+                                                       SiteDescription siteDescription = null)
         {
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); // to translate past keys into current keys
 
@@ -124,7 +128,7 @@
             int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = TrackHeight * (listOfBitmaps.Count + 4);  //+3 for title and top and bottom time tracks
-            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, title);
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, titleText);
             //Bitmap time1Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             TimeSpan xAxisPixelDuration = indexGenerationData.IndexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
@@ -132,19 +136,17 @@
 
             //indexGenerationData.RecordingStartDate.
             //Bitmap time2Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
-            Bitmap time2Bmp = time1Bmp;
+            Bitmap timeBmp2 = time1Bmp;
             Bitmap suntrack = null;
-            DateTimeOffset ? dateTimeOffset = indexGenerationData.RecordingStartDate;
+            DateTimeOffset? dateTimeOffset = indexGenerationData.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
-                time2Bmp = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, TrackHeight);
-                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
-
-                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
-                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
-                suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
+                timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, TrackHeight);
+                suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, siteDescription);
             }
+
+
 
             //draw the composite bitmap
             var imageList = new List<Image>();
@@ -154,7 +156,7 @@
             {
                 imageList.Add(listOfBitmaps[i]);
             }
-            imageList.Add(time2Bmp);
+            imageList.Add(timeBmp2);
             imageList.Add(suntrack);
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
