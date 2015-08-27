@@ -312,11 +312,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             IndexGenerationData indexGenerationData = GetIndexGenerationData(topLevelDirectories[0]);
             indexGenerationData.RecordingStartDate = dto;
 
-            throw new NotImplementedException("DISABLED ON PURPOSE");
-            /*
-            indexGenerationData.SiteName = site;
-            indexGenerationData.Latitude = latitude;
-            indexGenerationData.Longitude = longitude;*/
+            //throw new NotImplementedException("DISABLED ON PURPOSE");
+            var siteDescription = new SiteDescription();
+            siteDescription.SiteName = site;
+            siteDescription.Latitude = latitude;
+            siteDescription.Longitude = longitude;
 
             SummaryIndexBase[] summaryIndices = null;
             bool returnChromelessImages = false;
@@ -333,6 +333,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             dictionary,
             summaryIndices,
             indexDistributions,
+            siteDescription,
             returnChromelessImages);
         }
 
@@ -392,6 +393,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // get the IndexGenerationData file from the first directory
             IndexGenerationData indexGenerationData = GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
 
+            var siteDescription = new SiteDescription();
+            siteDescription.SiteName = opFileStem;
+
             SummaryIndexBase[] summaryIndices = null;
             bool returnChromelessImages = false;
 
@@ -406,6 +410,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             dictionary,
             summaryIndices,
             indexDistributions,
+            siteDescription,
             returnChromelessImages);
         }
 
@@ -536,20 +541,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             IndexGenerationData indexGenerationData = GetIndexGenerationData(topLevelDirectories[0]);
             indexGenerationData.RecordingStartDate  = dto;
 
-            throw new NotImplementedException("DISABLED ON PURPOSE");
-            /*
-            indexGenerationData.Latitude  = latitude;
-            indexGenerationData.Longitude = longitude;*/
+            var siteDescription = new SiteDescription();
+            siteDescription.SiteName = opFileStem;
+            siteDescription.Latitude  = latitude;
+            siteDescription.Longitude = longitude;
 
             TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
             string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
-            string imageTitle = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
-            Bitmap tracksImage =
-                DrawSummaryIndices.DrawImageOfSummaryIndices(
-                    IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
-                    indexGenerationData,
-                    dictionaryOfCsvColumns,
-                    imageTitle);
+            if((start.Hours == 0) && (start.Minutes == 0)) startTime = "midnight";
+            string titletext = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
+            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(
+                                 IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
+                                 indexGenerationData,
+                                 dictionaryOfCsvColumns,
+                                 titletext,
+                                 siteDescription);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, imgFileExt);
             tracksImage.Save(imagePath);
         }

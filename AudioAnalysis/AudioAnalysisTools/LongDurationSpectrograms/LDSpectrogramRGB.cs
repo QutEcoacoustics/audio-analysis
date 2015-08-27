@@ -1010,7 +1010,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
             Bitmap suntrack = null;
 
-            // TODO  TODO  TODO set up system for getting sunrise and sunset. ###############################################
             DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
@@ -1292,6 +1291,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, double[,]> indexSpectrograms = null,
             SummaryIndexBase[] summaryIndices = null,
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
+            SiteDescription siteDescription = null,
             bool returnChromelessImages = false)
         {
             LdSpectrogramConfig config = ldSpectrogramConfig;
@@ -1307,12 +1307,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = indexGenerationData.BackgroundFilterCoeff;
-            
-            throw new NotImplementedException("DISABLED ON PURPOSE");
-            /*
-            cs1.SiteName  = indexGenerationData.SiteName;
-            cs1.Latitude  = indexGenerationData.Latitude;
-            cs1.Longitude = indexGenerationData.Longitude;*/
+            cs1.SiteName  = siteDescription.SiteName;
+            cs1.Latitude  = siteDescription.Latitude;
+            cs1.Longitude = siteDescription.Longitude;
 
             // calculate start time by combining DatetimeOffset with minute offset.
             cs1.StartOffset = indexGenerationData.MinuteOffset;

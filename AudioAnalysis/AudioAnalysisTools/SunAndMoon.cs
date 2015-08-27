@@ -62,7 +62,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// TODO TODO  work on this using website and javascript referred to by Anthony. (suncalc.net)
+        /// TODO TODO  work on this method using website and javascript referred to by Anthony. (suncalc.net)
         /// This is a quick HACK!!!!!!!
         /// 
         /// returns an astronomical track depending on site etc.
@@ -73,8 +73,12 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, string siteName, double? latitude, double? longitude)
         {
-            if (siteName != null) return null;
-            if ((siteName.StartsWith("Gympie")) || (siteName.StartsWith("Woondum3"))) // only works for Gympie and 
+            if (siteName == null) return null;
+
+            if ((siteName.StartsWith("Gympie")) 
+             || (siteName.StartsWith("Woondum3"))
+             || (siteName.StartsWith("SERF"))
+            ) 
             {
                 int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
                 double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
@@ -85,7 +89,10 @@ namespace AudioAnalysisTools
             return null;
         }
 
-
+        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, SiteDescription siteDescription)
+        {
+            return AddSunTrackToImage(width, dateTimeOffset, siteDescription.SiteName, siteDescription.Latitude, siteDescription.Longitude);        
+        }
 
         /// <summary>
         /// This method assumes that the argument "dayValue" will not take zero value i.e. dayValue=1 represents January 1st.
@@ -139,7 +146,7 @@ namespace AudioAnalysisTools
             Graphics g = Graphics.FromImage(image);
             g.FillRectangle(Brushes.Gray, nautiRiseMinute, 1, nautiDayLength, trackHeight - 2);
             g.FillRectangle(Brushes.OrangeRed, civilRiseMinute, 1, civilDayLength, trackHeight - 2);
-            g.FillRectangle(Brushes.Gold, sunriseMinute, 1, sunDayLength, trackHeight - 2);
+            g.FillRectangle(Brushes.LightYellow, sunriseMinute, 1, sunDayLength, trackHeight - 2);
 
             if (moonPhase != null)
             {
