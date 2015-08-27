@@ -21,13 +21,13 @@
 
 ######## You may wish to change these ###################### 
 # Set to where the CSV files are to be saved
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_16")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21")
 
 # Set sourceDir to where the wavefiles files are (for mapping file)
-sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\"
+sourceDir <- "Y:\\Yvonne\\Cooloola\\2015June28\\GympieNP\\"
 
 # Set folder to where the indices files are
-folder <- "F:\\Indices\\<Insert Availae Results folder>\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\"
+folder <- "F:\\Indices\\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\\Yvonne\\Cooloola\\2015June28\\GympieNP\\"
 
 #site <- "Woondum1 "
 #latitude <- "Latitude"
@@ -55,6 +55,7 @@ source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\dateTime
 
 # Obtain a list of the original wave files
 myFiles <- list.files(full.names=FALSE, pattern="*.wav$", path=sourceDir)
+myFiles
 
 # Call dateTime function and create lists of dates and times
 dt <- dateTime(myFiles) 
@@ -72,7 +73,7 @@ mapping <- cbind(myFiles, latitude, longitude, elevation)
 write.csv(mapping, file=paste("Mapping", site,date, ".csv", sep = "_"))
 
 myFiles <- read.csv(file=paste("Mapping", site, date, ".csv", sep = "_"))[,2]
-
+myFiles
 length <- length(myFiles)
 length
 ### SUMMARY INDICES ###########################
@@ -259,13 +260,14 @@ write.csv(all.indices,
           sub("*.wav","\\1", myFiles[length]),".csv", 
           sep = ""))
 
+
 indices <- read.csv(paste("Towsey_Summary_Indices_", site,
                           sub("*.wav","\\1", myFiles[1]),"to", 
-                          sub("*.wav","\\1", myFiles[length]),".csv", 
+                          sub("*.wav","\\1", myFiles[length(myFiles)]),".csv", 
                           sep = ""),header = T)
 # Generate histograms of original indices
 png(
-  "Histograms_of_Indices.png",
+  paste("Histograms_of_Indices_",site,dates,".png",sep=""),
   width     = 320,
   height    = 200,
   units     = "mm",
@@ -273,14 +275,29 @@ png(
   pointsize = 4
 )
 
-par(mfrow=c(4,5)) 
-par(mar=c(4,4,4,1))
-for(i in 4:20){
-  hist(indices[,i],col="red", 
+par(mfrow=c(4,5), xpd=TRUE) 
+par(mar=c(4,3,4,1), oma=c(2,2,0,0))
+for(i in 2:20){
+  hist(indices[,i], col="red", 
        #main=paste("Index",i,sep = " "),
        main=colnames(indices[i]),
        cex.main=3, cex.axis=3,
-       xlab = "", ylab = "")}
+       xlab = "", ylab = "")
+  if(max(indices[,i]) >= 0) {
+    text((0.7*max(indices[,i])),1000,
+         paste("max", signif(max(indices[,i]), digits=3)), 
+         cex=4)
+  } else {
+    text((2*max(indices[,i])),1000,
+           paste("max", signif(max(indices[,i]), digits=3)), 
+           cex=4)
+  }
+}
+plot(2, axes=F,xlim=c(0,1), ylim=c(0,1), xlab = "",
+     ylab = "")
+legend("center", c(paste(dates[1]), paste(dates[length(dates)])),
+       title = paste(site), cex = 4,
+       bty="n",xjust = 0.5)
 dev.off()
 
 ### SPECTRAL INDEX FOR ACI ###########################
