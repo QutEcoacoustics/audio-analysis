@@ -134,21 +134,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// Use this concatenation method when you want to concatenate every file within the passed data directory
+        /// Use this concatenation method when you want to concatenate EVERY index file within the passed data directories
         /// </summary>
         /// <param name="dataDir"></param>
         /// <param name="indexPropertiesConfigFileInfo"></param>
         /// <param name="opDir"></param>
         /// <param name="opFileStem"></param>
-        public static void ConcatenateIndexFiles(DirectoryInfo dataDir, 
+        public static void ConcatenateAllIndexFiles(DirectoryInfo[] dataDirs, 
                                                  FileInfo indexPropertiesConfigFileInfo, 
                                                  DirectoryInfo opDir,
                                                  string opFileStem,
                                                  double? latitude = null,
                                                  double? longitude = null)
         {
-            LDSpectrogramStitching.ConcatenateSpectralIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
-            LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+            LDSpectrogramStitching.ConcatenateSpectralIndexFiles(dataDirs[0], indexPropertiesConfigFileInfo, opDir, opFileStem);
+            LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDirs[0], indexPropertiesConfigFileInfo, opDir, opFileStem);
         }
 
 
@@ -161,7 +161,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="opDir"></param>
         /// <param name="site"></param>
         /// <param name="dto"></param>
-        public static int ConcatenateIndexFiles(DirectoryInfo[] topLevelDataDirectories,
+        public static int ConcatenateIndexFilesForOneDay(DirectoryInfo[] topLevelDataDirectories,
                                          FileInfo indexPropertiesConfigFileInfo,
                                          DirectoryInfo opDir,
                                          string site,

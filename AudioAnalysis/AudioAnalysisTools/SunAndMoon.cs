@@ -136,6 +136,7 @@ namespace AudioAnalysisTools
             int civilDayLength = civilSetMinute - civilRiseMinute + 1;
 
             string[] sunriseArray = fields[8].Split(' ');
+
             string[] sunsetArray = fields[9].Split(' ');
             sunriseArray = sunriseArray[0].Split(':');
             sunsetArray = sunsetArray[0].Split(':');
@@ -144,9 +145,11 @@ namespace AudioAnalysisTools
             int sunDayLength = sunsetMinute - sunriseMinute + 1;
 
             Graphics g = Graphics.FromImage(image);
+            Color cbgn = Color.FromArgb(0, 0, 35);
+            g.Clear(cbgn);
             g.FillRectangle(Brushes.Gray, nautiRiseMinute, 1, nautiDayLength, trackHeight - 2);
-            g.FillRectangle(Brushes.OrangeRed, civilRiseMinute, 1, civilDayLength, trackHeight - 2);
-            g.FillRectangle(Brushes.LightYellow, sunriseMinute, 1, sunDayLength, trackHeight - 2);
+            g.FillRectangle(Brushes.LightPink, civilRiseMinute, 1, civilDayLength, trackHeight - 2);
+            g.FillRectangle(Brushes.SkyBlue, sunriseMinute, 1, sunDayLength, trackHeight - 2);
 
             if (moonPhase != null)
             {

@@ -173,7 +173,7 @@ namespace AnalysisPrograms
 
             // PAPUA NEW GUINEA DATA
             // concatenating csv files of spectral and summary indices
-            if (false)
+            if (true)
             {
                 // top level directory
                 //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
@@ -196,24 +196,23 @@ namespace AnalysisPrograms
 
                 string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
                 string opFileStem = "TNC_Musiamunat_20150703_BAR18";
-                
 
-                var dataDir = new DirectoryInfo(dataPath);
+
+                DirectoryInfo[] dataDir = { new DirectoryInfo(dataPath) };
 
                 string indexPropertiesConfigPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml";
                 FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
 
                 // string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
-                // var opDir = new DirectoryInfo(outputDirectory);
-                var opDir = dataDir;
-                LDSpectrogramStitching.ConcatenateIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                var opDir = new DirectoryInfo(dataPath);
+                LDSpectrogramStitching.ConcatenateAllIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
 
             }
 
 
             // YVONNE'S DATA
             // concatenating csv files of spectral and summary indices
-            if (true)
+            if (false)
             {
                 // top level directory
                 DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
@@ -242,7 +241,7 @@ namespace AnalysisPrograms
                     var thisday = dtoStart.AddDays(d);
 
                     LoggedConsole.WriteLine("\n\n\nCONCATENATING DAY: " + thisday.ToString()) ;
-                    int status = LDSpectrogramStitching.ConcatenateIndexFiles(dataDirs, indexPropertiesConfigFileInfo, opDir, siteName, thisday, latitude, longitude);
+                    int status = LDSpectrogramStitching.ConcatenateIndexFilesForOneDay(dataDirs, indexPropertiesConfigFileInfo, opDir, siteName, thisday, latitude, longitude);
                     if (status != 0)
                     {
                         LoggedConsole.WriteLine("\nPREMATURE TERMINATION - DAY DOES NOT EXIST: " + thisday.ToString());
@@ -252,7 +251,7 @@ namespace AnalysisPrograms
 
             }
 
-            // testing directory serach and file search 
+            // testing directory search and file search 
             if(false)
             {
                 string[] topLevelDirs =
