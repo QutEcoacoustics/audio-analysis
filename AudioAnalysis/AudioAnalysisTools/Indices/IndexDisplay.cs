@@ -132,11 +132,8 @@
             //Bitmap time1Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             TimeSpan xAxisPixelDuration = indexGenerationData.IndexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
-            Bitmap time1Bmp = Image_Track.DrawTimeRelativeTrack(fullDuration, graphWidth, TrackHeight);
-
-            //indexGenerationData.RecordingStartDate.
-            //Bitmap time2Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
-            Bitmap timeBmp2 = time1Bmp;
+            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, graphWidth, TrackHeight);
+            Bitmap timeBmp2 = timeBmp1;
             Bitmap suntrack = null;
             DateTimeOffset? dateTimeOffset = indexGenerationData.RecordingStartDate;
             if (dateTimeOffset.HasValue)
@@ -146,12 +143,10 @@
                 suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, siteDescription);
             }
 
-
-
             //draw the composite bitmap
             var imageList = new List<Image>();
             imageList.Add(titleBmp);
-            imageList.Add(time1Bmp);
+            imageList.Add(timeBmp1);
             for (int i = 0; i < listOfBitmaps.Count; i++)
             {
                 imageList.Add(listOfBitmaps[i]);
@@ -161,6 +156,8 @@
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
+
+
 
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
