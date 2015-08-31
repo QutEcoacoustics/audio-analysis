@@ -477,7 +477,25 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
             return spectrogramMatrices;
         }
 
-
+        /// <summary>
+        /// returns dictionary of spectral indices.
+        /// Assumes both arrays of same length and keys correspond to file name. Just too lazy to do it better!
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public static Dictionary<string, double[,]> ReadSummaryIndexFiles(FileInfo[] files, string[] keys)
+        {
+            int count = files.Length;
+            var dict = new Dictionary<string, double[,]>();
+            for (int c = 0; c < count; c++)
+            {
+                int freqBinCount;
+                double[,] matrix = ReadSpectrogram(files[c], out freqBinCount);
+                dict.Add(keys[c], matrix);
+            }
+            return dict;
+        }
 
         public static Dictionary<string, double[,]> ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
         {
