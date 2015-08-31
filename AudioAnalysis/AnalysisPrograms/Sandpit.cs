@@ -173,7 +173,7 @@ namespace AnalysisPrograms
 
             // PAPUA NEW GUINEA DATA
             // concatenating csv files of spectral and summary indices
-            if (true)
+            if (false)
             {
                 // top level directory
                 //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
@@ -251,8 +251,43 @@ namespace AnalysisPrograms
 
             }
 
+
+            // testing TERNARY PLOTS using spectral indices
+            if (true)
+            {
+                string[] keys = { "ACI", "ENT", "EVN" };
+                //string[] keys = { "BGN", "POW", "EVN"};
+
+                FileInfo[] indexFiles = { new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[0]+".csv"),
+                                          new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[1]+".csv"),
+                                          new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622__"+keys[2]+".csv")
+                };
+                FileInfo opImage = new FileInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP\20150622\GympieNP_20150622_TernaryPlot.png");
+
+                var matrixDictionary = IndexMatrices.ReadSummaryIndexFiles(indexFiles, keys);
+
+                string indexPropertiesConfigPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults" + @"\IndexPropertiesConfig.yml";
+                FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
+                Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo);
+                dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
+
+                foreach (string key in keys)
+                {
+                    IndexProperties indexProperties = dictIP[key];
+                    double min = indexProperties.NormMin;
+                    double max = indexProperties.NormMax;
+                    matrixDictionary[key] = MatrixTools.NormaliseInZeroOne(matrixDictionary[key], min, max);
+                    //matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter); // to de-demphasize the background small values
+                }
+                Image image = TernaryPlots.DrawTernaryPlot(matrixDictionary, keys);
+                image.Save(opImage.FullName);
+            }
+
+
+
+
             // testing directory search and file search 
-            if(false)
+            if (false)
             {
                 string[] topLevelDirs =
                 {

@@ -2203,6 +2203,15 @@ namespace TowseyLibrary
             return grayScale;
         }
 
+        public static Color[] GreenScale()
+        {
+            int max = 256;
+            Color[] greenScale = new Color[256];
+            for (int c = 0; c < max; c++)
+                greenScale[c] = Color.FromArgb(0, c, 0);
+            return greenScale;
+        }
+
         /// <summary>
         /// Normalises the matrix between zero and one. 
         /// Then draws the reversed matrix and saves image to passed path.
@@ -2319,6 +2328,54 @@ namespace TowseyLibrary
             return bmp;
         }
 
+        public static Image DrawMatrixWithoutNormalisationGreenScale(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+
+            Color[] grayScale = GreenScale();
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int greyId = (int)Math.Floor(matrix[r, c] * 255);
+
+                    if (greyId < 0) { greyId = 0; }
+                    else
+                    { if (greyId > 255) greyId = 255; }
+
+                    bmp.SetPixel(c, r, grayScale[greyId]);
+                }//end all columns
+            }//end all rows
+            return bmp;
+        }
+
+        public static Image DrawRGBMatrix(double[,] matrixR, double[,] matrixG, double[,] matrixB)
+        {
+            int rows = matrixR.GetLength(0); //number of rows
+            int cols = matrixR.GetLength(1); //number
+
+            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int R = (int)Math.Floor(matrixR[r, c] * 255);
+                    if (R < 0) { R = 0; } else { if (R > 255) R = 255; }
+                    int G = (int)Math.Floor(matrixG[r, c] * 255);
+                    if (G < 0) { G = 0; } else { if (G > 255) G = 255; }
+                    int B = (int)Math.Floor(matrixB[r, c] * 255);
+                    if (B < 0) { B = 0; } else { if (B > 255) B = 255; }
+
+                    bmp.SetPixel(c, r, Color.FromArgb(R, G, B));
+                }//end all columns
+            }//end all rows
+            return bmp;
+        }
 
         public static Image DrawXandYaxes(Image image, int scaleWidth, double xTicInterval, int xOffset, double yTicInterval, int yOffset)
         {
