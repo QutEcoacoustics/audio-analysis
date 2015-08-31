@@ -13,11 +13,10 @@
 #  9. Segmenting_image.R
 # 10. 
 
-# 
-setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
 # The cluster centers have come from kmeans Clustering
-centers <- read.csv("Cluster_centers 22-28 June 2015_5,7,9,10,11,12,13,14,15,17Gympie NP1 .csv", header = T)
-centers <- centers[,2:11] # this removes the leading column of numerals
+centers <- read.csv("Cluster_centers 22-28 June 2015_5,7,9,11,12,13,14,17,20Gympie NP1 .csv", header = T)
+centers <- centers[,2:10] # this removes the leading column of numerals
 
 #centers <- read.csv("Cluster_centers 22-28 June 2015_5,9,11,13,14,15,17Gympie NP1 .csv", header = T)
 #centers <- centers[,2:8] # this removes the leading column of numerals
@@ -28,41 +27,41 @@ site <- "GympieNP 22 June 2015"
 ####################################
 as.matrix(dist(centers))
 write.table (as.matrix(dist(centers)), 
-             file = paste("Distance_matrix_5,7,9,10,11,12,13,14,15,17",
+             file = paste("Distance_matrix_5,7,9,11,12,13,14,17,20",
              site, ".csv", sep = ""), sep = ",")
-write.table (as.matrix(dist(centers)), 
-             file = paste("Distance_matrix_5,8,10,13,14,15,17",
-             site, ".csv", sep = ""), sep = ",")
-write.table (as.matrix(dist(centers)), 
-             file = paste("Distance_matrix_5,9,11,13,14,15,17",
-             site, ".csv", sep = ""), sep = ",")
+#write.table (as.matrix(dist(centers)), 
+#             file = paste("Distance_matrix_5,8,10,13,14,15,17",
+#             site, ".csv", sep = ""), sep = ",")
+#write.table (as.matrix(dist(centers)), 
+#             file = paste("Distance_matrix_5,9,11,13,14,15,17",
+#             site, ".csv", sep = ""), sep = ",")
 
 # Classical multidimensional scaling of a data matrix. 
 # Also known as principal coordinates analysis (Gower, 1966).
 
-distances <- read.csv(
-  "C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\Distance_matrix_5,7,9,10,11,12,13,14,15,17GympieNP 22 June 2015.csv", header =
-T)
+distances <- read.csv("Distance_matrix_5,7,9,11,12,13,14,17,20GympieNP 22 June 2015.csv", header =T)
 #distances <- read.csv(
 #  "Distance_matrix_5,9,11,13,14,15,17GympieNP 22 June 2015.csv", header =
 #    T)
 #distances <- read.csv("Distance_matrix_5,8,10,13,14,15,17GympieNP 22 June 2015.csv", header=T)
 
 # Two dimensional analysis
-dist <- cmdscale(distances[,1:30], k=2)
+dist <- cmdscale(distances[,1:35], k=2)
 x <- dist[, 1]
 y <- -dist[, 2]
-plot(x, y, type = "n", axes = T, ylim=c(-0.3,0.4))
+plot(x, y, type = "l", axes = T, asp=1)
 text(x,y, rownames(distances), cex = 0.6)
 abline(h = seq(-0.6,0.6,0.1), col = "lightgray", lty = 3)
 
 # One dimensional analysis
 #distances <- read.csv("Distance_matrix_GympieNP 22 June 2015.csv", header =                        T)
                         
-dist <- cmdscale(distances[,1:30], k=1)
+dist <- cmdscale(distances[,1:35], k=1)
 y <- dist[, 1]
 z <- sort(y)
+
 order <- names(z)
+
 x <- c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
 y <- as.numeric(b[,2])
 plot(y, x, type = 'n')

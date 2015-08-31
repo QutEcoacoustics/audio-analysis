@@ -15,58 +15,45 @@
 #  8. Minimising_error.R
 #  9. Segmenting_image.R
 
-#setwd("C:\\Work\\CSV files\\Data 15 to 20 March 2015 Woondum - Wet Eucalypt\\")
-#setwd("C:\\Work\\CSV files\\Data 22 to 27  March 2015 Woondum - Eastern Eucalypt\\")
-#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\")
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
-#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_21\\")
-#setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_28\\")
-#setwd("C:\\Work\\CSV files\\Woondum3\\2015_06_28\\")
-
-#indices <- read.csv("Towsey_summary_indices 20150315_133427 to 20150320_153429 .csv", header=T)
-#indices <- read.csv("Towsey_Summary_Indices 20150322_113743 to 20150327_103745 .csv", header=T)
-#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622_000000to20150628_064559.csv", header = T)
 indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000.csv")
-#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150622_000000to20150628_133139.csv", header = T)
-#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150628_105043to20150705_064555.csv",header = T)
-#indices <- read.csv("Towsey_Summary_Indices_Woondum3 20150628_140435to20150705_064558.csv",header = T)
 
 site <- indices$site[1]
 startDate <- indices$rec.date[1]
 endDate <- indices$rec.date[length(indices$rec.date)]
-
 ################ Normalise data ####################
+# normalize values using minimum and maximum values
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
 }
-
-# Pre-processing transformation of Temporal Entropy
+# Pre-processing of Temporal Entropy
 # to correct the long tail 
 indices[,14] <- sqrt(indices[,14])
 
 normIndices <- indices
-
 # normalise variable columns
-normIndices[,4]  <- normalise(indices[,4], -50,-10)    # AverageSignalAmplitude
-normIndices[,5]  <- normalise(indices[,5], -50,-10)    # BackgroundNoise
-normIndices[,6]  <- normalise(indices[,6],  0, 50)     # Snr
-normIndices[,7]  <- normalise(indices[,7],  3, 10)     # AvSnrofActive Frames
-normIndices[,8]  <- normalise(indices[,8],  0, 1)      # Activity 
-normIndices[,9]  <- normalise(indices[,9],  0, 2)      # EventsPerSecond
-normIndices[,10] <- normalise(indices[,10], 0, 0.5)    # HighFreqCover
-normIndices[,11] <- normalise(indices[,11], 0, 0.5)    # MidFreqCover
-normIndices[,12] <- normalise(indices[,12], 0, 0.5)    # LowFreqCover
-normIndices[,13] <- normalise(indices[,13], 0.4,0.7)   # AcousticComplexity
-normIndices[,14] <- normalise(indices[,14], 0, 0.3)    # TemporalEntropy
-normIndices[,15] <- normalise(indices[,15], 0, 0.7)    # EntropyOfAverageSpectrum
-normIndices[,16] <- normalise(indices[,16], 0, 1)      # EntropyOfVarianceSpectrum
-normIndices[,17] <- normalise(indices[,17], 0, 1)      # EntropyOfPeaksSpectrum
-normIndices[,18] <- normalise(indices[,18], 0, 0.7)    # EntropyOfCoefOfVarSpectrum
-normIndices[,19] <- normalise(indices[,19], -0.8, 1)   # NDSI
-normIndices[,20] <- normalise(indices[,20], 0, 15)     # SptDensity
+normIndices[,2]  <- normalise(indices[,2],  0,  2)    # HighAmplitudeIndex (0,2)
+normIndices[,3]  <- normalise(indices[,3],  0,  1)    # ClippingIndex (0,1)
+normIndices[,4]  <- normalise(indices[,4], -44.34849276,-27.1750784)   # AverageSignalAmplitude (-50,-10)
+normIndices[,5]  <- normalise(indices[,5], -45.06046874,-29.52071375)  # BackgroundNoise (-50,-10)
+normIndices[,6]  <- normalise(indices[,6],  4.281792124, 25.57295061)  # Snr (0,50)
+normIndices[,7]  <- normalise(indices[,7],  3.407526438, 7.653004384)  # AvSnrofActive Frames (3,10)
+normIndices[,8]  <- normalise(indices[,8],  0.006581494, 0.453348819)  # Activity (0,1)
+normIndices[,9]  <- normalise(indices[,9],  0, 2.691666667)     # EventsPerSecond (0,2)
+normIndices[,10] <- normalise(indices[,10], 0.015519804, 0.167782223)  # HighFreqCover (0,0.5)
+normIndices[,11] <- normalise(indices[,11], 0.013522414, 0.197555718)  # MidFreqCover (0,0.5)
+normIndices[,12] <- normalise(indices[,12], 0.01984127,  0.259381856)  # LowFreqCover (0,0.5)
+normIndices[,13] <- normalise(indices[,13], 0.410954108, 0.501671845)  # AcousticComplexity (0.4,0.7)
+normIndices[,14] <- normalise(indices[,14], 0.004326753, sqrt(0.155612175))  # TemporalEntropy (0,sqrt(0.3))
+normIndices[,15] <- normalise(indices[,15], 0.02130969, 0.769678735)   # EntropyOfAverageSpectrum (0,0.7)
+normIndices[,16] <- normalise(indices[,16], 0.098730903, 0.82144857)   # EntropyOfVarianceSpectrum (0,1)
+normIndices[,17] <- normalise(indices[,17], 0.119538801, 0.998670805)  # EntropyOfPeaksSpectrum (0,1)
+normIndices[,18] <- normalise(indices[,18], 0.004470594, 0.530948096)   # EntropyOfCoVSpectrum (0,0.7)
+normIndices[,19] <- normalise(indices[,19], 0.043940755, 0.931257154)  # NDSI (-0.8,1)
+normIndices[,20] <- normalise(indices[,20], 1.852187379, 11.79845141)    # SptDensity (0,15)
 
 # adjust values greater than 1 or less than 0
-for (j in 4:20) {
+for (j in 4:20){
   for (i in 1:length(normIndices[,j])) {
     if (normIndices[i,j] > 1) {
       normIndices[i,j] = 1
@@ -138,7 +125,7 @@ colourBlock <- brick(colourName, package="raster")
 plotRGB(colourBlock)
 colourBlock <- as.data.frame(colourBlock)
 colours <- NULL
-for(i in 1:30) {
+for(i in 1:35) {
   col <- rgb(colourBlock$colourBlock.1[i],
              colourBlock$colourBlock.2[i],
              colourBlock$colourBlock.3[i],
@@ -146,35 +133,15 @@ for(i in 1:30) {
   colours <- c(colours, col)
 }
 
-png(
-  "Cluster 22-28 June 2015 5,7,9,10,11,13,14,15,17,18.png",
-  width     = 400,
-  height    = 85,
-  units     = "mm",
-  res       = 1200,
-  pointsize = 4
-)
-#***#***#***#***#***#***#***#
-#indicesRef <- c(5,9,11,13,14,15,17)
-#set.seed(1234)
-#***#***#***#***#***#
-#***#***#***#***#***#***#***#
-#indicesRef <- c(5,8,10,13,14,15,17)
-#set.seed(1234)
-#***#***#***#***#***#
-#indicesRef <- c(5,6,8,11,12,15,17,18,19,20)
-#indicesRef <- c(5,9,11,14,15,17,18,20)
-indicesRef <- c(5,7,9,10,11,13,14,15,17,18) 
+indicesRef <- c(5,7,9,11,12,13,14,17,20)
 #0.8878094 for k = 30, Gympie NP 22 to 28 June 2015
-set.seed(1092)
-#set.seed(1234)
+set.seed(474)
 length1 <- 0
 length2 <- length(normIndices$X)
 
 length <- length(indices$rec.date)
 dataFrame <- normIndices[length1:length2, indicesRef]  # best eleven variables
-kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 20,
-                    nstart = 3)
+kmeansObj <- kmeans(dataFrame, centers = 35, iter.max = 100)
 kmeansObj
 normIndices <- cbind(normIndices, unname(kmeansObj$cluster))
 #plot(dataFrame, col=kmeansObj$cluster)
@@ -187,14 +154,24 @@ normIndicesVector <- cbind(normIndices[length1:length2,],vector)
 vector <- kmeansObj$cluster[length1:length2]
 normIndicesVector <- cbind(normIndices[length1:length2,],vector)
 
-# The clusterOrder comes from the distance matrix
-clusterOrder <- c("29","10","21","27","2","3","19","28","11",
-                  "5","17","26","12","16","15","13","6","30",
-                  "25","14","20","7","4","8","23","1","18","22",
-                  "24","9") # for 5,7,9,10,11,12,13,14,15,17 with seed 
+##### Find cluster order #########################
+centers <- kmeansObj$centers
 
-clusterOrder <- c(29,10,21,27,2,3,19,28,11,5,17,26,12,16,15,13,6,30,
-                  25,14,20,7,4,8,23,1,18,22,24,9) # for 5,7,9,10,11,12,13,14,15,17 with seed 
+write.table (as.matrix(dist(centers)), 
+             file = paste("Distance_matrix_5,7,9,11,12,13,14,17,20",
+                          site, ".csv", sep = ""), sep = ",")
+distances <- read.csv(
+  "C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\Distance_matrix_5,7,9,11,12,13,14,17,20Gympie NP1 .csv", header =T)
+
+# One dimensional analysis
+#distances <- read.csv("Distance_matrix_GympieNP 22 June 2015.csv", header =                        T)
+
+dist <- cmdscale(distances[,1:35], k=1)
+y <- dist[, 1]
+z <- sort(y)
+
+clusterOrder <- names(z)
+
 colourOrder <- cbind(clusterOrder, colours)
 colourOrder <- as.data.frame(colourOrder)
 colourOrder$clusterOrder <- as.numeric(as.character(colourOrder$clusterOrder))
@@ -212,6 +189,15 @@ sort.Filename <- function(filenames) {
   return(rightOrder)
 }
 ###############################################
+png(
+  "Cluster 22-28 June 2015 5,7,9,11,12,13,14,17,20.png",
+  width     = 400,
+  height    = 85,
+  units     = "mm",
+  res       = 1200,
+  pointsize = 4
+)
+
 plot(normIndicesVector$vector,
      #col = normIndicesVector$vector, 
      col = colours[normIndicesVector$vector], 
@@ -236,34 +222,7 @@ abline(v = 4320-offset, lwd=1.5, lty = 3)
 abline(v = 5760-offset, lwd=1.5, lty = 3)
 abline(v = 7200-offset, lwd=1.5, lty = 3)
 abline(v = 8640-offset, lwd=1.5, lty = 3)
-#abline(v = 360-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 420-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 480-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 540-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 600-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 660-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 720-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 780-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 840-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 900-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 960-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1020-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1080-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1140-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1200-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1260-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1320-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1380-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 1440-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 2040-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 2100-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 2160-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 3600-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 5040-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 6480-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 7920-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 9360-offset, lwd=1.5, lty = 3, col = "grey")
-#abline(v = 5040-offset, lwd=1.5, lty = 3, col = "grey")
+dev.off()
 ########################
 # Text labels
 textLabels <- read.csv("Textfiles_GympieNP1_.csv", 
@@ -317,202 +276,27 @@ dev.off()
 
 # Histogram
 par(mfrow = c(3,2), mar = c(3,3,2,1))
-hist(normIndicesVector$vector[1:1440],    breaks = 40, ylim= c(0,410), xlim = c(0,31))
-hist(normIndicesVector$vector[1441:2880], breaks = 40, ylim= c(0,410), xlim = c(0,31))
-hist(normIndicesVector$vector[2881:4320], breaks = 30, ylim= c(0,410), xlim = c(0,31))
-hist(normIndicesVector$vector[4321:5760], breaks = 30, ylim= c(0,410), xlim = c(0,31))
-hist(normIndicesVector$vector[5761:7200], breaks = 30, ylim= c(0,410), xlim = c(0,31))
-hist(normIndicesVector$vector[7201:8640], breaks = 30, ylim= c(0,410), xlim = c(0,31))
+hist(normIndicesVector$vector[1:1440],  breaks = 36, ylim= c(0,410), xlim = c(1,36))
+hist(normIndicesVector$vector[1441:2880], breaks = 40, ylim= c(0,410), xlim = c(1,36))
+hist(normIndicesVector$vector[2881:4320], breaks = 30, ylim= c(0,410), xlim = c(1,36))
+hist(normIndicesVector$vector[4321:5760], breaks = 30, ylim= c(0,410), xlim = c(1,36))
+hist(normIndicesVector$vector[5761:7200], breaks = 30, ylim= c(0,410), xlim = c(1,36))
+hist(normIndicesVector$vector[7201:8640], breaks = 30, ylim= c(0,410), xlim = c(1,36))
 
-#dataFrame <- normIndices[,c(5,7,9,10,11,12,13,14,15,17)]
-#kmeansObj <- kmeans(dataFrame, centers=20, iter.max = 30)
-#kmeansObj # 87.2% different for different sets of data
 
-plot(normIndices[c(9,4)],col=kmeansObj$cluster)
-plot(normIndices[c(9,5)],col=kmeansObj$cluster)
-plot(normIndices[c(9,6)],col=kmeansObj$cluster)
-plot(normIndices[c(9,7)],col=kmeansObj$cluster)
-plot(normIndices[c(9,8)],col=kmeansObj$cluster)
-plot(normIndices[c(9,10)],col=kmeansObj$cluster)
-plot(normIndices[c(9,11)],col=kmeansObj$cluster)
-plot(normIndices[c(9,12)],col=kmeansObj$cluster)
-plot(normIndices[c(9,13)],col=kmeansObj$cluster)
-plot(normIndices[c(9,14)],col=kmeansObj$cluster)
-plot(normIndices[c(9,15)],col=kmeansObj$cluster)
-plot(normIndices[c(9,16)],col=kmeansObj$cluster)
-plot(normIndices[c(9,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(9,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(10,4)],col=kmeansObj$cluster)
-plot(normIndices[c(10,5)],col=kmeansObj$cluster)
-plot(normIndices[c(10,6)],col=kmeansObj$cluster)
-plot(normIndices[c(10,7)],col=kmeansObj$cluster)
-plot(normIndices[c(10,8)],col=kmeansObj$cluster)
-plot(normIndices[c(10,9)],col=kmeansObj$cluster)
-plot(normIndices[c(10,10)],col=kmeansObj$cluster)
-plot(normIndices[c(10,11)],col=kmeansObj$cluster)
-plot(normIndices[c(10,12)],col=kmeansObj$cluster)
-plot(normIndices[c(10,13)],col=kmeansObj$cluster)
-plot(normIndices[c(10,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(10,15)],col=kmeansObj$cluster)
-plot(normIndices[c(10,16)],col=kmeansObj$cluster)
-plot(normIndices[c(10,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(10,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(11,4)],col=kmeansObj$cluster)
-plot(normIndices[c(11,5)],col=kmeansObj$cluster)
-plot(normIndices[c(11,6)],col=kmeansObj$cluster)
-plot(normIndices[c(11,7)],col=kmeansObj$cluster)
-plot(normIndices[c(11,8)],col=kmeansObj$cluster)
-plot(normIndices[c(11,9)],col=kmeansObj$cluster)
-plot(normIndices[c(11,10)],col=kmeansObj$cluster)
-plot(normIndices[c(11,11)],col=kmeansObj$cluster) # Mid Freq cover
-plot(normIndices[c(11,12)],col=kmeansObj$cluster)
-plot(normIndices[c(11,13)],col=kmeansObj$cluster)
-plot(normIndices[c(11,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(11,15)],col=kmeansObj$cluster)
-plot(normIndices[c(11,16)],col=kmeansObj$cluster)
-plot(normIndices[c(11,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(11,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(12,4)],col=kmeansObj$cluster)
-plot(normIndices[c(12,5)],col=kmeansObj$cluster)
-plot(normIndices[c(12,6)],col=kmeansObj$cluster)
-plot(normIndices[c(12,7)],col=kmeansObj$cluster)
-plot(normIndices[c(12,8)],col=kmeansObj$cluster)
-plot(normIndices[c(12,9)],col=kmeansObj$cluster)
-plot(normIndices[c(12,10)],col=kmeansObj$cluster)
-plot(normIndices[c(12,11)],col=kmeansObj$cluster)
-plot(normIndices[c(12,12)],col=kmeansObj$cluster)
-plot(normIndices[c(12,13)],col=kmeansObj$cluster)
-plot(normIndices[c(12,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(12,15)],col=kmeansObj$cluster)
-plot(normIndices[c(12,16)],col=kmeansObj$cluster)
-plot(normIndices[c(12,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(12,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(13,4)],col=kmeansObj$cluster)
-plot(normIndices[c(13,5)],col=kmeansObj$cluster)
-plot(normIndices[c(13,6)],col=kmeansObj$cluster)
-plot(normIndices[c(13,7)],col=kmeansObj$cluster)
-plot(normIndices[c(13,8)],col=kmeansObj$cluster)
-plot(normIndices[c(13,9)],col=kmeansObj$cluster)
-plot(normIndices[c(13,10)],col=kmeansObj$cluster)
-plot(normIndices[c(13,11)],col=kmeansObj$cluster) # MidFreqCover
-plot(normIndices[c(13,12)],col=kmeansObj$cluster)
-plot(normIndices[c(13,13)],col=kmeansObj$cluster)# Acoustic Complexity
-plot(normIndices[c(13,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(13,15)],col=kmeansObj$cluster)# AverEntropySpec
-plot(normIndices[c(13,16)],col=kmeansObj$cluster)# VarianceEntropy
-plot(normIndices[c(13,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(13,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(14,4)],col=kmeansObj$cluster)
-plot(normIndices[c(14,5)],col=kmeansObj$cluster)
-plot(normIndices[c(14,6)],col=kmeansObj$cluster)
-plot(normIndices[c(14,7)],col=kmeansObj$cluster)
-plot(normIndices[c(14,8)],col=kmeansObj$cluster)
-plot(normIndices[c(14,9)],col=kmeansObj$cluster)
-plot(normIndices[c(14,10)],col=kmeansObj$cluster)
-plot(normIndices[c(14,11)],col=kmeansObj$cluster)
-plot(normIndices[c(14,12)],col=kmeansObj$cluster)
-plot(normIndices[c(14,13)],col=kmeansObj$cluster)
-plot(normIndices[c(14,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(14,15)],col=kmeansObj$cluster)
-plot(normIndices[c(14,16)],col=kmeansObj$cluster)
-plot(normIndices[c(14,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(14,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(15,4)],col=kmeansObj$cluster)
-plot(normIndices[c(15,5)],col=kmeansObj$cluster)
-plot(normIndices[c(15,6)],col=kmeansObj$cluster)
-plot(normIndices[c(15,7)],col=kmeansObj$cluster)
-plot(normIndices[c(15,8)],col=kmeansObj$cluster)
-plot(normIndices[c(15,9)],col=kmeansObj$cluster)
-plot(normIndices[c(15,10)],col=kmeansObj$cluster)
-plot(normIndices[c(15,11)],col=kmeansObj$cluster)
-plot(normIndices[c(15,12)],col=kmeansObj$cluster)
-plot(normIndices[c(15,13)],col=kmeansObj$cluster)
-plot(normIndices[c(15,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(15,15)],col=kmeansObj$cluster) # AvgEntropySpectrum
-plot(normIndices[c(15,16)],col=kmeansObj$cluster) # Variance
-plot(normIndices[c(15,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(15,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(16,4)],col=kmeansObj$cluster)
-plot(normIndices[c(16,5)],col=kmeansObj$cluster)
-plot(normIndices[c(16,6)],col=kmeansObj$cluster)
-plot(normIndices[c(16,7)],col=kmeansObj$cluster)
-plot(normIndices[c(16,8)],col=kmeansObj$cluster)
-plot(normIndices[c(16,9)],col=kmeansObj$cluster)
-plot(normIndices[c(16,10)],col=kmeansObj$cluster)
-plot(normIndices[c(16,11)],col=kmeansObj$cluster)
-plot(normIndices[c(16,12)],col=kmeansObj$cluster)
-plot(normIndices[c(16,13)],col=kmeansObj$cluster)
-plot(normIndices[c(16,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(16,15)],col=kmeansObj$cluster)
-plot(normIndices[c(16,16)],col=kmeansObj$cluster) #VarianceEntropy
-plot(normIndices[c(16,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(16,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(17,4)],col=kmeansObj$cluster)
-plot(normIndices[c(17,5)],col=kmeansObj$cluster)
-plot(normIndices[c(17,6)],col=kmeansObj$cluster)
-plot(normIndices[c(17,7)],col=kmeansObj$cluster)
-plot(normIndices[c(17,8)],col=kmeansObj$cluster)
-plot(normIndices[c(17,9)],col=kmeansObj$cluster)
-plot(normIndices[c(17,10)],col=kmeansObj$cluster)
-plot(normIndices[c(17,11)],col=kmeansObj$cluster)
-plot(normIndices[c(17,12)],col=kmeansObj$cluster)
-plot(normIndices[c(17,13)],col=kmeansObj$cluster)
-plot(normIndices[c(17,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(17,15)],col=kmeansObj$cluster)
-plot(normIndices[c(17,16)],col=kmeansObj$cluster)
-plot(normIndices[c(17,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(17,18)],col=kmeansObj$cluster)
-
-plot(normIndices[c(18,4)],col=kmeansObj$cluster)
-plot(normIndices[c(18,5)],col=kmeansObj$cluster)
-plot(normIndices[c(18,6)],col=kmeansObj$cluster)
-plot(normIndices[c(18,7)],col=kmeansObj$cluster)
-plot(normIndices[c(18,8)],col=kmeansObj$cluster)
-plot(normIndices[c(18,9)],col=kmeansObj$cluster)
-plot(normIndices[c(18,10)],col=kmeansObj$cluster)
-plot(normIndices[c(18,11)],col=kmeansObj$cluster)
-plot(normIndices[c(18,12)],col=kmeansObj$cluster)
-plot(normIndices[c(18,13)],col=kmeansObj$cluster)
-plot(normIndices[c(18,14)],col=kmeansObj$cluster)# Temporal Entropy
-plot(normIndices[c(18,15)],col=kmeansObj$cluster)
-plot(normIndices[c(18,16)],col=kmeansObj$cluster)
-plot(normIndices[c(18,17)],col=kmeansObj$cluster) # Entropy Peaks
-plot(normIndices[c(18,18)],col=kmeansObj$cluster)
 
 ############# Saving files ####################
-png(file= "Clusterplot 5_7_9_10_11_13_14_15_17_18",
-  width     = 320,
-  height    = 85,
-  units     = "mm",
-  res       = 800,
-  pointsize = 4
-)
-
-plot(normIndicesVector$vector,col=normIndicesVector$vector)
-dev.off()
-
 write.csv(as.matrix(kmeansObj$centers), 
-          file = paste("Cluster_centers 22-28 June 2015_5,7,9,10,11,12,13,14,15,17,18", site, 
+          file = paste("Cluster_centers 22-28 June 2015_5,7,9,11,12,13,14,17,20", site, 
                        ".csv", sep = ""))
 
 write.csv(unname(kmeansObj$cluster),
-          file = paste("Cluster_list 22-28 June 2015_5,7,9,10,11,12,13,14,15,17,18", 
-          site, ".csv", sep = ""))
-
+          file = paste("Cluster_list 22-28 June 2015_5,7,9,11,12,13,14,17,20", 
+          site, ".csv", sep = ""), row.names=FALSE)
+cluster.list <- read.csv(file = paste("Cluster_list 22-28 June 2015_5,7,9,11,12,13,14,17,20", 
+                                      site, ".csv", sep = ""), header = T,
+                         col.names = "cluster.list")
 ###############################################
-
-write.csv(as.matrix(kmeansObj$centers), 
-             file = paste("Cluster_centers 22-28 June 2015_5,9,11,13,14,15,17", site, 
-              ".csv", sep = ""))
-
 library(MASS)
 write.matrix(normIndices, file=paste("normIndicesClusters 5,9,11,13,14,15,17", 
               site, "22-28 June 2015 test .csv", sep=","), sep=",")
@@ -522,3 +306,7 @@ plot(normIndicesVector$vector, col=normIndicesVector$vector)
 vec<- read.csv(paste("normIndicesClusters ", site, "22-28 June 2015.csv",
                      sep=","), sep=",", header=T)
 table(vec$vector)
+
+indices <- cbind(indices, cluster.list)
+write.csv(indices, row.names=FALSE,
+          file = paste("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000a.csv"))
