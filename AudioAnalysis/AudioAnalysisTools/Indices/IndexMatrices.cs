@@ -343,11 +343,11 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, double[,]> AddDerivedIndices(Dictionary<string, double[,]> spectrogramMatrices)
         {
             string key = "POW";
-            if (spectrogramMatrices.ContainsKey(key)) 
+            string newKey = "Sqrt" + key;
+            if ((spectrogramMatrices.ContainsKey(key)) && (! spectrogramMatrices.ContainsKey(newKey)))
             // add another matrix with square root and log transform  of values for lop-sided distributions
             {
                 var m = spectrogramMatrices[key];
-                string newKey = "Sqrt" + key;
                 spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
                 newKey = "Log" + key;
                 spectrogramMatrices.Add(newKey, MatrixTools.LogTransform(m));
@@ -355,12 +355,17 @@ namespace AudioAnalysisTools.Indices
 
             // add another matrix with square root and log transform of values for lop-sided distributions
             key = "ENT";
-            if (spectrogramMatrices.ContainsKey(key))
+            newKey = "Sqrt" + key;
+            if ((spectrogramMatrices.ContainsKey(key)) && (! spectrogramMatrices.ContainsKey(newKey)))
             {
                 var m = spectrogramMatrices[key];
-                string newKey = "Sqrt" + key;
                 spectrogramMatrices.Add(newKey, MatrixTools.SquareRootOfValues(m));
-                newKey = "Log" + key;
+            }
+
+            newKey = "Log" + key;
+            if ((spectrogramMatrices.ContainsKey(key)) && (! spectrogramMatrices.ContainsKey(newKey)))
+            {
+                var m = spectrogramMatrices[key];
                 spectrogramMatrices.Add(newKey, MatrixTools.LogTransform(m));
             }
             return spectrogramMatrices;

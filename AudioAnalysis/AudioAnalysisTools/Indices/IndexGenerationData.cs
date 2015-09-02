@@ -9,6 +9,8 @@ namespace AudioAnalysisTools.Indices
     using System;
 
     using AudioAnalysisTools.LongDurationSpectrograms;
+    using System.IO;
+    using Acoustics.Shared;
 
     public class IndexGenerationData
     {
@@ -85,5 +87,37 @@ namespace AudioAnalysisTools.Indices
         /// the backgroundnoise will be calculated from N seconds before the current subsegment to N seconds after => N secs + subseg duration + N secs
         /// </summary>
         public TimeSpan BGNoiseNeighbourhood { get; set; }
+
+
+
+        // ********************************************************************************************************************
+        // STATIC METHODS
+
+        /// <summary>
+        /// Returns the index generation data from file in passed directory.
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static IndexGenerationData GetIndexGenerationData(DirectoryInfo directory)
+        {
+            string pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
+            //FileInfo igdFile = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern).Single();
+            FileInfo[] igdFiles = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern);
+            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFiles[0]);
+            return indexGenerationData;
+        }
+
+        public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName)
+        {
+            var indexGenerationData = IndexGenerationData.GetIndexGenerationData(directory);
+
+            // Get the start time from the file name.
+            DateTimeOffset startTime = IndexMatrices.GetFileStartTime(fileName);
+            indexGenerationData.RecordingStartDate = startTime;
+            return indexGenerationData;
+        }
+
+
     }
 }
