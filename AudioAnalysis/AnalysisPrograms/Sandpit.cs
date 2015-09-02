@@ -210,48 +210,6 @@ namespace AnalysisPrograms
             }
 
 
-            // YVONNE'S DATA
-            // concatenating csv files of spectral and summary indices
-            if (false)
-            {
-                // top level directory
-                DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
-                                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") };
-
-                string opPath   = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
-
-                // The recording siteName and its location. Site name is used for naming files
-                // The location is used only to draw the sunrise/sunset track.
-                string siteName = "GympieNP";
-                double? latitude = null;
-                double? longitude = null;
-                //string siteName = "Woondum3";
-                var dtoStart = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
-                string indexPropertiesConfigPath = opPath + @"\IndexPropertiesConfig.yml";
-
-
-                FileInfo indexPropertiesConfigFileInfo = new FileInfo(indexPropertiesConfigPath);
-
-                DirectoryInfo opDir = new DirectoryInfo(opPath);
-
-                if (!opDir.Exists) opDir.Create();
-
-                for (int d = 0; d < 5; d++)
-                {
-                    var thisday = dtoStart.AddDays(d);
-
-                    LoggedConsole.WriteLine("\n\n\nCONCATENATING DAY: " + thisday.ToString()) ;
-                    int status = LDSpectrogramStitching.ConcatenateIndexFilesForOneDay(dataDirs, indexPropertiesConfigFileInfo, opDir, siteName, thisday, latitude, longitude);
-                    if (status != 0)
-                    {
-                        LoggedConsole.WriteLine("\nPREMATURE TERMINATION - DAY DOES NOT EXIST: " + thisday.ToString());
-                        break;
-                    }
-                }
-
-            }
-
-
             // testing TERNARY PLOTS using spectral indices
             if (true)
             {

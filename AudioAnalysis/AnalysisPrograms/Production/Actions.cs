@@ -125,6 +125,14 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.Aed.Execute;
         }
 
+        [ArgDescription("Calls ConcatenateIndexFiles.Execute():  Concatenates multiple consecutive index.csv files.")]
+        public ConcatenateIndexFiles.Arguments concatenateIndexFilesArgs { get; set; }
+        public static Action<ConcatenateIndexFiles.Arguments> concatenateIndexFiles()
+        {
+            return AnalysisPrograms.ConcatenateIndexFiles.Execute;
+        }
+
+
         [ArgDescription("Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.")]
         public DrawLongDurationSpectrograms.Arguments ColourSpectrogramArgs { get; set; }
         public static Action<DrawLongDurationSpectrograms.Arguments> ColourSpectrogram()

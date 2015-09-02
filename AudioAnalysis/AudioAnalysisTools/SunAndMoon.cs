@@ -148,7 +148,7 @@ namespace AudioAnalysisTools
             Color cbgn = Color.FromArgb(0, 0, 35);
             g.Clear(cbgn);
             g.FillRectangle(Brushes.Gray, nautiRiseMinute, 1, nautiDayLength, trackHeight - 2);
-            g.FillRectangle(Brushes.LightPink, civilRiseMinute, 1, civilDayLength, trackHeight - 2);
+            g.FillRectangle(Brushes.LightSalmon, civilRiseMinute, 1, civilDayLength, trackHeight - 2);
             g.FillRectangle(Brushes.SkyBlue, sunriseMinute, 1, sunDayLength, trackHeight - 2);
 
             if (moonPhase != null)
