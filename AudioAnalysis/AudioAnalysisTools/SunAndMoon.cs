@@ -187,5 +187,24 @@ namespace AudioAnalysisTools
 
 
 
+
+        public static DateTimeOffset ParseString2DateTime(string dtString)
+        {
+            // assume that first eight digits constitute a date string.
+            int year = Int32.Parse(dtString.Substring(0, 4));
+            int mnth = Int32.Parse(dtString.Substring(4, 2));
+            int day = Int32.Parse(dtString.Substring(6, 2));
+            // assume skip digit and then next six digits constitute a time of day string.
+            int hour = Int32.Parse(dtString.Substring(9, 2));
+            int min = Int32.Parse(dtString.Substring(11, 2));
+            int sec = Int32.Parse(dtString.Substring(13, 2));
+
+            //?? TODO TODO TODO TODO CANNOT GET DATE TIME STIRNG TO PARSE
+            DateTimeOffset dto = new DateTimeOffset(year, mnth, day, hour, min, sec, TimeSpan.Zero);
+            //Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(dtString, out dto);
+            return dto;
+        }
+
+
     }
 }
