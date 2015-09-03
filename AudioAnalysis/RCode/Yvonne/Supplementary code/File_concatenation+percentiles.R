@@ -5,7 +5,8 @@ setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data")
 
 folder <- "C:\\Work\\CSV files\\GympieNP1_new\\"
 
-myFolders <- list.files(full.names=FALSE, pattern="2015_*", path=folder)
+myFolders <- list.files(full.names=FALSE, pattern="2015_*", 
+                        path=folder)
 myFolders
 length <- length(myFolders)
 length
@@ -22,11 +23,12 @@ for (i in 1:length) {
 site <- all.indices$site[1]
 dates <- all.indices$rec.date
 
-write.csv(all.indices,
+
+write.csv(all.indices, row.names = F,
           file=paste("Towsey_Summary_Indices_", site,
-                     sub("*.wav","\\1", myFiles[1]),
-                     "to current.csv", 
+                     dates[1],"to current.csv", 
                      sep = ""))
+
 quantiles1 <- NULL
 quantiles2 <- NULL
 minimum <- NULL
@@ -52,7 +54,7 @@ colnames(quantiles) <- c("min","2%","5%","mean","95%","98%","max","index")
 
 write.csv(quantiles, row.names = FALSE,
           file=paste("Percentiles_", site,
-                     sub("*.wav","\\1", myFiles[1]),
+                     dates[1],
                      "to current.csv", 
                      sep = ""))
 

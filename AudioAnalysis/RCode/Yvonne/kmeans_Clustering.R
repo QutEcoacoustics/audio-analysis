@@ -15,12 +15,14 @@
 #  8. Minimising_error.R
 #  9. Segmenting_image.R
 
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
-indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000.csv")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
+indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv", header = T)
 
 site <- indices$site[1]
 startDate <- indices$rec.date[1]
 endDate <- indices$rec.date[length(indices$rec.date)]
+
 ################ Normalise data ####################
 # normalize values using minimum and maximum values
 normalise <- function (x, xmin, xmax) {
@@ -39,7 +41,7 @@ normIndices[,5]  <- normalise(indices[,5], -45.06046874,-29.52071375)  # Backgro
 normIndices[,6]  <- normalise(indices[,6],  4.281792124, 25.57295061)  # Snr (0,50)
 normIndices[,7]  <- normalise(indices[,7],  3.407526438, 7.653004384)  # AvSnrofActive Frames (3,10)
 normIndices[,8]  <- normalise(indices[,8],  0.006581494, 0.453348819)  # Activity (0,1)
-normIndices[,9]  <- normalise(indices[,9],  0, 2.691666667)     # EventsPerSecond (0,2)
+normIndices[,9]  <- normalise(indices[,9],  0, 2.691666667)  # EventsPerSecond (0,2)
 normIndices[,10] <- normalise(indices[,10], 0.015519804, 0.167782223)  # HighFreqCover (0,0.5)
 normIndices[,11] <- normalise(indices[,11], 0.013522414, 0.197555718)  # MidFreqCover (0,0.5)
 normIndices[,12] <- normalise(indices[,12], 0.01984127,  0.259381856)  # LowFreqCover (0,0.5)
@@ -48,12 +50,12 @@ normIndices[,14] <- normalise(indices[,14], 0.004326753, sqrt(0.155612175))  # T
 normIndices[,15] <- normalise(indices[,15], 0.02130969, 0.769678735)   # EntropyOfAverageSpectrum (0,0.7)
 normIndices[,16] <- normalise(indices[,16], 0.098730903, 0.82144857)   # EntropyOfVarianceSpectrum (0,1)
 normIndices[,17] <- normalise(indices[,17], 0.119538801, 0.998670805)  # EntropyOfPeaksSpectrum (0,1)
-normIndices[,18] <- normalise(indices[,18], 0.004470594, 0.530948096)   # EntropyOfCoVSpectrum (0,0.7)
+normIndices[,18] <- normalise(indices[,18], 0.004470594, 0.530948096)  # EntropyOfCoVSpectrum (0,0.7)
 normIndices[,19] <- normalise(indices[,19], 0.043940755, 0.931257154)  # NDSI (-0.8,1)
-normIndices[,20] <- normalise(indices[,20], 1.852187379, 11.79845141)    # SptDensity (0,15)
+normIndices[,20] <- normalise(indices[,20], 1.852187379, 11.79845141)  # SptDensity (0,15)
 
 # adjust values greater than 1 or less than 0
-for (j in 4:20){
+for (j in 4:20) {
   for (i in 1:length(normIndices[,j])) {
     if (normIndices[i,j] > 1) {
       normIndices[i,j] = 1
@@ -86,7 +88,7 @@ for (j in 1:(length(mn$rec.time)+1)) {
 
 # adjust first and last counter by one
 counter[1] <- counter[1]-1
-counter[length(mn$rec.time)] <- counter[length(mn$rec.time)]+1
+counter[length(mn$rec.time)] <- counter[length(mn$rec.time)] + 1
 
 ######## Create day identification for different colours in plot #############
 number.of.days <- length(unique(indices$rec.date))
@@ -117,7 +119,6 @@ timeLabel <- rep(timeLabel, length.out=(length(timePos)))
 datePos <- c(seq((offset+720), nrow(indices)+1500, by = 1440))
 dateLabel <- unique(substr(indices$rec.date, 1,10))
 dateLabel <- dateLabel[1:length(datePos)]
-
 ##########################################################
 library(raster)
 colourName <- "colourBlock.png"
@@ -133,16 +134,18 @@ for(i in 1:35) {
   colours <- c(colours, col)
 }
 
-indicesRef <- c(5,7,9,11,12,13,14,17,20)
-#0.8878094 for k = 30, Gympie NP 22 to 28 June 2015
-set.seed(474)
+indicesRef <- c(5,7,9,10,11,12,13,17,18)
+
+set.seed(1653)    # for 30 clusters and 5,7,9,10,11,12,13,17,18
+
 length1 <- 0
 length2 <- length(normIndices$X)
 
 length <- length(indices$rec.date)
 dataFrame <- normIndices[length1:length2, indicesRef]  # best eleven variables
-kmeansObj <- kmeans(dataFrame, centers = 35, iter.max = 100)
+kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 100)
 kmeansObj
+
 normIndices <- cbind(normIndices, unname(kmeansObj$cluster))
 #plot(dataFrame, col=kmeansObj$cluster)
 r <- (kmeansObj$betweenss*100/kmeansObj$totss)
@@ -158,11 +161,11 @@ normIndicesVector <- cbind(normIndices[length1:length2,],vector)
 centers <- kmeansObj$centers
 
 write.table (as.matrix(dist(centers)), 
-             file = paste("Distance_matrix_5,7,9,11,12,13,14,17,20",
+             file = paste("Distance_matrix_5,7,9,11,12,13,17,20",
                           site, ".csv", sep = ""), sep = ",")
-distances <- read.csv(
-  "C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\Distance_matrix_5,7,9,11,12,13,14,17,20Gympie NP1 .csv", header =T)
-
+distances <- read.csv(file = paste("Distance_matrix_5,7,9,11,12,13,17,20",
+                                   site, ".csv", sep = ""), header=T)
+  
 # One dimensional analysis
 #distances <- read.csv("Distance_matrix_GympieNP 22 June 2015.csv", header =                        T)
 
@@ -178,19 +181,19 @@ colourOrder$clusterOrder <- as.numeric(as.character(colourOrder$clusterOrder))
 colourOrder[ do.call(order, colourOrder), ]
 
 ################################################
-sort.Filename <- function(filenames) {
-  index <- numeric()
-  for(i in 1:length(filenames)){
-    index[i] <- sub(".*_([[:digit:]]+).*", "\\1", filenames[i])
-  }
-  index <- as.numeric(index)
-  index.sorted <- sort(index, index.return=TRUE)
-  rightOrder <- filenames[index.sorted[[2]]]
-  return(rightOrder)
-}
+#sort.Filename <- function(filenames) {
+#  index <- numeric()
+#  for(i in 1:length(filenames)){
+#    index[i] <- sub(".*_([[:digit:]]+).*", "\\1", filenames[i])
+#  }
+#  index <- as.numeric(index)
+#  index.sorted <- sort(index, index.return=TRUE)
+#  rightOrder <- filenames[index.sorted[[2]]]
+#  return(rightOrder)
+#}
 ###############################################
 png(
-  "Cluster 22-28 June 2015 5,7,9,11,12,13,14,17,20.png",
+  "kmeans Cluster 22-28 June 2015 5,7,9,11,12,13,17,18.png",
   width     = 400,
   height    = 85,
   units     = "mm",
@@ -199,7 +202,6 @@ png(
 )
 
 plot(normIndicesVector$vector,
-     #col = normIndicesVector$vector, 
      col = colours[normIndicesVector$vector], 
      xaxt = 'n', xlab = " ", ylab = "Cluster reference", 
      main = paste(site, "24 to 25 June 2015", sep = " "),
@@ -274,31 +276,66 @@ for (l in 1:length(textLabels$des)) {
 
 dev.off()
 
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\")
+
+list <- which(normIndicesVector$minute.of.day=="0")
+dates <- unique(normIndices$rec.date)
 # Histogram
-par(mfrow = c(3,2), mar = c(3,3,2,1))
-hist(normIndicesVector$vector[1:1440],  breaks = 36, ylim= c(0,410), xlim = c(1,36))
-hist(normIndicesVector$vector[1441:2880], breaks = 40, ylim= c(0,410), xlim = c(1,36))
-hist(normIndicesVector$vector[2881:4320], breaks = 30, ylim= c(0,410), xlim = c(1,36))
-hist(normIndicesVector$vector[4321:5760], breaks = 30, ylim= c(0,410), xlim = c(1,36))
-hist(normIndicesVector$vector[5761:7200], breaks = 30, ylim= c(0,410), xlim = c(1,36))
-hist(normIndicesVector$vector[7201:8640], breaks = 30, ylim= c(0,410), xlim = c(1,36))
+par(mfrow = c(3,2), mar = c(1,2,1,0),oma=c(3,2,0,2))
+for(i in 1:6) {
+  hist(normIndicesVector$vector[list[i]:list[i+1]], breaks = 36, 
+       ylim= c(0,410), xlim = c(1,36), main="")
+  mtext(side = 3,paste(dates[i]), line=-2)
+}
 
+list <- which(normIndicesVector$minute.of.day=="0")
+dates <- unique(normIndices$rec.date)
 
+# Histogram
+par(mfrow = c(4,2), mar = c(1,2,1,0),oma=c(3,2,0,2))
+for(i in 1:7) {
+  hist(normIndicesVector$vector[list[i]:list[i+1]], breaks = 36, ylim= c(0,410), xlim = c(1,36), main="")
+  mtext(side = 3,paste(dates[i]), line=-2)
+}
+seq(1,1000,7)
 
+par(mfrow = c(4,2), mar = c(1,2,1,0),oma=c(3,2,0,2))
+for(i in 8:14) {
+  hist(normIndicesVector$vector[list[i]:list[i+1]], breaks = 36, ylim= c(0,410), xlim = c(1,36), main="")
+  mtext(side = 3,paste(dates[i]), line=-2)
+}
+
+hist(normIndicesVector$vector[list[1]:list[2]-1],  breaks = 36, 
+     ylim= c(0,410), xlim = c(1,36),main="")
+mtext(side = 3,"22 June 2015", line=-2)
+hist(normIndicesVector$vector[list[2]:list[3]-1], breaks = 40, 
+     ylim= c(0,410), xlim = c(1,36),main="")
+mtext(side = 3,"23 June 2015", line = -2)
+hist(normIndicesVector$vector[2882:4320], breaks = 30, 
+     ylim= c(0,410), xlim = c(1,36), main="")
+mtext(side = 3,"24 June 2015", line=-2)
+hist(normIndicesVector$vector[4321:5760], breaks = 30, 
+     ylim= c(0,410), xlim = c(1,36), main="")
+mtext(side=3,"25 June 2015",line = -2)
+hist(normIndicesVector$vector[5761:7200], breaks = 30, 
+     ylim= c(0,410), xlim = c(1,36), main = "")
+mtext(side = 3,"26 June 2015", line=-2)
+hist(normIndicesVector$vector[7201:8640], breaks = 30, 
+     ylim= c(0,410), xlim = c(1,36), main="")
+mtext(side = 3,"27 June 2015", line=-2)
 ############# Saving files ####################
 write.csv(as.matrix(kmeansObj$centers), 
-          file = paste("Cluster_centers 22-28 June 2015_5,7,9,11,12,13,14,17,20", site, 
+          file = paste("Cluster_centers 22-28 June 2015_5,7,9,10,11,12,13,17,18", site, 
                        ".csv", sep = ""))
-
 write.csv(unname(kmeansObj$cluster),
-          file = paste("Cluster_list 22-28 June 2015_5,7,9,11,12,13,14,17,20", 
+          file = paste("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30", 
           site, ".csv", sep = ""), row.names=FALSE)
-cluster.list <- read.csv(file = paste("Cluster_list 22-28 June 2015_5,7,9,11,12,13,14,17,20", 
+cluster.list <- read.csv(file = paste("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30", 
                                       site, ".csv", sep = ""), header = T,
                          col.names = "cluster.list")
 ###############################################
 library(MASS)
-write.matrix(normIndices, file=paste("normIndicesClusters 5,9,11,13,14,15,17", 
+write.matrix(normIndices, file=paste("normIndicesClusters 5,7,9,10,11,12,13,17,18", 
               site, "22-28 June 2015 test .csv", sep=","), sep=",")
 
 plot(normIndicesVector$vector, col=normIndicesVector$vector)
@@ -307,6 +344,6 @@ vec<- read.csv(paste("normIndicesClusters ", site, "22-28 June 2015.csv",
                      sep=","), sep=",", header=T)
 table(vec$vector)
 
-indices <- cbind(indices, cluster.list)
-write.csv(indices, row.names=FALSE,
-          file = paste("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000a.csv"))
+#indices <- cbind(indices, cluster.list)
+#write.csv(indices, row.names=FALSE,
+#          file = paste("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000a.csv"))

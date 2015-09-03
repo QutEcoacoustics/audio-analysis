@@ -15,12 +15,16 @@
 #  9. Segmenting_image.R
 
 ########## You may wish to change these ###########################
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
-indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv", header = T)
-cluster.list <- read.csv(file = paste("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30", 
-                         site, ".csv", sep = ""), header = T,
-                         col.names = "cluster.list")
-clust <- as.character(unname(unlist(unique(cluster.list)))) # remove this for a clean PCA without points
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data")
+indices <- "C:\\Work\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv"
+
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters")
+cluster.list <- read.csv(file = "mclust30list_9", header = T)
+
+clust <- as.character(unname(unlist(unique(cluster.list)))) # Standard normalisation and transformation of
+# AvgSnrofActiveFrames and Temporal Entropy
+
 site <- indices$site[1]
 date <- paste(indices$rec.date[1], 
         indices$rec.date[length(indices$rec.date)],
@@ -103,7 +107,8 @@ normIndices <- normIndices[,c(5,7,9,10,11,12,13,17,18,37,38)]
 normIndices <- cbind(normIndices, cluster.list)
 normIndices$cluster.list <- as.factor(normIndices$cluster.list)
 
-normIndices.pca <- prcomp(normIndices[,1:9], scale. = F)
+normIndices.pca <- prcomp(normIndices[,1:8], scale. = F)
+
 normIndices$PC1 <- normIndices.pca$x[,1]
 sum(normIndices$PC1)
 normIndices$PC2 <- normIndices.pca$x[,2]
@@ -113,7 +118,7 @@ normIndices$PC5 <- normIndices.pca$x[,5]
 normIndices$PC6 <- normIndices.pca$x[,6]
 normIndices$PC7 <- normIndices.pca$x[,7]
 normIndices$PC8 <- normIndices.pca$x[,8]
-normIndices$PC9 <- normIndices.pca$x[,9]
+#normIndices$PC9 <- normIndices.pca$x[,9]
 plot(normIndices.pca)
 biplot(normIndices.pca)
 
@@ -153,24 +158,22 @@ normIndices <- within(normIndices, levels(cluster.list) <- colours)
 #fooPlot(dat, col = "red")
 
 #### Plotting PC1 & PC2 Principal Component Plots with base plotting system
+# change file name when necessary
 png('pca_plot PC1_PC2_2_98_5,7,9,10,11,12,13,17,18.png', 
     width = 1500, height = 1200, units = "px") 
 PrinComp_X_axis <- "PC1"
 PrinComp_Y_axis <- "PC2"
 first <- 1  # change this and values in plot function below!!! to match PC# 
 second <- 2  # change this!!! to match PC#
-start <- 1
-finish <- 10076
-arrowScale <- 1.1 # increase/decrease this to adjust arrow length
+arrowScale <- 1.5 # increase/decrease this to adjust arrow length
 summ <- summary(normIndices.pca)
 rotate <- unname(summ$rotation)
 labels <- names(normIndices[1:length(summ$center)])
 
-mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
-                     PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
+mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
 par(mar=c(6,6,4,4))
-plot(normIndices$PC1[start:finish],normIndices$PC2[start:finish],  # Change these!!!!! 
-     col=as.character(normIndices$cluster.list[start:finish]), 
+plot(normIndices$PC1,normIndices$PC2,  # Change these!!!!! 
+     col=as.character(normIndices$cluster.list), 
      cex=1.2, type='p', pch=19, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
                 round(summ$importance[first*3-1]*100,2),"%)", 
@@ -204,11 +207,10 @@ summ <- summary(normIndices.pca)
 rotate <- unname(summ$rotation)
 labels <- names(normIndices[1:length(summ$center)])
 
-mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
-                     PrinComp_X_axis, PrinComp_Y_axis, sep="_")
+mainHeader <- paste (site, date, PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
 par(mar=c(6,6,4,4))
-plot(normIndices$PC1[start,finish],normIndices$PC3[start,finish],  # Change these!!!!! 
-     col=as.character(normIndices$cluster.list[start,finish]), 
+plot(normIndices$PC1,normIndices$PC3,  # Change these!!!!! 
+     col=as.character(normIndices$cluster.list), 
      cex=1.2, type='p', pch=19, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
                 round(summ$importance[first*3-1]*100,2),"%)", sep=""),
@@ -245,8 +247,8 @@ summ <- summary(normIndices.pca)
 rotate <- unname(summ$rotation)
 labels <- names(normIndices[1:length(summ$center)])
 
-mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
-                     PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
+mainHeader <- paste (site, date, PrinComp_X_axis, 
+                     PrinComp_Y_axis, sep=" ")
 
 par(mar=c(6,6,4,4))
 plot(normIndices$PC2,normIndices$PC3,  # Change these!!!!! 
@@ -275,6 +277,7 @@ dev.off()
 ####### PCA plot in ggplot ################
 file <- paste("Principal Component Analysis_ggbiplot_5,7,9,10,11,12,13,17,18", site, 
               "_", date, ".png", sep = "")
+
 library(ggbiplot)
 normIndices.pca <- prcomp(normIndices[,1:17], 
                           scale. = F)

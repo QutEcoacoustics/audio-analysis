@@ -1,17 +1,14 @@
-# 29 July 2015 
-#
-# Minimising the error in kmeans clustering - determining which 
-# set.seed gives the lowest error
+# 3 September 2015
+# The Mclust function uses an optimal Bayesian Information criteria (BIC)
+# A seed does not need to be set.
 
-#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
-#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_20clusters")
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data")
-#indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000.csv")
 indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv")
 
 site <- indices$site[1]
 startDate <- indices$rec.date[1]
 endDate <- indices$rec.date[length(indices$rec.date)]
+
 ################ Normalise data ####################
 # normalize values using minimum and maximum values
 normalise <- function (x, xmin, xmax) {
@@ -24,7 +21,7 @@ normalise <- function (x, xmin, xmax) {
 
 normIndices <- indices
 # normalise variable columns
-normIndices[,2]  <- normalise(indices[,2],0,2)  # HighAmplitudeIndex (0,2)
+normIndices[,2]  <- normalise(indices[,2],  0,2)  # HighAmplitudeIndex (0,2)
 normIndices[,3]  <- normalise(indices[,3],  0,  1)  # ClippingIndex (0,1)
 normIndices[,4]  <- normalise(indices[,4], -44.34849276,-27.1750784)   # AverageSignalAmplitude (-50,-10)
 normIndices[,5]  <- normalise(indices[,5], -45.06046874,-29.52071375)  # BackgroundNoise (-50,-10)
@@ -58,34 +55,86 @@ for (j in 4:20) {
   }
 }
 ##############################################
+# Create a list of the number of minutes per day used to plot colours ##########
+counter <- NULL
+list <- 0
+endTime <- length(indices$rec.time)
+mn <-indices[grep("\\<0\\>", indices$minute.of.day),]
+min.per.day <- NULL
+for (k in 1:length(mn$rec.time)) {
+  m <- mn$X[k]
+  list <- c(list, m)
+}
+list <- c(list, endTime)
+
+for (j in 1:(length(mn$rec.time)+1)) {
+  diff <- list[j+1] - list[j]
+  d <- c(min.per.day, diff)
+  counter <- c(counter, d)
+}
+
+# adjust first and last counter by one
+counter[1] <- counter[1]-1
+counter[length(mn$rec.time)] <- counter[length(mn$rec.time)] + 1
+
+######## Create day identification for different colours in plot #############
+number.of.days <- length(unique(indices$rec.date))
+day <- NULL
+
+if (counter[1]==0) 
+  for (i in 1:(number.of.days+1)) {
+    id <- rep(LETTERS[i], counter[i])
+    day <- c(day, id)
+  }
+
+if (counter[1] > 0) 
+  for (i in 1:(number.of.days)) {
+    id <- rep(LETTERS[i], counter[i])
+    day <- c(day, id)
+  }
+
+indices <- cbind(indices, day)
+
+######## Create references for plotting dates and times ################
+timeRef <- indices$minute.of.day[1]
+offset <- 0 - timeRef 
+
+timePos   <- seq((offset), (nrow(indices)+359), by = 360) # 359 ensures timelabels to end
+timeLabel <- c("00:00","6:00","12:00","18:00")
+timeLabel <- rep(timeLabel, length.out=(length(timePos))) 
+
+datePos <- c(seq((offset+720), nrow(indices)+1500, by = 1440))
+dateLabel <- unique(substr(indices$rec.date, 1,10))
+dateLabel <- dateLabel[1:length(datePos)]
+##########################################################
 rm(indices)
 indicesRef <- c(5,7,9,10,11,12,13,17,18)
 length1 <- 0
 length2 <- length(normIndices$X)
 dataFrame <- normIndices[length1:length2, indicesRef]  
-#############################################
 
-#indicesRef <- c(5,7,9,10,11,12,13,14,15,17) 
-#dataFrame <- normIndices[1:length(normIndices$X),indicesRef]
+dev.off()
+colourBlock <- read.csv("colours.csv", header = T)
 
-errorRatio <- NULL
-errorList <- NULL
-withinSS <- NULL
+# Model-Based Clustering
+library(mclust)
+fit <- Mclust(dataFrame[1:9287,1:9], G=30)
+#plot(fit) # plot results 
+#summary(fit) # display the best model
+plot(fit$classification, col=colourBlock[unname(fit$classification),],
+     xaxt = 'n', xlab = "", ylab = "Clusters", main="mclust_30_GympieNP")
+axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8, 0.5, 0), 
+     cex.axis = 1.5)
+axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
+     tick = FALSE)
+#fit <- Mclust(dataFrame[1:1441,5:9], G=1:30)
+mclust30list_9a <- unname(fit$classification)
+write.table(mclust30list_9a, file="mclust30list_9a.csv", 
+            row.names = F)
 
-for (i in 1:2000) {
-  set.seed(i)
-  kmeansObj <- kmeans(dataFrame, centers = 30, iter.max = 500, 
-                      nstart = 1)
-  R <- 100 - (kmeansObj$betweenss*100/kmeansObj$totss)
-  errorRatio <- c(errorRatio,R)
-  with <- kmeansObj$tot.withinss
-  withinSS <- c(withinSS, with)
-  print(paste(i))
-}
+fit$parameters$mean
+#mclust15List <- unname(fit$classification)
+#mclust30list_9 <- unname(fit$classification)
+#mclust23list_9 <- unname(fit$classification)
+#mclust <- cbind(mclust15list_9, mclust23list_9, mclust30list_9)
 
-ref <- 1:2000
-errorList <- cbind(ref, errorRatio, withinSS)
-min(errorRatio)
-
-write.csv(errorList,(file=paste("Minimum_error_indices_5,7,9,10,11,12,13,17,18_30", 
-                      site, ".csv", sep = "")))

@@ -3,8 +3,8 @@
 # 
 # Get cluster information
 #setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_35clusters")
-#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_40clusters")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_35clusters")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_40clusters")
 site <- "Gympie NP1 "
 cluster.list <- read.csv(file = paste("Cluster_list 22-28 June 2015_5,7,9,11,12,13,17,20", 
                          site, ".csv", sep = ""), header = T,
@@ -16,7 +16,7 @@ distances <- read.csv(
 # One dimensional analysis
 #distances <- read.csv("Distance_matrix_GympieNP 22 June 2015.csv", header =                        T)
 
-dist <- cmdscale(distances[,1:35], k=1)
+dist <- cmdscale(distances[,1:40], k=1)
 y <- dist[, 1]
 z <- sort(y)
 
@@ -67,7 +67,7 @@ png(filename = "Image 22 June 2015e Gympie NP_5,7,9,11,12,13,17,20.png",
     res = NA, family = "", restoreConsole = TRUE)
 
 total <- NULL
-for (i in 1:35) {
+for (i in 1:40) {
   current.minute.list <- which(cluster.list == clusterOrder[i])
   length <- sum(current.minute.list <= 1440)
 total <- c(total, length)
@@ -76,7 +76,7 @@ total
 
 length2 <- 10
 
-for (i in 1:35) {
+for (i in 1:40) {
   current.minute.list <- which(cluster.list == clusterOrder[i])
   length <- sum(current.minute.list <= 1440)
   if (length > 0) {
