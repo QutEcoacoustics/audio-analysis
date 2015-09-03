@@ -185,7 +185,7 @@ for (i in 1:length(labels)) {
          rotate[i,second]*arrowScale, col=1, lwd=1.6)  
   text(rotate[i,first]*arrowScale*1.1, 
        rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=1.6)
+       paste(labels[i]), cex=2.4)
 }
 abline (v=0, h=0, lty=2)
 legend('topright', clust, pch=19, col=colours, bty='n', 
@@ -223,7 +223,7 @@ for (i in 1:length(labels)) {
          rotate[i,second]*arrowScale, col=1, lwd=1.6)  
   text(rotate[i,first]*arrowScale*1.1, 
        rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=1.6)
+       paste(labels[i]), cex=2.4)
 }
 fourhour.col <- c('red','orange','yellow', 'green','blue','violet')
 
@@ -266,7 +266,7 @@ for (i in 1:length(labels)) {
          rotate[i,second]*arrowScale, col=1, lwd=1.6)  
   text(rotate[i,first]*arrowScale*1.1, 
        rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=1.6)
+       paste(labels[i]), cex=2.4)
 }
 abline (v=0, h=0, lty=2)
 legend('topright', clust, pch=19, col=colours, bty='n', 
