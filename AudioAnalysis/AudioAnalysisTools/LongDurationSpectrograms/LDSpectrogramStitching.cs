@@ -112,6 +112,29 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return op;
         }
 
+        public static SortedDictionary<DateTimeOffset, FileInfo> FilterFilesForDates(FileInfo[] files)
+        {
+            var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
+
+            foreach (var file in files)
+            {
+                DateTimeOffset parsedDate;
+                if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint: null))
+                {
+                    datesAndFiles.Add(parsedDate, file);
+                }
+            }
+
+            // minnimum
+            //datesAndFiles[datesAndFiles.Keys.First()];
+            
+            // maximum
+            //datesAndFiles[datesAndFiles.Keys.Last()];
+
+            return datesAndFiles;
+        }
+
+
 
 
         /// <summary>
