@@ -78,6 +78,42 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
+
+        /// <summary>
+        /// TWO MAJOR ASSUMPTIONS WITH THIS METHOD !!!!!!!!!!!!!!!!!!
+        /// Assumes that the file names contain valid parseable date-time strings
+        /// Also assumes that the array of files has been sorted in temporal order
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        public static DateTimeOffset[] GetStartAndEndDateTimes(FileInfo[] files)
+        {
+            var op = new DateTimeOffset[2];
+            string firstFileName = files[0].Name;
+            string lastFileName  = files[files.Length - 1].Name;
+
+            // calculate start date
+            //?? TODO TODO TODO TODO CANNOT GET DATE-TIME STRING TO PARSE USING FileDateHelpers.FileNameContainsDateTime()
+            //DateTimeOffset dto = SunAndMoon.ParseString2DateTime(firstFileName.Substring(0, 15));
+            DateTimeOffset dto;
+            if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(firstFileName.Substring(0, 15), out dto))
+            {
+                op[0] = dto;
+            }
+
+            // calculate end date if passed value = null.
+            //op[1] = SunAndMoon.ParseString2DateTime(lastFileName.Substring(0, 15));
+            //op[1] = DateTimeOffset.UtcNow;
+
+            if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(lastFileName.Substring(0, 15), out dto))
+            {
+                op[1] = dto;    
+            }
+            return op;
+        }
+
+
+
         /// <summary>
         /// Use this concatenation method when you only want to concatenate the files for a fixed single day.
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
