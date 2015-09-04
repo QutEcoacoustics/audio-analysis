@@ -208,35 +208,29 @@ namespace AnalysisPrograms
             string pattern = "*__Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
 
-            string firstFileName = csvFiles[0].Name;
-            string lastFileName = csvFiles[csvFiles.Length-1].Name;
-
             if (verbose)
             {
                 LoggedConsole.WriteLine("# Subdirectory Count = " + subDirectories.Length);
                 LoggedConsole.WriteLine("# Indices.csv  Count = " + csvFiles.Length);
-                LoggedConsole.WriteLine("# First  file   name = " + firstFileName);
-                LoggedConsole.WriteLine("# Last   file   name = " + lastFileName);
+                LoggedConsole.WriteLine("# First  file   name = " + csvFiles[0].Name);
+                LoggedConsole.WriteLine("# Last   file   name = " + csvFiles[csvFiles.Length - 1].Name);
             }
 
+            var startendDTO = LDSpectrogramStitching.GetStartAndEndDateTimes(csvFiles);
+
+            // calculate start date if passed value = null.
             DateTimeOffset? startDate = arguments.StartDate;
-            //?? TODO TODO TODO TODO CANNOT GET DATE TIME STIRNG TO PARSE
             if (startDate == null)
             {
                 LoggedConsole.WriteLine("# Revising start date ... ");
-                DateTimeOffset dto = SunAndMoon.ParseString2DateTime(firstFileName.Substring(0, 15));
-                startDate = dto;
-                //Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(dtString, out startDate);
+                startDate = startendDTO[0];
             }
-
-
-
+            // calculate end date if passed value = null.
             DateTimeOffset? endDate = arguments.EndDate;
             if (endDate == null)
             {
                 LoggedConsole.WriteLine("# Revising end date ... ");
-                DateTimeOffset dto = SunAndMoon.ParseString2DateTime(lastFileName.Substring(0, 15));
-                endDate = dto;
+                endDate = startendDTO[1];
                 //endDate = DateTimeOffset.UtcNow;
             }
 
@@ -250,7 +244,6 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
                 LoggedConsole.WriteLine("# Day  count = " + dayCount);
                 LoggedConsole.WriteLine();
-                //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             }
 
             if (dayCount == 0)
