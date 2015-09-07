@@ -162,7 +162,6 @@ namespace AnalysisPrograms
 
 
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
-            // problem is that Jason cuts them up into 6 hour blocks.
             if (false)
             {
                 //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
