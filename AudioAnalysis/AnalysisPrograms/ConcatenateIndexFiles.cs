@@ -26,6 +26,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.IO;
+    using System.Linq;
 
     using Acoustics.Shared;
 
@@ -53,7 +54,7 @@ namespace AnalysisPrograms
             public DirectoryInfo OutputDirectory { get; set; }
 
             [ArgDescription("Filter string used to search for the required csv files - assumed to be in directory path.")]
-            public string SiteName { get; set; }
+            public string DirectoryFilter { get; set; }
 
             [ArgDescription("File stem name for output files.")]
             public string FileStemName { get; set; }
@@ -63,6 +64,10 @@ namespace AnalysisPrograms
 
             [ArgDescription("DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
             public DateTimeOffset? EndDate { get; set; }
+
+            [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info.")]
+            public TimeSpan? TimeSpanOffsetHint { get; set; }
+
 
             //[ArgDescription("Draw images of summary and spectral indices after concatenating them")]
             internal bool DrawImages { get; set; }
@@ -126,6 +131,7 @@ namespace AnalysisPrograms
             //var dtoEnd   = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
+            TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
 
             bool drawImages = true;
              if(!indexPropertiesConfig.Exists) LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
@@ -143,15 +149,15 @@ namespace AnalysisPrograms
             {
                 InputDataDirectories = dataDirs,
                 OutputDirectory = new DirectoryInfo(opPath),
-                SiteName  = siteName,
-                FileStemName = fileStemName,
-                StartDate = dtoStart,
-                EndDate   = dtoEnd,
-                //SiteDescription = siteDescription,
+                DirectoryFilter = siteName,
+                FileStemName    = fileStemName,
+                StartDate       = dtoStart,
+                EndDate         = dtoEnd,
                 DrawImages = drawImages,
                 IndexPropertiesConfig = indexPropertiesConfig,
                 // use the default set of index properties in the AnalysisConfig directory.
                 //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                TimeSpanOffsetHint = offsetHint,
             };
             throw new NoDeveloperMethodException();
     }
@@ -179,16 +185,16 @@ namespace AnalysisPrograms
                 }
                 LoggedConsole.WriteLine("# Output directory: " + arguments.OutputDirectory.FullName);
                 if (arguments.StartDate == null)
-                    LoggedConsole.WriteLine("# Start date = NULL");
+                    LoggedConsole.WriteLine("# Start date = NULL. Revising start date ....");
                 else
                     LoggedConsole.WriteLine("# Start date = " + arguments.StartDate.ToString());
 
                 if (arguments.EndDate == null)
-                    LoggedConsole.WriteLine("# End date = NULL");
+                    LoggedConsole.WriteLine("# End   date = NULL. Revising end date ....");
                 else
                     LoggedConsole.WriteLine("# End   date = " + arguments.EndDate.ToString());
 
-                LoggedConsole.WriteLine("# SITE FILTER = " + arguments.SiteName);
+                LoggedConsole.WriteLine("# DIRECTORY FILTER = " + arguments.DirectoryFilter);
                 LoggedConsole.WriteLine();
                 //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             }
@@ -196,60 +202,60 @@ namespace AnalysisPrograms
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
             // Assumes that the required subdirectories have the given site name somewhere in their path. 
-            var subDirectories = LDSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.SiteName);
+            var subDirectories = LDSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.DirectoryFilter);
             if (subDirectories.Length == 0)
             {
-                LoggedConsole.WriteErrorLine("\n# WARNING: Subdirectory Count = ZERO");
-                LoggedConsole.WriteErrorLine("\n# RETURNING EMPTY HANDED!");
+                LoggedConsole.WriteErrorLine("\n\n#WARNING from method ConcatenateIndexFiles.Execute():");
+                LoggedConsole.WriteErrorLine("        Subdirectory Count with given filter = ZERO");
+                LoggedConsole.WriteErrorLine("        RETURNING EMPTY HANDED!");
                 return;
             }
 
-            // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES. Do this because want to determine earliest date of files.
+            // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES.
             string pattern = "*__Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
+            if (csvFiles.Length == 0)
+            {
+                LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
+                LoggedConsole.WriteErrorLine("        No SUMMARY index files were found.");
+                LoggedConsole.WriteErrorLine("        RETURNING EMPTY HANDED!");
+                return;
+            }
+
+            // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
+            var sortedDictionaryOfDatesAndFiles = LDSpectrogramStitching.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
+
+            DateTimeOffset? startDate = arguments.StartDate;
+            DateTimeOffset? endDate   = arguments.EndDate;
 
             if (verbose)
             {
-                LoggedConsole.WriteLine("# Subdirectory Count = " + subDirectories.Length);
-                LoggedConsole.WriteLine("# Indices.csv  Count = " + csvFiles.Length);
-                LoggedConsole.WriteLine("# First  file   name = " + csvFiles[0].Name);
-                LoggedConsole.WriteLine("# Last   file   name = " + csvFiles[csvFiles.Length - 1].Name);
+                LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
+                LoggedConsole.WriteLine("# IndexFiles.csv Count = " + csvFiles.Length);
             }
 
-            var startendDTO = LDSpectrogramStitching.GetStartAndEndDateTimes(csvFiles);
-
-            // calculate start date if passed value = null.
-            DateTimeOffset? startDate = arguments.StartDate;
+            // calculate new start date if passed value = null.
             if (startDate == null)
             {
-                LoggedConsole.WriteLine("# Revising start date ... ");
-                startDate = startendDTO[0];
+                startDate = sortedDictionaryOfDatesAndFiles.Keys.First();
             }
-            // calculate end date if passed value = null.
-            DateTimeOffset? endDate = arguments.EndDate;
+            // calculate new end date if passed value = null.
             if (endDate == null)
             {
-                LoggedConsole.WriteLine("# Revising end date ... ");
-                endDate = startendDTO[1];
+                endDate = sortedDictionaryOfDatesAndFiles.Keys.Last();
                 //endDate = DateTimeOffset.UtcNow;
             }
 
-            TimeSpan timespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
-            int dayCount = timespan.Days;
+            TimeSpan totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
+            int dayCount = totalTimespan.Days;
 
             if (verbose)
             {
-                LoggedConsole.WriteLine("\n# REVISED START AND END DAYS:");
-                LoggedConsole.WriteLine("# Start date = " + startDate.ToString());
+                LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine("# Day  count = " + dayCount);
-                LoggedConsole.WriteLine();
-            }
-
-            if (dayCount == 0)
-            {
-                LoggedConsole.WriteErrorLine("\nNUMBER OF DAYS TO PROCESS = ZERO. Must process one day. Day count has been set = 1.");
-                dayCount = 1;
+                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", totalTimespan.TotalHours));
+                LoggedConsole.WriteLine("# Day  count = " + (dayCount + 1));
+                LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
             }
 
             // create top level output directory if it does not exist.
@@ -276,22 +282,34 @@ namespace AnalysisPrograms
             }
 
 
-            // loop over days
-            for (int d = 0; d < dayCount; d++)
-            {
-                // TODO TODO TODO TODO    Fix up time of day on subsequent passes through day loop.
-                // TIME OF DAY should be changed to midnight.
+            //TODO TODO TODO                           NEED TO DEBUG THE FOLLOWING OPTION
+            //TODO TODO TODO
+            //if (ConcatenateEverythingYouCanLayYourHandsOn)
+            //{
+            //    LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+            //    LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0],  indexPropertiesConfig, opDir, arguments.FileStemName);
+            //    return;
+            //}
 
+
+
+            // loop over days
+            for (int d = 0; d <= dayCount; d++)
+            {
                 var thisday = ((DateTimeOffset)startDate).AddDays(d);
-                FileInfo[] files = LDSpectrogramStitching.GetSummaryIndexFilesForOneDay(subDirectories, thisday);
-                if (files.Length == 0)
+
+                var filteredDict = LDSpectrogramStitching.GetFilesForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
+                if (filteredDict.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
                     LoggedConsole.WriteErrorLine("        No files of SUMMARY indices were found.");
-                    LoggedConsole.WriteErrorLine("        Break cycling through days!!! ");
+                    LoggedConsole.WriteErrorLine("        Break cycle through days!!! ");
                     break;
                 }
-                LoggedConsole.WriteLine("\n\n\nCONCATENATING DAY: " + thisday.ToString());
+
+                // get the exact date and time
+                thisday = filteredDict.Keys.First();
+                LoggedConsole.WriteLine(String.Format("\n\n\nCONCATENATING DAY {0}:   {1}", d, thisday.ToString()));
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
                 string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
@@ -302,6 +320,8 @@ namespace AnalysisPrograms
                 var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
                 var indicesCsvfile = new FileInfo(indicesFile);
 
+                // concatenate the summary index files
+                FileInfo[] files = filteredDict.Values.ToArray<FileInfo>();
                 var summaryDict = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(files, resultsDir, indicesCsvfile);
                 if (summaryDict.Count == 0)
                 {

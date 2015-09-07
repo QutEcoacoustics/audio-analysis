@@ -202,8 +202,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Returns a sorted list of file paths, sorted on file name.
-        /// IMPORTANT: Sorts on alphanumerics, NOT on time. 
-        ///            Make sure file name is correctly formatted if intend to sort for time.
+        /// IMPORTANT: Sorts on alphanumerics, NOT on date or time encoded in the file name. 
         /// </summary>
         /// <param name="path"></param>
         /// <param name="pattern"></param>

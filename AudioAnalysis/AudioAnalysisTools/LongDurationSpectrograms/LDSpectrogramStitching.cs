@@ -86,40 +86,40 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        public static DateTimeOffset[] GetStartAndEndDateTimes(FileInfo[] files)
-        {
-            var op = new DateTimeOffset[2];
-            string firstFileName = files[0].Name;
-            string lastFileName  = files[files.Length - 1].Name;
+        //public static DateTimeOffset[] GetStartAndEndDateTimes(FileInfo[] files)
+        //{
+        //    var op = new DateTimeOffset[2];
+        //    string firstFileName = files[0].Name;
+        //    string lastFileName  = files[files.Length - 1].Name;
 
-            // calculate start date
-            //?? TODO TODO TODO TODO CANNOT GET DATE-TIME STRING TO PARSE USING FileDateHelpers.FileNameContainsDateTime()
-            //DateTimeOffset dto = SunAndMoon.ParseString2DateTime(firstFileName.Substring(0, 15));
-            DateTimeOffset dto;
-            if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(firstFileName.Substring(0, 15), out dto))
-            {
-                op[0] = dto;
-            }
+        //    // calculate start date
+        //    //?? TODO TODO TODO TODO CANNOT GET DATE-TIME STRING TO PARSE USING FileDateHelpers.FileNameContainsDateTime()
+        //    //DateTimeOffset dto = SunAndMoon.ParseString2DateTime(firstFileName.Substring(0, 15));
+        //    DateTimeOffset dto;
+        //    if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(firstFileName.Substring(0, 15), out dto))
+        //    {
+        //        op[0] = dto;
+        //    }
 
-            // calculate end date if passed value = null.
-            //op[1] = SunAndMoon.ParseString2DateTime(lastFileName.Substring(0, 15));
-            //op[1] = DateTimeOffset.UtcNow;
+        //    // calculate end date if passed value = null.
+        //    //op[1] = SunAndMoon.ParseString2DateTime(lastFileName.Substring(0, 15));
+        //    //op[1] = DateTimeOffset.UtcNow;
 
-            if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(lastFileName.Substring(0, 15), out dto))
-            {
-                op[1] = dto;    
-            }
-            return op;
-        }
+        //    if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(lastFileName.Substring(0, 15), out dto))
+        //    {
+        //        op[1] = dto;    
+        //    }
+        //    return op;
+        //}
 
-        public static SortedDictionary<DateTimeOffset, FileInfo> FilterFilesForDates(FileInfo[] files)
+        public static SortedDictionary<DateTimeOffset, FileInfo> FilterFilesForDates(FileInfo[] files, TimeSpan? offsetHint = null)
         {
             var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
-
             foreach (var file in files)
             {
                 DateTimeOffset parsedDate;
-                if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint: null))
+                //if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint: null))
+                if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint))
                 {
                     datesAndFiles.Add(parsedDate, file);
                 }
@@ -263,6 +263,40 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string fileStemPattern = dateString + pattern;
             FileInfo[] files = IndexMatrices.GetFilesInDirectories(directories, fileStemPattern);
             return files;
+        }
+
+        public static FileInfo[] GetSummaryIndexFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
+        {
+            string pattern = "Towsey.Acoustic.Indices.csv";
+            // LDSpectrogramStitching.IndexType, LDSpectrogramStitching.CsvFileExt
+            var keys = dict.Keys;
+            var matchFiles = new List<FileInfo>();
+            foreach (var key in keys)
+            {
+                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                {
+                    FileInfo file = dict[key];
+                    if(file.Name.EndsWith(pattern))
+                    {
+                        matchFiles.Add(file);
+                    }
+                }
+            }
+            return matchFiles.ToArray();
+        }
+
+        public static SortedDictionary<DateTimeOffset, FileInfo> GetFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
+        {
+            var keys = dict.Keys;
+            var matchFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
+            foreach (var key in keys)
+            {
+                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                {
+                    matchFiles.Add(key, dict[key]);
+                }
+            }
+            return matchFiles;
         }
 
 
