@@ -2,9 +2,9 @@
 # The Mclust function uses an optimal Bayesian Information criteria (BIC)
 # A seed does not need to be set.
 
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters")
 indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv")
-
+list <- which(indices$minute.of.day=="0")
 site <- indices$site[1]
 startDate <- indices$rec.date[1]
 endDate <- indices$rec.date[length(indices$rec.date)]
@@ -107,32 +107,68 @@ datePos <- c(seq((offset+720), nrow(indices)+1500, by = 1440))
 dateLabel <- unique(substr(indices$rec.date, 1,10))
 dateLabel <- dateLabel[1:length(datePos)]
 ##########################################################
-rm(indices)
 indicesRef <- c(5,7,9,10,11,12,13,17,18)
 length1 <- 0
 length2 <- length(normIndices$X)
 dataFrame <- normIndices[length1:length2, indicesRef]  
 
 dev.off()
-colourBlock <- read.csv("colours.csv", header = T)
+#colourBlock <- read.csv("colours.csv", header = T)
+colours <- c("red", "chocolate4", "palegreen", "darkblue",
+             "brown1", "darkgoldenrod3", "cadetblue4", 
+             "darkorchid", "orange" ,"darkseagreen", 
+             "deeppink3", "darkslategrey", "firebrick2", 
+             "gold2", "hotpink2", "blue", "maroon", 
+             "mediumorchid4", "mediumslateblue","mistyrose4",
+             "royalblue", "orange", "palevioletred2", 
+             "sienna", "slateblue", "yellow", "tan2", 
+             "salmon","violetred1","plum")
+
+write.table(colours, file="colours.csv", row.names = F)
 
 # Model-Based Clustering
 library(mclust)
-fit <- Mclust(dataFrame[1:9287,1:9], G=30)
+# The next line cannot be run on all 8 weeks because
+# In double(ld) : Reached total allocation of 16289Mb: 
+# see help(memory.size).  Running on one week takes 
+# around 10 minutes
+start <- 1
+end <- 10076
+fit <- Mclust(dataFrame[start:end,1:9], G=30)
+mclust30list_9 <- unname(fit$classification)
+write.table(mclust30list_9, file="mclust30list_9.csv", 
+            row.names = F)
+clusters <- read.csv(file="mclust30list_9.csv", header=T)
+
 #plot(fit) # plot results 
 #summary(fit) # display the best model
-plot(fit$classification, col=colourBlock[unname(fit$classification),],
-     xaxt = 'n', xlab = "", ylab = "Clusters", main="mclust_30_GympieNP")
-axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8, 0.5, 0), 
-     cex.axis = 1.5)
-axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
-     tick = FALSE)
-#fit <- Mclust(dataFrame[1:1441,5:9], G=1:30)
-mclust30list_9a <- unname(fit$classification)
-write.table(mclust30list_9a, file="mclust30list_9a.csv", 
-            row.names = F)
+png(paste("Clusterplot_mclust", indices$rec.data[start],
+          indices$rec.date[end],"5,7,9,11,12,13,17,18.png",
+          sep="_"),
+    width = 400, 
+    height = 85, 
+    units = "mm",
+    res=1200,
+    pointsize = 4)
 
-fit$parameters$mean
+#par(mar=c(3,5,3,3))
+plot(fit$classification, col=colours[fit$classification],
+     xaxt = 'n', xlab = "", ylab = "Cluster reference", cex.axis=2,
+     cex.lab=1.5, main = paste(site, indices$rec.date[start],
+     indices$rec.date[end], "(mclust)", sep = "_"),
+     cex.main = 2)
+axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8, 0.5, 0), 
+     cex.axis = 1.5, mgp = c(1.8, 0.5, 0))
+axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
+     tick = FALSE, cex.axis=1.5, mgp = c(4, 1.8, 0))
+mtext(paste(indicesRef, collapse = ", ", sep = ""), side=3, 
+      line = -0.1, cex = 1.5)
+for (i in 1:length(list)) {
+  abline(v=list[i], lwd=1.5, lty = 3)
+}
+dev.off()
+
+#fit$parameters$mean
 #mclust15List <- unname(fit$classification)
 #mclust30list_9 <- unname(fit$classification)
 #mclust23list_9 <- unname(fit$classification)

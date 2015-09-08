@@ -2,32 +2,44 @@
 # 23 July 2015 
 # 
 # Get cluster information
-#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_35clusters")
-#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_40clusters")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
+#cluster.list <- read.csv(file = paste("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30", 
+#                        site, ".csv", sep = ""), header = T,
+#                        col.names = "cluster.list")
+
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters")
+cluster.list <- read.csv(file="mclust30list_9,csv", header = T)
+
 site <- "Gympie NP1 "
-cluster.list <- read.csv(file = paste("Cluster_list 22-28 June 2015_5,7,9,11,12,13,17,20", 
-                         site, ".csv", sep = ""), header = T,
-                         col.names = "cluster.list")
 ##### Find cluster order #########################
-distances <- read.csv(
-  "Distance_matrix_5,7,9,11,12,13,17,20Gympie NP1 .csv", header =T)
+#distances <- read.csv(
+#  "Distance_matrix_5,7,9,11,12,13,17,20Gympie NP1 .csv", header =T)
 
 # One dimensional analysis
 #distances <- read.csv("Distance_matrix_GympieNP 22 June 2015.csv", header =                        T)
 
-dist <- cmdscale(distances[,1:35], k=1)
-y <- dist[, 1]
-z <- sort(y)
+#dist <- cmdscale(distances[,1:35], k=1)
+#y <- dist[, 1]
+#z <- sort(y)
 
-clusterOrder <- names(z)
-clusterOrder
+#clusterOrder <- names(z)
+#clusterOrder
 ################################################
 # Read in the colourBlock image
 library(raster)
 colourName <- "colourBlock.png"
 colourBlock <- brick(colourName, package="raster")
-plotRGB(colourBlock)
+#plotRGB(colourBlock)
+colours <- c("red", "chocolate4", "palegreen", "darkblue",
+             "brown1", "darkgoldenrod3", "cadetblue4", 
+             "darkorchid", "orange" ,"darkseagreen", 
+             "deeppink3", "darkslategrey", "firebrick2", 
+             "gold2", "hotpink2", "blue", "maroon", 
+             "mediumorchid4", "mediumslateblue","mistyrose4",
+             "royalblue", "orange", "palevioletred2", 
+             "sienna", "slateblue", "yellow", "tan2", 
+             "salmon","violetred1","plum")
+
 ##### Code for 1st day #########################
 # make rasterRBG from a 24 hour spectrogram
 # 22 June 2015 Gympie NP
@@ -39,11 +51,11 @@ image1 <- brick(image, package="raster")
 image1[[1]] <- 255 
 image1[[2]] <- 255
 image1[[3]] <- 255
-png(filename = "whiteRaster.png",
-    width = 2000, height = 334, units = "px", pointsize = 12,
-    res = NA, family = "", restoreConsole = TRUE)
+#png(filename = "whiteRaster.png",
+#    width = 2000, height = 334, units = "px", pointsize = 12,
+#    res = NA, family = "", restoreConsole = TRUE)
 plotRGB(image1)
-dev.off()
+#dev.off()
 
 b1 <- "GympieNP_20150622__ACI-ENT-EVN.png"
 b <- brick(b1, package="raster")
@@ -62,12 +74,12 @@ plotRGB(sourceImage)
 #setwd("F:\\Indices\\2015Jul01-120417 - Yvonne, Indices, ICD=60.0\\Yvonne\\Woondum3\\20150622_000000.wav\\Towsey.Acoustic\\")
 
 ### Change date here!
-png(filename = "Image 22 June 2015e Gympie NP_5,7,9,11,12,13,17,20.png",
+png(filename = "ClusterImage 22 June 2015 Gympie NP_5,7,9,10,11,12,13,17,18.png",
     width = 2000, height = 334, units = "px", pointsize = 12,
     res = NA, family = "", restoreConsole = TRUE)
 
 total <- NULL
-for (i in 1:35) {
+for (i in 1:30) {
   current.minute.list <- which(cluster.list == clusterOrder[i])
   length <- sum(current.minute.list <= 1440)
 total <- c(total, length)
@@ -76,8 +88,8 @@ total
 
 length2 <- 10
 
-for (i in 1:35) {
-  current.minute.list <- which(cluster.list == clusterOrder[i])
+for (i in 1:30) {
+  current.minute.list <- which(cluster.list == i)
   length <- sum(current.minute.list <= 1440)
   if (length > 0) {
     for (j in 1:length) {
@@ -242,6 +254,8 @@ plotRGB(sourceImage)
 png(filename = "Image 26 June 2015b GympieNP 5,7,9,10,11,12,13,14,15,17.png",
     width = 2000, height = 334, units = "px", pointsize = 12,
     res = NA, family = "", restoreConsole = TRUE)
+
+clusterOrder <- as.character(1:30)
 
 length2 <- 1
 #clusterOrder <- order

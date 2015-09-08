@@ -16,11 +16,14 @@
 
 ########## You may wish to change these ###########################
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
-indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv", header = T)
 cluster.list <- read.csv(file = paste("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30", 
-                         site, ".csv", sep = ""), header = T,
+                                      site, ".csv", sep = ""), header = T,
                          col.names = "cluster.list")
-clust <- as.character(unname(unlist(unique(cluster.list)))) # remove this for a clean PCA without points
+
+indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv", header = T)
+
+
+#clust <- as.character(unname(unlist(unique(cluster.list)))) 
 site <- indices$site[1]
 date <- paste(indices$rec.date[1], 
         indices$rec.date[length(indices$rec.date)],
@@ -125,20 +128,31 @@ normIndices <- within(normIndices, levels(hour.class) <-
                 "#00FF80FF","#00FFBFFF","#00FFFFFF","#00BFFFFF","#0080FFFF",
                 "#0040FFFF","#0000FFFF","#4000FFFF","#8000FFFF","#BF00FFFF",
                 "#FF00FFFF","#FF00BFFF","#FF0080FF","#FF0040FF"))
-library(raster)
-colourName <- "colourBlock.png"
-colourBlock <- brick(colourName, package="raster")
-plotRGB(colourBlock)
-colourBlock <- as.data.frame(colourBlock)
-colours <- NULL
-for(i in 1:40) {
-  col <- rgb(colourBlock$colourBlock.1[i],
-             colourBlock$colourBlock.2[i],
-             colourBlock$colourBlock.3[i],
-             max = 255)
-  colours <- c(colours, col)
-}
-write.table(colours, file="colours.csv", row.names = F)
+#library(raster)
+#colourName <- "colourBlock.png"
+#colourBlock <- brick(colourName, package="raster")
+#plotRGB(colourBlock)
+#colourBlock <- as.data.frame(colourBlock)
+#colours <- NULL
+#for(i in 1:40) {
+#  col <- rgb(colourBlock$colourBlock.1[i],
+#             colourBlock$colourBlock.2[i],
+#             colourBlock$colourBlock.3[i],
+#             max = 255)
+#  colours <- c(colours, col)
+#}
+#colours <- colours[1:30]
+colours <- c("red", "chocolate4", "palegreen", "darkblue",
+             "brown1", "darkgoldenrod3", "cadetblue4", 
+             "darkorchid", "orange" ,"darkseagreen", 
+             "deeppink3", "darkslategrey", "firebrick2", 
+             "gold2", "hotpink2", "blue", "maroon", 
+             "mediumorchid4", "mediumslateblue","mistyrose4",
+             "royalblue", "orange", "palevioletred2", 
+             "sienna", "slateblue", "yellow", "tan2", 
+             "salmon","violetred1","plum")
+
+#write.table(colours, file="colours.csv", row.names = F)
 
 normIndices <- within(normIndices, levels(cluster.list) <- colours)
 
@@ -161,17 +175,18 @@ first <- 1  # change this and values in plot function below!!! to match PC#
 second <- 2  # change this!!! to match PC#
 start <- 1
 finish <- 10076
-arrowScale <- 1.1 # increase/decrease this to adjust arrow length
+arrowScale <- 1.2 # increase/decrease this to adjust arrow length
 summ <- summary(normIndices.pca)
 rotate <- unname(summ$rotation)
-labels <- names(normIndices[1:length(summ$center)])
-
+labels1 <- names(normIndices[1:length(summ$center)])
+labels2 <- c("BGN","ASF","EPS","HFC","MFC","LFC","ACC",
+            "ENPS","ECVS")
 mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
                      PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
 par(mar=c(6,6,4,4))
 plot(normIndices$PC1[start:finish],normIndices$PC2[start:finish],  # Change these!!!!! 
      col=as.character(normIndices$cluster.list[start:finish]), 
-     cex=1.2, type='p', pch=19, main=mainHeader, 
+     cex=1, type='p', pch=15, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
                 round(summ$importance[first*3-1]*100,2),"%)", 
                 sep=""),
@@ -183,95 +198,109 @@ plot(normIndices$PC1[start:finish],normIndices$PC2[start:finish],  # Change thes
 for (i in 1:length(labels)) {
   arrows(0,0, rotate[i,first]*arrowScale, 
          rotate[i,second]*arrowScale, col=1, lwd=1.6)  
-  text(rotate[i,first]*arrowScale*1.1, 
-       rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=2.4)
+  text(rotate[i,first]*arrowScale*1.05, 
+       rotate[i,second]*arrowScale*1.05, 
+       paste(labels2[i]), cex=2.6)
 }
 abline (v=0, h=0, lty=2)
-legend('topright', clust, pch=19, col=colours, bty='n', 
-       cex=2, title = "clusters")
+clust <- as.character(1:30)
+legend('topright', clust, pch=15, col=colours, bty='n', 
+       cex=2, title = "Clusters")
+legend('topleft',labels, col=colours, bty='n', 
+       cex=2, title = "Indices")
+
 dev.off()
 
 #### Plotting PC1 & PC3 Principal Component Plots with base plotting system
-# change file name when necessary
-png('pca_plot PC1_PC3_2_98_5,7,9,10,11,12,13,17,18.png', width=1500, height=1200, units="px") 
+png('pca_plot PC1_PC3_2_98_5,7,9,10,11,12,13,17,18.png', 
+    width = 1500, height = 1200, units = "px") 
 PrinComp_X_axis <- "PC1"
 PrinComp_Y_axis <- "PC3"
 first <- 1  # change this and values in plot function below!!! to match PC# 
 second <- 3  # change this!!! to match PC#
-arrowScale <- 1.3 # increase/decrease this to adjust arrow length
+start <- 1
+finish <- 10076
+arrowScale <- 1.2 # increase/decrease this to adjust arrow length
 summ <- summary(normIndices.pca)
 rotate <- unname(summ$rotation)
-labels <- names(normIndices[1:length(summ$center)])
-
+labels1 <- names(normIndices[1:length(summ$center)])
+labels2 <- c("BGN","ASF","EPS","HFC","MFC","LFC","ACC",
+             "ENPS","ECVS")
 mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
-                     PrinComp_X_axis, PrinComp_Y_axis, sep="_")
+                     PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
 par(mar=c(6,6,4,4))
-plot(normIndices$PC1[start,finish],normIndices$PC3[start,finish],  # Change these!!!!! 
-     col=as.character(normIndices$cluster.list[start,finish]), 
-     cex=1.2, type='p', pch=19, main=mainHeader, 
+plot(normIndices$PC1[start:finish],normIndices$PC3[start:finish],  # Change these!!!!! 
+     col=as.character(normIndices$cluster.list[start:finish]), 
+     cex=1, type='p', pch=15, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
-                round(summ$importance[first*3-1]*100,2),"%)", sep=""),
+                round(summ$importance[first*3-1]*100,2),"%)", 
+                sep=""),
      ylab=paste(PrinComp_Y_axis," (",  
                 round(summ$importance[second*3-1]*100,2),"%)", sep=""),
      cex.lab=2, cex.axis=1.2, cex.main=2)
 hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
            "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
-
 for (i in 1:length(labels)) {
   arrows(0,0, rotate[i,first]*arrowScale, 
          rotate[i,second]*arrowScale, col=1, lwd=1.6)  
-  text(rotate[i,first]*arrowScale*1.1, 
-       rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=2.4)
+  text(rotate[i,first]*arrowScale*1.05, 
+       rotate[i,second]*arrowScale*1.05, 
+       paste(labels2[i]), cex=2.6)
 }
-fourhour.col <- c('red','orange','yellow', 'green','blue','violet')
-
 abline (v=0, h=0, lty=2)
-legend('topright', clust, pch=19, col=colours, bty='n', 
-       cex=2, title = "clusters")
+clust <- as.character(1:30)
+legend('topright', clust, pch=15, col=colours, bty='n', 
+       cex=2, title = "Clusters")
+legend('topleft',labels, col=colours, bty='n', 
+       cex=2, title = "Indices")
+
 dev.off()
 
 #### Plotting PC2 & PC3 Principal Component Plots with base plotting system
-# change file name when necessary
-png('pca_plot PC2_PC3_2_98_5,7,9,10,11,12,13,17,18.png', width=1500, 
-    height=1200, units="px") 
+png('pca_plot PC2_PC3_2_98_5,7,9,10,11,12,13,17,18.png', 
+    width = 1500, height = 1200, units = "px") 
 PrinComp_X_axis <- "PC2"
 PrinComp_Y_axis <- "PC3"
 first <- 2  # change this and values in plot function below!!! to match PC# 
 second <- 3  # change this!!! to match PC#
-arrowScale <- 1.3 # increase/decrease this to adjust arrow length
+start <- 1
+finish <- 10076
+arrowScale <- 1.2 # increase/decrease this to adjust arrow length
 summ <- summary(normIndices.pca)
 rotate <- unname(summ$rotation)
-labels <- names(normIndices[1:length(summ$center)])
-
+labels1 <- names(normIndices[1:length(summ$center)])
+labels2 <- c("BGN","ASF","EPS","HFC","MFC","LFC","ACC",
+             "ENPS","ECVS")
 mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
                      PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
-
 par(mar=c(6,6,4,4))
-plot(normIndices$PC2,normIndices$PC3,  # Change these!!!!! 
-     col=as.character(normIndices$cluster.list), 
-     cex=1.2, type='p', pch=19, main=mainHeader, 
+plot(normIndices$PC2[start:finish],normIndices$PC3[start:finish],  # Change these!!!!! 
+     col=as.character(normIndices$cluster.list[start:finish]), 
+     cex=1, type='p', pch=15, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
                 round(summ$importance[first*3-1]*100,2),"%)", 
                 sep=""),
      ylab=paste(PrinComp_Y_axis," (",  
-                round(summ$importance[second*3-1]*100,2),"%)",
-                sep=""),
+                round(summ$importance[second*3-1]*100,2),"%)", sep=""),
      cex.lab=2, cex.axis=1.2, cex.main=2)
 hours <- c("12 to 4 am","4 to 8 am", "8 to 12 noon",
            "12 noon to 4 pm", "4 to 8 pm", "8 to midnight")
 for (i in 1:length(labels)) {
   arrows(0,0, rotate[i,first]*arrowScale, 
          rotate[i,second]*arrowScale, col=1, lwd=1.6)  
-  text(rotate[i,first]*arrowScale*1.1, 
-       rotate[i,second]*arrowScale*1.1, 
-       paste(labels[i]), cex=2.4)
+  text(rotate[i,first]*arrowScale*1.05, 
+       rotate[i,second]*arrowScale*1.05, 
+       paste(labels2[i]), cex=2.6)
 }
 abline (v=0, h=0, lty=2)
-legend('topright', clust, pch=19, col=colours, bty='n', 
-       cex=2, title = "clusters")
+clust <- as.character(1:30)
+legend('topright', clust, pch=15, col=colours, bty='n', 
+       cex=2, title = "Clusters")
+legend('topleft',labels, col=colours, bty='n', 
+       cex=2, title = "Indices")
+
 dev.off()
+
 ####### PCA plot in ggplot ################
 file <- paste("Principal Component Analysis_ggbiplot_5,7,9,10,11,12,13,17,18", site, 
               "_", date, ".png", sep = "")
@@ -299,7 +328,7 @@ g <- g + theme_classic()
 g <- g + theme(legend.direction = 'horizontal',
                legend.position = 'top')
 g <- g + theme(axis.text=element_text(size=40),
-        axis.title=element_text(size=40,face="bold"))
+               axis.title=element_text(size=40,face="bold"))
 g <- g + geom_hline(yintercept = 0)
 g <- g + geom_vline(xintercept = 0)
 g <- g +  theme(legend.text = element_text(size=50))

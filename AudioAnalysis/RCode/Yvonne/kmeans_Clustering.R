@@ -18,7 +18,7 @@
 #setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
 indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv", header = T)
-
+list <- which(indices$minute.of.day=="0")
 site <- indices$site[1]
 startDate <- indices$rec.date[1]
 endDate <- indices$rec.date[length(indices$rec.date)]
@@ -126,7 +126,7 @@ colourBlock <- brick(colourName, package="raster")
 plotRGB(colourBlock)
 colourBlock <- as.data.frame(colourBlock)
 colours <- NULL
-for(i in 1:35) {
+for(i in 1:30) {
   col <- rgb(colourBlock$colourBlock.1[i],
              colourBlock$colourBlock.2[i],
              colourBlock$colourBlock.3[i],
@@ -151,34 +151,36 @@ normIndices <- cbind(normIndices, unname(kmeansObj$cluster))
 r <- (kmeansObj$betweenss*100/kmeansObj$totss)
 vector <- kmeansObj$cluster[length1:length2]
 normIndicesVector <- cbind(normIndices[length1:length2,],vector)
+list <- which(normIndicesVector$minute.of.day=="0")
+dates <- unique(normIndices$rec.date)
 
-#length1 <- 2881
-#length2 <-  5760  #length(normIndices$X)
+length1 <- 1
+length2 <-  10076  #length(normIndices$X)
 vector <- kmeansObj$cluster[length1:length2]
 normIndicesVector <- cbind(normIndices[length1:length2,],vector)
 
 ##### Find cluster order #########################
-centers <- kmeansObj$centers
+#centers <- kmeansObj$centers
 
-write.table (as.matrix(dist(centers)), 
-             file = paste("Distance_matrix_5,7,9,11,12,13,17,20",
-                          site, ".csv", sep = ""), sep = ",")
-distances <- read.csv(file = paste("Distance_matrix_5,7,9,11,12,13,17,20",
-                                   site, ".csv", sep = ""), header=T)
+#write.table (as.matrix(dist(centers)), 
+#             file = paste("Distance_matrix_5,7,9,11,12,13,17,20",
+#             site, ".csv", sep = ""), sep = ",")
+#distances <- read.csv(file = paste("Distance_matrix_5,7,9,11,12,13,17,20",
+#             site, ".csv", sep = ""), header=T)
   
 # One dimensional analysis
 #distances <- read.csv("Distance_matrix_GympieNP 22 June 2015.csv", header =                        T)
 
-dist <- cmdscale(distances[,1:35], k=1)
-y <- dist[, 1]
-z <- sort(y)
+#dist <- cmdscale(distances[,1:35], k=1)
+#y <- dist[, 1]
+#z <- sort(y)
 
-clusterOrder <- names(z)
+#clusterOrder <- names(z)
 
-colourOrder <- cbind(clusterOrder, colours)
-colourOrder <- as.data.frame(colourOrder)
-colourOrder$clusterOrder <- as.numeric(as.character(colourOrder$clusterOrder))
-colourOrder[ do.call(order, colourOrder), ]
+#colourOrder <- cbind(clusterOrder, colours)
+#colourOrder <- as.data.frame(colourOrder)
+#colourOrder$clusterOrder <- as.numeric(as.character(colourOrder$clusterOrder))
+#colourOrder[ do.call(order, colourOrder), ]
 
 ################################################
 #sort.Filename <- function(filenames) {
@@ -193,7 +195,9 @@ colourOrder[ do.call(order, colourOrder), ]
 #}
 ###############################################
 png(
-  "kmeans Cluster 22-28 June 2015 5,7,9,11,12,13,17,18.png",
+  file=paste("Clusterplot_kmeans",indices$rec.date[length1],
+             indices$rec.date[length2],
+             "5,7,9,11,12,13,17,18.png", sep ="_"), 
   width     = 400,
   height    = 85,
   units     = "mm",
@@ -204,26 +208,21 @@ png(
 plot(normIndicesVector$vector,
      col = colours[normIndicesVector$vector], 
      xaxt = 'n', xlab = " ", ylab = "Cluster reference", 
-     main = paste(site, "24 to 25 June 2015", sep = " "),
+     main = paste(site, indices$rec.date[length1],
+                  indices$rec.date[length2], 
+                  "(kmeans)", sep = " "),
      cex.main = 2)
 axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8, 0.5, 0), 
      cex.axis = 1.5)
-#axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
- #    tick = FALSE, cex.axis = 1.5)
+axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
+     tick = FALSE, cex.axis = 1.5)
 mtext(paste(site, "_", round(r, 3), "%", sep = " "), side=4, 
       cex =1.5)
 mtext(paste(indicesRef, collapse = ", ", sep = ""), side=3, 
       line = 0.2, cex = 1.5)
-abline(v = 0, lwd=1.5, lty = 3)
-
-#offset <- indices$minute.of.day[1]
-
-abline(v = 1440-offset, lwd=1.5, lty = 3)
-abline(v = 2880-offset, lwd=1.5, lty = 3)
-abline(v = 4320-offset, lwd=1.5, lty = 3)
-abline(v = 5760-offset, lwd=1.5, lty = 3)
-abline(v = 7200-offset, lwd=1.5, lty = 3)
-abline(v = 8640-offset, lwd=1.5, lty = 3)
+for (i in 1:length(list)) {
+  abline(v=list[i], lwd=1.5, lty = 3)
+}
 dev.off()
 ########################
 # Text labels
@@ -278,7 +277,6 @@ dev.off()
 
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\")
 
-list <- which(normIndicesVector$minute.of.day=="0")
 dates <- unique(normIndices$rec.date)
 # Histogram
 par(mfrow = c(3,2), mar = c(1,2,1,0),oma=c(3,2,0,2))
