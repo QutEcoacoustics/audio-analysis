@@ -46,6 +46,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     public static class LDSpectrogramStitching
     {
 
+        // CONSTANT STRINGS
+        public const string CsvFileExt = "csv";
+        public const string ImgFileExt = "png";
+
+        public const string SummaryIndicesStr  = "SummaryIndices";
+        public const string SpectralIndicesStr = "SpectralIndices";
+
 
         public static DirectoryInfo[] GetSubDirectoriesForSiteData(DirectoryInfo[] topLevelDataDirectories, string site)
         {
@@ -71,24 +78,79 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
+
+        /// <summary>
+        /// TWO MAJOR ASSUMPTIONS WITH THIS METHOD !!!!!!!!!!!!!!!!!!
+        /// Assumes that the file names contain valid parseable date-time strings
+        /// Also assumes that the array of files has been sorted in temporal order
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        //public static DateTimeOffset[] GetStartAndEndDateTimes(FileInfo[] files)
+        //{
+        //    var op = new DateTimeOffset[2];
+        //    string firstFileName = files[0].Name;
+        //    string lastFileName  = files[files.Length - 1].Name;
+
+        //    // calculate start date
+        //    //?? TODO TODO TODO TODO CANNOT GET DATE-TIME STRING TO PARSE USING FileDateHelpers.FileNameContainsDateTime()
+        //    //DateTimeOffset dto = SunAndMoon.ParseString2DateTime(firstFileName.Substring(0, 15));
+        //    DateTimeOffset dto;
+        //    if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(firstFileName.Substring(0, 15), out dto))
+        //    {
+        //        op[0] = dto;
+        //    }
+
+        //    // calculate end date if passed value = null.
+        //    //op[1] = SunAndMoon.ParseString2DateTime(lastFileName.Substring(0, 15));
+        //    //op[1] = DateTimeOffset.UtcNow;
+
+        //    if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(lastFileName.Substring(0, 15), out dto))
+        //    {
+        //        op[1] = dto;    
+        //    }
+        //    return op;
+        //}
+
+        public static SortedDictionary<DateTimeOffset, FileInfo> FilterFilesForDates(FileInfo[] files, TimeSpan? offsetHint = null)
+        {
+            var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
+            foreach (var file in files)
+            {
+                DateTimeOffset parsedDate;
+                //if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint: null))
+                if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint))
+                {
+                    datesAndFiles.Add(parsedDate, file);
+                }
+            }
+
+            // minnimum
+            //datesAndFiles[datesAndFiles.Keys.First()];
+            
+            // maximum
+            //datesAndFiles[datesAndFiles.Keys.Last()];
+
+            return datesAndFiles;
+        }
+
+
+
+
         /// <summary>
         /// Use this concatenation method when you only want to concatenate the files for a fixed single day.
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
         /// </summary>
-        /// <param name="topLevelDataDirectories"></param>
+        /// <param name="directories"></param>
         /// <param name="opDir"></param>
         /// <param name="site"></param>
         /// <param name="dto"></param>
-        public static Dictionary<string, double[,]> ConcatenateSpectralIndexFilesForOneDay(DirectoryInfo[] topLevelDataDirectories,
+        public static Dictionary<string, double[,]> ConcatenateSpectralIndexFilesForOneDay(DirectoryInfo[] directories,
                                          DirectoryInfo opDir,
-                                         string site,
+                                         string filestem,
                                          DateTimeOffset dto)
         {
-            // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-            // Assumes that the required subdirectories have given site somewhere in their path. 
-            var dataDirectories = GetSubDirectoriesForSiteData(topLevelDataDirectories, site);
-
-            // 2. PATTERN SEARCH FOR CORRECT CSV FILES
+            // 1. PATTERN SEARCH FOR CORRECT CSV FILES
             // Assumes that the required files are subdirectories of given site. 
             // Read them into a dictionary
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
@@ -96,18 +158,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
             string filePrefix = null;
             // Concatenate the csv files
-            var dictionary = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(dataDirectories.ToArray(), filePrefix, dto, keys);
+            var dictionary = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(directories.ToArray(), filePrefix, dto, keys);
 
-            // 3. CREATE OUTPUT DIRECTORY
+            // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-            //DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, site, dateString));
-            //if (!resultsDir.Exists) resultsDir.Create();
-
-
-            // 4. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
-            string opFileStem = String.Format("{0}_{1}", site, dateString);
+            string opFileStem = String.Format("{0}_{1}", filestem, dateString);
             TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
-            // TODO TODO TODO TODO TODO -- THERE ARE PROBLEMS WITH ORIENTATION OF THE WRITTEN FILES. COLUMNS END UP WRITTEN IN REVERSE ORDER
             foreach (var key in keys)
             {
                 var filename = FilenameHelpers.AnalysisResultName(opDir, opFileStem, key, "csv").ToFileInfo();
@@ -194,54 +250,54 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        public static FileInfo[] GetSummaryIndexFilesForOneDay(DirectoryInfo[] topLevelDirectories, string site, DateTimeOffset dto)
+        public static FileInfo[] GetSummaryIndexFilesForOneDay(DirectoryInfo[] directories, DateTimeOffset dto)
         {
-            // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-            // Assumes that the required subdirectories have given site somewhere in their path. 
-            var subDirectories = GetSubDirectoriesForSiteData(topLevelDirectories, site);
-
             string pattern = "*__Towsey.Acoustic.Indices.csv";
+           // LDSpectrogramStitching.IndexType, LDSpectrogramStitching.CsvFileExt
 
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-            string opFileStem = String.Format("{0}_{1}", site, dateString);
+            //string opFileStem = String.Format("{0}_{1}", site, dateString);
 
             // 2. PATTERN SEARCH FOR CORRECT SUMMARY CSV FILES AND READ INTO DICTIONARY
             // Assumes that the required files are subdirectories of given site. 
             string fileStemPattern = dateString + pattern;
-            FileInfo[] files = IndexMatrices.GetFilesInDirectories(subDirectories, fileStemPattern);
-
-            if (files.Length == 0)
-            {
-                return null;
-            }
+            FileInfo[] files = IndexMatrices.GetFilesInDirectories(directories, fileStemPattern);
             return files;
         }
 
-        /// <summary>
-        /// Use this concatenation method when you only want to concatenate the files for a fixed single day.
-        /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
-        /// </summary>
-        /// <param name="topLevelDataDirectories"></param>
-        /// <param name="indexPropertiesConfigFileInfo"></param>
-        /// <param name="opDir"></param>
-        /// <param name="siteName"></param>
-        /// <param name="dto"></param>
-        //public static Dictionary<string, double[]> ConcatenateSummaryIndexFilesForOneDay(DirectoryInfo[] topLevelDataDirectories,
-        //                                             DirectoryInfo opDir,
-        //                                             string siteName,
-        //                                             DateTimeOffset dto)
-        //{
-        //    // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-        //    // Assumes that the required subdirectories have given site somewhere in their path. 
-        //    var dataDirectories = GetSubDirectoriesForSiteData(topLevelDataDirectories, siteName);
+        public static FileInfo[] GetSummaryIndexFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
+        {
+            string pattern = "Towsey.Acoustic.Indices.csv";
+            // LDSpectrogramStitching.IndexType, LDSpectrogramStitching.CsvFileExt
+            var keys = dict.Keys;
+            var matchFiles = new List<FileInfo>();
+            foreach (var key in keys)
+            {
+                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                {
+                    FileInfo file = dict[key];
+                    if(file.Name.EndsWith(pattern))
+                    {
+                        matchFiles.Add(file);
+                    }
+                }
+            }
+            return matchFiles.ToArray();
+        }
 
-        //    // 2. PATTERN SEARCH FOR CORRECT SUMMARY CSV FILES AND READ INTO DICTIONARY
-        //    // Assumes that the required files are subdirectories of given site. 
-        //    // Read them into a dictionary - also written at same time
-        //    //var dictionary = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDirectories.ToArray(), opDir, siteName, dto);
-        //    var dictionary = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDirectories.ToArray(), opDir, siteName, dto);
-        //    return dictionary;
-        //}
+        public static SortedDictionary<DateTimeOffset, FileInfo> GetFilesForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
+        {
+            var keys = dict.Keys;
+            var matchFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
+            foreach (var key in keys)
+            {
+                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                {
+                    matchFiles.Add(key, dict[key]);
+                }
+            }
+            return matchFiles;
+        }
 
 
         public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(FileInfo[] files, DirectoryInfo opDir, FileInfo indicesCsvfile)
@@ -277,8 +333,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                 DirectoryInfo opDir,
                                                 SiteDescription siteDescription)
         {
-            string imgFileExt = "png";
-            string indexType = "SummaryIndices";
             DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
 
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
@@ -297,7 +351,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                  dictionaryOfCsvColumns,
                                  titletext,
                                  siteDescription);
-            var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, imgFileExt);
+            var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
             tracksImage.Save(imagePath);
         }
 
