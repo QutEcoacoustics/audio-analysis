@@ -78,40 +78,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-
         /// <summary>
-        /// TWO MAJOR ASSUMPTIONS WITH THIS METHOD !!!!!!!!!!!!!!!!!!
-        /// Assumes that the file names contain valid parseable date-time strings
-        /// Also assumes that the array of files has been sorted in temporal order
+        /// sorts a list of files by the date assumed to be encoded in their file names
+        /// and then returns the list as a sorted dictionary with file DateTime as the keys.
         /// </summary>
         /// <param name="files"></param>
+        /// <param name="offsetHint"></param>
         /// <returns></returns>
-        //public static DateTimeOffset[] GetStartAndEndDateTimes(FileInfo[] files)
-        //{
-        //    var op = new DateTimeOffset[2];
-        //    string firstFileName = files[0].Name;
-        //    string lastFileName  = files[files.Length - 1].Name;
-
-        //    // calculate start date
-        //    //?? TODO TODO TODO TODO CANNOT GET DATE-TIME STRING TO PARSE USING FileDateHelpers.FileNameContainsDateTime()
-        //    //DateTimeOffset dto = SunAndMoon.ParseString2DateTime(firstFileName.Substring(0, 15));
-        //    DateTimeOffset dto;
-        //    if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(firstFileName.Substring(0, 15), out dto))
-        //    {
-        //        op[0] = dto;
-        //    }
-
-        //    // calculate end date if passed value = null.
-        //    //op[1] = SunAndMoon.ParseString2DateTime(lastFileName.Substring(0, 15));
-        //    //op[1] = DateTimeOffset.UtcNow;
-
-        //    if (Acoustics.Shared.FileDateHelpers.FileNameContainsDateTime(lastFileName.Substring(0, 15), out dto))
-        //    {
-        //        op[1] = dto;    
-        //    }
-        //    return op;
-        //}
-
         public static SortedDictionary<DateTimeOffset, FileInfo> FilterFilesForDates(FileInfo[] files, TimeSpan? offsetHint = null)
         {
             var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
@@ -125,12 +98,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
 
-            // minnimum
-            //datesAndFiles[datesAndFiles.Keys.First()];
-            
-            // maximum
-            //datesAndFiles[datesAndFiles.Keys.Last()];
-
+            // use following lines to get first and last date from returned dictionary
+            //DateTimeOffset firstdate = datesAndFiles[datesAndFiles.Keys.First()];
+            //DateTimeOffset lastdate  = datesAndFiles[datesAndFiles.Keys.Last()];
             return datesAndFiles;
         }
 
