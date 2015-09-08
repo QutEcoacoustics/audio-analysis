@@ -65,8 +65,12 @@ namespace AnalysisPrograms
             [ArgDescription("DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
             public DateTimeOffset? EndDate { get; set; }
 
-            [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info.")]
-            public TimeSpan? TimeSpanOffsetHint { get; set; }
+            public TimeSpan? timeSpanOffsetHint = new TimeSpan(10, 0, 0);
+            [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. Set default to east coast Australia")]
+            public TimeSpan? TimeSpanOffsetHint {
+                get { return timeSpanOffsetHint; }
+                set { timeSpanOffsetHint = value; }
+            }
 
 
             //[ArgDescription("Draw images of summary and spectral indices after concatenating them")]
@@ -76,6 +80,14 @@ namespace AnalysisPrograms
             //[Production.ArgExistingFile(Extension = ".yml")]
             //[ArgPosition(1)]
             internal FileInfo IndexPropertiesConfig { get; set; }
+
+            private bool concatenateEverythingYouCanLayYourHandsOn = false;
+            [ArgDescription("Set this true when want to concatenate longer than 24-hour recordings as in case of PNG data.")]
+            public bool ConcatenateEverythingYouCanLayYourHandsOn {
+                get { return concatenateEverythingYouCanLayYourHandsOn; }
+                set { concatenateEverythingYouCanLayYourHandsOn = value; }
+            }
+
         }
 
         /// <summary>
@@ -115,28 +127,33 @@ namespace AnalysisPrograms
             //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_8-7-15\BAR\BAR_64\";
             //string opFileStem = "TNC_Yavera_20150708_BAR64";
 
-            FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
             string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
             string opPath   = dataPath;
-            string siteName = "Musimunat";
-            string fileStemName = "Musimunat_BAR18";
+            string directoryFilter = "Musimunat";  // this is a directory filter to locate only the required files
+            string opFileStem = "Musimunat_BAR18"; // this should be a unique site identifier
             //string opFileStem = "TNC_Musimunat_20150703_BAR18";
             DirectoryInfo[] dataDirs = { new DirectoryInfo(dataPath) };
+
+            // the default set of index properties is located in the AnalysisConfig directory.
+            //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo();
+            // However the PNG data uses an older set of index properties prior to fixing a bug!
+            FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
+
             // ########################## END of EDDIE GAME'S RECORDINGS
 
 
 
 
-            //var dtoStart = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
-            //var dtoEnd   = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
-            TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
+            //var dtoStart = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
+            //var dtoEnd   = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
 
             bool drawImages = true;
-             if(!indexPropertiesConfig.Exists) LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
+            if(!indexPropertiesConfig.Exists) LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
 
             // DISCUSS THE FOLLOWING WITH ANTHONY
+            // Anthony says we would need to serialise the class. Skip this for the moment.
             // The following location data is used only to draw the sunrise/sunset tracks on images.
             //double? latitude = null;
             //double? longitude = null;
@@ -149,15 +166,13 @@ namespace AnalysisPrograms
             {
                 InputDataDirectories = dataDirs,
                 OutputDirectory = new DirectoryInfo(opPath),
-                DirectoryFilter = siteName,
-                FileStemName    = fileStemName,
+                DirectoryFilter = directoryFilter,
+                FileStemName    = opFileStem,
                 StartDate       = dtoStart,
                 EndDate         = dtoEnd,
-                DrawImages = drawImages,
+                DrawImages      = drawImages,
                 IndexPropertiesConfig = indexPropertiesConfig,
-                // use the default set of index properties in the AnalysisConfig directory.
-                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
-                TimeSpanOffsetHint = offsetHint,
+                ConcatenateEverythingYouCanLayYourHandsOn = true,
             };
             throw new NoDeveloperMethodException();
     }
@@ -201,7 +216,7 @@ namespace AnalysisPrograms
 
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-            // Assumes that the required subdirectories have the given site name somewhere in their path. 
+            // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path. 
             var subDirectories = LDSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.DirectoryFilter);
             if (subDirectories.Length == 0)
             {
@@ -214,6 +229,12 @@ namespace AnalysisPrograms
             // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES.
             string pattern = "*__Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
+            if (verbose)
+            {
+                LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
+                LoggedConsole.WriteLine("# IndexFiles.csv Count = " + csvFiles.Length);
+            }
+
             if (csvFiles.Length == 0)
             {
                 LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
@@ -225,16 +246,10 @@ namespace AnalysisPrograms
             // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
             var sortedDictionaryOfDatesAndFiles = LDSpectrogramStitching.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
 
-            DateTimeOffset? startDate = arguments.StartDate;
-            DateTimeOffset? endDate   = arguments.EndDate;
-
-            if (verbose)
-            {
-                LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
-                LoggedConsole.WriteLine("# IndexFiles.csv Count = " + csvFiles.Length);
-            }
 
             // calculate new start date if passed value = null.
+            DateTimeOffset? startDate = arguments.StartDate;
+            DateTimeOffset? endDate = arguments.EndDate;
             if (startDate == null)
             {
                 startDate = sortedDictionaryOfDatesAndFiles.Keys.First();
@@ -284,10 +299,12 @@ namespace AnalysisPrograms
 
             //TODO TODO TODO                           NEED TO DEBUG THE FOLLOWING OPTION
             //TODO TODO TODO
-            //if (ConcatenateEverythingYouCanLayYourHandsOn)
+            //if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             //{
+            //    // concatenate the summary index files
+            //    FileInfo[] files = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
             //    LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
-            //    LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0],  indexPropertiesConfig, opDir, arguments.FileStemName);
+            //    LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
             //    return;
             //}
 
