@@ -24,9 +24,10 @@ training <- apply(training, 2, as.numeric)
 training <- t(training)
 
 #calculate the Jaccard matrix
-distance.matrix <- dist.binary(training, 1)
+distance.matrix <- dist.binary(training, 2)
 
 #calculate the principle coordinate analysis
-pco.result <- dudi.pco(distance.matrix)
+pco.result <- dudi.pco(distance.matrix, 10)
 
 #scatter(pco.result)
+#s.label(pco.result$li, clabel=1, boxes=FALSE, xax=1, yax=2)
