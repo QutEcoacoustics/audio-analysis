@@ -21,13 +21,22 @@
 
 ######## You may wish to change these ###################### 
 # Set to where the CSV files are to be saved
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_16")
 
-# Set sourceDir to where the wavefiles files are (for mapping file)
-sourceDir <- "Y:\\Yvonne\\Cooloola\\2015June28\\GympieNP\\"
+# Set sourceDir to where the wavefiles files are 
+#(for mapping file)
+# this date is a week later than the date above
+sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\"
 
 # Set folder to where the indices files are
-folder <- "F:\\Indices\\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\\Yvonne\\Cooloola\\2015June28\\GympieNP\\"
+folder <- "F:\\Indices\\2015Aug31-110230 - Yvonne, Indices, ICD=60.0, #53"
+
+# Obtain a list of the original wave files
+myFiles <- list.files(full.names=FALSE, pattern="*.wav$", path=sourceDir)
+myFiles
+
+# Set pathName to where the wave files 
+pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\",sep="")
 
 #site <- "Woondum1 "
 #latitude <- "Latitude"
@@ -53,9 +62,6 @@ elevation <- "225m"
 # Source the code for the dateTime function
 source("C:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\dateTime_function.R")
 
-# Obtain a list of the original wave files
-myFiles <- list.files(full.names=FALSE, pattern="*.wav$", path=sourceDir)
-myFiles
 
 # Call dateTime function and create lists of dates and times
 dt <- dateTime(myFiles) 
@@ -82,13 +88,12 @@ all.indices <- NULL
 numberRows <- NULL
 rec.date <- NULL
 rec.time <- NULL
-
 for (i in 1:length) {
-  pathName <- (paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                     sub("*.wav","\\1", myFiles[i]), 
+    Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20), 
                      "__Towsey.Acoustic.Indices.csv", 
                      sep =""))
-  assign(paste("fileContents"), read.csv(pathName))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   dateTimeOfRecord  <- paste((substr(dates[i], 1,4)), "-", 
                             (substr(dates[i], 5,6)), "-",
@@ -304,10 +309,10 @@ dev.off()
 all.indices <- NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-         sub("*.wav","\\1", myFiles[i]), 
-         "__Towsey.Acoustic.ACI.csv", sep =""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20),
+                     "__Towsey.Acoustic.ACI.csv", sep =""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -326,10 +331,10 @@ write.csv(all.indices, file=paste("Towsey.Acoustic.ACI_", site,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), 
-              "__Towsey.Acoustic.BGN.csv", sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20), 
+                     "__Towsey.Acoustic.BGN.csv", sep = ""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -351,10 +356,10 @@ write.csv(all.indices,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), 
-              "__Towsey.Acoustic.CVR.csv", sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20),
+                     "__Towsey.Acoustic.CVR.csv", sep = ""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -375,10 +380,10 @@ write.csv(all.indices,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), 
-              "__Towsey.Acoustic.DIF.csv", sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20),
+                     "__Towsey.Acoustic.DIF.csv", sep = ""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -399,10 +404,10 @@ write.csv(all.indices,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), 
-              "__Towsey.Acoustic.ENT.csv", sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20), 
+                     "__Towsey.Acoustic.ENT.csv", sep = ""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -423,10 +428,10 @@ write.csv(all.indices,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-              sub("*.wav","\\1", myFiles[i]), 
-              "__Towsey.Acoustic.EVN.csv", sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20), 
+                     "__Towsey.Acoustic.EVN.csv", sep = ""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -447,10 +452,10 @@ write.csv(all.indices,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), 
-                   "__Towsey.Acoustic.POW.csv", sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20), 
+                    "__Towsey.Acoustic.POW.csv", sep = ""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -471,10 +476,10 @@ write.csv(all.indices,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), 
-                   "__Towsey.Acoustic.SPT.csv", sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20), 
+                     "__Towsey.Acoustic.SPT.csv", sep = ""))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }
@@ -495,11 +500,11 @@ write.csv(all.indices,
 all.indices<-NULL
 
 for (i in 1:length) {
-  pathName<-(paste(folder, myFiles[i], "\\Towsey.Acoustic\\", 
-                   sub("*.wav","\\1", myFiles[i]), 
-                   "__Towsey.Acoustic.SUM.csv", 
+  Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
+                     substr(myFiles[i], 1,20), 
+                     "__Towsey.Acoustic.SUM.csv", 
                    sep = ""))
-  assign(paste("fileContents"), read.csv(pathName))
+  assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
   all.indices <- rbind(all.indices, fileContents)
 }

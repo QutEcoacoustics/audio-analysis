@@ -5,16 +5,6 @@
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters")
 indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv")
 list <- which(indices$minute.of.day=="0")
-lst1 <- NULL
-for (i in 1:length(list)) {
-  lst <- list[i+1]-1
-  lst1 <- c(lst1, lst)
-}
-list <- cbind(list, lst1)
-colnames(list) <- c("start","end")
-write.table(list[,1:2], file="list.csv", 
-            row.names = F, sep = ",")
-
 site <- indices$site[1]
 startDate <- indices$rec.date[1]
 endDate <- indices$rec.date[length(indices$rec.date)]
@@ -66,34 +56,27 @@ for (j in 4:20) {
 }
 ##############################################
 # Create a list of the number of minutes per day used to plot colours ##########
-#counter <- NULL
-#list <- 0
-#endTime <- length(indices$rec.time)
-#mn <-indices[grep("\\<0\\>", indices$minute.of.day),]
-#min.per.day <- NULL
-#for (k in 1:length(mn$rec.time)) {
-#  m <- mn$X[k]
-#  list <- c(list, m)
-#}
-#list <- c(list, endTime)
+counter <- NULL
+list <- 0
+endTime <- length(indices$rec.time)
+mn <-indices[grep("\\<0\\>", indices$minute.of.day),]
+min.per.day <- NULL
+for (k in 1:length(mn$rec.time)) {
+  m <- mn$X[k]
+  list <- c(list, m)
+}
+list <- c(list, endTime)
 
-#for (j in 1:(length(mn$rec.time)+1)) {
-#  diff <- list[j+1] - list[j]
-#  d <- c(min.per.day, diff)
-#  counter <- c(counter, d)
-#}
+for (j in 1:(length(mn$rec.time)+1)) {
+  diff <- list[j+1] - list[j]
+  d <- c(min.per.day, diff)
+  counter <- c(counter, d)
+}
 
 # adjust first and last counter by one
-#counter[1] <- counter[1]-1
-#counter[length(mn$rec.time)] <- counter[length(mn$rec.time)] + 1
+counter[1] <- counter[1]-1
+counter[length(mn$rec.time)] <- counter[length(mn$rec.time)] + 1
 
-counter <- NULL
-
-for (i in 1:length(list)) {
-  count <- list[i+1]-list[i]
-  counter <- c(counter, count)
-}
-counter <- counter[1:length(counter)-1]
 ######## Create day identification for different colours in plot #############
 number.of.days <- length(unique(indices$rec.date))
 day <- NULL
@@ -103,7 +86,6 @@ if (counter[1]==0)
     id <- rep(LETTERS[i], counter[i])
     day <- c(day, id)
   }
-
 
 if (counter[1] > 0) 
   for (i in 1:(number.of.days)) {
@@ -150,52 +132,41 @@ library(mclust)
 # In double(ld) : Reached total allocation of 16289Mb: 
 # see help(memory.size).  Running on one week takes 
 # around 10 minutes
-
-# Week 2 
-#start <- list[8]; end <- list[15]-1
-# Week 3
-#start <- list[15]; end <- list[22]-1
-# Week 4
-#start <- list[22]; end <- list[29]-1
-
-set.seed(1)
-start <- 1 # equivalent to list[8]
-end <-   40000         #length(indices$X) # equivalent to list[14]-1
-fit <- Mclust(dataFrame[start:end,1:9], G=1:40)
-mclust30list_9_all <- unname(fit$classification)
-write.table(mclust30list_9_all, file="mclust30listG10_35_9_weeks1_4_1_40000minutes_a.csv", 
+start <- 10077
+end <- 20158
+fit <- Mclust(dataFrame[start:end,1:9], G=30)
+mclust30list_9 <- unname(fit$classification)
+write.table(mclust30list_9, file="mclust30list_9_week2.csv", 
             row.names = F)
-clusters <- read.csv(file="mclust30listG10_35_9_weeks1_4_1_40000minutes_a.csv", header=T)
-write.table(fit$parameters$mean, file="mclust30listG10_35_9_weeks1_4_1_40000minutes_a_mean.csv", 
-            row.names = F, sep = ",")
-plot(fit)
+clusters <- read.csv(file="mclust30list_9_week2.csv", header=T)
+
 #plot(fit) # plot results 
 #summary(fit) # display the best model
-#png(paste("Clusterplot_mclust", indices$rec.data[start],
-#          indices$rec.date[end],"5,7,9,11,12,13,17,18.png",
-#          sep="_"),
-#    width = 400, 
-#    height = 85, 
-#    units = "mm",
-#    res=1200,
-#    pointsize = 4)
+png(paste("Clusterplot_mclust", indices$rec.data[start],
+          indices$rec.date[end],"5,7,9,11,12,13,17,18.png",
+          sep="_"),
+    width = 400, 
+    height = 85, 
+    units = "mm",
+    res=1200,
+    pointsize = 4)
 
 #par(mar=c(3,5,3,3))
-#plot(fit$classification, col=colours[fit$classification],
-#     xaxt = 'n', xlab = "", ylab = "Cluster reference", cex.axis=2,
-#     cex.lab=1.5, main = paste(site, indices$rec.date[start],
-#     indices$rec.date[end], "(mclust)", sep = "_"),
-#     cex.main = 2)
-#axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8, 0.5, 0), 
-#     cex.axis = 1.5, mgp = c(1.8, 0.5, 0))
-#axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
-#     tick = FALSE, cex.axis=1.5, mgp = c(4, 1.8, 0))
-#mtext(paste(indicesRef, collapse = ", ", sep = ""), side=3, 
-#      line = -0.1, cex = 1.5)
-#for (i in 1:length(list)) {
-#  abline(v=list[i], lwd=1.5, lty = 3)
-#}
-#dev.off()
+plot(fit$classification, col=colours[fit$classification],
+     xaxt = 'n', xlab = "", ylab = "Cluster reference", cex.axis=2,
+     cex.lab=1.5, main = paste(site, indices$rec.date[start],
+     indices$rec.date[end], "(mclust)", sep = "_"),
+     cex.main = 2)
+axis(side = 1, at = timePos, labels = timeLabel, mgp = c(1.8, 0.5, 0), 
+     cex.axis = 1.5, mgp = c(1.8, 0.5, 0))
+axis(side = 1, at = datePos, labels = dateLabel, mgp = c(4, 1.8, 0),
+     tick = FALSE, cex.axis=1.5, mgp = c(4, 1.8, 0))
+mtext(paste(indicesRef, collapse = ", ", sep = ""), side=3, 
+      line = -0.1, cex = 1.5)
+for (i in 1:length(list)) {
+  abline(v=list[i], lwd=1.5, lty = 3)
+}
+dev.off()
 
 #fit$parameters$mean
 #mclust15List <- unname(fit$classification)

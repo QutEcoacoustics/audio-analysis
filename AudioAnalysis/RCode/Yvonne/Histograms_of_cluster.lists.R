@@ -20,7 +20,7 @@ cluster.list <- as.data.frame(cluster.list)
 #rm(indices)
 
 cluster.ref <- unname(table(cluster.list[day.ref[1]:day.ref[2]-1,]))
-
+### Daily clustering
 ref <- LETTERS[1:26] ## Gives a sequence of the letters of the alphabet 
 counts <- NULL
 

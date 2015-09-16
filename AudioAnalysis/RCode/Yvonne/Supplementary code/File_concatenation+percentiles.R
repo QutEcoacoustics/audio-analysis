@@ -1,5 +1,6 @@
 # Concatenating csv files aswell as calculation of percentiles
 # of each index
+# Use Save_Summary_Indices_ as_csv_file.R to save csv files into folders
 
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data")
 
@@ -7,7 +8,10 @@ folder <- "C:\\Work\\CSV files\\GympieNP1_new\\"
 
 myFolders <- list.files(full.names=FALSE, pattern="2015_*", 
                         path=folder)
+last <- myFolders[length(myFolders)]
+
 myFolders
+
 length <- length(myFolders)
 length
 
@@ -26,7 +30,7 @@ dates <- all.indices$rec.date
 
 write.csv(all.indices, row.names = F,
           file=paste("Towsey_Summary_Indices_", site,
-                     dates[1],"to current.csv", 
+                     dates[1],"to",last, ".csv", 
                      sep = ""))
 
 quantiles1 <- NULL
@@ -55,7 +59,7 @@ colnames(quantiles) <- c("min","2%","5%","mean","95%","98%","max","index")
 write.csv(quantiles, row.names = FALSE,
           file=paste("Percentiles_", site,
                      dates[1],
-                     "to current.csv", 
+                     "to" , last, ".csv", 
                      sep = ""))
 
 View(quantiles)
