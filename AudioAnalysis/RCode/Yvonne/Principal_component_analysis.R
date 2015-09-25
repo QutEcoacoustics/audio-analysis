@@ -17,7 +17,7 @@
 ########## You may wish to change these ###########################
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
 cluster.list <- read.csv(file = paste("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30", 
-                                      site, ".csv", sep = ""), header = T,
+                         site, ".csv", sep = ""), header = T,
                          col.names = "cluster.list")
 
 indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv", header = T)
