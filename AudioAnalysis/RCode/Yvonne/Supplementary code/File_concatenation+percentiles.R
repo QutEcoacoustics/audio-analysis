@@ -4,7 +4,8 @@
 
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\all_data")
 
-folder <- "C:\\Work\\CSV files\\GympieNP1_new\\"
+#folder <- "C:\\Work\\CSV files\\GympieNP1_new\\"
+folder <- "C:\\Work\\CSV files\\Woondum3_new\\"
 
 myFolders <- list.files(full.names=FALSE, pattern="2015_*", 
                         path=folder)
@@ -27,11 +28,13 @@ for (i in 1:length) {
 site <- all.indices$site[1]
 dates <- all.indices$rec.date
 
-
-write.csv(all.indices, row.names = F,
+write.csv(all.indices, row.names = FALSE,
           file=paste("Towsey_Summary_Indices_", site,
                      dates[1],"to",last, ".csv", 
                      sep = ""))
+
+#all.indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 22-06-2015to2015_08_16.csv", 
+# header=T)
 
 quantiles1 <- NULL
 quantiles2 <- NULL

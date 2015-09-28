@@ -71,3 +71,8 @@ a <- cor(normIndices[,4:20][,unlist(lapply(indices[,4:20], is.numeric))])
 write.table(a, file = paste("Correlation_matrix_2_98%",site, "_", date,
                             ".csv",sep=""), sep = ",", col.names = NA, 
                             qmethod = "double")
+
+a <- cor(centers[,1:100])
+write.table(a, file = paste("Correlation_matrix_mclustABCD",site, "_", date,
+                            ".csv",sep=""), sep = ",", col.names = NA, 
+            qmethod = "double")

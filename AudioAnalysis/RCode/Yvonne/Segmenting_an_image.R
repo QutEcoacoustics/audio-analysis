@@ -11,9 +11,12 @@
 #setwd("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters\\Week2_29June_5July2015")
 #cluster.list <- read.csv(file="mclust30list_9_week2.csv", header = T)
 
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters\\Week1_22_28June2015")
-cluster.list <- read.csv(file="mclust30list_9_week1.csv", header = T)
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters\\Week1_22_28June2015")
+#cluster.list <- read.csv(file="mclust30list_9_week1.csv", header = T)
 
+setwd ("C:\\Work\\CSV files\\GympieNP1_new\\mclust_30clusters\\Week1_22_28June 2015_10000min\\")
+cluster.list <- read.csv(file = "mclustG1_30_I9_T1_10000minutes_a.csv", header = T)
+cluster.list <- unname(cluster.list[,1])
 indices <- read.csv("C:\\Work\\CSV files\\GympieNP1_new\\all_data\\Towsey_Summary_Indices_Gympie NP1 22-06-2015to current.csv")
 list <- which(indices$minute.of.day=="0")
 lst1 <- NULL
@@ -43,7 +46,7 @@ site <- "Gympie NP1 "
 library(raster)
 colourName <- "colourBlock.png"
 colourBlock <- brick(colourName, package="raster")
-#plotRGB(colourBlock)
+plotRGB(colourBlock)
 colours <- c("red", "chocolate4", "palegreen", "darkblue",
              "brown1", "darkgoldenrod3", "cadetblue4", 
              "darkorchid", "orange" ,"darkseagreen", 
@@ -52,7 +55,7 @@ colours <- c("red", "chocolate4", "palegreen", "darkblue",
              "mediumorchid4", "mediumslateblue","mistyrose4",
              "royalblue", "orange", "palevioletred2", 
              "sienna", "slateblue", "yellow", "tan2", 
-             "salmon","violetred1","plum")
+             "salmon","violetred1","plum","magenta","mauve")
 
 ##### Code for 1st day #########################
 # make rasterRBG from a 24 hour spectrogram
@@ -96,9 +99,9 @@ png(filename = "ClusterImage_a_mclust_22 June 2015 Gympie NP_5,7,9,10,11,12,13,1
     width = 2000, height = 334, units = "px", pointsize = 12,
     res = NA, family = "", restoreConsole = TRUE)
 
-clusterOrder <- as.character(c(1:30))
+clusterOrder <- as.character(c(1:31))
 total <- NULL
-for (i in 1:30) {
+for (i in 1:31) {
   current.minute.list <- which(cluster.list == clusterOrder[i])
   length <- sum(current.minute.list <= 1441)
 total <- c(total, length)
@@ -107,7 +110,7 @@ total
 
 length2 <- 10
 
-for (i in 1:30) {
+for (i in 1:31) {
   current.minute.list <- which(cluster.list == i)
   length <- sum(current.minute.list <= 1441)
   if (length > 0) {
@@ -138,18 +141,18 @@ dev.off()
 ##### Code for 2nd day  #########################
 #library(raster)
 #Change date here!
-for (j in 1:7) {
-  b1 <- c("GympieNP_20150622__ACI-ENT-EVN.png",
-          "GympieNP_20150623__ACI-ENT-EVN.png",
-          "GympieNP_20150624__ACI-ENT-EVN.png",
-          "GympieNP_20150625__ACI-ENT-EVN.png",
-          "GympieNP_20150626__ACI-ENT-EVN.png",
-          "GympieNP_20150627__ACI-ENT-EVN.png",
-          "GympieNP_20150628__ACI-ENT-EVN.png")
-  
-  b <- brick(paste(b1[j]), package="raster")
+#for (j in 1:7) {
+#  b1 <- c("GympieNP_20150622__ACI-ENT-EVN.png",
+#b1 <-   "GympieNP_20150623__ACI-ENT-EVN.png"
+#b1 <-   "GympieNP_20150624__ACI-ENT-EVN.png"
+b1 <-   "GympieNP_20150625__ACI-ENT-EVN.png"
+b1 <-   "GympieNP_20150626__ACI-ENT-EVN.png"
+#          "GympieNP_20150627__ACI-ENT-EVN.png",
+#          "GympieNP_20150628__ACI-ENT-EVN.png")
+  list <- as.data.frame(list)
+  b <- brick(paste(b1), package="raster")
   sourceImage <- brick(b1, package="raster")
-  b2 <- brick(b1, package="raster", norows=334, ncols=1650)#s <- b2
+  b2 <- brick(b1, package="raster", norows=334, ncols=1600)#s <- b2
   s <- image1
   plotRGB(sourceImage)
   
@@ -159,23 +162,23 @@ for (j in 1:7) {
   dev.off()
   dev.off()
   dev.off()
-  file <- paste("ClusterImage_a_mclust_", "week_", week, date[j],
+  file <- paste("ClusterImage_a_mclust_", "week_", week, "26_06_2105",
                 "_GympieNP 5,7,9,10,11,12,13,14,15,17.png", sep = "_")
   png(filename = file, width = 2000, height = 334, units = "px", 
       pointsize = 12, res = NA, family = "", restoreConsole = TRUE)
   length2 <- 1
-  clusterOrder <- as.character(c(1:30))
-  
-  for (i in 1:30) { 
+  length3 <- length(unique(cluster.list))
+  clusterOrder <- as.character(c(1:length3))
+  for (i in 1:length3) { #2882 4321 4322 5762 5763 7202
     current.minute.list <- which(cluster.list == clusterOrder[i])
-    current.minute.list.ref <- which((current.minute.list >= list$start[j]) & 
-                                       (current.minute.list <= list$start[j]))
+    current.minute.list.ref <- which((current.minute.list >= 5763) & 
+                                       (current.minute.list <= 7202))
     length <- length(current.minute.list.ref)
     if (length > 0) {
       for (j in seq_along(current.minute.list.ref)) {
         replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=334, 
-                                           col=(current.minute.list[current.minute.list.ref[j]]-(list$start[j]-1)), 
-                                           ncols=1) # number row above needs one less than # row 157
+                                            col=(current.minute.list[current.minute.list.ref[j]]-5762),
+                                            ncols=1) # number row above needs one less than # row 157
         s[1:334, length2] <- replacementBlock
         s[1:40, length2] <- getValuesBlock(colourBlock, row=1,
                                            nrows=40, col=i, ncols = 1)
@@ -185,7 +188,7 @@ for (j in 1:7) {
     print(paste("finishing", i, sep = ""))
     length2 <- length2 + 2
   }
-}
+
 plotRGB(s)
 dev.off()
 
@@ -205,10 +208,10 @@ dev.off()
 png(filename = "ClusterImage_mclust_24 June 2015 Gympie NP 5,7,9,10,11,12,13,14,15,17.png",
     width = 2000, height = 334, units = "px", pointsize = 12,
     res = NA, family = "", restoreConsole = TRUE)
-clusterOrder <- as.character(1:30)
+clusterOrder <- as.character(1:length)
 length2 <- 1
 #clusterOrder <- order
-for (i in 1:30) {
+for (i in 1:length) {
   current.minute.list <- which(cluster.list == clusterOrder[i])
   current.minute.list.ref <- which((current.minute.list > 2882) & 
                                  (current.minute.list < 4321))
@@ -216,7 +219,7 @@ for (i in 1:30) {
   if (length > 0) {
     for (j in seq_along(current.minute.list.ref)) {
      replacementBlock <- getValuesBlock(sourceImage, row=1, nrows=334, 
-                        col=(current.minute.list[current.minute.list.ref[j]]-2880), 
+                        col=(current.minute.list[current.minute.list.ref[j]]-2881), 
                         ncols=1)
       s[1:334, length2] <- replacementBlock
       s[1:40, length2] <- getValuesBlock(colourBlock, row=1,

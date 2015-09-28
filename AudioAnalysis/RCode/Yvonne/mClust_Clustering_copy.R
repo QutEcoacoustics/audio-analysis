@@ -26,12 +26,11 @@ normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
 }
 
-
 normIndices <- indices
 # normalise variable columns
 normIndices[,1]  <- normalise(indices[,1], -44.97,-29.52)  # BackgroundNoise (-50,-10)
-normIndices[,2]  <- normalise(indices[,2], 3.41, 7.78)  # AvSnrofActive Frames (3,10)
-normIndices[,3]  <- normalise(indices[,3], 0, 2.7) # EventsPerSecond (0,2)
+normIndices[,2]  <- normalise(indices[,2],  3.41, 7.78)  # AvSnrofActive Frames (3,10)
+normIndices[,3]  <- normalise(indices[,3],  0, 2.7) # EventsPerSecond (0,2)
 normIndices[,4] <- normalise(indices[,4], 0.015, 0.17)  # HighFreqCover (0,0.5)
 normIndices[,5] <- normalise(indices[,5], 0.014, 0.20)  # MidFreqCover (0,0.5)
 normIndices[,6] <- normalise(indices[,6], 0.019,  0.26)  # LowFreqCover (0,0.5)
@@ -155,7 +154,7 @@ odd <- seq(from=1, to=length(dataFrame$BackgroundNoise), by=2)
 
 #start <- 1 
 #end   <- 60000         
-fit <- Mclust(dataFrame[odd,1:9], G=30:50)
+fit <- Mclust(dataFrame[odd,1:9], G=1:100)
 summary(fit) 
 
 mclust30list_9_all <- unname(fit$classification)
@@ -174,9 +173,12 @@ fit$parameters$variance
 sink()
 
 sigma <- fit$parameters$variance$sigma
-write.table(sigma, 
+write.table(mean, 
             file="mclustG1_30_I9_T50001_60000minutes_sigma.csv", 
             row.names = F, sep = ",")
+
+#coordProj(data = dataFrame[start:end,1:9], dimens = c(4,9), what = "density",
+#          parameters = fit$parameters, z = fit$z)
 
 png('BIC_plot.png', 
     width = 1500, height = 1200, units = "px") 
@@ -193,10 +195,6 @@ png('Classification_plot.png',
 plot(fit, what = "classification")
 dev.off()
 
-
-#coordProj(data = dataFrame[start:end,1:9], dimens = c(4,9), what = "density",
-#          parameters = fit$parameters, z = fit$z)
-
 # Density plot # these take a while these give nice density plots of 
 # the normalised data
 
@@ -206,34 +204,10 @@ densBackgr <- densityMclust(dataFrame$BackgroundNoise)
 plot(densBackgr, data = dataFrame$BackgroundNoise, what = "density")
 dev.off()
 
-png('densBGR_plot_before_normalisation.png', 
-    width = 1500, height = 1200, units = "px") 
-densBackgr <- densityMclust(indices$BackgroundNoise)
-plot(densBackgr, data = indices$BackgroundNoise, what = "density")
-dev.off()
-
-png('densEPS_plot.png', 
-    width = 1500, height = 1200, units = "px") 
-densEPS <- densityMclust(dataFrame$EventsPerSecond)
-plot(densEPS, data = dataFrame$EventsPerSecond, what = "density")
-dev.off()
-
-png('densEPS_plot_before_normalisation.png', 
-    width = 1500, height = 1200, units = "px") 
-densEPS <- densityMclust(indices$EventsPerSecond)
-plot(densEPS, data = indices$EventsPerSecond, what = "density")
-dev.off()
-
 png('densAvSNR_plot.png', 
     width = 1500, height = 1200, units = "px") 
 densAvSNR <- densityMclust(dataFrame$AvgSnrOfActiveFrames)
 plot(densAvSNR, data = dataFrame$AvgSnrOfActiveFrames, what = "density")
-dev.off()
-
-png('densAvSNR_plot_before_normalisation.png', 
-    width = 1500, height = 1200, units = "px") 
-densAvSNR <- densityMclust(indices$AvgSnrOfActiveFrames)
-plot(densAvSNR, data = indices$AvgSnrOfActiveFrames, what = "density")
 dev.off()
 
 png('densAccComp_plot.png', 
@@ -242,22 +216,10 @@ densAcousticComp <- densityMclust(dataFrame$AcousticComplexity)
 plot(densAcousticComp, data = dataFrame$AcousticComplexity, what = "density")
 dev.off()
 
-png('densAccComp_plot_before_normalisation.png', 
-    width = 1500, height = 1200, units = "px") 
-densAcousticComp <- densityMclust(indices$AcousticComplexity)
-plot(densAcousticComp, data = indices$AcousticComplexity, what = "density")
-dev.off()
-
 png('densEntCOV_plot.png', 
     width = 1500, height = 1200, units = "px") 
 densEntCoV <- densityMclust(dataFrame$EntropyOfCoVSpectrum)
-plot(densEntCoV, data = dataFrame$EntropyOfCoVSpectrum, what = "density")
-dev.off()
-
-png('densEntCOV_plot_before_normalisation.png', 
-    width = 1500, height = 1200, units = "px") 
-densEntCoV <- densityMclust(indices$EntropyOfCoVSpectrum)
-plot(densEntCoV, data = indices$EntropyOfCoVSpectrum, what = "density")
+plot(densEntCv, data = dataFrame$EntropyOfCoVSpectrum, what = "density")
 dev.off()
 
 png('densLowFrCov_plot.png', 
@@ -281,13 +243,7 @@ dev.off()
 png('densEntPS_plot.png', 
     width = 1500, height = 1200, units = "px") 
 densEntPs <- densityMclust(dataFrame$EntropyOfPeaksSpectrum)
-plot(densEntPs, data = dataFrame$EntropyOfPeaksSpectrum, what = "density")
-dev.off()
-
-png('densEntPS_plot_before_normalisation.png', 
-    width = 1500, height = 1200, units = "px") 
-densEntPs <- densityMclust(indices$EntropyOfPeaksSpectrum)
-plot(densEntPs, data = indices$EntropyOfPeaksSpectrum, what = "density")
+plot(densBackgr, data = dataFrame$EntropyOfPeaksSpectrum, what = "density")
 dev.off()
 
 # 3D plot

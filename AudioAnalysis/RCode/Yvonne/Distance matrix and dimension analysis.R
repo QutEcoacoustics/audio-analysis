@@ -18,9 +18,10 @@
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21_40clusters")
 
 # The cluster centers have come from kmeans Clustering
-centers <- read.csv("Cluster_centers 22-28 June 2015_5,7,9,11,12,13,17,20Gympie NP1 .csv", header = T)
-centers <- centers[,2:10] # this removes the leading column of numerals
+centers <- read.csv("Cluster_centers 22-28 June 2015_5,7,9,11,12,13,17,20Gympie NP1 .csv", header = T)#centers <- centers[,2:10] # this removes the leading column of numerals
 
+#centers <- read.csv("mclust_clustersABCD.csv", header = T)
+#centers <- t(centers)
 #centers <- read.csv("Cluster_centers 22-28 June 2015_5,9,11,13,14,15,17Gympie NP1 .csv", header = T)
 #centers <- centers[,2:8] # this removes the leading column of numerals
 #centers <- read.csv("Cluster_centers 22-28 June 2015_5,8,10,13,14,15,17Gympie NP1 .csv", header = T)

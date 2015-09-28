@@ -3,6 +3,9 @@
 # Reads in the Towsey_summary_indices an saves to csv.  
 # Also generates plot containing an array of
 # histrograms of the indices
+# NOTE:  This code will work well with dates such as 20150426-145603+1000
+# if not in this form there are lines indicated (**) in the code that will
+# need adjustment
 
 #  This file is #1 in the sequence:
 #  *1. Save_Summary_Indices_ as_csv_file.R
@@ -21,22 +24,154 @@
 
 ######## You may wish to change these ###################### 
 # Set to where the CSV files are to be saved
-setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_16")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_16")
+#date.list <- 	c("2015June28", 
+#				  "2015July5","2015July12","2015July19","2015July26",
+#				  "2015Aug2","2015Aug9", "2015Aug16","2015Aug23","2015Aug30",
+#				  "2015Sept6","2015Sept13","2015Sept20","2015Sept27",
+#				  "2015Oct4","2015Oct11","2015Oct18","2015Oct25",
+#				  "2015Nov1")
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_28")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_07_05")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_07_12")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_07_19")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_07_26")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_02")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_09")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_16")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_23")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_08_30")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_09_06")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_09_13")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_09_20")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_09_27")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_10_04")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_10_11")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_10_18")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_10_25")
+#setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_11_01")
+
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_06_22")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_06_28")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_07_05")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_07_12")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_07_19")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_07_26")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_08_02")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_08_09")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_08_16")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_08_23")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_08_30")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_09_06")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_09_13")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_09_20")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_09_27")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_10_04")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_10_11")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_10_18")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_10_25")
+#setwd("C:\\Work\\CSV files\\Woondum3_new\\2015_11_01")
 
 # Set sourceDir to where the wavefiles files are 
 #(for mapping file)
 # this date is a week later than the date above
-sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\"
+sourceDir <- "Y:\\Yvonne\\Cooloola\\2015June28\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July5\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July12\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July19\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July26\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug2\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug9\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug16\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug30\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept6\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept13\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept20\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept27\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct4\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct11\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct18\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct25\\GympieNP\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Nov1\\GympieNP\\"
+
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015June28\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July5\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July12\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July19\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015July26\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug2\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug9\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug16\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug23\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Aug30\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept6\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept13\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept20\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Sept27\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct4\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct11\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct18\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Oct25\\Woondum3\\"
+#sourceDir <- "Y:\\Yvonne\\Cooloola\\2015Nov1\\Woondum3\\"
 
 # Set folder to where the indices files are
-folder <- "F:\\Indices\\2015Aug31-110230 - Yvonne, Indices, ICD=60.0, #53"
+# containing 2015June28 to 2015Aug2
+#folder <- "F:\\Indices\\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"
+# containing 2015Aug9
+#folder <- "F:\\Indices\\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50"
+# containing 2015Aug16 
+#folder <-  "F:\\Indices\\2015Aug20-180247 - Yvonne, Indics, ICD=60.0, #52"  
+# containing 2015Aug23
+#folder <- "F:\\Indices\\2015Aug31-110230 - Yvonne, Indices, ICD=60.0, #53" 
+# containing 2015June28 to 2015Sept20
+folder <- "F:\\Indices\\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57"
 
 # Obtain a list of the original wave files
 myFiles <- list.files(full.names=FALSE, pattern="*.wav$", path=sourceDir)
 myFiles
 
-# Set pathName to where the wave files 
-pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\",sep="")
+# Set sourceDir to where the wave files 
+pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015June28\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July5\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July12\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July19\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July26\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug2\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug9\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug16\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug23\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug30\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept6\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept13\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept20\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept27\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct4\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct11\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct18\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct25\\GympieNP\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Nov1\\GympieNP\\",sep="")
+
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015June28\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July5\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July12\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July19\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015July26\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug2\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug9\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug16\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug23\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Aug30\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept6\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept13\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept20\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Sept27\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct4\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct11\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct18\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Oct25\\Woondum3\\",sep="")
+#pathName <- paste(folder,"\\Yvonne\\Cooloola\\2015Nov1\\Woondum3\\",sep="")
 
 #site <- "Woondum1 "
 #latitude <- "Latitude"
@@ -90,7 +225,8 @@ rec.date <- NULL
 rec.time <- NULL
 for (i in 1:length) {
     Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20), 
+                   substr(myFiles[i], 1,20),                     
+                   #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.Indices.csv", 
                      sep =""))
   assign(paste("fileContents"), read.csv(Name))
@@ -98,9 +234,12 @@ for (i in 1:length) {
   dateTimeOfRecord  <- paste((substr(dates[i], 1,4)), "-", 
                             (substr(dates[i], 5,6)), "-",
                             (substr(dates[i], 7,8)), " ", 
-                            (substr(times[i], 10,11)), ":",
-                            (substr(times[i], 12,13)), ":", 
-                            (substr(times[i], 14,15)), sep = "")
+                            (substr(times[i], 10,11)), ":",  
+                            #(substr(times[i], 1,2)), ":",  # **use with ambiguous dates
+                            (substr(times[i], 12,13)), ":",  
+                            #(substr(times[i], 3,4)), ":",  # **use with ambiguous dates
+                            (substr(times[i], 14,15)), sep = "") 
+                            #(substr(times[i], 5,6)), sep="") # **use with ambiguous dates
   dateTimeOfRecordSequence <- (seq(as.POSIXct(dateTimeOfRecord), 
                                    len = numberRows, by="min"))
   rec.date1 <- paste(substr(dateTimeOfRecordSequence, 9,10),
@@ -265,7 +404,6 @@ write.csv(all.indices,
           sub("*.wav","\\1", myFiles[length]),".csv", 
           sep = ""))
 
-
 indices <- read.csv(paste("Towsey_Summary_Indices_", site,
                           sub("*.wav","\\1", myFiles[1]),"to", 
                           sub("*.wav","\\1", myFiles[length(myFiles)]),".csv", 
@@ -282,7 +420,7 @@ png(
 
 par(mfrow=c(4,5), xpd=TRUE) 
 par(mar=c(4,3,4,1), oma=c(2,2,0,0))
-for(i in 2:20){
+for(i in 2:20) {
   hist(indices[,i], col="red", 
        #main=paste("Index",i,sep = " "),
        main=colnames(indices[i]),
@@ -310,7 +448,8 @@ all.indices <- NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20),
+                 substr(myFiles[i], 1,20),    
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.ACI.csv", sep =""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -332,7 +471,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20), 
+                 substr(myFiles[i], 1,20),
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.BGN.csv", sep = ""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -357,7 +497,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20),
+                 substr(myFiles[i], 1,20),
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.CVR.csv", sep = ""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -381,7 +522,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20),
+                 substr(myFiles[i], 1,20),
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.DIF.csv", sep = ""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -405,7 +547,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20), 
+                 substr(myFiles[i], 1,20),
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.ENT.csv", sep = ""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -429,7 +572,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20), 
+                    substr(myFiles[i], 1,20),
+                    #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.EVN.csv", sep = ""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -453,7 +597,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20), 
+                 substr(myFiles[i], 1,20),
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                     "__Towsey.Acoustic.POW.csv", sep = ""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -477,7 +622,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20), 
+                 substr(myFiles[i], 1,20),
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.SPT.csv", sep = ""))
   assign(paste("fileContents"), read.csv(Name))
   numberRows <- nrow(fileContents)
@@ -501,7 +647,8 @@ all.indices<-NULL
 
 for (i in 1:length) {
   Name <- (paste(pathName, myFiles[i],"\\Towsey.Acoustic\\",
-                     substr(myFiles[i], 1,20), 
+                 substr(myFiles[i], 1,20), 
+                 #substr(myFiles[i], 1,15), # **use with ambiguous dates
                      "__Towsey.Acoustic.SUM.csv", 
                    sep = ""))
   assign(paste("fileContents"), read.csv(Name))
