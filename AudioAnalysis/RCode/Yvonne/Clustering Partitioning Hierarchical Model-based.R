@@ -70,17 +70,30 @@ abline(h=0,v=0)
 mtext(side = 3, line = 2, 
       paste("Principal Component Analysis prcomp ds3"), 
       cex = 2.5)
-
+rm(PCAofIndices)
 dev.off()
 
 #######################################################
 # Method 1A:  Partitioning by kmeans
 #######################################################
+file <- paste("kmeans_plots_ds3norm_2_98.png", sep = "")
+png(
+  file,
+  width     = 200,
+  height    = 200,
+  units     = "mm",
+  res       = 400,
+  pointsize = 4
+)
+par(mfrow=c(2,1), mar=c(5,5,4,2), cex.main=2, cex.axis=2,
+    cex.lab=2)
 # Determining the number of clusters ()
 wss <- (nrow(ds3.norm_2_98)*sum(apply(ds3.norm_2_98, 2, var)))
-for (i in 2:30) wss[i] <- sum(sum(kmeans(ds3.norm_2_98, centers=i)$withinss))
+for (i in 2:30) wss[i] <- sum(sum(kmeans(ds3.norm_2_98, 
+                          centers=i)$withinss, iter.max = 100))
 plot(1:30, wss, type = "b", xlab="Number of clusters", 
-     ylab = "within groups sum of squares")
+     ylab = "within groups sum of squares",
+     main = "kmeans Within Groups Sum of Squares")
 set.seed(123)
 min.size <- NULL
 max.size <- NULL
@@ -93,7 +106,7 @@ for (i in 2:30) {
 }
 
 plot(2:30,c(min.size), type = "l", ylim=c(0,8000), 
-     ylab = "Cluster size", xlab = "Cluster number",
+     ylab = "Cluster size", xlab = "Number of clusters",
      main = "kmeans Cluster Size Range")
 par(new=TRUE)
 plot(2:30,c(max.size), type = "l", col = "red", 
@@ -101,7 +114,7 @@ plot(2:30,c(max.size), type = "l", col = "red",
 abline(v=6, col="red", lty=2)
 abline(v=15, col="red", lty=2)
 abline(v=27, col="red", lty=2)
-
+dev.off()
 # determine the minimum size of clusters to get more evenly sized 
 # clusters
 set.seed(123)
@@ -129,83 +142,52 @@ max.cs/length(ds3.norm_2_98$BackgroundNoise)*100
 #######################################################
 library(cluster)
 library(fpc)
-# use pamk to predict number of clusters
-#ds1pk <- pamk(ds1.norm, krange = 10:100, criterion ="multiasw",
-#              usepam = F)
-#ds1pk$nc # optimum number of clusters
-#ds1pk$pamobject$silinfo$avg.width
-#ds1pk$pamobject$silinfo$clus.avg.widths
-#ds1pk$pamobject$i.med
-h# [1] 10 when tested between 10:100 for ds1.norm
-# $avg.width [1] 0.303939
-# $clus.avg.widths
-# [1] 0.34850246 0.14569529 0.05002397 0.48073611 
-# [4] 0.22814917 0.73292138 0.60045972 0.32395219 
-# [7] 0.26941398 0.24524659
+# Determine the optimum number of clusters with the pamk function
+# in fpc package
 opt.no <- NULL
 avg.width <- NULL
-for (i in 15:40) {
-  ds1pk <- pamk(ds1.norm, krange = i, criterion ="multiasw",
-                usepam = F)
-  nc <- ds1pk$nc # optimum number of clusters
-  aw <- ds1pk$pamobject$silinfo$avg.width
-  opt.no <- c(opt.no, nc)
-  avg.width <- c(avg.width, aw)
-}
-
-opt.no <- NULL
-avg.width <- NULL
-for (i in 2:24) {
-  ds3pk <- pamk(ds3.norm, krange = i, criterion ="multiasw",
+for (i in 2:30) {
+  ds3pk <- pamk(ds3.norm_2_98, krange = i, criterion ="multiasw",
                 usepam = F)
   nc <- ds3pk$nc # optimum number of clusters
   aw <- ds3pk$pamobject$silinfo$avg.width
   opt.no <- c(opt.no, nc)
   avg.width <- c(avg.width, aw)
 }
-
-# note value was higher for 10 clusters
-plot(opt.no, avg.width, type="l", main = "Average width vs Opt Cluster No.")
+rm(ds3pk)
+plot(opt.no, avg.width, type="l", 
+     main = "Average Silhouette Width (ASW) vs Opt Cluster No.",
+     ylab = "ASW", xlab = "Number of Clusters")
 abline(v=2, lty=2, col="red")
-abline(v=4, lty=2, col="red")
-abline(v=10, lty=2, col="red")
-abline(v=13, lty=2, col="red")
-abline(v=17, lty=2, col="red")
+abline(v=5, lty=2, col="red")
+abline(v=12, lty=2, col="red")
+abline(v=16, lty=2, col="red")
+abline(v=28, lty=2, col="red")
 
-#code from pam.object help
-# note change of pam to clara due to large
-# dataset
-x <- ds3.norm
-asw <- numeric(20)
+# From pam.object help
+# Predict the best number of clusters from a range
+# Note: pam() changed to clara() for large dataset
+x <- ds3.norm_2_98
+asw <- numeric(30)
 # Note that "k=1" won't work!
-for (k in 3:20)
+for (k in 7:30)
    asw[k] <- clara(x, k) $ silinfo $ avg.width
 k.best <- which.max(asw)
 cat("silhouette-optimal number of clusters:", k.best, "\n")
- 
 
 # Another method to determine the no. of clusters is 
-# the Calinski-Harabasz index
-cal.har <- NULL
-for (i in 2:20) {
-  set.seed(1234)
-  km <- kmeans(ds3,i)
-  ch <- round(calinhara(ds3,km$cluster),digits=2)
-  cal.har <- c(cal.har,ch)
-}
+# the Calinski-Harabasz index - I did not use!!!
+#cal.har <- NULL
+#for (i in 2:30) {
+#  set.seed(1234)
+#  km <- kmeans(ds3.norm_2_98, i, iter.max = 100)
+#  ch <- round(calinhara(ds3.norm_2_98,km$cluster),digits=2)
+#  cal.har <- c(cal.har,ch)
+#}
 
-plot(2:20, cal.har, type = "l")
-abline(v=7, lty=2, col="red")
-
-ds3pk <- pamk(ds3.norm, krange = 10:50, criterion ="multiasw",
-              usepam = F)
-ds3pk$nc # optimum number of clusters
-ds3pk$pamobject$silinfo$avg.width
-ds3pk$pamobject$silinfo$clus.avg.widths
-plot(ds3pk$pamobject, nmax.lab = 100)
-
-pr4 <- clara(ds3.norm, 5, sampsize = nrow(ds3.norm)/100)
-str(si <- silhouette(pr4, full = T))
+pr4 <- clara(ds3.norm_2_98, 5, sampsize = nrow(ds3.norm_2_98)/100)
+str(si <- silhouette(pr4))
+rm(pr4)
 (ssi <- summary(si))
 plot(si) # silhouette plot
 plot(si, col = c("red", "green","orange","yellow",
@@ -214,108 +196,138 @@ plot(si, col = c("red", "green","orange","yellow",
 
 op <- par(mfrow= c(3,2), oma= c(0,0, 3, 0),
           mgp= c(1.6,.8,0), mar= .1+c(4,2,2,2))
-for(k in c(2,4,7,12))
+for(k in c(2,5,12,16))
   plot(silhouette(clara(ds3.norm, k=k)), main = paste("k = ",k), do.n.k=FALSE)
 mtext("CLARA(DataSet) as in Kaufman & Rousseeuw, p.101",
       outer = TRUE, font = par("font.main"), cex = par("cex.main")); frame()
-#dev.off()
-# [1] 10 when tested between 10:100 for ds1.norm
-# $avg.width [1] 0.303939
-#[1] 0.34850246 0.14569529 0.05002397 0.48073611 0.22814917
-#[6] 0.73292138 0.60045972 0.32395219 0.26941398 0.24524659
-
-# [1]  when tested between 20:100 for ds1.norm
-# $avg.width [1] 22
-# $clus.avg.widths [1] 0.1919076
-#[1]  0.298682756  0.007886176 -0.030908805  0.019389666  0.343382397
-#[6]  0.287502927  0.000000000  0.224976961  0.498949608  0.232327207
-#[11]  0.123952792  0.258290524  0.314491017  0.000000000  0.479141721
-#[16]  0.100742293  0.297011855  0.000000000  0.018075021  0.429723882
-#[21]  0.237040180  0.000000000
 
 # perform clara clustering with optimum clusters
-ds3.10.clara <- clara(ds3.norm, 10)
+dev.off()
+par(mfrow=c(2,1), mar=c(2.2,3,1,1))
+ds3.12.clara <- clara(ds3.norm_2_98, 12)
 colours <- c("red","orange","yellow","green","blue",
              "darkorange","violet", "magenta","midnightblue",
-             "sienna")
-plot(ds3.10.clara, col.p = colours, which.plots = 1)
-plot(ds3.10.clara, col.p=ds3.10.clara$cluster, 
+             "sienna", "red", "orange")
+#plot(ds3.12.clara, col.p = colours, which.plots = 1)
+plot(ds3.12.clara, col.p=ds3.12.clara$cluster, 
      shade = T, which.plots = 1, labels = 4,
      color = T) # type of PCA
-plot(ds3.10.clara$clustering) 
+plot(ds3.12.clara$clustering) 
+abline(v=c(0,4320,8640, 12970, length(ds3.norm_2_98$Snr)), 
+       col="blue", lty=2)
 # decision made on 24 clusters
+rm(ds3.12.clara)
+dev.off()
 
 #######################################################
-# Method 2:  Hierarchical either hclust or agnes
-# pam has a feature which identifies observations which lie 
-# closest to the medoids (exemplars for each cluster)
+# Method 2a:  Hierarchical - hclust or agnes
 #######################################################
-hc <- hclust(dist(USArrests), "ward.D")
-plot(hc)
-plot(hc, hang = -1)
+require(graphics)
+par(mfrow = c(1,2))
+hc.fit <- hclust(dist(ds3.norm), "ward.D")
+plot(hc.fit, hang = -1, cex=0.1,
+     main = "Cluster Dendrogram - ward.D")
 
-hc.fit <- hclust(dist(ds3.norm), "complete")
-plot(hc.fit, hang = -1, cex=0.1)
-# I tried "ave" it works
-# ward.D did not work - requires too much memory
-# complete worked faster than ave
-# single crashed
-# median appeared confused
-# mcquitty looked very similar to another
-# ward.D2 - fatal error when plotting
+hc.fit <- hclust(dist(ds3.norm), "ward.D2")
+plot(hc.fit, hang = -1, cex=0.1,
+     main = "Cluster Dendrogram - ward.D2")
 
+#######################################################
+# Method 2b:  Hierarchical - agnes
+#######################################################
 library(cluster)
 # WARNING: agnes takes many hours 
-ag.d <- dist(ds3.norm[1:4000,], method = "euclidean")
-ag.fit <- agnes(ag.d)
+ag.d <- dist(ds3.norm_2_98[1:2880,], method = "euclidean")
+ag.fit <- agnes(ag.d, method = "ward")
+par(mfrow=c(2,2), mar=c(2,2,2,2))
 plot(ag.fit, which.plots=2, cex=0.5, hang=-1)
+#(cut_height_3 <- cutree(as.hclust(ag.fit), h = 3))
+#plot(unname(cut_height_3), main = "Height =3")
+(cut_height_4 <- cutree(as.hclust(ag.fit), h = 4))
+plot(unname(cut_height_4), main = "Height =4")
+(cut_height_5 <- cutree(as.hclust(ag.fit), h = 5))
+plot(unname(cut_height_5), main = "Height =5")
+(cut_height_7 <- cutree(as.hclust(ag.fit), h = 7))
+plot(unname(cut_height_7), main = "Height =7")
 
-#rm(ag.d)
+# Clustering of full dataset
+ag.d <- dist(ds3.norm_2_98, method = "euclidean")
+ag.fit <- agnes(ag.d, method = "ward")
+(cut_height_0.5 <- cutree(as.hclust(ag.fit), h = 0.5))
+(cut_height_1 <- cutree(as.hclust(ag.fit), h = 1))
+(cut_height_1.5 <- cutree(as.hclust(ag.fit), h = 1.5))
+(cut_height_2 <- cutree(as.hclust(ag.fit), h = 2))
+(cut_height_2.5 <- cutree(as.hclust(ag.fit), h = 2.5))
+(cut_height_3 <- cutree(as.hclust(ag.fit), h = 3))
+(cut_height_3.5 <- cutree(as.hclust(ag.fit), h = 3.5))
+(cut_height_4 <- cutree(as.hclust(ag.fit), h = 4))
+(cut_height_4.5 <- cutree(as.hclust(ag.fit), h = 4.5))
+(cut_height_5 <- cutree(as.hclust(ag.fit), h = 5))
+(cut_height_5.5 <- cutree(as.hclust(ag.fit), h = 5.5))
+(cut_height_6 <- cutree(as.hclust(ag.fit), h = 6))
+(cut_height_6.5 <- cutree(as.hclust(ag.fit), h = 6.5))
+(cut_height_7 <- cutree(as.hclust(ag.fit), h = 7))
+(cut_height_7.5 <- cutree(as.hclust(ag.fit), h = 7.5))
+(cut_height_8 <- cutree(as.hclust(ag.fit), h = 8))
+(cut_height_8.5 <- cutree(as.hclust(ag.fit), h = 8.5))
+(cut_height_9 <- cutree(as.hclust(ag.fit), h = 9))
+(cut_height_9.5 <- cutree(as.hclust(ag.fit), h = 9.5))
+(cut_height_10 <- cutree(as.hclust(ag.fit), h = 10))
 
-# Method 3:  Model-based mclust
+cut_heights <- cbind(cut_height_0.5, cut_height_1, cut_height_1.5,
+                     cut_height_2, cut_height_2.5, cut_height_3,
+                     cut_height_3.5, cut_height_4, cut_height_4.5,
+                     cut_height_5, cut_height_5.5, cut_height_6,
+                     cut_height_6.5, cut_height_7, cut_height_7.5, 
+                     cut_height_8, cut_height_8.5, cut_height_9, 
+                     cut_height_9.5, cut_height_10)
+
+#######################################################
+# Method 3:  Model-based - Mclust
+#######################################################
 # WARNING: mclust takes many hours 
 library(mclust)
-mc.fit <- Mclust(ds1.norm[,1:9], G=50:70) 
+mc.fit <- Mclust(ds3.norm, G=1:50) 
 # crashed at 1:50, 1:30, 1:20 so tried 1:15 and 
 # defining # rows and # col 
 
 summary(mc.fit) 
 
 mclust.list <- unname(mc.fit$classification)
-png('Clusterplot_ds1_50_70.png', 
+png('Clusterplot_ds3norm_1_50.png', 
     width = 1500, height = 1200, units = "px") 
 plot(mclust.list)
 dev.off()
 
 write.table(mclust.list, 
-            file="mclustlist_ds1_50_70.csv", 
+            file="mclustlist_ds3norm_1_50.csv", 
             row.names = F, sep = ",")
 
 mean <- mc.fit$parameters$mean
 write.table(mean, 
-            file="mclust_ds1_50_70_mean.csv", 
+            file="mclust_ds3norm_1_50_mean.csv", 
             row.names = F, sep = ",")
 
-sink('mclust_variance_ds1_50_70_.csv')
+sink('mclust_variance_ds3norm_1_50_.csv')
 mc.fit$parameters$variance
 sink()
 
 sigma <- mc.fit$parameters$variance$sigma
 write.table(sigma, 
-            file="mclust_sigma_ds1_50_70.csv", 
+            file="mclust_sigma_ds3norm_1_50.csv", 
             row.names = F, sep = ",")
 
-png('mclust_BIC_plot_ds1_50_70.png', 
+png('mclust_BIC_plot_ds3norm_1_50.png', 
     width = 1500, height = 1200, units = "px") 
 plot(mc.fit, what = "BIC")
 dev.off()
 
-png('mclust_Density_plot_ds1_50_70.png', 
+png('mclust_Density_plot_ds3norm_1_50.png', 
     width = 1500, height = 1200, units = "px") 
 plot(mc.fit, what = "density")
 dev.off()
 
-png('mclust_Classification_plot_ds1_50_70.png', 
+png('mclust_Classification_plot_ds3norm_1_50.png', 
     width = 1500, height = 1200, units = "px") 
 plot(mc.fit, what = "classification")
 dev.off()
@@ -325,14 +337,14 @@ dev.off()
 
 png('densBGR_plot.png', 
     width = 1500, height = 1200, units = "px") 
-densBackgr <- densityMclust(ds1.norm$BackgroundNoise)
-plot(densBackgr, data = ds1.norm$BackgroundNoise, what = "density")
+densBackgr <- densityMclust(ds3.norm$BackgroundNoise)
+plot(densBackgr, data = ds3.norm$BackgroundNoise, what = "density")
 dev.off()
 
 png('densEPS_plot.png', 
     width = 1500, height = 1200, units = "px") 
 densEPS <- densityMclust(ds2.norm$EventsPerSecond)
-plot(densEPS, data = ds1.norm$EventsPerSecond, what = "density")
+plot(densEPS, data = ds3.norm$EventsPerSecond, what = "density")
 dev.off()
 
 png('densAvSNR_plot.png', 
@@ -343,38 +355,38 @@ dev.off()
 
 png('densAccComp_plot.png', 
     width = 1500, height = 1200, units = "px") 
-densAcousticComp <- densityMclust(ds1.norm$AcousticComplexity)
-plot(densAcousticComp, data = ds1.norm$AcousticComplexity, what = "density")
+densAcousticComp <- densityMclust(ds3.norm$AcousticComplexity)
+plot(densAcousticComp, data = ds3.norm$AcousticComplexity, what = "density")
 dev.off()
 
 png('densEntCOV_plot.png', 
     width = 1500, height = 1200, units = "px") 
-densEntCoV <- densityMclust(ds1.norm$EntropyOfCoVSpectrum)
-plot(densEntCoV, data = ds1.norm$EntropyOfCoVSpectrum, what = "density")
+densEntCoV <- densityMclust(ds3.norm$EntropyOfCoVSpectrum)
+plot(densEntCoV, data = ds3.norm$EntropyOfCoVSpectrum, what = "density")
 dev.off()
 
 png('densLowFrCov_plot.png', 
     width = 1500, height = 1200, units = "px") 
-densLowFrCov <- densityMclust(ds1.norm$LowFreqCover)
-plot(densLowFrCov, data = ds1.norm$LowFreqCover, what = "density")
+densLowFrCov <- densityMclust(ds3.norm$LowFreqCover)
+plot(densLowFrCov, data = ds3.norm$LowFreqCover, what = "density")
 dev.off()
 
 png('densMidFrCov_plot.png', 
     width = 1500, height = 1200, units = "px") 
-densMidFrCov <- densityMclust(ds1.norm$MidFreqCover)
-plot(densMidFrCov, data = ds1.norm$MidFreqCover, what = "density")
+densMidFrCov <- densityMclust(ds3.norm$MidFreqCover)
+plot(densMidFrCov, data = ds3.norm$MidFreqCover, what = "density")
 dev.off()
 
 png('densHighFrCov_plot.png', 
     width = 1500, height = 1200, units = "px") 
-densHighFrCov <- densityMclust(ds1.norm$HighFreqCover)
-plot(densHighFrCov, data = ds1.norm$HighFreqCover, what = "density")
+densHighFrCov <- densityMclust(ds3.norm$HighFreqCover)
+plot(densHighFrCov, data = ds3.norm$HighFreqCover, what = "density")
 dev.off()
 
 png('densEntPS_plot.png', 
     width = 1500, height = 1200, units = "px") 
-densEntPs <- densityMclust(ds1.norm$EntropyOfPeaksSpectrum)
-plot(densEntPs, data = ds1.norm$EntropyOfPeaksSpectrum, what = "density")
+densEntPs <- densityMclust(ds3.norm$EntropyOfPeaksSpectrum)
+plot(densEntPs, data = ds3.norm$EntropyOfPeaksSpectrum, what = "density")
 dev.off()
 
 # WARNING: mclust takes many hours 
