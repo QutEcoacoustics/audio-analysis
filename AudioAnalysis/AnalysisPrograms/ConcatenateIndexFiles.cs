@@ -2,10 +2,12 @@
 // <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
+
 // <summary>
-//   Defines the DrawLongDurationSpectrograms type.
+// Defines the ConcatenateIndexFiles type.
 //
-// Action code for this analysis = ColourSpectrogram
+// Action code for this activity = "concatenateIndexFiles"
+
 /// Activity Codes for other tasks to do with spectrograms and audio files:
 /// 
 /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
@@ -95,16 +97,29 @@ namespace AnalysisPrograms
         /// </summary>
         public static Arguments Dev()
         {
+            DateTimeOffset? dtoStart = null;
+            DateTimeOffset? dtoEnd = null;
+
             // ########################## YVONNE'S RECORDINGS
             // top level directory
-            //FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesConfig.yml");
+            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
-            //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") };
-            //string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
-            // The recording siteName is used as filter pattern. It is also used for naming the output files
-            //string siteName = "Woondum3";
-            //string siteName = "GympieNP";
-            //string fileStemName = siteName;
+            //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") 
+            //                           };
+
+
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
+                                       };
+            
+
+            // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
+            //string directoryFilter = "Woondum3";
+            string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
+            string opFileStem = directoryFilter;
+            string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
+
+            dtoStart = new DateTimeOffset(2015, 6, 27, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2015, 6, 29, 0, 0, 0, TimeSpan.Zero);
 
 
             // ########################## EDDIE GAME'S RECORDINGS
@@ -127,27 +142,21 @@ namespace AnalysisPrograms
             //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Yavera_8-7-15\BAR\BAR_64\";
             //string opFileStem = "TNC_Yavera_20150708_BAR64";
 
-            string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
-            string opPath   = dataPath;
-            string directoryFilter = "Musimunat";  // this is a directory filter to locate only the required files
-            string opFileStem = "Musimunat_BAR18"; // this should be a unique site identifier
+            //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
+            //string opPath   = dataPath;
+            //string directoryFilter = "Musimunat";  // this is a directory filter to locate only the required files
+            //string opFileStem = "Musimunat_BAR18"; // this should be a unique site identifier
             //string opFileStem = "TNC_Musimunat_20150703_BAR18";
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(dataPath) };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(dataPath) };
 
             // the default set of index properties is located in the AnalysisConfig directory.
             //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo();
             // However the PNG data uses an older set of index properties prior to fixing a bug!
-            FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
+            //FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
 
             // ########################## END of EDDIE GAME'S RECORDINGS
 
 
-
-
-            DateTimeOffset? dtoStart = null;
-            DateTimeOffset? dtoEnd = null;
-            //var dtoStart = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
-            //var dtoEnd   = new DateTimeOffset(2015, 6, 22, 0, 0, 0, TimeSpan.Zero);
 
             bool drawImages = true;
             if(!indexPropertiesConfig.Exists) LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
@@ -200,12 +209,12 @@ namespace AnalysisPrograms
                 }
                 LoggedConsole.WriteLine("# Output directory: " + arguments.OutputDirectory.FullName);
                 if (arguments.StartDate == null)
-                    LoggedConsole.WriteLine("# Start date = NULL. Revising start date ....");
+                    LoggedConsole.WriteLine("# Start date = NULL (No argument provided). Will revise start date ....");
                 else
                     LoggedConsole.WriteLine("# Start date = " + arguments.StartDate.ToString());
 
                 if (arguments.EndDate == null)
-                    LoggedConsole.WriteLine("# End   date = NULL. Revising end date ....");
+                    LoggedConsole.WriteLine("# End   date = NULL (No argument provided). Will revise end date ....");
                 else
                     LoggedConsole.WriteLine("# End   date = " + arguments.EndDate.ToString());
 
@@ -262,14 +271,14 @@ namespace AnalysisPrograms
             }
 
             TimeSpan totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
-            int dayCount = totalTimespan.Days;
+            int dayCount = totalTimespan.Days + 1;
 
             if (verbose)
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
                 LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", totalTimespan.TotalHours));
-                LoggedConsole.WriteLine("# Day  count = " + (dayCount + 1));
+                LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
             }
 
@@ -311,7 +320,7 @@ namespace AnalysisPrograms
 
 
             // loop over days
-            for (int d = 0; d <= dayCount; d++)
+            for (int d = 0; d < dayCount; d++)
             {
                 var thisday = ((DateTimeOffset)startDate).AddDays(d);
 
