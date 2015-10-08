@@ -893,6 +893,55 @@ namespace TowseyLibrary
       return newMatrix;
   }
 
+
+  public static double[,] RemoveLastNRows(double[,] m1, int N)
+  {
+      int m1Rows = m1.GetLength(0);
+      int m1Cols = m1.GetLength(1);
+      int newRowCount = m1Rows - N;
+
+      double[,] newMatrix = new double[newRowCount, m1Cols];
+      for (int r = 0; r < newRowCount; r++)
+      {
+          for (int c = 0; c < m1Cols; c++)
+          {
+              newMatrix[r, c] = m1[r, c];
+          }
+      }
+      return newMatrix;
+  }
+
+
+  /// <summary>
+  /// Add rows of nan to pad out a matrix.
+  /// </summary>
+  /// <param name="m1"></param>
+  /// <param name="N"></param>
+  /// <returns></returns>
+  public static double[,] AddBlankRows(double[,] m1, int N)
+  {
+      int m1Rows = m1.GetLength(0);
+      int m1Cols = m1.GetLength(1);
+      int newRowCount = m1Rows + N;
+
+      double[,] newMatrix = new double[newRowCount, m1Cols];
+      for (int r = 0; r < m1Rows; r++)
+      {
+          for (int c = 0; c < m1Cols; c++)
+          {
+              newMatrix[r, c] = m1[r, c];
+          }
+      }
+      for (int r = 0; r < N; r++)
+      {
+          for (int c = 0; c < m1Cols; c++)
+          {
+              newMatrix[m1Rows + r, c] = Double.NaN;
+          }
+      }
+      return newMatrix;
+  }
+        
     public static double[,] SubtractValuesFromOne(double[,] m)
     {
         int rows = m.GetLength(0);

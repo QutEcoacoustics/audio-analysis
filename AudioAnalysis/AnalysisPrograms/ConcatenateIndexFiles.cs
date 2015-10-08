@@ -118,7 +118,7 @@ namespace AnalysisPrograms
             string opFileStem = directoryFilter;
             string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
 
-            dtoStart = new DateTimeOffset(2015, 6, 27, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2015, 6, 28, 0, 0, 0, TimeSpan.Zero);
             dtoEnd   = new DateTimeOffset(2015, 6, 29, 0, 0, 0, TimeSpan.Zero);
 
 
@@ -181,7 +181,7 @@ namespace AnalysisPrograms
                 EndDate         = dtoEnd,
                 DrawImages      = drawImages,
                 IndexPropertiesConfig = indexPropertiesConfig,
-                ConcatenateEverythingYouCanLayYourHandsOn = true,
+                ConcatenateEverythingYouCanLayYourHandsOn = false,
             };
             throw new NoDeveloperMethodException();
     }

@@ -108,12 +108,19 @@ namespace AudioAnalysisTools.Indices
             return indexGenerationData;
         }
 
-        public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName)
+        public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName, TimeSpan? offsetHint = null)
         {
             var indexGenerationData = IndexGenerationData.GetIndexGenerationData(directory);
 
             // Get the start time from the file name.
-            DateTimeOffset startTime = IndexMatrices.GetFileStartTime(fileName);
+            // DateTimeOffset startTime = IndexMatrices.GetFileStartTime(fileName);   // ##################### CHANGE TO ANTHONY'S METHOD
+            DateTimeOffset startTime;
+            if (!FileDateHelpers.FileNameContainsDateTime(fileName, out startTime, offsetHint))
+            {
+                LoggedConsole.WriteLine("WARNING from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(" + fileName + ") ");
+                LoggedConsole.WriteLine("  File name <{0}> does not contain a valid DateTime = {0}", fileName);
+            }
+
             indexGenerationData.RecordingStartDate = startTime;
             return indexGenerationData;
         }
