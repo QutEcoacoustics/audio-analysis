@@ -16,7 +16,7 @@ RankOrder: # AKA IndexCount
   IncludeInComboIndex: false
   ComboWeight: 0.0
 StartOffset:
-  Name: Segment start minute
+  Name: Segment start time
   Comment: "Exact time span (total minutes) from start of recording to start of this segment."
   DataType: double
   DefaultValue: 0.0
@@ -25,6 +25,30 @@ StartOffset:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+StartOffsetMinute:
+  Name: Segment start minute
+  Comment: "Total minutes from start of recording to start of this segment."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 200.0
+  ProjectID: Acoustic Indices
+  Units: "min"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+StartOffsetSecond:
+  Name: Segment start second
+  Comment: "Total seconds from start of recording to start of this segment."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 200.0
+  ProjectID: Acoustic Indices
+  Units: "sec"
   IncludeInComboIndex: false
   ComboWeight: 0.0
 SegmentDuration:
@@ -210,6 +234,30 @@ TemporalEntropy:
   Units: ""
   IncludeInComboIndex: true
   ComboWeight: 0.3
+SqrtTempEntropy:
+  Name: Sqrt(1-H[t])
+  Comment: "Sqrt(1-Ht) is an attempt to obtain more even distribution of Ht values."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.7
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+LogTempEntropy:
+  Name: Log(1-H[t])
+  Comment: "Sqrt(1-Ht) is an attempt to obtain more even distribution of Ht values."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.1
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
 EntropyOfAverageSpectrum:
   Name: 1-H[avg spectrum]
   Comment: "1-H[spectral avg] is a measure of concentration of acoustic energy in the average spectrum over one minute."
@@ -330,33 +378,53 @@ SptDensity:
 #  Units: "s"
 #  IncludeInComboIndex: false
 #  ComboWeight: 0.0
-#RainIndex:
-#  Name: Rain Index
-#  Comment: "Rain score calculated every 10 sec and 6 values averaged over the minute."
-#  DataType: double
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0
-#  NormMax: 1.0
-#  ProjectID: Acoustic Indices
-#  Units: ""
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
-#CicadaIndex:
-#  Name: Cicada Index
-#  Comment: "Cicada score calculated every 10 sec and 6 values averaged over the minute."
-#  DataType: double
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0
-#  NormMax: 1.0
-#  ProjectID: Acoustic Indices
-#  Units: ""
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
+RainIndex:
+  Name: Rain Index
+  Comment: "OBSOLETE! DEPRACATED! Rain score calculated every 10 sec and 6 values averaged over the minute."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+CicadaIndex:
+  Name: Cicada Index
+  Comment: "OBSOLETE! DEPRACATED! Cicada score calculated every 10 sec and 6 values averaged over the minute."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
 NDSI:
   Name: NDSI
   Comment: "Normalised Difference Soundscape Index) calculated from PSD - originated from Stuart Gage."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -1.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+NDSI-LM:
+  Name: NDSI-LM
+  Comment: "Normalised Difference Soundscape Index) ratio of Mid/Low freq bands."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -1.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+NDSI-MH:
+  Name: NDSI-MH
+  Comment: "Normalised Difference Soundscape Index)  ratio of High/Mid freq bands."
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
@@ -379,9 +447,17 @@ EventsTotalThresholded:
   Comment: "Count of acoustic events (wide range)"
   DataType: double
   DefaultValue: 0.0
-  DoDisplay: true
+  DoDisplay: false
   NormMin: 5
   NormMax: 25
+  ProjectID: Acoustic Indices
+  Units: ""
+FileName:
+  Name: File Name
+  Comment: "FILLER TO STOP WARNING MESSAGE! File Name"
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: false
   ProjectID: Acoustic Indices
   Units: ""
 # ADD THE SUMMARY INDICES ABOVE HERE
