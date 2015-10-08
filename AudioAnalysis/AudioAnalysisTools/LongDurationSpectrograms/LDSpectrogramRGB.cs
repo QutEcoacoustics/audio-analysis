@@ -780,11 +780,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Graphics g = Graphics.FromImage(image);
             for (int i = 0; i < width; i++)
             {
-                int red = (int)(255 * indices1[i]);
-                int grn = (int)(255 * indices2[i]);
-                int blu = (int)(255 * indices3[i]);
+                if (Double.IsNaN(indices1[i]) || Double.IsNaN(indices2[i]) || Double.IsNaN(indices3[i]))
+                {
+                    pen = new Pen(Color.Gray);
+                }
+                else
+                {
+                    int red = (int)(255 * indices1[i]);
+                    int grn = (int)(255 * indices2[i]);
+                    int blu = (int)(255 * indices3[i]);
+                    pen = new Pen(Color.FromArgb(red, grn, blu));
+                }
 
-                pen = new Pen(Color.FromArgb(red, grn, blu));
                 g.DrawLine(pen, i, 0, i, height);
             }
             return image;
@@ -866,16 +873,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 //  get the average of the three indices in the low bandwidth
                 index = (indices1[0, i] + indices2[0, i] + indices3[0, i]) / 3; 
-                int red = (int)(255 * index);
-                if (red > 255) red = 255;
-                index = (indices1[1, i] + indices2[1, i] + indices3[1, i]) / 3;
-                int grn = (int)(255 * index);
-                if (grn > 255) grn = 255;
-                index = (indices1[2, i] + indices2[2, i] + indices3[2, i]) / 3;
-                int blu = (int)(255 * index);
-                if (blu > 255) blu = 255;
-
-                pen = new Pen(Color.FromArgb(red, grn, blu));
+                if(Double.IsNaN(index))
+                {
+                    pen = new Pen(Color.Gray);
+                }
+                else
+                {
+                    int red = (int)(255 * index);
+                    if (red > 255) red = 255;
+                    index = (indices1[1, i] + indices2[1, i] + indices3[1, i]) / 3;
+                    int grn = (int)(255 * index);
+                    if (grn > 255) grn = 255;
+                    index = (indices1[2, i] + indices2[2, i] + indices3[2, i]) / 3;
+                    int blu = (int)(255 * index);
+                    if (blu > 255) blu = 255;
+                    pen = new Pen(Color.FromArgb(red, grn, blu));
+                }
                 g.DrawLine(pen, i, 0, i, height);
             }
             return image;
@@ -918,16 +931,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     int start = (h * bandWidth);
                     double[] subArray = DataTools.Subarray(spectrum1, start, bandWidth);
                     double index = subArray.Average();
+                    if (Double.IsNaN(index)) index = 0.5;
                     int red = (int)(255 * index);
                     if (red > 255) red = 255;
 
                     subArray = DataTools.Subarray(spectrum2, start, bandWidth);
                     index = subArray.Average();
+                    if (Double.IsNaN(index)) index = 0.5;
                     int grn = (int)(255 * index);
                     if (grn > 255) grn = 255;
 
                     subArray = DataTools.Subarray(spectrum3, start, bandWidth);
                     index = subArray.Average();
+                    if (Double.IsNaN(index)) index = 0.5;
                     int blu = (int)(255 * index);
                     if (blu > 255) blu = 255;
 
@@ -1124,12 +1140,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     d2 = grnM[row, column];
                     d3 = bluM[row, column];
 
+                    // blank indices painted grey.
+                    if (Double.IsNaN(d1)) d1 = 0.5;
+                    if (Double.IsNaN(d2)) d2 = 0.5;
+                    if (Double.IsNaN(d3)) d3 = 0.5;
+
+
                     if (doReverseColour)
                     {
                         d1 = 1 - d1;
                         d2 = 1 - d2;
                         d3 = 1 - d3;
                     }
+
 
                     v1 = Convert.ToInt32(Math.Max(0, d1 * MaxRGBValue));
                     v2 = Convert.ToInt32(Math.Max(0, d2 * MaxRGBValue));

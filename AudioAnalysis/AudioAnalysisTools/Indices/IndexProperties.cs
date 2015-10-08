@@ -216,22 +216,31 @@ namespace AudioAnalysisTools.Indices
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(grayScale[240]);
 
+            Color barColor;
+            int barHeight = 0;
+
             // for pixels in the line
             for (int i = 0; i < dataLength; i++) 
             {
                 double value = values[i];
-                if (value > 1.0)
+
+                if (Double.IsNaN(value))
                 {
                     // expect normalised data
-                    value = 1.0; 
+                    barHeight = trackHeight;
+                    barColor = Color.Gray;
+                }
+                else
+                {
+                    if (value > 1.0) value = 1.0; // expect normalised data
+                    barHeight = (int)Math.Round(value * trackHeight);
+                    barColor = Color.Black;
                 }
 
-                int barHeight = (int)Math.Round(value * trackHeight);
                 for (int y = 0; y < barHeight; y++)
                 {
-                    bmp.SetPixel(i, trackHeight - y - 1, Color.Black);
+                    bmp.SetPixel(i, trackHeight - y - 1, barColor);
                 }
-
                 // draw upper boundary
                 bmp.SetPixel(i, 0, Color.Gray);
             }

@@ -236,7 +236,7 @@ TemporalEntropy:
   ComboWeight: 0.3
 SqrtTempEntropy:
   Name: Sqrt(1-H[t])
-  Comment: "Sqrt(1-Ht) is an attempt to obtain more even distribution of Ht values."
+  Comment: "Sqrt(1-Ht) is an attempt to obtain more even distribution of Ht values. NormMax = sqrt(0.5)"
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
@@ -248,12 +248,12 @@ SqrtTempEntropy:
   ComboWeight: 0.0
 LogTempEntropy:
   Name: Log(1-H[t])
-  Comment: "Sqrt(1-Ht) is an attempt to obtain more even distribution of Ht values."
+  Comment: "Log(1-Ht) is an attempt to obtain more even distribution of Ht values. NormMax = log(1 + 0.5)"
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.1
+  NormMax: 0.176
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
