@@ -316,9 +316,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string titletext = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
             Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(
                                  IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
-                                 indexGenerationData,
                                  dictionaryOfCsvColumns,
                                  titletext,
+                                 indexGenerationData.IndexCalculationDuration,
+                                 indexGenerationData.RecordingStartDate,
                                  siteDescription);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
             tracksImage.Save(imagePath);
@@ -476,14 +477,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // get the IndexGenerationData file from the first directory
             IndexGenerationData indexGenerationData = IndexGenerationData.GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
             TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
-            string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
-            string imageTitle = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
+            string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
+            string imageTitle =
+                $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
             Bitmap tracksImage =
                 DrawSummaryIndices.DrawImageOfSummaryIndices(
                     IndexProperties.GetIndexProperties(indexPropertiesConfig),
-                    indexGenerationData,
                     dictionaryOfCsvColumns,
-                    imageTitle);
+                    imageTitle,
+                    indexGenerationData.IndexCalculationDuration,
+                    indexGenerationData.RecordingStartDate);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, imgFileExt);
             tracksImage.Save(imagePath);
         }
