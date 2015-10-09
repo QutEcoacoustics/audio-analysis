@@ -10,6 +10,8 @@ namespace AudioAnalysisTools.Indices
 
     using AudioAnalysisTools.LongDurationSpectrograms;
     using System.IO;
+    using System.Linq;
+
     using Acoustics.Shared;
 
     public class IndexGenerationData
@@ -96,16 +98,19 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Returns the index generation data from file in passed directory.
         /// </summary>
-        /// <param name="directory"></param>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
+        /// <param name="directory">
+        /// </param>
+        /// <returns>
+        /// </returns>
         public static IndexGenerationData GetIndexGenerationData(DirectoryInfo directory)
         {
-            string pattern = "*__" + IndexGenerationData.FileNameFragment + ".json";
-            //FileInfo igdFile = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern).Single();
-            FileInfo[] igdFiles = IndexMatrices.GetFilesInDirectory(directory.FullName, pattern);
-            IndexGenerationData indexGenerationData = Json.Deserialise<IndexGenerationData>(igdFiles[0]);
-            return indexGenerationData;
+            return Json.Deserialise<IndexGenerationData>(FindFile(directory));
+        }
+
+        public static FileInfo FindFile(DirectoryInfo directory)
+        {
+            const string Pattern = "*" + FileNameFragment + "*";
+            return directory.GetFiles(Pattern).Single();
         }
 
         public static IndexGenerationData GetIndexGenerationDataAndAddStartTime(DirectoryInfo directory, string fileName, TimeSpan? offsetHint = null)

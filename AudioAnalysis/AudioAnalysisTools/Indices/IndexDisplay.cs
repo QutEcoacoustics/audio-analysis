@@ -25,64 +25,105 @@
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
         /// <summary>
         /// Uses a dictionary of index properties to traw an image of summary index tracks
         /// </summary>
-        /// <param name="csvFile"></param>
-        /// <param name="indexPropertiesConfig"></param>
-        /// <param name="title"></param>
-        /// <returns></returns>
-        public static Bitmap DrawImageOfSummaryIndexTracks(FileInfo csvFile, FileInfo indexPropertiesConfig, string title)
+        /// <param name="csvFile">
+        /// </param>
+        /// <param name="indexPropertiesConfig">
+        /// </param>
+        /// <param name="title">
+        /// </param>
+        /// <param name="indexCalculationDuration">
+        /// The index Calculation Duration.
+        /// </param>
+        /// <param name="recordingStartDate">
+        /// The recording Start Date.
+        /// </param>
+        /// <returns>
+        /// </returns>
+        public static Bitmap DrawImageOfSummaryIndexTracks(
+            FileInfo csvFile,
+            FileInfo indexPropertiesConfig,
+            string title,
+            TimeSpan indexCalculationDuration,
+            DateTimeOffset? recordingStartDate)
         {
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictIP);
-            return DrawSummaryIndices.DrawImageOfSummaryIndices(dictIP, csvFile, title);
+            return DrawSummaryIndices.DrawImageOfSummaryIndices(
+                dictIP,
+                csvFile,
+                title,
+                indexCalculationDuration,
+                recordingStartDate);
         }
 
-
-                /// <summary>
+        /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
-        /// <param name="listOfIndexProperties"></param>
-        /// <param name="dt"></param>
-        /// <param name="title"></param>
-        /// <returns></returns>
-        public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, FileInfo csvFile, 
-                                                       string titleText, SiteDescription siteDescription = null)
+        /// <param name="listOfIndexProperties">
+        /// </param>
+        /// <param name="csvFile">
+        /// </param>
+        /// <param name="titleText">
+        /// </param>
+        /// <param name="indexGenerationData">
+        /// </param>
+        /// <param name="siteDescription">
+        /// </param>
+        /// <returns>
+        /// </returns>
+        public static Bitmap DrawImageOfSummaryIndices(
+            Dictionary<string, IndexProperties> listOfIndexProperties,
+            FileInfo csvFile,
+            string titleText,
+            TimeSpan indexCalculationDuration,
+            DateTimeOffset? recordingStartDate,
+            SiteDescription siteDescription = null)
         {
             if (!csvFile.Exists)
             {
                 return null;
             }
 
-            IndexGenerationData indexGenerationData = null;
-
             Dictionary<string, double[]> dictionaryOfCsvFile = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
-            return DrawSummaryIndices.DrawImageOfSummaryIndices(listOfIndexProperties, indexGenerationData, dictionaryOfCsvFile, 
-                                                                titleText, siteDescription);
+            return DrawSummaryIndices.DrawImageOfSummaryIndices(
+                listOfIndexProperties,
+                dictionaryOfCsvFile,
+                titleText,
+                indexCalculationDuration,
+                recordingStartDate,
+                siteDescription);
         }
-
 
         /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
         /// <param name="listOfIndexProperties"></param>
-        /// <param name="dt"></param>
+        /// <param name="dictionaryOfCsvFile"></param>
         /// <param name="titleText"></param>
+        /// <param name="indexCalculationDuration"></param>
+        /// <param name="recordingStartDate"></param>
+        /// <param name="siteDescription"></param>
+        /// <param name="dt"></param>
         /// <returns></returns>
-        public static Bitmap DrawImageOfSummaryIndices(Dictionary<string, IndexProperties> listOfIndexProperties, 
-                                                       IndexGenerationData indexGenerationData,    
-                                                       Dictionary<string, double[]> dictionaryOfCsvFile, 
-                                                       string titleText,
-                                                       SiteDescription siteDescription = null)
+        public static Bitmap DrawImageOfSummaryIndices(
+            Dictionary<string, IndexProperties> listOfIndexProperties,
+            Dictionary<string, double[]> dictionaryOfCsvFile,
+            string titleText,
+            TimeSpan indexCalculationDuration,
+            DateTimeOffset? recordingStartDate,
+            SiteDescription siteDescription = null)
         {
-            Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary(); // to translate past keys into current keys
+            Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary();
+                // to translate past keys into current keys
 
 
             const int TrackHeight = DrawSummaryIndices.DefaultTrackHeight;
             int scaleLength = 0;
-            var arrayOfBitmaps = new Image[dictionaryOfCsvFile.Keys.Count]; // accumulate the individual tracks in a List
+            var arrayOfBitmaps = new Image[dictionaryOfCsvFile.Keys.Count];
+                // accumulate the individual tracks in a List
 
             foreach (string key in dictionaryOfCsvFile.Keys)
             {
@@ -99,7 +140,9 @@
                     }
                     else
                     {
-                        Logger.Warn("A index properties configuration could not be found for {0} (not even in the translation dictory). Property is ignored and not rendered".Format2(key));
+                        Logger.Warn(
+                            "A index properties configuration could not be found for {0} (not even in the translation directory). Property is ignored and not rendered"
+                                .Format2(key));
                         continue;
                     }
                 }
@@ -116,7 +159,7 @@
                 Image bitmap = ip.GetPlotImage(array);
 
                 if (arrayOfBitmaps.Length > ip.Order) // THIS IF CONDITION IS A HACK. THERE IS A BUG SOMEWHERE.
-                        arrayOfBitmaps[ip.Order] = bitmap;
+                    arrayOfBitmaps[ip.Order] = bitmap;
             }
 
             var listOfBitmaps = arrayOfBitmaps.Where(b => b != null).ToList();
@@ -127,15 +170,15 @@
             int graphWidth = X_offset + scaleLength;
             int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
-            int imageHt = TrackHeight * (listOfBitmaps.Count + 4);  //+3 for title and top and bottom time tracks
+            int imageHt = TrackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, titleText);
             //Bitmap time1Bmp = Image_Track.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
-            TimeSpan xAxisPixelDuration = indexGenerationData.IndexCalculationDuration;
+            TimeSpan xAxisPixelDuration = indexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
             Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(fullDuration, graphWidth, TrackHeight);
             Bitmap timeBmp2 = timeBmp1;
             Bitmap suntrack = null;
-            DateTimeOffset? dateTimeOffset = indexGenerationData.RecordingStartDate;
+            DateTimeOffset? dateTimeOffset = recordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
