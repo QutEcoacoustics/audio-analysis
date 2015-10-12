@@ -276,7 +276,7 @@
                     var rows = spectrogram.Data.GetLength(1) - 1;  // Have to minus the graphical device context(DC) line. 
                     var cols = spectrogram.Data.GetLength(0);
                     poiList = POISelection.RidgePoiSelection(spectrogram, ridgeConfig, featurePropSet);
-                    //poiList = POISelection.Post8DirGradient(spectrogram, gradientConfig);
+                    ////poiList = POISelection.Post8DirGradient(spectrogram, gradientConfig);
                     var filterRidges = POISelection.RemoveFalseRidges(poiList, spectrogram.Data, 6, 15.0);
                     //var addCompressedRidges = POISelection.AddCompressedRidges(
                     //    config,
