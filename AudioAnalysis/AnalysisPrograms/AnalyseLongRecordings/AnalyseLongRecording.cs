@@ -272,28 +272,31 @@ Output  to  directory: {1}
                     throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
                 }
 
-                // this arbitary amount - a sheer guess... who knows if it will work.
+                // this arbitrary amount - a sheer guess... who knows if it will work.
                 if (mergedIndicesResults.Length > 5000)
                 {
                     Log.Warn("Summary Indices Image not able to be drawn - there are too many indices to render");
                 }
                 else
                 {
-                    string fileName = Path.GetFileNameWithoutExtension(fileNameBase);
-                    string imageTitle = string.Format("SOURCE:{0},   (c) QUT;  ", fileName);
+                    var basename = Path.GetFileNameWithoutExtension(fileNameBase);
+                    string imageTitle = $"SOURCE:{basename},   (c) QUT;  ";
+
                     Bitmap tracksImage =
                         DrawSummaryIndices.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
                             indicesFile,
-                            imageTitle);
-                    var imagePath =FilenameHelpers.AnalysisResultName(instanceOutputDirectory, fileName, "Indices", ImagefileExt);
+                            imageTitle,
+                            analysisSettings.SegmentMaxDuration.Value,
+                            fileSegment.OriginalFileStartDate);
+                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "Indices", ImagefileExt);
                     tracksImage.Save(imagePath);
                 }
             }
 
             // 13. wrap up, write stats
             LoggedConsole.WriteLine(
-                "INDICES CSV file(s) = " + (indicesFile == null ? "<<No indices result, no file!>>" : indicesFile.Name));
+                "INDICES CSV file(s) = " + (indicesFile?.Name ?? "<<No indices result, no file!>>"));
             LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
                                     numberOfRowsOfIndices);
             LoggedConsole.WriteLine(string.Empty);

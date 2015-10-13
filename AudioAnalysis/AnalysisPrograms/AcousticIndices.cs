@@ -54,22 +54,10 @@ namespace AnalysisPrograms
             public string Task { get; set; }
 
             [ArgIgnore]
-            public bool TaskIsAnalyse
-            {
-                get
-                {
-                    return string.Equals(this.Task, TaskAnalyse, StringComparison.InvariantCultureIgnoreCase);
-                }
-            }
+            public bool TaskIsAnalyse => string.Equals(this.Task, TaskAnalyse, StringComparison.InvariantCultureIgnoreCase);
 
             [ArgIgnore]
-            public bool TaskIsLoadCsv
-            {
-                get
-                {
-                    return string.Equals(this.Task, TaskLoadCsv, StringComparison.InvariantCultureIgnoreCase);
-                }
-            }
+            public bool TaskIsLoadCsv => string.Equals(this.Task, TaskLoadCsv, StringComparison.InvariantCultureIgnoreCase);
 
             [ArgDescription("The path to the config file")]
             [Production.ArgExistingFile()]
