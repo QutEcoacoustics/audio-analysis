@@ -1,12 +1,31 @@
 #######################################################
+# 2 October 2015
+# This code performs two experiments on two different datasets
+#
+# EXPERIMENT 1 
+# Works with a four (4) day dataset from the 22 to 25 June 2015 from
+# the Gympie NP site
+# The aim of this experiment is to compare three major clustering 
+# techniques (PARTITIONING - kmeans, HIERARCHICAL - hclust, agnes and
+# MODEL-BASED - mclust) in order to determine which technique is best
+# for characterising a rain-event.
+
+# EXPERIMENT 2
+# Works with a twelve (12) day dataset from the two sites Gympie NP and 
+# Woondum3.  Dates are:  30/07/2015; 31/07/2015; 1/08/2015; 31/08/2015;
+# 1/09/2015; 4/09/2015.
+# The dataset forms four groups split by sites and months (July and August)
+# The aim is to compare three major clustering techniques (listed above)
+# and to determine which is best for clustering acoustic data
+#
+#######################################################
 # EXPERIMENT 2 
 #######################################################
-# Clustering - Partitioning (kmeans & clara), hierarchical 
-# (hclust & agnes), model-based (mclust) and affinity
-# propogation (apcluster)
+# Clustering - Partitioning (kmeans & clara), hierarchical (hclust 
+# & agnes), model-based (mclust) and affinity propogation (apcluster)
 #######################################################
 #setwd("C:\\Work\\CSV files\\DataSet_New")
-setwd("C:\\Work\\CSV files\\DataSet_New_New_New")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2")
 
 #AcousticDS <- read.csv("DataSet_Exp2_4_5July_31July_1Aug_31Aug-1Sept_2015.csv", header=T)
 AcousticDS <- read.csv("Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", header=T)
@@ -128,7 +147,7 @@ for (i in 2:50) {
 }
 
 column.names <- NULL
-for (i in 1:length(variance)) {
+for (i in 2:(length(variance)+1)) {
   col.names <- paste("clusters_", i, sep = "")
   column.names <- c(column.names,col.names)
 }
@@ -291,12 +310,57 @@ dev.off()
 #######################################################
 # Method 2a:  Hierarchical - hclust
 #######################################################
-setwd("C:\\Work\\CSV files\\DataSet_New_New_New\\Hierarchical")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2\\Hierarchical\\")
 require(graphics)
 ds3.norm_2_98 <- cbind(ds3.norm_2_98, AcousticDS$rec.time)
 dist.hc <- dist(ds3.norm_2_98[,-8])
 #hc.fit <- hclust(dist.hc, "average")
 hc.fit.ward <- hclust(dist.hc, "ward.D2")
+hc.fit.average <- hclust(dist.hc, "average")
+
+hc.fit.ward.10 <- cutree(hc.fit.ward, k = 10)
+hc.fit.ward.15 <- cutree(hc.fit.ward, k = 15)
+hc.fit.ward.20 <- cutree(hc.fit.ward, k = 20)
+hc.fit.ward.25 <- cutree(hc.fit.ward, k = 25)
+
+hc.fit.average.10 <- cutree(hc.fit.average, k = 10)
+hc.fit.average.15 <- cutree(hc.fit.average, k = 15)
+hc.fit.average.20 <- cutree(hc.fit.average, k = 20)
+hc.fit.average.25 <- cutree(hc.fit.average, k = 25)
+
+set.hc.fit <- cbind(hc.fit.average.10, hc.fit.average.15,
+                hc.fit.average.20, hc.fit.average.25,hc.fit.ward.10, 
+                hc.fit.ward.15, hc.fit.ward.20, hc.fit.ward.25)
+write.csv(set.hc.fit, "hc_fit_set_cutree_k.csv", row.names = F)
+
+png("hclust_average_cutree_k_ds3norm_2_98.png", width = 1500, 
+    height = 1200, units = "px")
+par(mfrow=c(4,1), mar=c(3,3,1,1), oma=c(3,2,3,1), cex.main=3,
+    cex.axis=2)
+plot(hc.fit.average.10, xaxt="n")
+mtext("hclust_cutree_average_k_10", side = 3,line = 1, cex = 2)
+plot(hc.fit.average.15, xaxt="n")
+mtext("hclust_cutree_average_k_15", side = 3,line = 1, cex = 2)
+plot(hc.fit.average.20, xaxt="n")
+mtext("hclust_cutree_average_k_20", side = 3,line = 1, cex = 2)
+plot(hc.fit.average.25)
+mtext("hclust_cutree_average_k_25", side = 3,line = 1, cex = 2)
+dev.off()
+
+png("hclust_ward_d2_cutree_k_ds3norm_2_98.png", width = 1500, 
+    height = 1200, units = "px")
+par(mfrow=c(4,1), mar=c(3,3,1,1), oma=c(3,2,3,1), cex.main=3,
+    cex.axis=2)
+plot(hc.fit.ward.10, xaxt="n")
+mtext("hclust_cutree_ward_k_10", side = 3,line = 1, cex = 2)
+plot(hc.fit.ward.15, xaxt="n")
+mtext("hclust_cutree_ward_k_15", side = 3,line = 1, cex = 2)
+plot(hc.fit.ward.20, xaxt="n")
+mtext("hclust_cutree_ward_k_20", side = 3,line = 1, cex = 2)
+plot(hc.fit.ward.25)
+mtext("hclust_cutree_ward_k_25", side = 3,line = 1, cex = 2)
+dev.off()
+
 
 # To plotting a very long narrow dendrogram change width to 200000
 rec.time <- AcousticDS$rec.time
@@ -304,104 +368,81 @@ png('hclust_ward_D2_dendrogram_average_ds3.exp1.norm_2_98.png',
     width = 2000, height = 800, units = "px",
     pointsize = 12) 
 par(mar=c(0,0,3,0), oma=c(5,5,5,5))
-plot(hc.fit.ward, hang = -1,
+plot(hc.fit.ward, hang = -0.1,
      main = "Cluster Dendrogram - ward.D2",
      cex.main=5, las=2,
      labels = rec.time)
 dev.off()
 
-cut.heights <- NULL
-for (i in seq(1,70,0.5)) {
-  nam <- paste("cut_height_", i, sep="")
-  (nam <- cutree(hc.fit.ward, h = i))
-  cut.heights <- cbind(cut.heights, unname(nam))
-}
-column.names <- NULL
-for (i in seq(1,70,0.5)) {
-  col.names <- paste("cut_heights_", i, sep = "")
-  column.names <- c(column.names,col.names)
-}
-colnames(cut.heights) <- column.names
+#cut.heights <- NULL
+#for (i in seq(1,70,0.5)) {
+#  nam <- paste("cut_height_", i, sep="")
+#  (nam <- cutree(hc.fit.ward, h = i))
+#  cut.heights <- cbind(cut.heights, unname(nam))
+#}
+#column.names <- NULL
+#for (i in seq(1,70,0.5)) {
+#  col.names <- paste("cut_heights_", i, sep = "")
+#  column.names <- c(column.names,col.names)
+#}
 
-write.csv(cut.heights, file = "hclust_ward_D2_clustering_cut_heights.csv")
+#colnames(cut.heights) <- column.names
+
+#write.csv(cut.heights, file = "hclust_ward_D2_clustering_cut_heights.csv")
 
 cut_hc_clust.av <- read.csv("hclust_average_clustering_cut_heights.csv", header = T)
 cut_hc_clust.wd <- read.csv("hclust_ward_D2_clustering_cut_heights.csv", header = T)
 
 png('hclust_average_cut_heights_ds3norm_2_98.png', 
     width = 1500, height = 1200, units = "px")
-par(mfrow=c(4,1), mar=c(3,3,1,1), cex.main=3, cex.axis=2)
-plot(cut_hc_clust.av$cut_heights_0.68, main="hclust_average_cut_height_0.68",
-     xaxt="n")
-plot(cut_hc_clust.av$cut_heights_0.7, main="hclust_average_cut_height_0.7",
-     xaxt="n")
-plot(cut_hc_clust.av$cut_heights_0.74, main="hclust_average_cut_height_0.74",
-     xaxt="n")
-plot(cut_hc_clust.av$cut_heights_0.69, main="hclust_average_cut_height_0.69")
+par(mfrow=c(4,1), mar=c(3,3,1,1), oma=c(3,2,3,1), cex.main=3,
+    cex.axis=2)
+plot(cut_hc_clust.av$cut_heights_0.68, xaxt="n")
+mtext("hclust_average_cut_height_0.68", side = 3, line = 1, cex = 2)
+plot(cut_hc_clust.av$cut_heights_0.7, xaxt="n")
+mtext("hclust_average_cut_height_0.7", side = 3, line = 1, cex = 2)
+plot(cut_hc_clust.av$cut_heights_0.74,xaxt="n")
+mtext("hclust_average_cut_height_0.74", side = 3, line = 1, cex = 2)
+plot(cut_hc_clust.av$cut_heights_0.78)
+mtext("hclust_average_cut_height_0.78", side = 3, line = 1, cex = 2)
 dev.off()
 
 png('hclust_ward_D2_cut_heights_ds3norm_2_98.png', 
     width = 1500, height = 1200, units = "px")
-par(mfrow=c(4,1), mar=c(3,3,1,1), cex.main=3, cex.axis=2)
-plot(cut_hc_clust.wd$cut_heights_6, main="hclust_ward_D2_cut_height_6",
-     xaxt="n")
-plot(cut_hc_clust.wd$cut_heights_7, main="hclust_ward_D2_cut_height_7",
-     xaxt="n")
-plot(cut_hc_clust.wd$cut_heights_7.5, main="hclust_ward_D2_cut_height_7.5",
-     xaxt="n")
-plot(cut_hc_clust.wd$cut_heights_8, main="hclust_ward_D2_cut_height_8")
+par(mfrow=c(4,1), mar=c(3,3,1,1), oma=c(3,2,3,1), cex.main=3,
+    cex.axis=2)
+plot(cut_hc_clust.wd$cut_heights_6, xaxt="n")
+mtext("hclust_ward_D2_cut_height_6", side = 3, line = 1, cex = 2)
+plot(cut_hc_clust.wd$cut_heights_7, xaxt="n")
+mtext("hclust_ward_D2_cut_height_7", side = 3, line = 1, cex = 2)
+plot(cut_hc_clust.wd$cut_heights_7.5, xaxt="n")
+mtext("hclust_ward_D2_cut_height_7.5", side = 3, line = 1, cex = 2)
+plot(cut_hc_clust.wd$cut_heights_8)
+mtext("hclust_ward_D2_cut_height_8", side = 3, line = 1, cex = 2)
 dev.off()
 
-cut.heights <- NULL
-for (i in seq(0.01,1,0.01)) {
-  nam <- paste("cut_height_", i, sep="")
-  (nam <- cutree(hc.fit, h = i))
-  cut.heights <- cbind(cut.heights, unname(nam))
-}
-column.names <- NULL
-for (i in seq(0.01,1,0.01)) {
-  col.names <- paste("cut_heights_", i, sep = "")
-  column.names <- c(column.names,col.names)
-}
-colnames(cut.heights) <- column.names
-
-write.csv(cut.heights, file = "hclust_average_clustering_cut_heights.csv")
-
+#cut.heights <- NULL
+#for (i in seq(0.01,1,0.01)) {
+#  nam <- paste("cut_height_", i, sep="")
+#  (nam <- cutree(hc.fit, h = i))
+#  cut.heights <- cbind(cut.heights, unname(nam))
+#}
+#column.names <- NULL
+#for (i in seq(0.01,1,0.01)) {
+#  col.names <- paste("cut_heights_", i, sep = "")
+#  column.names <- c(column.names,col.names)
+#}
+#colnames(cut.heights) <- column.names
+#write.csv(cut.heights, file = "hclust_average_clustering_cut_heights.csv")
 
 # Plotting hclust dendograms
-par(mfrow = c(1,2))
-hc.fit.mcquitty <- hclust(dist(ds3.norm_2_98), "mcquitty")
-png('hclust_dendrogram_mcquitty_ds3norm_2_98.png', 
-    width = 1500, height = 1200, units = "px") 
-plot(hc.fit.mcquitty, hang = -1, cex=0.1,
-     main = "Cluster Dendrogram - mcquitty")
-dev.off()
-
-
-png('hclust_methods_cutreeDynamic_Exp2_ds3norm_2_98.png', 
-    width = 1500, height = 1200, units = "px") 
-par(mfrow=c(4,1), mar=c(1,2,0.6,1), oma=c(3,3,3,3))
-plot(cut.complete, xaxt='n')
-mtext(side = 3, line=0, cex=2,
-      "Exp2 hclust method - complete, cutreeDynamic method = tree, minClusterSize = 80")
-plot(cut.average, xaxt="n")
-mtext(side = 3, line=0, cex=2,
-      "Exp2 hclust method - average, cutreeDynamic method = tree, minClusterSize = 80")
-plot(cut.mcquitty, xaxt="n")
-mtext(side = 3, line=0, cex=2,
-      "Exp2 hclust method - mcquitty, cutreeDynamic method = tree, minClusterSize = 80")
-plot(cut.wardd2)
-mtext(side = 3, line=0, cex=2,
-      "Exp2 hclust method - ward d2, cutreeDynamic method = tree, minClusterSize = 80")
-dev.off()
-
-png('hclust_dendrogram_wardD2_ds3norm_2_98.png', 
-    width = 1500, height = 1200, units = "px") 
-hc.fit.ward.d2 <- hclust(dist(ds3.norm_2_98), "ward.D2")
-plot(hc.fit.ward.d2, hang = -1, cex=0.1,
-     main = "Cluster Dendrogram - ward.D2")
-dev.off()
-
+#par(mfrow = c(1,2))
+#hc.fit.mcquitty <- hclust(dist(ds3.norm_2_98), "mcquitty")
+#png('hclust_dendrogram_mcquitty_ds3norm_2_98.png', 
+#    width = 1500, height = 1200, units = "px") 
+#plot(hc.fit.mcquitty, hang = -0.1, cex=0.1,
+#     main = "Cluster Dendrogram - mcquitty")
+#dev.off()
 
 #######################################################
 # Method 2b:  Hierarchical - agnes
@@ -412,19 +453,22 @@ library(cluster)
 # WARNING: agnes takes four hours to cluster 17000 objects 
 ag.d <- dist(ds3.norm_2_98[1:2880,], method = "euclidean")
 ag.fit <- agnes(ag.d, method = "ward")
+
+# Plot dendrogram
 par(mfrow=c(2,2), mar=c(2,2,2,2))
 png('Agnes_plot_ds3norm_2_98.png', 
     width = 1500, height = 1200, units = "px") 
-plot(ag.fit, which.plots=2, cex=0.5, hang=-1)
+plot(ag.fit, which.plots=2, cex=0.5, hang=-0.1)
 dev.off()
+
 #(cut_height_3 <- cutree(as.hclust(ag.fit), h = 3))
 #plot(unname(cut_height_3), main = "Height =3")
 (cut_height_4 <- cutree(as.hclust(ag.fit), h = 4))
-plot(unname(cut_height_4), main = "Height =4")
+plot(unname(cut_height_4), main = "Height = 4")
 (cut_height_5 <- cutree(as.hclust(ag.fit), h = 5))
-plot(unname(cut_height_5), main = "Height =5")
+plot(unname(cut_height_5), main = "Height = 5")
 (cut_height_7 <- cutree(as.hclust(ag.fit), h = 7))
-plot(unname(cut_height_7), main = "Height =7")
+plot(unname(cut_height_7), main = "Height = 7")
 
 # Clustering of full dataset
 # WARNING: This takes four hours and is demanding on 
@@ -769,7 +813,7 @@ par(mfrow = c(1,2))
 hc.exp1.fit.ward <- hclust(dist(ds.exp1.norm_2_98), "ward.D")
 png('hclust_dendrogram_wardD_ds.exp1.norm_2_98.png', 
     width = 1500, height = 1200, units = "px") 
-plot(hc.exp1.fit.ward, hang = -1, cex=0.1,
+plot(hc.exp1.fit.ward, hang = -0.1, cex=0.1,
      main = "Cluster Dendrogram - ward.D")
 dev.off()
 
@@ -782,7 +826,7 @@ plot(cut, ylim=c(0,30))
 png('hclust_dendrogram_wardD2_ds.exp1.norm_2_98.png', 
     width = 1500, height = 1200, units = "px") 
 hc.exp1.fit.ward.d2 <- hclust(dist(ds.exp1.norm_2_98), "ward.D2")
-plot(hc.exp1.fit.ward.d2, hang = -1, cex=0.1,
+plot(hc.exp1.fit.ward.d2, hang = -0.1, cex=0.1,
      main = "Cluster Dendrogram - ward.D2")
 dev.off()
 
