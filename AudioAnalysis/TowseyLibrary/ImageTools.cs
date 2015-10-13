@@ -2280,17 +2280,26 @@ namespace TowseyLibrary
             Color[] grayScale = GrayScale();
 
             Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            int greyId = 0;
 
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    int greyId = (int)Math.Floor(matrix[r, c] * 255);
-                    if (greyId < 0) { greyId = 0; }
+                    if (Double.IsNaN(matrix[r, c]))
+                    {
+                        greyId = 128; //want NaN values in gray,
+                    }
                     else
-                    { if (greyId > 255) greyId = 255; }
+                    {
+                        greyId = (int)Math.Floor(matrix[r, c] * 255);
+                        if (greyId < 0) { greyId = 0; }
+                        else
+                        { if (greyId > 255) greyId = 255; }
 
-                    greyId = 255 - greyId; // reverse image - want high values in black, low values in white
+                        greyId = 255 - greyId; // reverse image - want high values in black, low values in white
+                    }
+
                     bmp.SetPixel(c, r, grayScale[greyId]);
                 }//end all columns
             }//end all rows

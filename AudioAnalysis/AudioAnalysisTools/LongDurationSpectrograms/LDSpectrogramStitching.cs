@@ -91,7 +91,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             foreach (var file in files)
             {
                 DateTimeOffset parsedDate;
-                //if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint: null))
                 if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint))
                 {
                     datesAndFiles.Add(parsedDate, file);
@@ -272,8 +271,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(FileInfo[] files, DirectoryInfo opDir, FileInfo indicesCsvfile)
         {
-
-            var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenate(files);
+            // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
+            var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
             string[] headers = summaryDataTuple.Item1;
             double[,] summaryIndices = summaryDataTuple.Item2;
             Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
@@ -317,9 +316,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string titletext = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
             Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(
                                  IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
-                                 indexGenerationData,
                                  dictionaryOfCsvColumns,
                                  titletext,
+                                 indexGenerationData.IndexCalculationDuration,
+                                 indexGenerationData.RecordingStartDate,
                                  siteDescription);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
             tracksImage.Save(imagePath);
@@ -431,6 +431,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// WRITTEN FOR EDDIE GAME's DATA
         /// This method merges ALL files of acoustic indices (in any and all subdirectories of the passed topLevelDirectory) 
         /// It is assumed you are concatneating a sequence of consecutive shorter recordings.
+        /// NOTE WARNING with method call to IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
         /// </summary>
         public static void ConcatenateSummaryIndexFiles(DirectoryInfo topLevelDirectory,
                                                           FileInfo indexPropertiesConfig,
@@ -447,7 +448,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string date = opFileStem.Substring(opFileStem.Length - 8);
             string fileStemPattern = date + pattern;
             FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, fileStemPattern);
-            var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenate(files);
+
+            // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
+            var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
             string[] headers = summaryDataTuple.Item1;
             double[,] summaryIndices = summaryDataTuple.Item2;
             Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
@@ -474,14 +477,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // get the IndexGenerationData file from the first directory
             IndexGenerationData indexGenerationData = IndexGenerationData.GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
             TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
-            string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
-            string imageTitle = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
+            string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
+            string imageTitle =
+                $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
             Bitmap tracksImage =
                 DrawSummaryIndices.DrawImageOfSummaryIndices(
                     IndexProperties.GetIndexProperties(indexPropertiesConfig),
-                    indexGenerationData,
                     dictionaryOfCsvColumns,
-                    imageTitle);
+                    imageTitle,
+                    indexGenerationData.IndexCalculationDuration,
+                    indexGenerationData.RecordingStartDate);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, imgFileExt);
             tracksImage.Save(imagePath);
         }

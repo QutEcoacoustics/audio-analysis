@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AudioAnalysisTools.LongDurationSpectrograms
+﻿namespace AudioAnalysisTools.LongDurationSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.Contracts;
     using System.IO;
+    using System.Linq;
+    using System.Text;
 
     using Acoustics.Shared;
 
@@ -21,9 +20,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public Dictionary<string, IndexProperties> IndexProperties { get; set; }
 
-        public FileInfo IndexGenerationDataFile { get; set;}
+        public FileInfo IndexGenerationDataFile { get; set; }
 
-        public FileInfo IndexDistributionsFile { get; set;}
+        public FileInfo IndexDistributionsFile { get; set; }
 
         public void GuessOriginalBasename()
         {
@@ -74,7 +73,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static void CheckForNeededFiles(DirectoryInfo indicesDirectory, out FileInfo indexGenerationDataFile, out FileInfo indexDistributionsFile)
         {
             indexDistributionsFile = indicesDirectory.GetFiles("*" + IndexDistributions.SpectralIndexStatisticsFilenameFragment + "*").Single();
-            indexGenerationDataFile = indicesDirectory.GetFiles("*" + IndexGenerationData.FileNameFragment + "*").Single();
+            indexGenerationDataFile = IndexGenerationData.FindFile(indicesDirectory);
         }
     }
 }

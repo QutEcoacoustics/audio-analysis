@@ -52,6 +52,7 @@ namespace TowseyLibrary
                 return bins;
             }
 
+            int NaN_COUNT = 0;
             binWidth = range / (double)binCount;
             for (int i = 0; i < data.Length; i++)
             {
@@ -59,8 +60,7 @@ namespace TowseyLibrary
                 int id = 0;
                 if (Double.IsNaN(value))
                 {
-                    string msg = String.Format("WARNING from Histogram.Histo():  dataValue[{0}] is NaN", i);
-                    LoggedConsole.WriteErrorLine(msg);
+                    NaN_COUNT ++;
                 }
                 else
                 {
@@ -68,6 +68,12 @@ namespace TowseyLibrary
                 }
                 if (id >= binCount) id = binCount - 1; 
                 bins[id]++;
+            }
+
+            if (NaN_COUNT > 0)
+            {
+                string msg = String.Format("#### WARNING from Histogram.Histo():  {0}/{1} values were NaN", NaN_COUNT, data.Length);
+                LoggedConsole.WriteErrorLine(msg);
             }
             return bins;
         }

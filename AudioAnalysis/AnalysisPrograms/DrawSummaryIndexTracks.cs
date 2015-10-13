@@ -111,20 +111,27 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine(date);
                     LoggedConsole.WriteLine("# Input  .csv   file: " + arguments.InputCsv);
                     LoggedConsole.WriteLine("# Output image  file: " + arguments.Output);
-                    LoggedConsole.WriteLine("");
+                    LoggedConsole.WriteLine();
                 }
 
             }
 
             arguments.Output.CreateParentDirectories();
 
+            // Find required index generation data
+            var igd = IndexGenerationData.GetIndexGenerationData(arguments.InputCsv.Directory);
+
             // Convert summary indices to image
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
-            string title = String.Format("SOURCE:{0},   (c) QUT;  ", fileName);
-            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(arguments.InputCsv, arguments.IndexPropertiesConfig, title);
+            string title = $"SOURCE:{fileName},   (c) QUT;  ";
+            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(
+                arguments.InputCsv,
+                arguments.IndexPropertiesConfig,
+                title,
+                igd.IndexCalculationDuration,
+                igd.RecordingStartDate);
             tracksImage.Save(arguments.Output.FullName);
 
-        } // Main();
-
-    } //class
+        }
+    }
 }
