@@ -253,7 +253,7 @@ namespace AnalysisPrograms
             }
 
             // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
-            var sortedDictionaryOfDatesAndFiles = LDSpectrogramStitching.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
+            var sortedDictionaryOfDatesAndFiles = FileDateHelpers.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
 
 
             // calculate new start date if passed value = null.
