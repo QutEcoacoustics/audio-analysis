@@ -78,30 +78,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        /// <summary>
-        /// sorts a list of files by the date assumed to be encoded in their file names
-        /// and then returns the list as a sorted dictionary with file DateTime as the keys.
-        /// </summary>
-        /// <param name="files"></param>
-        /// <param name="offsetHint"></param>
-        /// <returns></returns>
-        public static SortedDictionary<DateTimeOffset, FileInfo> FilterFilesForDates(FileInfo[] files, TimeSpan? offsetHint = null)
-        {
-            var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
-            foreach (var file in files)
-            {
-                DateTimeOffset parsedDate;
-                if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint))
-                {
-                    datesAndFiles.Add(parsedDate, file);
-                }
-            }
-
-            // use following lines to get first and last date from returned dictionary
-            //DateTimeOffset firstdate = datesAndFiles[datesAndFiles.Keys.First()];
-            //DateTimeOffset lastdate  = datesAndFiles[datesAndFiles.Keys.Last()];
-            return datesAndFiles;
-        }
 
 
 
