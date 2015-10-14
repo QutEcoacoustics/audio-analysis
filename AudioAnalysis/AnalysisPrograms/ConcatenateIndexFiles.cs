@@ -118,8 +118,8 @@ namespace AnalysisPrograms
             string opFileStem = directoryFilter;
             string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
 
-            dtoStart = new DateTimeOffset(2015, 6, 28, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2015, 6, 29, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2015, 06, 22, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
 
 
             // ########################## EDDIE GAME'S RECORDINGS
@@ -271,13 +271,13 @@ namespace AnalysisPrograms
             }
 
             TimeSpan totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
-            int dayCount = totalTimespan.Days + 1;
+            int dayCount = totalTimespan.Days + 1; // assume last day has full 24 hours of recording available.
 
             if (verbose)
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", totalTimespan.TotalHours));
+                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
                 LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
             }
@@ -306,16 +306,20 @@ namespace AnalysisPrograms
             }
 
 
-            //TODO TODO TODO                           NEED TO DEBUG THE FOLLOWING OPTION
-            //TODO TODO TODO
-            //if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
-            //{
-            //    // concatenate the summary index files
-            //    FileInfo[] files = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
-            //    LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
-            //    LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
-            //    return;
-            //}
+            //TODO TODO TODO   ########################   NEED TO DEBUG THE FOLLOWING OPTION
+            if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
+            {
+                LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
+                LoggedConsole.WriteErrorLine("       TODO TODO TODO   ########################   NEED TO DEBUG THE FOLLOWING OPTION");
+                LoggedConsole.WriteErrorLine("       The option <ConcatenateEverythingYouCanLayYourHandsOn> has not been debugged.");
+                LoggedConsole.WriteErrorLine("       Check results for accuracy.");
+                LoggedConsole.WriteErrorLine("       This option is only currently used for the TNC data of Eddie Game.");
+                // concatenate the summary index files
+                FileInfo[] files = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
+                LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                return;
+            }
 
 
 
@@ -335,7 +339,7 @@ namespace AnalysisPrograms
 
                 // get the exact date and time
                 thisday = filteredDict.Keys.First();
-                LoggedConsole.WriteLine(String.Format("\n\n\nCONCATENATING DAY {0}:   {1}", d, thisday.ToString()));
+                LoggedConsole.WriteLine(String.Format("\n\n\nCONCATENATING DAY {0} of {1}:   {2}", (d+1), dayCount, thisday.ToString()));
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
                 string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
