@@ -81,6 +81,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// sorts a list of files by the date assumed to be encoded in their file names
         /// and then returns the list as a sorted dictionary with file DateTime as the keys.
+        /// 
+        /// This is not a bug, it's a feature!
+        /// IMPORTANT NOTE: This method only sorts on DATE and not on TIME-OF-DAY. Consequently a bug arises if the files for a given day contain different separators,
+        /// for example YYYYMMDD-hhmmss as well as YYYYMMDD_hhmmss. The returned Sorted dictionary returns the files within a day in alphabetical order. 
         /// </summary>
         /// <param name="files"></param>
         /// <param name="offsetHint"></param>
