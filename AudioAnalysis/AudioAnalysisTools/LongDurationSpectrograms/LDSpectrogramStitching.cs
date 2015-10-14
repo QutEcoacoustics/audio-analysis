@@ -76,12 +76,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return dataDirectories.ToArray();
         }
 
-
-
-
-
-
-
         /// <summary>
         /// Use this concatenation method when you only want to concatenate the files for a fixed single day.
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
