@@ -99,15 +99,16 @@ namespace AnalysisPrograms
             // top level directory
             FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
 
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"),
-                                       };
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"),
             //                           };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),
+                                       };
+            //string opFileStem = "GympieNP2015";
+            string opFileStem = "Woondum32015";
 
 
             // The filter pattern finds summary index files
             string fileFilter = "*SummaryIndices.csv";
-            string opFileStem = "GympieNP2015";
             string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
 
             dtoStart = new DateTimeOffset(2015, 06, 22, 0, 0, 0, TimeSpan.Zero);
@@ -247,41 +248,75 @@ namespace AnalysisPrograms
             Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFiles[0].FullName);
             var names = tuple.Item1;
-            //int redID = 8;  // backgroundNoise
+            int redID = 3;  // backgroundNoise
             ////int grnID = 4;  //SNR
-            //int grnID = 5; // avSNROfActiveframes
-            //int bluID = 7;   // events per second
+            int grnID = 5; // avSNROfActiveframes
+            int bluID = 7;   // events per second
 
-            int redID = 11;  // ACI
-            int grnID = 12;  // Ht
-            int bluID = 15;  // Hpeaks
+            //int redID = 11;  // ACI
+            //int grnID = 12;  // Ht
+            //int bluID = 15;  // Hpeaks
 
             IndexProperties redIndexProps = listOfIndexProperties[names[redID]];
             IndexProperties grnIndexProps = listOfIndexProperties[names[grnID]];
             IndexProperties bluIndexProps = listOfIndexProperties[names[bluID]];
 
             //corrections for these images
-            //redIndexProps.NormMax = -15;
-            //grnIndexProps.NormMax = 25;
-            //bluIndexProps.NormMax = 3;
+            redIndexProps.NormMax = -15;
+            //grnIndexProps.NormMax = 25; //SNR
+            grnIndexProps.NormMax = 12;   //avSNROfActiveframes
+            bluIndexProps.NormMax = 3;
             //bluIndexProps.NormMax = 2.0;
 
-            int dayPixelHeight = 4;
-            int rowCount = dayPixelHeight * dayCount;
+            int dayPixelHeight = 5;
+            int rowCount = (dayPixelHeight * dayCount) + 30; // +30 for grid lines
             int colCount = 1440;
             var bitmap = new Bitmap(colCount, rowCount);
             var colour = Color.Yellow;
+            int currentRow = 0;
+            var oneDay = TimeSpan.FromHours(24);
+            int graphWidth = colCount;
+            int trackHeight = 20;
+            Pen whitePen = new Pen(Color.White);
+            //Pen grayPen = new Pen(Color.Gray);
+            Font stringFont = new Font("Arial", 8);
+            string[] monthNames = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
+
+            // for drawing the y-axis scale
+            int scaleWidth = trackHeight + 5;
+            var yAxisScale = new Bitmap(scaleWidth, rowCount + (2 * trackHeight));
+            Graphics g = Graphics.FromImage(yAxisScale);
+            g.Clear(Color.Black);
 
             // loop over days
             for (int d = 0; d < dayCount; d++)
             {
                 var thisday = ((DateTimeOffset)startDate).AddDays(d);
 
+                if (thisday.Day == 1)
+                {
+                    int nextRow = currentRow + 1;
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        bitmap.SetPixel(c, currentRow, Color.Gray);
+                        bitmap.SetPixel(c, nextRow,    Color.Gray);
+                    }
+                    for (int c = 0; c < scaleWidth; c++)
+                    {
+                        yAxisScale.SetPixel(c, currentRow + trackHeight, Color.Gray);
+                        yAxisScale.SetPixel(c, nextRow + trackHeight, Color.Gray);
+                    }
+                    string month = monthNames[thisday.Month];
+                    g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
+
+                    currentRow += 2;
+
+                }
 
                 // get the exact date and time
                 //thisday = filteredDict.Keys.First();
-                LoggedConsole.WriteLine(String.Format("\nREADING DAY {0} of {1}:   {2}", (d+1), dayCount, thisday.ToString()));
+                LoggedConsole.WriteLine(String.Format("READING DAY {0} of {1}:   {2}", (d+1), dayCount, thisday.ToString()));
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
                 string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
@@ -331,10 +366,21 @@ namespace AnalysisPrograms
                         int bluVal = (int)Math.Round(transformedValue * 255);
                         if (bluVal < 0) bluVal = 0;
                         else
-                        if (bluVal > 255) bluVal = 255;
-                        bitmap.SetPixel(c, ((d * dayPixelHeight) + r), Color.FromArgb(redVal, grnVal, bluVal));
-                    }
+                        if (bluVal > 255) bluVal = 255;  
+                        bitmap.SetPixel(c, (currentRow + r), Color.FromArgb(redVal, grnVal, bluVal));
 
+                    }
+                } // over all columns
+
+                currentRow += dayPixelHeight;
+
+                if (thisday.Day % 7 == 0)
+                {
+                    for (int c = 0; c < colCount; c++)
+                    {
+                        bitmap.SetPixel(c, currentRow, Color.Gray);
+                    }
+                    currentRow++;
                 }
 
 
@@ -356,8 +402,22 @@ namespace AnalysisPrograms
 
             } // over days
 
-            var outputFileName = Path.Combine(opDir.FullName, "image.png");
-            bitmap.Save(outputFileName);
+            Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
+            var imageList = new List<Image>();
+            imageList.Add(timeBmp1);
+            imageList.Add(bitmap);
+            imageList.Add(timeBmp1);
+            Bitmap compositeBmp1 = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+
+            imageList = new List<Image>();
+            imageList.Add(yAxisScale);
+            imageList.Add(compositeBmp1);
+            Bitmap compositeBmp2 = (Bitmap)ImageTools.CombineImagesInLine(imageList);
+
+            var outputFileName = Path.Combine(opDir.FullName, arguments.FileStemName + ".EASY.png");
+            compositeBmp2.Save(outputFileName);
+
+
 
         } // Execute()
     }
