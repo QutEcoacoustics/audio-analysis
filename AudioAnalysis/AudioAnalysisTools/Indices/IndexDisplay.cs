@@ -183,7 +183,11 @@
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, TrackHeight);
-                suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, siteDescription);
+
+                if (siteDescription != null)
+                {
+                    suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, siteDescription);
+                }
             }
 
             //draw the composite bitmap
