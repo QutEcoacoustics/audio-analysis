@@ -54,38 +54,31 @@ namespace AudioAnalysisTools
             {
                 moon = "New moon";
             }
-
-            if (intPhase < 3)
+            else if (intPhase < 3)
             {
                 moon = "Waxing Crescent Moon";
             }
-
-            if (intPhase < 5)
+            else if (intPhase < 5)
             {
                 moon = "First Quarter Moon";
             }
-
-            if (intPhase < 7)
+            else if (intPhase < 7)
             {
                 moon = "Waxing Gibbous Moon";
             }
-
-            if (intPhase < 9)
+            else if (intPhase < 9)
             {
                 moon = "Full Moon";
             }
-
-            if (intPhase < 11)
+            else if (intPhase < 11)
             {
                 moon = "Waning Gibbous Moon";
             }
-
-            if (intPhase < 13)
+            else if (intPhase < 13)
             {
                 moon = "Third Quarter Moon";
             }
-
-            if (intPhase < 15)
+            else if (intPhase < 15)
             {
                 moon = "Waning Crescent Moon";
             }
