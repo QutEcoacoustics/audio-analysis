@@ -101,6 +101,7 @@ namespace AnalysisPrograms
             DateTimeOffset? dtoEnd = null;
 
             // ########################## YVONNE'S RECORDINGS
+            /*
             // top level directory
             FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
@@ -120,6 +121,40 @@ namespace AnalysisPrograms
 
             dtoStart = new DateTimeOffset(2015, 06, 22, 0, 0, 0, TimeSpan.Zero);
             dtoEnd   = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
+
+    */
+
+
+            // ########################## STURT RECORDINGS
+            // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
+            // top level directory
+            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+
+
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\SensorNetworks\WavFiles\SturtRecordings\Thompson"), };
+            //string directoryFilter = "Thompson";   // this is a directory filter to locate only the required files
+            //string opFileStem = "Sturt-Thompson";
+            //string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
+
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\SensorNetworks\WavFiles\SturtRecordings\Stud"), };
+            //string directoryFilter = "Stud";   // this is a directory filter to locate only the required files
+            //string opFileStem = "Sturt-Stud";
+            //string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
+
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\SensorNetworks\WavFiles\SturtRecordings\Sturt1"), };
+            //string directoryFilter = "Sturt1";   // this is a directory filter to locate only the required files
+            //string opFileStem      = "Sturt-Sturt1";
+            //string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
+
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Jul29-110950 - Jason, Towsey.Indices, ICD=60.0, #43\Sturt\2015July\Mistletoe"), };
+            string directoryFilter = "STURT2";          // this is a directory filter to locate only the required files
+            string opFileStem = "Sturt-Mistletoe";
+            string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
+
+            dtoStart = new DateTimeOffset(2015, 07, 01, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2015, 07, 06, 0, 0, 0, TimeSpan.Zero);
+
+
 
 
             // ########################## EDDIE GAME'S RECORDINGS
