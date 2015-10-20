@@ -97,14 +97,14 @@ namespace AnalysisPrograms
 
             // ########################## CSV FILES CONTAINING SUMMARY INDICES IN 24 hour BLOCKS 
             // top level directory
-            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\EASYIndexPropertiesConfig.yml");
 
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"),
-            //                           };
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"),
                                        };
-            //string opFileStem = "GympieNP2015";
-            string opFileStem = "Woondum32015";
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),
+            //                           };
+            string opFileStem = "GympieNP-2015";
+            //string opFileStem = "Woondum3-2015";
 
 
             // The filter pattern finds summary index files
@@ -167,18 +167,7 @@ namespace AnalysisPrograms
             }
 
 
-            // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
-            // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path. 
-            //var subDirectories = LDSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.FileFilter);
-            //if (subDirectories.Length == 0)
-            //{
-            //    LoggedConsole.WriteErrorLine("\n\n#WARNING from method DrawEasyImage.Execute():");
-            //    LoggedConsole.WriteErrorLine("        Subdirectory Count with given filter = ZERO");
-            //    LoggedConsole.WriteErrorLine("        RETURNING EMPTY HANDED!");
-            //    return;
-            //}
-
-            // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES.
+            // PATTERN SEARCH FOR SUMMARY INDEX FILES.
             //string pattern = "*__Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(arguments.InputDataDirectories, arguments.FileFilter);
             if (verbose)
@@ -198,20 +187,9 @@ namespace AnalysisPrograms
             // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo> 
             //var sortedDictionaryOfDatesAndFiles = LDSpectrogramStitching.FilterFilesForDates(csvFiles, arguments.TimeSpanOffsetHint);
 
-
             // calculate new start date if passed value = null.
             DateTimeOffset? startDate = arguments.StartDate;
             DateTimeOffset? endDate = arguments.EndDate;
-            //if (startDate == null)
-            //{
-            //    startDate = csvFiles.First();
-            //}
-            //// calculate new end date if passed value = null.
-            //if (endDate == null)
-            //{
-            //    endDate = csvFiles.Last();
-            //    //endDate = DateTimeOffset.UtcNow;
-            //}
 
             TimeSpan totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
             int dayCount = totalTimespan.Days + 1; // assume last day has full 24 hours of recording available.
@@ -248,25 +226,36 @@ namespace AnalysisPrograms
             Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFiles[0].FullName);
             var names = tuple.Item1;
+
+            // default EASY indices
             int redID = 3;  // backgroundNoise
-            ////int grnID = 4;  //SNR
+            //int grnID = 4;  //SNR
             int grnID = 5; // avSNROfActiveframes
             int bluID = 7;   // events per second
 
-            //int redID = 11;  // ACI
-            //int grnID = 12;  // Ht
-            //int bluID = 15;  // Hpeaks
+            // ACI Ht Hpeaks EASY indices
+            if (false)
+            {
+                redID = 11;  // ACI
+                grnID = 12;  // Ht
+                //bluID = 13;  // HavgSp
+                //bluID = 14;  // Hvariance
+                //bluID = 15;  // Hpeaks
+                //bluID = 16;  // Hcov
+                bluID = 7;  // SPT
+            }
+
+            // LF, MF, HF
+            if (true)
+            {
+                redID = 10;  // LF
+                grnID = 9;   // MF
+                bluID = 8;   // HF
+            }
 
             IndexProperties redIndexProps = listOfIndexProperties[names[redID]];
             IndexProperties grnIndexProps = listOfIndexProperties[names[grnID]];
             IndexProperties bluIndexProps = listOfIndexProperties[names[bluID]];
-
-            //corrections for these images
-            redIndexProps.NormMax = -15;
-            //grnIndexProps.NormMax = 25; //SNR
-            grnIndexProps.NormMax = 12;   //avSNROfActiveframes
-            bluIndexProps.NormMax = 3;
-            //bluIndexProps.NormMax = 2.0;
 
             int dayPixelHeight = 5;
             int rowCount = (dayPixelHeight * dayCount) + 30; // +30 for grid lines
@@ -284,7 +273,7 @@ namespace AnalysisPrograms
 
 
             // for drawing the y-axis scale
-            int scaleWidth = trackHeight + 5;
+            int scaleWidth = trackHeight + 7;
             var yAxisScale = new Bitmap(scaleWidth, rowCount + (2 * trackHeight));
             Graphics g = Graphics.FromImage(yAxisScale);
             g.Clear(Color.Black);
@@ -307,28 +296,27 @@ namespace AnalysisPrograms
                         yAxisScale.SetPixel(c, currentRow + trackHeight, Color.Gray);
                         yAxisScale.SetPixel(c, nextRow + trackHeight, Color.Gray);
                     }
-                    string month = monthNames[thisday.Month];
-                    g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
+                    string month = monthNames[thisday.Month-1];
+                    if (thisday.Month == 1) // January
+                    {
+                        g.DrawString(thisday.Year.ToString(), stringFont, Brushes.White, new PointF(0, nextRow + trackHeight + 1)); //draw time
+                        g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 11)); //draw time
+                    }
+                    else {
+                        g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
+                    }
 
                     currentRow += 2;
-
                 }
 
                 // get the exact date and time
-                //thisday = filteredDict.Keys.First();
                 LoggedConsole.WriteLine(String.Format("READING DAY {0} of {1}:   {2}", (d+1), dayCount, thisday.ToString()));
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
                 string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
-                //DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
-                //if (!resultsDir.Exists) resultsDir.Create();
-
-
-
 
                 string opFileStem = String.Format("{0}_{1}", arguments.FileStemName, dateString);
                 //var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
-                //var indicesCsvfile = new FileInfo(csvFiles[d]);
 
                 tuple = CsvTools.ReadCSVFile(csvFiles[d].FullName);
                 var arrays = tuple.Item2;
@@ -383,23 +371,6 @@ namespace AnalysisPrograms
                     currentRow++;
                 }
 
-
-
-                // concatenate the summary index files
-                //FileInfo[] files = filteredDict.Values.ToArray<FileInfo>();
-                //var summaryDict = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(files, resultsDir, indicesCsvfile);
-                //if (summaryDict.Count == 0)
-                //{
-                //    LoggedConsole.WriteErrorLine("\n\nWARNING from method DrawEasyImage.Execute():");
-                //    LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
-                //    break;
-                //}
-
-                // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
-                //indexGenerationData.RecordingStartDate = thisday;
-                //LDSpectrogramStitching.DrawSummaryIndexFiles(summaryDict, indexGenerationData, indexPropertiesConfig, resultsDir, siteDescription);
-
-
             } // over days
 
             Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
@@ -414,6 +385,16 @@ namespace AnalysisPrograms
             imageList.Add(compositeBmp1);
             Bitmap compositeBmp2 = (Bitmap)ImageTools.CombineImagesInLine(imageList);
 
+            // indices used for image
+            string indicesDescription = $"{redIndexProps.Name}|{grnIndexProps.Name}|{bluIndexProps.Name}";
+            string startString = $"{startDate.Value.Year}/{startDate.Value.Month}/{startDate.Value.Day}";
+            string   endString = $"{endDate.Value.Year}/{endDate.Value.Month}/{endDate.Value.Day}";
+            string title = $"EASY:   {arguments.FileStemName}    From {startString} to {endString}                          Indices: {indicesDescription}";
+            Bitmap titleBar = Image_Track.DrawTitleTrack(compositeBmp2.Width, trackHeight, title);
+            imageList = new List<Image>();
+            imageList.Add(titleBar);
+            imageList.Add(compositeBmp2);
+            compositeBmp2 = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             var outputFileName = Path.Combine(opDir.FullName, arguments.FileStemName + ".EASY.png");
             compositeBmp2.Save(outputFileName);
 

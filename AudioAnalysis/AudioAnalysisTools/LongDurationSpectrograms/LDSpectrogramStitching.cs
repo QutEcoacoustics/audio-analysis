@@ -131,11 +131,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string analysisType = "Towsey.Acoustic";
 
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-            string opFileStem = dateString;
-            if (filePrefix != null)
-                opFileStem = String.Format("{0}_{1}", filePrefix, dateString);
+            //string opFileStem = dateString;
+            //if (filePrefix != null)
+            //    opFileStem = String.Format("{0}_{1}", filePrefix, dateString);
 
-            string fileStemPattern = dateString + "*__" + analysisType;
+            string fileStemPattern = "*" + dateString + "*__" + analysisType;
             var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys);
             return dictionary;
         }
