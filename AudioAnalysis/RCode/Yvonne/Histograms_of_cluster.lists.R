@@ -10,7 +10,7 @@ cluster.lists.kmeans.exp2   <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Part
 cluster.lists.hclust.k.exp2 <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Hierarchical\\hc_fit_set_cutree_k.csv", header = T)
 cluster.lists.hclust.h.exp2 <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Hierarchical\\hc_fit_set_cutree_h.csv", header = T)
 cluster.lists.mclust.exp2   <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Model_based\\mclustlist_ds3norm_1_50.csv", header = T)
-cluster.list.test <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\Book1.csv", header=T)
+cluster.list.hybrid.exp2    <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Hybrid\\hybrid_clust_k20.csv", header = T)
 indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", 
                     header=T)
 day.ref <- which(indices$minute.of.day=="0")
@@ -400,6 +400,145 @@ twentyfour_hour_table <- cbind(twentyfour_hour_table,site,dates2)
 
 write.csv(twentyfour_hour_table, "mclust_k37_24hour.csv", 
           row.names = F)
+####################################################
+# Saving the Hybrid 24 hour file
+####################################################
+twentyfour_hour_table_1 <- NULL #read.csv(text="col1,col2")
+twentyfour_hour_table_2 <- NULL #read.csv(text="col1,col2")
+twentyfour_hour_table_3 <- NULL #read.csv(text="col1,col2")
+twentyfour_hour_table_4 <- NULL #read.csv(text="col1,col2")
+twentyfour_hour_table_5 <- NULL #read.csv(text="col1,col2")
+twentyfour_hour_table_6 <- NULL #read.csv(text="col1,col2")
+twentyfour_hour_table_7 <- NULL #read.csv(text="col1,col2")
+twentyfour_hour_table_8 <- NULL #read.csv(text="col1,col2")
+
+cluster.list <- cluster.list.hybrid.exp2
+for (i in 1:length(cluster.list)) {
+  for(j in 1:(length(dates)*2-1)) {
+    cluster.ref <- hist(cluster.list[day.ref[j]:(day.ref[j+1]-1),i], 
+                        breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
+    print(length(cluster.ref$counts))
+    
+    if (i == 1) {twentyfour_hour_table_1 <- rbind(twentyfour_hour_table_1, 
+                                                  cluster.ref$counts)}
+    if (i == 2) {twentyfour_hour_table_2 <- rbind(twentyfour_hour_table_2, cluster.ref$counts)}
+    if (i == 3) {twentyfour_hour_table_3 <- rbind(twentyfour_hour_table_3, cluster.ref$counts)}  
+    if (i == 4) {twentyfour_hour_table_4 <- rbind(twentyfour_hour_table_4, cluster.ref$counts)}
+    if (i == 5) {twentyfour_hour_table_5 <- rbind(twentyfour_hour_table_5, cluster.ref$counts)}
+    if (i == 6) {twentyfour_hour_table_6 <- rbind(twentyfour_hour_table_6, cluster.ref$counts)}  
+    if (i == 7) {twentyfour_hour_table_7 <- rbind(twentyfour_hour_table_7, cluster.ref$counts)}
+    if (i == 8) {twentyfour_hour_table_8 <- rbind(twentyfour_hour_table_8, cluster.ref$counts)}
+  }
+  cluster.ref <- hist(cluster.list[day.ref[j+1]:length(cluster.lists.kmeans.exp2$km_clusters_8),i], 
+                      breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
+  print(length(cluster.ref$counts))
+  if (i == 1) {twentyfour_hour_table_1 <- rbind(twentyfour_hour_table_1, cluster.ref$counts)}
+  if (i == 2) {twentyfour_hour_table_2 <- rbind(twentyfour_hour_table_2, cluster.ref$counts)}
+  if (i == 3) {twentyfour_hour_table_3 <- rbind(twentyfour_hour_table_3, cluster.ref$counts)}  
+  if (i == 4) {twentyfour_hour_table_4 <- rbind(twentyfour_hour_table_4, cluster.ref$counts)}
+  if (i == 5) {twentyfour_hour_table_5 <- rbind(twentyfour_hour_table_5, cluster.ref$counts)}
+  if (i == 6) {twentyfour_hour_table_6 <- rbind(twentyfour_hour_table_6, cluster.ref$counts)}  
+  if (i == 7) {twentyfour_hour_table_7 <- rbind(twentyfour_hour_table_7, cluster.ref$counts)}
+  if (i == 8) {twentyfour_hour_table_8 <- rbind(twentyfour_hour_table_8, cluster.ref$counts)}
+}
+
+twentyfour_hour_table_1 <- as.data.frame(twentyfour_hour_table_1)
+twentyfour_hour_table_2 <- as.data.frame(twentyfour_hour_table_2)
+twentyfour_hour_table_3 <- as.data.frame(twentyfour_hour_table_3)
+twentyfour_hour_table_4 <- as.data.frame(twentyfour_hour_table_4)
+twentyfour_hour_table_5 <- as.data.frame(twentyfour_hour_table_5)
+twentyfour_hour_table_6 <- as.data.frame(twentyfour_hour_table_6)
+twentyfour_hour_table_7 <- as.data.frame(twentyfour_hour_table_7)
+twentyfour_hour_table_8 <- as.data.frame(twentyfour_hour_table_8)
+
+# Rename the columns
+column.names <- NULL
+if (i==1) {
+  for (k in 1:(length(twentyfour_hour_table_1))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_1) <- column.names
+}
+if (i==2) {
+  for (k in 1:(length(twentyfour_hour_table_2))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_2) <- column.names
+}
+if (i==3) {
+  for (k in 1:(length(twentyfour_hour_table_3))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_3) <- column.names
+}
+
+if (i==4) {
+  for (k in 1:(length(twentyfour_hour_table_4))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_4) <- column.names
+}
+if (i==5) {
+  for (k in 1:(length(twentyfour_hour_table_5))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_5) <- column.names
+}
+if (i==6) {
+  for (k in 1:(length(twentyfour_hour_table_6))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_6) <- column.names
+}
+if (i==7) {
+  for (k in 1:(length(twentyfour_hour_table_7))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_7) <- column.names
+}
+if (i==8) {
+  for (k in 1:(length(twentyfour_hour_table_8))) {
+    col.names <- paste("clus_", k, sep = "")
+    column.names <- c(column.names,col.names)
+  }
+  colnames(twentyfour_hour_table_8) <- column.names
+}
+
+site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+
+twentyfour_hour_table_1 <- cbind(twentyfour_hour_table_1,site,dates2)
+twentyfour_hour_table_2 <- cbind(twentyfour_hour_table_2,site,dates2)
+twentyfour_hour_table_3 <- cbind(twentyfour_hour_table_3,site,dates2)
+twentyfour_hour_table_4 <- cbind(twentyfour_hour_table_4,site,dates2)
+twentyfour_hour_table_5 <- cbind(twentyfour_hour_table_5,site,dates2)
+twentyfour_hour_table_6 <- cbind(twentyfour_hour_table_6,site,dates2)
+twentyfour_hour_table_7 <- cbind(twentyfour_hour_table_7,site,dates2)
+twentyfour_hour_table_8 <- cbind(twentyfour_hour_table_8,site,dates2)
+
+write.csv(twentyfour_hour_table_1, "hybrid_k1000_k20_24hour.csv", 
+          row.names = F)
+write.csv(twentyfour_hour_table_2, "hybrid_k2000_k20_24hour.csv", 
+          row.names = F)
+write.csv(twentyfour_hour_table_3, "hybrid_k3000_k20_24hour.csv", 
+          row.names = F)
+write.csv(twentyfour_hour_table_4, "hybrid_k4000_k20_24hour.csv", 
+          row.names = F)
+write.csv(twentyfour_hour_table_5, "hybrid_k5000_k20_24hour.csv", 
+          row.names = F)
+write.csv(twentyfour_hour_table_6, "hybrid_k6000_k20_24hour.csv", 
+          row.names = F)
+write.csv(twentyfour_hour_table_7, "hybrid_k7000_k20_24hour.csv", 
+          row.names = F)
+write.csv(twentyfour_hour_table_8, "hybrid_k8000_k20_24hour.csv", 
+          row.names = F)
+
 #############################################################
 cluster.list <- cluster.lists.kmeans.exp2$km_clusters_26
 

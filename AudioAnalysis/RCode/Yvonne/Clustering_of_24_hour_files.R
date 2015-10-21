@@ -10,6 +10,7 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
 myFiles <- list.files(full.names=TRUE, pattern="*_24hour.csv$",
                       path = "C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
 length <- length(myFiles)
+length
 myFilesShort <- list.files(full.names=FALSE, pattern="*24hour.csv$",
                            path = "C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
 

@@ -674,6 +674,46 @@ densEntPs <- densityMclust(ds3.norm$EntropyOfPeaksSpectrum)
 plot(densEntPs, data = ds3.norm$EntropyOfPeaksSpectrum, what = "density")
 dev.off()
 
+#######################################################
+# Method 4:  Hybrid method using kmeans followed by hclust
+# 
+#######################################################
+# Cluster using kmeans and 1000 centers
+clusters <- NULL
+for (i in seq(1000,8000,1000)) {
+  set.seed(123)
+  kmeansObj <- kmeans(ds3.norm_2_98, centers = i, iter.max = 100)
+  kmeansCenters <- kmeansObj$centers
+  dist.hc <- dist(kmeansCenters)
+  #hc.fit <- hclust(dist.hc, "average")
+  hybrid.fit.ward <- hclust(dist.hc, "ward.D2")
+  plot(hybrid.fit.ward)
+  hybrid.clusters <- cutree(hybrid.fit.ward, k=20)
+  # generate the test dataset
+  hybrid.dataset <- cbind(hybrid.clusters, kmeansCenters)
+  hybrid.dataset <- as.data.frame(hybrid.dataset)
+  train <- hybrid.dataset
+  table(hybrid.dataset$hybrid.clusters)
+  test <- ds3.norm_2_98
+  # set up classes
+  cl <- factor(unname(hybrid.clusters))
+  # perform linear discriminant analysis
+  library(MASS)
+  z <- lda(train[,-1], cl)
+  pr <- predict(z, test)
+  clusts <- as.integer(pr$class)
+  clusters <- cbind(clusters, clusts)
+}
+plot(clusters)
+# produce 24 hour fingerprints from this clusterlist
+column.names <- NULL
+for (i in seq(1000,8000,1000)) {
+  col.names <- paste("hybrid_k", i, "k20", sep = "")
+  column.names <- c(column.names,col.names)
+}
+colnames(clusters) <- column.names
+
+write.csv(clusters, file = "hybrid_clust_k20.csv", row.names = F)
 ##################################################################
 # EXPERIMENT 1
 # The aim of this experiment is to determine the minimum number of
