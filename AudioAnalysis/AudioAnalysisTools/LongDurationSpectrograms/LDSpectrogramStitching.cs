@@ -242,10 +242,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(FileInfo[] files, DirectoryInfo opDir, FileInfo indicesCsvfile)
         {
             // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
-            var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
-            string[] headers = summaryDataTuple.Item1;
-            double[,] summaryIndices = summaryDataTuple.Item2;
-            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
+            //var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
+            //string[] headers = summaryDataTuple.Item1;
+            //double[,] summaryIndices = summaryDataTuple.Item2;
+            //Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
+
+            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
 
             if (dictionaryOfCsvColumns.Count == 0)
             {
@@ -257,7 +259,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
-            CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
+            //CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
+            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfCsvColumns, indicesCsvfile);
 
             // insert some transformed data columns etc
             dictionaryOfCsvColumns = IndexMatrices.AddDerivedIndices(dictionaryOfCsvColumns);
@@ -420,10 +423,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, fileStemPattern);
 
             // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
-            var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
-            string[] headers = summaryDataTuple.Item1;
-            double[,] summaryIndices = summaryDataTuple.Item2;
-            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
+            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
+ 
+            string[] headers = dictionaryOfCsvColumns.Keys.ToArray();
             if (dictionaryOfCsvColumns.Count == 0)
             {
                 LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
@@ -442,7 +444,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indicesCsvfile = new FileInfo(indicesFile);
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
-            CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
+            //CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
+            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfCsvColumns, indicesCsvfile);
 
             // get the IndexGenerationData file from the first directory
             IndexGenerationData indexGenerationData = IndexGenerationData.GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
