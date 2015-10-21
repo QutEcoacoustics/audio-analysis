@@ -76,36 +76,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return dataDirectories.ToArray();
         }
 
-
-
-        /// <summary>
-        /// sorts a list of files by the date assumed to be encoded in their file names
-        /// and then returns the list as a sorted dictionary with file DateTime as the keys.
-        /// </summary>
-        /// <param name="files"></param>
-        /// <param name="offsetHint"></param>
-        /// <returns></returns>
-        public static SortedDictionary<DateTimeOffset, FileInfo> FilterFilesForDates(FileInfo[] files, TimeSpan? offsetHint = null)
-        {
-            var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
-            foreach (var file in files)
-            {
-                DateTimeOffset parsedDate;
-                if (FileDateHelpers.FileNameContainsDateTime(file.Name, out parsedDate, offsetHint))
-                {
-                    datesAndFiles.Add(parsedDate, file);
-                }
-            }
-
-            // use following lines to get first and last date from returned dictionary
-            //DateTimeOffset firstdate = datesAndFiles[datesAndFiles.Keys.First()];
-            //DateTimeOffset lastdate  = datesAndFiles[datesAndFiles.Keys.Last()];
-            return datesAndFiles;
-        }
-
-
-
-
         /// <summary>
         /// Use this concatenation method when you only want to concatenate the files for a fixed single day.
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
@@ -161,11 +131,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string analysisType = "Towsey.Acoustic";
 
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
-            string opFileStem = dateString;
-            if (filePrefix != null)
-                opFileStem = String.Format("{0}_{1}", filePrefix, dateString);
+            //string opFileStem = dateString;
+            //if (filePrefix != null)
+            //    opFileStem = String.Format("{0}_{1}", filePrefix, dateString);
 
-            string fileStemPattern = dateString + "*__" + analysisType;
+            string fileStemPattern = "*" + dateString + "*__" + analysisType;
             var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys);
             return dictionary;
         }

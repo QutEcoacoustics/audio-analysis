@@ -55,6 +55,8 @@ namespace Acoustics.Shared
         }
 
         public const string StandardDateFormat = "yyyyMMdd-HHmmsszzz";
+        public const string StandardDateFormatNoTimeZone = "yyyyMMdd-HHmmss";
+        public const string StandardDateFormatUnderscore = "yyyyMMdd_HHmmsszzz";
 
         public static string FileDateFormat
         {

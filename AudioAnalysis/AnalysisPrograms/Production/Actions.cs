@@ -132,6 +132,13 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.ConcatenateIndexFiles.Execute;
         }
 
+        
+        [ArgDescription("Calls DrawEasyImage.Execute():  Concatenates multiple consecutive index.csv files.")]
+        public DrawEasyImage.Arguments drawEasyImageArgs { get; set; }
+        public static Action<DrawEasyImage.Arguments> drawEasyImage()
+        {
+            return AnalysisPrograms.DrawEasyImage.Execute;
+        }
 
         [ArgDescription("Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.")]
         public DrawLongDurationSpectrograms.Arguments ColourSpectrogramArgs { get; set; }

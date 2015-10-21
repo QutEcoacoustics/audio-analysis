@@ -50,14 +50,39 @@ namespace AudioAnalysisTools
             string moon = "New moon";
             int intPhase = (int)Math.Round(phase * 16);
 
-            if (intPhase < 1)  return moon;
-            if (intPhase < 3)  return "Waxing Crescent Moon";
-            if (intPhase < 5)  return "First Quarter Moon";
-            if (intPhase < 7)  return "Waxing Gibbous Moon";
-            if (intPhase < 9)  return "Full Moon";
-            if (intPhase < 11) return "Waning Gibbous Moon";
-            if (intPhase < 13) return "Third Quarter Moon";
-            if (intPhase < 15) return "Waning Crescent Moon";
+            if (intPhase < 1)
+            {
+                moon = "New moon";
+            }
+            else if (intPhase < 3)
+            {
+                moon = "Waxing Crescent Moon";
+            }
+            else if (intPhase < 5)
+            {
+                moon = "First Quarter Moon";
+            }
+            else if (intPhase < 7)
+            {
+                moon = "Waxing Gibbous Moon";
+            }
+            else if (intPhase < 9)
+            {
+                moon = "Full Moon";
+            }
+            else if (intPhase < 11)
+            {
+                moon = "Waning Gibbous Moon";
+            }
+            else if (intPhase < 13)
+            {
+                moon = "Third Quarter Moon";
+            }
+            else if (intPhase < 15)
+            {
+                moon = "Waning Crescent Moon";
+            }
+
             return moon;
         }
 
@@ -73,12 +98,12 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, string siteName, double? latitude, double? longitude)
         {
-            if (siteName == null) return null;
+            if (siteName == null)
+            {
+                return null;
+            }
 
-            if ((siteName.StartsWith("Gympie")) 
-             || (siteName.StartsWith("Woondum3"))
-             || (siteName.StartsWith("SERF"))
-            ) 
+            if (siteName.StartsWith("Gympie") || siteName.StartsWith("Woondum3") || siteName.StartsWith("SERF"))
             {
                 int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
                 double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
@@ -86,6 +111,7 @@ namespace AudioAnalysisTools
                 Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
                 return suntrack;
             }
+
             return null;
         }
 

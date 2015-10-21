@@ -1300,6 +1300,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         ///     Optional spectra to pass in. If specified the spectra will not be loaded from disk!
         /// </param>
         /// <param name="indexDistributions"></param>
+        /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
         /// <param name="returnChromelessImages">If true, this method generates and returns separate chromeless images.</param>
         /// <param name="longDurationSpectrogramConfig">
         /// </param>
@@ -1330,9 +1331,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = indexGenerationData.BackgroundFilterCoeff;
-            cs1.SiteName  = siteDescription.SiteName;
-            cs1.Latitude  = siteDescription.Latitude;
-            cs1.Longitude = siteDescription.Longitude;
+            cs1.SiteName  = siteDescription?.SiteName;
+            cs1.Latitude  = siteDescription?.Latitude;
+            cs1.Longitude = siteDescription?.Longitude;
 
             // calculate start time by combining DatetimeOffset with minute offset.
             cs1.StartOffset = indexGenerationData.MinuteOffset;
@@ -1342,6 +1343,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 cs1.RecordingStartDate = dto;
                 if (dto != null) cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
             }
+
             // following line is debug purposes only
             //cs1.StartOffset = cs1.StartOffset + TimeSpan.FromMinutes(15);
 
@@ -1355,8 +1357,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 var sw = Stopwatch.StartNew();
                 Logger.Info("Reading spectra files from disk");
+                
                 // reads all known files spectral indices
-
                 cs1.ReadCSVFiles(inputDirectory, fileStem, cs1.spectrogramKeys);
                 DateTime now2 = DateTime.Now;
                 sw.Stop();
@@ -1374,14 +1376,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 throw new InvalidOperationException("Cannot find spectrogram matrix files");
             }
 
-            
             // Get index distribution statistics. 
             // Either read from input variable or json file. 
             // Stats are useful because needed if drawing difference spectrograms etc.     
             if (indexDistributions == null)
             {
                 indexDistributions = IndexDistributions.ReadSpectralIndexDistributionStatistics(inputDirectory, fileStem);
-                // cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
+                //cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
                 Log.Fatal("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
 
                 if (indexDistributions == null)
@@ -1430,11 +1431,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             CreateTwoMapsImage(outputDirectory, fileStem, image1, imageX, image2);
 
             Image ribbon;
-            // ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
+            //ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
 
             ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".SummaryRibbon", "png"));
-            // ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
+            //ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
             ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap2 + ".SummaryRibbon", "png"));
 
