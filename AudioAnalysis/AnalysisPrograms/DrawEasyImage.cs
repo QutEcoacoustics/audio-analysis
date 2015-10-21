@@ -112,7 +112,7 @@ namespace AnalysisPrograms
             string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
 
             dtoStart = new DateTimeOffset(2015, 06, 22, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
 
             if(!indexPropertiesConfig.Exists) LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
 
@@ -246,7 +246,7 @@ namespace AnalysisPrograms
             }
 
             // LF, MF, HF
-            if (true)
+            if (false)
             {
                 redID = 10;  // LF
                 grnID = 9;   // MF

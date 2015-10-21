@@ -44,7 +44,130 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        public static Tuple<string[], double[,]> GetSummaryIndexFilesAndConcatenateWithTimeCheck(FileInfo[] paths)
+        public static Dictionary<string, double[]> GetSummaryIndexFilesAndConcatenateWithTimeCheck(FileInfo[] paths)
+        {
+            TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
+            DateTimeOffset startDTO;
+            FileInfo file;
+            DateTimeOffset[] dtoArray = new DateTimeOffset[paths.Length];
+            // check that all file names contain valid date time format.
+            for (int i = 0; i < paths.Length; i++)
+            {
+                file = paths[i];
+                if (!FileDateHelpers.FileNameContainsDateTime(file.Name, out startDTO, offsetHint))
+                {
+                    LoggedConsole.WriteLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + file.Name + ") ");
+                    LoggedConsole.WriteLine("  File name <{0}> does not contain a valid DateTime = {0}", file.Name);
+                }
+                dtoArray[i] = startDTO;
+
+            }
+
+            // get first file
+            string[] headers = null;
+            var dictionary = new Dictionary<string, double[]>();
+            int[] rowCounts = new int[paths.Length];
+
+            // cycle through remaining files
+            for (int i = 0; i < paths.Length; i++)
+            {
+                file = paths[i];
+                if (file.Exists)
+                {
+                    // ##################################### NEXT LINE STILL USING DEPRACATED METHOD
+                    var intermediateDictionary = CsvTools.ReadCSVFile2Dictionary(file.FullName);
+
+                    if(headers == null) headers = intermediateDictionary.Keys.ToArray(); // only take headers in first file at start of day
+
+                    // now append the intermediate arrays
+                    for (int h = 0; h < headers.Length; h++)
+                    {
+                        string key = headers[h];
+                        double[] array2 = intermediateDictionary[headers[h]].ToArray();
+                        if (!dictionary.ContainsKey(key))
+                        {
+                            dictionary.Add(key, array2);
+                            rowCounts[i] = array2.Length; // assume all arrays of same length
+                        }
+                        else
+                        {
+                            // this is probably inefficient but it works!
+                            double[] array1 = dictionary[headers[h]].ToArray();
+                            double[] result = array1.Concat(array2).ToArray();
+                            dictionary[headers[h]] = result;
+                            rowCounts[i] = array2.Length; // assume all arrays of same length
+                        }
+                    }
+
+                    if (i == paths.Length-1) break;
+
+                    TimeSpan partialElapsedTime = dtoArray[i+1] - dtoArray[i];
+                    int partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
+                    //int partialMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
+
+                    if (rowCounts[i] != partialMinutes)
+                    {
+                        LoggedConsole.WriteLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + file.Name + ") ");
+                        string str = String.Format("  CsvFile {0}/{1}: Row Count={2} != {3} elapsed minutes", i + 1, paths.Length, rowCounts[i], partialMinutes);
+                        dictionary = RepairDictionaryOfArrays(dictionary, rowCounts[i], partialMinutes);
+                        int difference = partialMinutes - rowCounts[i];
+                        rowCounts[i] += difference;
+                    }
+
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("WARNING: from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + file.Extension + ") ");
+                    string str = String.Format("   MISSING FILE: {0}", file.FullName);
+                    LoggedConsole.WriteLine(str);
+                }
+            }
+
+            //int cumRowCount = rowCounts.Sum();  // a debug check
+            int dataRowCount = dictionary[headers[0]].Length;
+
+            int numberOfMinutesInDay = 1440;
+            TimeSpan totalElapsedTime = dtoArray[paths.Length-1] - dtoArray[0];
+            int totalElapsedMinutes = (int)Math.Round(totalElapsedTime.TotalMinutes) + rowCounts[paths.Length - 1];
+            if (dataRowCount != totalElapsedMinutes)
+            {
+                LoggedConsole.WriteLine("WARNING: ELAPSED TIME CHECK from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck() ");
+                string str = String.Format("   Final Data Row Count = {0}     Estimated Cumulative Duration = {1} minutes", dataRowCount, totalElapsedMinutes);
+                LoggedConsole.WriteLine(str);
+                dictionary = RepairDictionaryOfArrays(dictionary, dataRowCount, numberOfMinutesInDay);
+            }
+            //FileTools.WriteMatrix2File(M, @"C:\Users\towsey\temp\delete2.csv");
+
+            return dictionary;
+        }
+
+
+        public static Dictionary<string, double[]> RepairDictionaryOfArrays(Dictionary<string, double[]> dictionary, int rowCount, int requiredCount)
+        {
+            if (rowCount > requiredCount)
+            {
+                LoggedConsole.WriteLine("  About to remove {0} rows", requiredCount);
+                int countToRemove = rowCount - requiredCount;
+                dictionary = RemoveValuesFromArraysInDictionary(dictionary, countToRemove);
+            };
+
+            if (rowCount < requiredCount)
+            {
+                LoggedConsole.WriteLine("  About to append {0} rows", requiredCount);
+                int countToAdd = requiredCount - rowCount;
+                dictionary = PadDictionaryArraysWithNulls(dictionary, countToAdd);
+            };
+            return dictionary;
+        }
+
+
+
+        /// <summary>
+        /// WARNING! This method assumes that the total data required is 24 hours long and will trim csv files accordingly.
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        public static Tuple<string[], double[,]> GetSummaryIndexFilesAndConcatenateWithTimeCheck1(FileInfo[] paths)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
             var list = new List<double[,]>();
@@ -441,6 +564,40 @@ namespace AudioAnalysisTools.Indices
             }
             return M; // must have correct row count
         }
+
+        public static Dictionary<string, double[]> PadDictionaryArraysWithNulls(Dictionary<string, double[]> dict, int countToAdd)
+        {
+            double[] nullArray = new double[countToAdd];
+            for (int i = 0; i < countToAdd; i++)
+                nullArray[i] = Double.NaN;
+
+            string[] keys = dict.Keys.ToArray();
+            foreach(string key in keys)
+            {
+                double[] array = dict[key];
+                double[] result = array.Concat(nullArray).ToArray();
+                dict[key] = result;
+            }
+
+            return dict; 
+        }
+
+        public static Dictionary<string, double[]> RemoveValuesFromArraysInDictionary(Dictionary<string, double[]> dict, int countToRemove)
+        {
+            string[] keys = dict.Keys.ToArray();
+            foreach (string key in keys)
+            {
+                double[] array = dict[key];
+                int newArrayLength = array.Length - countToRemove;
+                double[] result = DataTools.Subarray(array, 0, newArrayLength);
+                dict[key] = result;
+            }
+
+            return dict;
+        }
+
+
+
 
 
         public static Dictionary<string, double[,]> AddDerivedIndices(Dictionary<string, double[,]> spectrogramMatrices)

@@ -97,19 +97,19 @@ namespace AnalysisPrograms
         /// </summary>
         public static Arguments Dev()
         {
+            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
 
-            // ########################## YVONNE'S RECORDINGS
-            /*
+            // ########################## YVONNE'S RECORDINGS          
             // top level directory
-            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
             //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") 
             //                           };
 
-
             DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
+                                         new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
                                        };
             
 
@@ -119,17 +119,15 @@ namespace AnalysisPrograms
             string opFileStem = directoryFilter;
             string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
 
-            dtoStart = new DateTimeOffset(2015, 06, 22, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
             dtoEnd   = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
 
-    */
+
 
 
             // ########################## STURT RECORDINGS
             // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            // top level directory
-            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-
 
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\SensorNetworks\WavFiles\SturtRecordings\Thompson"), };
             //string directoryFilter = "Thompson";   // this is a directory filter to locate only the required files
@@ -146,13 +144,13 @@ namespace AnalysisPrograms
             //string opFileStem      = "Sturt-Sturt1";
             //string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
 
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Jul29-110950 - Jason, Towsey.Indices, ICD=60.0, #43\Sturt\2015July\Mistletoe"), };
-            string directoryFilter = "STURT2";          // this is a directory filter to locate only the required files
-            string opFileStem = "Sturt-Mistletoe";
-            string opPath = @"F:\SensorNetworks\WavFiles\SturtRecordings\";
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Jul29-110950 - Jason, Towsey.Indices, ICD=60.0, #43\Sturt\2015July\Mistletoe"), };
+            //string directoryFilter = "STURT2";          // this is a directory filter to locate only the required files
+            //string opFileStem = "Sturt-Mistletoe";
+            //string opPath = @"F:\SensorNetworks\Output\Sturt\";
 
-            dtoStart = new DateTimeOffset(2015, 07, 01, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2015, 07, 06, 0, 0, 0, TimeSpan.Zero);
+            //dtoStart = new DateTimeOffset(2015, 07, 01, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2015, 07, 06, 0, 0, 0, TimeSpan.Zero);
 
 
 
@@ -385,7 +383,7 @@ namespace AnalysisPrograms
                 var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
                 var indicesCsvfile = new FileInfo(indicesFile);
 
-                // concatenate the summary index files
+                // CONCATENATE the SUMMARY INDEX FILES
                 FileInfo[] files = filteredDict.Values.ToArray<FileInfo>();
                 var summaryDict = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(files, resultsDir, indicesCsvfile);
                 if (summaryDict.Count == 0)

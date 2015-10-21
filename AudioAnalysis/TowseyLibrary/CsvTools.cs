@@ -250,10 +250,51 @@ namespace TowseyLibrary
                 sw.Write(sw.NewLine);
             }
             sw.Close();
-        } // DataTable2CSV()
+        } // WriteMatrix2CSV()
 
-         //WRITE A CSV FILE FROM A TABLE
-         public static void DataTable2CSV(DataTable dt, string strFilePath)
+
+        //WRITE A CSV FILE FROM A MATRIX and headers
+        public static void WriteDictionaryOfDoubles2CSV(Dictionary<string, double[]> dictionary, FileInfo opFile)
+        {
+            if (dictionary == null) return;
+            string[] headers = dictionary.Keys.ToArray();
+            int rowCount = dictionary[headers[0]].Length; // assume all arrays of the same length
+            int colCount = dictionary.Count;
+
+            StreamWriter sw = new StreamWriter(opFile.FullName, false);
+
+            // First we will write the headers.
+            sw.Write(headers[0]);
+            for (int i = 1; i < colCount; i++)
+            {
+                sw.Write("," + headers[i]);
+            }
+            sw.Write(sw.NewLine);
+
+            // Now write all the rows.
+            for (int r = 0; r < rowCount; r++)
+            {
+                double value = dictionary[headers[0]][r];
+                string str = String.Format("{0:f4}", value);
+                sw.Write(str);
+                for (int c = 1; c < colCount; c++)
+                {
+                    value = dictionary[headers[c]][r];
+                    if (!Convert.IsDBNull(value))
+                    {
+                        str = String.Format("{0:f4}", value);
+                        sw.Write("," + str);
+                    }
+                }
+                sw.Write(sw.NewLine);
+            }
+            sw.Close();
+        } // WriteDictionaryOfDoubles2CSV()
+
+
+
+        //WRITE A CSV FILE FROM A TABLE
+        public static void DataTable2CSV(DataTable dt, string strFilePath)
          {
              if (dt == null) return;
              Type[] types = DataTableTools.GetColumnTypes(dt);
@@ -416,6 +457,19 @@ namespace TowseyLibrary
             return System.Tuple.Create(headers, values);
         }
 
+
+        public static Dictionary<string, double[]> ReadCSVFileToDictionary(string csvFileName)
+        {
+            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFileName);
+            string[] headers = tuple.Item1.ToArray();
+            double[][] columns = tuple.Item2.ToArray();
+            var dictionary = new Dictionary<string, double[]>();
+            for(int i=0; i < headers.Length; i++)
+            {
+                dictionary.Add(headers[i], columns[i]);
+            }
+            return dictionary;
+        }
 
         public static List<double[]> ReadCSVFileOfDoubles(string csvFileName, bool skipHeader, bool skipFirstColumn)
         {
