@@ -383,7 +383,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image FrameSliceOf3DSpectrogram_ConstantFreq(Image bmp1, Image titleBar, TimeSpan X_interval, int HerzValue, FileInfo sunriseSetData, int nyquistFreq)
         {
 
-            SunAndMoon.AddSunRiseSetLinesToImage((Bitmap)bmp1, sunriseSetData);
+            SunAndMoon.AddSunRiseSetLinesToImage((Bitmap)bmp1, sunriseSetData, 0 , 365, 1);// assume full year and 1px/day
             
             Graphics g = Graphics.FromImage(bmp1);
             Pen pen = new Pen(Color.White);

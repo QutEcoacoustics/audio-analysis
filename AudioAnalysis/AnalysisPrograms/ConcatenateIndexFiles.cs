@@ -386,6 +386,7 @@ namespace AnalysisPrograms
                 // CONCATENATE the SUMMARY INDEX FILES
                 FileInfo[] files = filteredDict.Values.ToArray<FileInfo>();
                 var summaryDict = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(files, resultsDir, indicesCsvfile);
+
                 if (summaryDict.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");

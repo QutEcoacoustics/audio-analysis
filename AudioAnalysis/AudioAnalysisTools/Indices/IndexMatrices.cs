@@ -74,6 +74,12 @@ namespace AudioAnalysisTools.Indices
                 file = paths[i];
                 if (file.Exists)
                 {
+                    //####################################################################
+                    // REMEMBER THIS
+                    // ALTERNATIVE WAY TO DO HTIS WHOLE BUSINESS
+                    //var rowsOfCsvFile = Csv.ReadFromCsv<IndexSummaryValues>(file);
+                    //var ACIvlauesForOneDAY = rowsOfCsvFile.Select(x => x.ACI).ToArray();
+
                     // ##################################### NEXT LINE STILL USING DEPRACATED METHOD
                     var intermediateDictionary = CsvTools.ReadCSVFile2Dictionary(file.FullName);
 
