@@ -84,6 +84,7 @@ namespace AnalysisPrograms
             //[ArgPosition(1)]
             internal FileInfo IndexPropertiesConfig { get; set; }
 
+            public FileInfo BrisbaneSunriseDatafile { get; set; }
 
         }
 
@@ -95,16 +96,16 @@ namespace AnalysisPrograms
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
 
+            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigForEasyImages.yml");
+            FileInfo sunrisesetData = new FileInfo(@"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv");
+
             // ########################## CSV FILES CONTAINING SUMMARY INDICES IN 24 hour BLOCKS 
             // top level directory
-            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\EASYIndexPropertiesConfig.yml");
+            //string opFileStem = "GympieNP-2015";
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"), };
 
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"),
-                                       };
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),
-            //                           };
-            string opFileStem = "GympieNP-2015";
-            //string opFileStem = "Woondum3-2015";
+            string opFileStem = "Woondum3-2015";
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),   };
 
 
             // The filter pattern finds summary index files
@@ -125,6 +126,7 @@ namespace AnalysisPrograms
                 StartDate       = dtoStart,
                 EndDate         = dtoEnd,
                 IndexPropertiesConfig = indexPropertiesConfig,
+                BrisbaneSunriseDatafile = sunrisesetData,
             };
             throw new NoDeveloperMethodException();
     }
@@ -232,6 +234,7 @@ namespace AnalysisPrograms
             //int grnID = 4;  //SNR
             int grnID = 5; // avSNROfActiveframes
             int bluID = 7;   // events per second
+            string rep = @"bgn-avsnr-evn";
 
             // ACI Ht Hpeaks EASY indices
             if (false)
@@ -241,24 +244,27 @@ namespace AnalysisPrograms
                 //bluID = 13;  // HavgSp
                 //bluID = 14;  // Hvariance
                 //bluID = 15;  // Hpeaks
-                //bluID = 16;  // Hcov
-                bluID = 7;  // SPT
+                bluID = 16;  // Hcov
+                //bluID = 7;  // SPT
+                rep = @"aci-ht-hcov";
+                //rep = @"aci-ht-spt";
             }
 
             // LF, MF, HF
-            if (false)
+            if (true)
             {
                 redID = 10;  // LF
                 grnID = 9;   // MF
                 bluID = 8;   // HF
+                rep = @"lf-mf-hf";
             }
 
             IndexProperties redIndexProps = listOfIndexProperties[names[redID]];
             IndexProperties grnIndexProps = listOfIndexProperties[names[grnID]];
             IndexProperties bluIndexProps = listOfIndexProperties[names[bluID]];
 
-            int dayPixelHeight = 5;
-            int rowCount = (dayPixelHeight * dayCount) + 30; // +30 for grid lines
+            int dayPixelHeight = 4;
+            int rowCount = (dayPixelHeight * dayCount) + 35; // +30 for grid lines
             int colCount = 1440;
             var bitmap = new Bitmap(colCount, rowCount);
             var colour = Color.Yellow;
@@ -373,6 +379,13 @@ namespace AnalysisPrograms
 
             } // over days
 
+
+            // draw on civil dawn and dusk lines
+            int startdayOfYear = ((DateTimeOffset)startDate).DayOfYear;
+            int endDayOfYear   = ((DateTimeOffset)endDate).DayOfYear;
+            SunAndMoon.AddSunRiseSetLinesToImage((Bitmap)bitmap, arguments.BrisbaneSunriseDatafile, startdayOfYear, endDayOfYear, dayPixelHeight);
+
+            // add the time scales
             Bitmap timeBmp1 = Image_Track.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
             var imageList = new List<Image>();
             imageList.Add(timeBmp1);
@@ -395,7 +408,7 @@ namespace AnalysisPrograms
             imageList.Add(titleBar);
             imageList.Add(compositeBmp2);
             compositeBmp2 = (Bitmap)ImageTools.CombineImagesVertically(imageList);
-            var outputFileName = Path.Combine(opDir.FullName, arguments.FileStemName + ".EASY.png");
+            var outputFileName = Path.Combine(opDir.FullName, arguments.FileStemName + "." + rep + ".EASY.png");
             compositeBmp2.Save(outputFileName);
 
 
