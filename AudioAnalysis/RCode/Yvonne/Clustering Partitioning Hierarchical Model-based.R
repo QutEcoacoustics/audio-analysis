@@ -23,15 +23,18 @@
 #######################################################
 # Clustering - Partitioning (kmeans & clara), hierarchical (hclust 
 # & agnes), model-based (mclust) and affinity propogation (apcluster)
-#######################################################
 #setwd("C:\\Work\\CSV files\\DataSet_New")
-setwd("C:\\Work\\CSV files\\DataSet_Exp2")
+#setwd("C:\\Work\\CSV files\\DataSet_Exp2a")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2_new")
+#setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new")
 
 #AcousticDS <- read.csv("DataSet_Exp2_4_5July_31July_1Aug_31Aug-1Sept_2015.csv", header=T)
-AcousticDS <- read.csv("Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", header=T)
-
+#AcousticDS <- read.csv("Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", header=T)
+AcousticDS <- read.csv("Dataset_30_31July_1Aug2015_4_9_10Sept2015.csv", header=T)
+#AcousticDS <- read.csv("Dataset_30_31July_1Aug2015_9_10_12Sept2015.csv", header = T)
 #ds3 <- AcousticDS[,c(2:18)]
 ds3 <- AcousticDS[,c(3,4,7,10,11,15,16)]
+#ds3 <- AcousticDS[,c(3,4,7,10,11,13,16)]
 
 #######################################################
 # function - normalise
@@ -70,34 +73,33 @@ for (i in 1:length(ds3)) {
 #######################################################
 # Generate and save the Correlation Matrix 
 #######################################################
-#a <- cor(AcousticDS[,2:18][,unlist(lapply(AcousticDS[,2:18], is.numeric))])
-#write.table(a, file = paste("Correlation_matrix_Exp2a.csv",sep=""), 
-#            col.names = NA, qmethod = "double", sep = ",")
+a <- cor(AcousticDS[,2:18][,unlist(lapply(AcousticDS[,2:18], is.numeric))])
+write.table(a, file = paste("Correlation_matrix_Exp2a.csv",sep=""), 
+            col.names = NA, qmethod = "double", sep = ",")
 
 #######################################################
 # PRINCIPAL COMPONENT ANALYSIS sd3
 #######################################################
-#file <- paste("Principal Component Analysis_ds3norm.png", sep = "")
-#png(
-#  file,
-#  width     = 200,
-#  height    = 200,
-#  units     = "mm",
-#  res       = 1200,
-#  pointsize = 4
-#)
-
-#par(mar =c(2,2,4,2), cex.axis = 2.5)
-#PCAofIndices<- prcomp(ds3.norm)
-#biplot(PCAofIndices, col=c("grey80","red"), 
-#       cex=c(0.5,1))#, ylim = c(-0.025,0.02), 
-#       #xlim = c(-0.025,0.02))
-#abline(h=0,v=0)
-#mtext(side = 3, line = 2, 
-#      paste("Principal Component Analysis prcomp ds3"), 
-#      cex = 2.5)
-#rm(PCAofIndices)
-#dev.off()
+file <- paste("Principal Component Analysis_ds3norm.png", sep = "")
+png(
+  file,
+  width     = 200,
+  height    = 200,
+  units     = "mm",
+  res       = 1200,
+  pointsize = 4
+)
+par(mar =c(2,2,4,2), cex.axis = 2.5)
+PCAofIndices<- prcomp(ds3.norm)
+biplot(PCAofIndices, col=c("grey80","red"), 
+       cex=c(0.5,1))#, ylim = c(-0.025,0.02), 
+       #xlim = c(-0.025,0.02))
+abline(h=0,v=0)
+mtext(side = 3, line = 2, 
+      paste("Principal Component Analysis prcomp ds3"), 
+      cex = 2.5)
+rm(PCAofIndices)
+dev.off()
 
 #######################################################
 # Method 1A:  Partitioning by kmeans
@@ -310,10 +312,13 @@ dev.off()
 #######################################################
 # Method 2a:  Hierarchical - hclust
 #######################################################
-setwd("C:\\Work\\CSV files\\DataSet_Exp2\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+#setwd("C:\\Work\\CSV files\\DataSet_Exp2_new\\Hierarchical\\")
+
 require(graphics)
 ds3.norm_2_98 <- cbind(ds3.norm_2_98, AcousticDS$rec.time)
 dist.hc <- dist(ds3.norm_2_98[,-8])
+#dist.hc <- dist(ds3.norm_2_98)
 #hc.fit <- hclust(dist.hc, "average")
 hc.fit.ward <- hclust(dist.hc, "ward.D2")
 hc.fit.average <- hclust(dist.hc, "average")
@@ -360,7 +365,6 @@ mtext("hclust_cutree_ward_k_20", side = 3,line = 1, cex = 2)
 plot(hc.fit.ward.25)
 mtext("hclust_cutree_ward_k_25", side = 3,line = 1, cex = 2)
 dev.off()
-
 
 # To plotting a very long narrow dendrogram change width to 200000
 rec.time <- AcousticDS$rec.time
@@ -678,9 +682,10 @@ dev.off()
 # Method 4:  Hybrid method using kmeans followed by hclust
 # 
 #######################################################
-# Cluster using kmeans and 1000 centers
+# Cluster using kmeans and 1000, 1500... centers
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
 clusters <- NULL
-for (i in seq(1000,8000,1000)) {
+for (i in seq(1000, 4500, 500)) {
   set.seed(123)
   kmeansObj <- kmeans(ds3.norm_2_98, centers = i, iter.max = 100)
   kmeansCenters <- kmeansObj$centers
@@ -704,16 +709,16 @@ for (i in seq(1000,8000,1000)) {
   clusts <- as.integer(pr$class)
   clusters <- cbind(clusters, clusts)
 }
-plot(clusters)
+
 # produce 24 hour fingerprints from this clusterlist
 column.names <- NULL
-for (i in seq(1000,8000,1000)) {
+for (i in seq(1000, 4500, 500)) {
   col.names <- paste("hybrid_k", i, "k20", sep = "")
   column.names <- c(column.names,col.names)
 }
 colnames(clusters) <- column.names
 
-write.csv(clusters, file = "hybrid_clust_k20.csv", row.names = F)
+write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k20.csv", row.names = F)
 ##################################################################
 # EXPERIMENT 1
 # The aim of this experiment is to determine the minimum number of
@@ -842,10 +847,9 @@ for (i in list) {
 }
 mtext("kmeans", side = 3, line=1, cex=3, outer = T)
 dev.off()
-
-
-
+###################################################
 # METHOD 2: HIERARCHICAL - HCLUST
+##################################################
 require(graphics)
 dist.hc.exp1 <- dist(ds.exp1.norm_2_98)
 
