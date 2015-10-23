@@ -186,11 +186,11 @@ namespace AudioAnalysisTools
             return image;
         }
 
-        public static void AddSunRiseSetLinesToImage(Bitmap image, FileInfo sunriseSetData)
+        public static void AddSunRiseSetLinesToImage(Bitmap image, FileInfo sunriseSetData, int startdayOfYear, int endDayOfYear, int pixelStep)
         {
             List<string> lines = FileTools.ReadTextFile(sunriseSetData.FullName);
-
-            for (int i = 1; i <= 365; i++) // skip header
+            int imageRow = 0;
+            for (int i = startdayOfYear; i <= endDayOfYear; i++) // skip header
             {
                 string[] fields = lines[i].Split(',');
                 // the sunrise data hasthe below line format
@@ -204,8 +204,20 @@ namespace AudioAnalysisTools
                 sunsetArray = sunsetArray[0].Split(':');
                 int sunriseMinute = (Int32.Parse(sunriseArray[0]) * 60) + Int32.Parse(sunriseArray[1]);
                 int sunsetMinute = (Int32.Parse(sunsetArray[0]) * 60) + Int32.Parse(sunsetArray[1]) + 720;
-                image.SetPixel(sunriseMinute, dayOfYear, Color.White);
-                image.SetPixel(sunsetMinute, dayOfYear, Color.White);
+                for (int px = 0; px < pixelStep; px++)
+                {
+                    image.SetPixel(sunriseMinute, imageRow, Color.White);
+                    image.SetPixel(sunsetMinute,  imageRow, Color.White);
+                    imageRow++;
+                }
+
+                // this is a hack to deal with inserting weekly gridlines rather than overwriting the image.
+                // This was done for EASY images but not for 3D!!
+                // ONE DAY THIS WILL HAVE TO BE FIXED! 
+                if ((dayOfYear % 7 == 0)|| (dayOfYear % 30 == 0))
+                {
+                    imageRow++;
+                }
             }
 
         }
