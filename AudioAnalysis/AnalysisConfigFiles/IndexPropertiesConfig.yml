@@ -109,7 +109,7 @@ BackgroundNoise:
   DoDisplay: true
   # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL + 10
   NormMin: -50.0
-  NormMax: -10.0
+  NormMax: -15.0
   ProjectID: Acoustic Indices
   Units: "dB"
   IncludeInComboIndex: false
@@ -133,7 +133,7 @@ AvgSnrOfActiveFrames:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 30.0
+  NormMax: 25.0
   ProjectID: Acoustic Indices
   Units: "dB"
   IncludeInComboIndex: false
@@ -216,8 +216,8 @@ AcousticComplexity:
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.4
-  NormMax: 0.7
+  NormMin: 0.01
+  NormMax: 0.1
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: true
@@ -229,7 +229,7 @@ TemporalEntropy:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 0.01
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: true
@@ -349,7 +349,7 @@ SptDensity:
   DefaultValue: 0.0
   DoDisplay: false
   NormMin: 0.0
-  NormMax: 2.0
+  NormMax: 3.0
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false

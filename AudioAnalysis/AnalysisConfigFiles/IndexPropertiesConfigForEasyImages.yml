@@ -82,8 +82,8 @@ HighFreqCover:
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.1
-  NormMax: 0.3
+  NormMin: 0.0
+  NormMax: 0.2
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
@@ -95,7 +95,7 @@ MidFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.1
-  NormMax: 0.30
+  NormMax: 0.3
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
@@ -107,7 +107,7 @@ LowFreqCover:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.1
-  NormMax: 0.30
+  NormMax: 0.3
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
