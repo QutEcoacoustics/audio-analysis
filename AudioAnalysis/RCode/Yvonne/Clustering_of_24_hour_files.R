@@ -7,7 +7,8 @@
 
 setwd("C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
-setwd("C:\\Work\\CSV files\\DataSet_Exp2_new\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
 
@@ -17,18 +18,23 @@ myFiles <- list.files(full.names=TRUE, pattern="*_24hour.csv$",
 myFiles <- list.files(full.names=TRUE, pattern="*_4hour.csv$",
                       path = "C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
 
-myFiles <- list.files(full.names=TRUE, pattern="*_4hour.csv$",
-                      path = "C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
+myFiles <- list.files(full.names=TRUE, pattern="*hour.csv$",
+                      path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+myFilesShort <- list.files(full.names=FALSE, pattern="*hour.csv$",
+                      path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+
+myFiles <- list.files(full.names=TRUE, pattern="*hour.csv$",
+                      path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
+myFilesShort <- list.files(full.names=FALSE, pattern="*hour.csv$",
+                           path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
+
+myFiles <- list.files(full.names=TRUE, pattern="*hour.csv$",
+                      path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
+myFilesShort <- list.files(full.names=FALSE, pattern="*hour.csv$",
+                           path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 
 length <- length(myFiles)
 length
-myFilesShort <- list.files(full.names=FALSE, pattern="*24hour.csv$",
-                           path = "C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
-myFilesShort <- list.files(full.names=FALSE, pattern="*4hour.csv$",
-                           path = "C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
-
-myFilesShort <- list.files(full.names=FALSE, pattern="*24hour.csv$",
-                           path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
 
 # Read file contents of Summary Indices and collate
 numberCol <- NULL
@@ -50,10 +56,14 @@ for (i in 1:length(myFilesShort)) {
                       round(heightss[4],0),round(heightss[5],0),round(heightss[6],0),
                       round(heightss[7],0),round(heightss[8],0),round(heightss[9],0),
                       round(heightss[10],0),round(heightss[11],0)))
-  mtext(side = 1, line = 5.5, adj=1, cex=1.1, paste("1,2,3", site[1], dates[1], dates[2], dates[3], sep = "_")) 
-  mtext(side = 1, line = 7, adj=1, cex=1.1, paste("4,5,6", site[1], dates[4], dates[5], dates[6], sep = "_"))
-  mtext(side = 1, line = 8.5, adj=1, cex=1.1, paste("7,8,9", site[7], dates[1], dates[2], dates[3], sep = "_"))
-  mtext(side = 1, line = 10, adj=1, cex=1.1, paste("10,11,12", site[7], dates[4], dates[5], dates[6], sep = "_"))
+  mtext(side = 1, line = 5.5, adj=1, cex=1.1, paste("1,2,3", site[1], dates[1], 
+                                                    dates[2], dates[3], sep = "    ")) 
+  mtext(side = 1, line = 7, adj=1, cex=1.1, paste("4,5,6", site[1], dates[4], 
+                                                  dates[5], dates[6], sep = "    "))
+  mtext(side = 1, line = 8.5, adj=1, cex=1.1, paste("7,8,9", site[7], dates[1], 
+                                                    dates[2], dates[3], sep = "    "))
+  mtext(side = 1, line = 10, adj=1, cex=1.1, paste("10,11,12", site[7], dates[4], 
+                                                   dates[5], dates[6], sep = "    "))
   mtext(paste("heights: ",round(heightss[11],0),round(heightss[10],0),round(heightss[9],0),
               round(heightss[8],0),round(heightss[7],0), round(heightss[6],0),
               round(heightss[5],0), round(heightss[4],0),round(heightss[3],0),

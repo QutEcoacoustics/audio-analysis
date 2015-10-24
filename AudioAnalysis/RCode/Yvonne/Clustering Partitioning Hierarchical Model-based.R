@@ -174,9 +174,9 @@ plot(2:50, c(variance), type = "l", col="blue",
 axis(side=4, at = pretty(range(c(variance))),
      col = "blue",col.axis="blue",las=1)
 mtext("Variance",side=4,col="blue",line=9, cex=2)
-abline(v=8, lty=2, col="red")
-abline(v=16, lty=2, col="red")
-abline(v=26, lty=2, col="red")
+abline(v=9, lty=2, col="red")
+abline(v=18, lty=2, col="red")
+abline(v=28, lty=2, col="red")
 legend('topright', c("Maximum cluster size","Variance"), 
      lty=1, col=c('red', 'blue'),cex=2)
 dev.off()
@@ -185,7 +185,7 @@ dev.off()
 # determine the minimum size of clusters to get more evenly sized 
 # clusters
 set.seed(123)
-kmeansObj <- kmeans(ds3.norm_2_98, centers = 26, iter.max = 100)
+kmeansObj <- kmeans(ds3.norm_2_98, centers = 28, iter.max = 100)
 kmeansObj$cluster
 table(kmeansObj$cluster)
 min.cs <- unname(min(table(kmeansObj$cluster)))
@@ -201,7 +201,7 @@ max.cs/length(ds3.norm_2_98$BackgroundNoise)*100
 # over 12 days may represent this period of heavy rain depending
 # upon the season
 
-file <- paste("kmeans8_16_26_plots_ds3norm_2_98_Exp2.png", sep = "")
+file <- paste("kmeans9_18_28_plots_ds3norm_2_98_Exp2.png", sep = "")
 png(
   file,
   width     = 200,
@@ -212,14 +212,14 @@ png(
 )
 par(mfrow=c(3,1), mar=c(1,3,1,3), oma=c(4,3,3,3), 
     cex.axis=2, cex.main=3)
-plot(kmean_clust$clusters_8, xaxt="n", 
+plot(kmean_clust$clusters_9, xaxt="n", 
      cex.axis=2)
 mtext(side = 3,line = 1.2, "kmeans - Experiment 2 (30July_31July_1Aug_31Aug_1Sept_4Sept2015)", cex = 2.2)
-mtext(side = 4, line = 2, "clusters_8", cex = 2)
-plot(kmean_clust$clusters_16, xaxt="n", cex.axis=2)
-mtext(side = 4, line = 2, "clusters_16", cex = 2)
-plot(kmean_clust$clusters_26, cex.axis=2)
-mtext(side = 4, line = 2, "clusters_26", cex = 2)
+mtext(side = 4, line = 2, "clusters_9", cex = 2)
+plot(kmean_clust$clusters_18, xaxt="n", cex.axis=2)
+mtext(side = 4, line = 2, "clusters_18", cex = 2)
+plot(kmean_clust$clusters_28, cex.axis=2)
+mtext(side = 4, line = 2, "clusters_28", cex = 2)
 dev.off()
 
 #######################################################
@@ -317,7 +317,7 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
 
 require(graphics)
 ds3.norm_2_98 <- cbind(ds3.norm_2_98, AcousticDS$rec.time)
-dist.hc <- dist(ds3.norm_2_98[,-8])
+dist.hc <- dist(ds3.norm_2_98)
 #dist.hc <- dist(ds3.norm_2_98)
 #hc.fit <- hclust(dist.hc, "average")
 hc.fit.ward <- hclust(dist.hc, "ward.D2")
@@ -394,50 +394,6 @@ dev.off()
 
 #write.csv(cut.heights, file = "hclust_ward_D2_clustering_cut_heights.csv")
 
-cut_hc_clust.av <- read.csv("hclust_average_clustering_cut_heights.csv", header = T)
-cut_hc_clust.wd <- read.csv("hclust_ward_D2_clustering_cut_heights.csv", header = T)
-
-png('hclust_average_cut_heights_ds3norm_2_98.png', 
-    width = 1500, height = 1200, units = "px")
-par(mfrow=c(4,1), mar=c(3,3,1,1), oma=c(3,2,3,1), cex.main=3,
-    cex.axis=2)
-plot(cut_hc_clust.av$cut_heights_0.68, xaxt="n")
-mtext("hclust_average_cut_height_0.68", side = 3, line = 1, cex = 2)
-plot(cut_hc_clust.av$cut_heights_0.7, xaxt="n")
-mtext("hclust_average_cut_height_0.7", side = 3, line = 1, cex = 2)
-plot(cut_hc_clust.av$cut_heights_0.74,xaxt="n")
-mtext("hclust_average_cut_height_0.74", side = 3, line = 1, cex = 2)
-plot(cut_hc_clust.av$cut_heights_0.78)
-mtext("hclust_average_cut_height_0.78", side = 3, line = 1, cex = 2)
-dev.off()
-
-png('hclust_ward_D2_cut_heights_ds3norm_2_98.png', 
-    width = 1500, height = 1200, units = "px")
-par(mfrow=c(4,1), mar=c(3,3,1,1), oma=c(3,2,3,1), cex.main=3,
-    cex.axis=2)
-plot(cut_hc_clust.wd$cut_heights_6, xaxt="n")
-mtext("hclust_ward_D2_cut_height_6", side = 3, line = 1, cex = 2)
-plot(cut_hc_clust.wd$cut_heights_7, xaxt="n")
-mtext("hclust_ward_D2_cut_height_7", side = 3, line = 1, cex = 2)
-plot(cut_hc_clust.wd$cut_heights_7.5, xaxt="n")
-mtext("hclust_ward_D2_cut_height_7.5", side = 3, line = 1, cex = 2)
-plot(cut_hc_clust.wd$cut_heights_8)
-mtext("hclust_ward_D2_cut_height_8", side = 3, line = 1, cex = 2)
-dev.off()
-
-#cut.heights <- NULL
-#for (i in seq(0.01,1,0.01)) {
-#  nam <- paste("cut_height_", i, sep="")
-#  (nam <- cutree(hc.fit, h = i))
-#  cut.heights <- cbind(cut.heights, unname(nam))
-#}
-#column.names <- NULL
-#for (i in seq(0.01,1,0.01)) {
-#  col.names <- paste("cut_heights_", i, sep = "")
-#  column.names <- c(column.names,col.names)
-#}
-#colnames(cut.heights) <- column.names
-#write.csv(cut.heights, file = "hclust_average_clustering_cut_heights.csv")
 
 # Plotting hclust dendograms
 #par(mfrow = c(1,2))
@@ -693,7 +649,7 @@ for (i in seq(1000, 4500, 500)) {
   #hc.fit <- hclust(dist.hc, "average")
   hybrid.fit.ward <- hclust(dist.hc, "ward.D2")
   plot(hybrid.fit.ward)
-  hybrid.clusters <- cutree(hybrid.fit.ward, k=20)
+  hybrid.clusters <- cutree(hybrid.fit.ward, k=15)
   # generate the test dataset
   hybrid.dataset <- cbind(hybrid.clusters, kmeansCenters)
   hybrid.dataset <- as.data.frame(hybrid.dataset)
@@ -713,12 +669,12 @@ for (i in seq(1000, 4500, 500)) {
 # produce 24 hour fingerprints from this clusterlist
 column.names <- NULL
 for (i in seq(1000, 4500, 500)) {
-  col.names <- paste("hybrid_k", i, "k20", sep = "")
+  col.names <- paste("hybrid_k", i, "k15", sep = "")
   column.names <- c(column.names,col.names)
 }
 colnames(clusters) <- column.names
 
-write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k20.csv", row.names = F)
+write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k15.csv", row.names = F)
 ##################################################################
 # EXPERIMENT 1
 # The aim of this experiment is to determine the minimum number of
