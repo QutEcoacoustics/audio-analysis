@@ -16,8 +16,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
     /// <summary>
-    /// This class contains two methods:  (1) StitchPartialSpectrograms()   and    (2) ConcatenateSpectralIndexFiles()
+    /// This class used to contain only two methods:  (1) StitchPartialSpectrograms()   and    (2) ConcatenateSpectralIndexFiles()
+    /// Now it contains several versions to concatenate Index files. HTis is because there are now several use cases.
     /// 
+    /// 
+    /// Here are the original two methods: 
     /// (1) StitchPartialSpectrograms()
     /// This method stitches together images and/or indices derived from a sequence of short recordings with gaps between them.
     /// It was written to deal with a set of recordings with protocol of Gianna Pavan (10 minutes every 30 minutes).
@@ -77,7 +80,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Use this concatenation method when you only want to concatenate the files for a fixed single day.
+        /// ONLY Use this concatenation method when you want to concatenate the files for a fixed single day.
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
         /// </summary>
         /// <param name="directories"></param>
@@ -90,17 +93,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                          DateTimeOffset dto)
         {
             // 1. PATTERN SEARCH FOR CORRECT CSV FILES
-            // Assumes that the required files are subdirectories of given site. 
-            // Read them into a dictionary
+            // Assume that the required files are in subdirectories of given site. Read them into a dictionary
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN;
             string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
-            string filePrefix = null;
-            // Concatenate the csv files
-            var dictionary = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(directories.ToArray(), filePrefix, dto, keys);
+
+            string analysisType = "Towsey.Acoustic";
+            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+
+            string fileStemPattern = "*" + dateString + "*__" + analysisType;
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories.ToArray(), fileStemPattern, keys);
 
             // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
-            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
             string opFileStem = String.Format("{0}_{1}", filestem, dateString);
             TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
             foreach (var key in keys)
@@ -115,6 +119,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
+        /// Do not delete this method yet. Although it is not referenced, it may be when I come to debug the eddie Game use case.
+        /// 
         /// Assumes that the required spectral index files can be found using search patterns that utilise 
         /// the filePrefix,  the passed dateTimeOffset, the analysis type and the passed keys.  
         /// </summary>

@@ -523,33 +523,6 @@ namespace AudioAnalysisTools.Indices
             return M;
         }
 
-        //public static double[,] ReadAndConcatenateSpectrogramCSVFiles(FileInfo[] paths)
-        //{
-        //    string warning = null;
-
-        //    var list =  new List<double[,]>();
-
-        //    // get the path containing keys[i]
-        //    foreach (FileInfo file in paths)
-        //    {
-        //        if (file.Exists)
-        //        {
-        //            int freqBinCount;
-        //            double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
-        //            list.Add(matrix);
-        //        }
-        //    }
-
-        //    var M = MatrixTools.ConcatenateMatrixRows(list);
-
-
-        //    if (warning != null)
-        //    {
-        //        LoggedConsole.WriteLine(warning);
-        //    }
-
-        //    return M;
-        //}
 
         public static double[,] RepairMatrixRowCount(double[,] M, int requiredRowCount)
         {
