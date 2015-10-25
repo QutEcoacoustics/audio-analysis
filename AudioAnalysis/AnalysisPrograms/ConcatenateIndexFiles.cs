@@ -114,8 +114,8 @@ namespace AnalysisPrograms
             
 
             // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            //string directoryFilter = "Woondum3";
-            string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
+            string directoryFilter = "Woondum3";
+            //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
             string opFileStem = directoryFilter;
             string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
 
@@ -339,7 +339,7 @@ namespace AnalysisPrograms
             }
 
 
-            //TODO TODO TODO   ########################   NEED TO DEBUG THE FOLLOWING OPTION
+            //TODO TODO TODO   ########################   NEED TO DEBUG THE FOLLOWING OPTION - use case of EDDIE GAME
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
                 LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");

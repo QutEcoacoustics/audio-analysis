@@ -101,11 +101,11 @@ namespace AnalysisPrograms
 
             // ########################## CSV FILES CONTAINING SUMMARY INDICES IN 24 hour BLOCKS 
             // top level directory
-            //string opFileStem = "GympieNP-2015";
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"), };
+            string opFileStem = "GympieNP-2015";
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"), };
 
-            string opFileStem = "Woondum3-2015";
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),   };
+            //string opFileStem = "Woondum3-2015";
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),   };
 
 
             // The filter pattern finds summary index files

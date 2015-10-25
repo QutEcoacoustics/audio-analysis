@@ -119,7 +119,7 @@ AcousticComplexity:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.4
-  NormMax: 0.7
+  NormMax: 0.65
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: true
@@ -130,8 +130,8 @@ TemporalEntropy:
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 0.5
+  NormMin: 0.1
+  NormMax: 0.4
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: true
