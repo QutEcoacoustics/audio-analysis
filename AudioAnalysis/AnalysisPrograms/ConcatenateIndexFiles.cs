@@ -108,21 +108,37 @@ namespace AnalysisPrograms
             //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") 
             //                           };
 
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
-                                         new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
-                                       };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
+            //                             new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
+            //                           };
             
 
+            //// The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
+            //string directoryFilter = "Woondum3";
+            ////string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
+            //string opFileStem = directoryFilter;
+            //string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
+
+            //dtoStart = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
+            ////dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
+
+
+
+            // ########################## LENN'S RECORDINGS          
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Oct19-173501 - Lenn, Indices, ICD=60.0, #61\Berndt\Lenn\Week 1\Card1302_Box1302"),
+                                       };
+
+
             // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            string directoryFilter = "Woondum3";
-            //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
-            string opFileStem = directoryFilter;
-            string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
+            string directoryFilter = "Towsey.Acoustic"; // this is a directory filter to locate only the required files
+            string opFileStem = "Card1302_Box1302";
+            string opPath = @"C:\SensorNetworks\Output\LennsResults";
 
-            dtoStart = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2015, 09, 27, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2015, 09, 30, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
-
 
 
 
