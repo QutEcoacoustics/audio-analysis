@@ -568,8 +568,10 @@ namespace AnalysisPrograms
 
                     Log.Info("Tiling output at scale: " + acousticIndicesParsedConfiguration.IndexCalculationDuration);
 
-                    var image = images[1];
-                    TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
+                    foreach (var image in images)
+                    {
+                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
+                    }                    
                 }
             }
         }
