@@ -649,7 +649,7 @@ for (i in seq(1000, 4500, 500)) {
   #hc.fit <- hclust(dist.hc, "average")
   hybrid.fit.ward <- hclust(dist.hc, "ward.D2")
   plot(hybrid.fit.ward)
-  hybrid.clusters <- cutree(hybrid.fit.ward, k=15)
+  hybrid.clusters <- cutree(hybrid.fit.ward, k=25)
   # generate the test dataset
   hybrid.dataset <- cbind(hybrid.clusters, kmeansCenters)
   hybrid.dataset <- as.data.frame(hybrid.dataset)
@@ -669,12 +669,12 @@ for (i in seq(1000, 4500, 500)) {
 # produce 24 hour fingerprints from this clusterlist
 column.names <- NULL
 for (i in seq(1000, 4500, 500)) {
-  col.names <- paste("hybrid_k", i, "k15", sep = "")
+  col.names <- paste("hybrid_k", i, "k25", sep = "")
   column.names <- c(column.names,col.names)
 }
 colnames(clusters) <- column.names
 
-write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k15.csv", row.names = F)
+write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k25.csv", row.names = F)
 ##################################################################
 # EXPERIMENT 1
 # The aim of this experiment is to determine the minimum number of
