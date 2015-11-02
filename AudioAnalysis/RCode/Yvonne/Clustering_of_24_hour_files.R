@@ -8,6 +8,7 @@
 setwd("C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
@@ -22,6 +23,11 @@ myFiles <- list.files(full.names=TRUE, pattern="*hour.csv$",
                       path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
 myFilesShort <- list.files(full.names=FALSE, pattern="*hour.csv$",
                       path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+myFiles <- list.files(full.names=TRUE, pattern="*hour.csv$",
+                      path = "C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
+myFilesShort <- list.files(full.names=FALSE, pattern="*hour.csv$",
+                           path = "C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
+
 
 myFiles <- list.files(full.names=TRUE, pattern="*hour.csv$",
                       path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
@@ -32,6 +38,11 @@ myFiles <- list.files(full.names=TRUE, pattern="*hour.csv$",
                       path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 myFilesShort <- list.files(full.names=FALSE, pattern="*hour.csv$",
                            path = "C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
+
+myFiles <- list.files(full.names = TRUE, pattern ="mclust_k39_24hour.csv",
+                      path = "C:\\Work\\CSV files\\DataSet_Exp2a\\")
+myFilesShort <- list.files(full.names = FALSE, pattern ="mclust_k39_24hour.csv",
+                      path = "C:\\Work\\CSV files\\DataSet_Exp2a\\")
 
 length <- length(myFiles)
 length

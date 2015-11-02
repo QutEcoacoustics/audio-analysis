@@ -6,6 +6,7 @@
 #setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
@@ -153,6 +154,7 @@ write.csv(twentyfour_hour_table_6, "kmeans_k29_24hour.csv",
 # Saving the hclust_k 24 hour files
 ####################################################
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 twentyfour_hour_table_1 <- NULL #read.csv(text="col1,col2")
 twentyfour_hour_table_2 <- NULL #read.csv(text="col1,col2")
 twentyfour_hour_table_3 <- NULL #read.csv(text="col1,col2")
@@ -763,17 +765,13 @@ twentyfour_hour_table <- NULL #read.csv(text="col1,col2")
 
 cluster.list <- cluster.lists.mclust.exp2
 for (i in 1:length(cluster.list)) {
-  for(j in 1:(length(dates)*2-1)) {
+  for(j in 1:(length(day.ref)-1)) {
     cluster.ref <- hist(cluster.list[day.ref[j]:(day.ref[j+1]-1),i], 
                         breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
     print(length(cluster.ref$counts))
     if (i == 1) {twentyfour_hour_table <- rbind(twentyfour_hour_table, 
                                                   cluster.ref$counts)}
   }
-  cluster.ref <- hist(cluster.list[day.ref[j+1]:length(cluster.lists.kmeans.exp2$km_clusters_8),i], 
-                      breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
-  print(length(cluster.ref$counts))
-  if (i == 1) {twentyfour_hour_table <- rbind(twentyfour_hour_table, cluster.ref$counts)}
 }
 twentyfour_hour_table <- as.data.frame(twentyfour_hour_table)
 # Rename the columns
@@ -788,7 +786,7 @@ site <- c(rep("GympieNP",6), rep("WoondumNP",6))
 dates2 <- rep(dates,2)
 twentyfour_hour_table <- cbind(twentyfour_hour_table,site,as.character(dates2))
 
-write.csv(twentyfour_hour_table, "mclust_k37_24hour.csv", 
+write.csv(twentyfour_hour_table, "mclust_k39_24hour.csv", 
           row.names = F)
 
 ####################################################

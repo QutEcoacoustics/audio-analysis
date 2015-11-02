@@ -167,3 +167,38 @@ write.csv(all.indices, "dataSet_21Sept_11Oct2015.csv")
 #longitude <- "Longitude 152deg 47min 51.4sec"
 #elevation <- "118m"
 
+#############################
+# Concatenating files before and after 21 September 2015
+# Note: Do not apply this code until the columns match
+setwd("C:\\Work\\CSV files\\FourMonths\\")
+file1 <- read.csv("dataSet_upto20Sept2015.csv", header = T)
+file2 <- read.csv("dataSet_21Sept_11Oct2015.csv", header = T)
+
+length1 <- length(file1$X)
+length2 <- length(file2$X)
+total.length <- length1 + length2
+file1Gympie <- file1[1:(length1/2),]
+file1Woondum <- file1[((length1/2)+1):length1,]
+file2Gympie <- file2[1:(length2/2),]
+file2Woondum <- file2[((length2/2)+1):length2,]
+minute.of.day <- rep(1:1440, total.length/1440)
+site <- rep(c("GympieNP", "Woondum3"), each = total.length/2, 
+            length = total.length)
+
+# generate a sequence of dates
+start <-  strptime("20150622", format="%Y%m%d")
+finish <-  strptime("20151011", format="%Y%m%d")
+dates <- seq(start, finish, by = "1440 mins")
+any(is.na(dates)) #FALSE
+date.list <- NULL
+for (i in 1:length(dates)) {
+  dat <- substr(as.character(dates[i]),1,10)
+  date.list <- c(date.list, dat)
+}
+
+dates <- rep(date.list, each = 1440)
+##
+concat <- rbind(file1Gympie, file2Gympie, file1Woondum, file2Woondum)
+concat <- cbind(concat, site, dates, minute.of.day)
+
+write.csv(concat, "dataset_22June2015_11 Oct2015.csv", row.names = F)
