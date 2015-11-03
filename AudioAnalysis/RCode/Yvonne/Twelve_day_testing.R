@@ -1,10 +1,16 @@
+# 3 November 2015
+# This code generates 24 hour histogram data specifically used to 
+# pick out the twelve days used in Exp2
+
 setwd("C:\\Work\\CSV files\\FourMonths")
 
 #setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16")
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_9_10_11_15_16")
 
-cluster.list.hybrid.exp2 <- read.csv("hybrid_clust_35000.csv", header = T)[c(54721:59040,100801:103680,106561:108000,
-   185761:190080,231841:234720,237601:239040),]
+
+cluster.list.hybrid.exp2 <- read.csv("hybrid_clust_35000.csv", header = T)[
+  c(54721:59040,100801:103680,106561:108000,
+    216001:220320,262081:264960,267841:269280),]
 
 indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", 
                     header=T)
