@@ -1,17 +1,19 @@
 #######################################################
 # 2 November 2015
 # This code performs the hybrid method on a long-duration dataset 
-# (> four months)
+# (about four months at two sites, 112 days multiplied by 2)
 #
-# The four month dataset goes from 22 June 2015 to 11 Oct 2015 
+# The four month dataset goes from 22 June 2015 to 11 Oct 2015 from two 
+# sites GympieNP and Woondum3
 #######################################################
-setwd("C:\\Work\\CSV files\\FourMonths")
+setwd("C:\\Work\\CSV files\\FourMonths\\")
 
 AcousticDS <- read.csv("final_dataset_22June2015_11 Oct2015.csv", header = T)
 
 #ds3 <- AcousticDS[,c(2:18)]
 ds3 <- AcousticDS[,c(3,4,7,10,11,15,16)] # without Mid-frequency cover
-ds3 <- AcousticDS[,c(3,4,7,9,10,11,15,16)] # with Mid-frequency cover
+#ds3 <- AcousticDS[,c(3,4,7,9,10,11,15,16)] # with Mid-frequency cover
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16")
 
 # PCA type analysis
 #library(psych)
@@ -50,26 +52,28 @@ for (j in 1:length(ds3)) {
   }
 }
 
-# Create ds3.norm for mclust, apcluster where the data is normalised 
-# values between zero and one using minimum and maximum values
-
 #######################################################
 # Method:  Hybrid method using kmeans followed by hclust
 # 
 #######################################################
-setwd("C:\\Work\\CSV files\\FourMonths\\")
+#setwd("C:\\Work\\CSV files\\FourMonths\\")
 library(MASS)
 clusters <- NULL
+clusters.rf <- NULL
 ds3.norm_2_98noNA <- ds3.norm_2_98[complete.cases(ds3.norm_2_98), ]
-for (i in seq(25000, 25000, 1000)) {
-  paste(i)
+for (i in seq(25000, 25000, 5000)) {
+  paste(Sys.time(), " Starting kmeans clustering, centers ", i, sep = "")
   set.seed(123)
   kmeansObj <- kmeans(ds3.norm_2_98noNA, centers = i, iter.max = 100)
   kmeansCenters <- kmeansObj$centers
+  paste(Sys.time(), "Saving kmeans centers")
+  ###### !!!!!!!!!!!!!!!!!! I need to keep a copy of the centers
   #dist.hc <- dist(kmeansCenters)
+  paste(Sys.time(), "Starting hclust")
   hybrid.fit.ward <- hclust(dist(kmeansCenters), "ward.D2")
   #plot(hybrid.fit.ward)
-  for (j in seq(15, 40, 5)) {
+  paste(Sys.time(), "Starting cutree function")
+  for (j in seq(10, 40, 5)) {
     hybrid.clusters <- cutree(hybrid.fit.ward, k=j)
     # generate the test dataset
     hybrid.dataset <- cbind(hybrid.clusters, kmeansCenters)
@@ -77,24 +81,37 @@ for (i in seq(25000, 25000, 1000)) {
     train <- hybrid.dataset
     table(hybrid.dataset$hybrid.clusters)
     test <- ds3.norm_2_98
+    test <- test[complete.cases(test), ]
     # set up classes
     cl <- factor(unname(hybrid.clusters))
     # perform linear discriminant analysis
-    z <- lda(train[,-1], cl)
+    library(MASS)
+    train.lda <- qda(train[,-1], cl)
+    #train.lda <- lda(hybrid.clusters ~ ., data = train)
     library(stats)
-    pr <- predict(z, test) # gives warnings due to ds3.norm_2_98 containing NA
-    # but if ds3.norm_2_98noNA is used for test then the same result 
-    # but without a clue to the original rows is given.  So it is best
-    # to leave test as ds3.norm_2_98.
+    paste(Sys.time(), "Starting predict k2 =", j, sep = " ")
+    pr <- predict(train.lda, test) # gives warnings due to ds3.norm_2_98 
+    # containing NA but if ds3.norm_2_98noNA is used for test then the same
+    # result but without a clue to the original rows is given.  So it is 
+    # best to leave test as ds3.norm_2_98.
     clusts <- as.integer(pr$class)
     clusters <- cbind(clusters, clusts)
+    # use randomForest to predict classes 
+    paste(Sys.time(), "Starting randomForest")
+    library(randomForest)
+    # apply randomForest algorithm to training data
+    train.rf <- randomForest(train[,-1], cl, proximity = T)
+    train.rf
+    test.pred <- predict(test.rf, test)
+    clust.rf <- as.integer(unname(test.pred))
+    clusters.rf <- cbind(clusters, clust.rf)
   }
 }
 
 # produce column names 
 column.names <- NULL
-k1 <- seq(25000,25000,1000)
-k2 <- seq(15, 40, 5)
+k1 <- seq(25000,25000,5000)
+k2 <- seq(10, 40, 5)
 for (i in k1) {
   for (j in k2) {
     col.names <- paste("hybrid_k", i, "k", j, sep = "")
@@ -103,6 +120,7 @@ for (i in k1) {
 }
 colnames(clusters) <- column.names
 
-write.csv(clusters, file = "hybrid_clust_25000.csv", 
+write.csv(clusters, file = "hybrid_clust_lda_25000.csv", 
           row.names = F)
-gc()
+write.csv(clusters.rf, file = "hybrid_clust_rf_25000.csv",
+          row.names = F)

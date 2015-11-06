@@ -15,6 +15,7 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16")
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_9_10_11_15_16")
 
+metrics <- read.csv("clustering_metrics.csv", header = T)
 myFiles <- list.files(full.names=TRUE, pattern="*_24hour.csv$")
 myFilesShort <- list.files(full.names=FALSE, pattern="*_24hour.csv$")
 
@@ -52,7 +53,7 @@ for (i in 1:length(myFilesShort)) {
   mtext(side = 1, line = 7, adj=1, cex=1.1, paste("7,8,9", site[7], dates[1], 
                                                   dates[2], dates[3], "10,11,12", site[7], dates[4], 
                                                   dates[5], dates[6], sep = "    "))
-  mtext(side = 1, line = 8.5, adj=1, cex=1.1, "**Twelve days from 2 x 121 days of clustering. Indices:  BGN, SNR, EventsPerSec, LowFreqC, AcoComp, EPKS, ECOVS")
+  mtext(side = 1, line = 8.5, adj=1, cex=1.1, "**Twelve days from 2 x 112 days of clustering. Indices:  BGN, SNR, EventsPerSec, LowFreqC, AcoComp, EPKS, ECOVS")
   mtext(paste("heights: ",round(heightss[11],0),round(heightss[10],0),round(heightss[9],0),
               round(heightss[8],0),round(heightss[7],0), round(heightss[6],0),
               round(heightss[5],0), round(heightss[4],0),round(heightss[3],0),
@@ -64,3 +65,30 @@ for (i in 1:length(myFilesShort)) {
 heights <- cbind(myFilesShort, heights)
 write.csv(heights, "heights_test_ward_D2.csv")
 sort(unique(cophenetic(hc.fit)))
+
+# Plotting the metrics
+png("Clustering Metrics.png", width=1500, height =1000)
+x <- c(10000, 15000, 20000, 25000, 30000, 35000)
+plot(x,metrics$k15, type="l", ylim=c(1.3,2.1), col="red",
+     ylab = "intergroup dissimilarity", xlab = "kmeans k value (k1)", 
+     cex.axis=1.5, main="Clustering metrics - 112 days x 2 sites", cex.main=2, cex.lab=1.5)
+par(new=TRUE)
+plot(x,metrics$k20, type="l", ylim=c(1.3,2.1), col="orange", yaxt='n',
+     ylab = "", xlab = "", xaxt='n')
+par(new=TRUE)
+plot(x,metrics$k25, type="l", ylim=c(1.3,2.1), col="yellow", yaxt='n',
+     ylab = "", xlab = "", xaxt='n')
+par(new=TRUE)
+plot(x,metrics$k30, type="l", ylim=c(1.3,2.1), col="green", yaxt='n',
+     ylab = "", xlab = "", xaxt='n')
+par(new=TRUE)
+plot(x, metrics$k35, type="l", ylim=c(1.3,2.1), col="blue", yaxt='n',
+     ylab = "", xlab = "", xaxt='n')
+par(new=TRUE)
+plot(x, metrics$k40, type="l", ylim=c(1.3,2.1), col="violet", yaxt='n',
+     ylab = "", xlab = "", xaxt='n')
+k2 <- c("k2_15","k2_20","k2_25","k2_30","k2_35","k2_40")
+legend('topright', k2, 
+       lty=1, col=c('red', 'orange', 'yellow',' green','blue','violet'), 
+       bty='n', cex=2)
+dev.off()

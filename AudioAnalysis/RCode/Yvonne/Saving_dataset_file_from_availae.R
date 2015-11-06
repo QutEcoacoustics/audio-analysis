@@ -181,7 +181,7 @@ file1Gympie <- file1[1:(length1/2),]
 file1Woondum <- file1[((length1/2)+1):length1,]
 file2Gympie <- file2[1:(length2/2),]
 file2Woondum <- file2[((length2/2)+1):length2,]
-minute.of.day <- rep(1:1440, total.length/1440)
+minute.of.day <- rep(0:1439, total.length/1440)
 site <- rep(c("GympieNP", "Woondum3"), each = total.length/2, 
             length = total.length)
 

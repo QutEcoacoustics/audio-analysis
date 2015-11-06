@@ -4,16 +4,23 @@
 
 setwd("C:\\Work\\CSV files\\FourMonths")
 
-#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16")
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_9_10_11_15_16")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16")
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_9_10_11_15_16")
 
-
-cluster.list.hybrid.exp2 <- read.csv("hybrid_clust_35000.csv", header = T)[
-  c(54721:59040,100801:103680,106561:108000,
-    216001:220320,262081:264960,267841:269280),]
+cluster.list.hybrid.exp2 <- read.csv("hybrid_clust_30000.csv", 
+                            header = T)[c(54721:59040,100801:103680,106561:108000,
+                            216001:220320,262081:264960,267841:269280),]
 
 indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", 
                     header=T)
+site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+
+# Adaptation to cluster all 112 days x 2 sites 
+#cluster.list.hybrid.exp2 <- read.csv("hybrid_clust_30000na_replaced_with_50.csv", header = T)
+#cluster.list.hybrid.exp2 <- cluster.list.hybrid.exp2[complete.cases(cluster.list.hybrid.exp2), ]
+#indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_11 Oct2015.csv", header=T)
+#site <- c(rep("GympieNP",112), rep("WoondumNP",112))
+# Setting NAs to 50 works
 
 day.ref <- which(indices$minute.of.day=="0")
 day.ref <- c(day.ref, (length(indices$minute.of.day)+1))
@@ -37,7 +44,6 @@ dates <- unique(indices$rec.date)
 #dates2 <- rep(dates, each=6)
 dates2 <- rep(dates, 2)
 length.ref <- length(indices$X)
-
 
 ####################################################
 # Saving the Hybrid 24 hour files
@@ -138,8 +144,6 @@ if (i==8) {
   colnames(twentyfour_hour_table_8) <- column.names
 }
 
-site <- c(rep("GympieNP",6), rep("WoondumNP",6))
-
 twentyfour_hour_table_1 <- cbind(twentyfour_hour_table_1,site,as.character(dates2))
 twentyfour_hour_table_2 <- cbind(twentyfour_hour_table_2,site,as.character(dates2))
 twentyfour_hour_table_3 <- cbind(twentyfour_hour_table_3,site,as.character(dates2))
@@ -149,15 +153,15 @@ twentyfour_hour_table_6 <- cbind(twentyfour_hour_table_6,site,as.character(dates
 twentyfour_hour_table_7 <- cbind(twentyfour_hour_table_7,site,as.character(dates2))
 twentyfour_hour_table_8 <- cbind(twentyfour_hour_table_8,site,as.character(dates2))
 
-write.csv(twentyfour_hour_table_1, "hybrid_k35000_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_1, "hybrid_k30000_k15_24hour_112days.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_2, "hybrid_k35000_k20_24hour.csv", 
+write.csv(twentyfour_hour_table_2, "hybrid_k30000_k20_24hour_112days.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_3, "hybrid_k35000_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_3, "hybrid_k30000_k25_24hour_112days.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_4, "hybrid_k35000_k30_24hour.csv", 
+write.csv(twentyfour_hour_table_4, "hybrid_k30000_k30_24hour_112days.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_5, "hybrid_k35000_k35_24hour.csv", 
+write.csv(twentyfour_hour_table_5, "hybrid_k30000_k35_24hour_112days.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_6, "hybrid_k35000_k40_24hour.csv", 
+write.csv(twentyfour_hour_table_6, "hybrid_k30000_k40_24hour_112days.csv", 
           row.names = F)
