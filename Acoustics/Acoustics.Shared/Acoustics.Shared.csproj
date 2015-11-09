@@ -161,13 +161,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalysisWorkItem.cs" />
     <Compile Include="AppConfigHelper.cs" />
-    <Compile Include="AudioCoordinates.cs" />
-    <Compile Include="AudioUploadInfo.cs" />
     <Compile Include="Base58.cs" />
     <Compile Include="CalcSunTimes.cs" />
-    <Compile Include="CompareFeatures.cs" />
     <Compile Include="ConfigFile.cs" />
     <Compile Include="Coordinate.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />
@@ -195,7 +191,6 @@
     <Compile Include="Extensions\TupleExtensions.cs" />
     <Compile Include="FileDateHelpers.cs" />
     <Compile Include="FileNameHelpers.cs" />
-    <Compile Include="FilterResult.cs" />
     <Compile Include="Formatters.cs" />
     <Compile Include="GraphicsSegmented.cs" />
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
@@ -203,20 +198,15 @@
     <Compile Include="Logging\Logging.cs" />
     <Compile Include="Csv\MatrixMapper.cs" />
     <Compile Include="MediaTypes.cs" />
-    <Compile Include="MinimalLocationSummary.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
     <Compile Include="Orderer.cs" />
     <Compile Include="Plugins.cs" />
-    <Compile Include="ProcessorResultTag.cs" />
     <Compile Include="ProcessRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyComparer.cs" />
     <Compile Include="Range.cs" />
-    <Compile Include="ReadingsFilter.cs" />
     <Compile Include="ResultProperty.cs" />
-    <Compile Include="Segmenter.cs" />
     <Compile Include="SegmentPolicy.cs" />
-    <Compile Include="SortableBindingList.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StatDescriptive.cs" />
     <Compile Include="StringKeyValueStore.cs" />

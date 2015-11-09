@@ -210,7 +210,7 @@ namespace AnalysisPrograms
                 analysisType: Acoustic.TowseyAcoustic,
                 indexSpectrograms: null,
                 indexDistributions: indexDistributionsData,
-                returnChromelessImages: false);
+                imageChrome: false.ToImageChrome());
         }
     }
 }
