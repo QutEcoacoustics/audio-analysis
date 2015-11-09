@@ -39,7 +39,6 @@ ds3 <- AcousticDS[,c(3,4,7,10,11,15,16)]
 ds3 <- AcousticDS[,c(3,4,7,9,10,11,15,16)]
 #ds3 <- AcousticDS[,c(3,5,7,10,11,15,16)]
 #ds3 <- AcousticDS[,c(3,4,7,10,11,13,16)]
-
 # PCA type analysis
 library(psych)
 ic.out <- iclust(AcousticDS[,4:10])
@@ -138,13 +137,15 @@ par(mfrow=c(2,1), mar=c(5,7,2,11), cex.main=2,
 
 # Determining the number of clusters ()
 wss <- (nrow(ds3.norm_2_98noNA)*sum(apply(ds3.norm_2_98noNA, 2, var)))
-for (i in 2:50) {
+#for (i in 2:50) {
+for (i in seq(7500,35000,2500)) {
   set.seed(123)
   wss[i] <- sum(sum(kmeans(ds3.norm_2_98noNA, 
                     centers=i, iter.max = 100)$withinss))
 }
 
-plot(1:50, wss, type = "b", xlab="Number of clusters", 
+#plot(1:50, wss, type = "b", xlab="Number of clusters",
+plot(seq(10000,35000,2500), wss, type = "b", xlab="Number of clusters", 
      ylab = "within groups sum of squares",
      main = "kmeans Within Groups Sum of Squares - Exp2")
 
@@ -153,7 +154,8 @@ max.size <- NULL
 variance <- NULL
 clusters <- NULL
 
-for (i in 2:50) {
+#for (i in 2:50) {
+for (i in seq(7500,35000,2500)) {  
   set.seed(123)
   kmeansObj <- kmeans(ds3.norm_2_98noNA, centers = i, iter.max = 100)
   min <- unname(min(table(kmeansObj$cluster)))
@@ -180,21 +182,21 @@ kmean_clust <- read.csv("kmeans_clust.csv", header=T)
 #     main = "kmeans Cluster Size Range")
 #par(new=TRUE)
 
-plot(2:50,c(max.size), type = "l", col = "red", 
+plot(seq(7500,35000,2500),c(max.size), type = "l", col = "red", 
      ylim=c(0,9000), xlab = "", 
-     ylab = "",las=1, xlim = c(0,50))
+     ylab = "",las=1, xlim = c(0,35000))
 mtext("Maximum cluster size",side=2,
       col="black",line=5, cex=2)
 par(new=TRUE)
-plot(2:50, c(variance), type = "l", col="blue",
-     ylab = "", xlim = c(0,50),
+plot(seq(7500,35000,2500), c(variance), type = "l", col="blue",
+     ylab = "", xlim = c(0,35000),
      yaxt='n', xaxt='n',xlab = "")
 axis(side=4, at = pretty(range(c(variance))),
      col = "blue",col.axis="blue",las=1)
 mtext("Variance",side=4,col="blue",line=9, cex=2)
-abline(v=9, lty=2, col="red")
-abline(v=18, lty=2, col="red")
-abline(v=28, lty=2, col="red")
+abline(v=10000, lty=2, col="red")
+abline(v=20000, lty=2, col="red")
+abline(v=30000, lty=2, col="red")
 legend('topright', c("Maximum cluster size","Variance"), 
      lty=1, col=c('red', 'blue'),cex=2)
 dev.off()
