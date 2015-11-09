@@ -8,7 +8,21 @@
     using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
-    public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, similarityScoreList, scoreArrayNamed, scoreMatrix, zeroCrossings, hits, timeTics }
+    public enum TrackType
+    {
+        none,
+        deciBels,
+        waveEnvelope,
+        segmentation,
+        syllables,
+        scoreArray,
+        similarityScoreList,
+        scoreArrayNamed,
+        scoreMatrix,
+        zeroCrossings,
+        hits,
+        timeTics
+    }
 
 
     public sealed class Image_Track

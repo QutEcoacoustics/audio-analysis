@@ -26,21 +26,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public Image Image { get; set; }
 
-        public int OffsetX
-        {
-            get
-            {
-                return (int)Math.Round(this.TimeOffset.TotalSeconds / this.Scale.TotalSeconds);
-            }
-        }
+        public int OffsetX => (int)Math.Round(this.TimeOffset.TotalSeconds / this.Scale.TotalSeconds);
 
-        public int OffsetY
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int OffsetY => 0;
 
         public TimeSpan Scale { get; set; }
 
@@ -52,13 +40,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         #region Explicit Interface Properties
 
-        double ISuperTile.Scale
-        {
-            get
-            {
-                return this.Scale.TotalSeconds;
-            }
-        }
+        double ISuperTile.Scale => this.Scale.TotalSeconds;
 
         #endregion
     }

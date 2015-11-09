@@ -295,7 +295,7 @@ namespace AudioAnalysisTools.TileImage
                                     "Currently no support has been implemented for drawing from supertiles that are not aligned with the current tile on the y-axis");
                             }
 
-                            var destRect =
+                            var destinationRect =
                                 new Rectangle(
                                     new Point(
                                         imageComponent.Fragment.X - superTileLeft,
@@ -324,7 +324,7 @@ namespace AudioAnalysisTools.TileImage
                                     // paint a fraction from the previous image
                                     // here, we shift the co-ordinate system one-super-tile's width right
                                     sourceRect.X = sourceRect.X + width;
-                                    tileGraphics.DrawImage(previous.Image, destRect, sourceRect, GraphicsUnit.Pixel);
+                                    tileGraphics.DrawImage(previous.Image, destinationRect, sourceRect, GraphicsUnit.Pixel);
                                 }
                             }
                             else if (imageComponent.XBias == TileBias.Positive)
@@ -342,13 +342,13 @@ namespace AudioAnalysisTools.TileImage
                                     // paint a fraction from the next image
                                     // here, we shift the co-ordinate system one-super-tile's width left
                                     sourceRect.X = sourceRect.X - width;
-                                    tileGraphics.DrawImage(next.Image, destRect, sourceRect, GraphicsUnit.Pixel);
+                                    tileGraphics.DrawImage(next.Image, destinationRect, sourceRect, GraphicsUnit.Pixel);
                                 }
                             }
                             else
                             {
                                 // neutral
-                                tileGraphics.DrawImage(current.Image, destRect, sourceRect, GraphicsUnit.Pixel);
+                                tileGraphics.DrawImage(current.Image, destinationRect, sourceRect, GraphicsUnit.Pixel);
                             }
                         }
                     }
@@ -422,7 +422,7 @@ namespace AudioAnalysisTools.TileImage
                 parts.AddRange(rects);
             }
 
-            // check middle (this check is always true since rects are required to overlap
+            // check middle (this check is always true since rects are required to overlap)
             if (requestedRectangle.Right > baseRectangle.Left && requestedRectangle.Left < baseRectangle.Right)
             {
                 List<ImageComponent> rects = SplitAlongY(
