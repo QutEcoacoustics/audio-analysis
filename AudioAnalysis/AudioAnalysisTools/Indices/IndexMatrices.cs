@@ -11,16 +11,22 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+
+    using log4net;
+
     using TowseyLibrary;
 
     public static class IndexMatrices
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void test()
         {
@@ -752,17 +758,18 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
             string warning = null;
 
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
-            for (int i = 0; i < keys.Length; i++)
+            foreach (string indexKey in keys)
             {
-                DateTime now1 = DateTime.Now;
+                Log.Info($"Starting to read CSV file for index {indexKey}");
+                Stopwatch timer = Stopwatch.StartNew();
 
-                FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv"));
+                FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + indexKey + ".csv"));
                 if (file.Exists)
                 {
                     int freqBinCount;
                     double[,] matrix = ReadSpectrogram(file, out freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    spectrogramMatrices.Add(keys[i], matrix);
+                    spectrogramMatrices.Add(indexKey, matrix);
                     //this.FrameLength = freqBinCount * 2;
                 }
                 else
@@ -772,17 +779,16 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
                         warning = "\nWARNING: from method IndexMatrices.ReadCSVFiles()";
                     }
 
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
+                    warning += "\n      {0} File does not exist: {1}".Format2(indexKey, file.FullName);
                 }
 
-                DateTime now2 = DateTime.Now;
-                TimeSpan et = now2 - now1;
-                LoggedConsole.WriteLine("Time to read spectral index file <" + keys[i] + "> = " + et.TotalSeconds + " seconds");
+                timer.Stop();
+                LoggedConsole.WriteLine($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
             }
 
             if (warning != null)
             {
-                LoggedConsole.WriteLine(warning);
+                Log.Warn(warning);
             }
 
             if (spectrogramMatrices.Count == 0)
