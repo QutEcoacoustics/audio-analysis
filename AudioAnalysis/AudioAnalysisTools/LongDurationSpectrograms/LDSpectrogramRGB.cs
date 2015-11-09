@@ -1301,7 +1301,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </param>
         /// <param name="indexDistributions"></param>
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
-        /// <param name="returnChromelessImages">If true, this method generates and returns separate chromeless images.</param>
+        /// <param name="imageChrome">If true, this method generates and returns separate chromeless images.</param>
         /// <param name="longDurationSpectrogramConfig">
         /// </param>
         public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
@@ -1316,7 +1316,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             SummaryIndexBase[] summaryIndices = null,
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
             SiteDescription siteDescription = null,
-            bool returnChromelessImages = false)
+            ImageChrome imageChrome = ImageChrome.With)
         {
             LdSpectrogramConfig config = ldSpectrogramConfig;
 
@@ -1401,11 +1401,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             Image image1;
             Image image1NoChrome;
-            CreateSpectrogramFromSpectralIndices(cs1, colorMap1, returnChromelessImages, outputDirectory).Decompose(out image1, out image1NoChrome);
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap1, imageChrome, outputDirectory).Decompose(out image1, out image1NoChrome);
 
             Image image2;
             Image image2NoChrome;
-            CreateSpectrogramFromSpectralIndices(cs1, colorMap2, returnChromelessImages, outputDirectory).Decompose(out image2, out image2NoChrome);
+            CreateSpectrogramFromSpectralIndices(cs1, colorMap2, imageChrome, outputDirectory).Decompose(out image2, out image2NoChrome);
 
             // read high amplitude and clipping info into an image
             Image imageX;
@@ -1444,19 +1444,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
             ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap2 + ".SpectralRibbon", "png"));
 
-            return returnChromelessImages
+            // only return images if chromeless
+            return imageChrome == ImageChrome.Without
                        ? new[] { Tuple.Create(image1NoChrome, colorMap1), Tuple.Create(image2NoChrome, colorMap2) }
                        : null;
         }
 
-        private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, bool returnChromelessImages, DirectoryInfo outputDirectory)
+        private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, ImageChrome imageChrome, DirectoryInfo outputDirectory)
         {
             const int HertzInterval = 1000;
             int nyquist = cs1.SampleRate / 2;
 
             // create a chromeless false color image for tiling
             Image imageNoChrome = null;
-            if (returnChromelessImages)
+            if (imageChrome == ImageChrome.Without)
             {
                 imageNoChrome = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap, withChrome: false);
             }

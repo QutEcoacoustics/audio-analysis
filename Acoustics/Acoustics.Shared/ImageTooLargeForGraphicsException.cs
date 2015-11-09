@@ -127,10 +127,22 @@ namespace Acoustics.Shared
         public override string ToString()
         {
             var sb = new StringBuilder("ImageTooLargeForGraphicsException: ");
-            if (WidthAtException.HasValue) sb.Append(" Image Width: " + WidthAtException.Value);
-            if (HeightAtException.HasValue) sb.Append(" Image Height: " + HeightAtException.Value);
-            if (AudioLengthAtException.HasValue) sb.Append(" Audio Length: " + AudioLengthAtException.Value + "ms");
-            if (!string.IsNullOrEmpty(this.Message)) sb.Append(" " + this.Message + " ");
+            if (WidthAtException.HasValue)
+            {
+                sb.Append(" Image Width: " + WidthAtException.Value);
+            }
+            if (HeightAtException.HasValue)
+            {
+                sb.Append(" Image Height: " + HeightAtException.Value);
+            }
+            if (AudioLengthAtException.HasValue)
+            {
+                sb.Append(" Audio Length: " + AudioLengthAtException.Value + "ms");
+            }
+            if (!string.IsNullOrEmpty(this.Message))
+            {
+                sb.Append(" " + this.Message + " ");
+            }
             return sb + Environment.NewLine + base.ToString();
         }
 

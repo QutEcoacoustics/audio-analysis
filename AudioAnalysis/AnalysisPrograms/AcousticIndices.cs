@@ -560,7 +560,7 @@ namespace AnalysisPrograms
                         analysisType: this.Identifier,
                         indexSpectrograms: dictionaryOfSpectra,
                         indexDistributions: indexDistributions,
-                        returnChromelessImages: tileOutput);
+                        imageChrome: tileOutput.ToImageChrome());
 
                 if (tileOutput)
                 {

@@ -15,27 +15,19 @@ namespace AudioAnalysisTools.TileImage
     using System.Linq;
     using System.Text;
 
+    using Acoustics.Shared;
+
     public abstract class TilingProfile
     {
-        public virtual Color PaddingColor
-        {
-            get
-            {
-                return Color.Transparent;
-            }
-        }
+        public virtual Color PaddingColor => Color.Transparent;
 
         public abstract int TileWidth { get; }
 
         public abstract int TileHeight { get; }
 
-        public bool IsSquare
-        {
-            get
-            {
-                return this.TileHeight == this.TileWidth;
-            }
-        }
+        public bool IsSquare => this.TileHeight == this.TileWidth;
+
+        public virtual ImageChrome ChromeOption => ImageChrome.With;
 
         public virtual object GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
         {
@@ -51,7 +43,8 @@ namespace AudioAnalysisTools.TileImage
         {
 
             var coordinates = (Point)this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
-            return string.Format("{0}-{1}_{2}_{3}", "tile", (double)this.GetZoomIndex(calculatedLayers, selectedLayer), coordinates.X, coordinates.Y);
+            return
+                $"{"tile"}-{(double)this.GetZoomIndex(calculatedLayers, selectedLayer)}_{coordinates.X}_{coordinates.Y}";
         }
     }
 }
