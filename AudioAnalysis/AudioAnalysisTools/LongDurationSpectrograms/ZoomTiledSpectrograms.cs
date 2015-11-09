@@ -230,9 +230,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         // finally tile the output
                         Log.Debug("Begin tile production for minute: " + minute);
                         tiler.Tile(
-                            previous == null ? null : previous.Value[i],
+                            previous?.Value[i],
                             current.Value[i],
-                            next == null ? null : next.Value[i]);
+                            next?.Value[i]);
                         Log.Debug("Begin tile production for minute: " + minute);
                     }
                     
