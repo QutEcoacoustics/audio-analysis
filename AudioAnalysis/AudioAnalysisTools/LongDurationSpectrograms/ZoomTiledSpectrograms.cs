@@ -120,7 +120,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 1440,
                 new SortedSet<double>(allImageScales.Select(x => 1.0)),
                 1.0,
-                300);
+                namingPattern.TileHeight);
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
@@ -129,7 +129,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Stopwatch timer = Stopwatch.StartNew();
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(
                 inputDirectory,
-                fileStem + "__" + analysisType,
+                fileStem + FilenameHelpers.BasenameSeparator + analysisType,
                 keys);
             timer.Stop();
             Log.Info("Time to read spectral index files = " + timer.Elapsed.TotalSeconds + " seconds");
