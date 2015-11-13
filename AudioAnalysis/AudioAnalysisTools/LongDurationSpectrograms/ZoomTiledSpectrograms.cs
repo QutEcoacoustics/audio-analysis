@@ -95,12 +95,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 case nameof(AbsoluteDateTilingProfile):
                     // Zooming spectrograms use multiple color profiles at different levels
                     // therefore unable to set a useful tag (like ACI-ENT-EVN).
-                    namingPattern = new AbsoluteDateTilingProfile(
-                        fileStem,
-                        "BLENDED.Tile",
-                        (DateTimeOffset)indexGeneration.RecordingStartDate,
-                        indexGeneration.FrameLength / 2,
-                        zoomConfig.TileWidth);
+                    if (indexGeneration.RecordingStartDate != null)
+                    {
+                        namingPattern = new AbsoluteDateTilingProfile(
+                            fileStem,
+                            "BLENDED.Tile",
+                            (DateTimeOffset)indexGeneration.RecordingStartDate,
+                            indexGeneration.FrameLength / 2,
+                            zoomConfig.TileWidth);
+                    }
+                    else
+                    {
+                        throw new ArgumentNullException(
+                            nameof(zoomConfig.TilingProfile),
+                            "`RecordingStateDate` from the `IndexGenerationData.json` cannot be null when `AbsoluteDateTilingProfile` specified");
+                    }
                     break;
                 default:
                     throw new ConfigFileException(
