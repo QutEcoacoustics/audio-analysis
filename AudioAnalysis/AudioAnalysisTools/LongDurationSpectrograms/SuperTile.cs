@@ -40,7 +40,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         #region Explicit Interface Properties
 
-        double ISuperTile.Scale => this.Scale.TotalSeconds;
+        double ISuperTile.Scale
+        {
+            get
+            {
+                // round scale to counter IEEE float rounding issues
+                return Math.Round(this.Scale.TotalSeconds, 10);
+            }
+        }
 
         #endregion
     }

@@ -288,17 +288,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var startIndex = (int)(startTime.Ticks / dataScale.Ticks);
             var endIndex = (int)(endTime.Ticks / dataScale.Ticks);
-            if (endIndex >= columnCount)
-            {
-                endIndex = columnCount - 1;
-            }
+//            if (endIndex >= columnCount)
+//            {
+//                endIndex = columnCount - 1;
+//            }
 
             var spectralSelection = new Dictionary<string, double[,]>();
             foreach (string key in spectra.Keys)
             {
                 matrix = spectra[key];
                 int rowCount = matrix.GetLength(0);
-                spectralSelection[key] = MatrixTools.Submatrix(matrix, 0, startIndex, rowCount - 1, endIndex);
+
+                spectralSelection[key] = MatrixTools.Submatrix(matrix, 0, startIndex, rowCount - 1, endIndex - 1);
+                Debug.Assert(spectralSelection[key].GetLength(1) == (endTime - startTime).Ticks / dataScale.Ticks, "The expected number of frames should be extracted.");
             }
 
             // compress spectrograms to correct scale
