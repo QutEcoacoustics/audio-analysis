@@ -8,13 +8,44 @@
 #######################################################
 setwd("C:\\Work\\CSV files\\FourMonths\\")
 
-AcousticDS <- read.csv("final_dataset_22June2015_11 Oct2015.csv", header = T)
+AcousticDS <- read.csv("final_dataset_22June2015_10 Oct2015.csv", header = T)
 
 #ds3 <- AcousticDS[,c(2:18)]
-ds3 <- AcousticDS[,c(3,4,7,10,11,15,16)] # without Mid-frequency cover
+ds3 <- AcousticDS[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover
 #ds3 <- AcousticDS[,c(3,4,7,9,10,11,15,16)] # with Mid-frequency cover
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_qda_1")
+############## replace NA values
+site1 <- ds3[1:(length(ds3$BackgroundNoise)/2),]
+site2 <- ds3[((length(ds3$BackgroundNoise)/2)+1):(length(ds3$BackgroundNoise)),]
+for(i in 1:(ncol(site1)-1)) {  # columns
+  for(j in 1:nrow(site1)) {  # rows 
+    if (is.na(site1[j,i])) {
+      average <- mean(c(site1[(j-40),i], site1[(j-35),i], site1[(j-30),i],
+                       site1[(j-25),i], site1[(j-20),i],site1[(j-15),i],
+                       site1[(j+40),i], site1[(j+35),i], site1[(j+30),i],
+                       site1[(j+25),i], site1[(j+20),i], site1[(j+15),i]), 
+                       na.rm=TRUE)
+      site1[j,i] <- average   
+    }
+  }
+}
 
+for(i in 1:(ncol(site2)-1)) {  # columns
+  for(j in 1:nrow(site2)) {  # rows 
+    if (is.na(site2[j,i])) {
+      average <- mean(c(site2[(j-40),i], site2[(j-35),i], site2[(j-30),i],
+                        site2[(j-25),i], site2[(j-20),i],site2[(j-15),i],
+                        site2[(j+40),i], site2[(j+35),i], site2[(j+30),i],
+                        site2[(j+25),i], site2[(j+20),i], site2[(j+15),i]), 
+                        na.rm=TRUE)
+      site2[j,i] <- average   
+    }
+  }
+}
+
+ds3 <- rbind(site1[,1:7], site2[,1:7])
+#################################
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3c")
+#Hybrid_3_4_7_10_11_15_16_knn_k_1
 # PCA type analysis
 #library(psych)
 #ic.out <- iclust(AcousticDS[,4:10])
@@ -56,17 +87,20 @@ for (j in 1:length(ds3)) {
 # Alternative 1 Use qda to predict (see Alternative 2 below) 
 #######################################################
 library(MASS)
-k1 <- i <- 34000 
-k2 <- seq(10, 100, 10)
-clusters <- NULL
-ds3.norm_2_98noNA <- ds3.norm_2_98[complete.cases(ds3.norm_2_98), ]
+k1 <- i <- 17500 
+k2 <- seq(5, 100, 5)
+k3 <- 3
+
+#ds3.norm_2_98noNA <- ds3.norm_2_98[complete.cases(ds3.norm_2_98), ]
 paste(Sys.time(), " Starting kmeans clustering, centers ", i, sep = "")
 set.seed(123)
-kmeansObj <- kmeans(ds3.norm_2_98noNA, centers = i, iter.max = 100)
+kmeansObj <- kmeans(ds3.norm_2_98, centers = i, iter.max = 100)
 kmeansCenters <- kmeansObj$centers
 paste(Sys.time(), "Starting hclust")
 hybrid.fit.ward <- hclust(dist(kmeansCenters), "ward.D2")
 paste(Sys.time(), "Starting cutree function")
+
+clusters <- NULL
 for (j in k2) {
   hybrid.clusters <- cutree(hybrid.fit.ward, k=j)
   # generate the test dataset
@@ -80,31 +114,53 @@ for (j in k2) {
   cl <- factor(unname(hybrid.clusters))
   # perform linear discriminant analysis to perform unsupervised
   # prediction
-  library(MASS)
-  train.qda <- qda(train[,-1], cl)
-  library(stats)
-  paste(Sys.time(), "Starting predict k2 =", j, sep = " ")
-  pr <- predict(train.qda, test) # gives warnings due to ds3.norm_2_98 
+  #################### qda method #############
+  #library(MASS)
+  #train.qda <- qda(train[,-1], cl)
+  #library(stats)
+  #paste(Sys.time(), "Starting predict k2 =", j, sep = " ")
+  #pr <- predict(train.qda, test) # gives warnings due to ds3.norm_2_98 
   # containing NA but if ds3.norm_2_98noNA is used for test then the same
   # result but without a clue to the original rows is given.  So it is 
   # best to leave test as ds3.norm_2_98.
-  clusts <- as.integer(pr$class)
-  rm(pr)
+  #clusts <- as.integer(pr$class)
+  #rm(pr)
+  #clusters <- cbind(clusters, clusts)
+  ################## end qda method
+  ################# start knn method
+  library(class)
+  clusts <- knn(train[,-1], test, cl, k = k3, prob = F)
   clusters <- cbind(clusters, clusts)
+  #row.names(clusters) <- row.names(test)
+  ############### end knn method
 }
-
 # produce column names 
+
 column.names <- NULL
 for (i in i) {
   for (j in k2) {
-    col.names <- paste("hybrid_k", i, "k", j, sep = "")
+    col.names <- paste("hybrid_k", i, "k", j,"k",k3, sep = "")
     column.names <- c(column.names,col.names)
   }
 }
 colnames(clusters) <- column.names
+#value.ref <- which(!is.na(ds3$BackgroundNoise))
+#clusters <- cbind(value.ref, clusters)
 
-write.csv(clusters, file = paste("hybrid_clust_",i,".csv",sep = ""),
+write.csv(clusters, file = paste("hybrid_clust_knn_",i,"_",k3,".csv",sep = ""),
           row.names = F)
+
+###### Replace the NA values ####################
+# do not use this it will take one hour, it is not necessary now that the 
+# NA values have been replaced.
+#cluster.lists <- data.frame(matrix(nrow = length(ds3.norm_2_98$BackgroundNoise), ncol = 10))
+#paste(Sys.time(), " Starting replacement of NA values", i, sep = "")
+#count <- 0
+#for (j in value.ref) {
+#    count <- count + 1
+#    cluster.lists[j,1:10] <- clusters[count,1:10]
+#}
+#paste(Sys.time(), " End of replacement of NA values", i, sep = "")
 
 #######################################################
 # Method:  Hybrid method using kmeans followed by hclust
