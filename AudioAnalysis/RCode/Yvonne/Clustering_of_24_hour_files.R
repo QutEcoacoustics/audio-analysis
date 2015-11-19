@@ -6,8 +6,8 @@
 # The files that this code clusters is generated in the code 
 # Histograms_of_cluster.lists.R
 #metrics <- read.csv("clustering_metrics.csv", header = T)
-myFiles <- list.files(full.names=TRUE, pattern="*_24hour_112days.csv$")
-myFilesShort <- list.files(full.names=FALSE, pattern="*_24hour_112days.csv$")
+myFiles <- list.files(full.names=TRUE, pattern="*_24hour.csv$")
+myFilesShort <- list.files(full.names=FALSE, pattern="*_24hour.csv$")
 
 length <- length(myFiles)
 length
@@ -61,28 +61,28 @@ for (i in 1:length(myFilesShort)) {
 #sort(unique(cophenetic(hc.fit)))
 
 # Plotting the metrics
-png("Clustering Metrics.png", width=1500, height =1000)
-x <- c(10000, 15000, 20000, 25000, 30000, 35000)
-plot(x,metrics$k15, type="l", ylim=c(1.3,2.1), col="red",
-     ylab = "intergroup dissimilarity", xlab = "kmeans k value (k1)", 
-     cex.axis=1.5, main="Clustering metrics - 112 days x 2 sites", cex.main=2, cex.lab=1.5)
-par(new=TRUE)
-plot(x,metrics$k20, type="l", ylim=c(1.3,2.1), col="orange", yaxt='n',
-     ylab = "", xlab = "", xaxt='n')
-par(new=TRUE)
-plot(x,metrics$k25, type="l", ylim=c(1.3,2.1), col="yellow", yaxt='n',
-     ylab = "", xlab = "", xaxt='n')
-par(new=TRUE)
-plot(x,metrics$k30, type="l", ylim=c(1.3,2.1), col="green", yaxt='n',
-     ylab = "", xlab = "", xaxt='n')
-par(new=TRUE)
-plot(x, metrics$k35, type="l", ylim=c(1.3,2.1), col="blue", yaxt='n',
-     ylab = "", xlab = "", xaxt='n')
-par(new=TRUE)
-plot(x, metrics$k40, type="l", ylim=c(1.3,2.1), col="violet", yaxt='n',
-     ylab = "", xlab = "", xaxt='n')
-k2 <- c("k2_15","k2_20","k2_25","k2_30","k2_35","k2_40")
-legend('topright', k2, 
-       lty=1, col=c('red', 'orange', 'yellow',' green','blue','violet'), 
-       bty='n', cex=2)
-dev.off()
+#png("Clustering Metrics.png", width=1500, height =1000)
+#x <- c(10000, 15000, 20000, 25000, 30000, 35000)
+#plot(x,metrics$k15, type="l", ylim=c(1.3,2.1), col="red",
+#     ylab = "intergroup dissimilarity", xlab = "kmeans k value (k1)", 
+#     cex.axis=1.5, main="Clustering metrics - 112 days x 2 sites", cex.main=2, cex.lab=1.5)
+#par(new=TRUE)
+#plot(x,metrics$k20, type="l", ylim=c(1.3,2.1), col="orange", yaxt='n',
+#     ylab = "", xlab = "", xaxt='n')
+#par(new=TRUE)
+#plot(x,metrics$k25, type="l", ylim=c(1.3,2.1), col="yellow", yaxt='n',
+#     ylab = "", xlab = "", xaxt='n')
+#par(new=TRUE)
+#plot(x,metrics$k30, type="l", ylim=c(1.3,2.1), col="green", yaxt='n',
+#     ylab = "", xlab = "", xaxt='n')
+#par(new=TRUE)
+#plot(x, metrics$k35, type="l", ylim=c(1.3,2.1), col="blue", yaxt='n',
+#     ylab = "", xlab = "", xaxt='n')
+#par(new=TRUE)
+#plot(x, metrics$k40, type="l", ylim=c(1.3,2.1), col="violet", yaxt='n',
+#     ylab = "", xlab = "", xaxt='n')
+#k2 <- c("k2_15","k2_20","k2_25","k2_30","k2_35","k2_40")
+#legend('topright', k2, 
+#       lty=1, col=c('red', 'orange', 'yellow',' green','blue','violet'), 
+#       bty='n', cex=2)
+#dev.off()

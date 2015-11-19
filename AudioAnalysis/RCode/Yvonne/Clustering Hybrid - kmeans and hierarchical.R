@@ -19,11 +19,11 @@ site2 <- ds3[((length(ds3$BackgroundNoise)/2)+1):(length(ds3$BackgroundNoise)),]
 for(i in 1:(ncol(site1)-1)) {  # columns
   for(j in 1:nrow(site1)) {  # rows 
     if (is.na(site1[j,i])) {
-      average <- mean(c(site1[(j-40),i], site1[(j-35),i], site1[(j-30),i],
-                       site1[(j-25),i], site1[(j-20),i],site1[(j-15),i],
-                       site1[(j+40),i], site1[(j+35),i], site1[(j+30),i],
-                       site1[(j+25),i], site1[(j+20),i], site1[(j+15),i]), 
-                       na.rm=TRUE)
+      average <- mean(c(site1[(j-45),i], site1[(j-40),i], site1[(j-35),i], site1[(j-30),i],
+                        site1[(j-25),i], site1[(j-20),i], site1[(j-15),i],
+                        site1[(j+45),i], site1[(j+40),i], site1[(j+35),i], site1[(j+30),i],
+                        site1[(j+25),i], site1[(j+20),i], site1[(j+15),i]), 
+                        na.rm=TRUE)
       site1[j,i] <- average   
     }
   }
@@ -32,9 +32,9 @@ for(i in 1:(ncol(site1)-1)) {  # columns
 for(i in 1:(ncol(site2)-1)) {  # columns
   for(j in 1:nrow(site2)) {  # rows 
     if (is.na(site2[j,i])) {
-      average <- mean(c(site2[(j-40),i], site2[(j-35),i], site2[(j-30),i],
-                        site2[(j-25),i], site2[(j-20),i],site2[(j-15),i],
-                        site2[(j+40),i], site2[(j+35),i], site2[(j+30),i],
+      average <- mean(c(site2[(j-45),i], site2[(j-40),i], site2[(j-35),i], site2[(j-30),i],
+                        site2[(j-25),i], site2[(j-20),i], site2[(j-15),i],
+                        site2[(j+45),i], site2[(j+40),i], site2[(j+35),i], site2[(j+30),i],
                         site2[(j+25),i], site2[(j+20),i], site2[(j+15),i]), 
                         na.rm=TRUE)
       site2[j,i] <- average   
@@ -44,7 +44,7 @@ for(i in 1:(ncol(site2)-1)) {  # columns
 
 ds3 <- rbind(site1[,1:7], site2[,1:7])
 #################################
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3c")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3d")
 #Hybrid_3_4_7_10_11_15_16_knn_k_1
 # PCA type analysis
 #library(psych)
@@ -73,12 +73,10 @@ for (i in 1:length(ds3)) {
 # adjust values greater than 1 or less than 0
 for (j in 1:length(ds3)) {
   for (i in 1:length(ds3.norm_2_98[,j])) {
-    if (ds3.norm_2_98[i,j] > 1 & !is.na(ds3.norm_2_98[i,j])) 
-      ds3.norm_2_98[i,j] = 1
+    if (ds3.norm_2_98[i,j] > 1) {ds3.norm_2_98[i,j] = 1}
   }
   for (i in 1:length(ds3.norm_2_98[,j])) {
-    if (ds3.norm_2_98[i,j] < 0 & !is.na(ds3.norm_2_98[i,j])) 
-      ds3.norm_2_98[i,j] = 0
+    if (ds3.norm_2_98[i,j] < 0) {ds3.norm_2_98[i,j] = 0}
   }
 }
 
@@ -90,13 +88,14 @@ library(MASS)
 k1 <- i <- 17500 
 k2 <- seq(5, 100, 5)
 k3 <- 3
-
 #ds3.norm_2_98noNA <- ds3.norm_2_98[complete.cases(ds3.norm_2_98), ]
 paste(Sys.time(), " Starting kmeans clustering, centers ", i, sep = "")
 set.seed(123)
 kmeansObj <- kmeans(ds3.norm_2_98, centers = i, iter.max = 100)
 kmeansCenters <- kmeansObj$centers
+#################################
 paste(Sys.time(), "Starting hclust")
+# generate a dendrogram from the kmeanCenters
 hybrid.fit.ward <- hclust(dist(kmeansCenters), "ward.D2")
 paste(Sys.time(), "Starting cutree function")
 
