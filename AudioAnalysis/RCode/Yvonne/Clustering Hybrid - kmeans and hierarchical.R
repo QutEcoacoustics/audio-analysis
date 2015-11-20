@@ -1,7 +1,7 @@
 #######################################################
 # 2 November 2015
 # This code performs the hybrid method on a long-duration dataset 
-# (about four months at two sites, 112 days multiplied by 2)
+# (about four months ats two sites, 112 days multiplied by 2)
 #
 # The four month dataset goes from 22 June 2015 to 11 Oct 2015 from two 
 # sites GympieNP and Woondum3
@@ -9,34 +9,35 @@
 setwd("C:\\Work\\CSV files\\FourMonths\\")
 
 AcousticDS <- read.csv("final_dataset_22June2015_10 Oct2015.csv", header = T)
-
 #ds3 <- AcousticDS[,c(2:18)]
-ds3 <- AcousticDS[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover
+ds3 <- AcousticDS[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover #25 is minute.of.day
 #ds3 <- AcousticDS[,c(3,4,7,9,10,11,15,16)] # with Mid-frequency cover
+
 ############## replace NA values
 site1 <- ds3[1:(length(ds3$BackgroundNoise)/2),]
 site2 <- ds3[((length(ds3$BackgroundNoise)/2)+1):(length(ds3$BackgroundNoise)),]
+
 for(i in 1:(ncol(site1)-1)) {  # columns
   for(j in 1:nrow(site1)) {  # rows 
     if (is.na(site1[j,i])) {
-      average <- mean(c(site1[(j-45),i], site1[(j-40),i], site1[(j-35),i], site1[(j-30),i],
-                        site1[(j-25),i], site1[(j-20),i], site1[(j-15),i],
-                        site1[(j+45),i], site1[(j+40),i], site1[(j+35),i], site1[(j+30),i],
-                        site1[(j+25),i], site1[(j+20),i], site1[(j+15),i]), 
+      average <- mean(c(site1[(j-30),i], site1[(j-25),i], site1[(j-20),i],
+                        site1[(j-15),i], site1[(j-10),i], site1[(j-5),i],
+                        site1[(j+30),i], site1[(j+25),i], site1[(j+20),i],
+                        site1[(j+15),i], site1[(j+10),i], site1[(j+5),i]),
                         na.rm=TRUE)
-      site1[j,i] <- average   
+      site1[j,i] <- average
     }
   }
 }
-
+# checked to here
 for(i in 1:(ncol(site2)-1)) {  # columns
-  for(j in 1:nrow(site2)) {  # rows 
+  for(j in 1:nrow(site2)) {  # rows
     if (is.na(site2[j,i])) {
-      average <- mean(c(site2[(j-45),i], site2[(j-40),i], site2[(j-35),i], site2[(j-30),i],
-                        site2[(j-25),i], site2[(j-20),i], site2[(j-15),i],
-                        site2[(j+45),i], site2[(j+40),i], site2[(j+35),i], site2[(j+30),i],
-                        site2[(j+25),i], site2[(j+20),i], site2[(j+15),i]), 
-                        na.rm=TRUE)
+      average <- mean(c(site2[(j-30),i], site2[(j-25),i], site2[(j-20),i],
+                        site2[(j-15),i], site2[(j-10),i], site2[(j-5),i],
+                        site2[(j+30),i], site2[(j+25),i], site2[(j+20),i],
+                        site2[(j+15),i], site2[(j+10),i], site2[(j+5),i]),
+                      na.rm=TRUE)
       site2[j,i] <- average   
     }
   }
@@ -67,26 +68,27 @@ ds3.norm_2_98 <- ds3
 for (i in 1:length(ds3)) {
     q1 <- unname(quantile(ds3[,i], probs = 0.02, na.rm = TRUE))
     q2 <- unname(quantile(ds3[,i], probs = 0.98, na.rm = TRUE))
-    ds3.norm_2_98[,i]  <- normalise(ds3.norm_2_98[,i], 
-                                    q1, q2)  
+    ds3.norm_2_98[,i]  <- normalise(ds3.norm_2_98[,i], q1, q2)  
 }
 # adjust values greater than 1 or less than 0
 for (j in 1:length(ds3)) {
   for (i in 1:length(ds3.norm_2_98[,j])) {
-    if (ds3.norm_2_98[i,j] > 1) {ds3.norm_2_98[i,j] = 1}
+    if (ds3.norm_2_98[i,j] > 1 & !is.na(ds3.norm_2_98[i,j]))
+      ds3.norm_2_98[i,j] = 1
   }
   for (i in 1:length(ds3.norm_2_98[,j])) {
-    if (ds3.norm_2_98[i,j] < 0) {ds3.norm_2_98[i,j] = 0}
+    if (ds3.norm_2_98[i,j] < 0 & !is.na(ds3.norm_2_98[i,j]))
+      ds3.norm_2_98[i,j] = 0
   }
 }
 
 #######################################################
 # Method:  Hybrid method using kmeans followed by hclust
-# Alternative 1 Use qda to predict (see Alternative 2 below) 
+# Alternative 1 Use knn to predict (see Alternative 2 below) 
 #######################################################
 library(MASS)
 k1 <- i <- 17500 
-k2 <- seq(5, 100, 5)
+k2 <- seq(10,100, 10)
 k3 <- 3
 #ds3.norm_2_98noNA <- ds3.norm_2_98[complete.cases(ds3.norm_2_98), ]
 paste(Sys.time(), " Starting kmeans clustering, centers ", i, sep = "")
