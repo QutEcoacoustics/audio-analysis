@@ -88,7 +88,7 @@ for (j in 1:length(ds3)) {
 #######################################################
 library(MASS)
 k1 <- i <- 17500 
-k2 <- seq(10,100, 10)
+k2 <- seq(5,100,5)
 k3 <- 3
 #ds3.norm_2_98noNA <- ds3.norm_2_98[complete.cases(ds3.norm_2_98), ]
 paste(Sys.time(), " Starting kmeans clustering, centers ", i, sep = "")
