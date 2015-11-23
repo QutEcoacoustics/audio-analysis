@@ -26,21 +26,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public Image Image { get; set; }
 
-        public int OffsetX
-        {
-            get
-            {
-                return (int)Math.Round(this.TimeOffset.TotalSeconds / this.Scale.TotalSeconds);
-            }
-        }
+        public int OffsetX => (int)Math.Round(this.TimeOffset.TotalSeconds / this.Scale.TotalSeconds);
 
-        public int OffsetY
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int OffsetY => 0;
 
         public TimeSpan Scale { get; set; }
 
@@ -56,7 +44,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             get
             {
-                return this.Scale.TotalSeconds;
+                // round scale to counter IEEE float rounding issues
+                return Math.Round(this.Scale.TotalSeconds, 10);
             }
         }
 

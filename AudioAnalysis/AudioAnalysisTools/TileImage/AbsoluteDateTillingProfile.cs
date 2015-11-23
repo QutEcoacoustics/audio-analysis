@@ -22,41 +22,23 @@ namespace AudioAnalysisTools.TileImage
         private readonly string prefix;
         private readonly string tag;
         private readonly DateTimeOffset baseDateUtc;
-        private readonly int tileHeight;
-        private readonly int tileWidth;
 
         public AbsoluteDateTilingProfile(string prefix, string tag, DateTimeOffset baseDate, int tileHeight, int tileWidth)
         {
             this.prefix = prefix;
             this.tag = tag;
             this.baseDateUtc = baseDate.ToUniversalTime();
-            this.tileHeight = tileHeight;
-            this.tileWidth = tileWidth;
+            this.TileHeight = tileHeight;
+            this.TileWidth = tileWidth;
         }
 
-        public override int TileWidth
-        {
-            get
-            {
-                return this.tileWidth;
-            }
-        }
+        public override int TileWidth { get; }
 
-        public override int TileHeight
-        {
-            get
-            {
-                return this.tileHeight;
-            }
-        }
+        public override int TileHeight { get; }
 
-        public override Color PaddingColor
-        {
-            get
-            {
-                return base.PaddingColor;
-            }
-        }
+        public override Color PaddingColor => Color.Transparent;
+
+        public override ImageChrome ChromeOption => ImageChrome.Without;
 
         public override object GetZoomIndex(SortedSet<Layer> calculatedLayers, Layer selectedLayer)
         {

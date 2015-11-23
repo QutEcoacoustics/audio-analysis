@@ -204,7 +204,7 @@ namespace AnalysisPrograms
                     break;
                 case Arguments.ZoomActionType.Tile:
                     // Create the super tiles for a full set of recordings
-                    ZoomTiledSpectrograms.DrawSuperTiles(
+                    ZoomTiledSpectrograms.DrawTiles(
                         arguments.SourceDirectory,
                         arguments.Output,
                         common);

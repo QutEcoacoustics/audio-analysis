@@ -49,9 +49,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public double LowerNormalisationBoundForDecibelSpectrograms { get; set; }
 
-        // : 0.2,
-
-        // "TileWidth": 300,
+        /// : 0.2,
+        /// "TileWidth": 300,
         public int MaxTilesPerSuperTile { get; set; }
 
         public string ScaleUnits { get; set; }
@@ -72,6 +71,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double[] SpectralIndexScale { get; set; }
 
         public int TileWidth { get; set; }
+
+        public string TilingProfile { get; set; }
 
         public string UnitsOfTime { get; set; }
 
