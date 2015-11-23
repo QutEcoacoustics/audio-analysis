@@ -170,7 +170,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionary, opDir, opFileStem);
 
             SummaryIndexBase[] summaryIndices = null;
-            bool returnChromelessImages = false;
             string analysisType = "Towsey.Acoustic";
 
             Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
@@ -185,7 +184,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             summaryIndices,
             indexDistributions,
             siteDescription,
-            returnChromelessImages);
+            ImageChrome.With);
         }
 
 
@@ -387,7 +386,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             siteDescription.SiteName = opFileStem;
 
             SummaryIndexBase[] summaryIndices = null;
-            bool returnChromelessImages = false;
+
 
             Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
             topLevelDirectory,
@@ -401,7 +400,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             summaryIndices,
             indexDistributions,
             siteDescription,
-            returnChromelessImages);
+            ImageChrome.With);
         }
 
 

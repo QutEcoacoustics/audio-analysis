@@ -288,17 +288,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var startIndex = (int)(startTime.Ticks / dataScale.Ticks);
             var endIndex = (int)(endTime.Ticks / dataScale.Ticks);
-            if (endIndex >= columnCount)
-            {
-                endIndex = columnCount - 1;
-            }
+//            if (endIndex >= columnCount)
+//            {
+//                endIndex = columnCount - 1;
+//            }
 
             var spectralSelection = new Dictionary<string, double[,]>();
             foreach (string key in spectra.Keys)
             {
                 matrix = spectra[key];
                 int rowCount = matrix.GetLength(0);
-                spectralSelection[key] = MatrixTools.Submatrix(matrix, 0, startIndex, rowCount - 1, endIndex);
+
+                spectralSelection[key] = MatrixTools.Submatrix(matrix, 0, startIndex, rowCount - 1, endIndex - 1);
+                Debug.Assert(spectralSelection[key].GetLength(1) == (endTime - startTime).Ticks / dataScale.Ticks, "The expected number of frames should be extracted.");
             }
 
             // compress spectrograms to correct scale
@@ -327,9 +329,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             double backgroundFilterCoeff = indexGenerationData.BackgroundFilterCoeff;
 
             // double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
-            var cs1 = new LDSpectrogramRGB(config, indexGenerationData, colorMap1);
-            cs1.FileName = basename;
-            cs1.BackgroundFilter = backgroundFilterCoeff;
+            var cs1 = new LDSpectrogramRGB(config, indexGenerationData, colorMap1)
+                {
+                    FileName = basename,
+                    BackgroundFilter = backgroundFilterCoeff
+                };
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
             cs1.LoadSpectrogramDictionary(spectralSelection);
 
@@ -342,30 +346,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 blendWt1 = 1.0;
                 blendWt2 = 0.0;
             }
-            else
-                if (imageScaleInMsPerPixel > 10000)
-                {
-                    blendWt1 = 0.9;
-                    blendWt2 = 0.1;
-                }
-                else
-                    if (imageScaleInMsPerPixel > 5000)
-                    {
-                        blendWt1 = 0.8;
-                        blendWt2 = 0.2;
-                    }
-                    else
-                        if (imageScaleInMsPerPixel > 1000)
-                        {
-                            blendWt1 = 0.6;
-                            blendWt2 = 0.4;
-                        }
-                        else
-                            if (imageScaleInMsPerPixel > 500)
-                            {
-                                blendWt1 = 0.3;
-                                blendWt2 = 0.7;
-                            }
+            else if (imageScaleInMsPerPixel > 10000)
+            {
+                blendWt1 = 0.9;
+                blendWt2 = 0.1;
+            }
+            else if (imageScaleInMsPerPixel > 5000)
+            {
+                blendWt1 = 0.8;
+                blendWt2 = 0.2;
+            }
+            else if (imageScaleInMsPerPixel > 1000)
+            {
+                blendWt1 = 0.6;
+                blendWt2 = 0.4;
+            }
+            else if (imageScaleInMsPerPixel > 500)
+            {
+                blendWt1 = 0.3;
+                blendWt2 = 0.7;
+            }
 
             Image LDSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(
                 "NEGATIVE",
@@ -373,9 +373,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 colorMap2,
                 blendWt1,
                 blendWt2);
+
             if (LDSpectrogram == null)
             {
-                LoggedConsole.WriteErrorLine("Null Image of LDSpectrogram @ line 440 of class ZoomTiledSpectrograms.cs");
+                throw new NullReferenceException(
+                    "Null Image of LDSpectrogram @ line 440 of class ZoomTiledSpectrograms.cs");
             }
 
             return LDSpectrogram;

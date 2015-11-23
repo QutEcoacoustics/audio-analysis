@@ -11,16 +11,22 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+
+    using log4net;
+
     using TowseyLibrary;
 
     public static class IndexMatrices
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void test()
         {
@@ -749,41 +755,17 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
 
         public static Dictionary<string, double[,]> ReadCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys)
         {
-            string warning = null;
+            // parallel reading of CSV files
+            var readData = keys
+                .AsParallel()
+                .Select(key => ReadInSingleCsvFile(ipdir, fileName, key))
+                .Where(x => x != null);
+            
+            // actual work done here
+            // ReSharper disable PossibleInvalidOperationException
+            var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Key, kvp => kvp.Value.Value);
+            // ReSharper restore PossibleInvalidOperationException
 
-            Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                DateTime now1 = DateTime.Now;
-
-                FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv"));
-                if (file.Exists)
-                {
-                    int freqBinCount;
-                    double[,] matrix = ReadSpectrogram(file, out freqBinCount);
-                    matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
-                    spectrogramMatrices.Add(keys[i], matrix);
-                    //this.FrameLength = freqBinCount * 2;
-                }
-                else
-                {
-                    if (warning == null)
-                    {
-                        warning = "\nWARNING: from method IndexMatrices.ReadCSVFiles()";
-                    }
-
-                    warning += "\n      {0} File does not exist: {1}".Format2(keys[i], file.FullName);
-                }
-
-                DateTime now2 = DateTime.Now;
-                TimeSpan et = now2 - now1;
-                LoggedConsole.WriteLine("Time to read spectral index file <" + keys[i] + "> = " + et.TotalSeconds + " seconds");
-            }
-
-            if (warning != null)
-            {
-                LoggedConsole.WriteLine(warning);
-            }
 
             if (spectrogramMatrices.Count == 0)
             {
@@ -792,6 +774,33 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
             }
 
             return spectrogramMatrices;
+        }
+
+        private static KeyValuePair<string, double[,]>? ReadInSingleCsvFile(DirectoryInfo ipdir, string fileName, string indexKey)
+        {
+            Log.Info($"Starting to read CSV file for index {indexKey}");
+            Stopwatch timer = Stopwatch.StartNew();
+
+            FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + indexKey + ".csv"));
+            double[,] matrix;
+            if (file.Exists)
+            {
+                int freqBinCount;
+                matrix = ReadSpectrogram(file, out freqBinCount);
+                matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                //this.FrameLength = freqBinCount * 2;
+            }
+            else
+            {
+                Log.Warn(
+                    "\nWARNING: from method IndexMatrices.ReadCSVFiles()"
+                    + $"\n      {indexKey} File does not exist: {file.FullName}");
+                return null;
+            }
+
+            timer.Stop();
+            Log.Info($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
+            return new KeyValuePair<string, double[,]>(indexKey, matrix);
         }
 
         /// <summary>

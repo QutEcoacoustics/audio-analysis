@@ -6,6 +6,7 @@
 #setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
@@ -14,7 +15,7 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
 cluster.lists.kmeans.exp2   <- read.csv("km_fit_set.csv", header = T) # kmeans
 cluster.lists.hclust.k.exp2 <- read.csv("hc_fit_set_cutree_k.csv", header = T) # hclust
 cluster.lists.mclust.exp2   <- read.csv("mclustlist_ds3norm_1_50.csv", header = T) # mclust
-cluster.list.hybrid.exp2    <- read.csv("hybrid_clust_k15.csv", header = T) # hybrid
+cluster.list.hybrid.exp2    <- read.csv("hybrid_clust_k25.csv", header = T) # hybrid
 
 #indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", 
 #                    header=T)
@@ -153,6 +154,7 @@ write.csv(twentyfour_hour_table_6, "kmeans_k29_24hour.csv",
 # Saving the hclust_k 24 hour files
 ####################################################
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 twentyfour_hour_table_1 <- NULL #read.csv(text="col1,col2")
 twentyfour_hour_table_2 <- NULL #read.csv(text="col1,col2")
 twentyfour_hour_table_3 <- NULL #read.csv(text="col1,col2")
@@ -763,17 +765,13 @@ twentyfour_hour_table <- NULL #read.csv(text="col1,col2")
 
 cluster.list <- cluster.lists.mclust.exp2
 for (i in 1:length(cluster.list)) {
-  for(j in 1:(length(dates)*2-1)) {
+  for(j in 1:(length(day.ref)-1)) {
     cluster.ref <- hist(cluster.list[day.ref[j]:(day.ref[j+1]-1),i], 
                         breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
     print(length(cluster.ref$counts))
     if (i == 1) {twentyfour_hour_table <- rbind(twentyfour_hour_table, 
                                                   cluster.ref$counts)}
   }
-  cluster.ref <- hist(cluster.list[day.ref[j+1]:length(cluster.lists.kmeans.exp2$km_clusters_8),i], 
-                      breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
-  print(length(cluster.ref$counts))
-  if (i == 1) {twentyfour_hour_table <- rbind(twentyfour_hour_table, cluster.ref$counts)}
 }
 twentyfour_hour_table <- as.data.frame(twentyfour_hour_table)
 # Rename the columns
@@ -788,7 +786,7 @@ site <- c(rep("GympieNP",6), rep("WoondumNP",6))
 dates2 <- rep(dates,2)
 twentyfour_hour_table <- cbind(twentyfour_hour_table,site,as.character(dates2))
 
-write.csv(twentyfour_hour_table, "mclust_k37_24hour.csv", 
+write.csv(twentyfour_hour_table, "mclust_k39_24hour.csv", 
           row.names = F)
 
 ####################################################
@@ -805,7 +803,7 @@ twentyfour_hour_table_8 <- NULL #read.csv(text="col1,col2")
 
 cluster.list <- cluster.list.hybrid.exp2
 for (i in 1:length(cluster.list)) {
-  for(j in 1:(length(dates)*2-1)) {
+  for(j in 1:(length(day.ref)-1)) {
     cluster.ref <- hist(cluster.list[day.ref[j]:(day.ref[j+1]-1),i], 
                         breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
     print(length(cluster.ref$counts))
@@ -819,17 +817,6 @@ for (i in 1:length(cluster.list)) {
     if (i == 7) {twentyfour_hour_table_7 <- rbind(twentyfour_hour_table_7, cluster.ref$counts)}
     if (i == 8) {twentyfour_hour_table_8 <- rbind(twentyfour_hour_table_8, cluster.ref$counts)}
   }
-  cluster.ref <- hist(cluster.list[day.ref[j+1]:length(cluster.list.hybrid.exp2$hybrid_k1000k15),i], 
-                      breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
-  print(length(cluster.ref$counts))
-  if (i == 1) {twentyfour_hour_table_1 <- rbind(twentyfour_hour_table_1, cluster.ref$counts)}
-  if (i == 2) {twentyfour_hour_table_2 <- rbind(twentyfour_hour_table_2, cluster.ref$counts)}
-  if (i == 3) {twentyfour_hour_table_3 <- rbind(twentyfour_hour_table_3, cluster.ref$counts)}  
-  if (i == 4) {twentyfour_hour_table_4 <- rbind(twentyfour_hour_table_4, cluster.ref$counts)}
-  if (i == 5) {twentyfour_hour_table_5 <- rbind(twentyfour_hour_table_5, cluster.ref$counts)}
-  if (i == 6) {twentyfour_hour_table_6 <- rbind(twentyfour_hour_table_6, cluster.ref$counts)}  
-  if (i == 7) {twentyfour_hour_table_7 <- rbind(twentyfour_hour_table_7, cluster.ref$counts)}
-  if (i == 8) {twentyfour_hour_table_8 <- rbind(twentyfour_hour_table_8, cluster.ref$counts)}
 }
 
 twentyfour_hour_table_1 <- as.data.frame(twentyfour_hour_table_1)
@@ -912,21 +899,21 @@ twentyfour_hour_table_6 <- cbind(twentyfour_hour_table_6,site,as.character(dates
 twentyfour_hour_table_7 <- cbind(twentyfour_hour_table_7,site,as.character(dates2))
 twentyfour_hour_table_8 <- cbind(twentyfour_hour_table_8,site,as.character(dates2))
 
-write.csv(twentyfour_hour_table_1, "hybrid_k1000_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_1, "hybrid_k1000_k25_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_2, "hybrid_k1500_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_2, "hybrid_k1500_k25_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_3, "hybrid_k2000_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_3, "hybrid_k2000_k25_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_4, "hybrid_k2500_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_4, "hybrid_k2500_k25_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_5, "hybrid_k3000_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_5, "hybrid_k3000_k25_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_6, "hybrid_k3500_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_6, "hybrid_k3500_k25_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_7, "hybrid_k4000_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_7, "hybrid_k4000_k25_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_8, "hybrid_k4500_k15_24hour.csv", 
+write.csv(twentyfour_hour_table_8, "hybrid_k4500_k25_24hour.csv", 
           row.names = F)
 
 ####################################################
