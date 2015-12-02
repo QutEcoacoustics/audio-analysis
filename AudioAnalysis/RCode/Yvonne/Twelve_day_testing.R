@@ -27,20 +27,19 @@ dates2 <- rep(dates, 2) # this is for the 24 hour files
 #############################################
 # Use this for the whole 111 days by 2 sites (see above for exp2)
 #############################################
-#cluster.list.hybrid.exp2 <- read.csv(paste(csv.name, ".csv", sep = ""), 
-#                            header = T)
-#indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
-#dates <- unique(indices$rec.date)
-#site <- c(rep("GympieNP",111*12), rep("WoondumNP",111*12)) # for the two hour files
+cluster.list.hybrid.exp2 <- read.csv(paste(csv.name, ".csv", sep = ""), 
+                            header = T)
 
-#dates2 <- rep(dates, each=12, 2) # this is for the 2 hour files
-
+indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
+dates <- unique(indices$rec.date)
+site <- c(rep("GympieNP",111*12), rep("WoondumNP",111*12)) # for the two hour files
+dates2 <- rep(dates, each=12, 2) # this is for the 2 hour files
 # Adaptation to cluster all 112 days x 2 sites 
 #cluster.list.hybrid.exp2 <- read.csv("hybrid_clust_30000na_replaced_with_50.csv", header = T)
 #cluster.list.hybrid.exp2 <- cluster.list.hybrid.exp2[complete.cases(cluster.list.hybrid.exp2), ]
-#indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_11 Oct2015.csv", header=T)
-#site <- c(rep("GympieNP",112), rep("WoondumNP",112))
-# Setting NAs to 50 works
+indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
+site <- c(rep("GympieNP",112), rep("WoondumNP",112))
+
 
 day.ref <- which(indices$minute.of.day=="0")
 day.ref <- c(day.ref, (length(indices$minute.of.day)+1))

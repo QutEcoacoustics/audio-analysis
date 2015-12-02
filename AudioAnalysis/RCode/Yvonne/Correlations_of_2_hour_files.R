@@ -2,14 +2,14 @@
 # Work out which clusters are correlated in each of the 2 hour "histogram" files that came 
 # from the "Twelve_day_testing.R" file
 
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3a")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3f")
 
 #PCA type analysis
 library(psych)
 
 clusters_10 <- read.csv("hybrid_clust_knn_17500_3_k10_2hour_full111days.csv",header=T)
 cor_10 <- cor(clusters_10[,1:10])
-write.csv(cor_10, "cor_hybrid_clust_knn_17500_3_k10.csv")
+#write.csv(cor_10, "cor_hybrid_clust_knn_17500_3_k10.csv")
 ic.out <- iclust(clusters_10[,1:10])
 ic.out7 <- iclust(clusters_10[,1:10],nclusters = 6)
 fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
@@ -17,7 +17,7 @@ fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust")
 clusters_20 <- read.csv("hybrid_clust_knn_17500_3_k20_2hour_full111days.csv",header=T)
 cor_20 <- cor(clusters_20[,1:20])
 #View(cor_20)
-write.csv(cor_20, "cor_hybrid_clust_knn_17500_3_k20.csv")
+#write.csv(cor_20, "cor_hybrid_clust_knn_17500_3_k20.csv")
 ic.out <- iclust(clusters_20[,1:10])
 ic.out7 <- iclust(clusters_20[,1:10],nclusters = 6)
 fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
@@ -33,10 +33,32 @@ fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust")
 clusters_40 <- read.csv("hybrid_clust_knn_17500_3_k40_2hour_full111days.csv",header=T)
 cor_40 <- cor(clusters_40[,1:40])
 View(cor_40)
-write.csv(cor_40, "cor_hybrid_clust_knn_17500_3_k40.csv")
+#write.csv(cor_40, "cor_hybrid_clust_knn_17500_3_k40.csv")
 ic.out <- iclust(clusters_40[,1:40])
-ic.out7 <- iclust(clusters_40[,1:10],nclusters = 6)
-fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
+ic.out8 <- iclust(clusters_40[,1:40],nclusters = 8)
+fa.diagram(ic.out8$pattern,Phi=ic.out8$Phi,main="Pattern taken from iclust") 
+pdf("iclust_hybrid_clust_knn_17500_3_k40_2hour.pdf", width=4,
+    height =7)
+ic.out <- iclust(clusters_40[,1:40])
+ic.out8 <- iclust(clusters_40[,1:40],nclusters = 8)
+fa.diagram(ic.out8$pattern,Phi=ic.out8$Phi,main="Pattern taken from iclust", cex.lab = 100) 
+dev.off()
+
+order <- ic.out$sorted$sorted$item
+clusters_40_inorder <- NULL
+for (i in order) {
+  clusters_40_inorder <- cbind(clusters_40_inorder, clusters_40[,i])
+}
+# Rename the columns
+column.names <- NULL
+for (k in order) {
+  col.names <- paste("V", k, sep = "")
+  column.names <- c(column.names,col.names)
+}
+colnames(clusters_40_inorder) <- column.names
+write.csv(clusters_40_inorder, "clusters_40_inorder.csv")
+
+
 
 clusters_50 <- read.csv("hybrid_clust_knn_17500_3_k50_2hour_full111days.csv",header=T)
 cor_50 <- cor(clusters_50[,1:50])

@@ -1,9 +1,9 @@
 #######################################################
 # 2 November 2015
 # This code performs the hybrid method on a long-duration dataset 
-# (about four months ats two sites, 112 days multiplied by 2)
+# (about four months ats two sites, 111 days multiplied by 2)
 #
-# The four month dataset goes from 22 June 2015 to 11 Oct 2015 from two 
+# The four month dataset goes from 22 June 2015 to 10 Oct 2015 from two 
 # sites GympieNP and Woondum3
 #######################################################
 setwd("C:\\Work\\CSV files\\FourMonths\\")
