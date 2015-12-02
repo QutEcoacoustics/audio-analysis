@@ -29,12 +29,14 @@ library(raster)
 
 #b1 <- "20150622_000000__2Maps_full.png"
 image <- "Rasterimage.png"
-image1 <- brick(image, package="raster",nl=3,
-                crs=NA,ncol=)
+#image1 <- brick(image, package="raster", nl=3,
+#                crs=NA, ncol=1440)
+image1 <- brick(image, package="raster", ncol=700, nrows=668)
 image1[[1]] <- 255 
 image1[[2]] <- 255
 image1[[3]] <- 255
 
+#png("image.png",width = 1440, height = 668, units = "px")
 plotRGB(image1) # white image
 dev.off()
 
@@ -52,19 +54,18 @@ whichV1 <- sample(which1, 600)
 whichV1 <- 164160:(164160+719)
   
 png(filename = "ClusterImage_V1_k30.png", 
-    width = 2000, height = 668, 
-    units = "px")
+    width = 700, height = 668, 
+    units = "px", antialias = "none")
 s <- image1
 length2 <- 10
 
-for(i in 1:720) {
+for(i in 1:200) {
   paste(i)
   day.ref <- floor(whichV1[i]/1440 + 1)
   min.ref <- floor(((whichV1[i]/1440) - (day.ref-1))*1440)
   b1 <- spect_file_list[day.ref]
-  b <- brick(b1, package="raster")
-  sourceImage <- brick(b1, package="raster",
-                       nrows=668, ncols=1440)
+  #b <- brick(b1, package="raster")
+  sourceImage <- brick(b1, package="raster")
   #b2 <- brick(b1, package="raster",norows=668,ncols=2000)
   #plotRGB(sourceImage)
   #dev.off()
