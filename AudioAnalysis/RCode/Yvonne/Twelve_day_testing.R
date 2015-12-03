@@ -4,7 +4,7 @@
 # This code also saves 2 hour historgram data for the whole dataset
 
 ##### change this!!!!!
-#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3b")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3i")
 csv.name <- "hybrid_clust_knn_17500_3"
 
 #cluster.list.hybrid.exp2 <- read.csv(paste(csv.name, ".csv", sep = ""), 
@@ -28,7 +28,7 @@ dates2 <- rep(dates, 2) # this is for the 24 hour files
 # Use this for the whole 111 days by 2 sites (see above for exp2)
 #############################################
 cluster.list.hybrid.exp2 <- read.csv(paste(csv.name, ".csv", sep = ""), 
-                            header = T)
+                            header = T)[,2:21]
 
 indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
 dates <- unique(indices$rec.date)
