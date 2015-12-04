@@ -1,4 +1,11 @@
 # 30 November 2015
+##############################################
+# This file produces images that show 600 randomly selected minutes
+# from each cluster
+# NOTE: This file requires a png file dimensions width=620px and 
+# height 668px in the wd folder, these files can be easily 
+# generated in paint.
+##############################################
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3i")
 
 cluster.list <- read.csv("hybrid_clust_knn_17500_3.csv",header=T)[,7]
@@ -16,29 +23,12 @@ list <- as.data.frame(list)
 list[length(list$start),2] <- length(indices$X)
 
 library(raster)
-#colours <- c("red", "chocolate4", "palegreen", "darkblue",
-#             "brown1", "darkgoldenrod3", "cadetblue4", 
-#             "darkorchid", "orange" ,"darkseagreen", 
-#             "deeppink3", "darkslategrey", "firebrick2", 
-#             "gold2", "hotpink2", "blue", "maroon", 
-#             "mediumorchid4", "mediumslateblue","mistyrose4",
-#             "royalblue", "orange", "palevioletred2", 
-#             "sienna", "slateblue", "yellow", "tan2", 
-#             "salmon","violetred1","plum","magenta","mauve")
-
-#b1 <- "20150622_000000__2Maps_full.png"
 image <- "Rasterimage.png"
-#image1 <- brick(image, package="raster", nl=3,
-#                crs=NA, ncol=1440)
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
-
-#png("image.png",width = 1440, height = 668, units = "px")
-plotRGB(image1) # white image
-dev.off()
 
 # Get list of names (full path) of all spectrogram files
 path <- "E:\\False colour spectrograms" # path to spectrogram files
@@ -46,20 +36,21 @@ spect_file_Gympie <- list.files(full.names=TRUE, path = paste(path,"\\GympieNP",
 spect_file_Woondum <- list.files(full.names=TRUE, path = paste(path,"\\WoondumNP",sep="")) 
 spect_file_list <- c(spect_file_Gympie, spect_file_Woondum)
 length(spect_file_list)
-# Select a random sample from a cluster
 
 ######### cluster 1
+# Get list of positions of cluster 1
 which1 <- which(cluster.list==1)
+# Select a random sample from a cluster
 whichV1 <- sample(which1, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V1.png", 
-    width = 700, height = 668, 
+png(filename = "ClusterImage_V1_k30.png", 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -76,9 +67,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -100,14 +88,14 @@ rm(whichV1,which1)
 which2 <- which(cluster.list==2)
 whichV2 <- sample(which2, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V2.png", 
-    width = 700, height = 668, 
+png(filename = "ClusterImage_V2_k30.png", 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -124,9 +112,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -145,14 +130,14 @@ rm(whichV2,which2)
 which3 <- which(cluster.list==3)
 whichV3 <- sample(which3, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V3.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -167,9 +152,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -188,14 +170,14 @@ rm(whichV3,which3)
 which4 <- which(cluster.list==4)
 whichV4 <- sample(which4, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V4_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -210,9 +192,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -231,14 +210,14 @@ rm(whichV4,which4)
 which5 <- which(cluster.list==5)
 whichV5 <- sample(which5, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V5_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -253,9 +232,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -274,14 +250,14 @@ rm(whichV5,which5)
 which6 <- which(cluster.list==6)
 whichV6 <- sample(which6, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V6_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -296,9 +272,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -317,14 +290,14 @@ rm(whichV6,which6)
 which7 <- which(cluster.list==7)
 whichV7 <- sample(which7, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V7_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -339,9 +312,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -356,19 +326,18 @@ plotRGB(s)
 dev.off()
 rm(whichV7,which7)
 
-
 ######### cluster 8
 which8 <- which(cluster.list==8)
 whichV8 <- sample(which8, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V8_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -383,9 +352,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -404,14 +370,14 @@ rm(whichV8,which8)
 which9 <- which(cluster.list==9)
 whichV9 <- sample(which9, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V9_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -426,9 +392,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -447,14 +410,14 @@ rm(whichV9,which9)
 which10 <- which(cluster.list==10)
 whichV10 <- sample(which10, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V10_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -469,9 +432,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -486,19 +446,18 @@ plotRGB(s)
 dev.off()
 rm(whichV10,which10)
 
-
 ######### cluster 11
 which11 <- which(cluster.list==11)
 whichV11 <- sample(which11, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V11_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -513,9 +472,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -530,19 +486,18 @@ plotRGB(s)
 dev.off()
 rm(whichV11,which11)
 
-
 ######### cluster 12
 which12 <- which(cluster.list==12)
 whichV12 <- sample(which12, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V12_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -557,9 +512,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -578,14 +530,14 @@ rm(whichV12,which12)
 which13 <- which(cluster.list==13)
 whichV13 <- sample(which13, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V13_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -600,9 +552,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -621,14 +570,14 @@ rm(whichV13,which13)
 which14 <- which(cluster.list==14)
 whichV14 <- sample(which14, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V14_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -643,9 +592,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -664,14 +610,14 @@ rm(whichV14,which14)
 which15 <- which(cluster.list==15)
 whichV15 <- sample(which15, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V15_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -686,9 +632,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -707,14 +650,14 @@ rm(whichV15,which15)
 which16 <- which(cluster.list==16)
 whichV16 <- sample(which16, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V16_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -729,9 +672,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -750,14 +690,14 @@ rm(whichV16,which16)
 which17 <- which(cluster.list==17)
 whichV17 <- sample(which17, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V17_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -772,9 +712,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -793,14 +730,14 @@ rm(whichV17,which17)
 which18 <- which(cluster.list==18)
 whichV18 <- sample(which18, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V18_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -815,9 +752,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -837,14 +771,14 @@ rm(whichV18,which18)
 which19 <- which(cluster.list==19)
 whichV19 <- sample(which19, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V19_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -859,9 +793,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -880,14 +811,14 @@ rm(whichV19,which19)
 which20 <- which(cluster.list==20)
 whichV20 <- sample(which20, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V20_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -902,9 +833,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -923,14 +851,14 @@ rm(whichV20,which20)
 which21 <- which(cluster.list==21)
 whichV21 <- sample(which21, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V21_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -945,9 +873,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -967,14 +892,14 @@ rm(whichV21,which21)
 which22 <- which(cluster.list==22)
 whichV22 <- sample(which22, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V22_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -989,9 +914,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1010,14 +932,14 @@ rm(whichV22,which22)
 which23 <- which(cluster.list==23)
 whichV23 <- sample(which23, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V23_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1032,9 +954,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1053,14 +972,14 @@ rm(whichV23,which23)
 which24 <- which(cluster.list==24)
 whichV24 <- sample(which24, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V24_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1075,9 +994,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1096,14 +1012,14 @@ rm(whichV24,which24)
 which25 <- which(cluster.list==25)
 whichV25 <- sample(which25, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V25_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1118,9 +1034,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1140,14 +1053,14 @@ rm(whichV25,which25)
 which26 <- which(cluster.list==26)
 whichV26 <- sample(which26, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V26_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1162,9 +1075,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1183,14 +1093,14 @@ rm(whichV26,which26)
 which27 <- which(cluster.list==27)
 whichV27 <- sample(which27, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V27_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1205,9 +1115,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1227,14 +1134,14 @@ rm(whichV27,which27)
 which28 <- which(cluster.list==28)
 whichV28 <- sample(which28, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V28_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1249,9 +1156,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1270,14 +1174,14 @@ rm(whichV28,which28)
 which29 <- which(cluster.list==29)
 whichV29 <- sample(which29, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V29_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1292,9 +1196,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
@@ -1314,14 +1215,14 @@ rm(whichV29,which29)
 which30 <- which(cluster.list==30)
 whichV30 <- sample(which30, 600)
 
-s <- brick(image, package="raster", ncol=700, nrows=668)
+s <- brick(image, package="raster", ncol=620, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
 png(filename = "ClusterImage_V30_k30.png", 
-    width = 700, height = 668, 
+    width = 620, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
@@ -1336,9 +1237,6 @@ for(i in 1:600) {
   b1 <- spect_file_list[day.ref]
   b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
-  #b2 <- brick(b1, package="raster",nrows=668,ncols=2000)
-  #plotRGB(sourceImage)
-  #dev.off()
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
                                      row=1, 
