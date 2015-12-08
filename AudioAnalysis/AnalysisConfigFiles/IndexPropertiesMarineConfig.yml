@@ -473,7 +473,7 @@ ACI:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.4
-  NormMax: 0.7
+  NormMax: 0.9
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -482,12 +482,12 @@ BGN:
   Name: spectralBGN
   Comment: "Spectrum of dB value of the background 'noise' removed each frequency bin."
   DataType: double[]
-  DefaultValue: -100.0
+  DefaultValue: -90.0
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
   # -20 adds more contrast into BGN spectrogram
-  NormMin: -50.0
-  NormMax: -10.0
+  NormMin: -100.0
+  NormMax: -84.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -500,7 +500,7 @@ CVR:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.7
+  NormMax: 0.3
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -525,7 +525,7 @@ ENT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.6
+  NormMax: 0.5
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -537,7 +537,7 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 5.0
+  NormMax: 0.5
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -561,7 +561,7 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 7.0
+  NormMax: 3.0
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -573,7 +573,7 @@ SPT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 0.1
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

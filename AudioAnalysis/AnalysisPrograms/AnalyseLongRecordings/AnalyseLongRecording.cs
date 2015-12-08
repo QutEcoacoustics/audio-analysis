@@ -103,6 +103,10 @@ Output  to  directory: {1}
             {
                 Log.Warn("IndexProperties config can not be found! This will result in an exception if it is needed later on.");
             }
+            else
+            {
+                LoggedConsole.WriteLine("# IndexProperties Cfg: " + indicesPropertiesConfig.FullName);
+            }
 
             // min score for an acceptable event
             double scoreThreshold = 0.2;
@@ -249,18 +253,21 @@ Output  to  directory: {1}
             Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
             Debug.Assert(analysisSettings.SourceFile == fileSegment.OriginalFile);
 
-            // Important - this is where IAnalyser2's post processer gets called. I.e. Long duration spectrograms are drawn IFF analysis type is Towsey.Acoustic
+            // 11. IMPORTANT - this is where IAnalyser2's post processer gets called.
+            // Produces all spectrograms and images of SPECTRAL INDICES.
+            // Long duration spectrograms are drawn IFF analysis type is Towsey.Acoustic
             analyser.SummariseResults(analysisSettings, fileSegment, mergedEventResults, mergedIndicesResults, mergedSpectralIndexResults, analyserResults);
 
 
-            // 11. SAVE THE RESULTS
+            // 12. SAVE THE RESULTS
             string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
-            var eventsFile = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
+            var eventsFile  = ResultsTools.SaveEvents(analyser, fileNameBase, instanceOutputDirectory, mergedEventResults);
             var indicesFile = ResultsTools.SaveSummaryIndices(analyser, fileNameBase, instanceOutputDirectory, mergedIndicesResults);
             var spectraFile = ResultsTools.SaveSpectralIndices(analyser, fileNameBase, instanceOutputDirectory, mergedSpectralIndexResults);
 
-            // 12. Convert summary indices to tracks (black and white rows) image
+            // 13. THIS IS WHERE SUMMARY INDICES ARE PROCESSED
+            //     Convert summary indices to black and white tracks image
             if (mergedIndicesResults == null)
             {
                 Log.Info("No summary indices produced");
@@ -294,7 +301,7 @@ Output  to  directory: {1}
                 }
             }
 
-            // 13. wrap up, write stats
+            // 14. wrap up, write stats
             LoggedConsole.WriteLine(
                 "INDICES CSV file(s) = " + (indicesFile?.Name ?? "<<No indices result, no file!>>"));
             LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
