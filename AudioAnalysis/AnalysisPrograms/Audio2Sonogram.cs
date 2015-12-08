@@ -151,11 +151,10 @@ namespace AnalysisPrograms
             // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
-            // Resample rate must be 2 X the desired Nyquist. Default is that of recording.
+            // Resample rate must be 2 X the desired Nyquist. 
+            // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
             var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
 
-            // WARNING - below line is a hack to deal with MARINE recordings
-            resampleRate = 2000;
             var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
 
 
@@ -305,12 +304,13 @@ namespace AnalysisPrograms
 
                 double neighbourhoodSeconds = 0.25;
                 int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
-                double LcnContrastLevel = 0.3;
+                double LcnContrastLevel = 0.001;
                 LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
                 LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
                 int lowPercentile = 20;
                 sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
                 sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
+                //sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
@@ -347,12 +347,12 @@ namespace AnalysisPrograms
 
                 // 3) now draw the noise reduced decibel spectrogram
                 // #NOISE REDUCTION PARAMETERS - restore noise reduction ##################################################################
-                //sonoConfig.NoiseReductionType = disabledNoiseReductionType;
-                //sonoConfig.NoiseReductionParameter = double.Parse(configDict[AnalysisKeys.NoiseBgThreshold] ?? "3.0");
+                sonoConfig.NoiseReductionType = disabledNoiseReductionType;
+                sonoConfig.NoiseReductionParameter = double.Parse(configDict[AnalysisKeys.NoiseBgThreshold] ?? "2.0");
                 // #NOISE REDUCTION PARAMETERS - MARINE HACK ##################################################################
-                sonoConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
-                sonoConfig.NoiseReductionParameter = 80.0;
-
+                //sonoConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                //sonoConfig.NoiseReductionParameter = 80.0;
+    
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM + Lamel noise subtraction");
                 list.Add(image);
