@@ -1,6 +1,4 @@
-countBird <- function(callFile){
-  calls <- read.csv(callFile)
-  calls <- calls[ ,4:80]
+countBird <- function(calls){
   temp <- calls[1, ]
   for(i in 2:nrow(calls)){
     temp <- temp | calls[i, ]
