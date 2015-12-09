@@ -5,15 +5,15 @@ SegmentDuration: 1
 SegmentOverlap: 0
 
 #FRAME LENGTH in samples - must be power of 2
-FrameLength: 512
+FrameLength: 128
 
 #Frame Overlap as fraction: default=0.0 
-FrameOverlap: 0.50
+FrameOverlap: 0.25
 
-#Resample rate must be 2 X the desired Nyquist. 
+# Resample rate must be 2 X the desired Nyquist. 
 # WARNING: Default SR used to be the SR of the recording. NOW DEFAULT = 22050.
 # IF you want to keep the recording SR AND it is NOT 22050, THEN you must set the ResampleRate value here
-# ResampleRate: 20000
+ResampleRate: 2000
 
 #MinHz: 500
 #MaxHz: 3500
@@ -21,8 +21,8 @@ FrameOverlap: 0.50
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true 
 NoiseReductionType: STANDARD
-BgNoiseThreshold: 3.0
-LcnContrastLevel: 0.4
+BgNoiseThreshold: 0.5
+LcnContrastLevel: 0.5
 
 
 AddAxes: true

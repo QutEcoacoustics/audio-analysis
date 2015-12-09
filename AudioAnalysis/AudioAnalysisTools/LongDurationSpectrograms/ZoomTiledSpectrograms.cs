@@ -47,6 +47,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             ZoomCommonArguments common)
         {
             const bool SaveSuperTiles = false;
+            const double xNominalUnitScale = 60.0;
 
             Log.Info("Begin Draw Super Tiles");
 
@@ -59,7 +60,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string fileStem = common.OriginalBasename;
 
             string analysisType = "Towsey.Acoustic";
-            TimeSpan dataScale = indexGeneration.IndexCalculationDuration;
+            TimeSpan indexScale = indexGeneration.IndexCalculationDuration;
 
 
             // scales for false color images in seconds per pixel.
@@ -97,10 +98,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     // therefore unable to set a useful tag (like ACI-ENT-EVN).
                     if (indexGeneration.RecordingStartDate != null)
                     {
+                        var tilingStartDate = GetNearestTileBoundary(
+                            zoomConfig.TileWidth,
+                            xNominalUnitScale,
+                            (DateTimeOffset)indexGeneration.RecordingStartDate);
+
                         namingPattern = new AbsoluteDateTilingProfile(
                             fileStem,
                             "BLENDED.Tile",
-                            (DateTimeOffset)indexGeneration.RecordingStartDate,
+                            tilingStartDate,
                             indexGeneration.FrameLength / 2,
                             zoomConfig.TileWidth);
                     }
@@ -118,6 +124,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             Log.Info($"Tiling using {namingPattern.GetType().Name}, Tile Width: {namingPattern.TileWidth}, Height: {namingPattern.TileHeight}");
 
+            // pad out image so it produces a whole number of tiles
+            // this solves the asymmetric right padding of short audio files
+            // var paddedWidth = (int)(Math.Ceiling(zoomConfig.TileWidth / xNominalUnitScale) * xNominalUnitScale);
+
             // create a new tiler
             // pass it scales for x and y-axis
             // also pass it unit scale relations (between unit scale and unit height/width) to use as a reference point
@@ -125,7 +135,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 outputDirectory,
                 namingPattern,
                 new SortedSet<double>(allImageScales),
-                60.0,
+                xNominalUnitScale,
                 1440,
                 new SortedSet<double>(allImageScales.Select(x => 1.0)),
                 1.0,
@@ -279,6 +289,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             Log.Info("Tiling complete");
+        }
+
+        public static DateTimeOffset GetNearestTileBoundary(int tileWidth, double scale, DateTimeOffset recordingStartDate)
+        {
+            // if recording does not start on an absolutely aligned hour of the day
+            // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
+            var timeOfDay = recordingStartDate.TimeOfDay;
+            var previousAbsoluteHour =
+                TimeSpan.FromSeconds(
+                    Math.Floor(timeOfDay.TotalSeconds / (scale * tileWidth))
+                    * (scale * tileWidth));
+            var gap = timeOfDay - previousAbsoluteHour;
+            var tilingStartDate = recordingStartDate - gap;
+            return tilingStartDate;
         }
 
         /// <summary>

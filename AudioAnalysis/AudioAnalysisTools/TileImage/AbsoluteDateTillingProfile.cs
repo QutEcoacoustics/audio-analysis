@@ -58,7 +58,7 @@ namespace AudioAnalysisTools.TileImage
             // discard Y coordinate
             var xOffset = (TimeSpan)this.GetTileIndexes(calculatedLayers, selectedLayer, tileOffsets);
             var tileDate = this.baseDateUtc.Add(xOffset);
-            var formattedDateTime = tileDate.ToString(AppConfigHelper.StandardDateFormatUtc);
+            var formattedDateTime = tileDate.ToString(AppConfigHelper.StandardDateFormatUtcWithFractionalSeconds);
             
             var zoomIndex = (double)this.GetZoomIndex(calculatedLayers, selectedLayer);
 

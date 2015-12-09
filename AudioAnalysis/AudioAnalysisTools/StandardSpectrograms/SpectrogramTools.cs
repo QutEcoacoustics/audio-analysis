@@ -642,15 +642,22 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="PSD"></param>
         /// <param name="nyquist"></param>
         /// <returns></returns>
-        public static double CalculateNDSI(double[] PSD, int samplerate)
+        public static double CalculateNDSI(double[] PSD, int samplerate, int lowBound, int midBound, int topBound)
         {
             int nyquist = samplerate / 2;
             int binCount = PSD.Length;
             double binWidth = nyquist / (double)binCount;
             // skip lower 1kHz bin;
-            int countOf1kHbin = (int)Math.Floor(1000 / binWidth);
-            int countOf2kHbin = (int)Math.Floor(2000 / binWidth);
-            int countOf8kHbin = (int)Math.Floor(8000 / binWidth);
+            int countOf1kHbin = (int)Math.Floor(lowBound / binWidth);
+            int countOf2kHbin = (int)Math.Floor(midBound / binWidth);
+            int countOf8kHbin = (int)Math.Floor(topBound / binWidth);
+
+            // error checking - required for marine recordings where SR=2000.
+            // all this is arbitrary hack to something working for marine recordings. Will not affect terrestrial recordings
+            if (countOf8kHbin >= binCount) countOf8kHbin = binCount - 2;
+            if (countOf2kHbin >= countOf8kHbin) countOf2kHbin = countOf8kHbin - 100;
+            if (countOf1kHbin >= countOf2kHbin) countOf1kHbin = countOf2kHbin - 10;
+
             double anthropoEnergy = 0.0;
             for (int i = countOf1kHbin; i < countOf2kHbin; i++) anthropoEnergy += PSD[i];
             double biophonyEnergy = 0.0;
