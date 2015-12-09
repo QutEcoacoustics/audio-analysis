@@ -1,10 +1,11 @@
 #######################################################
 # 2 November 2015
 # This code performs the hybrid method on a long-duration dataset 
-# (about four months ats two sites, 112 days multiplied by 2)
+# (about four months ats two sites, 111 days multiplied by 2)
 #
-# The four month dataset goes from 22 June 2015 to 11 Oct 2015 from two 
+# The four month dataset goes from 22 June 2015 to 10 Oct 2015 from two 
 # sites GympieNP and Woondum3
+# NOTE See Folder i code
 #######################################################
 setwd("C:\\Work\\CSV files\\FourMonths\\")
 
@@ -45,7 +46,7 @@ for(i in 1:(ncol(site2)-1)) {  # columns
 
 ds3 <- rbind(site1[,1:7], site2[,1:7])
 #################################
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3d")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3i")
 #Hybrid_3_4_7_10_11_15_16_knn_k_1
 # PCA type analysis
 #library(psych)
@@ -81,7 +82,7 @@ for (j in 1:length(ds3)) {
       ds3.norm_2_98[i,j] = 0
   }
 }
-
+write.csv(ds3.norm_2_98,"ds3.norm_2_98.csv")
 #######################################################
 # Method:  Hybrid method using kmeans followed by hclust
 # Alternative 1 Use knn to predict (see Alternative 2 below) 

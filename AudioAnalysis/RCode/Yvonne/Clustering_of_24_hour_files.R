@@ -6,9 +6,9 @@
 # The files that this code clusters is generated in the code 
 # Histograms_of_cluster.lists.R
 #metrics <- read.csv("clustering_metrics.csv", header = T)
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3f")
-myFiles <- list.files(full.names=TRUE, pattern="*_24hour_112days.csv$")
-myFilesShort <- list.files(full.names=FALSE, pattern="*_24hour_112days.csv$")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3g")
+myFiles <- list.files(full.names=TRUE, pattern="*_24hour.csv$")
+myFilesShort <- list.files(full.names=FALSE, pattern="*_24hour.csv$")
 
 length <- length(myFiles)
 length

@@ -75,10 +75,14 @@ namespace AnalysisPrograms
 
             return new Arguments
             {
+                //MARINE 
+                Source = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav".ToFileInfo(),
+
+                //CANETOAD
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
                 // Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                Source = @"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
+                //Source = @"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\JCU\Litoria fellax1.mp3".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
@@ -88,10 +92,11 @@ namespace AnalysisPrograms
                 //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\SE_399_188293_20101014_132950_4.0__.wav".ToFileInfo(),
 
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
+                //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
+                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.SonogramMarine.yml".ToFileInfo(),
                 //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
 
-                Output = @"C:\SensorNetworks\Output\Sonograms\SonogramTest_2014November".ToDirectoryInfo(),
+                Output = @"C:\SensorNetworks\Output\MarineSonograms\".ToDirectoryInfo(),
             };
 
             throw new NoDeveloperMethodException();
@@ -146,9 +151,9 @@ namespace AnalysisPrograms
             // bool saveIntermediateWavFiles = (bool?)configuration[AnalysisKeys.SaveIntermediateWavFiles] ?? false;
             // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
-            // Resample rate must be 2 X the desired Nyquist. Default is that of recording.
+            // Resample rate must be 2 X the desired Nyquist. 
+            // WARNING: Default used to be the SR of the recording. NOW DEFAULT = 22050.
             var resampleRate = (int?)configuration[AnalysisKeys.ResampleRate] ?? AppConfigHelper.DefaultTargetSampleRate;
-
 
             var configDict = new Dictionary<string, string>((Dictionary<string, string>)configuration);
 
@@ -299,12 +304,13 @@ namespace AnalysisPrograms
 
                 double neighbourhoodSeconds = 0.25;
                 int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
-                double LcnContrastLevel = 0.3;
+                double LcnContrastLevel = 0.001;
                 LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
                 LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
                 int lowPercentile = 20;
                 sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
                 sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, LcnContrastLevel);
+                //sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
                 list.Add(image);
                 //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
@@ -340,10 +346,13 @@ namespace AnalysisPrograms
                 double[,] dbSpectrogramData = (double[,])sonogram.Data.Clone();
 
                 // 3) now draw the noise reduced decibel spectrogram
-                // #NOISE REDUCTION PARAMETERS - restore noise reduction
+                // #NOISE REDUCTION PARAMETERS - restore noise reduction ##################################################################
                 sonoConfig.NoiseReductionType = disabledNoiseReductionType;
-                sonoConfig.NoiseReductionParameter = double.Parse(configDict[AnalysisKeys.NoiseBgThreshold] ?? "3.0");
-
+                sonoConfig.NoiseReductionParameter = double.Parse(configDict[AnalysisKeys.NoiseBgThreshold] ?? "2.0");
+                // #NOISE REDUCTION PARAMETERS - MARINE HACK ##################################################################
+                //sonoConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                //sonoConfig.NoiseReductionParameter = 80.0;
+    
                 sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
                 image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM + Lamel noise subtraction");
                 list.Add(image);
