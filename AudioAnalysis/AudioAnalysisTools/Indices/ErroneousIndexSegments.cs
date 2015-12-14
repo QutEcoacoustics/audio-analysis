@@ -51,8 +51,9 @@ namespace AudioAnalysisTools.Indices
 
 
 
-
-
+        // #####################################################################################################################
+        //  STATIC METHODS BELOW 
+        // #####################################################################################################################
 
         public static List<ErroneousIndexSegments> RealityCheck(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
@@ -105,12 +106,13 @@ namespace AudioAnalysisTools.Indices
             // write info to file
             if (errors.Count != 0)
             {
-                string path = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, ErroneousIndexSegments.ErroneousIndexSegmentsFilenameFragment, "jsn");
+                string path = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, ErroneousIndexSegments.ErroneousIndexSegmentsFilenameFragment, "json");
                 Yaml.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
             }
 
             return errors;
         }
+
 
 
     }
