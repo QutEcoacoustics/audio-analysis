@@ -105,17 +105,17 @@ namespace AnalysisPrograms
 
             // ########################## YVONNE'S RECORDINGS          
             // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
-            //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50") 
-            //                           };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
+                                         new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
+                                       };
 
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
             //                             new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
             //                           };
 
             // below directory was to check a bug - missing 6 hours of recording
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
-                                       };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
+            //                           };
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola\2015July26\Woondum3"),
             //                           };
             //string directoryFilter = "20150725-000000+1000.wav";
@@ -126,10 +126,10 @@ namespace AnalysisPrograms
 
             string opFileStem = directoryFilter;
             //string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
-            string opPath = @"C:\SensorNetworks\Output\YvonneResults\FixACI bug2";
+            string opPath = @"C:\SensorNetworks\Output\YvonneResults\FixACI bug3";
 
             dtoStart = new DateTimeOffset(2015, 07, 25, 0, 0, 3, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2015, 07, 25, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2015, 07, 28, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
 
 

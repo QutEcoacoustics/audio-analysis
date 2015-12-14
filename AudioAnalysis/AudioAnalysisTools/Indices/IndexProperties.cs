@@ -220,7 +220,7 @@ namespace AudioAnalysisTools.Indices
             int barHeight = 0;
 
             // for pixels in the line
-            for (int i = 0; i < dataLength; i++) 
+            for (int i = 0; i < dataLength; i++)
             {
                 double value = values[i];
 
@@ -251,9 +251,16 @@ namespace AudioAnalysisTools.Indices
             g.FillRectangle(Brushes.Black, dataLength + 1, 0, endWidth, trackHeight);
             g.DrawString(annotation, font, Brushes.White, new PointF(dataLength + 5, 2));
 
-            bool verticalText = false;
-            var errorBmp = errors[0].DrawErrorPatch(trackHeight-2, verticalText);
-            g.DrawImage(errorBmp, errors[0].StartPosition, 1);
+            // now add in image patches for possible erroneous index segments 
+            if ((errors != null) && (errors.Count > 0))
+            { 
+                bool verticalText = false;
+                foreach (ErroneousIndexSegments errorSegment in errors)
+                {
+                    var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, verticalText);
+                    g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
+                }
+            }
             return bmp;
         }
 

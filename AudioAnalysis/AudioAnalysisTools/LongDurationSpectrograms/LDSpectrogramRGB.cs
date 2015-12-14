@@ -618,12 +618,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
 
-
+            // now add in image patches for possible erroneous index segments 
             if ((this.ErroneousSegments != null) && (this.ErroneousSegments.Count > 0))
             {
-                Bitmap errorPatch = this.ErroneousSegments[0].DrawErrorPatch(bmp.Height, true);
+                bool verticalText = false;
                 Graphics g = Graphics.FromImage(bmp);
-                g.DrawImage(errorPatch, this.ErroneousSegments[0].StartPosition, 1);
+                foreach (ErroneousIndexSegments errorsegment in ErroneousSegments)
+                {
+                    Bitmap errorPatch = errorsegment.DrawErrorPatch(bmp.Height, verticalText);
+                    g.DrawImage(errorPatch, errorsegment.StartPosition, 1);
+                }
             }
 
             if (!withChrome)
