@@ -157,7 +157,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                   IndexGenerationData indexGenerationData,
                                                   FileInfo indexPropertiesConfigFileInfo,
                                                   DirectoryInfo opDir,
-                                                  SiteDescription siteDescription)
+                                                  SiteDescription siteDescription,
+                                                  List<ErroneousIndexSegments> segmentErrors = null)
         {
             // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
@@ -184,6 +185,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             summaryIndices,
             indexDistributions,
             siteDescription,
+            segmentErrors,
             ImageChrome.With);
         }
 
@@ -278,7 +280,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                 IndexGenerationData indexGenerationData,
                                                 FileInfo indexPropertiesConfigFileInfo,
                                                 DirectoryInfo opDir,
-                                                SiteDescription siteDescription)
+                                                SiteDescription siteDescription,
+                                                List<ErroneousIndexSegments> erroneousSegments = null // info if have fatal errors i.e. no signal
+            )
         {
             DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
 
@@ -298,7 +302,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                  titletext,
                                  indexGenerationData.IndexCalculationDuration,
                                  indexGenerationData.RecordingStartDate,
-                                 siteDescription);
+                                 siteDescription,
+                                 erroneousSegments
+                                 );
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
             tracksImage.Save(imagePath);
         }
@@ -386,6 +392,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             siteDescription.SiteName = opFileStem;
 
             SummaryIndexBase[] summaryIndices = null;
+            List<ErroneousIndexSegments> segmentErrors = null;
 
 
             Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
@@ -400,6 +407,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             summaryIndices,
             indexDistributions,
             siteDescription,
+            segmentErrors,
             ImageChrome.With);
         }
 

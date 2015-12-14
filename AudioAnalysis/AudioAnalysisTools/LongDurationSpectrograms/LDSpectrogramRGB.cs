@@ -168,6 +168,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public Dictionary<string, IndexDistributions.SpectralStats> IndexStats { get; private set; }
 
+        public List<ErroneousIndexSegments> ErroneousSegments { get; private set; }
+
+
+
+
+
+
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -413,8 +420,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // check to determine if user wants to use the automated bound.
             if (this.IndexStats != null)
             {
-                if (indexProperties.CalculateNormMin) min = this.IndexStats[key].Mode;
-                if (indexProperties.CalculateNormMax) max = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                if (indexProperties.CalculateNormMin)
+                {
+                    min = this.IndexStats[key].Mode;
+                    //fix bug if signal is defective & = zero. We do not want ACI min ever set too low.
+                    if((key.Equals("ACI"))&&(min < 0.3)) min = indexProperties.NormMin;
+                }
+
+                if (indexProperties.CalculateNormMax)
+                {
+                    max = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+                }
             }
 
             Log.Debug("GetNormalisedSpectrogramMatrix(key=" + key + "): min bound=" + min + "      max bound=" + max); // check min, max values
@@ -601,6 +617,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool doReverseColour = colorMode.StartsWith("POS");
 
             Image bmp = LDSpectrogramRGB.DrawRGBColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
+
+
+            if ((this.ErroneousSegments != null) && (this.ErroneousSegments.Count > 0))
+            {
+                Bitmap errorPatch = this.ErroneousSegments[0].DrawErrorPatch(bmp.Height, true);
+                Graphics g = Graphics.FromImage(bmp);
+                g.DrawImage(errorPatch, this.ErroneousSegments[0].StartPosition, 1);
+            }
 
             if (!withChrome)
             {
@@ -1316,6 +1340,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             SummaryIndexBase[] summaryIndices = null,
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
             SiteDescription siteDescription = null,
+            List<ErroneousIndexSegments> segmentErrors = null,
             ImageChrome imageChrome = ImageChrome.With)
         {
             LdSpectrogramConfig config = ldSpectrogramConfig;
@@ -1334,6 +1359,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.SiteName  = siteDescription?.SiteName;
             cs1.Latitude  = siteDescription?.Latitude;
             cs1.Longitude = siteDescription?.Longitude;
+
+            cs1.ErroneousSegments = segmentErrors;
 
             // calculate start time by combining DatetimeOffset with minute offset.
             cs1.StartOffset = indexGenerationData.MinuteOffset;
@@ -1450,20 +1477,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                        : null;
         }
 
-        private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, ImageChrome imageChrome, DirectoryInfo outputDirectory)
+        private static Tuple<Image, Image> CreateSpectrogramFromSpectralIndices(LDSpectrogramRGB cs1, string colorMap, 
+                                                                                ImageChrome imageChrome, 
+                                                                                DirectoryInfo outputDirectory)
         {
             const int HertzInterval = 1000;
             int nyquist = cs1.SampleRate / 2;
+
+            bool errorsExist = false;
+            if ((cs1.ErroneousSegments != null) && (cs1.ErroneousSegments.Count > 0))
+            {
+                errorsExist = true;
+            }
 
             // create a chromeless false color image for tiling
             Image imageNoChrome = null;
             if (imageChrome == ImageChrome.Without)
             {
                 imageNoChrome = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap, withChrome: false);
+                if (errorsExist)
+                {
+                    Bitmap errorPatch = cs1.ErroneousSegments[0].DrawErrorPatch(imageNoChrome.Height, true);
+                    Graphics g = Graphics.FromImage(imageNoChrome);
+                    g.DrawImage(errorPatch, cs1.ErroneousSegments[0].StartPosition, 1);
+                }
+
             }
 
             // create a normal image with chrome
             Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            if (errorsExist)
+            {
+                Bitmap errorPatch = cs1.ErroneousSegments[0].DrawErrorPatch(image.Height, true);
+                Graphics g = Graphics.FromImage(image);
+                g.DrawImage(errorPatch, cs1.ErroneousSegments[0].StartPosition, 1);
+            }
             string startTime = string.Format("{0:d2}{1:d2}h", cs1.StartOffset.Hours, cs1.StartOffset.Minutes);
 
             // then pass that image into chromer
