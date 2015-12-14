@@ -114,7 +114,9 @@
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
-            SiteDescription siteDescription = null)
+            SiteDescription siteDescription = null,
+            List<ErroneousIndexSegments> errors = null
+            )
         {
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary();
                 // to translate past keys into current keys
@@ -156,7 +158,7 @@
                 string name = ip.Name;
                 double[] array = dictionaryOfCsvFile[key];
                 scaleLength = array.Length;
-                Image bitmap = ip.GetPlotImage(array);
+                Image bitmap = ip.GetPlotImage(array, errors);
 
                 if (arrayOfBitmaps.Length > ip.Order) // THIS IF CONDITION IS A HACK. THERE IS A BUG SOMEWHERE.
                     arrayOfBitmaps[ip.Order] = bitmap;

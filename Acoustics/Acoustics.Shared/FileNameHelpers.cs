@@ -74,6 +74,11 @@ namespace Acoustics.Shared
             return filename;
         }
 
+        public static string AnalysisResultName(DirectoryInfo outputDirectory, string v1, object spectralIndexDistributionsFilenameFragment, string v2)
+        {
+            throw new NotImplementedException();
+        }
+
         public static void ParseAnalysisFileName(
             FileInfo file,
             out string originalBasename,

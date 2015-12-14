@@ -39,6 +39,7 @@ namespace AnalysisPrograms
 
     using PowerArgs;
     using AudioAnalysisTools;
+    using System.Collections.Generic;
 
 
     /// <summary>
@@ -111,20 +112,28 @@ namespace AnalysisPrograms
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
             //                             new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
             //                           };
-            
 
-            //// The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            //string directoryFilter = "Woondum3";
-            ////string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
-            //string opFileStem = directoryFilter;
+            // below directory was to check a bug - missing 6 hours of recording
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
+                                       };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola\2015July26\Woondum3"),
+            //                           };
+            //string directoryFilter = "20150725-000000+1000.wav";
+
+            // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
+            string directoryFilter = "Woondum3";
+            //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
+
+            string opFileStem = directoryFilter;
             //string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
+            string opPath = @"C:\SensorNetworks\Output\YvonneResults\FixACI bug2";
 
-            //dtoStart = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2015, 09, 20, 0, 0, 0, TimeSpan.Zero);
-            ////dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2015, 07, 25, 0, 0, 3, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2015, 07, 25, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
 
 
-
+            /*
             // ########################## LENN'S RECORDINGS          
             // top level directory
             DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Oct19-173501 - Lenn, Indices, ICD=60.0, #61\Berndt\Lenn\Week 1\Card1302_Box1302"),
@@ -140,7 +149,7 @@ namespace AnalysisPrograms
             dtoEnd = new DateTimeOffset(2015, 09, 30, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
 
-
+    */
 
             // ########################## STURT RECORDINGS
             // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
@@ -410,11 +419,21 @@ namespace AnalysisPrograms
                     break;
                 }
 
+                // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
+                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.RealityCheck(summaryDict, resultsDir, arguments.FileStemName);
+
+
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
                     indexGenerationData.RecordingStartDate = thisday;
-                    LDSpectrogramStitching.DrawSummaryIndexFiles(summaryDict, indexGenerationData, indexPropertiesConfig, resultsDir, siteDescription);
+                    LDSpectrogramStitching.DrawSummaryIndexFiles(summaryDict, 
+                                                                 indexGenerationData, 
+                                                                 indexPropertiesConfig, 
+                                                                 resultsDir, 
+                                                                 siteDescription,
+                                                                 indexErrors
+                                                                 );
                 }
 
                 // ##############################################################################################################
@@ -431,7 +450,12 @@ namespace AnalysisPrograms
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
-                    LDSpectrogramStitching.DrawSpectralIndexFiles(spectralDict, indexGenerationData, indexPropertiesConfig, resultsDir, siteDescription);
+                    LDSpectrogramStitching.DrawSpectralIndexFiles(spectralDict, 
+                                                                  indexGenerationData, 
+                                                                  indexPropertiesConfig, 
+                                                                  resultsDir, 
+                                                                  siteDescription,
+                                                                  indexErrors);
                 }
 
             } // over days

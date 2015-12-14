@@ -200,7 +200,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public Image GetPlotImage(double[] array)
+        public Image GetPlotImage(double[] array, List<ErroneousIndexSegments> errors = null)
         {
             int dataLength = array.Length;
             string annotation = this.GetPlotAnnotation();
@@ -250,6 +250,10 @@ namespace AudioAnalysisTools.Indices
             var font = new Font("Arial", 9.0f, FontStyle.Regular);
             g.FillRectangle(Brushes.Black, dataLength + 1, 0, endWidth, trackHeight);
             g.DrawString(annotation, font, Brushes.White, new PointF(dataLength + 5, 2));
+
+            bool verticalText = false;
+            var errorBmp = errors[0].DrawErrorPatch(trackHeight-2, verticalText);
+            g.DrawImage(errorBmp, errors[0].StartPosition, 1);
             return bmp;
         }
 
