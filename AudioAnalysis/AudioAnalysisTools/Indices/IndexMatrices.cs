@@ -50,7 +50,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        public static Dictionary<string, double[]> GetSummaryIndexFilesAndConcatenateWithTimeCheck(FileInfo[] paths)
+        public static Dictionary<string, double[]> GetSummaryIndexFilesAndConcatenateWithTimeCheck(FileInfo[] paths, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
             DateTimeOffset startDTO;
@@ -117,7 +117,10 @@ namespace AudioAnalysisTools.Indices
                     int partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
                     //int partialMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
 
-                    if (rowCounts[i] != partialMinutes)
+                    // calculate elapsed time from the rows
+                    int rowMinutes = (int)Math.Round(rowCounts[i] * indexCalcDuration.TotalMinutes);
+
+                    if (rowMinutes != partialMinutes)
                     {
                         LoggedConsole.WriteLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + file.Name + ") ");
                         string str = String.Format("  CsvFile {0}/{1}: Row Count={2} != {3} elapsed minutes", i + 1, paths.Length, rowCounts[i], partialMinutes);

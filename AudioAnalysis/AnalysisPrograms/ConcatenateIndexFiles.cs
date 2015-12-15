@@ -103,11 +103,25 @@ namespace AnalysisPrograms
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
 
+            // ########################## MARINE RECORDINGS          
+            // top level directory
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            //                           };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
+                                       };
+            string directoryFilter = "201303";
+            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms";
+            dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2013, 03, 02, 0, 0, 0, TimeSpan.Zero);
+            string opFileStem = "CornellMarine";
+            indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
+
+
             // ########################## YVONNE'S RECORDINGS          
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
-                                         new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
-                                       };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48"),
+            //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
+            //                           };
 
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
             //                             new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
@@ -121,16 +135,16 @@ namespace AnalysisPrograms
             //string directoryFilter = "20150725-000000+1000.wav";
 
             // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            string directoryFilter = "Woondum3";
+            //string directoryFilter = "Woondum3";
             //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
 
-            string opFileStem = directoryFilter;
             //string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
-            string opPath = @"C:\SensorNetworks\Output\YvonneResults\FixACI bug3";
+            //string opPath = @"C:\SensorNetworks\Output\YvonneResults\FixACI bug3";
 
-            dtoStart = new DateTimeOffset(2015, 07, 25, 0, 0, 3, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2015, 07, 28, 0, 0, 0, TimeSpan.Zero);
+            //dtoStart = new DateTimeOffset(2015, 07, 25, 0, 0, 3, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2015, 07, 28, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
+            //string opFileStem = directoryFilter;
 
 
             /*
@@ -410,7 +424,7 @@ namespace AnalysisPrograms
 
                 // CONCATENATE the SUMMARY INDEX FILES
                 FileInfo[] files = filteredDict.Values.ToArray<FileInfo>();
-                var summaryDict = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(files, resultsDir, indicesCsvfile);
+                var summaryDict = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(files, resultsDir, indicesCsvfile, indexGenerationData.IndexCalculationDuration);
 
                 if (summaryDict.Count == 0)
                 {

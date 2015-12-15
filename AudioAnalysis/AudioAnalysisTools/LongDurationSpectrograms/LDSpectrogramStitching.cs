@@ -246,7 +246,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
-        public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(FileInfo[] files, DirectoryInfo opDir, FileInfo indicesCsvfile)
+        public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(FileInfo[] files, DirectoryInfo opDir, FileInfo indicesCsvfile, TimeSpan indexCalcTimeSpan)
         {
             // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
             //var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
@@ -254,7 +254,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //double[,] summaryIndices = summaryDataTuple.Item2;
             //Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
 
-            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
+            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcTimeSpan);
 
             if (dictionaryOfCsvColumns.Count == 0)
             {
@@ -436,7 +436,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, fileStemPattern);
 
             // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
-            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
+            TimeSpan indexCalcDuration = TimeSpan.FromSeconds(60); // an assumption for Eddie games recordings
+            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcDuration);
  
             string[] headers = dictionaryOfCsvColumns.Keys.ToArray();
             if (dictionaryOfCsvColumns.Count == 0)
