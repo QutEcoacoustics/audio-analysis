@@ -1,6 +1,12 @@
-setwd("C:\\Users\\n0572527\\Desktop\\")
+# 30 November 2015
+####################################
+# This code produced a series of histograms per month as a 
+# summary of the frequency of clusters per 2 hour time period
+# per month
+####################################
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
 
-dataset <- read.csv("hybrid_clust_knn_17500_3_k20_2hour_full111days.csv",header=T)
+dataset <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
 
 dates <- unique(dataset$as.character.dates2.)
 dataset$as.character.dates2. <- as.Date(dataset$as.character.dates2., format = "%d/%m/%Y")
@@ -9,7 +15,6 @@ site <- unique(dataset$site)
 hour.period <- c("12-2am","2-4am","4-6am","6-8am","8-10am","10-12noon",
                  "12-2pm","2-4pm","4-6pm","6-8pm","8-10pm","10-12midnight")
 hour.period <- c("01","02","03","04","05","06","07","08","09","10","11","12")
-
 
 count <- 1
 for(i in 1:length(dataset$V1)) {
@@ -31,10 +36,11 @@ for (i in 1:length(site)) {
 }
 days.per.month <- rep(days.per.month, each=12)
 
-per.month.per.period <- aggregate(dataset[,sapply(dataset,is.numeric)],dataset["site.yr.mth"],sum)
+per.month.per.period <- aggregate(dataset[,sapply(dataset,is.numeric)],
+                                  dataset["site.yr.mth"],sum)
 per.month.per.period <- per.month.per.period[c(2:length(per.month.per.period),1)]
                                                            
-View(per.month.per.period)
+#View(per.month.per.period)
 
 for (i in 1:length(per.month.per.period$V1)) {
     per.month.per.period[i,1:(length(per.month.per.period)-1)] <- 
@@ -44,12 +50,46 @@ for (i in 1:length(per.month.per.period$V1)) {
 length_Gympie <- length(which(substr(per.month.per.period$site.yr.mth, 1,6)=="Gympie"))
 length_Woondum <- length(which(substr(per.month.per.period$site.yr.mth, 1,7)=="Woondum"))
 
-names <-c("V1 quiet with some insects ","V2 quiet with insects ","V3 birds ","V4 light rain",
-          "V5 birds ","V6 very quiet ","V7 very quiet ","V8 Moderate wind",
-          "V9 Moderate rain ","V10 birds ","V11 Wind ","V12 Planes and motorbikes ",
-          "V13 birds","V14 Very light rain ","V15 Very very quiet ",
-          "V16 Rain ","V17 Loud planes ","V18 ?? ","V19 ??Daytime quietness ",
-          "V20 Thunder and kookaburras ")
+names <-c("V1 some insects + wind + birds","V2 wind","V3 fairly quiet",
+          "V4 birds (afternoon)","V5 quiet + some insects","V6 rain",
+          "V7 insects","V8 birds (midday)",
+          "V9 birds (morning)","V10 wind + birds",
+          "V11 quiet + planes","V12 planes + some birds",
+          "V13 louder planes + birds","V14 birds (morning)",
+          "V15 wind","V16 birds + wind","V17 rain",
+          "V18 birds + wind","V19 quiet + some insects","V20 quiet + birds + insects",
+          "V21 breezes","V22 birds (afternoon)", 
+          "V23 birds (morning)", "V24 very quiet", 
+          "V25 quiet","V26 birds (mid-morning)",
+         "V27 Thunder and kookaburras","V28 quiet + some birds", 
+         "V29 drizzle + birds + insects", "V30 insects")
+
+
+#names <-c("V1 Slight wind","V2 Slight wind + insects","V3 insects",
+#          "V4 quiet + insects","V5 light rain","V6 very quiet",
+#          "V7 Rain","V8 quiet + some insects",
+#          "V9 wind + birds","V10 birds (morning)",
+#          "V11 planes","V12 birds (morning)",
+#          "V13 quieter planes","V14 wind + insects + birds",
+#          "V15 wind + birds","V16 Birds (morning)","V17 Wind",
+#          "V18 birds + wind","V19 rain","V20 Mid frequency birds",
+#          "V21 quiet + some birds","V22 quiet + some insects + birds", 
+#          "V23 birds + wind", "V24 Very quiet", 
+#          "V25 Thunder and kookaburras","V26 Birds",
+#          "V27 Birds","V28 birds + insects", "V29 birds (morning)",
+#          "V30 Wind + birds")
+
+#names <-c("V1 Very quiet birds","V2 Very quiet birds2","V3 Birds!",
+#          "V4 birds","V5 ??","V6 Birds!","V7 Insects","V8 Quiet",
+#          "V9 Wind","V10 Birds!","V11 Quiet+insects","V12 Rain",
+#          "V13 Birds!","V14 Quiet_insects","V15 Wind+birds",
+#          "V16 Wind+birds ","V17 Quiet+birds","V18 Quieter birds",
+#          "V19 Quiet+birds","V20 Birds!","V21 Drizzle",
+#          "V22 Moderate wind+birds", "V23 Rain", 
+#          "V24 Lightwind+birds", "V25 Wind+insects",
+#          "V26 Planes + motorbikes","V27 Moderate wind+birds",
+#          "V28 Mid-afternoon birds", "V29 Very quiet",
+#          "V30 Thunder and kookaburras")
 
 # Gympie plots
 for (i in 1:(length(per.month.per.period)-1)) {
@@ -149,7 +189,8 @@ for (i in 1:(length(per.month.per.period)-1)) {
   axis(side=1, at=seq(0.2,16.4,2.39),labels=c(0,4,8,12,16,20,24), tick=F)
   par(new=F)
   barplot(per.month.per.period[(1+length_Gympie/length(dates1)):
-                                 (2*(length_Gympie/length(dates1))),i],beside=T,
+                                 (2*(length_Gympie/length(dates1))),i], 
+          beside=T,
           col="red", ,xlab="hours", 
           ylim=c(0,(max(per.month.per.period[1:length(per.month.per.period$V1),i])+0.2)),
           main=substr(per.month.per.period$site.yr.mth[13],10,16))
@@ -216,104 +257,3 @@ for (i in 1:(length(per.month.per.period)-1)) {
         outer=T)  
   dev.off()
 }
-
-
-
-
-dev.off()
-barplot(per.month.per.period[1:length_Gympie,2],beside=T,col="red",
-        main="insects V1")
-axis(side=1,at=at,labels=label.month,line=2)
-axis(side=1,at=at1,labels=label.hour,cex=0.2)
-barplot(per.month.per.period[1:length_Gympie,3],beside=T,col="red",
-        main="insects V2")
-barplot(per.month.per.period[1:length_Gympie,4],beside=T,col="red",
-        main="birds V3")
-barplot(per.month.per.period[1:length_Gympie,5],beside=T,col="red",
-        main="light rain V4")
-barplot(per.month.per.period[1:length_Gympie,6],beside=T,col="red",
-        main="birds V5")
-barplot(per.month.per.period[1:length_Gympie,7],beside=T,col="red",
-        main="very quiet V6")
-barplot(per.month.per.period[1:length_Gympie,8],beside=T,col="red",
-        main="very quiet V7")
-barplot(per.month.per.period[1:length_Gympie,9],beside=T,col="red",
-        main="Moderate wind V8 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,10],beside=T,col="red",
-        main="Moderate rain V9 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,11],beside=T,col="red",
-        main="birds V10 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,12],beside=T,col="red",
-        main="Wind V11 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,13],beside=T,col="red",
-        main="Planes and motorbikes V12 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,14],beside=T,col="red",
-        main="birds V13 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,15],beside=T,col="red",
-        main="Very light rain V14 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,16],beside=T,col="red",
-        main="Very very quiet V15 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,17],beside=T,col="red",
-        main="Rain V16 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,18],beside=T,col="red",
-        main="Loud planes V17 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,19],beside=T,col="red",
-        main="?? V18 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,20],beside=T,col="red",
-        main="??Daytime quietness V19 GympieNP")
-barplot(per.month.per.period[1:length_Gympie,21],beside=T,col="red",
-        main="Thunder and kookaburras V20 GympieNP")
-
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),2],
-        beside=T,col="white", main="insects V1 Woondum NP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),3],
-        beside=T,main="insects V2 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),4],
-        beside=T,main="birds V3")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),5],
-        beside=T,main="light rain V4")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),6],
-        beside=T,main="birds V5")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),7],
-        beside=T,main="very quiet V6")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),8],
-        beside=T,main="very quiet V7")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),9],
-        beside=T,main="Moderate wind V8 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),10],
-        beside=T,main="Moderate rain V9 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),11],
-        beside=T,main="birds V10 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),12],
-        beside=T,main="Wind V11 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),13],
-        beside=T,main="Planes and motorbikes V12 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),14],
-        beside=T,main="birds V13 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),15],
-        beside=T,main="Very light rain V14 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),16],
-        beside=T,main="Very very quiet V15 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),17],
-        beside=T,main="Rain V16 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),18],
-        beside=T,main="Loud planes V17 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),19],
-        beside=T,main="?? V18 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),20],
-        beside=T,main="??Daytime quietness V19 WoondumNP")
-barplot(per.month.per.period[(length_Gympie+1):(length_Gympie+length_Woondum),21],
-        beside=T,col="red",main="Thunder and kookaburras V20 WoondumNP")
-
-
-
-
-
-barplot(per.month.per.period[13:48,6]),beside=T,col="red")
-barplot(per.month.per.period[13:48,7]),beside=T,col="red")
-barplot(per.month.per.period[13:48,8]),beside=T,col="red")
-barplot(per.month.per.period[13:48,9]),beside=T,col="red")
-barplot(per.month.per.period[13:48,11]),beside=T,col="red")
-barplot(per.month.per.period[13:48,12]),beside=T,col="red")
-
-

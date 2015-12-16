@@ -1,14 +1,14 @@
 # 30 November 2015
 ##############################################
-# This file produces images that show 600 randomly selected minutes
+# This file produces images that show 1200 randomly selected minutes
 # from each cluster
-# NOTE: This file requires a png file dimensions width=620px and 
+# NOTE: This file requires a png file named Rasterimage.png dimensions width=1280px and 
 # height 668px in the wd folder, these files can be easily 
 # generated in paint.
 ##############################################
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3i")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
 
-cluster.list <- read.csv("hybrid_clust_knn_17500_3.csv",header=T)[,7]
+cluster.list <- read.csv("hybrid_clust_knn_17500_3.csv",header=T)[,6]
 indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
 
 list <- which(indices$minute.of.day=="0")
@@ -24,7 +24,7 @@ list[length(list$start),2] <- length(indices$X)
 
 library(raster)
 image <- "Rasterimage.png"
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
@@ -41,22 +41,22 @@ length(spect_file_list)
 # Get list of positions of cluster 1
 which1 <- which(cluster.list==1)
 # Select a random sample from a cluster
-whichV1 <- sample(which1, 600)
+whichV1 <- sample(which1, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V1_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V1_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
 min.ref.check <- NULL
 which.check <- NULL
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV1[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV1[i])/1440)
   }
@@ -82,26 +82,26 @@ for(i in 1:600) {
 plotRGB(s)
 dev.off()
 
-rm(whichV1,which1)
+rm(whichV1, which1)
 
 ######## cluster 2
 which2 <- which(cluster.list==2)
-whichV2 <- sample(which2, 600)
+whichV2 <- sample(which2, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V2_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V2_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
 min.ref.check <- NULL
 which.check <- NULL
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV2[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV2[i])/1440)
   }
@@ -128,20 +128,20 @@ rm(whichV2,which2)
 
 ######## cluster 3
 which3 <- which(cluster.list==3)
-whichV3 <- sample(which3, 600)
+whichV3 <- sample(which3, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V3.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V3_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV3[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV3[i])/1440)
   }
@@ -168,20 +168,20 @@ rm(whichV3,which3)
 
 ######### cluster 4
 which4 <- which(cluster.list==4)
-whichV4 <- sample(which4, 600)
+whichV4 <- sample(which4, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V4_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V4_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV4[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV4[i])/1440)
   }
@@ -208,20 +208,20 @@ rm(whichV4,which4)
 
 ######### cluster 5
 which5 <- which(cluster.list==5)
-whichV5 <- sample(which5, 600)
+whichV5 <- sample(which5, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V5_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V5_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV5[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV5[i])/1440)
   }
@@ -248,20 +248,20 @@ rm(whichV5,which5)
 
 ######### cluster 6
 which6 <- which(cluster.list==6)
-whichV6 <- sample(which6, 600)
+whichV6 <- sample(which6, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V6_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V6_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV6[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV6[i])/1440)
   }
@@ -288,20 +288,20 @@ rm(whichV6,which6)
 
 ######### cluster 7
 which7 <- which(cluster.list==7)
-whichV7 <- sample(which7, 600)
+whichV7 <- sample(which7, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V7_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V7_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV7[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV7[i])/1440)
   }
@@ -328,20 +328,20 @@ rm(whichV7,which7)
 
 ######### cluster 8
 which8 <- which(cluster.list==8)
-whichV8 <- sample(which8, 600)
+whichV8 <- sample(which8, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V8_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V8_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV8[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV8[i])/1440)
   }
@@ -368,20 +368,20 @@ rm(whichV8,which8)
 
 ######### cluster 9
 which9 <- which(cluster.list==9)
-whichV9 <- sample(which9, 600)
+whichV9 <- sample(which9, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V9_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V9_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV9[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV9[i])/1440)
   }
@@ -408,20 +408,20 @@ rm(whichV9,which9)
 
 ######### cluster 10
 which10 <- which(cluster.list==10)
-whichV10 <- sample(which10, 600)
+whichV10 <- sample(which10, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V10_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V10_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV10[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV10[i])/1440)
   }
@@ -448,20 +448,20 @@ rm(whichV10,which10)
 
 ######### cluster 11
 which11 <- which(cluster.list==11)
-whichV11 <- sample(which11, 600)
+whichV11 <- sample(which11, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V11_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V11_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV11[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV11[i])/1440)
   }
@@ -488,20 +488,20 @@ rm(whichV11,which11)
 
 ######### cluster 12
 which12 <- which(cluster.list==12)
-whichV12 <- sample(which12, 600)
+whichV12 <- sample(which12, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V12_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V12_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV12[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV12[i])/1440)
   }
@@ -528,20 +528,20 @@ rm(whichV12,which12)
 
 ######### cluster 13
 which13 <- which(cluster.list==13)
-whichV13 <- sample(which13, 600)
+whichV13 <- sample(which13, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V13_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V13_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV13[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV13[i])/1440)
   }
@@ -568,20 +568,20 @@ rm(whichV13,which13)
 
 ######### cluster 14
 which14 <- which(cluster.list==14)
-whichV14 <- sample(which14, 600)
+whichV14 <- sample(which14, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V14_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V14_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV14[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV14[i])/1440)
   }
@@ -608,20 +608,20 @@ rm(whichV14,which14)
 
 ######### cluster 15
 which15 <- which(cluster.list==15)
-whichV15 <- sample(which15, 600)
+whichV15 <- sample(which15, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V15_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V15_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV15[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV15[i])/1440)
   }
@@ -648,20 +648,20 @@ rm(whichV15,which15)
 
 ######### cluster 16
 which16 <- which(cluster.list==16)
-whichV16 <- sample(which16, 600)
+whichV16 <- sample(which16, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V16_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V16_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV16[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV16[i])/1440)
   }
@@ -688,20 +688,20 @@ rm(whichV16,which16)
 
 ######### cluster 17
 which17 <- which(cluster.list==17)
-whichV17 <- sample(which17, 600)
+whichV17 <- sample(which17, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V17_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V17_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV17[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV17[i])/1440)
   }
@@ -728,20 +728,20 @@ rm(whichV17,which17)
 
 ######### cluster 18
 which18 <- which(cluster.list==18)
-whichV18 <- sample(which18, 600)
+whichV18 <- sample(which18, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V18_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V18_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV18[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV18[i])/1440)
   }
@@ -769,20 +769,20 @@ rm(whichV18,which18)
 
 ######### cluster 19
 which19 <- which(cluster.list==19)
-whichV19 <- sample(which19, 600)
+whichV19 <- sample(which19, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V19_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V19_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV19[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV19[i])/1440)
   }
@@ -809,20 +809,20 @@ rm(whichV19,which19)
 
 ######### cluster 20
 which20 <- which(cluster.list==20)
-whichV20 <- sample(which20, 600)
+whichV20 <- sample(which20, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V20_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V20_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV20[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV20[i])/1440)
   }
@@ -849,20 +849,20 @@ rm(whichV20,which20)
 
 ######### cluster 21
 which21 <- which(cluster.list==21)
-whichV21 <- sample(which21, 600)
+whichV21 <- sample(which21, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V21_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V21_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV21[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV21[i])/1440)
   }
@@ -890,20 +890,20 @@ rm(whichV21,which21)
 
 ######### cluster 22
 which22 <- which(cluster.list==22)
-whichV22 <- sample(which22, 600)
+whichV22 <- sample(which22, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V22_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V22_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV22[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV22[i])/1440)
   }
@@ -930,20 +930,20 @@ rm(whichV22,which22)
 
 ######### cluster 23
 which23 <- which(cluster.list==23)
-whichV23 <- sample(which23, 600)
+whichV23 <- sample(which23, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V23_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V23_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV23[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV23[i])/1440)
   }
@@ -970,20 +970,20 @@ rm(whichV23,which23)
 
 ######### cluster 24
 which24 <- which(cluster.list==24)
-whichV24 <- sample(which24, 600)
+whichV24 <- sample(which24, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V24_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V24_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV24[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV24[i])/1440)
   }
@@ -1010,20 +1010,20 @@ rm(whichV24,which24)
 
 ######### cluster 25
 which25 <- which(cluster.list==25)
-whichV25 <- sample(which25, 600)
+whichV25 <- sample(which25, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V25_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V25_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV25[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV25[i])/1440)
   }
@@ -1051,20 +1051,20 @@ rm(whichV25,which25)
 
 ######### cluster 26
 which26 <- which(cluster.list==26)
-whichV26 <- sample(which26, 600)
+whichV26 <- sample(which26, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V26_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V26_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV26[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV26[i])/1440)
   }
@@ -1091,20 +1091,20 @@ rm(whichV26,which26)
 
 ######### cluster 27
 which27 <- which(cluster.list==27)
-whichV27 <- sample(which27, 600)
+whichV27 <- sample(which27, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V27_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V27_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV27[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV27[i])/1440)
   }
@@ -1129,23 +1129,22 @@ plotRGB(s)
 dev.off()
 rm(whichV27,which27)
 
-
 ######### cluster 28
 which28 <- which(cluster.list==28)
-whichV28 <- sample(which28, 600)
+whichV28 <- sample(which28, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V28_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V28_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV28[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV28[i])/1440)
   }
@@ -1172,20 +1171,20 @@ rm(whichV28,which28)
 
 ######### cluster 29
 which29 <- which(cluster.list==29)
-whichV29 <- sample(which29, 600)
+whichV29 <- sample(which29, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V29_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V29_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV29[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV29[i])/1440)
   }
@@ -1213,20 +1212,20 @@ rm(whichV29,which29)
 
 ######### cluster 30
 which30 <- which(cluster.list==30)
-whichV30 <- sample(which30, 600)
+whichV30 <- sample(which30, 1200)
 
-s <- brick(image, package="raster", ncol=620, nrows=668)
+s <- brick(image, package="raster", ncol=1280, nrows=668)
 s[[1]] <- 255 
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
-png(filename = "ClusterImage_V30_k30.png", 
-    width = 620, height = 668, 
+png(filename = "ClusterImage_V30_k30_1200min.png", 
+    width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
-for(i in 1:600) {
+for(i in 1:1200) {
   if(whichV30[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV30[i])/1440)
   }

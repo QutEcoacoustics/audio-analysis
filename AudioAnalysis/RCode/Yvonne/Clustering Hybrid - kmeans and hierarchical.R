@@ -17,46 +17,29 @@ ds3 <- AcousticDS[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover #25 is
 ############## replace NA values
 site1 <- ds3[1:(length(ds3$BackgroundNoise)/2),]
 site2 <- ds3[((length(ds3$BackgroundNoise)/2)+1):(length(ds3$BackgroundNoise)),]
-
 for(i in 1:(ncol(site1)-1)) {  # columns
-  for(j in 1:nrow(site1)) {  # rows 
+  for(j in 1:nrow(site1)) {  # rows
     if (is.na(site1[j,i])) {
-      average <- mean(c(site1[(j-30),i], site1[(j-25),i], site1[(j-20),i],
-                        site1[(j-15),i], site1[(j-10),i], site1[(j-5),i],
-                        site1[(j+30),i], site1[(j+25),i], site1[(j+20),i],
-                        site1[(j+15),i], site1[(j+10),i], site1[(j+5),i]),
-                        na.rm=TRUE)
+      average <- mean(c(site1[(j-15),i], site1[(j-12),i], site1[(j-10),i],
+                        site1[(j+15),i], site1[(j+12),i], site1[(j+10),i]),
+                      na.rm=TRUE)
       site1[j,i] <- average
     }
   }
 }
-# checked to here
 for(i in 1:(ncol(site2)-1)) {  # columns
   for(j in 1:nrow(site2)) {  # rows
     if (is.na(site2[j,i])) {
-      average <- mean(c(site2[(j-30),i], site2[(j-25),i], site2[(j-20),i],
-                        site2[(j-15),i], site2[(j-10),i], site2[(j-5),i],
-                        site2[(j+30),i], site2[(j+25),i], site2[(j+20),i],
-                        site2[(j+15),i], site2[(j+10),i], site2[(j+5),i]),
+      average <- mean(c(site2[(j-15),i], site2[(j-12),i], site2[(j-10),i],
+                        site2[(j+15),i], site2[(j+12),i], site2[(j+10),i]),
                       na.rm=TRUE)
-      site2[j,i] <- average   
+      site2[j,i] <- average
     }
   }
 }
-
-ds3 <- rbind(site1[,1:7], site2[,1:7])
-#################################
+ds6 <- rbind(site1[,1:7], site2[,1:7])
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3i")
-#Hybrid_3_4_7_10_11_15_16_knn_k_1
-# PCA type analysis
-#library(psych)
-#ic.out <- iclust(AcousticDS[,4:10])
-#ic.out7 <- iclust(AcousticDS[,3:18],nclusters = 7)
-#fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
 
-#######################################################
-# function - normalise
-#######################################################
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
 }
@@ -64,15 +47,14 @@ normalise <- function (x, xmin, xmax) {
 # Create ds3.norm_2_98 for kmeans, clara, hclust
 # a dataset normalised between 2 and 98%
 #######################################################
-ds3.norm_2_98 <- ds3
-
-for (i in 1:length(ds3)) {
-    q1 <- unname(quantile(ds3[,i], probs = 0.02, na.rm = TRUE))
-    q2 <- unname(quantile(ds3[,i], probs = 0.98, na.rm = TRUE))
-    ds3.norm_2_98[,i]  <- normalise(ds3.norm_2_98[,i], q1, q2)  
+ds3.norm_2_98 <- ds6
+for (i in 1:length(ds6)) {
+  q1 <- unname(quantile(ds6[,i], probs = 0.02, na.rm = TRUE))
+  q2 <- unname(quantile(ds6[,i], probs = 0.98, na.rm = TRUE))
+  ds3.norm_2_98[,i]  <- normalise(ds3.norm_2_98[,i], q1, q2)
 }
 # adjust values greater than 1 or less than 0
-for (j in 1:length(ds3)) {
+for (j in 1:length(ds6)) {
   for (i in 1:length(ds3.norm_2_98[,j])) {
     if (ds3.norm_2_98[i,j] > 1 & !is.na(ds3.norm_2_98[i,j]))
       ds3.norm_2_98[i,j] = 1

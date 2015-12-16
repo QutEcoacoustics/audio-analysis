@@ -23,73 +23,83 @@
 #######################################################
 # Clustering - Partitioning (kmeans & clara), hierarchical (hclust 
 # & agnes), model-based (mclust) and affinity propogation (apcluster)
-#setwd("C:\\Work\\CSV files\\DataSet_New")
-setwd("C:\\Work\\CSV files\\DataSet_Exp2a")
-setwd("C:\\Work\\CSV files\\FourMonths")
-#setwd("C:\\Work\\CSV files\\DataSet_Exp2_new")
-#setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new")
 
-#AcousticDS <- read.csv("DataSet_Exp2_4_5July_31July_1Aug_31Aug-1Sept_2015.csv", header=T)
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a")
 AcousticDS <- read.csv("Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", header=T)
-AcousticDS <- read.csv("final_dataset_22June2015_11 Oct2015.csv", header = T)
-#AcousticDS <- read.csv("Dataset_30_31July_1Aug2015_4_9_10Sept2015.csv", header=T)
-#AcousticDS <- read.csv("Dataset_30_31July_1Aug2015_9_10_12Sept2015.csv", header = T)
-#ds3 <- AcousticDS[,c(2:18)]
-ds3 <- AcousticDS[,c(3,4,7,10,11,15,16)]
-ds3 <- AcousticDS[,c(3,4,7,9,10,11,15,16)]
-#ds3 <- AcousticDS[,c(3,5,7,10,11,15,16)]
-#ds3 <- AcousticDS[,c(3,4,7,10,11,13,16)]
-# PCA type analysis
+ds6 <- AcousticDS[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover
+
 library(psych)
 ic.out <- iclust(AcousticDS[,4:10])
 ic.out7 <- iclust(AcousticDS[,3:18],nclusters = 7)
 fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
-#######################################################
-# function - normalise
-#######################################################
+
+############## ONLY FOR 111 days replace NA values
+#setwd("C:\\Work\\CSV files\\FourMonths\\")
+
+#AcousticDS <- read.csv("final_dataset_22June2015_10 Oct2015.csv", header = T)
+#ds3 <- AcousticDS[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover
+
+
+#site1 <- ds3[1:(length(ds3$BackgroundNoise)/2),]
+#site2 <- ds3[((length(ds3$BackgroundNoise)/2)+1):(length(ds3$BackgroundNoise)),]
+#for(i in 1:(ncol(site1)-1)) {  # columns
+#  for(j in 1:nrow(site1)) {  # rows
+#    if (is.na(site1[j,i])) {
+#      average <- mean(c(site1[(j-15),i], site1[(j-12),i], site1[(j-10),i],
+#                        site1[(j+15),i], site1[(j+12),i], site1[(j+10),i]),
+#                      na.rm=TRUE)
+#      site1[j,i] <- average
+#    }
+#  }
+#}
+#for(i in 1:(ncol(site2)-1)) {  # columns
+#  for(j in 1:nrow(site2)) {  # rows
+#    if (is.na(site2[j,i])) {
+#      average <- mean(c(site2[(j-15),i], site2[(j-12),i], site2[(j-10),i],
+#                        site2[(j+15),i], site2[(j+12),i], site2[(j+10),i]),
+#                      na.rm=TRUE)
+#      site2[j,i] <- average
+#    }
+#  }
+#}
+#ds6 <- rbind(site1[,1:7], site2[,1:7])
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
+
+##############################################
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
 }
-
 #######################################################
 # Create ds3.norm_2_98 for kmeans, clara, hclust
 # a dataset normalised between 2 and 98%
 #######################################################
-ds3.norm_2_98 <- ds3
-
-for (i in 1:length(ds3)) {
-    q1 <- unname(quantile(ds3[,i], probs = 0.02, na.rm = TRUE))
-    q2 <- unname(quantile(ds3[,i], probs = 0.98, na.rm = TRUE))
-    ds3.norm_2_98[,i]  <- normalise(ds3.norm_2_98[,i], 
-                                    q1, q2)  
+ds3.norm_2_98 <- ds6
+for (i in 1:length(ds6)) {
+  q1 <- unname(quantile(ds6[,i], probs = 0.015, na.rm = TRUE))
+  q2 <- unname(quantile(ds6[,i], probs = 0.985, na.rm = TRUE))
+  ds3.norm_2_98[,i]  <- normalise(ds3.norm_2_98[,i], q1, q2)
 }
 # adjust values greater than 1 or less than 0
-for (j in 1:length(ds3)) {
+for (j in 1:length(ds6)) {
   for (i in 1:length(ds3.norm_2_98[,j])) {
-    if (ds3.norm_2_98[i,j] > 1 & !is.na(ds3.norm_2_98[i,j])) 
+    if (ds3.norm_2_98[i,j] > 1 & !is.na(ds3.norm_2_98[i,j]))
       ds3.norm_2_98[i,j] = 1
   }
   for (i in 1:length(ds3.norm_2_98[,j])) {
-    if (ds3.norm_2_98[i,j] < 0 & !is.na(ds3.norm_2_98[i,j])) 
+    if (ds3.norm_2_98[i,j] < 0 & !is.na(ds3.norm_2_98[i,j]))
       ds3.norm_2_98[i,j] = 0
   }
 }
 
-# Create ds3.norm for mclust, apcluster where the data is normalised 
-# values between zero and one using minimum and maximum values
-
-ds3.norm <- ds3
-for (i in 1:length(ds3)) {
-    ds3.norm[,i]  <- normalise(ds3.norm[,i], min(ds3[,i], na.rm = TRUE),
-                               max(ds3[,i], na.rm = TRUE))
-}
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
 
 #######################################################
 # Generate and save the Correlation Matrix 
 #######################################################
-AcousticDS_noNA <- AcousticDS[complete.cases(AcousticDS), ]
+#AcousticDS_noNA <- AcousticDS[complete.cases(AcousticDS), ]
 a <- abs(cor(AcousticDS_noNA[,2:18][,unlist(lapply(AcousticDS_noNA[,2:18], 
                                                is.numeric))]))
+
 write.table(a, file = paste("Correlation_matrix_Exp2a.csv",sep=""), 
             col.names = NA, qmethod = "double", sep = ",")
 
@@ -121,7 +131,7 @@ dev.off()
 #######################################################
 # Method 1A:  Partitioning by kmeans
 #######################################################
-file <- paste("kmeans_plots_ds3norm_2_98_Exp2.png", sep = "")
+file <- paste("kmeans_plots_ds3norm_2_98_Exp2_test.png", sep = "")
 
 png(
   file,
@@ -131,20 +141,40 @@ png(
   res       = 400,
   pointsize = 4
 )
-ds3.norm_2_98noNA <- ds3.norm_2_98[complete.cases(ds3.norm_2_98), ]
-par(mfrow=c(2,1), mar=c(5,7,2,11), cex.main=2, 
+
+ds3.norm_2_98noNA <- ds3.norm_2_98#[complete.cases(ds3.norm_2_98), ]
+ds3.norm_2_98noNA <- ds3.norm_2_98noNA[,1:7]
+par(mfrow=c(3,1), mar=c(5,7,2,11), cex.main=2, 
     cex.axis=2, cex.lab=2)
 
 # Determining the number of clusters ()
-wss <- (nrow(ds3.norm_2_98noNA)*sum(apply(ds3.norm_2_98noNA, 2, var)))
+wss <- (nrow(ds3.norm_2_98)*sum(apply(ds3.norm_2_98, 2, var)))
+wss <- NULL
 #for (i in 2:50) {
-for (i in seq(7500,35000,2500)) {
+for (i in seq(1,40,1)) {
   set.seed(123)
-  wss[i] <- sum(sum(kmeans(ds3.norm_2_98noNA, 
-                    centers=i, iter.max = 100)$withinss))
+  wss[i] <- kmeans(ds3.norm_2_98, centers=i, iter.max = 50)$tot.withinss
 }
 
-#plot(1:50, wss, type = "b", xlab="Number of clusters",
+error.wss <- NULL
+for (i in 1:40) {
+  error.wss[i] <- (wss[i]-wss[i+1])/wss[i]
+}
+
+png("kmeans error.png", width = 800, height=650)
+par(mar=c(4,5,1,1))
+plot(error.wss,type="l",main="kmeans error",xlab = "k value",
+     ylab = expression(paste(Delta, " ", Sigma, "wss / ", Sigma, 
+     "wss")),cex.axis=1.2,cex.lab=1.4)
+abline(v=8,col="red",lty=2)
+abline(v=16,col="red",lty=2)
+abline(v=30,col="red",lty=2)
+dev.off()
+
+plot(1:20, wss[1:20], type = "b", xlab="Number of clusters",
+ylab = "within groups sum of squares",
+main = "kmeans Within Groups Sum of Squares - Exp2")
+
 plot(seq(10000,35000,2500), wss, type = "b", xlab="Number of clusters", 
      ylab = "within groups sum of squares",
      main = "kmeans Within Groups Sum of Squares - Exp2")
@@ -153,9 +183,10 @@ min.size <- NULL
 max.size <- NULL
 variance <- NULL
 clusters <- NULL
+#write.csv(ds3.norm_2_98noNA,"file.csv")
 
-#for (i in 2:50) {
-for (i in seq(7500,35000,2500)) {  
+for (i in 2:50) {
+#for (i in seq(7500,35000,2500)) {  
   set.seed(123)
   kmeansObj <- kmeans(ds3.norm_2_98noNA, centers = i, iter.max = 100)
   min <- unname(min(table(kmeansObj$cluster)))
@@ -177,20 +208,25 @@ colnames(clusters) <- column.names
 
 write.csv(clusters, file = "kmeans_clust.csv")
 kmean_clust <- read.csv("kmeans_clust.csv", header=T)
-#plot(2:50,c(min.size), type = "l", ylim=c(0,8000), 
-#     ylab = "Cluster size", xlab = "Number of clusters",
-#     main = "kmeans Cluster Size Range")
-#par(new=TRUE)
 
-plot(seq(7500,35000,2500),c(max.size), type = "l", col = "red", 
-     ylim=c(0,9000), xlab = "", 
-     ylab = "",las=1, xlim = c(0,35000))
+plot(1:50,c(min.size), type = "l", ylim=c(0,8000), 
+     ylab = "Cluster size", xlab = "Number of clusters",
+     main = "kmeans Cluster Size Range")
 mtext("Maximum cluster size",side=2,
       col="black",line=5, cex=2)
 par(new=TRUE)
-plot(seq(7500,35000,2500), c(variance), type = "l", col="blue",
-     ylab = "", xlim = c(0,35000),
+
+#plot(seq(7500,35000,2500),c(max.size), type = "l", col = "red", 
+#     ylim=c(0,9000), xlab = "", 
+#     ylab = "",las=1, xlim = c(0,35000))
+
+plot(1:50, c(variance), type = "l", col="blue",
+     ylab = "", 
      yaxt='n', xaxt='n',xlab = "")
+
+#plot(seq(7500,35000,2500), c(variance), type = "l", col="blue",
+#     ylab = "", xlim = c(0,35000),
+#     yaxt='n', xaxt='n',xlab = "")
 axis(side=4, at = pretty(range(c(variance))),
      col = "blue",col.axis="blue",las=1)
 mtext("Variance",side=4,col="blue",line=9, cex=2)
@@ -198,14 +234,15 @@ abline(v=10000, lty=2, col="red")
 abline(v=20000, lty=2, col="red")
 abline(v=30000, lty=2, col="red")
 legend('topright', c("Maximum cluster size","Variance"), 
-     lty=1, col=c('red', 'blue'),cex=2)
+     lty=1, col=c('red', 'blue'),cex=1)
+plot(1:50,error.wss[1:50], type="l")
 dev.off()
 # calculate the variance
 
 # determine the minimum size of clusters to get more evenly sized 
 # clusters
 set.seed(123)
-kmeansObj <- kmeans(ds3.norm_2_98noNA, centers = 28, iter.max = 100)
+kmeansObj <- kmeans(ds3.norm_2_98noNA, centers = 17, iter.max = 100)
 kmeansObj$cluster
 table(kmeansObj$cluster)
 min.cs <- unname(min(table(kmeansObj$cluster)))
@@ -332,8 +369,8 @@ dev.off()
 #######################################################
 # Method 2a:  Hierarchical - hclust
 #######################################################
-setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
-setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
+#setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+#setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 #setwd("C:\\Work\\CSV files\\DataSet_Exp2_new\\Hierarchical\\")
 
 require(graphics)
@@ -671,7 +708,7 @@ for (i in seq(1000, 4500, 500)) {
   #hc.fit <- hclust(dist.hc, "average")
   hybrid.fit.ward <- hclust(dist.hc, "ward.D2")
   plot(hybrid.fit.ward)
-  hybrid.clusters <- cutree(hybrid.fit.ward, k=25)
+  hybrid.clusters <- cutree(hybrid.fit.ward, k=35)
   # generate the test dataset
   hybrid.dataset <- cbind(hybrid.clusters, kmeansCenters)
   hybrid.dataset <- as.data.frame(hybrid.dataset)
@@ -691,12 +728,12 @@ for (i in seq(1000, 4500, 500)) {
 # produce 24 hour fingerprints from this clusterlist
 column.names <- NULL
 for (i in seq(1000, 4500, 500)) {
-  col.names <- paste("hybrid_k", i, "k25", sep = "")
+  col.names <- paste("hybrid_k", i, "k35", sep = "")
   column.names <- c(column.names,col.names)
 }
 colnames(clusters) <- column.names
 
-write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k25.csv", row.names = F)
+write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k35.csv", row.names = F)
 ##################################################################
 # EXPERIMENT 1
 # The aim of this experiment is to determine the minimum number of

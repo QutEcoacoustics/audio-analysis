@@ -1,5 +1,9 @@
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3i")
+# 18 November 2015
+# Code calculates the average of each index at each site for 
+# each cluster
 
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
+path <- "C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\"
 norm.dat <- read.csv("ds3.norm_2_98.csv", header = T)
 
 ##############################
@@ -7,23 +11,24 @@ clusters <- read.csv("hybrid_clust_knn_17500_3.csv",header=T)
 
 #norm.dat <- norm.dat[c(1:(length(norm.dat$X)/2),(length(norm.dat$X)/2+1):(length(norm.dat$X))),]
 
-norm.dat <- cbind(norm.dat[2:length(norm.dat)], clusters[7])
+norm.dat <- cbind(norm.dat[2:length(norm.dat)], clusters$hybrid_k17500k30k3)
+
 norm.dat1 <- norm.dat[1:(length(norm.dat$Snr)/2),]
 norm.dat2 <- norm.dat[(length(norm.dat$Snr)/2)+1:length(norm.dat$Snr),]
 
 for (i in unique(clusters$hybrid_k17500k30k3)) {
     Name <- paste("Gympie",i,".csv",sep="")
-    write.csv(subset(norm.dat1, hybrid_k17500k30k3==i, row.names=F), Name, row.names=F)
+    write.csv(subset(norm.dat1, clusters$hybrid_k17500k30k3==i, row.names=F), Name, row.names=F)
 }
 
 for (i in unique(clusters$hybrid_k17500k30k3)) {
   Name <- paste("Woondum",i,".csv",sep="")
-  write.csv(subset(norm.dat2, hybrid_k17500k30k3==i, row.names=F), Name, row.names=F)
+  write.csv(subset(norm.dat2, clusters$hybrid_k17500k30k3==i, row.names=F), Name, row.names=F)
 }
 
 for (i in unique(clusters$hybrid_k17500k30k3)) {
   Name <- paste("All",i,".csv",sep="")
-  write.csv(subset(norm.dat, hybrid_k17500k30k3==i, row.names=F), Name, row.names=F)
+  write.csv(subset(norm.dat, clusters$hybrid_k17500k30k3==i, row.names=F), Name, row.names=F)
 }
 
 #source("F:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\sort.Filename.R")
@@ -49,7 +54,6 @@ site2.list <- c("Woondum1.csv","Woondum2.csv","Woondum3.csv","Woondum4.csv","Woo
                 ,"Woondum29.csv","Woondum30.csv")
 
 all.Gympie.averages <- NULL
-path <- "C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3i\\"
 
 for (i in site1.list) {
   Name <- (paste(path,i,sep =""))
@@ -126,19 +130,12 @@ comparisonOfTwo <- rbind(all.Gympie.averages,all.Woondum.averages)
 a <- hclust(dist(comparisonOfTwo),"ward.D2")
 png("hclust Comparison of Gympie and Woondum 17500 k30 3.png",width=2500,height=1000)
 par(mar=c(6,6,2,2))
-site.list <- c("G1","G2","G3","G4","G5","G6","G7","G8","G9","G10",
-               "G11","G12","G13","G14","G15","G16","G17","G18","G19","G20",
-               "G21","G22","G23","G24","G25","G26","G27","G28","G29","G30",
-               "G31","G32","G33","G34","G35","G36","G37","G38","G39","G40",
-               "W1","W2","W3","W4","W5","W6","W7","W8","W9","W10",
-               "W11","W12","W13","W14","W15","W16","W17","W18","W19","W20",
-               "W21","W22","W23","W24","W25","W26","W27","W28","W29","W30",
-               "W31","W32","W33","W34","W35","W36","W37","W38","W39","W40")
+site.list <- site.list
 plot(a, main = "Comparison of Gympie and Woondum k17500, k30 k3", cex.lab=2, 
      cex.axis=2, cex=1.5, cex.main=2, labels=site.list)
 dev.off()
 
-View(norm.dat)
+#View(norm.dat)
 col.name <- names(norm.dat[,1:7])
 
 colnames(all.averages) <- col.name

@@ -1,7 +1,7 @@
 ####################################################################
 # 7 September 2015
 # Histograms of cluster.lists - daily and four-hourly
-#
+# Follow this code with 
 ####################################################################
 #setwd("C:\\Work\\CSV files\\GympieNP1_new\\kmeans_30clusters")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2\\24hourFilesA\\")
@@ -12,18 +12,17 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
 #cluster.list <- read.csv("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30Gympie NP1 .csv", header = T)
-cluster.lists.kmeans.exp2   <- read.csv("km_fit_set.csv", header = T) # kmeans
+setof6 <- c(6,8,10,12,14,16) # set which columns are to be used
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\kmeans")
+
+cluster.lists.kmeans.exp2   <- read.csv("kmeans_clust.csv", header = T)[,setof6] # kmeans
 cluster.lists.hclust.k.exp2 <- read.csv("hc_fit_set_cutree_k.csv", header = T) # hclust
 cluster.lists.mclust.exp2   <- read.csv("mclustlist_ds3norm_1_50.csv", header = T) # mclust
-cluster.list.hybrid.exp2    <- read.csv("hybrid_clust_k25.csv", header = T) # hybrid
+cluster.list.hybrid.exp2    <- read.csv("hybrid_clust_k35.csv", header = T) # hybrid
 
 #indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", 
 #                    header=T)
 indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2a\\Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", 
-                    header=T)
-indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2_new\\Dataset_30_31July_1Aug2015_4_9_10Sept2015.csv", 
-                    header=T)
-indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Dataset_30_31July_1Aug2015_9_10_12Sept2015.csv", 
                     header=T)
 
 day.ref <- which(indices$minute.of.day=="0")
@@ -136,19 +135,18 @@ twentyfour_hour_table_4 <- cbind(twentyfour_hour_table_4,site,as.character(dates
 twentyfour_hour_table_5 <- cbind(twentyfour_hour_table_5,site,as.character(dates2))
 twentyfour_hour_table_6 <- cbind(twentyfour_hour_table_6,site,as.character(dates2))
 
-write.csv(twentyfour_hour_table_1, "kmeans_k8_24hour.csv", 
+write.csv(twentyfour_hour_table_1, paste("kmeans_k",setof6[1],"_24hour.csv",sep = ""), 
           row.names = F)
-write.csv(twentyfour_hour_table_2, "kmeans_k9_24hour.csv", 
+write.csv(twentyfour_hour_table_2, paste("kmeans_k",setof6[2],"_24hour.csv",sep = ""), 
           row.names = F)
-write.csv(twentyfour_hour_table_3, "kmeans_k14_24hour.csv", 
+write.csv(twentyfour_hour_table_3, paste("kmeans_k",setof6[3],"_24hour.csv",sep = ""), 
           row.names = F)
-write.csv(twentyfour_hour_table_4, "kmeans_k18_24hour.csv", 
+write.csv(twentyfour_hour_table_4, paste("kmeans_k",setof6[4],"_24hour.csv",sep = ""), 
           row.names = F)
-write.csv(twentyfour_hour_table_5, "kmeans_k28_24hour.csv", 
+write.csv(twentyfour_hour_table_5, paste("kmeans_k",setof6[5],"_24hour.csv",sep = ""), 
           row.names = F)
-write.csv(twentyfour_hour_table_6, "kmeans_k29_24hour.csv", 
+write.csv(twentyfour_hour_table_6, paste("kmeans_k",setof6[6],"_24hour.csv",sep = ""), 
           row.names = F)
-
 
 #####################################################
 # Saving the hclust_k 24 hour files
@@ -899,21 +897,21 @@ twentyfour_hour_table_6 <- cbind(twentyfour_hour_table_6,site,as.character(dates
 twentyfour_hour_table_7 <- cbind(twentyfour_hour_table_7,site,as.character(dates2))
 twentyfour_hour_table_8 <- cbind(twentyfour_hour_table_8,site,as.character(dates2))
 
-write.csv(twentyfour_hour_table_1, "hybrid_k1000_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_1, "hybrid_k1000_k35_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_2, "hybrid_k1500_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_2, "hybrid_k1500_k35_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_3, "hybrid_k2000_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_3, "hybrid_k2000_k35_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_4, "hybrid_k2500_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_4, "hybrid_k2500_k35_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_5, "hybrid_k3000_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_5, "hybrid_k3000_k35_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_6, "hybrid_k3500_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_6, "hybrid_k3500_k35_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_7, "hybrid_k4000_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_7, "hybrid_k4000_k35_24hour.csv", 
           row.names = F)
-write.csv(twentyfour_hour_table_8, "hybrid_k4500_k25_24hour.csv", 
+write.csv(twentyfour_hour_table_8, "hybrid_k4500_k35_24hour.csv", 
           row.names = F)
 
 ####################################################
