@@ -90,7 +90,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Dictionary<string, double[,]> ConcatenateSpectralIndexFilesForOneDay(DirectoryInfo[] directories,
                                          DirectoryInfo opDir,
                                          string filestem,
-                                         DateTimeOffset dto)
+                                         DateTimeOffset dto,
+                                         TimeSpan indexCalcTimeSpan)
         {
             // 1. PATTERN SEARCH FOR CORRECT CSV FILES
             // Assume that the required files are in subdirectories of given site. Read them into a dictionary
@@ -102,7 +103,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
 
             string fileStemPattern = "*" + dateString + "*__" + analysisType;
-            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories.ToArray(), fileStemPattern, keys);
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories.ToArray(), fileStemPattern, keys, indexCalcTimeSpan);
 
             // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
             string opFileStem = String.Format("{0}_{1}", filestem, dateString);
@@ -142,7 +143,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //    opFileStem = String.Format("{0}_{1}", filePrefix, dateString);
 
             string fileStemPattern = "*" + dateString + "*__" + analysisType;
-            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys);
+            TimeSpan indexCalcDuration = TimeSpan.FromSeconds(60); // ASSUMPTION!!!
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys, indexCalcDuration);
             return dictionary;
         }
 
