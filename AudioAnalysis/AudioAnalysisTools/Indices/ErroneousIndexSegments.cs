@@ -55,7 +55,7 @@ namespace AudioAnalysisTools.Indices
         //  STATIC METHODS BELOW 
         // #####################################################################################################################
 
-        public static List<ErroneousIndexSegments> RealityCheck(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
+        public static List<ErroneousIndexSegments> DataIntegrityCheck(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
             bool allOK = true;
             int errorStart = 0;
