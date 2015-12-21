@@ -157,9 +157,8 @@ TargetSubset <- function (df, target) {
  }
 
 
-    
 
-GetTargetDescription <- function (target) {
+GetTargetDescription   <- function (target) {
     # Converts a target from a nested list to a compact textual representation 
     #
     # Args:
@@ -168,43 +167,245 @@ GetTargetDescription <- function (target) {
     #                 eg c(0, 13, 29, 34) will include minutes 0-13 and 29-34
     # 
     
+    target.df <- TargetToDf(target)
     
-    sites <- names(target)
-    sites.txt <- sites
-    # first get all dates, to if they are all the same year or month
-    all.dates <- c()
-    for (site in sites) {
-        all.dates <- c(all.dates, names(target[[site]]))
-    }
-    date.parts <- GetDateParts(all.dates)
+    return(DfToDesc(target.df))
     
-    for (s in 1:length(sites)) {
-        site <- sites[s]
+    
+}
 
+TargetToDf <- function (target) {
+    df <- data.frame(site = character(), year = numeric(), month = numeric(), day = numeric(), mins = character())
+    sites <- names(target)
+    for (site in sites) {
         dates <- names(target[[site]])
-        dates.txt <- dates
-        for (d in 1:length(dates)) {
-            date <- dates[d]
-            dates.txt[d] <- paste(strsplit(dates.txt[d], "-")[[1]][date.parts$selector], collapse = "-")
-            ranges <- target[[site]][[date]]
-            if (any(ranges != c(0,1439))) {
-                # if the ranges for this date are anything except all day, 
-                # specify it, else ommit it since it is all day by default
-                dates.txt[d] <- paste0(dates.txt[d], "(", paste(ranges, collapse = ","),")")
-            }
+        for (date in dates) {
+            mins.txt <- paste0("(", paste(target[[site]][[date]], collapse = ","),")")
+            date.vals <- unlist(strsplit(date, "-"))
+            row <- data.frame(site = site, year = as.numeric(date.vals[1]), month = as.numeric(date.vals[2]), day = as.numeric(date.vals[3]), mins = mins.txt)
+            df <- rbind(df, row)
+        }
+    }
+    return(df)
+}
+
+DfToDesc <- function (df) {
+    # given a data frame of exact minutes and sites with the columns
+    # year, month, site, day, mins
+    # e.g. year month site day     mins
+    #   1  2010    10   NE  12 (0,1439)
+    # transforms it into a concise unambiguous string that describes the ranges
+    # eg "2010-10NE12,15-17,NW,SE,SW13-17,-11NE14"
+    # 
+    # Details: 
+    #   there is one row of the dataframe for each individual day in the study
+    #   and the minutes to include are in the format "(start.range,end.range)"
+    #   the returned string will have the years each of which followed by the months 
+    #   in that year, each of which followed by the sites in that month, each of which followed by the days in that site
+    #   to avoid ambiguity, year is any number is 4 digits, month is preceded by a dash, sites are characters, 
+    #   but if they start or end with an integer will be surrounded by square brackets
+
+    
+    # todo: check the colnames are right
+    
+    df <- data.frame(lapply(df, as.character), stringsAsFactors=FALSE)
+    
+    # remove minutes 0-1439 because that is all day so default
+    df$mins[df$mins == '(0,1439)'] <- ''
+    
+    # sort correctly
+    df <- df[with(df, order(year, month, site, day, mins)), ]
+    
+    # add a dash before month number
+    df$month <- paste0('-', df$month)
+    
+    # sites that start or end with a number will produce an ambigous string, 
+    # so put them in square brackets []
+    site.with.num <- grep('^[0-9]|[0-9]$', df$site)
+    df$site[site.with.num] <- paste0('[', df$site[site.with.num], ']')
+    
+    
+    cols <- c('year', 'month', 'site', 'day', 'mins')
+    
+    for (cur.col in 4:1) {
+        
+        group.by <- cols[cur.col]
+        merge <- cols[cur.col:(cur.col+1)]
+        df <-GroupBy(df, group.by, merge)
+        df <- GroupBy(df, group.by)
+    }
+    
+    
+    return(df)
+    
+    
+    
+    
+}
+
+GroupBy <- function (df, group.by, merge = NULL) {
+        
+    # the total number of rows will be reduced to the unique combinations of everything to the left
+    # of the group.by.col number
+    
+    if (ncol(df) == 1) {
+        return(paste0(as.character(df[,group.by]), collapse=','))
+    }
+    
+    
+    keep.cols <- colnames(df)[colnames(df) != group.by]
+    u <- unique(df[colnames(df) != group.by])
+    grouped = rep(NA, nrow(u))
+    for (row in 1:nrow(u)) {
+        if (length(keep.cols) > 1) {
+            subset <- merge(df, u[row,], by = keep.cols)
+            to.group <- subset[,group.by]
+        } else {
+            to.group <- df[df[keep.cols] == u[row,keep.cols],group.by]
         }
         
-        sites.txt[s] <- paste(site, paste(dates.txt, collapse = ","), sep = ":")
+        
+        grouped[row] <- MakeGroup(to.group)
     }
-    d <- paste(sites.txt, collapse = ";")
-    d <- paste(date.parts$prefix, d)
-    return(d)  
+    u[group.by] <- grouped
+    if (!is.null(merge)) {
+        merged <- paste0(u[,merge[1]], u[,merge[2]])
+        u <- u[!colnames(u) %in% merge]
+        u[merge[1]] <- merged
+    }
+    
+    
+    
+    return(u)
+}
+
+
+MakeGroup <- function (items, sort = TRUE) {
+    # if the items are non numerical, pastes them together with separator
+    # if they are integers, replaces 3 or more consecutive numbers with the first and last separated by a :
+    
+    
+    if (length(items) == 1) {
+        return(items)
+    } else if (sort) {
+        items <- items[order(items)] 
+    }
+    
+    # check if they are numeric
+    if (length(grep('^[0-9]+$', as.character(items))) == length(items)) {
+        items <- AbbreviateConsecutive(as.numeric(items))
+    }
+    
+    return(paste0(items, collapse = ','))
+}
+
+AbbreviateConsecutive <- function (nums, intra.group.separator = '-', inter.group.separator = NULL) {
+    # converts a sequency of numbers from something like this 1,2,3,4,6,7,8,10,11
+    # to this "1-4,6-8,10,11" or ["1-4","6-8","10","11"]
+    #
+    # Args: 
+    #   nums: integers
+    #   intra.group.separator: string; the string to separate the first and last numbers of a run of consecutive numbers
+    #   inter.group.separator: string; optional; if supplied, will return a string with each group of consecutive numbers separated by this
+    #                                            if ommited, will return a vector of strings, with each element representing a group of consecutive numbers
+    
+    if (length(nums) == 1) {
+        return(nums)
+    }
+    groups <- list()
+    cur.group <- 1
+    groups[[cur.group]] <- nums[1]
+    for (i in 2:length(nums)) {
+        
+        if (nums[i] - nums[i-1] > 1) {
+            cur.group <- cur.group + 1
+            groups[[cur.group]] <- nums[i]
+        } else {
+            groups[[cur.group]] <- c(groups[[cur.group]], nums[i])
+        }
+    }
+    grouped <- lapply(groups, function (x) {
+        if (length(x) > 2) {
+            return(paste0(x[1],intra.group.separator,x[length(x)])) 
+        } else if (length(x) == 2) {
+            return(paste0(x[1],',',x[length(x)]))
+        } else {
+            return(x[1])
+        }
+    })
+    
+    if (is.null(inter.group.separator)) {
+        return(as.character(grouped))
+    } else {
+        return(paste0(grouped, collapse = inter.group.separator))
+    }
+    
 }
 
 
 
+#     
+#     # now we have a data frame with all the site year month day mins
+#     # to best group, figure out which is 
+#     # group by year
+#     years <- unique(df$year)
+#     for (y in years) {
+#         cur.year <- df[df$year == y,]
+#         months <- unique(cur.year$month)
+#         for (m in months) {
+#             cur.month <- cur.year[cur.year$month == m]
+#         }
+#     }
+#     
+# DfToDesc.recursive.1 <- function (df) {
+#     groups <- unique(df[,1])
+#     to.return <- list(vals = )
+#     for (g in groups) {
+#         selection <- df[df[,1] == g,]
+#         if (ncol(df) == 1) {
+#             # we are looking at the mins
+#             if (selection == '(0,1439)') {
+#                 return('')
+#             } else {
+#                 return(selection)
+#             }
+#         } else {
+#             new.df <- df[,2:(ncol(df))]
+#         }
+#     }
+# }
 
 
+GetMinlistDescription <- function (min.list) {
+    
+    return(GetTargetDescription(GetMinlistSummary(min.list)))
+    
+}
+
+GetMinlistSummary <- function (min.list) {
+    # given a dataframe of minutes with the columns site, date, min
+    # returns a textual description
+    
+    sites <- unique(min.list$site)
+    summary <- list()
+    for (s in sites) {
+        summary[[s]] <- list()
+        dates <- unique(min.list$date[min.list$site == s])
+        for (d in dates) {
+            mins <- RemoveConsecutive(min.list$min[min.list$site == s & min.list$date == d])
+            summary[[s]][[d]] <- mins
+        }
+    }
+    return(summary)
+}
+
+RemoveConsecutive <- function (nums) {
+    upper.bounds <- abs(nums[1:(length(nums) - 1)] - nums[2:(length(nums))]) != 1
+    lower.bounds <- which(upper.bounds) + 1
+    upper.bounds[lower.bounds] <- TRUE
+    upper.bounds[1] <- TRUE
+    return(nums[upper.bounds])
+}
 
 
 ExpandMinId <- function (min.ids = NA) {
@@ -227,7 +428,6 @@ ExpandMinId <- function (min.ids = NA) {
     row.names(new.df) <- row.names
     return(new.df)
 }
-
 
 IsWithinTargetTimes <- function (date, min, site) {
     # determines whether the given date, startmin and site are within
@@ -263,7 +463,6 @@ IsWithinTargetTimes <- function (date, min, site) {
     }
 }
 
-
 AddMinuteIdCol <- function (data) {
     # given a data frame with the columns "date", "site", and either "min" or "start.sec", 
     # will look up the minute id for each row and add a column to the data frame
@@ -294,9 +493,6 @@ AddMinuteIdCol <- function (data) {
     return(data) 
 }
 
-
-
-
 SetMinute <- function (events, start.sec.col = "start.sec")  {
     # for a list of events which contains the filename 
     # (which has the start time for the file encoded)
@@ -315,10 +511,6 @@ SetMinute <- function (events, start.sec.col = "start.sec")  {
     return (new.events)
     
 }
-
-
-
-
 
 CreateTargetMinutesRandom.old <- function () {
     # randomly selects a subset of the target minutes
@@ -418,3 +610,46 @@ AddMinuteIdCol.old <- function (data) {
     colnames(new.data) <- c(cols, 'min.id')
     return(new.data) 
 }
+
+GetTargetDescription.old <- function (target) {
+    # Converts a target from a nested list to a compact textual representation 
+    #
+    # Args:
+    #   target: list; names of top level are sites, values are lists of dates
+    #                 names of 2nd level are dates, values are minutes to include 
+    #                 eg c(0, 13, 29, 34) will include minutes 0-13 and 29-34
+    # 
+    
+    
+    sites <- names(target)
+    sites.txt <- sites
+    # first get all dates, to if they are all the same year or month
+    all.dates <- c()
+    for (site in sites) {
+        all.dates <- c(all.dates, names(target[[site]]))
+    }
+    date.parts <- GetDateParts(all.dates)
+    
+    for (s in 1:length(sites)) {
+        site <- sites[s]
+        
+        dates <- names(target[[site]])
+        dates.txt <- dates
+        for (d in 1:length(dates)) {
+            date <- dates[d]
+            dates.txt[d] <- paste(strsplit(dates.txt[d], "-")[[1]][date.parts$selector], collapse = "-")
+            ranges <- target[[site]][[date]]
+            if (any(ranges != c(0,1439))) {
+                # if the ranges for this date are anything except all day, 
+                # specify it, else ommit it since it is all day by default
+                dates.txt[d] <- paste0(dates.txt[d], "(", paste(ranges, collapse = ","),")")
+            }
+        }
+        
+        sites.txt[s] <- paste(site, paste(dates.txt, collapse = ","), sep = ":")
+    }
+    d <- paste(sites.txt, collapse = ";")
+    d <- paste(date.parts$prefix, d)
+    return(d)  
+}
+

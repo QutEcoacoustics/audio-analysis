@@ -2,7 +2,7 @@
 
 paths <- list(
     audio = c("/Volumes/My Passport/Phil#61/Audio/OriginalAudio/TaggedRecordings",
-                     "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
+             "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
               '/Users/n8933464/Documents/sample_selection_output/cache'),

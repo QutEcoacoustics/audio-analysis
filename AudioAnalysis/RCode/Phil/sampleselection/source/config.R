@@ -1,7 +1,7 @@
 # the lower the number the less reporting is done
 # when the report function is called, the priority is specified
 # lower numbers are higher priority
-g.report.level <- 4
+g.report.level <- 5
 
 #####
 # paths for input and output relative to working directory

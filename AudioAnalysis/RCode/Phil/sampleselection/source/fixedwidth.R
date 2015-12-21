@@ -145,7 +145,8 @@ ExtractSDFForFile <- function (path,
                                num.fbands = 16, 
                                max.f = 8000, 
                                min.f = 400, 
-                               num.coefficients = 16) {
+                               num.coefficients = 16,
+                               use.cached = TRUE) {
     
     # given the path to an audio file, will create a spectrogram, then split it into the appropriate 
     # segments, then calculate TDCCs 
@@ -157,10 +158,13 @@ ExtractSDFForFile <- function (path,
     require('digest')
     
     cache.id <- digest(paste(path, num.fbands, max.f, min.f, num.coefficients))
-    retrieved.from.cache <- ReadCache(cache.id)
-    if (retrieved.from.cache != FALSE) {
-        return(retrieved.from.cache)
+    if (use.cached) {
+        retrieved.from.cache <- ReadCache(cache.id)
+        if (retrieved.from.cache != FALSE) {
+            return(retrieved.from.cache)
+        }
     }
+
     
     cur.segments <- segments[segments$wave.path == path, ] 
     all.files <- unique(segments$wave.path)
@@ -170,7 +174,11 @@ ExtractSDFForFile <- function (path,
     # create the spectrogram
     cur.spectro <- Sp.CreateFromFile(path, frame.width = 256)
     
+    # Noise Reduction !!!!
+    spectro.vals <- DoNoiseReduction(cur.spectro$vals)
     spectro.vals <- ReduceSpectrogram2(cur.spectro$vals, num.bands = num.fbands, min.f, max.f)
+    
+    
     
     #        cur.spectro$vals <- RemoveNoise(cur.spectro$vals)
     segment.duration <- 1 # seconds
@@ -293,22 +301,6 @@ RoundToPow2 <- function (x, ceil = FALSE, floor = FALSE) {
 }
 
 
-RemoveNoise <- function (spectro) {
-    # aggressive noise removal
-    # normalise
-    spectro <- Normalize(spectro)
-    # for each row, calculate the median of it and it's neighbouring rows
-    med <- rep(NA, nrow(spectro))
-    s1 <- rbind(spectro[1,], spectro)
-    s1 <- rbind(s1, s1[nrow(s1),])
-    for (i in 1:(length(med))) {    
-        med[i] <- median(s1[i:(i+2),], na.rm = TRUE)
-    }
-    med <- matrix(med, nrow = nrow(spectro), ncol = ncol(spectro))
-    rem <- spectro < med
-    spectro[rem] <- 0
-    return(spectro)
-}
 
 test1 <- function () {
     

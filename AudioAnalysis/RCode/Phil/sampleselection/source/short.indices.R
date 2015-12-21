@@ -1,6 +1,15 @@
 
-
+# ACI: Acoustic Complexity Index
+# BGN: Background Noise
+# CVR: Cover
+# ENT: Entropy
+# POW: ??
 spectral.indices <- c('ACI', 'BGN', 'CVR', 'ENT', 'EVN', 'POW')
+
+
+
+
+
 offset.list <- c('Indices.csv') # this contains a column for second-offset from start of file
 
 
@@ -181,8 +190,6 @@ Complete24hCsv <- function (df, row.numbers) {
     # given a df where each row represents a second of the day, and a list of which second of the day each row represents
     # adds any extra rows so that the final rownumber equals the second of the day it represents
 
-
-
     # add NAs for missing seconds
     df.with.na <- as.data.frame(matrix(NA, nrow = 60*60*24, ncol = ncol(df)))
     colnames(df.with.na) <- colnames(df)
@@ -194,7 +201,7 @@ Complete24hCsv <- function (df, row.numbers) {
 
 
 
-
+# Todo: get this working with the standard clustering code that already works for segment events (fixed.width.R)
 
 ClusterSeconds <- function (df = NULL) {
     
@@ -242,7 +249,6 @@ CreateMinIdColumn <- function (site, date, resolution, num.rows, start.min = 0) 
     #   num.rows: how many rows. i.e. duration in minutes * resolution
     #   start.minute: the minute of the day of the first minute in the recording. 
     
-    
     min.ids <- GetMinuteList()
     min.ids <- min.ids[min.ids$date == date & min.ids$site == site,]
     min.ids <- min.ids$min.id
@@ -268,9 +274,7 @@ AddEventIdColumn <- function (df) {
     # to make it sortable, we need to padd with zeros, which means assuming a maximum number
     # of min ids. here, we choose 6 for a maximum number of almost 1 million minutes per study
     minute.padding.length <- 6
-    
     min.ids <- unique(df$min.id)
-    
     for (min.id in min.ids) {
         Dot()
         selection <- df$min.id == min.id
@@ -281,7 +285,6 @@ AddEventIdColumn <- function (df) {
         df$event.id[selection] <- paste0(ZeroPad(min.id, minute.padding.length), '-', ZeroPad((1:num.events), event.padding.length))
         
     }
-    
     return(df)
     
     
@@ -306,12 +309,9 @@ ReduceSpectrogram2 <- function (m, num.bands, min.f, max.f, source.max.f = 11050
     # given a matrix representing spectral data each row representing a frequency bin and each 
     # column a time frame, discards unwanted frequencies and merges frequency bin to reduce the number (by averaging)
     
-    
-    
     f.per.bin <- source.max.f / nrow(m)
     min.bin <- round(min.f / f.per.bin)
     max.bin <- round(max.f / f.per.bin)
-    
     
     freq.labels <- 1:nrow(m) * f.per.bin
     
@@ -322,24 +322,16 @@ ReduceSpectrogram2 <- function (m, num.bands, min.f, max.f, source.max.f = 11050
     # interpolate
     
     matrix.out <- matrix(NA, nrow = num.bands, ncol = ncol(m))
-    
     # this might be very slow ... about 8 seconds
     for (cur.col in 1:ncol(m)) {
         matrix.out[,cur.col] <- approx(m[,cur.col], n = num.bands)$y
     }
     
-    
     freq.labels <- round(approx(freq.labels, n = num.bands)$y)
-    
     rownames(matrix.out) <- freq.labels
-    
     return(matrix.out)
     
-    
-    
-    
 }
-
 
 
 ReduceCsv <- function (csv, discard.bottom = 6, discard.top = 40, merge.columns = 1) {
@@ -348,10 +340,6 @@ ReduceCsv <- function (csv, discard.bottom = 6, discard.top = 40, merge.columns 
     # 2) discards some rows from the top (high frequencies where birds don't call)
     # 3) averaging: groups nearby rows and computes averages so that the total number of 
     #               remaining rows is num.bands
-    
-    
-    
-    
     
     # remove the column that has the minute num
     csv <- csv[,2:ncol(csv)]
@@ -362,43 +350,30 @@ ReduceCsv <- function (csv, discard.bottom = 6, discard.top = 40, merge.columns 
     
     # descard top and bottom
     csv <- csv[, (discard.bottom+1):(ncol(csv) - discard.top)]
-        
         # the number of columns to use per frequency band
         band.width = merge.columns
-        
         # we have previously ensured that this is an integer
         num.bands <- ncol(csv) / merge.columns
-        
         end.cols <- (1:num.bands)*band.width 
         start.cols <- end.cols - band.width + 1
 
     if (merge.columns > 1) {
-    
         # take averages
         new.csv <- matrix(NA, nrow = nrow(csv), ncol = num.bands)
-        
 
         for (band in 1:num.bands) {
             Dot()
             new.csv[,band] <- apply(csv[,start.cols[band]:end.cols[band]], 1, mean)   
         }
       
-        
-        
     } else {
-        
         new.csv <- csv
-        
     }
-    
 
-    
     new.csv <- as.data.frame(new.csv)
     colnames(new.csv) <- paste0(start.cols + discard.bottom)
     
-    
     return(new.csv)
-    
     
 }
 
@@ -416,23 +391,18 @@ ClusterSegments <- function (df, num.clusters = 240, normalize = TRUE, nstart = 
     remove.cols <- c('min.id', 'event.id')
     features <- df[,!colnames(df) %in% remove.cols]
     features <- as.matrix(scale(features))
-    
-    Timer(ptm, 'scaling features')  
-    
+    Timer(ptm, 'scaling features')
     if (is.null(num.clusters)) {
         num.clusters <- ReadInt('number of clusters for K Means', default = 240)     
     }
-    
     kmeans.results <- as.list(rep(NA, length(num.clusters)))
     alg <- "Hartigan-Wong"  #"Hartigan-Wong" seems to cause an error if too many clusters, but Lloyd seems to not converge easily
     gc()
     for (i in 1:length(num.clusters)) {
         kmeans.results[[i]] <- kmeans(features, num.clusters[i], algorithm = alg, iter.max = 30, nstart = nstart)   
     }
-    
     return(kmeans.results)
-    
-    
+
 }
 
 
@@ -445,9 +415,5 @@ GetIndexFiles <- function (path, indices) {
                    full.names = TRUE, recursive = FALSE,
                    ignore.case = FALSE, include.dirs = FALSE, no.. = FALSE))
     })
-
-    
     return(files)
-    
-    
 }

@@ -4,7 +4,6 @@ g.hash.dir <- file.path(g.output.parent.dir, 'hash')
 g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')
 
 
-
 g.cachepath <- c(
     '/Volumes/files/qut_data/cache'
     )
@@ -645,6 +644,7 @@ ChooseOutputVersion <- function (names, params, dependencies, false.if.missing =
     if (nrow(name.meta) == 1) {
         # we only have one thing to choose from, so choose it for them
         # but show them which one is being chosen
+        Report(4, 'only one file to choose from, returing it:')
         ReportAnimated(5, choices[1], duration = 3)
         which.version <- 1
     } else {

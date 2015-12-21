@@ -69,6 +69,7 @@ source('label.events.R')
 source('short.indices.R')
 source('fixedwidth.R')
 source('reporting.R')
+source('noise.reduction.R')
 source('tests/test.all.R')
 
 

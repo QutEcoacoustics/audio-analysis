@@ -111,6 +111,193 @@ InspectClusters <- function (cluster.groups = NA, duration.per.group = 30, max.g
     
 }
 
+
+
+InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clusters = 5, segment.duration = 1) {
+    #  for some given clusters, shows some segment events belonging to each of those clusters
+    #  
+    #  Args:
+    #    cluster.groups: vector of ints; which clusters
+    #    num.segments: int; number of segments to show for each cluster
+    #    max.groups: if clusters is not provided it will be set to either the number of clusters or max.groups (whichever is smaller)
+    #
+    #  Details:
+    #    Randomply chooses segments from the group 1 by 1 
+    #    It then generates spectrogram of the event plus the padding, and appends them to form a spectrogram of length duration.per.group
+    #    each clustergroup will have its own row
+    #
+    
+    events <- ReadOutput('segment.events') #
+    clustered.events <- ReadOutput('clustered.events')  # contains only group and event id and min id
+    
+    
+    # double check that the event ids match correctly
+    if (!all(clustered.events$data$event.id == events$data$event.id)) {
+        stop('event id of events and clustered events data don\'t match')
+    }
+    
+    # get the different clusterings for different number of clusters
+    clusterings <- colnames(clustered.events$data)
+    clusterings <- clusterings[!clusterings %in% c('event.id', 'min.id')]
+    
+    # combine the event columns to the clustered event data frame
+    clustered.events.data <- cbind(clustered.events$data, events$data[,-(which(colnames(events$data) == 'event.id'))])
+    
+
+    
+    if (length(clusterings) > 1) {
+        which.k <- GetUserChoice(clusterings, 'which clustering (which size k) for inspection')
+    } else {
+        which.k <- 1
+    }
+    
+    group.col <- clusterings[which.k]
+    
+    # this should really just be 1:num.clusters, but to be safe do it like this
+    all.groups <- unique(clustered.events.data[,group.col])
+    all.groups <- all.groups[order(all.groups)]
+    
+    if (is.numeric(clusters)) {
+        # make sure that the cluster groups given are actually real groups
+        groups.that.exist <- clusters %in% all.groups
+        groups.that.dont.exist <- clusters[!groups.that.exist]
+        if (length(groups.that.dont.exist) > 0) {
+            Report(1, 'Clusters specified by user that don\'t exist. Ignoring:', groups.that.dont.exist)
+        }
+        clusters <- clusters[groups.that.exist]
+    } else {
+        # no clusters specified by user, so 
+        clusters <- all.groups
+    }
+    
+    # make sure max is not exceeded
+    if(length(clusters) > max.clusters) {
+        removed <- clusters[(max.clusters + 1):length(clusters)]
+        clusters <- clusters[1:max.clusters]
+        Report(3, 'Number of clusters to render was greater than max.groups ... Ignoring the following clusters:', paste(removed, collapse = ','))
+    }
+    
+    selected.events <- clustered.events.data[clustered.events.data[,group.col] %in% clusters,]
+    
+    
+      
+    # !! -- !!
+    
+    temp.dir <- TempDirectory()
+    
+    
+    
+    for (group in clusters) {
+        subset <- selected.events[group.col] == group
+        num.before <- sum(subset)
+        if (num.before > num.segments) {
+            # select some random segments
+            subset[subset][sample(num.before,num.before-num.segments)] <- FALSE
+        }
+        num.after <- sum(subset)
+        Report(4, 'Selecting', num.after, 'spectrograms for group', group, 'out of a total of', num.before)
+        selected.events <- selected.events[selected.events[group.col] != group | subset,]
+    }
+    
+    selected.events$spectro.fn <- rep('', nrow(selected.events))
+    
+    
+    
+    # generate spectrograms in parallel
+    SetReportMode(socket = TRUE)
+    cl <- makeCluster(3)
+    registerDoParallel(cl)
+    temp.fns <- paste(selected.events$event.id, 'png', sep = '.')
+    selected.events$spectro.fn <- file.path(temp.dir, temp.fns)
+    nums <- 1:nrow(selected.events)
+    res <- foreach(site = selected.events$site, 
+                   start.date = selected.events$date,
+                   start.sec = selected.events$min * 60 + selected.events$start.sec,
+                   img.path = selected.events$spectro.fn,
+                   num = nums, .combine='c', .export=ls(envir=globalenv())) %dopar% Sp.CreateTargeted(site = site, 
+                                                                                                        start.date = start.date, 
+                                                                                                        start.sec = start.sec, 
+                                                                                                        duration = segment.duration, 
+                                                                                                        img.path = img.path,
+                                                                                                        msg = num)  
+    
+    
+#     for (e in 1:nrow(selected.events)) {
+#             temp.fn <- paste(selected.events$event.id[e], 'png', sep = '.')
+#             img.path <- file.path(temp.dir, temp.fn)
+#             selected.events$spectro.fn[e] <- img.path 
+#             # the duration, top and bottom frequency and rect color
+#             # can all be taken directly from the event. The start.sec of the rect
+#             # needs to be from the start of the spectrogram, which in this case is the padding
+#             Sp.CreateTargeted(site = selected.events$site[e], 
+#                               start.date = selected.events$date[e], 
+#                               start.sec = selected.events$min[e] * 60 + selected.events$start.sec[e], 
+#                               duration = segment.duration, 
+#                               img.path = img.path)
+#             
+#     }
+
+    col.names <- colnames(selected.events)
+    col.names[col.names == group.col] <- 'group'
+    colnames(selected.events) <- col.names
+    
+    html.file <- paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html')
+    
+    MakeHtmlInspector(selected.events, file.name =  html.file)
+    
+    
+    
+    
+    
+}
+
+
+MakeHtmlInspector <- function (spectrograms, title = 'Inspect Segments', file.name = 'inspect.segments.html') {
+    
+    template.file <- 'templates/segment.event.inspector.html'
+    template <- readChar(template.file, file.info(template.file)$size)
+    # replace title with title
+
+    template <- InsertIntoTemplate('title', title, template)
+    groups <- unique(spectrograms$group)
+    rows = list()
+    for (g in groups) {
+        s <- spectrograms[spectrograms$group == g,]
+        paths <- s$spectro.fn
+        img.titles <- paste(s$event.id, s$site, s$date, s$min, sep = ' : ')
+        img.tags <- paste0('    <img src="', paths, '" title="', img.titles, '" alt="" />', "\n") 
+        rows[[g]] <- paste0(img.tags, collapse = '')
+        
+    }
+    
+    # wrap each rows in a div
+    rows <- paste0('<div class="cluster" title="cluster:', groups, '">',"\n" ,rows, '</div>')
+    
+    # merge into a single string
+    rows <- paste(rows, collapse = "\n\n")
+    
+    template <- InsertIntoTemplate('content', rows, template)
+    
+    output.file <- file.path(g.output.parent.dir, 'inspection', file.name)
+   
+    fileConn<-file(output.file)
+    writeLines(template, fileConn)
+    close(fileConn)
+    return(file.name)
+    
+}
+
+InsertIntoTemplate <- function (flag, text, template, delim = "###") {
+    # gsub is better?
+    split <- paste0(delim, flag, delim)
+    split.template <- unlist(strsplit(template, split, fixed = TRUE))
+    text <- rep(text, length(split.template))
+    text[length(text)] <- ''
+    return(paste0(split.template, text, collapse = ''))
+}
+
+
+
 IntegerVectorAsString <- function (ints, inner.sep = "-", outer.sep = ",") {
     # how much each index is different from the last
     delta <- ints[-1] - ints[-(length(ints))]

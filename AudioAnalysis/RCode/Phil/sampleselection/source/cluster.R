@@ -49,8 +49,11 @@ ClusterEvents <- function (num.groups = 'auto',
         
     }
     
-    dependencies = list(events = events$version, features = event.features$version)
-
+    dependencies <- list()
+    # events could be segment events or AED events
+    dependencies[[events$name]] <- events$version
+    dependencies[[event.features$name]] <- event.features$version
+    
 
 
     
@@ -123,6 +126,7 @@ CreateEventGroups.kmeans <- function (events, clustering.results) {
     groups.df <- as.data.frame(groups.df)
     colnames(groups.df) <- names
     groups.df$event.id <- events$event.id
+    groups.df$min.id <- events$min.id
     return(groups.df)
     
 }

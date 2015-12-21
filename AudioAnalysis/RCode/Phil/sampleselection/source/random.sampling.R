@@ -25,7 +25,8 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA,
                            num.repetitions = 10, 
                            dawn.first = TRUE, 
                            dawn.from = 315, dawn.to = 495, 
-                           block.size = 1) {
+                           block.size = 1, 
+                           use.cached = TRUE) {
     # repeatedly performs a sample selection from random selection of dawn minutes
     # 
     # Args:
@@ -42,6 +43,10 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA,
     #   list: mean: the mean species count progression (count only)
     #   list: sd: the standard deviation minute by minute
     
+    
+   
+    
+    
     if (dawn.first) {
         msg <-  'performing random sampling at dawn (RSAD)'   
     } else {
@@ -50,6 +55,7 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA,
     Report(3, msg)
     
     mins <- ValidateMins(mins)
+    
     
     #species.in.each.min is optional. 
     if (class(species.in.each.sample) != 'list') {

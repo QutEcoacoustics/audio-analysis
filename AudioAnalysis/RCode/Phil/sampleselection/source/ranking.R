@@ -19,11 +19,11 @@ Batch1 <- function () {
     #mins <- c(9,10,11,12,13,7,8)
     #clustered.events  <- c(3,4,5,6,7,9,10)
     
-    events <- c(13,14,15,16,18,19)
-    mins <- c(10,11,12,13,7,8)
-    clustered.events  <- c(4,5,6,7,9,10)
+    events.versions <- c(13,14,15,16,18,19)
+    mins.versions <- c(10,11,12,13,7,8)
+    clustered.events.versions  <- c(4,5,6,7,9,10)
     
-    RankSamplesBatch(events, clustered.events, mins)
+    RankSamplesBatch(events.versions, clustered.events.versions, mins.versions)
     
 }
 
@@ -71,7 +71,6 @@ RankSamples <- function (mins = NULL, clustered.events = NULL) {
 #         events <- ReadOutput('events') 
 #     }
     
-    
     if (is.null(clustered.events)) {
         clustered.events <- ReadOutput('clustered.events')
     } 
@@ -82,6 +81,11 @@ RankSamples <- function (mins = NULL, clustered.events = NULL) {
         # pass in NA to use the same min ids as are present in the 
         min <- unique(clustered.events$min.id)
     }
+    
+    
+#    if (!'min.id' %in% names(clustered.events$data)) {
+#        clustered.events$data <- AddMinuteIdCol(clustered.events$data)
+#    }
     
 
     

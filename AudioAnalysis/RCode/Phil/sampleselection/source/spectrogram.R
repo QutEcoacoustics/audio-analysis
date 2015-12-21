@@ -12,7 +12,7 @@ TS <- function (s = NA) {
 
 Sp.CreateTargeted <- function (site, start.date, start.sec, 
                                duration, img.path = NA, rects = NULL, 
-                               audio.source.in.label = TRUE, label = NA, frame.width = 512) {
+                               audio.source.in.label = TRUE, label = NA, frame.width = 512, msg = '') {
     # creates a spectrogram of audio given the start, duration and site 
     #
     # Args:
@@ -31,7 +31,10 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     # 3. idenify the sample number for the start and end
     
     cache.id <- paste(site, start.date, start.sec, duration,frame.width, 'spectro', sep = '.')
+    Report(5, msg, ':', cache.id)
     spec <- ReadCache(cache.id)
+    
+  
     
     # only cache the spectrogram without the rectangles
     # because the point is to be able to change the rectanles without

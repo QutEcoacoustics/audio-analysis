@@ -103,5 +103,22 @@ PadMatrix <- function (m, numr, numc, val = NA) {
 }
 
 
+RemoveNoise <- function (spectro) {
+    # aggressive noise removal
+    # normalise
+    # this is not very good. I don't think it was finished
+    spectro <- Normalize(spectro)
+    # for each row, calculate the median of it and its neighbouring rows
+    med <- rep(NA, nrow(spectro))
+    s1 <- rbind(spectro[1,], spectro) # pad before the first row
+    s1 <- rbind(s1, s1[nrow(s1),]) # padd after the last row
+    for (i in 1:(length(med))) {    
+        med[i] <- median(s1[i:(i+2),], na.rm = TRUE)
+    }
+    med <- matrix(med, nrow = nrow(spectro), ncol = ncol(spectro))
+    rem <- spectro < med
+    spectro[rem] <- 0
+    return(spectro)
+}
 
 

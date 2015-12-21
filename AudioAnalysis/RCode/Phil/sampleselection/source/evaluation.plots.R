@@ -127,9 +127,8 @@ GraphProgressions <- function (progressions,
     
     if (!is.null(fn)) {
         png(filename = fn,
-            width = 700, height = 700, units = "px", pointsize = 13,
-            bg = "white",  res = NA,
-            type = c("cairo", "cairo-png", "Xlib", "quartz"))
+            width = 800, height = 600, units = "px", pointsize = 13,
+            bg = "white",  res = NA)
     }
     
     rank.names <- names(progressions);
