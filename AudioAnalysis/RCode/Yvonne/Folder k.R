@@ -11,6 +11,7 @@
 # NOTE: Variables on line #75 can be changed
 #######################################################
 setwd("C:\\Work\\CSV files\\FourMonths\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
 
 AcousticDS <- read.csv("final_dataset_22June2015_10 Oct2015.csv", 
                        header = T)
@@ -42,6 +43,8 @@ for(i in 1:(ncol(site2)-1)) {  # columns
 }
 ds6 <- rbind(site1[,1:7], site2[,1:7])
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\kmeans")
+#setwd("C:\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hclust")
 
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
@@ -87,7 +90,7 @@ write.csv(ds3.norm_2_98,"ds3.norm_2_98.csv")
 #########################
 library(MASS)
 ########set-up the variables
-k1 <- i <- 17500
+k1 <- i <- 18500
 k2 <- seq(5, 100, 5)
 k3 <- 3
 csv.name <- paste("hybrid_clust_knn_", i, "_3",sep="")
@@ -493,6 +496,7 @@ write.csv(twentyfour_hour_table_20, paste(csv.name, "_k100_24hour.csv", sep = ""
           row.names = F)
 
 # This is from file named "Clustering_of_24_hour_files.R"
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Mclust\\")
 myFiles <- list.files(full.names=TRUE, pattern="*_24hour.csv$")
 myFilesShort <- list.files(full.names=FALSE, pattern="*_24hour.csv$")
 
@@ -538,9 +542,11 @@ for (i in 1:length(myFilesShort)) {
     row3 <- c(row1,hc.fit$height[3],row2)
   }
   #saving row4
+  #negative-negative
   if (hc.fit$merge[4]<0 & hc.fit$merge[15]<0) {
     row4 <- c(abs(hc.fit$merge[4]),hc.fit$height[4],abs(hc.fit$merge[15]))
   }
+  #negative-positive
   if (hc.fit$merge[4]<0 & hc.fit$merge[15]==1) {
     row4 <- c(abs(hc.fit$merge[4]),hc.fit$height[4],row1)
   }
@@ -550,19 +556,22 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[4]<0 & hc.fit$merge[15]==3) {
     row4 <- c(abs(hc.fit$merge[4]),hc.fit$height[4],row3)
   }
+  #positive-positive
   if (hc.fit$merge[4]==1 & hc.fit$merge[15]==2) {
     row4 <- c(row1,hc.fit$height[4],row2)
-  }
-  if (hc.fit$merge[4]==2 & hc.fit$merge[15]==3) {
-    row4 <- c(row2,hc.fit$height[4],row3)
   }
   if (hc.fit$merge[4]==1 & hc.fit$merge[15]==3) {
     row4 <- c(row1,hc.fit$height[4],row3)
   }
+  if (hc.fit$merge[4]==2 & hc.fit$merge[15]==3) {
+    row4 <- c(row2,hc.fit$height[4],row3)
+  }
   #saving row5
+  # negative-negative
   if (hc.fit$merge[5]<0 & hc.fit$merge[16]<0) {
     row5 <- c(abs(hc.fit$merge[5]),hc.fit$height[5],abs(hc.fit$merge[16]))
   }
+  # negative-positive
   if (hc.fit$merge[5]<0 & hc.fit$merge[16]==1) {
     row5 <- c(abs(hc.fit$merge[5]),hc.fit$height[5],row1)
   }
@@ -575,25 +584,31 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[5]<0 & hc.fit$merge[16]==4) {
     row5 <- c(abs(hc.fit$merge[5]),hc.fit$height[5],row4)
   }
+  #positive-positive
   if (hc.fit$merge[5]==1 & hc.fit$merge[16]==2) {
     row5 <- c(row1,hc.fit$height[5],row2)
-  }
-  if (hc.fit$merge[5]==2 & hc.fit$merge[16]==3) {
-    row5 <- c(row2,hc.fit$height[5],row3)
-  }
-  if (hc.fit$merge[5]==3 & hc.fit$merge[16]==4) {
-    row5 <- c(row3,hc.fit$height[5],row4)
   }
   if (hc.fit$merge[5]==1 & hc.fit$merge[16]==3) {
     row5 <- c(row1,hc.fit$height[5],row3)
   }
+  if (hc.fit$merge[5]==1 & hc.fit$merge[16]==4) {
+    row5 <- c(row1,hc.fit$height[5],row4)
+  }
+  if (hc.fit$merge[5]==2 & hc.fit$merge[16]==3) {
+    row5 <- c(row2,hc.fit$height[5],row3)
+  }
   if (hc.fit$merge[5]==2 & hc.fit$merge[16]==4) {
     row5 <- c(row2,hc.fit$height[5],row4)
   }
+  if (hc.fit$merge[5]==3 & hc.fit$merge[16]==4) {
+    row5 <- c(row3,hc.fit$height[5],row4)
+  }
   #saving row6
+  #negative-negative
   if (hc.fit$merge[6]<0 & hc.fit$merge[17]<0) {
     row6 <- c(abs(hc.fit$merge[6]),hc.fit$height[6],abs(hc.fit$merge[17]))
   }
+  #negative-positive
   if (hc.fit$merge[6]<0 & hc.fit$merge[17]==1) {
     row6 <- c(abs(hc.fit$merge[6]),hc.fit$height[6],row1)
   }
@@ -609,17 +624,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[6]<0 & hc.fit$merge[17]==5) {
     row6 <- c(abs(hc.fit$merge[6]),hc.fit$height[6],row5)
   }
+  #positive-positive
   if (hc.fit$merge[6]==1 & hc.fit$merge[17]==2) {
     row6 <- c(row1,hc.fit$height[6],row2)
-  }
-  if (hc.fit$merge[6]==2 & hc.fit$merge[17]==3) {
-    row6 <- c(row2,hc.fit$height[6],row3)
-  }
-  if (hc.fit$merge[6]==3 & hc.fit$merge[17]==4) {
-    row6 <- c(row3,hc.fit$height[6],row4)
-  }
-  if (hc.fit$merge[6]==4 & hc.fit$merge[17]==5) {
-    row6 <- c(row4,hc.fit$height[6],row5)
   }
   if (hc.fit$merge[6]==1 & hc.fit$merge[17]==3) {
     row6 <- c(row1,hc.fit$height[6],row3)
@@ -630,20 +637,30 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[6]==1 & hc.fit$merge[17]==5) {
     row6 <- c(row1,hc.fit$height[6],row5)
   }
+  if (hc.fit$merge[6]==2 & hc.fit$merge[17]==3) {
+    row6 <- c(row2,hc.fit$height[6],row3)
+  }
   if (hc.fit$merge[6]==2 & hc.fit$merge[17]==4) {
     row6 <- c(row2,hc.fit$height[6],row4)
   }
   if (hc.fit$merge[6]==2 & hc.fit$merge[17]==5) {
     row6 <- c(row2,hc.fit$height[6],row5)
   }
+  if (hc.fit$merge[6]==3 & hc.fit$merge[17]==4) {
+    row6 <- c(row3,hc.fit$height[6],row4)
+  }
   if (hc.fit$merge[6]==3 & hc.fit$merge[17]==5) {
     row6 <- c(row3,hc.fit$height[6],row5)
   }
-
+  if (hc.fit$merge[6]==4 & hc.fit$merge[17]==5) {
+    row6 <- c(row4,hc.fit$height[6],row5)
+  }
   #saving row7
+  #negative-negative
   if (hc.fit$merge[7]<0 & hc.fit$merge[18]<0) {
     row7 <- c(abs(hc.fit$merge[7]),hc.fit$height[7],abs(hc.fit$merge[18]))
   }
+  #negative-positive
   if (hc.fit$merge[7]<0 & hc.fit$merge[18]==1) {
     row7 <- c(abs(hc.fit$merge[7]),hc.fit$height[7],row1)
   }
@@ -662,20 +679,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[7]<0 & hc.fit$merge[18]==6) {
     row7 <- c(abs(hc.fit$merge[7]),hc.fit$height[7],row6)
   }
+  #postive-positive
   if (hc.fit$merge[7]==1 & hc.fit$merge[18]==2) {
     row7 <- c(row1,hc.fit$height[7],row2)
-  }
-  if (hc.fit$merge[7]==2 & hc.fit$merge[18]==3) {
-    row7 <- c(row2,hc.fit$height[7],row3)
-  }
-  if (hc.fit$merge[7]==3 & hc.fit$merge[18]==4) {
-    row7 <- c(row3,hc.fit$height[7],row4)
-  }
-  if (hc.fit$merge[7]==4 & hc.fit$merge[18]==5) {
-    row7 <- c(row4,hc.fit$height[7],row5)
-  }
-  if (hc.fit$merge[7]==5 & hc.fit$merge[18]==6) {
-    row7 <- c(row5,hc.fit$height[7],row6)
   }
   if (hc.fit$merge[7]==1 & hc.fit$merge[18]==3) {
     row7 <- c(row1,hc.fit$height[7],row3)
@@ -689,6 +695,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[7]==1 & hc.fit$merge[18]==6) {
     row7 <- c(row1,hc.fit$height[7],row6)
   }
+  if (hc.fit$merge[7]==2 & hc.fit$merge[18]==3) {
+    row7 <- c(row2,hc.fit$height[7],row3)
+  }
   if (hc.fit$merge[7]==2 & hc.fit$merge[18]==4) {
     row7 <- c(row2,hc.fit$height[7],row4)
   }
@@ -698,19 +707,30 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[7]==2 & hc.fit$merge[18]==6) {
     row7 <- c(row2,hc.fit$height[7],row6)
   }
+  if (hc.fit$merge[7]==3 & hc.fit$merge[18]==4) {
+    row7 <- c(row3,hc.fit$height[7],row4)
+  }
   if (hc.fit$merge[7]==3 & hc.fit$merge[18]==5) {
     row7 <- c(row3,hc.fit$height[7],row5)
   }
   if (hc.fit$merge[7]==3 & hc.fit$merge[18]==6) {
     row7 <- c(row3,hc.fit$height[7],row6)
   }
+  if (hc.fit$merge[7]==4 & hc.fit$merge[18]==5) {
+    row7 <- c(row4,hc.fit$height[7],row5)
+  }
   if (hc.fit$merge[7]==4 & hc.fit$merge[18]==6) {
     row7 <- c(row4,hc.fit$height[7],row6)
   }
+  if (hc.fit$merge[7]==5 & hc.fit$merge[18]==6) {
+    row7 <- c(row5,hc.fit$height[7],row6)
+  }
   #saving row8
+  #negative-negative
   if (hc.fit$merge[8]<0 & hc.fit$merge[19]<0) {
     row8 <- c(abs(hc.fit$merge[8]),hc.fit$height[8],abs(hc.fit$merge[19]))
   }
+  #negative-positive
   if (hc.fit$merge[8]<0 & hc.fit$merge[19]==1) {
     row8 <- c(abs(hc.fit$merge[8]),hc.fit$height[8],row1)
   }
@@ -732,23 +752,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[8]<0 & hc.fit$merge[19]==7) {
     row8 <- c(abs(hc.fit$merge[8]),hc.fit$height[8],row7)
   }
+  #postive-positive
   if (hc.fit$merge[8]==1 & hc.fit$merge[19]==2) {
     row8 <- c(row1,hc.fit$height[8],row2)
-  }
-  if (hc.fit$merge[8]==2 & hc.fit$merge[19]==3) {
-    row8 <- c(row2,hc.fit$height[8],row3)
-  }
-  if (hc.fit$merge[8]==3 & hc.fit$merge[19]==4) {
-    row8 <- c(row3,hc.fit$height[8],row4)
-  }
-  if (hc.fit$merge[8]==4 & hc.fit$merge[19]==5) {
-    row8 <- c(row4,hc.fit$height[8],row5)
-  }
-  if (hc.fit$merge[8]==5 & hc.fit$merge[19]==6) {
-    row8 <- c(row5,hc.fit$height[8],row6)
-  }
-  if (hc.fit$merge[8]==6 & hc.fit$merge[19]==7) {
-    row8 <- c(row6,hc.fit$height[8],row7)
   }
   if (hc.fit$merge[8]==1 & hc.fit$merge[19]==3) {
     row8 <- c(row1,hc.fit$height[8],row3)
@@ -765,6 +771,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[8]==1 & hc.fit$merge[19]==7) {
     row8 <- c(row1,hc.fit$height[8],row7)
   }
+  if (hc.fit$merge[8]==2 & hc.fit$merge[19]==3) {
+    row8 <- c(row2,hc.fit$height[8],row3)
+  }
   if (hc.fit$merge[8]==2 & hc.fit$merge[19]==4) {
     row8 <- c(row2,hc.fit$height[8],row4)
   }
@@ -777,6 +786,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[8]==2 & hc.fit$merge[19]==7) {
     row8 <- c(row2,hc.fit$height[8],row7)
   }
+  if (hc.fit$merge[8]==3 & hc.fit$merge[19]==4) {
+    row8 <- c(row3,hc.fit$height[8],row4)
+  }
   if (hc.fit$merge[8]==3 & hc.fit$merge[19]==5) {
     row8 <- c(row3,hc.fit$height[8],row5)
   }
@@ -786,19 +798,30 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[8]==3 & hc.fit$merge[19]==7) {
     row8 <- c(row3,hc.fit$height[8],row7)
   }
+  if (hc.fit$merge[8]==4 & hc.fit$merge[19]==5) {
+    row8 <- c(row4,hc.fit$height[8],row5)
+  }
   if (hc.fit$merge[8]==4 & hc.fit$merge[19]==6) {
     row8 <- c(row4,hc.fit$height[8],row6)
   }
   if (hc.fit$merge[8]==4 & hc.fit$merge[19]==7) {
     row8 <- c(row4,hc.fit$height[8],row7)
   }
+  if (hc.fit$merge[8]==5 & hc.fit$merge[19]==6) {
+    row8 <- c(row5,hc.fit$height[8],row6)
+  }
   if (hc.fit$merge[8]==5 & hc.fit$merge[19]==7) {
     row8 <- c(row5,hc.fit$height[8],row7)
   }
+  if (hc.fit$merge[8]==6 & hc.fit$merge[19]==7) {
+    row8 <- c(row6,hc.fit$height[8],row7)
+  }
   #saving row9
+  #negative-negative
   if (hc.fit$merge[9]<0 & hc.fit$merge[20]<0) {
     row9 <- c(abs(hc.fit$merge[9]),hc.fit$height[9],abs(hc.fit$merge[20]))
   }
+  #negative-positive
   if (hc.fit$merge[9]<0 & hc.fit$merge[20]==1) {
     row9 <- c(abs(hc.fit$merge[9]),hc.fit$height[9],row1)
   }
@@ -823,26 +846,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[9]<0 & hc.fit$merge[20]==8) {
     row9 <- c(abs(hc.fit$merge[9]),hc.fit$height[9],row8)
   }
+  #positive-positive
   if (hc.fit$merge[9]==1 & hc.fit$merge[20]==2) {
     row9 <- c(row1,hc.fit$height[9],row2)
-  }
-  if (hc.fit$merge[9]==2 & hc.fit$merge[20]==3) {
-    row9 <- c(row2,hc.fit$height[9],row3)
-  }
-  if (hc.fit$merge[9]==3 & hc.fit$merge[20]==4) {
-    row9 <- c(row3,hc.fit$height[9],row4)
-  }
-  if (hc.fit$merge[9]==4 & hc.fit$merge[20]==5) {
-    row9 <- c(row4,hc.fit$height[9],row5)
-  }
-  if (hc.fit$merge[9]==5 & hc.fit$merge[20]==6) {
-    row9 <- c(row5,hc.fit$height[9],row6)
-  }
-  if (hc.fit$merge[9]==6 & hc.fit$merge[20]==7) {
-    row9 <- c(row6,hc.fit$height[9],row7)
-  }
-  if (hc.fit$merge[9]==7 & hc.fit$merge[20]==8) {
-    row9 <- c(row7,hc.fit$height[9],row8)
   }
   if (hc.fit$merge[9]==1 & hc.fit$merge[20]==3) {
     row9 <- c(row1,hc.fit$height[9],row3)
@@ -862,6 +868,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[9]==1 & hc.fit$merge[20]==8) {
     row9 <- c(row1,hc.fit$height[9],row8)
   }
+  if (hc.fit$merge[9]==2 & hc.fit$merge[20]==3) {
+    row9 <- c(row2,hc.fit$height[9],row3)
+  }
   if (hc.fit$merge[9]==2 & hc.fit$merge[20]==4) {
     row9 <- c(row2,hc.fit$height[9],row4)
   }
@@ -877,6 +886,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[9]==2 & hc.fit$merge[20]==8) {
     row9 <- c(row2,hc.fit$height[9],row8)
   }
+  if (hc.fit$merge[9]==3 & hc.fit$merge[20]==4) {
+    row9 <- c(row3,hc.fit$height[9],row4)
+  }
   if (hc.fit$merge[9]==3 & hc.fit$merge[20]==5) {
     row9 <- c(row3,hc.fit$height[9],row5)
   }
@@ -889,6 +901,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[9]==3 & hc.fit$merge[20]==8) {
     row9 <- c(row3,hc.fit$height[9],row8)
   }
+  if (hc.fit$merge[9]==4 & hc.fit$merge[20]==5) {
+    row9 <- c(row4,hc.fit$height[9],row5)
+  }
   if (hc.fit$merge[9]==4 & hc.fit$merge[20]==6) {
     row9 <- c(row4,hc.fit$height[9],row6)
   }
@@ -898,19 +913,30 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[9]==4 & hc.fit$merge[20]==8) {
     row9 <- c(row4,hc.fit$height[9],row8)
   }
+  if (hc.fit$merge[9]==5 & hc.fit$merge[20]==6) {
+    row9 <- c(row5,hc.fit$height[9],row6)
+  }
   if (hc.fit$merge[9]==5 & hc.fit$merge[20]==7) {
     row9 <- c(row5,hc.fit$height[9],row7)
   }
   if (hc.fit$merge[9]==5 & hc.fit$merge[20]==8) {
     row9 <- c(row5,hc.fit$height[9],row8)
   }
+  if (hc.fit$merge[9]==6 & hc.fit$merge[20]==7) {
+    row9 <- c(row6,hc.fit$height[9],row7)
+  }
   if (hc.fit$merge[9]==6 & hc.fit$merge[20]==8) {
     row9 <- c(row6,hc.fit$height[9],row8)
   }
+  if (hc.fit$merge[9]==7 & hc.fit$merge[20]==8) {
+    row9 <- c(row7,hc.fit$height[9],row8)
+  }
   #saving row10
+  #negative-negative
   if (hc.fit$merge[10]<0 & hc.fit$merge[21]<0) {
     row10 <- c(abs(hc.fit$merge[10]),hc.fit$height[10],abs(hc.fit$merge[21]))
   }
+  #negative-postive
   if (hc.fit$merge[10]<0 & hc.fit$merge[21]==1) {
     row10 <- c(abs(hc.fit$merge[10]),hc.fit$height[10],row1)
   }
@@ -938,29 +964,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[10]<0 & hc.fit$merge[21]==9) {
     row10 <- c(abs(hc.fit$merge[10]),hc.fit$height[10],row9)
   }
+  #positive-positive
   if (hc.fit$merge[10]==1 & hc.fit$merge[21]==2) {
     row10 <- c(row1,hc.fit$height[10],row2)
-  }
-  if (hc.fit$merge[10]==2 & hc.fit$merge[21]==3) {
-    row10 <- c(row2,hc.fit$height[10],row3)
-  }
-  if (hc.fit$merge[10]==3 & hc.fit$merge[21]==4) {
-    row10 <- c(row3,hc.fit$height[10],row4)
-  }
-  if (hc.fit$merge[10]==4 & hc.fit$merge[21]==5) {
-    row10 <- c(row4,hc.fit$height[10],row5)
-  }
-  if (hc.fit$merge[10]==5 & hc.fit$merge[21]==6) {
-    row10 <- c(row5,hc.fit$height[10],row6)
-  }
-  if (hc.fit$merge[10]==6 & hc.fit$merge[21]==7) {
-    row10 <- c(row6,hc.fit$height[10],row7)
-  }
-  if (hc.fit$merge[10]==7 & hc.fit$merge[21]==8) {
-    row10 <- c(row7,hc.fit$height[10],row8)
-  }
-  if (hc.fit$merge[10]==8 & hc.fit$merge[21]==9) {
-    row10 <- c(row8,hc.fit$height[10],row9)
   }
   if (hc.fit$merge[10]==1 & hc.fit$merge[21]==3) {
     row10 <- c(row1,hc.fit$height[10],row3)
@@ -983,6 +989,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[10]==1 & hc.fit$merge[21]==9) {
     row10 <- c(row1,hc.fit$height[10],row9)
   }
+  if (hc.fit$merge[10]==2 & hc.fit$merge[21]==3) {
+    row10 <- c(row2,hc.fit$height[10],row3)
+  }
   if (hc.fit$merge[10]==2 & hc.fit$merge[21]==4) {
     row10 <- c(row2,hc.fit$height[10],row4)
   }
@@ -1001,6 +1010,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[10]==2 & hc.fit$merge[21]==9) {
     row10 <- c(row2,hc.fit$height[10],row9)
   }
+  if (hc.fit$merge[10]==3 & hc.fit$merge[21]==4) {
+    row10 <- c(row3,hc.fit$height[10],row4)
+  }
   if (hc.fit$merge[10]==3 & hc.fit$merge[21]==5) {
     row10 <- c(row3,hc.fit$height[10],row5)
   }
@@ -1016,6 +1028,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[10]==3 & hc.fit$merge[21]==9) {
     row10 <- c(row3,hc.fit$height[10],row9)
   }
+  if (hc.fit$merge[10]==4 & hc.fit$merge[21]==5) {
+    row10 <- c(row4,hc.fit$height[10],row5)
+  }
   if (hc.fit$merge[10]==4 & hc.fit$merge[21]==6) {
     row10 <- c(row4,hc.fit$height[10],row6)
   }
@@ -1028,6 +1043,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[10]==4 & hc.fit$merge[21]==9) {
     row10 <- c(row4,hc.fit$height[10],row9)
   }
+  if (hc.fit$merge[10]==5 & hc.fit$merge[21]==6) {
+    row10 <- c(row5,hc.fit$height[10],row6)
+  }
   if (hc.fit$merge[10]==5 & hc.fit$merge[21]==7) {
     row10 <- c(row5,hc.fit$height[10],row7)
   }
@@ -1037,42 +1055,59 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[10]==5 & hc.fit$merge[21]==9) {
     row10 <- c(row5,hc.fit$height[10],row9)
   }
+  if (hc.fit$merge[10]==6 & hc.fit$merge[21]==7) {
+    row10 <- c(row6,hc.fit$height[10],row7)
+  }
   if (hc.fit$merge[10]==6 & hc.fit$merge[21]==8) {
     row10 <- c(row6,hc.fit$height[10],row8)
   }
   if (hc.fit$merge[10]==6 & hc.fit$merge[21]==9) {
     row10 <- c(row6,hc.fit$height[10],row9)
   }
+  if (hc.fit$merge[10]==7 & hc.fit$merge[21]==8) {
+    row10 <- c(row7,hc.fit$height[10],row8)
+  }
   if (hc.fit$merge[10]==7 & hc.fit$merge[21]==9) {
     row10 <- c(row7,hc.fit$height[10],row9)
   }
+  if (hc.fit$merge[10]==8 & hc.fit$merge[21]==9) {
+    row10 <- c(row8,hc.fit$height[10],row9)
+  }
   #saving row11
+  #negative-positive
+  if (hc.fit$merge[11]<0 & hc.fit$merge[22]==1) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row1)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[22]==2) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row2)
+  }
+  if (hc.fit$merge[11] <0 & hc.fit$merge[22]==3) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row3)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[22]==4) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row4)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[21]==5) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row5)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[21]==6) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row6)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[22]==7) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row7)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[22]==8) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row8)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[22]==9) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row9)
+  }
+  if (hc.fit$merge[11]<0 & hc.fit$merge[22]==10) {
+    row11 <- c(abs(hc.fit$merge[11]),hc.fit$height[11],row10)
+  }
+  #positive-positive
   if (hc.fit$merge[11]==1 & hc.fit$merge[22]==2) {
     row11 <- c(row1,hc.fit$height[11],row2)
-  }
-  if (hc.fit$merge[11]==2 & hc.fit$merge[22]==3) {
-    row11 <- c(row2,hc.fit$height[11],row3)
-  }
-  if (hc.fit$merge[11]==3 & hc.fit$merge[22]==4) {
-    row11 <- c(row3,hc.fit$height[11],row4)
-  }
-  if (hc.fit$merge[11]==4 & hc.fit$merge[22]==5) {
-    row11 <- c(row4,hc.fit$height[11],row5)
-  }
-  if (hc.fit$merge[11]==5 & hc.fit$merge[22]==6) {
-    row11 <- c(row5,hc.fit$height[11],row6)
-  }
-  if (hc.fit$merge[11]==6 & hc.fit$merge[22]==7) {
-    row11 <- c(row6,hc.fit$height[11],row7)
-  }
-  if (hc.fit$merge[11]==7 & hc.fit$merge[22]==8) {
-    row11 <- c(row7,hc.fit$height[11],row8)
-  }
-  if (hc.fit$merge[11]==8 & hc.fit$merge[22]==9) {
-    row11 <- c(row8,hc.fit$height[11],row9)
-  }
-  if (hc.fit$merge[11]==9 & hc.fit$merge[22]==10) {
-    row11 <- c(row9,hc.fit$height[11],row10)
   }
   if (hc.fit$merge[11]==1 & hc.fit$merge[22]==3) {
     row11 <- c(row1,hc.fit$height[11],row3)
@@ -1098,6 +1133,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[11]==1 & hc.fit$merge[22]==10) {
     row11 <- c(row1,hc.fit$height[11],row10)
   }
+  if (hc.fit$merge[11]==2 & hc.fit$merge[22]==3) {
+    row11 <- c(row2,hc.fit$height[11],row3)
+  }
   if (hc.fit$merge[11]==2 & hc.fit$merge[22]==4) {
     row11 <- c(row2,hc.fit$height[11],row4)
   }
@@ -1119,6 +1157,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[11]==2 & hc.fit$merge[22]==10) {
     row11 <- c(row2,hc.fit$height[11],row10)
   }
+  if (hc.fit$merge[11]==3 & hc.fit$merge[22]==4) {
+    row11 <- c(row3,hc.fit$height[11],row4)
+  }
   if (hc.fit$merge[11]==3 & hc.fit$merge[22]==5) {
     row11 <- c(row3,hc.fit$height[11],row5)
   }
@@ -1137,6 +1178,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[11]==3 & hc.fit$merge[22]==10) {
     row11 <- c(row3,hc.fit$height[11],row10)
   }
+  if (hc.fit$merge[11]==4 & hc.fit$merge[22]==5) {
+    row11 <- c(row4,hc.fit$height[11],row5)
+  }
   if (hc.fit$merge[11]==4 & hc.fit$merge[22]==6) {
     row11 <- c(row4,hc.fit$height[11],row6)
   }
@@ -1152,6 +1196,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[11]==4 & hc.fit$merge[22]==10) {
     row11 <- c(row4,hc.fit$height[11],row10)
   }
+  if (hc.fit$merge[11]==5 & hc.fit$merge[22]==6) {
+    row11 <- c(row5,hc.fit$height[11],row6)
+  }
   if (hc.fit$merge[11]==5 & hc.fit$merge[22]==7) {
     row11 <- c(row5,hc.fit$height[11],row7)
   }
@@ -1164,6 +1211,9 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[11]==5 & hc.fit$merge[22]==10) {
     row11 <- c(row5,hc.fit$height[11],row10)
   }
+  if (hc.fit$merge[11]==6 & hc.fit$merge[22]==7) {
+    row11 <- c(row6,hc.fit$height[11],row7)
+  }
   if (hc.fit$merge[11]==6 & hc.fit$merge[22]==8) {
     row11 <- c(row6,hc.fit$height[11],row8)
   }
@@ -1173,14 +1223,23 @@ for (i in 1:length(myFilesShort)) {
   if (hc.fit$merge[11]==6 & hc.fit$merge[22]==10) {
     row11 <- c(row6,hc.fit$height[11],row10)
   }
+  if (hc.fit$merge[11]==7 & hc.fit$merge[22]==8) {
+    row11 <- c(row7,hc.fit$height[11],row8)
+  }
   if (hc.fit$merge[11]==7 & hc.fit$merge[22]==9) {
     row11 <- c(row7,hc.fit$height[11],row9)
   }
   if (hc.fit$merge[11]==7 & hc.fit$merge[22]==10) {
     row11 <- c(row7,hc.fit$height[11],row10)
   }
+  if (hc.fit$merge[11]==8 & hc.fit$merge[22]==9) {
+    row11 <- c(row8,hc.fit$height[11],row9)
+  }
   if (hc.fit$merge[11]==8 & hc.fit$merge[22]==10) {
     row11 <- c(row8,hc.fit$height[11],row10)
+  }
+  if (hc.fit$merge[11]==9 & hc.fit$merge[22]==10) {
+    row11 <- c(row9,hc.fit$height[11],row10)
   }
   all.heights <- c(row11[2],row11[4],row11[6],row11[8],
                    row11[10],row11[12],row11[14],row11[16],
@@ -1267,7 +1326,7 @@ for (i in 1:length(myFilesShort)) {
   mtext(side = 1, line = 7, adj=1, cex=1.3, paste("7,8,9", site[7], dates[1], 
                                                   dates[2], dates[3], "10,11,12", site[7], dates[4], 
                                                   dates[5], dates[6], sep = "    "))
-  mtext(side = 1, line = 8.5, adj=1, cex=1.2, expression(italic(Twelve ~days ~from ~2 ~x ~111 ~days ~of ~clustering)))
+  mtext(side = 1, line = 8.5, adj=1, cex=1.2, expression(italic(Twelve ~days)))# ~from ~2 ~x ~111 ~days ~of ~clustering)))
   mtext(side = 1, line = 10, adj=1, cex=1.2, expression(italic(Indices:~BackgroundNoise ~Snr ~EventsPerSecond ~LowFreqCover ~AcousticComplexity ~EntropyOfPeaksSpectrum ~EntropyOfCoVSpectrum)))
   mtext(side = 3, line = -0.8, cex=1.5, paste("heights: ", round(heightss[11],0),
                                               round(heightss[10],0), round(heightss[9],0), round(heightss[8],0),
