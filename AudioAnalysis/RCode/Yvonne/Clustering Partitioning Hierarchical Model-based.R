@@ -26,7 +26,7 @@
 
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a")
 AcousticDS <- read.csv("Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", header=T)
-ds6 <- AcousticDS[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover
+ds6 <- AcousticDS[,c(3,4,7,10,11,15,16)] # without Mid-frequency cover
 
 library(psych)
 ic.out <- iclust(AcousticDS[,4:10])
@@ -71,12 +71,12 @@ normalise <- function (x, xmin, xmax) {
 }
 #######################################################
 # Create ds3.norm_2_98 for kmeans, clara, hclust
-# a dataset normalised between 2 and 98%
+# a dataset normalised between 1.5 and 98.5%
 #######################################################
 ds3.norm_2_98 <- ds6
 for (i in 1:length(ds6)) {
-  q1 <- unname(quantile(ds6[,i], probs = 0.015, na.rm = TRUE))
-  q2 <- unname(quantile(ds6[,i], probs = 0.985, na.rm = TRUE))
+  q1 <- unname(quantile(ds6[,i], probs = 0.02, na.rm = TRUE))
+  q2 <- unname(quantile(ds6[,i], probs = 0.98, na.rm = TRUE))
   ds3.norm_2_98[,i]  <- normalise(ds3.norm_2_98[,i], q1, q2)
 }
 # adjust values greater than 1 or less than 0
@@ -372,7 +372,7 @@ dev.off()
 #setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
 #setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 #setwd("C:\\Work\\CSV files\\DataSet_Exp2_new\\Hierarchical\\")
-
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3l\\hclust")
 require(graphics)
 ds3.norm_2_98 <- cbind(ds3.norm_2_98, AcousticDS$rec.time)
 dist.hc <- dist(ds3.norm_2_98)
@@ -381,19 +381,24 @@ dist.hc <- dist(ds3.norm_2_98)
 hc.fit.ward <- hclust(dist.hc, "ward.D2")
 hc.fit.average <- hclust(dist.hc, "average")
 
+hc.fit.ward.5 <- cutree(hc.fit.ward, k = 5)
 hc.fit.ward.10 <- cutree(hc.fit.ward, k = 10)
 hc.fit.ward.15 <- cutree(hc.fit.ward, k = 15)
 hc.fit.ward.20 <- cutree(hc.fit.ward, k = 20)
 hc.fit.ward.25 <- cutree(hc.fit.ward, k = 25)
+hc.fit.ward.30 <- cutree(hc.fit.ward, k = 30)
 
+hc.fit.average.5 <- cutree(hc.fit.average, k = 5)
 hc.fit.average.10 <- cutree(hc.fit.average, k = 10)
 hc.fit.average.15 <- cutree(hc.fit.average, k = 15)
 hc.fit.average.20 <- cutree(hc.fit.average, k = 20)
 hc.fit.average.25 <- cutree(hc.fit.average, k = 25)
+hc.fit.average.30 <- cutree(hc.fit.average, k = 30)
 
-set.hc.fit <- cbind(hc.fit.average.10, hc.fit.average.15,
-                hc.fit.average.20, hc.fit.average.25,hc.fit.ward.10, 
-                hc.fit.ward.15, hc.fit.ward.20, hc.fit.ward.25)
+set.hc.fit <- cbind(hc.fit.average.5,hc.fit.average.10, hc.fit.average.15,
+                hc.fit.average.20, hc.fit.average.25, hc.fit.average.30,
+                hc.fit.ward.5,hc.fit.ward.10, hc.fit.ward.15, hc.fit.ward.20, 
+                hc.fit.ward.25, hc.fit.ward.30)
 write.csv(set.hc.fit, "hc_fit_set_cutree_k.csv", row.names = F)
 
 png("hclust_average_cutree_k_ds3norm_2_98.png", width = 1500, 
@@ -699,6 +704,9 @@ dev.off()
 #######################################################
 # Cluster using kmeans and 1000, 1500... centers
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hybrid12days")
+k = 5
+
 clusters <- NULL
 for (i in seq(1000, 4500, 500)) {
   set.seed(123)
@@ -708,7 +716,7 @@ for (i in seq(1000, 4500, 500)) {
   #hc.fit <- hclust(dist.hc, "average")
   hybrid.fit.ward <- hclust(dist.hc, "ward.D2")
   plot(hybrid.fit.ward)
-  hybrid.clusters <- cutree(hybrid.fit.ward, k=35)
+  hybrid.clusters <- cutree(hybrid.fit.ward, k=k)
   # generate the test dataset
   hybrid.dataset <- cbind(hybrid.clusters, kmeansCenters)
   hybrid.dataset <- as.data.frame(hybrid.dataset)
@@ -728,12 +736,13 @@ for (i in seq(1000, 4500, 500)) {
 # produce 24 hour fingerprints from this clusterlist
 column.names <- NULL
 for (i in seq(1000, 4500, 500)) {
-  col.names <- paste("hybrid_k", i, "k35", sep = "")
+  col.names <- paste("hybrid_k", i, "k", k, sep = "")
   column.names <- c(column.names,col.names)
 }
 colnames(clusters) <- column.names
 
-write.csv(clusters, file = "C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\hybrid_clust_k35.csv", row.names = F)
+write.csv(clusters, file = paste("hybrid_clust_k",k,".csv",sep=""), row.names = F)
+# now go to histograms of cluster lists
 ##################################################################
 # EXPERIMENT 1
 # The aim of this experiment is to determine the minimum number of
