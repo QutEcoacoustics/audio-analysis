@@ -2,6 +2,9 @@
 # for Jason Wimmer
 # 24 December 2015
 #
+# Set cluster number
+n <- 9
+  
 setwd("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Yvonne\\")
 mapping1 <- read.csv("audio_recordings_from_site_1192_GympieNP.csv", header = T)[,c(1,5,6,21)]
 mapping2 <- read.csv("audio_recordings_from_site_1193_Woondum3.csv", header = T)[,c(1,5,6,21)]
@@ -18,12 +21,9 @@ indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_1
 dates <- as.Date(indices$rec.date, format = "%d/%m/%Y")
 dates <- unique(dates)
 dates <- rep(dates, 2)
-# select out 40 random minutes from clusters x, y and z
-#list_9 <- which(cluster.list==9)
-list_9_Gympie <- which(cluster.list.Gympie==9)
-list_9_Woondum <- which(cluster.list.Woondum==9)
-#list_9_Gympie <- list_9[which(list_9 < (length(indices$X)/2+1))]
-#list_9_Woondum <- list_9[which(list_9 > (length(indices$X)/2))]
+
+list_Gympie <- which(cluster.list.Gympie==n)
+list_Woondum <- which(cluster.list.Woondum==n)
 
 # Generate Gympie file
 a <- NULL
@@ -36,19 +36,19 @@ file.ids <- NULL
 site.ids <- NULL
 duration <- NULL 
 
-for (i in 1:length(list_9_Gympie)) {
+for (i in 1:length(list_Gympie)) {
   # Find date
-  day.ref <- floor(list_9_Gympie[i]/1440) + 1
+  day.ref <- floor(list_Gympie[i]/1440) + 1
   if(day.ref < 112) {
     ste <- "GympieNP"
     date1 <- dates[day.ref]
-    hour1 <- floor((list_9_Gympie[i]/1440 - (day.ref-1))*24)
+    hour1 <- floor((list_Gympie[i]/1440 - (day.ref-1))*24)
     hour1 <- as.integer(hour1)
     if (hour1<10) {
       hour1 <- paste("0",as.integer(hour1),sep = "")
     }
   }
-  minute1 <- ((((list_9_Gympie[i]/1440) - (day.ref-1))*24)-as.integer(hour1))*60
+  minute1 <- ((((list_Gympie[i]/1440) - (day.ref-1))*24)-as.integer(hour1))*60
   minute1 <- round(minute1,0)
   if(minute1 < 10) {
     minute1 <- paste("0",round(minute1,0),sep = "")
@@ -95,7 +95,7 @@ orig.files <- list
 
 # determine the number of seconds since the start of the recording
 sec <- NULL
-for (i in 1:length(list_9_Gympie)) {
+for (i in 1:length(list_Gympie)) {
   rec.start.hour <- substr(mapping1$original_file_name[file.ref[i]],10,11)
   rec.start.min <- substr(mapping1$original_file_name[file.ref[i]],12,13)
   rec.start.sec <- substr(mapping1$original_file_name[file.ref[i]],14,15)
@@ -110,9 +110,10 @@ for (i in 1:length(list_9_Gympie)) {
 seconds.into.rec <- sec
 sec.remainder <- duration - seconds.into.rec 
 
-dataset <- cbind(list_9_Gympie,file.ref,file.ids, site.ids,site,date_times,hour,
+dataset <- cbind(list_Gympie,file.ref,file.ids, site.ids,site,date_times,hour,
                  minute,orig.files, seconds.into.rec, duration,sec.remainder)
-write.csv(dataset, "cluster9_dataset_Gympie.csv", row.names=F)
+
+write.csv(dataset, row.names=F, file=paste("cluster", n, "_dataset_Gympie.csv", sep=""))
 
 # Generate Woondum File
 a <- NULL
@@ -125,19 +126,19 @@ file.ids <- NULL
 site.ids <- NULL
 duration <- NULL 
 
-for (i in 1:length(list_9_Woondum)) {
+for (i in 1:length(list_Woondum)) {
   # Find date
-  day.ref <- floor(list_9_Woondum[i]/1440) + 1
+  day.ref <- floor(list_Woondum[i]/1440) + 1
   if(day.ref < 112) {
     ste <- "WoondumNP"
     date1 <- dates[day.ref]
-    hour1 <- floor((list_9_Woondum[i]/1440 - (day.ref-1))*24)
+    hour1 <- floor((list_Woondum[i]/1440 - (day.ref-1))*24)
     hour1 <- as.integer(hour1)
     if (hour1<10) {
       hour1 <- paste("0",as.integer(hour1),sep = "")
     }
   }
-  minute1 <- ((((list_9_Woondum[i]/1440) - (day.ref-1))*24)-as.integer(hour1))*60
+  minute1 <- ((((list_Woondum[i]/1440) - (day.ref-1))*24)-as.integer(hour1))*60
   minute1 <- round(minute1,0)
   if(minute1 < 10) {
     minute1 <- paste("0",round(minute1,0),sep = "")
@@ -184,7 +185,7 @@ orig.files <- list
 
 # determine the number of seconds since the start of the recording
 sec <- NULL
-for (i in 1:length(list_9_Woondum)) {
+for (i in 1:length(list_Woondum)) {
   rec.start.hour <- substr(mapping2$original_file_name[file.ref[i]],10,11)
   rec.start.min <- substr(mapping2$original_file_name[file.ref[i]],12,13)
   rec.start.sec <- substr(mapping2$original_file_name[file.ref[i]],14,15)
@@ -199,8 +200,8 @@ for (i in 1:length(list_9_Woondum)) {
 seconds.into.rec <- sec
 sec.remainder <- duration - seconds.into.rec 
 
-dataset <- cbind(list_9_Woondum,file.ref,file.ids, site.ids,site,
+dataset <- cbind(list_Woondum,file.ref,file.ids, site.ids,site,
                  date_times,hour, minute,orig.files, seconds.into.rec, 
                  duration,sec.remainder)
-write.csv(dataset, "cluster9_dataset_Woondum.csv", row.names=F)
 
+write.csv(dataset, row.names=F, file=paste("cluster", n, "_dataset_Woondum.csv", sep=""))
