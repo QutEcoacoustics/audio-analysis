@@ -3,7 +3,7 @@
 # 24 December 2015
 #
 # Set cluster number
-n <- 26
+n <- 23
   
 setwd("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Yvonne\\")
 mapping1 <- read.csv("audio_recordings_from_site_1192_GympieNP.csv", header = T)[,c(1,5,6,21)]
@@ -25,6 +25,7 @@ dates <- unique(dates)
 list_Gympie <- which(cluster.list.Gympie==n)
 list_Woondum <- which(cluster.list.Woondum==n)
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\Ecosounds")
+
 # Generate Gympie file
 a <- NULL
 date_times <- NULL
@@ -44,43 +45,62 @@ for (i in 1:length(list_Gympie)) {
     date1 <- dates[day.ref]
     hour1 <- floor((list_Gympie[i]/1440 - (day.ref-1))*24)
     hour1 <- as.integer(hour1)
-    if (hour1<10) {
-      hour1 <- paste("0",as.integer(hour1),sep = "")
-    }
   }
   minute1 <- ((((list_Gympie[i]/1440) - (day.ref-1))*24)-as.integer(hour1))*60
-  minute1 <- round(minute1,0)
-  if(minute1 < 10) {
-    minute1 <- paste("0",round(minute1,0),sep = "")
-  }
+  # correct a slight rounding problem to adjust hours
+  # and minutes
   if(minute1==60) {
     hour1 <- as.integer(hour1) + 1
-    if (hour1<10) {
-      hour1 <- paste("0",as.integer(hour1),sep = "")
-    }
-    minute1 <- "00"
+    minute1 <- 0
+  }
+  # subtract one from the minutes to get the beginning
+  # of the minute that matches the cluster list
+  minute1 <- round(minute1,0) - 1
+  # correct hours and minutes caused by going back one minute 
+  if(minute1==-1 & hour1 > 0) {
+    hour1 <- hour1 - 1
+    minute1 <- "59" 
+  }
+  if(minute1==-1 & hour1==0) {
+    hour1 <- 23
+    minute1 <- 59
+    date1 <- dates[day.ref-1]
+  }
+  if (hour1<10) {
+    hour1 <- paste("0",as.integer(hour1),sep = "")
+  }
+  if(minute1 < 10) {
+    minute1 <- paste("0",round(minute1,0),sep = "")
   }
   date_time <- paste(substr(date1,1,4),substr(date1,6,7),
                      substr(date1,9,10),"_",
                      hour1, minute1,"00",
                      sep = "")
+  if (hour1!="00"|minute1!="00") {
   file.ref <- which((substr(mapping1$original_file_name,1,8)
                      ==substr(date_time,1,8)) & 
-                      (substr(mapping1$original_file_name,10,15) < 
+                      (substr(mapping1$original_file_name,10,15) <=
                          substr(date_time,10,15)))
-  if(length(file.ref)>1) {
+  }
+  if (hour1=="00" & minute1=="00") {
+    file.ref <- which(((substr(mapping1$original_file_name,1,8))
+                       ==substr(date_time,1,8)) &
+                        as.numeric(substr(mapping1$original_file_name,10,15)) <
+                        as.numeric("000100"))
+  }
+  if(length(file.ref) > 1) {
     file.ref <- max(file.ref)
   }
   file.id <- mapping1$id[file.ref]
   site.id <- mapping1$site_id[file.ref]
   dur <- mapping1$duration_seconds[file.ref]
-  a <- c(a,file.ref)
+  a <- c(a, file.ref)
   file.ids <- c(file.ids, file.id)
   site.ids <- c(site.ids, site.id)
   date_times <- c(date_times, date_time)
   hour <- c(hour, hour1)
   minute <- c(minute, minute1)
-  site <- c(site,ste)
+  site <- c(site, ste)
   duration <- c(duration, dur)
 }
 
@@ -134,43 +154,62 @@ for (i in 1:length(list_Woondum)) {
     date1 <- dates[day.ref]
     hour1 <- floor((list_Woondum[i]/1440 - (day.ref-1))*24)
     hour1 <- as.integer(hour1)
-    if (hour1<10) {
-      hour1 <- paste("0",as.integer(hour1),sep = "")
-    }
   }
   minute1 <- ((((list_Woondum[i]/1440) - (day.ref-1))*24)-as.integer(hour1))*60
-  minute1 <- round(minute1,0)
-  if(minute1 < 10) {
-    minute1 <- paste("0",round(minute1,0),sep = "")
-  }
+  # correct a slight rounding problem to adjust hours
+  # and minutes
   if(minute1==60) {
     hour1 <- as.integer(hour1) + 1
-    if (hour1<10) {
-      hour1 <- paste("0",as.integer(hour1),sep = "")
-    }
-    minute1 <- "00"
+    minute1 <- 0
+  }
+  # subtract one from the minutes to get the beginning
+  # of the minute that matches the cluster list
+  minute1 <- round(minute1,0) - 1
+  # correct hours and minutes caused by going back one minute 
+  if(minute1==-1 & hour1 > 0) {
+    hour1 <- hour1 - 1
+    minute1 <- "59" 
+  }
+  if(minute1==-1 & hour1==0) {
+    hour1 <- 23
+    minute1 <- 59
+    date1 <- dates[day.ref-1]
+  }
+  if (hour1<10) {
+    hour1 <- paste("0",as.integer(hour1),sep = "")
+  }
+  if(minute1 < 10) {
+    minute1 <- paste("0",round(minute1,0),sep = "")
   }
   date_time <- paste(substr(date1,1,4),substr(date1,6,7),
                      substr(date1,9,10),"_",
                      hour1, minute1,"00",
                      sep = "")
-  file.ref <- which((substr(mapping2$original_file_name,1,8)
-                     ==substr(date_time,1,8)) & 
-                      (substr(mapping2$original_file_name,10,15) < 
-                         substr(date_time,10,15)))
-  if(length(file.ref)>1) {
+  if (hour1!="00"|minute1!="00") {
+    file.ref <- which((substr(mapping2$original_file_name,1,8)
+                       ==substr(date_time,1,8)) & 
+                        (substr(mapping2$original_file_name,10,15) <=
+                           substr(date_time,10,15)))
+  }
+  if (hour1=="00" & minute1=="00") {
+    file.ref <- which(((substr(mapping2$original_file_name,1,8))
+                       ==substr(date_time,1,8)) &
+                        as.numeric(substr(mapping2$original_file_name,10,15)) <
+                        as.numeric("000100"))
+  }
+  if(length(file.ref) > 1) {
     file.ref <- max(file.ref)
   }
   file.id <- mapping2$id[file.ref]
   site.id <- mapping2$site_id[file.ref]
   dur <- mapping2$duration_seconds[file.ref]
-  a <- c(a,file.ref)
+  a <- c(a, file.ref)
   file.ids <- c(file.ids, file.id)
   site.ids <- c(site.ids, site.id)
   date_times <- c(date_times, date_time)
   hour <- c(hour, hour1)
   minute <- c(minute, minute1)
-  site <- c(site,ste)
+  site <- c(site, ste)
   duration <- c(duration, dur)
 }
 
@@ -200,9 +239,8 @@ for (i in 1:length(list_Woondum)) {
 seconds.into.rec <- sec
 sec.remainder <- duration - seconds.into.rec 
 
-dataset <- cbind(list_Woondum,file.ref,file.ids, site.ids,site,
-                 date_times,hour, minute,orig.files, seconds.into.rec, 
-                 duration,sec.remainder)
+dataset <- cbind(list_Woondum,file.ref,file.ids, site.ids,site,date_times,hour,
+                 minute,orig.files, seconds.into.rec, duration,sec.remainder)
 
 write.csv(dataset, row.names=F, file=paste("cluster", n, "_dataset_Woondum.csv", sep=""))
 
@@ -214,7 +252,7 @@ write.csv(dataset, row.names=F, file=paste("cluster", n, "_dataset_Woondum.csv",
 # cluster 9 Gympie 4 to 6am
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\Ecosounds")
 cluster9 <- read.csv("cluster9_dataset_Gympie.csv",header = T)
-cluster9 <- cluster9[cluster9[,12]>60,,drop=FALSE] 
+cluster9 <- cluster9[cluster9[,12]>0,,drop=FALSE] 
 cluster9$cluster <- rep(9, length(cluster9$site))
 
 clusters_4am <- cluster9[cluster9[,7]==4,, drop=FALSE]
@@ -228,7 +266,7 @@ length_9_Sept_Gym
 
 # cluster 9 Woondum 4 to 6am
 cluster9 <- read.csv("cluster9_dataset_Woondum.csv",header = T)
-cluster9 <- cluster9[cluster9[,12]>60,,drop=FALSE] 
+cluster9 <- cluster9[cluster9[,12]>0,,drop=FALSE] 
 cluster9$cluster <- rep(9, length(cluster9$site))
 
 clusters_4am <- cluster9[cluster9[,7]==4,, drop=FALSE]
@@ -242,7 +280,7 @@ length_9_Sept_Woon
 
 # cluster 22 Gympie 12 noon to 2pm
 cluster22 <- read.csv("cluster22_dataset_Gympie.csv",header = T)
-cluster22 <- cluster22[cluster22[,12]>60,,drop=FALSE] 
+cluster22 <- cluster22[cluster22[,12]>0,,drop=FALSE] 
 cluster22$cluster <- rep(22, length(cluster22$site))
 
 clusters_12noon <- cluster22[cluster22[,7]==12,, drop=FALSE]
@@ -256,7 +294,7 @@ length_22_Sept_Gym
 
 # cluster 22 Woondum 12noon to 2pm
 cluster22 <- read.csv("cluster22_dataset_Woondum.csv",header = T)
-cluster22 <- cluster22[cluster22[,12]>60,,drop=FALSE] 
+cluster22 <- cluster22[cluster22[,12]>0,,drop=FALSE] 
 cluster22$cluster <- rep(22, length(cluster22$site))
 
 clusters_12noon <- cluster22[cluster22[,7]==12,, drop=FALSE]
@@ -270,7 +308,7 @@ length_22_Sept_Woon
 
 # cluster 4 Gympie 4pm to 6pm
 cluster4 <- read.csv("cluster4_dataset_Gympie.csv",header = T)
-cluster4 <- cluster4[cluster4[,12]>60,,drop=FALSE] 
+cluster4 <- cluster4[cluster4[,12]>0,,drop=FALSE] 
 cluster4$cluster <- rep(4, length(cluster4$site))
 
 clusters_4pm <- cluster4[cluster4[,7]==16,, drop=FALSE]
@@ -284,7 +322,7 @@ length_4_Sept_Gym
 
 # cluster 4 Woondum 4pm to 6pm
 cluster4 <- read.csv("cluster4_dataset_Woondum.csv",header = T)
-cluster4 <- cluster4[cluster4[,12]>60,,drop=FALSE] 
+cluster4 <- cluster4[cluster4[,12]>0,,drop=FALSE] 
 cluster4$cluster <- rep(4, length(cluster4$site))
 
 clusters_4pm <- cluster4[cluster4[,7]==16,, drop=FALSE]
@@ -326,8 +364,8 @@ for (i in 1:length(concat.samples$minute)) {
 
 concat.samples$links <- links
 
-write.csv(concat.samples, "links.csv",row.names = F)
+write.csv(concat.samples, "new_links.csv",row.names = F)
 
-fileConn<-file("links.txt")
+fileConn<-file("new_links.txt")
 writeLines(paste(links), fileConn)
 close(fileConn)
