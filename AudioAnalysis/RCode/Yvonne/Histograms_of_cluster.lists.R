@@ -15,11 +15,12 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
 setof6 <- c(6,8,10,12,14,16) # set which columns are to be used
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\kmeans")
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hybrid12days")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hclust")
 cluster.lists.kmeans.exp2   <- read.csv("kmeans_clust.csv", header = T)[,setof6] # kmeans
 cluster.lists.hclust.k.exp2 <- read.csv("hc_fit_set_cutree_k.csv", header = T) # hclust
 cluster.lists.mclust.exp2   <- read.csv("mclustlist_ds3norm_1_50.csv", header = T) # mclust
 
-z <- 5 # set the k value
+z <- 5 # set the k value for hybrid method 
 cluster.list.hybrid.exp2    <- read.csv(paste("hybrid_clust_k",z,".csv",sep=""), header = T) # hybrid
 
 #indices <- read.csv("C:\\Work\\CSV files\\DataSet_Exp2\\Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", 
@@ -44,6 +45,10 @@ six.pm.ref <- which(indices$minute.of.day=="1080")
 six.hour.ref <- c(day.ref, six.am.ref, midday.ref, six.pm.ref)
 six.hour.ref <- sort(six.hour.ref)
 six.hour.ref <- c(six.hour.ref, (length(indices$minute.of.day)+1))
+
+twelve.hour.ref <- c(midday.ref, day.ref)
+twelve.hour.ref <- sort(twelve.hour.ref)
+twelve.hour.ref <- c(twelve.hour.ref, length(indices$minute.of.day)+1)
 
 dates <- unique(indices$rec.date)
 #dates2 <- rep(dates, each=6)
@@ -334,18 +339,18 @@ write.csv(twentyfour_hour_table_12, "hclust_wardd2_k30_24hour.csv",
 ####################################################
 # Saving the hclust_k 4 hour files
 ####################################################
-four_hour_table_1 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_2 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_3 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_4 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_5 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_6 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_7 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_8 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_9 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_10 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_11 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-four_hour_table_12 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
+four_hour_table_1 <- NULL 
+four_hour_table_2 <- NULL 
+four_hour_table_3 <- NULL 
+four_hour_table_4 <- NULL 
+four_hour_table_5 <- NULL 
+four_hour_table_6 <- NULL 
+four_hour_table_7 <- NULL 
+four_hour_table_8 <- NULL 
+four_hour_table_9 <- NULL 
+four_hour_table_10 <- NULL
+four_hour_table_11 <- NULL 
+four_hour_table_12 <- NULL 
 
 n <- 6  # number of time periods in 24 hours
 cluster.list <- cluster.lists.hclust.k.exp2
@@ -685,18 +690,18 @@ for (i in 1:length(cluster.list)) {
 ####################################################
 # Saving the hclust_k 6 hour files
 ####################################################
-six_hour_table_1 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_2 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_3 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_4 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_5 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_6 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_7 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_8 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_9 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_10 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_11 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
-six_hour_table_12 <- NULL #as.data.frame(matrix(0, ncol = 120, nrow = 12))
+six_hour_table_1 <- NULL 
+six_hour_table_2 <- NULL 
+six_hour_table_3 <- NULL 
+six_hour_table_4 <- NULL 
+six_hour_table_5 <- NULL 
+six_hour_table_6 <- NULL 
+six_hour_table_7 <- NULL 
+six_hour_table_8 <- NULL 
+six_hour_table_9 <- NULL 
+six_hour_table_10 <- NULL
+six_hour_table_11 <- NULL
+six_hour_table_12 <- NULL
 
 n <- 4 # number of periods in 24 hours
 #cluster.list <- cluster.lists.hclust.k.exp2
@@ -1034,6 +1039,358 @@ for (i in 1:length(cluster.list)) {
   }
 }
 
+####################################################
+# Saving the hclust_k 12 hour files
+####################################################
+twelve_hour_table_1 <- NULL 
+twelve_hour_table_2 <- NULL 
+twelve_hour_table_3 <- NULL 
+twelve_hour_table_4 <- NULL 
+twelve_hour_table_5 <- NULL 
+twelve_hour_table_6 <- NULL 
+twelve_hour_table_7 <- NULL 
+twelve_hour_table_8 <- NULL 
+twelve_hour_table_9 <- NULL 
+twelve_hour_table_10 <- NULL
+twelve_hour_table_11 <- NULL
+twelve_hour_table_12 <- NULL
+
+n <- 2 # number of periods in 24 hours
+#cluster.list <- cluster.lists.hclust.k.exp2
+cluster.list <- cluster.lists.hclust.k.exp2
+for (i in 1:length(cluster.list)) {
+  for (j in 1:(length(twelve.hour.ref)-1)) {
+    cluster.ref <- hist(cluster.list[twelve.hour.ref[j]:(twelve.hour.ref[j+1]-1),i], 
+                        breaks=seq(0.5,(max(cluster.list[,i])+0.5)))
+    cluster.ref$counts
+    if (i == 1) {twelve_hour_table_1 <- append(twelve_hour_table_1, cluster.ref$counts)}
+    if (i == 2) {twelve_hour_table_2 <- append(twelve_hour_table_2, cluster.ref$counts)}
+    if (i == 3) {twelve_hour_table_3 <- append(twelve_hour_table_3, cluster.ref$counts)}  
+    if (i == 4) {twelve_hour_table_4 <- append(twelve_hour_table_4, cluster.ref$counts)}
+    if (i == 5) {twelve_hour_table_5 <- append(twelve_hour_table_5, cluster.ref$counts)}
+    if (i == 6) {twelve_hour_table_6 <- append(twelve_hour_table_6, cluster.ref$counts)}  
+    if (i == 7) {twelve_hour_table_7 <- append(twelve_hour_table_7, cluster.ref$counts)}
+    if (i == 8) {twelve_hour_table_8 <- append(twelve_hour_table_8, cluster.ref$counts)}
+    if (i == 9) {twelve_hour_table_9 <- append(twelve_hour_table_9, cluster.ref$counts)}
+    if (i == 10) {twelve_hour_table_10 <- append(twelve_hour_table_10, cluster.ref$counts)}  
+    if (i == 11) {twelve_hour_table_11 <- append(twelve_hour_table_11, cluster.ref$counts)}
+    if (i == 12) {twelve_hour_table_12 <- append(twelve_hour_table_12, cluster.ref$counts)}
+    l <- length(cluster.ref$counts)
+  }
+  if (i == 1) {
+    l <- 5 # number of clusters 
+    twelve_hour_table_1 <- data.frame(twelve_hour_table_1[1:(n*l)],
+                                   twelve_hour_table_1[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_1[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_1[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_1[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_1[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_1[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_1[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_1[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_1[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_1[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_1[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_1 <- t(twelve_hour_table_1)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_1) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_1 <- cbind(twelve_hour_table_1,site,as.character(dates2))
+    write.csv(twelve_hour_table_1, "hclust_average_k5_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 2) {
+    l <- 10
+    twelve_hour_table_2 <- data.frame(twelve_hour_table_2[1:(n*l)],
+                                   twelve_hour_table_2[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_2[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_2[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_2[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_2[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_2[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_2[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_2[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_2[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_2[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_2[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_2 <- t(twelve_hour_table_2)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_2) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_2 <- cbind(twelve_hour_table_2,site,as.character(dates2))
+    write.csv(twelve_hour_table_2, "hclust_average_k10_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 3) {
+    l <- 15
+    twelve_hour_table_3 <- data.frame(twelve_hour_table_3[1:(n*l)],
+                                   twelve_hour_table_3[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_3[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_3[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_3[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_3[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_3[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_3[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_3[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_3[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_3[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_3[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_3 <- t(twelve_hour_table_3)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_3) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_3 <- cbind(twelve_hour_table_3,site,as.character(dates2))
+    write.csv(twelve_hour_table_3, "hclust_average_k15_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 4) {
+    l <- 20
+    twelve_hour_table_4 <- data.frame(twelve_hour_table_4[1:(n*l)],
+                                   twelve_hour_table_4[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_4[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_4[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_4[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_4[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_4[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_4[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_4[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_4[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_4[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_4[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_4 <- t(twelve_hour_table_4)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_4) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_4 <- cbind(twelve_hour_table_4,site,as.character(dates2))
+    write.csv(twelve_hour_table_4, "hclust_average_k20_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 5) {
+    l <- 25
+    twelve_hour_table_5 <- data.frame(twelve_hour_table_5[1:(n*l)],
+                                   twelve_hour_table_5[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_5[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_5[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_5[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_5[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_5[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_5[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_5[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_5[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_5[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_5[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_5 <- t(twelve_hour_table_5)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_5) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_5 <- cbind(twelve_hour_table_5,site,as.character(dates2))
+    write.csv(twelve_hour_table_5, "hclust_average_k25_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 6) {
+    l <- 30
+    twelve_hour_table_6 <- data.frame(twelve_hour_table_6[1:(n*l)],
+                                   twelve_hour_table_6[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_6[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_6[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_6[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_6[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_6[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_6[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_6[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_6[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_6[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_6[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_6 <- t(twelve_hour_table_6)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_6) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_6 <- cbind(twelve_hour_table_6,site,as.character(dates2))
+    write.csv(twelve_hour_table_6, "hclust_average_k30_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 7) {
+    l <- 5
+    twelve_hour_table_7 <- data.frame(twelve_hour_table_7[1:(n*l)],
+                                   twelve_hour_table_7[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_7[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_7[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_7[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_7[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_7[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_7[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_7[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_7[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_7[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_7[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_7 <- t(twelve_hour_table_7)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_7) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_7 <- cbind(twelve_hour_table_7,site,as.character(dates2))
+    write.csv(twelve_hour_table_7, "hclust_wardD2_k5_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 8) {
+    l <- 10
+    twelve_hour_table_8 <- data.frame(twelve_hour_table_8[1:(n*l)],
+                                   twelve_hour_table_8[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_8[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_8[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_8[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_8[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_8[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_8[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_8[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_8[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_8[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_8[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_8 <- t(twelve_hour_table_8)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_8) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_8 <- cbind(twelve_hour_table_8,site,as.character(dates2))
+    write.csv(twelve_hour_table_8, "hclust_wardD2_k10_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 9) {
+    l <- 15
+    twelve_hour_table_9 <- data.frame(twelve_hour_table_9[1:(n*l)],
+                                   twelve_hour_table_9[(n*l+1)   :(2*n*l)],
+                                   twelve_hour_table_9[(2*n*l+1) :(3*n*l)],
+                                   twelve_hour_table_9[(3*n*l+1) :(4*n*l)],
+                                   twelve_hour_table_9[(4*n*l+1) :(5*n*l)],
+                                   twelve_hour_table_9[(5*n*l+1) :(6*n*l)],
+                                   twelve_hour_table_9[(6*n*l+1) :(7*n*l)],
+                                   twelve_hour_table_9[(7*n*l+1) :(8*n*l)],
+                                   twelve_hour_table_9[(8*n*l+1) :(9*n*l)],
+                                   twelve_hour_table_9[(9*n*l+1) :(10*n*l)],
+                                   twelve_hour_table_9[(10*n*l+1) :(11*n*l)],
+                                   twelve_hour_table_9[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_9 <- t(twelve_hour_table_9)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_9) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_9 <- cbind(twelve_hour_table_9,site,as.character(dates2))
+    write.csv(twelve_hour_table_9, "hclust_wardD2_k15_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 10) {
+    l <- 20
+    twelve_hour_table_10 <- data.frame(twelve_hour_table_10[1:(n*l)],
+                                    twelve_hour_table_10[(n*l+1)   :(2*n*l)],
+                                    twelve_hour_table_10[(2*n*l+1) :(3*n*l)],
+                                    twelve_hour_table_10[(3*n*l+1) :(4*n*l)],
+                                    twelve_hour_table_10[(4*n*l+1) :(5*n*l)],
+                                    twelve_hour_table_10[(5*n*l+1) :(6*n*l)],
+                                    twelve_hour_table_10[(6*n*l+1) :(7*n*l)],
+                                    twelve_hour_table_10[(7*n*l+1) :(8*n*l)],
+                                    twelve_hour_table_10[(8*n*l+1) :(9*n*l)],
+                                    twelve_hour_table_10[(9*n*l+1) :(10*n*l)],
+                                    twelve_hour_table_10[(10*n*l+1) :(11*n*l)],
+                                    twelve_hour_table_10[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_10 <- t(twelve_hour_table_10)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_10) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_10 <- cbind(twelve_hour_table_10,site,as.character(dates2))
+    write.csv(twelve_hour_table_10, "hclust_wardD2_k20_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 11) {
+    l <- 25
+    twelve_hour_table_11 <- data.frame(twelve_hour_table_11[1:(n*l)],
+                                    twelve_hour_table_11[(n*l+1)   :(2*n*l)],
+                                    twelve_hour_table_11[(2*n*l+1) :(3*n*l)],
+                                    twelve_hour_table_11[(3*n*l+1) :(4*n*l)],
+                                    twelve_hour_table_11[(4*n*l+1) :(5*n*l)],
+                                    twelve_hour_table_11[(5*n*l+1) :(6*n*l)],
+                                    twelve_hour_table_11[(6*n*l+1) :(7*n*l)],
+                                    twelve_hour_table_11[(7*n*l+1) :(8*n*l)],
+                                    twelve_hour_table_11[(8*n*l+1) :(9*n*l)],
+                                    twelve_hour_table_11[(9*n*l+1) :(10*n*l)],
+                                    twelve_hour_table_11[(10*n*l+1) :(11*n*l)],
+                                    twelve_hour_table_11[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_11 <- t(twelve_hour_table_11)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_11) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_11 <- cbind(twelve_hour_table_11,site,as.character(dates2))
+    write.csv(twelve_hour_table_11, "hclust_wardD2_k25_12hour.csv", 
+              row.names = F)
+  }
+  if (i == 12) {
+    l <- 30
+    twelve_hour_table_12 <- data.frame(twelve_hour_table_12[1:(n*l)],
+                                    twelve_hour_table_12[(n*l+1)   :(2*n*l)],
+                                    twelve_hour_table_12[(2*n*l+1) :(3*n*l)],
+                                    twelve_hour_table_12[(3*n*l+1) :(4*n*l)],
+                                    twelve_hour_table_12[(4*n*l+1) :(5*n*l)],
+                                    twelve_hour_table_12[(5*n*l+1) :(6*n*l)],
+                                    twelve_hour_table_12[(6*n*l+1) :(7*n*l)],
+                                    twelve_hour_table_12[(7*n*l+1) :(8*n*l)],
+                                    twelve_hour_table_12[(8*n*l+1) :(9*n*l)],
+                                    twelve_hour_table_12[(9*n*l+1) :(10*n*l)],
+                                    twelve_hour_table_12[(10*n*l+1) :(11*n*l)],
+                                    twelve_hour_table_12[(11*n*l+1) :(12*n*l)])
+    twelve_hour_table_12 <- t(twelve_hour_table_12)
+    column.names <- NULL
+    for (k in 1:(l*n)) {
+      col.names <- paste("clus_", k, sep = "")
+      column.names <- c(column.names,col.names)
+    }
+    colnames(twelve_hour_table_12) <- column.names
+    site <- c(rep("GympieNP",6), rep("WoondumNP",6))
+    twelve_hour_table_12 <- cbind(twelve_hour_table_12,site,as.character(dates2))
+    write.csv(twelve_hour_table_12, "hclust_wardD2_k30_12hour.csv", 
+              row.names = F)
+  }
+}
+# now go to "myfiles" in folder k.R file
 ####################################################
 # Saving the mclust 24 hour file
 ####################################################

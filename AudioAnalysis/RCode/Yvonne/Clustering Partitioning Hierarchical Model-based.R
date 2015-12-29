@@ -91,7 +91,7 @@ for (j in 1:length(ds6)) {
   }
 }
 
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
 
 #######################################################
 # Generate and save the Correlation Matrix 
@@ -131,15 +131,16 @@ dev.off()
 #######################################################
 # Method 1A:  Partitioning by kmeans
 #######################################################
-file <- paste("kmeans_plots_ds3norm_2_98_Exp2_test.png", sep = "")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
+file <- paste("kmeans_plots_ds3norm_2_98_Exp2_test_a.png", sep = "")
 
 png(
   file,
-  width     = 200,
-  height    = 200,
-  units     = "mm",
-  res       = 400,
-  pointsize = 4
+  width     = 600,
+  height    = 600,
+  units     = "px"#,
+  #res       = 400,
+  #pointsize = 4
 )
 
 ds3.norm_2_98noNA <- ds3.norm_2_98#[complete.cases(ds3.norm_2_98), ]
@@ -161,15 +162,6 @@ for (i in 1:40) {
   error.wss[i] <- (wss[i]-wss[i+1])/wss[i]
 }
 
-png("kmeans error.png", width = 800, height=650)
-par(mar=c(4,5,1,1))
-plot(error.wss,type="l",main="kmeans error",xlab = "k value",
-     ylab = expression(paste(Delta, " ", Sigma, "wss / ", Sigma, 
-     "wss")),cex.axis=1.2,cex.lab=1.4)
-abline(v=8,col="red",lty=2)
-abline(v=16,col="red",lty=2)
-abline(v=30,col="red",lty=2)
-dev.off()
 
 plot(1:20, wss[1:20], type = "b", xlab="Number of clusters",
 ylab = "within groups sum of squares",
@@ -216,6 +208,25 @@ mtext("Maximum cluster size",side=2,
       col="black",line=5, cex=2)
 par(new=TRUE)
 
+## Error plot
+png("kmeans error_test.png", width = 700, height=600)
+par(mar=c(4.5,4.5,1.5,4.5), cex = 1.3, cex.axis =1.5,
+    cex.lab=1.5)
+plot(error.wss,type="l",main="kmeans",xlab = "k value",
+     ylab = expression(paste(Delta, " ", Sigma, "wss / ", Sigma, 
+                             "wss")),cex.axis=1.6,cex.main=1.5, cex=0.8, lwd = 2)
+abline(v=8,col="red",lty=2)
+abline(v=16,col="red",lty=2)
+abline(v=30,col="red",lty=2)
+par(new=TRUE)
+plot(max.size[1:40],type = "l", lty=3,yaxt="n",ylab = "",
+     xlab = "", lwd=2)
+axis(4,ylim=c(min(max.size[1:40]),max(max.size[1:40])),lwd=1.8,
+     mgp=c(3,0.4,0),tck=-0.01)
+legend("topright",bty='n',lty=c(1,3),lwd=2,
+       legend=c("wss error","max cluster size"),cex=1.2)
+mtext(side=4, line = 2, "maximum cluster size",cex = 2)
+dev.off()
 #plot(seq(7500,35000,2500),c(max.size), type = "l", col = "red", 
 #     ylim=c(0,9000), xlab = "", 
 #     ylab = "",las=1, xlim = c(0,35000))
@@ -370,11 +381,12 @@ dev.off()
 # Method 2a:  Hierarchical - hclust
 #######################################################
 #setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hierarchical\\")
+setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\hclust")
 #setwd("C:\\Work\\CSV files\\DataSet_Exp3a\\Hierarchical\\")
 #setwd("C:\\Work\\CSV files\\DataSet_Exp2_new\\Hierarchical\\")
 #setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3l\\hclust")
 require(graphics)
-ds3.norm_2_98 <- cbind(ds3.norm_2_98, AcousticDS$rec.time)
+#ds3.norm_2_98 <- cbind(ds3.norm_2_98, AcousticDS$rec.time)
 dist.hc <- dist(ds3.norm_2_98)
 #dist.hc <- dist(ds3.norm_2_98)
 #hc.fit <- hclust(dist.hc, "average")
@@ -400,6 +412,9 @@ set.hc.fit <- cbind(hc.fit.average.5,hc.fit.average.10, hc.fit.average.15,
                 hc.fit.ward.5,hc.fit.ward.10, hc.fit.ward.15, hc.fit.ward.20, 
                 hc.fit.ward.25, hc.fit.ward.30)
 write.csv(set.hc.fit, "hc_fit_set_cutree_k.csv", row.names = F)
+
+#####
+
 
 png("hclust_average_cutree_k_ds3norm_2_98.png", width = 1500, 
     height = 1200, units = "px")
@@ -705,7 +720,7 @@ dev.off()
 # Cluster using kmeans and 1000, 1500... centers
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Hybrid\\")
 #setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hybrid12days")
-k = 5
+k = 55
 
 clusters <- NULL
 for (i in seq(1000, 4500, 500)) {

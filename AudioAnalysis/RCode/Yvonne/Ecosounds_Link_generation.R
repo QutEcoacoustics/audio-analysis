@@ -278,6 +278,64 @@ length_9_Sept_Woon <- length(Sept_4am_5am_C9_Woon$file.ids)
 length_9_Sept_Woon
 #  462
 
+# cluster 26 Gympie 4 to 6am
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\Ecosounds")
+cluster26 <- read.csv("cluster26_dataset_Gympie.csv",header = T)
+cluster26 <- cluster26[cluster26[,12]>0,,drop=FALSE] 
+cluster26$cluster <- rep(26, length(cluster26$site))
+
+clusters_4am <- cluster26[cluster26[,7]==4,, drop=FALSE]
+clusters_5am <- cluster26[cluster26[,7]==5,, drop=FALSE]
+clusters_4am_5am <- rbind(clusters_4am,clusters_5am)
+
+Sept_4am_5am_C26_Gym <- subset(clusters_4am_5am, substr(clusters_4am_5am$date_times,1,6)=="201509")
+length_26_Sept_Gym <- length(Sept_4am_5am_C26_Gym$file.ids)
+length_26_Sept_Gym
+#  644
+
+# cluster 26 Woondum 4 to 6am
+cluster26 <- read.csv("cluster26_dataset_Woondum.csv",header = T)
+cluster26 <- cluster26[cluster26[,12]>0,,drop=FALSE] 
+cluster26$cluster <- rep(26, length(cluster26$site))
+
+clusters_4am <- cluster26[cluster26[,7]==4,, drop=FALSE]
+clusters_5am <- cluster26[cluster26[,7]==5,, drop=FALSE]
+clusters_4am_5am <- rbind(clusters_4am,clusters_5am)
+
+Sept_4am_5am_C26_Woon <- subset(clusters_4am_5am, substr(clusters_4am_5am$date_times,1,6)=="201509")
+length_26_Sept_Woon <- length(Sept_4am_5am_C26_Woon$file.ids)
+length_26_Sept_Woon
+#  462
+
+# cluster 9 Gympie 4 to 6am
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\Ecosounds")
+cluster23 <- read.csv("cluster23_dataset_Gympie.csv",header = T)
+cluster23 <- cluster23[cluster23[,12]>0,,drop=FALSE] 
+cluster23$cluster <- rep(23, length(cluster23$site))
+
+clusters_4am <- cluster23[cluster23[,7]==4,, drop=FALSE]
+clusters_5am <- cluster23[cluster23[,7]==5,, drop=FALSE]
+clusters_4am_5am <- rbind(clusters_4am,clusters_5am)
+
+Sept_4am_5am_C23_Gym <- subset(clusters_4am_5am, substr(clusters_4am_5am$date_times,1,6)=="201509")
+length_23_Sept_Gym <- length(Sept_4am_5am_C23_Gym$file.ids)
+length_23_Sept_Gym
+#  644
+
+# cluster 23 Woondum 4 to 6am
+cluster23 <- read.csv("cluster23_dataset_Woondum.csv",header = T)
+cluster23 <- cluster23[cluster23[,12]>0,,drop=FALSE] 
+cluster23$cluster <- rep(23, length(cluster23$site))
+
+clusters_4am <- cluster23[cluster23[,7]==4,, drop=FALSE]
+clusters_5am <- cluster23[cluster23[,7]==5,, drop=FALSE]
+clusters_4am_5am <- rbind(clusters_4am,clusters_5am)
+
+Sept_4am_5am_C23_Woon <- subset(clusters_4am_5am, substr(clusters_4am_5am$date_times,1,6)=="201509")
+length_23_Sept_Woon <- length(Sept_4am_5am_C23_Woon$file.ids)
+length_23_Sept_Woon
+#  462
+
 # cluster 22 Gympie 12 noon to 2pm
 cluster22 <- read.csv("cluster22_dataset_Gympie.csv",header = T)
 cluster22 <- cluster22[cluster22[,12]>0,,drop=FALSE] 
@@ -334,6 +392,7 @@ length_4_Sept_Woon <- length(Sept_4pm_5pm_C4_Woon$file.ids)
 length_4_Sept_Woon
 #  325
 
+
 # Select 20 random sample (minutes) from each of these clusters 4, 9 and 22 and each site
 # Generate samples
 sample9Gym <- Sept_4am_5am_C9_Gym[sample(nrow(Sept_4am_5am_C9_Gym),20),]
@@ -342,6 +401,10 @@ sample22Gym <- Sept_12_1pm_C22_Gym[sample(nrow(Sept_12_1pm_C22_Gym),20),]
 sample22Woon <- Sept_12_1pm_C22_Woon[sample(nrow(Sept_12_1pm_C22_Woon),20),]
 sample4Gym <- Sept_4pm_5pm_C4_Gym[sample(nrow(Sept_4pm_5pm_C4_Gym),20),]
 sample4Woon <- Sept_4pm_5pm_C4_Woon[sample(nrow(Sept_4pm_5pm_C4_Woon),20),]
+sample26Gym <- Sept_12_1pm_C26_Gym[sample(nrow(Sept_12_1pm_C26_Gym),20),]
+sample26Woon <- Sept_12_1pm_C26_Woon[sample(nrow(Sept_12_1pm_C26_Woon),20),]
+sample23Gym <- Sept_12_1pm_C23_Gym[sample(nrow(Sept_12_1pm_C23_Gym),20),]
+sample23Woon <- Sept_12_1pm_C23_Woon[sample(nrow(Sept_12_1pm_C23_Woon),20),]
 
 names(sample9Gym)[names(sample9Gym) == 'list_Gympie'] <- 'minute'
 names(sample9Woon)[names(sample9Woon) == 'list_Woondum'] <- 'minute'
@@ -349,6 +412,10 @@ names(sample22Gym)[names(sample22Gym) == 'list_Gympie'] <- 'minute'
 names(sample22Woon)[names(sample22Woon) == 'list_Woondum'] <- 'minute'
 names(sample4Gym)[names(sample4Gym) == 'list_Gympie'] <- 'minute'
 names(sample4Woon)[names(sample4Woon) == 'list_Woondum'] <- 'minute'
+names(sample26Gym)[names(sample26Gym) == 'list_Gympie'] <- 'minute'
+names(sample26Woon)[names(sample26Woon) == 'list_Woondum'] <- 'minute'
+names(sample23Gym)[names(sample23Gym) == 'list_Gympie'] <- 'minute'
+names(sample23Woon)[names(sample23Woon) == 'list_Woondum'] <- 'minute'
 
 concat.samples <- rbind(sample9Gym, sample9Woon, 
                         sample22Gym, sample22Woon,

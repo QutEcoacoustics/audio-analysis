@@ -497,8 +497,8 @@ write.csv(twentyfour_hour_table_20, paste(csv.name, "_k100_24hour.csv", sep = ""
 
 # This is from file named "Clustering_of_24_hour_files.R"
 setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Mclust\\")
-myFiles <- list.files(full.names=TRUE, pattern="*_24hour.csv$")
-myFilesShort <- list.files(full.names=FALSE, pattern="*_24hour.csv$")
+myFiles <- list.files(full.names=TRUE, pattern="_6hour.csv$")
+myFilesShort <- list.files(full.names=FALSE, pattern="*_6hour.csv$")
 
 length <- length(myFiles)
 length
