@@ -23,15 +23,14 @@ plot(x, hclust_4hour, type = "b",pch=17, ylim = c(1.3,2.3),
      4, 6 & 24 hour fingerprints - 12 days",
      cex=1.3,cex.axis=1.5)
 par(new=TRUE)
-plot(x, hclust_6hour,type = "b",pch=19,ylim = c(1.3,2.2),
+plot(x, hclust_6hour,type = "b",pch=19,ylim = c(1.3,2.3),
      yaxt="n",ylab = "",xlab = "k",cex=1.3,cex.axis=1.5)
 par(new=TRUE)
-plot(x, hclust_24hour,type = "b",pch=15,ylim = c(1.3,2.2),
+plot(x, hclust_24hour,type = "b",pch=15,ylim = c(1.3,2.3),
      yaxt="n",ylab = "",xlab = "k",cex=1.3,cex.axis=1.5)
 legend("bottomright",pch = c(17, 19, 15),
        c("4 hour","6 hour","24 hour"),bty = "n",cex=1.5)
 dev.off()
-
 
 ####################################
 # Plotting kmeans (12 days)

@@ -291,6 +291,12 @@ clusters_530am_630am <- rbind(clusters_5am,clusters_6am)
 Sept_530am_630am_C9_Gym <- subset(clusters_530am_630am, substr(clusters_530am_630am$date_times,1,6)=="201509")
 
 Sept_530am_630am_C9_Gym <- subset(Sept_530am_630am_C9_Gym, 
+                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="01"|
+                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="02"|
+                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="03"|
+                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="14"|
+                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="05"|
+                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="06"|
                                   substr(Sept_530am_630am_C9_Gym[,6],7,8)=="07"|
                                   substr(Sept_530am_630am_C9_Gym[,6],7,8)=="08"|
                                   substr(Sept_530am_630am_C9_Gym[,6],7,8)=="09"|
@@ -298,13 +304,7 @@ Sept_530am_630am_C9_Gym <- subset(Sept_530am_630am_C9_Gym,
                                   substr(Sept_530am_630am_C9_Gym[,6],7,8)=="11"|
                                   substr(Sept_530am_630am_C9_Gym[,6],7,8)=="12"|
                                   substr(Sept_530am_630am_C9_Gym[,6],7,8)=="13"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="14"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="15"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="16"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="17"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="18"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="19"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="20")
+                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="14")
 length_9_Sept_Gym <- length(Sept_530am_630am_C9_Gym$file.ids)
 length_9_Sept_Gym
 
@@ -320,20 +320,20 @@ clusters_530am_630am <- rbind(clusters_5am,clusters_6am)
 Sept_530am_630am_C9_Woon <- subset(clusters_530am_630am, substr(clusters_530am_630am$date_times,1,6)=="201509")
 
 Sept_530am_630am_C9_Woon <- subset(Sept_530am_630am_C9_Woon, 
-                                  substr(Sept_530am_630am_C9_Woon[,6],7,8)=="07"|
+                                  substr(Sept_530am_630am_C9_Woon[,6],7,8)=="01"|
+                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="02"|
+                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="03"|
+                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="04"|
+                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="05"|
+                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="06"|
+                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="07"|
                                     substr(Sept_530am_630am_C9_Woon[,6],7,8)=="08"|
                                     substr(Sept_530am_630am_C9_Woon[,6],7,8)=="09"|
                                     substr(Sept_530am_630am_C9_Woon[,6],7,8)=="10"|
                                     substr(Sept_530am_630am_C9_Woon[,6],7,8)=="11"|
                                     substr(Sept_530am_630am_C9_Woon[,6],7,8)=="12"|
                                     substr(Sept_530am_630am_C9_Woon[,6],7,8)=="13"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="14"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="15"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="16"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="17"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="18"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="19"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="20")
+                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="14")
 length_9_Sept_Woon <- length(Sept_530am_630am_C9_Woon$file.ids)
 length_9_Sept_Woon
 #  276
@@ -349,20 +349,20 @@ clusters_1230_130 <- rbind(clusters_1230,clusters_130)
 
 Sept_1230_130_C22_Gym <- subset(clusters_1230_130, substr(clusters_1230_130$date_times,1,6)=="201509")
 Sept_1230_130_C22_Gym <- subset(Sept_1230_130_C22_Gym, 
-                                  substr(Sept_1230_130_C22_Gym[,6],7,8)=="07"|
+                                  substr(Sept_1230_130_C22_Gym[,6],7,8)=="01"|
+                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="02"|
+                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="03"|
+                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="04"|
+                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="05"|
+                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="06"|
+                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="07"|
                                     substr(Sept_1230_130_C22_Gym[,6],7,8)=="08"|
                                     substr(Sept_1230_130_C22_Gym[,6],7,8)=="09"|
                                     substr(Sept_1230_130_C22_Gym[,6],7,8)=="10"|
                                     substr(Sept_1230_130_C22_Gym[,6],7,8)=="11"|
                                     substr(Sept_1230_130_C22_Gym[,6],7,8)=="12"|
                                     substr(Sept_1230_130_C22_Gym[,6],7,8)=="13"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="14"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="15"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="16"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="17"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="18"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="19"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="20")
+                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="14")
 
 length_22_Sept_Gym <- length(Sept_1230_130_C22_Gym$file.ids)
 length_22_Sept_Gym
@@ -379,20 +379,20 @@ clusters_1230_130 <- rbind(clusters_1230,clusters_130pm)
 
 Sept_1230_130_C22_Woon <- subset(clusters_1230_130, substr(clusters_1230_130$date_times,1,6)=="201509")
 Sept_1230_130_C22_Woon <- subset(Sept_1230_130_C22_Woon, 
-                                substr(Sept_1230_130_C22_Woon[,6],7,8)=="07"|
+                                substr(Sept_1230_130_C22_Woon[,6],7,8)=="01"|
+                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="02"|
+                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="03"|
+                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="04"|
+                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="05"|
+                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="06"|
+                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="07"|
                                   substr(Sept_1230_130_C22_Woon[,6],7,8)=="08"|
                                   substr(Sept_1230_130_C22_Woon[,6],7,8)=="09"|
                                   substr(Sept_1230_130_C22_Woon[,6],7,8)=="10"|
                                   substr(Sept_1230_130_C22_Woon[,6],7,8)=="11"|
                                   substr(Sept_1230_130_C22_Woon[,6],7,8)=="12"|
                                   substr(Sept_1230_130_C22_Woon[,6],7,8)=="13"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="14"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="15"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="16"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="17"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="18"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="19"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="20")
+                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="14")
 
 length_22_Sept_Woon <- length(Sept_1230_130_C22_Woon$file.ids)
 length_22_Sept_Woon
@@ -408,20 +408,20 @@ clusters_1730 <- cluster4[cluster4[,7]==17 & cluster4[,8]<=29,, drop=FALSE]
 clusters_1630_1730 <- rbind(clusters_1630,clusters_1730)
 Sept_1630_1730_C4_Gym <- subset(clusters_1630_1730, substr(clusters_1630_1730$date_times,1,6)=="201509")
 Sept_1630_1730_C4_Gym <- subset(Sept_1630_1730_C4_Gym, 
-                                 substr(Sept_1630_1730_C4_Gym[,6],7,8)=="07"|
+                                 substr(Sept_1630_1730_C4_Gym[,6],7,8)=="01"|
+                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="02"|
+                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="03"|
+                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="04"|
+                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="05"|
+                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="06"|
+                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="07"|
                                    substr(Sept_1630_1730_C4_Gym[,6],7,8)=="08"|
                                    substr(Sept_1630_1730_C4_Gym[,6],7,8)=="09"|
                                    substr(Sept_1630_1730_C4_Gym[,6],7,8)=="10"|
                                    substr(Sept_1630_1730_C4_Gym[,6],7,8)=="11"|
                                    substr(Sept_1630_1730_C4_Gym[,6],7,8)=="12"|
                                    substr(Sept_1630_1730_C4_Gym[,6],7,8)=="13"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="14"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="15"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="16"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="17"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="18"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="19"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="20")
+                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="14")
 
 length_4_Sept_Gym <- length(Sept_1630_1730_C4_Gym$file.ids)
 length_4_Sept_Gym
@@ -437,20 +437,20 @@ clusters_1730 <- cluster4[cluster4[,7]==17 & cluster4[,8]<=29,, drop=FALSE]
 clusters_1630_1730 <- rbind(clusters_1630,clusters_1730)
 Sept_1630_1730_C4_Woon <- subset(clusters_1630_1730, substr(clusters_1630_1730$date_times,1,6)=="201509")
 Sept_1630_1730_C4_Woon <- subset(Sept_1630_1730_C4_Woon, 
-                                substr(Sept_1630_1730_C4_Woon[,6],7,8)=="07"|
+                                substr(Sept_1630_1730_C4_Woon[,6],7,8)=="01"|
+                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="02"|
+                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="03"|
+                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="04"|
+                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="05"|
+                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="06"|
+                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="07"|
                                   substr(Sept_1630_1730_C4_Woon[,6],7,8)=="08"|
                                   substr(Sept_1630_1730_C4_Woon[,6],7,8)=="09"|
                                   substr(Sept_1630_1730_C4_Woon[,6],7,8)=="10"|
                                   substr(Sept_1630_1730_C4_Woon[,6],7,8)=="11"|
                                   substr(Sept_1630_1730_C4_Woon[,6],7,8)=="12"|
                                   substr(Sept_1630_1730_C4_Woon[,6],7,8)=="13"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="14"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="15"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="16"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="17"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="18"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="19"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="20")
+                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="14")
 
 length_4_Sept_Woon <- length(Sept_1630_1730_C4_Woon$file.ids)
 length_4_Sept_Woon
@@ -494,9 +494,9 @@ for (i in 1:length(concat.samples$minute)) {
 
 concat.samples$links <- links
 
-write.csv(concat.samples, "new_links.csv",row.names = F)
+write.csv(concat.samples, "new2_links.csv",row.names = F)
 
-fileConn<-file("new_links.txt")
+fileConn<-file("new2_links.txt")
 writeLines(paste(links), fileConn)
 close(fileConn)
 
