@@ -18,58 +18,71 @@
 
 
 PlotSeconds <- function (x, y, class) {
-    
     plot(x, y, col=c("red","blue")[as.numeric(class)+1])
-    
-    
-    
 }
 
 
-PlotFeatures <- function (features, range = 1:30, seconds = NULL, spectro.size = .5) {
+PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spectro.size = .5, scale = TRUE) {
     # spectro.size: float [0,1]; the fraction of the vertical height of the graph to use for the spectrogram
     # 0.5 means that it will be half the size of the graph, or 1/3 of the total size
+
+    if (!is.null(section)) {
+        # section is specified. Overrides range
+        range <- 1:30 + (section - 1) * 30
+    }
     
     
-    features <- scale(features)
+    old.par <- par(mfrow=c(2, 1), par(oma=c(0,0,0,0)))
+    
+    if (scale) {
+        features <- scale(features)    
+    }
+
     cn <- colnames(features)
     colors <- rainbow(ncol(features), v = 0.75)
     
     mx <- max(features[range,])
     mn <- min(features[range,])
-    
     w <- length(range)
-    
     y.range <- mx-mn
     mx2 <- mn + (y.range * (1 + spectro.size))
-    
+    par(mar=c(0,2,2,2))
     plot(seq(mn, mx2, length.out = w), type = 'n', xlab = 'seconds', ylab = 'scaled feature values (z score)')
-    
     wav.fn <- unique(seconds$wav.file[range])
     if (length(wav.fn) == 1) {
         # if the range covers exactly 1 wave file
         spectro <- Sp.CreateFromFile(wav.fn)
-        
         sv <- Normalize(spectro$vals)
-        
+        sv <- NormaliseSpectrumNoise(spectro$vals)
         x <- 1:ncol(sv) * (w / ncol(sv)) + 0.5
         #y <- 1:nrow(sv) * ((mx - mn) / nrow(sv)) + mn
         y <- 1:nrow(sv)  * ((mx2 - mx) / nrow(sv)) + mx
-        
-        image(x, y, z = t(spectro$vals), col = rev(gray.colors(20)), add = TRUE)
+        image(x, y, z = t(sv), col = rev(gray.colors(10)), add = TRUE)
         #grid(nx = w+1, ny = 0, col = 'black')
-        
         for (grid in 0:w) {
             abline(v = grid + 0.5, col = 'darkgrey')
             abline(v = grid + 0.5, col = 'white', lty = 2)
         }
-        
     }
     for (f in 1:ncol(features)) {
         points(features[range, cn[f]], col = colors[f])
-        lines(features[range, cn[f]], col = colors[f], lwd=5)
+        lines(features[range, cn[f]], col = colors[f], lwd= 5)
     }
     legend("bottomright", legend = cn, col = colors, pch = 1)
+    
+    
+    # plot the bird cover below
+    colors <- rainbow(2, v = 0.75) 
+    par(mar=c(2,2,1,2))
+    plot(seconds$bird.cover.2[range], ylab = 'number of seconds of annotation cover', xlab = 'seconds', col = colors[2], type = 'b', oma=c(1,1,0,1))
+    points(seconds$bird.cover.1[range], col = colors[1])
+    lines(seconds$bird.cover.1[range], col = colors[1])
+    for (grid in 0:w) {
+        abline(v = grid + 0.5, col = 'darkgrey')
+        abline(v = grid + 0.5, col = 'white', lty = 2)
+    } 
+    old.par <- par(old.par)
+    
 }
 
 
@@ -138,8 +151,6 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
                 Dot()
             #}
             
-
-            
             features$mm1[cur.sec] <- mm1
             features$mm2[cur.sec] <- mm2
             
@@ -174,12 +185,8 @@ GetEntropy <- function (spectro.vals) {
     # treats the resulting vector as a prob dist
     # then calculates entropy on it
     # Hf averages the columns of the matrix, then does the same
-    
     row <- apply(spectro.vals, 1, mean)
     col <- apply(spectro.vals, 2, mean)
-
-    
-    
     return(list(Hf = CalculateEntropy(col), Ht = CalculateEntropy(row)))
 }
 
@@ -192,17 +199,13 @@ CalculateEntropy <- function (pp, normalize = TRUE) {
     if (normalize) {
         H <- H / log2(length(pp))
     }
-    
     return(H)
 }
 
-CalculateHasBird <- function (seconds) {
-    
-    seconds$has.bird <- seconds$bird.cover.1 > 0.1
+CalculateHasBird <- function (seconds, f = 'bird.cover.1', t = 0.1) {
+   # using the annotation cover sets a threshold
+    seconds$has.bird <- seconds[,f] > t
     return(seconds)
-    
-    
-    
 }
 
 
