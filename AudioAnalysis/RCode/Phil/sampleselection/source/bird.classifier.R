@@ -17,6 +17,67 @@
 #
 
 
+BirdClassifier <- function () {
+    # do all the steps needed for for bird classifier
+    seconds <- BuildSecondList()
+    seconds <- CalculateAnnotationCover(seconds)
+    seconds <- CalculateHasBird(seconds)
+    features <- CalculateBirdFeatures(seconds)
+    model <- ClassifySeconds(seconds, features)
+}
+
+
+
+ClassifySeconds <- function (seconds, features) {
+    # TODO: logistic regression to classify second as 'active' or 'quite'
+    #       training/testing data uses the 'has.bird' flag, generated based on the annotation overlap
+    #       
+    
+    # is this right??
+    # features <- ScaleDf(features)
+    
+    data <- cbind(features, seconds$has.bird)
+    colnames(data) <- c(colnames(features), 'has.bird')
+    
+    # 10% for testing
+    num.train <- floor(nrow(data)*.9)
+    train.selection <- rep(FALSE, nrow(data))
+    train.selection[sample.int(nrow(data), num.train)] <- TRUE
+
+    
+    train <- data[train.selection,]
+    test <- data[!train.selection,]
+    
+    model <- glm(has.bird ~.,family=binomial(link='logit'),data=train)
+    summary(model)
+    return(model)
+    
+    
+}
+
+
+GetCorrelations <- function (bird.cover, features) {
+    # for each feature, find the correlation (absolute) 
+    # between it and the bird cover for that second
+    corrs <- apply(features, 2, function (col) {
+        # TODO: significance??
+        return(cor(bird.cover, col))
+    })
+
+    return(corrs)
+    
+}
+
+
+
+
+ScaleDf <- function (df) {
+    for (c in colnames(df)) {
+        df[,c] <- (df[,c] / sd(df[,c])) - mean(df[,c])
+    }
+    return(df)
+}
+
 PlotSeconds <- function (x, y, class) {
     plot(x, y, col=c("red","blue")[as.numeric(class)+1])
 }
@@ -74,9 +135,9 @@ PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spect
     # plot the bird cover below
     colors <- rainbow(2, v = 0.75) 
     par(mar=c(2,2,1,2))
-    plot(seconds$bird.cover.2[range], ylab = 'number of seconds of annotation cover', xlab = 'seconds', col = colors[2], type = 'b', oma=c(1,1,0,1))
-    points(seconds$bird.cover.1[range], col = colors[1])
-    lines(seconds$bird.cover.1[range], col = colors[1])
+    plot(seconds$bird.cover[range], ylab = 'number of seconds of annotation cover', xlab = 'seconds', col = colors[2], type = 'b', oma=c(1,1,0,1))
+    #points(seconds$bird.cover.1[range], col = colors[1])
+    #lines(seconds$bird.cover.1[range], col = colors[1])
     for (grid in 0:w) {
         abline(v = grid + 0.5, col = 'darkgrey')
         abline(v = grid + 0.5, col = 'white', lty = 2)
@@ -102,7 +163,10 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
     #
     
     empty <- rep(NA, nrow(seconds))
-    features <- data.frame(Ht = empty, Hf = empty, mm1 = empty, mm2 = empty)
+    
+    feature.names <- c('Ht1', 'Hf1', 'Ht2', 'Hf2', 'mm1', 'mm2', 'sd', 'amd.1', 'amd.2')
+    features <- matrix(rep(NA, length(feature.names)*nrow(seconds)), ncol = length(feature.names))
+    colnames(features) <- feature.names
     audio.files <- unique(seconds$wav.file)
     for (af in audio.files) {
         af.path <- file.path(input.directory, 'wav', af)
@@ -133,26 +197,41 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
             end.offset <- floor((sec)*second.width)
             cur.sec.spectro.vals <- spectro.vals[,start.offset:end.offset]
             
-            H <- GetEntropy(cur.sec.spectro.vals)
-            features$Ht[cur.sec] <- 1 - H$Ht
-            features$Hf[cur.sec] <- 1 - H$Hf
+            H1 <- GetEntropy1(cur.sec.spectro.vals)
+            features[cur.sec, 'Ht1'] <- 1 - H1$Ht
+            features[cur.sec, 'Hf1'] <- 1 - H1$Hf
             
-            mm1 <- abs(mean(cur.sec.spectro.vals) - median(cur.sec.spectro.vals))
+            H2 <- GetEntropy2(cur.sec.spectro.vals)
+            features[cur.sec, 'Ht2'] <- 1 - H2$Ht
+            features[cur.sec, 'Hf2'] <- 1 - H2$Hf
+            
+            mean.val <- mean(cur.sec.spectro.vals)
+            med.val <- median(cur.sec.spectro.vals)
+            
+            features[cur.sec, 'mm1'] <- abs(mean.val - med.val)
             
             # this one should not be absolute, because on busy 30 seconds,
             # median might be greater than mean of silent second
-            mm2 <- mean(cur.sec.spectro.vals) - median.spectro.vals
+            features[cur.sec, 'mm2'] <- mean.val - median.spectro.vals
             
+            
+            # the mean squared 
+            features[cur.sec, 'sd'] <- sd(cur.sec.spectro.vals)
+            
+            # mean distance from the median
+            features[cur.sec, 'amd.1'] <- mean(abs(cur.sec.spectro.vals - med.val))
+            features[cur.sec, 'amd.2'] <- mean(abs(cur.sec.spectro.vals - median.spectro.vals))
+            
+
             #if (seconds$bird.cover.1[cur.sec] == 0.0 && mm1 > 0.004 || seconds$bird.cover.1[cur.sec] == 1 && mm1 < 0.004) {
                 #debug
-                msg <- paste(seconds[cur.sec, c('day','hour', 'min', 'sec', 'has.bird')], collapse = ':')
-                print(paste(mm2, ' : ', msg))
+                #msg <- paste(seconds[cur.sec, c('day','hour', 'min', 'sec', 'has.bird')], collapse = ':')
+                #print(paste(features[cur.sec, 'mm2'], ' : ', msg))
                 #image(t(cur.sec.spectro.vals))
-                Dot()
+                #Dot()
             #}
             
-            features$mm1[cur.sec] <- mm1
-            features$mm2[cur.sec] <- mm2
+
             
             Dot()
         }
@@ -164,6 +243,9 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
     return(features)
     
 }
+
+
+
 
 NormaliseSpectrumNoise <- function (vals, q = .25) {
     # for each row, subtract the difference between the overall percentile (param) and the percentile (q) for that row
@@ -177,18 +259,34 @@ NormaliseSpectrumNoise <- function (vals, q = .25) {
     return(vals)
 }
 
-
-
-GetEntropy <- function (spectro.vals) {
+GetEntropy1 <- function (spectro.vals) {
     # given a matrix, returns the time entropy and frequency entropy
     # Ht averages the rows of the matrix (to get a single row), 
     # treats the resulting vector as a prob dist
     # then calculates entropy on it
     # Hf averages the columns of the matrix, then does the same
-    row <- apply(spectro.vals, 1, mean)
-    col <- apply(spectro.vals, 2, mean)
+    col <- apply(spectro.vals, 1, mean)
+    row <- apply(spectro.vals, 2, mean)
     return(list(Hf = CalculateEntropy(col), Ht = CalculateEntropy(row)))
 }
+
+GetEntropy2 <- function (spectro.vals) {
+    # given a matrix, returns the time entropy and frequency entropy
+    # Ht averages the rows of the matrix (to get a single row), 
+    # treats the resulting vector as a prob dist
+    # then calculates entropy on it
+    # Hf averages the columns of the matrix, then does the same
+    Hts <- apply(spectro.vals, 1, CalculateEntropy)
+    Hfs <- apply(spectro.vals, 2, CalculateEntropy)
+    
+    # use only the bottom half
+    Hts <- Hts[Hts < median(Hts)]
+    Hfs <- Hfs[Hfs < median(Hfs)]
+    
+    
+    return(list(Hf = mean(Hfs), Ht = mean(Hts)))
+}
+
 
 
 CalculateEntropy <- function (pp, normalize = TRUE) {
@@ -202,13 +300,11 @@ CalculateEntropy <- function (pp, normalize = TRUE) {
     return(H)
 }
 
-CalculateHasBird <- function (seconds, f = 'bird.cover.1', t = 0.1) {
+CalculateHasBird <- function (seconds, f = 'bird.cover', t = 0.1) {
    # using the annotation cover sets a threshold
     seconds$has.bird <- seconds[,f] > t
     return(seconds)
 }
-
-
 
 CalculateAnnotationCover <- function (seconds, input.directory = "/Users/n8933464/Documents/SERF/mtlewis") {
     # for each second (row) in the data frame supplied,
@@ -262,19 +358,17 @@ CalculateAnnotationCover <- function (seconds, input.directory = "/Users/n893346
             seconds$bird.cover.2[se] <- bc2
             seconds$num.annotations[se] <- nrow(overlapping)
             
+            
         } else {
             # debug
-            print('no annotations')
+            # print('no annotations')
             
         } # if has annotations
     } # for each second
+    # lets say that the final value for bird cover is the average of the 2 estimates
+    seconds$bird.cover <- rowMeans(seconds[,c('bird.cover.1', 'bird.cover.2')])
     return(seconds)
 }
-
-
-
-
-
 
 BuildSecondList <- function (input.directory = "/Users/n8933464/Documents/SERF/mtlewis") {
     # create a csv of seconds based on the files downloaded from the ecosounds website
