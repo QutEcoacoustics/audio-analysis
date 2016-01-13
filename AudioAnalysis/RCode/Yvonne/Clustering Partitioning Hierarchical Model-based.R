@@ -71,7 +71,7 @@ normalise <- function (x, xmin, xmax) {
 }
 #######################################################
 # Create ds3.norm_2_98 for kmeans, clara, hclust
-# a dataset normalised between 1.5 and 98.5%
+# a dataset normalised between 2 and 98%
 #######################################################
 ds3.norm_2_98 <- ds6
 for (i in 1:length(ds6)) {
@@ -97,8 +97,8 @@ for (j in 1:length(ds6)) {
 # Generate and save the Correlation Matrix 
 #######################################################
 #AcousticDS_noNA <- AcousticDS[complete.cases(AcousticDS), ]
-a <- abs(cor(AcousticDS_noNA[,2:18][,unlist(lapply(AcousticDS_noNA[,2:18], 
-                                               is.numeric))]))
+a <- round(abs(cor(AcousticDS_noNA[,2:16][,unlist(lapply(AcousticDS_noNA[,2:16], 
+                                               is.numeric))])),2)
 
 write.table(a, file = paste("Correlation_matrix_Exp2a.csv",sep=""), 
             col.names = NA, qmethod = "double", sep = ",")

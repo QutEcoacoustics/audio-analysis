@@ -63,7 +63,6 @@ BuGn <- brewer.pal(9,"BuGn")
 cluster.list <- read.csv(file ="hybrid_clust_17500_30.csv", header=T)
 
 # Gympie NP plot
-png("GympieNP_diel_Assigned_colours_different.png",width = 1000, height = 600, units="px")
 cluster.list1 <- cluster.list[1:(length(cluster.list$hybrid_k17500k30k3)/2),]
 r <- g <- b <- raster(ncol=1440, nrow=111)
 values(r) <- NA
@@ -136,13 +135,13 @@ for (i in 1:length(cluster.list1)) {
     values(g)[i] <- a[2]
     values(b)[i] <- a[3]
   }
-  if (cluster.list2[i]==8) {
+  if (cluster.list1[i]==8) {
     a <- col2rgb((YlGn[3]))
     values(r)[i] <- a[1]
     values(g)[i] <- a[2]
     values(b)[i] <- a[3]
   }
-  if (cluster.list2[i]==2) {
+  if (cluster.list1[i]==2) {
     a <- col2rgb((Oranges[4]))
     values(r)[i] <- a[1]
     values(g)[i] <- a[2]
@@ -251,16 +250,22 @@ for (i in 1:length(cluster.list1)) {
     values(b)[i] <- a[3]
   }
 }
-rgb = rgb <-stack(r,g,b)
+rgb <-stack(r,g,b)
+aspect <- 0.4
+png("GympieNP_diel_Assigned_colours_different_a.png",
+    width = 1000*aspect, height = 100, units="mm",
+    res=80)
 par(oma=c(2,2,2,2))
-plotRGB(rgb)
-mtext(side=3,"Gympie NP 22 June 2015 - 10 Oct 2015",cex=2)
-mtext(side=3, line = -1.5, "Assigned cluster colours",cex=1.5)
+par(mar = rep(0, 4))
+plotRGB(rgb, axes=FALSE, asp=aspect)
+#mtext(side=3,"Gympie NP 22 June 2015 - 10 Oct 2015",cex=2)
+#mtext(side=3, line = -1.5, "Assigned cluster colours",cex=1.5)
 dev.off()
 
 # Woondum plot
-png("WoondumNP_diel_Assigned_colours_different.png",width = 1000, height = 600, 
-    units="px")
+png("WoondumNP_diel_Assigned_colours_different_a.png",
+    width = 1000*aspect, height = 100, units = "mm", 
+    units="mm", res=80)
 cluster.list2 <- cluster.list[((length(cluster.list$hybrid_k17500k30k3)/2)+1):
                                 length(cluster.list$hybrid_k17500k30k3),]
 r <- g <- b <- raster(ncol=1440, nrow=111)

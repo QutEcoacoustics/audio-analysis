@@ -496,9 +496,8 @@ write.csv(twentyfour_hour_table_20, paste(csv.name, "_k100_24hour.csv", sep = ""
           row.names = F)
 
 # This is from file named "Clustering_of_24_hour_files.R"
-setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Mclust\\")
-myFiles <- list.files(full.names=TRUE, pattern="_6hour.csv$")
-myFilesShort <- list.files(full.names=FALSE, pattern="*_6hour.csv$")
+myFiles <- list.files(full.names=TRUE, pattern="*hybrid_clust_knn_17500_3_k30_24hour.csv$")
+myFilesShort <- list.files(full.names=FALSE, pattern="*hybrid_clust_knn_17500_3_k30_24hour.csv$")
 
 length <- length(myFiles)
 length
@@ -1308,18 +1307,22 @@ for (i in 1:length(myFilesShort)) {
   png(paste(myFilesShort[i],"Method wardD2.png", sep = ""), width=1110,
       height =1000)
   par(oma=c(7,3,3,3))
-  plot(hc.fit, cex=2, main = paste(myFilesShort[i]), sub="", xlab = "hclust(method = ward.D2)",
-       xaxt="n", yaxt = "n", cex.lab=1.5, ylab="", cex.main=1.5)
-  mtext(side = 2, "Height",cex = 1.5, line = -2)
-  mtext(side = 3, paste("I3D Separation =",round(I3D.separation,3),sep = " "),
-        cex = 2, line = -4)
+  plot(hc.fit, cex=2.5, main = paste(myFilesShort[i]), sub="", 
+       xlab = "hclust(method = ward.D2)",
+       xaxt="n", yaxt = "n", cex.lab=2, ylab="", 
+       cex.main=2.5, lwd=3)
+  mtext(side = 2, "Height",cex = 2, line = -2)
+  mtext(side = 3, paste("I3D Separation"),
+        cex = 2.5, line = -5)
+  mtext(side = 3, paste("=",round(I3D.separation,3),sep = " "),
+        cex = 2.5, line = -7)
   heightss <- hc.fit$height
   axis(side = 4, at=c(round(heightss[2],0),round(heightss[4],0),round(heightss[6],0),
                       round(heightss[8],0),round(heightss[10],0)), 
-       las=1, cex.axis=1.5)
+       lwd=2,las=1, cex.axis=2.4)
   axis(side = 2, at=c(round(heightss[1],0),round(heightss[3],0),round(heightss[5],0),
                       round(heightss[7],0),round(heightss[9],0),round(heightss[11],0)), 
-       las=1, cex.axis=1.5)
+       lwd=2,las=1, cex.axis=2.4)
   mtext(side = 1, line = 5.5, adj=1, cex=1.3, paste("1,2,3", site[1], dates[1], 
                                                     dates[2], dates[3], "4,5,6", site[1], dates[4], 
                                                     dates[5], dates[6], sep = "    ")) 
@@ -1328,7 +1331,7 @@ for (i in 1:length(myFilesShort)) {
                                                   dates[5], dates[6], sep = "    "))
   mtext(side = 1, line = 8.5, adj=1, cex=1.2, expression(italic(Twelve ~days)))# ~from ~2 ~x ~111 ~days ~of ~clustering)))
   mtext(side = 1, line = 10, adj=1, cex=1.2, expression(italic(Indices:~BackgroundNoise ~Snr ~EventsPerSecond ~LowFreqCover ~AcousticComplexity ~EntropyOfPeaksSpectrum ~EntropyOfCoVSpectrum)))
-  mtext(side = 3, line = -0.8, cex=1.5, paste("heights: ", round(heightss[11],0),
+  mtext(side = 3, line = -0.8, cex=2, paste("heights: ", round(heightss[11],0),
                                               round(heightss[10],0), round(heightss[9],0), round(heightss[8],0),
                                               round(heightss[7],0), round(heightss[6],0), round(heightss[5],0), 
                                               round(heightss[4],0), round(heightss[3],0), round(heightss[2],0), 
