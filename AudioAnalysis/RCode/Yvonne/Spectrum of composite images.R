@@ -73,7 +73,7 @@ for(i in 1:12) {
   greenSpectrum2 <- rbind(greenSpectrum2, redSpect2)
 }
 
-plot(colMeans(redSpectrum1), type="l")  #ACI
+plot(colMeans(redSpectrum1[4:200], na.rm = T), ylim=c(0.4,0.45), type="l")  #ACI
 plot(colMeans(greenSpectrum1), type="l") # TEMPORAL ENTROPY
 plot(colMeans(blueSpectrum1),type="l") #EVENTS
 plot(colMeans(redSpectrum2), type="l")  #BGN
