@@ -4,7 +4,7 @@
 # summary of the frequency of clusters per 2 hour time period
 # per month
 ####################################
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
 
 dataset <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
 
@@ -50,34 +50,34 @@ for (i in 1:length(per.month.per.period$V1)) {
 length_Gympie <- length(which(substr(per.month.per.period$site.yr.mth, 1,6)=="Gympie"))
 length_Woondum <- length(which(substr(per.month.per.period$site.yr.mth, 1,7)=="Woondum"))
 
-names <-c("V1 some insects + wind + birds","V2 wind","V3 fairly quiet",
-          "V4 birds (afternoon)","V5 quiet + some insects","V6 rain",
-          "V7 insects","V8 birds (midday)",
-          "V9 birds (morning)","V10 wind + birds",
-          "V11 quiet + planes","V12 planes + some birds",
-          "V13 louder planes + birds","V14 birds (morning)",
-          "V15 wind","V16 birds + wind","V17 rain",
-          "V18 birds + wind","V19 quiet + some insects","V20 quiet + birds + insects",
-          "V21 breezes","V22 birds (afternoon)", 
-          "V23 birds (morning)", "V24 very quiet", 
-          "V25 quiet","V26 birds (mid-morning)",
-         "V27 Thunder and kookaburras","V28 quiet + some birds", 
-         "V29 drizzle + birds + insects", "V30 insects")
+#names <-c("V1 some insects + wind + birds","V2 wind","V3 fairly quiet",
+#          "V4 birds (afternoon)","V5 quiet + some insects","V6 rain",
+#          "V7 insects","V8 birds (midday)",
+#          "V9 birds (morning)","V10 wind + birds",
+#          "V11 quiet + planes","V12 planes + some birds",
+#          "V13 louder planes + birds","V14 birds (morning)",
+#          "V15 wind","V16 birds + wind","V17 rain",
+#          "V18 birds + wind","V19 quiet + some insects","V20 quiet + birds + insects",
+#          "V21 breezes","V22 birds (afternoon)", 
+#          "V23 birds (morning)", "V24 very quiet", 
+#          "V25 quiet","V26 birds (mid-morning)",
+#         "V27 Thunder and kookaburras","V28 quiet + some birds", 
+#         "V29 drizzle + birds + insects", "V30 insects")
 
 
-#names <-c("V1 Slight wind","V2 Slight wind + insects","V3 insects",
-#          "V4 quiet + insects","V5 light rain","V6 very quiet",
-#          "V7 Rain","V8 quiet + some insects",
-#          "V9 wind + birds","V10 birds (morning)",
-#          "V11 planes","V12 birds (morning)",
-#          "V13 quieter planes","V14 wind + insects + birds",
-#          "V15 wind + birds","V16 Birds (morning)","V17 Wind",
-#          "V18 birds + wind","V19 rain","V20 Mid frequency birds",
-#          "V21 quiet + some birds","V22 quiet + some insects + birds", 
-#          "V23 birds + wind", "V24 Very quiet", 
-#          "V25 Thunder and kookaburras","V26 Birds",
-#          "V27 Birds","V28 birds + insects", "V29 birds (morning)",
-#          "V30 Wind + birds")
+names <-c("V1 Slight wind","V2 Slight wind + insects","V3 insects",
+          "V4 quiet + insects","V5 light rain","V6 very quiet",
+          "V7 Rain","V8 quiet + some insects",
+          "V9 wind + birds","V10 birds (morning)",
+          "V11 planes","V12 birds (morning)",
+          "V13 quieter planes","V14 wind + insects + birds",
+          "V15 wind + birds","V16 Birds (morning)","V17 Wind",
+          "V18 birds + wind","V19 rain","V20 Mid frequency birds",
+          "V21 quiet + some birds","V22 quiet + some insects + birds", 
+          "V23 birds + wind", "V24 Very quiet", 
+          "V25 Thunder and kookaburras","V26 Birds",
+          "V27 Birds","V28 birds + insects", "V29 birds (morning)",
+          "V30 Wind + birds")
 
 #names <-c("V1 Very quiet birds","V2 Very quiet birds2","V3 Birds!",
 #          "V4 birds","V5 ??","V6 Birds!","V7 Insects","V8 Quiet",

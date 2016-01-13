@@ -6,9 +6,10 @@
 # height 668px in the wd folder, these files can be easily 
 # generated in paint.
 ##############################################
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
 
 cluster.list <- read.csv("hybrid_clust_knn_17500_3.csv",header=T)[,6]
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\ClusterImages\\")
 indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
 
 list <- which(indices$minute.of.day=="0")
@@ -31,7 +32,7 @@ s[[3]] <- 255
 s <- subset(s,1:3)
 
 # Get list of names (full path) of all spectrogram files
-path <- "E:\\False colour spectrograms" # path to spectrogram files
+path <- "D:\\False colour spectrograms" # path to spectrogram files
 spect_file_Gympie <- list.files(full.names=TRUE, path = paste(path,"\\GympieNP",sep="")) 
 spect_file_Woondum <- list.files(full.names=TRUE, path = paste(path,"\\WoondumNP",sep="")) 
 spect_file_list <- c(spect_file_Gympie, spect_file_Woondum)
@@ -56,8 +57,15 @@ png(filename = "ClusterImage_V1_k30_1200min.png",
 length2 <- 10
 min.ref.check <- NULL
 which.check <- NULL
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 for(i in 1:1200) {
-  if(whichV1[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
+  if(whichV1[i] %in% c(seq(1440,length(spect_file_list)*1440, 1440))){
     day.ref <- floor((whichV1[i])/1440)
   }
   else {
@@ -73,6 +81,12 @@ for(i in 1:1200) {
                                      nrows=668, 
                                      col=current.minute.list, 
                                      ncols=1)
+  redSpectrum1 <- rbind(redSpectrum1, replacementBlock[44:298,1])
+  greenSpectrum1 <- rbind(greenSpectrum1, replacementBlock[44:298,2])
+  blueSpectrum1 <- rbind(blueSpectrum1, replacementBlock[44:298,3])
+  redSpectrum2 <- rbind(redSpectrum2, replacementBlock[358:632,1])
+  greenSpectrum2 <- rbind(greenSpectrum2, replacementBlock[358:632,2])
+  blueSpectrum2 <- rbind(blueSpectrum2, replacementBlock[358:632,3])
   s[1:668, length2] <- replacementBlock
   length2 <- length2 + 1
   which.check <- c(which.check,whichV1[i])
@@ -81,6 +95,13 @@ for(i in 1:1200) {
 
 plotRGB(s)
 dev.off()
+
+plot(colMeans(redSpectrum1), type="l")  #ACI
+plot(colMeans(greenSpectrum1), type="l") # TEMPORAL ENTROPY
+plot(colMeans(blueSpectrum1),type="l") #EVENTS
+plot(colMeans(redSpectrum2), type="l")  #BGN
+plot(colMeans(redSpectrum2), type="l") # POW
+plot(colMeans(blueSpectrum2),type="l") #EVENTS
 
 rm(whichV1, which1)
 
@@ -93,6 +114,12 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V2_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -136,9 +163,22 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V3_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 length2 <- 10
 for(i in 1:1200) {
@@ -158,6 +198,12 @@ for(i in 1:1200) {
                                      nrows=668, 
                                      col=current.minute.list, 
                                      ncols=1)
+  redSpectrum1 <- rbind(redSpectrum1, replacementBlock[298:44,1])
+  greenSpectrum1 <- rbind(greenSpectrum1, replacementBlock[298:44,2])
+  blueSpectrum1 <- rbind(blueSpectrum1, replacementBlock[298:44,3])
+  redSpectrum2 <- rbind(redSpectrum2, replacementBlock[631:376,1])
+  greenSpectrum2 <- rbind(greenSpectrum2, replacementBlock[632:376,2])
+  blueSpectrum2 <- rbind(blueSpectrum2, replacementBlock[632:376,3])
   s[1:668, length2] <- replacementBlock
   length2 <- length2 + 1
 }
@@ -165,6 +211,51 @@ for(i in 1:1200) {
 plotRGB(s)
 dev.off()
 rm(whichV3,which3)
+
+redSpectrum1 <- as.data.frame(redSpectrum1)
+redSpectrum1 <- redSpectrum1[redSpectrum1$V23!=255 & redSpectrum1$V46!=255 
+                            & redSpectrum1$V69!=255 & redSpectrum1$V92!=255 
+                            & redSpectrum1$V115!=255 & redSpectrum1$V138!=255 
+                            & redSpectrum1$V161!=255 & redSpectrum1$V184!=255 
+                            & redSpectrum1$V207!=255 & redSpectrum1$V230!=255 
+                            & redSpectrum1$V253!=255, ]
+plot(colMeans(redSpectrum1), type="l")  #ACI
+greenSpectrum1 <- as.data.frame(greenSpectrum1)
+greenSpectrum1 <- greenSpectrum1[greenSpectrum1$V23!=255 & greenSpectrum1$V46!=255 
+                             & greenSpectrum1$V69!=255 & greenSpectrum1$V92!=255 
+                             & greenSpectrum1$V115!=255 & greenSpectrum1$V138!=255 
+                             & greenSpectrum1$V161!=255 & greenSpectrum1$V184!=255 
+                             & greenSpectrum1$V207!=255 & greenSpectrum1$V230!=255 
+                             & greenSpectrum1$V253!=255, ]
+
+plot(colMeans(greenSpectrum1), type="l") # TEMPORAL ENTROPY
+blueSpectrum1 <- as.data.frame(blueSpectrum1)
+blueSpectrum1 <- blueSpectrum1[blueSpectrum1$V23!=255 & blueSpectrum1$V46!=255 
+                                 & blueSpectrum1$V69!=255 & blueSpectrum1$V92!=255 
+                                 & blueSpectrum1$V115!=255 & blueSpectrum1$V138!=255 
+                                 & blueSpectrum1$V161!=255 & blueSpectrum1$V184!=255 
+                                 & blueSpectrum1$V207!=255 & blueSpectrum1$V230!=255 
+                                 & blueSpectrum1$V253!=255, ]
+
+plot(colMeans(blueSpectrum1),type="l",ylim=c(0,30)) #EVENTS
+
+redSpectrum2 <- as.data.frame(redSpectrum2)
+redSpectrum2 <- redSpectrum2[redSpectrum2$V23!=255 & redSpectrum2$V46!=255 
+                             & redSpectrum2$V69!=255 & redSpectrum2$V92!=255 
+                             & redSpectrum2$V115!=255 & redSpectrum2$V138!=255 
+                             & redSpectrum2$V161!=255 & redSpectrum2$V184!=255 
+                             & redSpectrum2$V207!=255 & redSpectrum2$V230!=255 
+                             & redSpectrum2$V253!=255, ]
+plot(colMeans(redSpectrum2), type="l",ylim=c(0,50))  #BGN
+blueSpectrum2 <- as.data.frame(blueSpectrum2)
+blueSpectrum2 <- blueSpectrum2[blueSpectrum2$V23!=255 & blueSpectrum2$V46!=255 
+                               & blueSpectrum2$V69!=255 & blueSpectrum2$V92!=255 
+                               & blueSpectrum2$V115!=255 & blueSpectrum2$V138!=255 
+                               & blueSpectrum2$V161!=255 & blueSpectrum2$V184!=255 
+                               & blueSpectrum2$V207!=255 & blueSpectrum2$V230!=255 
+                               & blueSpectrum2$V253!=255, ]
+plot(colMeans(greenSpectrum2), type="l",ylim=c(0,20)) # POW
+plot(colMeans(blueSpectrum2),type="l",ylim=c(0,30)) #EVENTS
 
 ######### cluster 4
 which4 <- which(cluster.list==4)
@@ -175,6 +266,13 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V4_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -206,6 +304,13 @@ plotRGB(s)
 dev.off()
 rm(whichV4,which4)
 
+plot(colMeans(redSpectrum1), type="l")  #ACI
+plot(colMeans(greenSpectrum1), type="l") # TEMPORAL ENTROPY
+plot(colMeans(blueSpectrum1),type="l") #EVENTS
+plot(colMeans(redSpectrum2), type="l")  #BGN
+plot(colMeans(redSpectrum2), type="l") # POW
+plot(colMeans(blueSpectrum2),type="l") #EVENTS
+
 ######### cluster 5
 which5 <- which(cluster.list==5)
 whichV5 <- sample(which5, 1200)
@@ -215,6 +320,13 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V5_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -256,6 +368,13 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V6_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
@@ -295,6 +414,13 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V7_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -336,6 +462,13 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V8_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
@@ -375,6 +508,13 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V9_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -416,6 +556,13 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V10_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
@@ -455,6 +602,13 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V11_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -496,6 +650,13 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V12_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
@@ -536,13 +697,20 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V13_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
 
 length2 <- 10
 for(i in 1:1200) {
-  if(whichV13[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
+  if(whichV13[i] %in% c(seq(1440,length(spect_file_list)*1440, 1440))){
     day.ref <- floor((whichV13[i])/1440)
   }
   else {
@@ -550,7 +718,7 @@ for(i in 1:1200) {
   }
   min.ref <- ((whichV13[i]/1440) - (day.ref-1))*1440
   b1 <- spect_file_list[day.ref]
-  b <- brick(b1, package="raster")
+  #b <- brick(b1, package="raster")
   sourceImage <- brick(b1, package="raster")
   current.minute.list <- min.ref
   replacementBlock <- getValuesBlock(sourceImage, 
@@ -575,6 +743,14 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 
 png(filename = "ClusterImage_V14_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -616,6 +792,13 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V15_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
@@ -656,9 +839,20 @@ s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
 
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 png(filename = "ClusterImage_V16_k30_1200min.png", 
     width = 1280, height = 668, 
     units = "px", antialias = "none")
+
+redSpectrum <- NULL
+greenSpectrum <- NULL
+blueSpectrum <- NULL
 
 length2 <- 10
 for(i in 1:1200) {
@@ -678,12 +872,20 @@ for(i in 1:1200) {
                                      nrows=668, 
                                      col=current.minute.list, 
                                      ncols=1)
+  redSpectrum <- rbind(redSpectrum, replacementBlock[44:298,1])
+  greenSpectrum <- rbind(greenSpectrum, replacementBlock[44:298,2])
+  blueSpectrum <- rbind(blueSpectrum, replacementBlock[44:298,3])
   s[1:668, length2] <- replacementBlock
   length2 <- length2 + 1
 }
 
 plotRGB(s)
 dev.off()
+
+plot(colMeans(redSpectrum), type="l")  #ACI
+plot(colMeans(greenSpectrum), type="l") # TEMPORAL ENTROPY
+plot(colMeans(blueSpectrum),type="l") #EVENTS
+
 rm(whichV16,which16)
 
 ######### cluster 17
@@ -695,6 +897,13 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
+
 
 png(filename = "ClusterImage_V17_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -735,6 +944,12 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V18_k30_1200min.png", 
     width = 1280, height = 668, 
@@ -776,6 +991,13 @@ s[[1]] <- 255
 s[[2]] <- 255
 s[[3]] <- 255
 s <- subset(s,1:3)
+
+redSpectrum1 <- NULL
+greenSpectrum1 <- NULL
+blueSpectrum1 <- NULL
+redSpectrum2 <- NULL
+greenSpectrum2 <- NULL
+blueSpectrum2 <- NULL
 
 png(filename = "ClusterImage_V19_k30_1200min.png", 
     width = 1280, height = 668, 
