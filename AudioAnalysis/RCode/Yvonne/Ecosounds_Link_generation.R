@@ -3,7 +3,7 @@
 # 24 December 2015
 #
 # Set cluster number
-n <- 27
+n <- 20
 
 setwd("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Yvonne\\")
 mapping1 <- read.csv("audio_recordings_from_site_1192_GympieNP.csv", header = T)[,c(1,5,6,21)]

@@ -221,35 +221,41 @@ month <- c("Jan", "Feb", "Mar",
 rainfall <- c(158.7, 197.9, 157.3, 81.1,56.3,
               40.9, 28.1, 75.8, 39.0, 58.2,
               66.7, 119.9)
+png("Cooran rainfall.png", height=600, width = 600)
 par(mar=c(5,5,2,1))
 barplot(names.arg=month, height=rainfall, ylab = "rainfall (mm)",
      main = "Average monthly rainfall - Cooran", cex.axis = 2,
-     cex.main=2,cex.lab=2, xlab = "months", ylim = c(0,250),
+     cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,250),
      col = "gray20")
+dev.off()
 # Goomboorian
+png("Goomboorian rainfall.png", height=600, width = 600)
+par(mar=c(5,5,2,1))
 rainfall <- c(143.0, 233.3, 137.8, 127.3,
               86.6,  68.0,   35.0,  60.3,
               40.3,  56.9,   79.5, 122.2)
 barplot(names.arg=month, height=rainfall, ylab = "rainfall (mm)",
         main = "Average monthly rainfall - Goomboorian", cex.axis = 2,
-        cex.main=2,cex.lab=2, xlab = "months", ylim = c(0,250),
+        cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,250),
         col = "gray20")
-
+dev.off()
 temperature.min <- c(19.6, 19.6, 18.1, 14.7, 10.8,	
                       8.0,	6.3,  7.1, 10.2, 13.8,	
                      16.5, 18.5)
 temperature.max <- c(31.2, 30.4, 29.3, 27.3,
                      24.5, 22.0, 21.9, 23.4,
                      26.1, 28.3, 30.3, 31.3)
+png("Gympie temperature.png", height=600, width = 600)
 par(mar=c(5,5,6,1))
 barplot(names.arg=month, height=temperature.max, ylab = "temperature (C)",
         main = "Average minimum and maximum monthly 
         temperatures - Gympie", cex.axis = 2,
-        cex.main=2,cex.lab=2, xlab = "months", ylim = c(0,32))
+        cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,32))
 par(new=TRUE)
 barplot(names.arg=month, height=temperature.min, ylab = "temperature (C)",
-        cex.axis = 2, cex.main=2,cex.lab=2, xlab = "months", ylim = c(0,32),
+        cex.axis = 2, cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,32),
         col="gray20")
+dev.off()
 
 temperature.min.tewantin <- c(21.9, 21.9, 20.7, 18.0,
                               14.7, 12.6, 11.1, 11.6,
@@ -258,14 +264,18 @@ temperature.min.tewantin <- c(21.9, 21.9, 20.7, 18.0,
 temperature.max.tewantin <- c(28.5, 28.4, 27.4, 25.8,
                               23.5, 21.5,	21.1,	22.2,
                               24.2, 25.5,	26.5,	28.0)
+
+png("Tewantin temperature.png", height=600, width = 600)
+par(mar=c(5,5,6,1))
 barplot(names.arg=month, height=temperature.max.tewantin, ylab = "temperature (C)",
         main = "Average minimum and maximum monthly 
         temperatures - Tewantin", cex.axis = 2,
-        cex.main=2,cex.lab=2, xlab = "months", ylim = c(0,32))
+        cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,32))
 par(new=TRUE)
 barplot(names.arg=month, height=temperature.min.tewantin, ylab = "temperature (C)",
-        cex.axis = 2, cex.main=2,cex.lab=2, xlab = "months", ylim = c(0,32),
+        cex.axis = 2, cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,32),
         col="gray20")
+dev.off()
 #########################################################
 # rose diagrams
 #################################################################

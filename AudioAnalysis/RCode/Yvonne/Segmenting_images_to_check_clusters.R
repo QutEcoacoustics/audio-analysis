@@ -129,7 +129,7 @@ length2 <- 10
 min.ref.check <- NULL
 which.check <- NULL
 for(i in 1:1200) {
-  if(whichV2[i] %in% c(seq(1440,length(spect_file_list)*1440,1440))){
+  if(whichV2[i] %in% c(seq(1440, length(spect_file_list)*1440,1440))){
     day.ref <- floor((whichV2[i])/1440)
   }
   else {
