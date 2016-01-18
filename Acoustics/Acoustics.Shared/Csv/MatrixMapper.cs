@@ -26,6 +26,7 @@ namespace Acoustics.Shared
         Transpose = 2,
 
         /// <summary>
+        /// This transform should be equivalent to RotateMatrix90DegreesAntiClockwise
         /// 2 | 4
         /// 1 | 3
         /// </summary>
