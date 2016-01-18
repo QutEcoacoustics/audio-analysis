@@ -3,7 +3,7 @@ setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
 # that go from high frequency values to low frequency values
 
 # set cluster number 
-cluster.no = 9
+cluster.no = 7
 n = 1000 # number of minutes used in the spectrum plots
 sample.size = 1400 # Must be smaller or equal to the smallest cluster size
 ############
@@ -51,7 +51,9 @@ which1 <- which(cluster.list==cluster.no)
 # The list of these is obtained from finding which minute contains
 # NA in the indices
 which.missing <- which(which1 %in% missing.ref) 
-which1 <- which1[-c(which.missing)]
+if(length(which.missing > 0)) {
+  which1 <- which1[-c(which.missing)]  
+}
 
 # <- which1[which1 != which1[which.missing[i]]]
 
@@ -334,151 +336,251 @@ abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 dev.off()
 
 # Overall, gympie and Woondum ACI
-png(paste("ACI_all_",cluster.no,".png",sep=""), height=300, width=1250)
-par(mfrow=c(1,3),oma=c(0,1,0,0))
-plot(colMeans(redSpectrum1[256:3], na.rm = T), type="l",
-     xlab="Frequency (kHz)", xaxt="n", ylab="ACI", 
-     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #ACI
-axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
-mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
-abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
+png(paste("ACI_all_",cluster.no,".png",sep=""), height=400, width=1000)
+par(mfrow=c(1,2),oma=c(0,1,0,0))
+#plot(colMeans(redSpectrum1[256:3], na.rm = T), type="l",
+#     xlab="Frequency (kHz)", xaxt="n", ylab="ACI", 
+#     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #ACI
+#axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
+#mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
+#mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
+#abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(redSpect1Gympie[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="ACI", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #ACI
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(redSpect1Gympie$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Gympie National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect1Gympie$Index), sep = ""))
+mtext(side = 3, line = 1,  cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0,  cex = 1.5, paste("Gympie National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(redSpect1Woondum[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="ACI", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #ACI
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(redSpect1Woondum$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Woondum National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect1Woondum$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0,  cex = 1.5, paste("Woondum National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 dev.off()
 
 # Overall, gympie and Woondum TEMP ENT
-png(paste("TEMPENT_all_",cluster.no,".png",sep=""), height=300, width=1250)
-par(mfrow=c(1,3),oma=c(0,1,0,0))
-plot(colMeans(greenSpectrum1[256:3], na.rm = T), type="l",
-     xlab="Frequency (kHz)", xaxt="n",ylab="TEMP ENT", 
-     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) # TEMPORAL ENTROPY
-axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
-mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
-abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
+png(paste("TEMPENT_all_",cluster.no,".png",sep=""), height=400, width=1000)
+par(mfrow=c(1,2),oma=c(0,1,0,0))
+#plot(colMeans(greenSpectrum1[256:3], na.rm = T), type="l",
+#     xlab="Frequency (kHz)", xaxt="n",ylab="TEMP ENT", 
+#     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) # TEMPORAL ENTROPY
+#axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
+#mtext(side = 3, line = 1, cex = 1.5, paste("minutes = ", n, sep = ""))
+#mtext(side = 3, line = 0, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+#abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(greenSpect1Gympie[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="TEMP ENT", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #TEMP ENT
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(greenSpect1Gympie$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Gympie National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(greenSpect1Gympie$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Gympie National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(greenSpect1Woondum[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="TEMP ENT", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #TEMP ENT
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(greenSpect1Woondum$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Woondum National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(greenSpect1Woondum$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Woondum National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 dev.off()
 
 # Overall, gympie and Woondum TEMP ENT
-png(paste("EVENTS_all_",cluster.no,".png",sep = ""), height=300, width=1250)
-par(mfrow=c(1,3),oma=c(0,1,0,0))
-plot(colMeans(blueSpectrum1[256:3], na.rm = T),type="l",
-     xlab="Frequency (kHz)", xaxt="n",ylab="EVENTS", 
-     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #EVENTS
-axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
-mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
-abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
+png(paste("EVENTS_all_",cluster.no,".png",sep = ""), height=400, width=1000)
+par(mfrow=c(1,2),oma=c(0,1,0,0))
+#plot(colMeans(blueSpectrum1[256:3], na.rm = T),type="l",
+#     xlab="Frequency (kHz)", xaxt="n",ylab="EVENTS", 
+#     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #EVENTS
+#axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
+#mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
+#mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
+#abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(blueSpect1Gympie[256:3], na.rm = T), type="l",
-     xlab="Frequency (kHz)", xaxt="n",ylab="EVENTS", 
+     xlab="Frequency (kHz)", xaxt="n", ylab="EVENTS", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #EVENTS
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(blueSpect1Gympie$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Gympie National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(blueSpect1Gympie$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Gympie National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(blueSpect1Woondum[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="EVENTS", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #EVENTS
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(blueSpect1Woondum$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Woondum National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(blueSpect1Woondum$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Woondum National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 dev.off()
 
 # Overall, gympie and Woondum BACKGR
-png(paste("BGN_all_",cluster.no, ".png",sep = ""), height=300, width=1250)
-par(mfrow=c(1,3),oma=c(0,1,0,0))
-plot(colMeans(redSpectrum2[256:3], na.rm = T), type="l",
-     xlab="Frequency (kHz)", xaxt="n",ylab="BGN", 
-     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5)  #BGN
-axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
-mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
-abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
+png(paste("BGN_all_",cluster.no, ".png",sep = ""), height=400, width=1000)
+par(mfrow=c(1,2),oma=c(0,1,0,0))
+#plot(colMeans(redSpectrum2[256:3], na.rm = T), type="l",
+#     xlab="Frequency (kHz)", xaxt="n",ylab="BGN", 
+#     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5)  #BGN
+#axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
+#mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
+#mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
+#abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(redSpect2Gympie[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="BGN", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #BACKGROUND
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(redSpect2Gympie$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Gympie National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect2Gympie$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Gympie National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(redSpect2Woondum[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="BGN", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #BACKGROUND
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(redSpect2Woondum$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Woondum National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect2Woondum$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Woondum National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 dev.off()
 
 # Overall, gympie and Woondum POWER
-png(paste("POW_all_",cluster.no, ".png",sep = ""), height=300, width=1250)
-par(mfrow=c(1,3),oma=c(0,1,0,0))
-plot(colMeans(greenSpectrum2[256:3], na.rm = T), type="l",
-     xlab="Frequency (kHz)", xaxt="n", ylab="POW", 
-     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) # POW
-axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
-mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
-abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
+png(paste("POW_all_",cluster.no, ".png",sep = ""), height=400, width=1000)
+par(mfrow=c(1,2),oma=c(0,1,0,0))
+#plot(colMeans(greenSpectrum2[256:3], na.rm = T), type="l",
+#     xlab="Frequency (kHz)", xaxt="n", ylab="POW", 
+#     lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) # POW
+#axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
+#mtext(side = 3, line = 1, paste("minutes = ", n, sep = ""))
+#mtext(side = 3, line = 0, paste("cluster =",cluster.no,sep = ""))
+#abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(greenSpect2Gympie[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="POW", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #POWER
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(greenSpect2Gympie$Index), sep = ""))
-mtext(side = 3, line = 1, paste("cluster =",cluster.no,sep = ""))
-mtext(side = 3, line = 0, paste("Gympie National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(greenSpect2Gympie$Index), sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Gympie National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 
 plot(colMeans(greenSpect2Woondum[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n",ylab="POW", 
      lwd=1.5, cex.axis = 1.5, cex.lab = 1.5) #POWER
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
-mtext(side = 3, line = 2, paste("minutes = ", length(greenSpect2Woondum$Index) , sep = ""))
-mtext(side = 3, line = 1, paste("cluster =", cluster.no, sep = ""))
-mtext(side = 3, line = 0, paste("Woondum National Park"))
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(greenSpect2Woondum$Index) , sep = ""))
+mtext(side = 3, line = 1, cex = 1.5, paste("cluster =", cluster.no, sep = ""))
+mtext(side = 3, line = 0, cex = 1.5, paste("Woondum National Park"))
 abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
 dev.off()
+
+# This is a short-cut way of plotting without rerunning the code above
+redSpectrum1Gympie <- read.csv(paste("ACI_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+greenSpectrum1Gympie <- read.csv(paste("ENT_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+blueSpectrum1Gympie <- read.csv(paste("EVN_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+redSpectrum2Gympie <- read.csv(paste("BGN_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+greenSpectrum2Gympie <- read.csv(paste("POW_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+
+redSpectrum1Woondum <- read.csv(paste("ACI_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+greenSpectrum1Woondum <- read.csv(paste("ENT_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+blueSpectrum1Woondum <- read.csv(paste("EVN_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+redSpectrum2Woondum <- read.csv(paste("BGN_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+greenSpectrum2Woondum <- read.csv(paste("POW_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+
+#GYMPIE and WOONDUM
+png(paste("Spectra_Gympie_Woondum",cluster.no,".png",sep=""), height=480, width=1200)
+par(mfrow=c(1,2), mar=c(5,2,4,1))
+plot(colMeans(redSpect1Gympie[256:3], na.rm = T), type="l",
+     xlab="Frequency (kHz)", xaxt="n", ylab = "", yaxt="n", 
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, 
+     col="orange", ylim = c(0.39,0.62)) #ACI
+axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect1Gympie$c000000), sep = ""))
+mtext(side = 3, line = 1,  cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0,  cex = 1.5, paste("Gympie National Park"))
+abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
+par(new=T)
+plot(colMeans(greenSpect1Gympie[256:3], na.rm = T), type="l",
+     xaxt="n", xlab = "",#ylab="TEMP ENT", 
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
+     col="cyan", ylim = c(0,0.37)) #TEMP ENT
+par(new=T)
+plot(colMeans(blueSpect1Gympie[256:3], na.rm = T), type="l",
+     xaxt="n", xlab = "", 
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "", yaxt="n",
+     col="blue", ylim = c(0, 2.2)) #EVENTS
+par(new=T)
+plot(colMeans(redSpect2Gympie[256:3], na.rm = T), type="l",yaxt="n",
+     xaxt="n", xlab = "",
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",
+     col="red", ylim = c(-105,-70)) #BACKGROUND
+par(new=T)
+plot(colMeans(greenSpect2Gympie[256:3], na.rm = T), type="l",yaxt="n",
+     xaxt="n", xlab = "",
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
+     col="green4", ylim = c(0,4)) #POWER
+legend("topright",legend=c("ACI","Temporal Entropy","Events","Background","Power"),          
+       col=c("orange","cyan","blue","red","green4"),lty = 1, 
+       lwd=2, xjust=1,y.intersp=0.8, cex=1.5,
+       inset = .02, bty = "n")
+#png(paste("Spectra_Woondum_",cluster.no,".png",sep=""), height=600, width=600)
+#par(lwd=2)
+plot(colMeans(redSpect1Woondum[256:3], na.rm = T), type="l",
+     xlab="Frequency (kHz)", xaxt="n", ylab = "", yaxt="n", 
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, 
+     col="orange", ylim = c(0.39,0.62)) #ACI
+axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
+mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect1Woondum$c000000), sep = ""))
+mtext(side = 3, line = 1,  cex = 1.5, paste("cluster =",cluster.no,sep = ""))
+mtext(side = 3, line = 0,  cex = 1.5, paste("Woondum National Park"))
+abline (v=seq(0, 256, 46.3), lty=2, lwd=0.2)
+par(new=T)
+plot(colMeans(greenSpect1Woondum[256:3], na.rm = T), type="l",
+     xaxt="n", xlab = "",#ylab="TEMP ENT", 
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
+     col="cyan", ylim = c(0,0.37)) #TEMP ENT
+par(new=T)
+plot(colMeans(blueSpect1Woondum[256:3], na.rm = T), type="l",
+     xaxt="n", xlab = "", 
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "", yaxt="n",
+     col="blue", ylim = c(0, 2.2)) #EVENTS
+par(new=T)
+plot(colMeans(redSpect2Woondum[256:3], na.rm = T), type="l",yaxt="n",
+     xaxt="n", xlab = "",
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",
+     col="red", ylim = c(-105,-70)) #BACKGROUND
+par(new=T)
+plot(colMeans(greenSpect2Woondum[256:3], na.rm = T), type="l",yaxt="n",
+     xaxt="n", xlab = "",
+     lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
+     col="green4", ylim = c(0,4)) #POWER
+legend("topright",legend=c("ACI","Temporal Entropy","Events","Background","Power"),          
+       col=c("orange","cyan","blue","red","green4"),lty = 1, 
+       lwd=2, xjust=1,y.intersp=0.8, cex=1.5,
+       inset = .02, bty = "n")
+dev.off()
+
+# Use this for a short-cut way of plotting without rerunning the code above
+# once the csv files have been generated
+redSpect1Gympie <- read.csv(paste("ACI_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+greenSpect1Gympie <- read.csv(paste("ENT_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+blueSpect1Gympie <- read.csv(paste("EVN_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+redSpect2Gympie <- read.csv(paste("BGN_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+greenSpect2Gympie <- read.csv(paste("POW_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
+
+redSpect1Woondum <- read.csv(paste("ACI_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+greenSpect1Woondum <- read.csv(paste("ENT_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+blueSpect1Woondum <- read.csv(paste("EVN_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+redSpect2Woondum <- read.csv(paste("BGN_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+greenSpect2Woondum <- read.csv(paste("POW_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
