@@ -107,7 +107,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
             string opFileStem = String.Format("{0}_{1}", filestem, dateString);
-            TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
+            //TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
+            TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajorFlipped;
             foreach (var key in keys)
             {
                 var filename = FilenameHelpers.AnalysisResultName(opDir, opFileStem, key, "csv").ToFileInfo();
