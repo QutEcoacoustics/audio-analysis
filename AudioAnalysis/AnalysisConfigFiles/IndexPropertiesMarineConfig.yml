@@ -473,7 +473,7 @@ ACI:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.4
-  NormMax: 0.7
+  NormMax: 0.8
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -525,7 +525,7 @@ ENT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 0.8
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -537,7 +537,7 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 0.7
   CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
