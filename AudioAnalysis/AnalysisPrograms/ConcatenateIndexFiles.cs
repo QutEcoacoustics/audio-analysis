@@ -109,10 +109,11 @@ namespace AnalysisPrograms
             //                           };
             DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
                                        };
-            string directoryFilter = "201304";
-            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
-            dtoStart = new DateTimeOffset(2013, 04, 12, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2013, 04, 13, 0, 0, 0, TimeSpan.Zero);
+            string directoryFilter = "201303";
+            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
+            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
             string opFileStem = "CornellMarine";
             indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
 
