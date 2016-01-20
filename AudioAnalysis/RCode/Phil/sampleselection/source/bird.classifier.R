@@ -56,12 +56,12 @@ ClassifySeconds <- function (seconds, features) {
 }
 
 
-GetCorrelations <- function (bird.cover, features) {
+GetCorrelations <- function (seconds, features) {
     # for each feature, find the correlation (absolute) 
     # between it and the bird cover for that second
     corrs <- apply(features, 2, function (col) {
         # TODO: significance??
-        return(cor(bird.cover, col))
+        return(cor(seconds$bird.cover, col))
     })
 
     return(corrs)
@@ -113,8 +113,8 @@ PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spect
     if (length(wav.fn) == 1) {
         # if the range covers exactly 1 wave file
         spectro <- Sp.CreateFromFile(wav.fn)
-        sv <- Normalize(spectro$vals)
-        sv <- NormaliseSpectrumNoise(spectro$vals)
+        sv <- PreprocessSpectroVals(spectro$vals)
+        
         x <- 1:ncol(sv) * (w / ncol(sv)) + 0.5
         #y <- 1:nrow(sv) * ((mx - mn) / nrow(sv)) + mn
         y <- 1:nrow(sv)  * ((mx2 - mx) / nrow(sv)) + mx
@@ -148,7 +148,15 @@ PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spect
 
 
 
-
+PreprocessSpectroVals <- function (m) {
+    
+    m <- Normalize(m)
+    m <- NormaliseSpectrumNoise(m)
+    m <- Blur(m)
+    m <- MedianSubtraction(m)
+    return(m)
+    
+}
 
 
 
@@ -156,22 +164,28 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
     
     # go audio file by audio file
     
-    # Ht = temporal.entropy
-    # Hf = spectral.entropy
+    # Ht1 = temporal.entropy (average then entropy)
+    # Hf1 = spectral.entropy (average then entropy)
+    # Ht2 = temporal.entropy (entropy then average)
+    # Hf2 = spectral.entropy (entropy then entropy)
+    # H2m = max of Ht2 and Hf2
     # mm1 = abs(mean - median of second)
     # mm2 = mean - median of 30 seconds
-    #
+    # sd = standard deviation of values in the second
+    # amd.1 = average difference from median
+    # amd.2 = average difference from the 30 second median
     
     empty <- rep(NA, nrow(seconds))
     
-    feature.names <- c('Ht1', 'Hf1', 'Ht2', 'Hf2', 'mm1', 'mm2', 'sd', 'amd.1', 'amd.2')
+    feature.names <- c('Ht1', 'Hf1', 'Ht2', 'Hf2', 'H1m', 'H2m', 'mm1', 'mm2', 'sd', 'amd.1', 'amd.2')
     features <- matrix(rep(NA, length(feature.names)*nrow(seconds)), ncol = length(feature.names))
     colnames(features) <- feature.names
     audio.files <- unique(seconds$wav.file)
     for (af in audio.files) {
         af.path <- file.path(input.directory, 'wav', af)
         spectro <- Sp.CreateFromFile(af.path)
-        spectro.vals <- Normalize(spectro$vals)
+        
+        
         seconds.selection <- seconds$wav.file == af
         af.seconds <- seconds[seconds.selection, ]
         num.secs <- sum(seconds.selection)
@@ -180,7 +194,9 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
             stop('something went wrong')
         }
         
-        spectro.vals <- NormaliseSpectrumNoise(spectro.vals)
+        # noise removal
+        spectro.vals <- PreprocessSpectroVals(spectro$vals)
+        
         
         # chop the spectrogram into bits
         second.width <- ncol(spectro.vals) / num.secs
@@ -204,6 +220,8 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
             H2 <- GetEntropy2(cur.sec.spectro.vals)
             features[cur.sec, 'Ht2'] <- 1 - H2$Ht
             features[cur.sec, 'Hf2'] <- 1 - H2$Hf
+            
+
             
             mean.val <- mean(cur.sec.spectro.vals)
             med.val <- median(cur.sec.spectro.vals)
@@ -235,10 +253,23 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
             
             Dot()
         }
+        
+        
+        
+  
+        
         Report(5, 'file complete (30 secs')
  
         
     }
+    
+    # add combo features 
+    
+    features.s <- scale(features)
+    
+    
+    features[, 'H1m'] <- apply(cbind(features.s[, 'Ht1'], features.s[, 'Hf1']), 1, max)
+    features[, 'H2m'] <- apply(cbind(features.s[, 'Ht2'], features.s[, 'Hf2']), 1, max)
     
     return(features)
     
@@ -270,18 +301,17 @@ GetEntropy1 <- function (spectro.vals) {
     return(list(Hf = CalculateEntropy(col), Ht = CalculateEntropy(row)))
 }
 
-GetEntropy2 <- function (spectro.vals) {
+GetEntropy2 <- function (spectro.vals, q = 0.1) {
     # given a matrix, returns the time entropy and frequency entropy
-    # Ht averages the rows of the matrix (to get a single row), 
-    # treats the resulting vector as a prob dist
-    # then calculates entropy on it
-    # Hf averages the columns of the matrix, then does the same
+    # H is obtained for each row, then the result averaged for the final Ht, 
+    # H is obtained for each column, then the result averaged for the final Hf
+
     Hts <- apply(spectro.vals, 1, CalculateEntropy)
     Hfs <- apply(spectro.vals, 2, CalculateEntropy)
     
-    # use only the bottom half
-    Hts <- Hts[Hts < median(Hts)]
-    Hfs <- Hfs[Hfs < median(Hfs)]
+    # use only below the specified quantile
+    Hts <- Hts[Hts < quantile(Hts, q)]
+    Hfs <- Hfs[Hfs < quantile(Hfs, q)]
     
     
     return(list(Hf = mean(Hfs), Ht = mean(Hts)))

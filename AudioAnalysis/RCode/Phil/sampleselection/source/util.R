@@ -405,13 +405,17 @@ GetIncluded <- function (total.num, num.included, offset = NA) {
     return(include)
 }
 
-Convolve <- function (amp, mask = NA) {
+Convolve <- function (amp, mask = NA, repeat.edges = TRUE) {
+    # convolves matrix amd with a mask
     w <- ncol(amp)
     h <- nrow(amp)
     if (class(mask) != 'matrix') {
         mask <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)  
     }
-    amp2 <- ExpandMatrix(amp, floor(nrow(mask)/2), floor(ncol(mask)/2))
+    # convolving will produce a result that is smaller than the original matrix
+    # by the number of columns/rows of the mask - 1
+    # therefore, we first expand the original matrix
+    amp2 <- ExpandMatrix(amp, floor(nrow(mask)/2), floor(ncol(mask)/2), repeat.edges = repeat.edges)
     total <- matrix(0, nrow = nrow(amp), ncol = ncol(amp))
     for (rr in 1:nrow(mask)) {
         for (cc in 1:ncol(mask)) {
@@ -422,10 +426,10 @@ Convolve <- function (amp, mask = NA) {
     return(total)
 }
 
-Blur <- function (m) {  
+Blur <- function (m, repeat.edges = FALSE) {  
     #mask <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)
     mask <- matrix(c(1,2,1,2,4,2,1,2,1)/16, 3, 3, byrow = TRUE)
-    m2 <- Convolve(m, mask)
+    m2 <- Convolve(m, mask, repeat.edges = repeat.edges)
     return(m2)  
 }
 
@@ -478,13 +482,26 @@ GaussianFunction <- function (a, x, b = 0, c = 1, d = 0) {
 }
 
 
-ExpandMatrix <- function (m, rr, cc) {
+ExpandMatrix <- function (m, rr, cc, repeat.edges = TRUE) {
     # copies the edge rows and columns by rr and cc respectively
+    # or, padds with zeros (depending on the value for 'use')
     if (cc > 0) {
-        m <- cbind(matrix(rep(m[,1], cc), ncol = cc), m,  matrix(rep(m[,ncol(m)], cc), ncol = cc) )    
+        if (repeat.edges) {
+            left <- m[,1]
+            right <- m[,ncol(m)]
+        } else {
+            left <- right <-  rep(0, nrow(m))
+        }
+        m <- cbind(matrix(rep(left, cc), ncol = cc), m,  matrix(rep(right, cc), ncol = cc) )    
     }
     if (rr > 0) {
-        m <- rbind(matrix(rep(m[1,], rr), byrow = TRUE, nrow = rr), m,  matrix(rep(m[nrow(m),], rr), byrow = TRUE, nrow = rr) )
+        if (repeat.edges) {
+            top <- m[1,]
+            bottom <- m[nrow(m),]
+        } else {
+            top <- bottom <-  rep(0, ncol(m))
+        } 
+        m <- rbind(matrix(rep(top, rr), byrow = TRUE, nrow = rr), m,  matrix(rep(bottom, rr), byrow = TRUE, nrow = rr) )
     }
     return(m)
 }

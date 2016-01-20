@@ -17,22 +17,24 @@ DoNoiseReduction <- function (m) {
     
     m <- Normalize(m)
     #np <- GetNoiseProfile.histdy(m)
+    m <- Blur(m)
+    m <- MedianSubtraction(m)
+    return(m2)
+    
+}
+
+MedianSubtraction <- function (m) {
     np <- GetNoiseProfile.median(m)
     np.matrix <- matrix(np, ncol = ncol(m), nrow = nrow(m))
     m2 <- m - np.matrix
     m2[m2 < 0] <- 0
     return(m2)
-    
 }
 
 
 GetNoiseProfile.median <- function (m) {
-
-    
     np <- apply(m, 1, median)
     return(np)
-    
-    
 }
 
 GetNoiseProfile.histdy <- function (m) {
@@ -51,14 +53,8 @@ GetHistDy <- function (v) {
 
 
 RemoveGrains <- function (m) {
-    
-    
     kernel <- matrix(1, nrow = 3, ncol = 3)
-    
     arr <- constructArray(kernel)
-    
-    
-    
 }
 
 ConstructArray <- function(m, kernel) {
@@ -120,5 +116,6 @@ RemoveNoise <- function (spectro) {
     spectro[rem] <- 0
     return(spectro)
 }
+
 
 
