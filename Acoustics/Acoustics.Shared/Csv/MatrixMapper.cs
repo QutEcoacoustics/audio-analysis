@@ -19,6 +19,7 @@ namespace Acoustics.Shared
     public enum TwoDimensionalArray
     {
         /// <summary>
+        /// This is effectively a transpose
         /// 1 | 3
         /// 2 | 4
         /// </summary>
@@ -26,6 +27,7 @@ namespace Acoustics.Shared
         Transpose = 2,
 
         /// <summary>
+        /// This transform should be equivalent to RotateMatrix90DegreesAntiClockwise
         /// 2 | 4
         /// 1 | 3
         /// </summary>
@@ -33,6 +35,7 @@ namespace Acoustics.Shared
         Rotate90ClockWise = 1,
 
         /// <summary>
+        /// Store/Read values in the same orientation as they are in memory
         /// 1 | 2
         /// 3 | 4
         /// </summary>

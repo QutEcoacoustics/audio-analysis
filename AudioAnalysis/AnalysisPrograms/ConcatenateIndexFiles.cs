@@ -110,9 +110,10 @@ namespace AnalysisPrograms
             DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
                                        };
             string directoryFilter = "201303";
-            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms";
+            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
+            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
             dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2013, 03, 02, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
             string opFileStem = "CornellMarine";
             indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
 
@@ -434,7 +435,7 @@ namespace AnalysisPrograms
                 }
 
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
-                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.RealityCheck(summaryDict, resultsDir, arguments.FileStemName);
+                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict, resultsDir, arguments.FileStemName);
 
 
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
@@ -453,7 +454,7 @@ namespace AnalysisPrograms
                 // ##############################################################################################################
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
-                var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday);
+                var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday, indexGenerationData.IndexCalculationDuration);
                 if (spectralDict.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
