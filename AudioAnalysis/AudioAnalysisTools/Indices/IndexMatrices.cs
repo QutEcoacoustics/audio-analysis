@@ -96,10 +96,10 @@ namespace AudioAnalysisTools.Indices
                     {
                         string key = headers[h];
                         double[] array2 = intermediateDictionary[headers[h]].ToArray();
+                        rowCounts[i] = array2.Length; // assume all arrays of same length
                         if (!dictionary.ContainsKey(key))
                         {
                             dictionary.Add(key, array2);
-                            rowCounts[i] = array2.Length; // assume all arrays of same length
                         }
                         else
                         {
@@ -107,7 +107,6 @@ namespace AudioAnalysisTools.Indices
                             double[] array1 = dictionary[headers[h]].ToArray();
                             double[] result = array1.Concat(array2).ToArray();
                             dictionary[headers[h]] = result;
-                            rowCounts[i] = array2.Length; // assume all arrays of same length
                         }
                     }
 
@@ -138,18 +137,24 @@ namespace AudioAnalysisTools.Indices
                 }
             }
 
-            //int cumRowCount = rowCounts.Sum();  // a debug check
-            int dataRowCount = dictionary[headers[0]].Length;
+            // ########### NOW DO FINAL CHECK ON ROW-COUNT OF CONCATENATED FILES
+            // IMPORTANT: IT IS ASSUMED THAT A FULL 24 HOURS OF DATA HAS BEEN CONCATENATED
 
             int numberOfMinutesInDay = 1440;
+            int expectedRowCount = (int)Math.Round(numberOfMinutesInDay / indexCalcDuration.TotalMinutes);
+
+            int actualDataRowCount = dictionary[headers[0]].Length;
+
             TimeSpan totalElapsedTime = dtoArray[paths.Length-1] - dtoArray[0];
-            int totalElapsedMinutes = (int)Math.Round(totalElapsedTime.TotalMinutes) + rowCounts[paths.Length - 1];
-            if (dataRowCount != totalElapsedMinutes)
+            int lastRowMinutes = (int)Math.Round(rowCounts[paths.Length - 1] * indexCalcDuration.TotalMinutes);
+            int totalElapsedMinutes = (int)Math.Round(totalElapsedTime.TotalMinutes + lastRowMinutes);
+
+            if ((actualDataRowCount != expectedRowCount) || (totalElapsedMinutes != numberOfMinutesInDay))
             {
-                LoggedConsole.WriteLine("WARNING: ELAPSED TIME CHECK from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck() ");
-                string str = String.Format("   Final Data Row Count = {0}     Estimated Cumulative Duration = {1} minutes", dataRowCount, totalElapsedMinutes);
+                LoggedConsole.WriteLine("WARNING: INCONSISTENT ELAPSED TIME CHECK from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck() ");
+                string str = String.Format("   Final Data Row Count = {0}     Estimated Cumulative Duration = {1} minutes", actualDataRowCount, totalElapsedMinutes);
                 LoggedConsole.WriteLine(str);
-                dictionary = RepairDictionaryOfArrays(dictionary, dataRowCount, numberOfMinutesInDay);
+                dictionary = RepairDictionaryOfArrays(dictionary, actualDataRowCount, expectedRowCount);
             }
             //FileTools.WriteMatrix2File(M, @"C:\Users\towsey\temp\delete2.csv");
 
@@ -179,6 +184,8 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// WARNING! This method assumes that the total data required is 24 hours long and will trim csv files accordingly.
+        /// 
+        /// NOTE - 2015 DECEMBER 16: THIS METHOD IS NOT REFERENCED AND PRESUMABLy COULD BE REMOVED
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
@@ -335,7 +342,10 @@ namespace AudioAnalysisTools.Indices
         //}
 
 
-        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs, string fileStemPattern, string[] keys)
+        public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(DirectoryInfo[] dirs, 
+                                                                                        string fileStemPattern, 
+                                                                                        string[] keys,
+                                                                                        TimeSpan indexCalcTimeSpan)
         {
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
 
@@ -348,7 +358,7 @@ namespace AudioAnalysisTools.Indices
                 if (files.Length == 0) return spectrogramMatrices;
 
                 //var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
-                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(files);
+                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(files, indexCalcTimeSpan);
 
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
@@ -363,6 +373,8 @@ namespace AudioAnalysisTools.Indices
 
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(string path, string fileStemPattern, string[] keys)
         {
+            TimeSpan indexCalcDuration = TimeSpan.FromSeconds(60); // ASSUMPTION!!!
+
             Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
 
             foreach (string key in keys)
@@ -374,7 +386,7 @@ namespace AudioAnalysisTools.Indices
                 if (files.Length == 0) return spectrogramMatrices;
 
                 //var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFiles(files);
-                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(files);
+                var m = IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(files, indexCalcDuration);
                 
                 m = MatrixTools.MatrixRotate90Anticlockwise(m);
                 spectrogramMatrices.Add(key, m);
@@ -447,7 +459,7 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-        public static double[,] ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(FileInfo[] paths)
+        public static double[,] ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(FileInfo[] paths, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
             var list = new List<double[,]>();
@@ -482,11 +494,16 @@ namespace AudioAnalysisTools.Indices
                         LoggedConsole.WriteLine("  File name <{0}> does not contain a valid DateTime = {0}", file.Name);
                     }
 
-                    var partialElapsedTime = thisDTO - previousStartTime;
-                    //int partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
-                    int partialMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
+                    TimeSpan partialElapsedTime = thisDTO - previousStartTime;
+                    int partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
+                    //int partialMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
 
-                    if (partialMatrixLength != partialMinutes)
+                    // calculate elapsed time from the rows
+                    int rowCount = matrix.GetLength(0);
+                    int rowMinutes = (int)Math.Round(rowCount * indexCalcDuration.TotalMinutes);
+
+                    //if (partialMatrixLength != partialMinutes)  //PREVIOUS
+                    if (rowMinutes != partialMinutes)
                     {
                         LoggedConsole.WriteLine("WARNING from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(" + file.Name + ") ");
                         string str = String.Format("  Matrix {0}/{1}: Row Count={2} does not tally with Elapsed Minutes in File Name = {3} minutes", i, paths.Length, partialMatrixLength, partialMinutes);
@@ -513,18 +530,29 @@ namespace AudioAnalysisTools.Indices
             var M = MatrixTools.ConcatenateMatrixRows(list);
             int matrixRowCount = M.GetLength(0);
 
-            TimeSpan totalElapsedTime = previousStartTime - startDTO;
-            int totalElapsedMinutes = (int)Math.Round(totalElapsedTime.TotalMinutes) + partialMatrixLength;
-            if (matrixRowCount != totalElapsedMinutes)
-            {
-                LoggedConsole.WriteLine("WARNING: ELAPSED TIME CHECK from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
-                string str = String.Format("   Final Matrix Row Count = {0}     Estimated Cumulative Duration = {1} minutes", M.GetLength(0), totalElapsedMinutes);
-                LoggedConsole.WriteLine(str);
-            }
+            // ########### NOW DO FINAL CHECK ON ROW-COUNT OF CONCATENATED FILES
+            // IMPORTANT: IT IS ASSUMED THAT A FULL 24 HOURS OF DATA HAS BEEN CONCATENATED
+
             int numberOfMinutesInDay = 1440;
-            if (matrixRowCount != numberOfMinutesInDay)
+            int expectedRowCount = (int)Math.Round(numberOfMinutesInDay / indexCalcDuration.TotalMinutes);
+
+            TimeSpan totalElapsedTime = previousStartTime - startDTO;
+            int lastRowMinutes = (int)Math.Round(partialMatrixLength * indexCalcDuration.TotalMinutes);
+            int totalElapsedMinutes = (int)Math.Round(totalElapsedTime.TotalMinutes) + lastRowMinutes;
+
+            //if (matrixRowCount != totalElapsedMinutes)
+            //{
+            //    LoggedConsole.WriteLine("WARNING: ELAPSED TIME CHECK from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
+            //    string str = String.Format("   Final Matrix Row Count = {0}     Estimated Cumulative Duration = {1} minutes", M.GetLength(0), totalElapsedMinutes);
+            //    LoggedConsole.WriteLine(str);
+            //}
+
+            if ((cumRowCount != expectedRowCount) || (totalElapsedMinutes != numberOfMinutesInDay))
             {
-                LoggedConsole.WriteLine("MATRIX ROW COUNT != {0} minutes in day. Append/remove rows to correct length!", numberOfMinutesInDay);
+                LoggedConsole.WriteLine("WARNING: INCONSISTENT ELAPSED TIME CHECK from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
+                string str = String.Format("   Final Data Row Count = {0}     Estimated Cumulative Duration = {1} minutes", cumRowCount, totalElapsedMinutes);
+                LoggedConsole.WriteLine(str);
+                //LoggedConsole.WriteLine("         MATRIX ROW COUNT != {0} minutes in day. Append/remove rows to correct length!", numberOfMinutesInDay);
                 M = RepairMatrixRowCount(M, numberOfMinutesInDay);
             }
             //FileTools.WriteMatrix2File(M, @"C:\Users\towsey\temp\delete2.csv");
