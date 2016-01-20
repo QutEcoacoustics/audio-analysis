@@ -638,6 +638,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
             int herzInterval = 1000;
             int nyquist = this.SampleRate / 2;
+            if (nyquist < 5000) herzInterval = 500;
+            if (nyquist < 2000) herzInterval = 200;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp.Width;
             TimeSpan fullDuration = TimeSpan.FromSeconds(secondsDuration);
             SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, this.StartOffset, fullDuration, this.XTicInterval, nyquist, herzInterval);
