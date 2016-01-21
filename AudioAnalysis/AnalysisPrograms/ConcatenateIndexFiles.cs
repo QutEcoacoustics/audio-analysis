@@ -40,6 +40,8 @@ namespace AnalysisPrograms
     using PowerArgs;
     using AudioAnalysisTools;
     using System.Collections.Generic;
+    using System.Drawing;
+    using TowseyLibrary;
 
 
     /// <summary>
@@ -476,5 +478,71 @@ namespace AnalysisPrograms
             } // over days
 
         } // Execute()
+
+
+
+        public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, 
+                                                   string opFileStem, string title)
+        {
+            //get the ribon files
+            FileInfo[] imageFiles = IndexMatrices.GetFilesInDirectories(dataDirs, pattern);
+
+            var image = new Bitmap(imageFiles[0].FullName);
+            int imageHt = image.Height;
+            int imageCount = imageFiles.Length;
+            var spacer = new Bitmap(image.Width, 1);
+            Graphics canvas = Graphics.FromImage(spacer);
+            canvas.Clear(Color.Gray);
+
+            // add ribbon files to list
+            var imageList = new List<Image>();
+            foreach (FileInfo imageFile in imageFiles)
+            {
+                image = new Bitmap(imageFile.FullName);
+                imageList.Add(image);
+                imageList.Add(spacer);
+            }
+
+            //create composite image
+            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+
+            // create left side day scale    
+            Font stringFont = new Font("Arial", 16);
+            imageList = new List<Image>();
+            for(int i = 0; i < imageCount; i++)
+            {
+                image = new Bitmap(60, imageHt);
+                canvas = Graphics.FromImage(image);
+                string str = String.Format("{0}", i+1);
+                canvas.DrawString(str, stringFont, Brushes.White, new PointF(3, 3));
+
+                imageList.Add(image);
+                imageList.Add(spacer);
+            }
+
+            //create composite image
+            Bitmap compositeBmpYscale = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            Bitmap[] finalImages = { compositeBmpYscale, compositeBmp, compositeBmpYscale };
+            Bitmap finalComposite = (Bitmap)ImageTools.CombineImagesInLine(finalImages);
+
+            // add title bar
+            var titleBmp = new Bitmap(finalComposite.Width, 30);
+            canvas = Graphics.FromImage(titleBmp);
+            canvas.DrawString(title, stringFont, Brushes.White, new PointF(30, 3));
+
+            // add title plus spacer
+            spacer = new Bitmap(finalComposite.Width, 3);
+            canvas = Graphics.FromImage(spacer);
+            canvas.Clear(Color.Gray);
+            Bitmap[] titledImages = { titleBmp, spacer, finalComposite };
+            finalComposite = (Bitmap)ImageTools.CombineImagesVertically(titledImages);
+
+            finalComposite.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
+            Console.WriteLine(string.Format("Final compositeBmp dimensions are width {0} by height {1}", compositeBmp.Width, compositeBmp.Height));
+            Console.WriteLine(string.Format("Final number of ribbons/days = {0}", imageFiles.Length));
+
+        } //ConcatenateRibbonImages
+
+
     }
 }
