@@ -210,7 +210,7 @@ namespace AnalysisPrograms
 
 
             // testing TERNARY PLOTS using spectral indices
-            if (true)
+            if (false)
             {
                 string[] keys = { "ACI", "ENT", "EVN" };
                 //string[] keys = { "BGN", "POW", "EVN"};
@@ -298,10 +298,37 @@ namespace AnalysisPrograms
                 LDSpectrogramDiscreteColour.DiscreteColourSpectrograms();
             }
 
+
+            // experiments with false colour images - categorising/discretising the colours
+            if (true)
+            {
+
+                DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
+                                             new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine")
+                                           };
+
+                DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms");
+                string title = "Marine Spectrograms - off Georgia Coast, USA - Day 1= 01/March/2013";
+                //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
+
+                //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
+                //string opFileStem = "CornellMarine.ACI-ENT-EVN.SpectralRibbon.2013MarchApril";
+
+                string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
+                string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
+
+                ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title);
+            }
+
+
             Console.WriteLine("# Finished!");
             Console.ReadLine();
             System.Environment.Exit(0);
         }
+
+
+
+
 
     }
 }
