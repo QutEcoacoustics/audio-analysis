@@ -474,7 +474,7 @@ ACI:
   DoDisplay: true
   NormMin: 0.4
   NormMax: 0.8
-  CalculateNormMin: false
+  CalculateNormMin: true
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
