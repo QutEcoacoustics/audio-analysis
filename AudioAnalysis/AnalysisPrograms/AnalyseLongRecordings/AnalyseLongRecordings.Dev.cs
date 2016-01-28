@@ -30,9 +30,10 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //audio2csv  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
 
             //MARINE 
-            string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav";
             //string configPath  = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.SonogramMarine.yml";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticMarine.yml";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticMarine.yml";
+            //string outputPath = @"C:\SensorNetworks\Output\MarineSonograms\Test1";
 
 
             //RAIN
@@ -47,6 +48,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             // ARTIFICIAL TEST RECORDING
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            //string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
+            //string outputPath    = @"C:\SensorNetworks\Output\FalseColourSpectrograms";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
@@ -58,8 +61,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // TUI TERRACE RECORDINGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
-            //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-            //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
+            //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013";
+            //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
@@ -71,7 +74,6 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
-
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\Canetoad";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices";
 
@@ -83,22 +85,29 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             // ST BEES KOALA RECORDING TWO HOURS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\WESTKNOLL_20140905-001853+1000.wav";
-            //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices";
+            //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016";
+
+            // BAC recordings
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav";
+            string outputPath    = @"C:\SensorNetworks\Output\BAC\HiRes";
 
             // EASTERN BRISTLE BIRD
             //string recordingPath = @"F:\SensorNetworks\WavFiles\EasternBristlebird\CURRUMBIN_20150529-142503+1000.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\BristleBird";
 
+            // Use these configs for Summary and Spectral Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Italy.Acoustic.Parallel.yml";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
+
+
+            // Use these configs for Call recognition Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.LSKiwi3.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Human.cfg";
             //string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Crow.cfg";
-
-
 
             // DEV CONFIG OPTIONS
             //C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\App.config
@@ -108,12 +117,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                                 {
                                     Source = recordingPath.ToFileInfo(),
                                     Config = configPath.ToFileInfo(),
-                                    //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013".ToDirectoryInfo()
-                                    //Output = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014".ToDirectoryInfo()
-                                    //Output = @"C:\SensorNetworks\Output\Test\Test2".ToDirectoryInfo()
-                                    //Output = @"C:\SensorNetworks\Output\Frogs\Canetoad".ToDirectoryInfo()
-                                    //Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms".ToDirectoryInfo()
-                                    Output = @"C:\SensorNetworks\Output\MarineSonograms\Test1".ToDirectoryInfo()
+                                    Output = outputPath.ToDirectoryInfo()
             };
 
             if (!arguments.Source.Exists)

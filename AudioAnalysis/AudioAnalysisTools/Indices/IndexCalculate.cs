@@ -165,17 +165,32 @@ namespace AudioAnalysisTools.Indices
             subsegmentSampleCount = (int)Math.Ceiling(frameCount) * frameStep;
             int sampleEnd   = sampleStart + subsegmentSampleCount - 1;
 
+            // GET the SUBSEGMENT FOR NOISE calculation.
+            // Set the duration of SUBSEGMENT used to calculate BACKGROUND NOISE = total segment duration if its length >= 60 seconds
+            // If the index calculation duration is much shorter than 1 minute, then need to calculate
+            // BGN noise from a longer length of recording - i.e. add noiseBuffer either side. Typical noiseBuffer value = 5 seconds
+            // If the index calculation duration = 60 seconds, then caluclate BGN from the full 60 seconds of recording.
             int noiseBuffer    = (int)(BGNoiseNeighbourhood * sampleRate);
-            int bgnSampleStart = sampleStart - noiseBuffer;
-            int bgnSampleEnd   = sampleEnd + noiseBuffer;
-            if (bgnSampleStart < 0) bgnSampleStart = 0;
-            if (bgnSampleEnd >= signalLength) bgnSampleEnd = signalLength - 1;
-            int bgnSubsegmentSampleCount = bgnSampleEnd - bgnSampleStart + 1;
+            //int bgnSampleStart = sampleStart - noiseBuffer;
+            //int bgnSampleEnd   = sampleEnd + noiseBuffer;
+            //if (bgnSampleStart < 0) bgnSampleStart = 0;
+            //if (bgnSampleEnd >= signalLength) bgnSampleEnd = signalLength - 1;
+            //int bgnSubsegmentSampleCount = bgnSampleEnd - bgnSampleStart + 1;
+            AudioRecording bgnRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, noiseBuffer);
+
+
+            // GET SUB-SEGMENT for RIDGE calculation AND EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
+            int bufferFrameCount = 4;
+            int ridgeBuffer = frameSize * bufferFrameCount;
+            AudioRecording ridgeRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, ridgeBuffer);
+
+
+
 
 
             // minimum samples needed to calculate data
             // this value was chosen somewhat arbitrarily
-            int minnimumViableDuration = frameSize * 8;
+            int minimumViableDuration = frameSize * 8;
             
             // set the SUBSEGMENT recording = total segment if its length >= 60 seconds
             AudioRecording subsegmentRecording = recording;
@@ -186,7 +201,7 @@ namespace AudioAnalysisTools.Indices
                 // if completely outside of available audio
                 // or if end falls outside of audio
                 if (sampleStart > signalLength ||
-                    (end > signalLength && (signalLength - sampleStart) < minnimumViableDuration))
+                    (end > signalLength && (signalLength - sampleStart) < minimumViableDuration))
                 {
                     // back track so at least we can fill a whole result
                     // this is equivalent to setting overlap for only one frame.
@@ -206,20 +221,10 @@ namespace AudioAnalysisTools.Indices
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
 
 
-            // Set the duration of SUBSEGMENT used to calculate BACKGROUND NOISE = total segment duration if its length >= 60 seconds
-            // If the index calculation duration is much shorter than 1 minute, then need to calculate
-            // BGN noise from a longer length of recording - i.e. add noiseBuffer either side. Typical noiseBuffer value = 5 seconds
-            // If the index calculation duration = 60 seconds, then caluclate BGN from the full 60 seconds of recording.
-            AudioRecording bgnSubsegmentRecording = recording;
-            if (bgnSubsegmentSampleCount <= signalLength)
-            {
-                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, bgnSampleStart, bgnSubsegmentSampleCount);
-                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
-                bgnSubsegmentRecording = new AudioRecording(wr);
-            }
+
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
-            var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnSubsegmentRecording, frameSize, frameStep);
+            var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnRecording, frameSize, frameStep);
             // i. convert signal to dB and subtract background noise. Noise SDs to calculate threshold = ZERO by default
             double signalBGN = NoiseRemoval_Modal.CalculateBackgroundNoise(dspOutput2.Envelope);
             // ii.: calculate the noise profile from the amplitude sepctrogram
@@ -227,6 +232,7 @@ namespace AudioAnalysisTools.Indices
             // iii: generate deciBel spectrogram and calculate the dB noise profile
             double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput2.amplitudeSpectrogram, dspOutput2.WindowPower, sampleRate, epsilon);
             double[] spectralDecibelBGN = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
+
 
 
             // ################################## BEGIN CALCULATION OF INDICES ##################################
@@ -417,10 +423,20 @@ namespace AudioAnalysisTools.Indices
 
             // vii: CALCULATE SPECTRAL PEAK TRACKS. NOTE: spectrogram is a noise reduced decibel spectrogram
             // FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
+            var dspOutput3 = DSP_Frames.ExtractEnvelopeAndFFTs(ridgeRecording, frameSize, frameStep);
+            // Generate the ridge SUBSEGMENT deciBel spectrogram from the SUBSEGMENT amplitude spectrogram
+            double[,] ridgeSpectrogram = MFCCStuff.DecibelSpectra(dspOutput3.amplitudeSpectrogram, dspOutput3.WindowPower, sampleRate, epsilon);
+            ridgeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(ridgeSpectrogram, spectralDecibelBGN);
+            ridgeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(ridgeSpectrogram, nhDecibelThreshold);
+
             double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
             dBThreshold = 3.0;
-            var sptInfo = new SpectralPeakTracks(deciBelSpectrogram, framesStepsPerSecond, dBThreshold);
+            var sptInfo = new SpectralPeakTracks(ridgeSpectrogram, framesStepsPerSecond, dBThreshold);
             spectralIndices.SPT = sptInfo.SptSpectrum;
+            spectralIndices.RHZ = sptInfo.RhzSpectrum;
+            spectralIndices.RVT = sptInfo.RvtSpectrum;
+            spectralIndices.RPS = sptInfo.RpsSpectrum;
+            spectralIndices.RNG = sptInfo.RngSpectrum;
 
             summaryIndices.SptDensity = sptInfo.TrackDensity;
             //summaryIndices.AvgSptDuration = sptInfo.AvTrackDuration;
@@ -555,7 +571,24 @@ namespace AudioAnalysisTools.Indices
         // ########################################################################################################################################################################
 
 
-
+        public static AudioRecording GetRecordingSubsegment(AudioRecording recording, int sampleStart, int sampleEnd, int sampleBuffer)
+        {
+            int sampleRate = recording.SampleRate;
+            int signalLength = recording.WavReader.Samples.Length;
+            int subsampleStart = sampleStart - sampleBuffer;
+            int subsampleEnd   = sampleEnd + sampleBuffer;
+            if (subsampleStart < 0) subsampleStart = 0;
+            if (subsampleEnd >= signalLength) subsampleEnd = signalLength - 1;
+            int subsegmentSampleCount = subsampleEnd - subsampleStart + 1;
+            AudioRecording subsegmentRecording = recording;
+            if (subsegmentSampleCount <= signalLength)
+            {
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, subsampleStart, subsegmentSampleCount);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                subsegmentRecording = new AudioRecording(wr);
+            }
+            return subsegmentRecording;
+        }
 
         public static double[] GetArrayOfWeightedAcousticIndices(DataTable dt, double[] weightArray)
         {

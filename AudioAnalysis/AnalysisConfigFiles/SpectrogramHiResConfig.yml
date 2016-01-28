@@ -1,0 +1,32 @@
+---
+UnitsOfTime: "second"
+SpectralFrameDuration: 0.02
+TileWidth: 300
+# How to tile, valid values:
+# - PanoJsTilingProfile
+# - AbsoluteDateTilingProfile
+TilingProfile: AbsoluteDateTilingProfile
+ScaleUnits: "SecondsPerPixel"
+SpectralIndexScale: 
+    - 60
+    - 24
+    - 12
+    - 6
+    - 4
+    - 2
+    - 1
+    - 0.6
+    - 0.4
+    - 0.2
+    - 0.1
+MaxTilesPerSuperTile: 12
+UseDistributionsForNormalization: false
+LdSpectrogramConfig:
+    ColorMap1: "ACI-ENT-EVN" 
+    ColorMap2: "BGN-POW-EVN"
+    # minutes
+    XAxisTicInterval: 60
+    # Hertz
+    YAxisTicInterval: 1000
+IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+...

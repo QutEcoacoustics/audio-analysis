@@ -373,7 +373,8 @@ namespace AnalysisPrograms
                 //hits = MatrixTools.MatrixRotate90Clockwise(hits);
                 // ########################### EIGEN ridge detection
 
-                image = sonogram.GetColourDecibelSpectrogramFullyAnnotated("DECIBEL SPECTROGRAM - Colour annotated", dbSpectrogramData, nrSpectrogramData, hits);
+                image = sonogram.GetColourDecibelSpectrogramFullyAnnotated("DECIBEL SPECTROGRAM - Colour annotated",
+                                                                                                    dbSpectrogramData, nrSpectrogramData, hits);
                 list.Add(image);
 
                 // 5) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM

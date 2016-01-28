@@ -64,8 +64,8 @@ using System.Drawing;
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
+                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
             };
 
@@ -239,7 +239,8 @@ using System.Drawing;
             finalImage.Save(fiImage.FullName, ImageFormat.Png);
 
             //prepare sonogram images
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            bool doHighlightSubband = false;
+            bool add1kHzLines = true;
             //Image_MultiTrack image = null;
 
 
@@ -269,7 +270,7 @@ using System.Drawing;
 
             //sonogram.SetBinarySpectrum(binary);
             ////sonogram.Data = SNR.SpectralRidges2Intensity(binary, originalSg);
-            
+
             //image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, false));
             //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.sonogramImage.Width));
@@ -299,9 +300,9 @@ using System.Drawing;
             //fn = outputFolder + wavFileName + "_sobel.png";
             //image.Save(fn);
             //LoggedConsole.WriteLine("Sobel sonogram to file: " + fn);
-            
-            
-            
+
+
+
             // I1.txt contains the sonogram matrix produced by matlab
             //string matlabFile = @"C:\SensorNetworks\Software\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
             //double[,] matlabMatrix = Util.fileToMatrix(matlabFile, 256, 5166);
