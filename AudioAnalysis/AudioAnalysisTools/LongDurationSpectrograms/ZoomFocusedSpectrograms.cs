@@ -55,7 +55,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             var sw = Stopwatch.StartNew();
-            string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "SUM", "SPT" };
+            string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
             sw.Stop();
             LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
@@ -76,12 +76,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 TimeSpan imageScale = TimeSpan.FromSeconds(imageScales[i]);
                 image = DrawIndexSpectrogramAtScale(ldsConfig, indexGeneration, indexProperties, focalTime, dataScale, imageScale, imageWidth, spectra, fileStem);
-                if (image != null) imageList.Add(image);
+                if (image != null)
+                {
+                    imageList.Add(image);
+                    string name = String.Format("{0}_FocalZoom_min{1:f1}_scale{2}.png", fileStem, focalTime.TotalMinutes, imageScales[i]);
+                    image.Save(Path.Combine(outputDirectory.FullName, name));
+                }
+
             }
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from spectral indices. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
 
-
+            /***
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             int[] compressionFactor = { 8, 4, 2, 1 };
             int compressionCount = compressionFactor.Length;
@@ -125,6 +131,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from standard frames. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
+            *****/
 
             // combine the images into a stack  
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);

@@ -254,7 +254,11 @@ namespace AudioAnalysisTools.Indices
 
         public double[] POW { get; set; }
 
-        public double[] SPT { get; set; }
+        public double[] RHZ { get; set; } //Spectral Ridges Horizontal
+        public double[] RVT { get; set; } //Spectral Ridges Vertical
+        public double[] RPS { get; set; } //Spectral Ridges Positive slope
+        public double[] RNG { get; set; } //Spectral Ridges Negative Slope
+        public double[] SPT { get; set; } // Spectral Peak Tracks
 
         public double[] SUM { get; set; }
 

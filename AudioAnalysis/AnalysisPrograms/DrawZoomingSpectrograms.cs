@@ -92,8 +92,14 @@ namespace AnalysisPrograms
             // string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.200msIndicesKIWI-TEST";
 
             // KOALA RECORDING AT ST BEES
-            string ipdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramFocalZoom\FocalZoomImage";
+            //string ipdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016\SpectrogramFocalZoom";
+            //string opdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016";
+
+
+            // BAC
+            string ipdir = @"C:\SensorNetworks\Output\BAC\HiRes\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\BAC\HiRes";
 
 
             // ECLIPSE FARMSTAY
@@ -116,23 +122,24 @@ namespace AnalysisPrograms
             //csp.TestImage(Path.Combine(opdir, "testImageCyanScale1.png"));
             // ################ TEST a colour scheme for the high resolution frame spectrograms.
 
-            var ipDir = new DirectoryInfo(ipdir);
             var opDir = new DirectoryInfo(opdir);
+
+            //string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json";
+            string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
+
 
             return new Arguments
                        {
                            // use the default set of index properties in the AnalysisConfig directory.
-                           SourceDirectory = ipDir,
-                           Output = opDir,
-                           SpectrogramTilingConfig =
-                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml".ToFileInfo(),
-                               //@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json".ToFileInfo(),
+                           SourceDirectory = ipdir.ToDirectoryInfo(),
+                           Output = opdir.ToDirectoryInfo(),
+                           SpectrogramTilingConfig = config.ToFileInfo(),
 
                            // draw a focused multi-resolution pyramid of images
                            //ZoomAction = Arguments.ZoomActionType.Tile,
                            ZoomAction = Arguments.ZoomActionType.Focused,
-                           //FocusMinute = 17,
-                           FocusMinute = 61,
+                           FocusMinute = 1,
+                           //FocusMinute = 61,
                        };
         }
 
@@ -174,6 +181,11 @@ namespace AnalysisPrograms
 
             // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
             common.CheckForNeededFiles(arguments.SourceDirectory);
+            // Create directory if not exists
+            if (!arguments.Output.Exists)
+            {
+                arguments.Output.Create();
+            }
 
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
             LoggedConsole.WriteLine();

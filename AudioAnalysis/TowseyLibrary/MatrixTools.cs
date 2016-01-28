@@ -956,7 +956,15 @@ namespace TowseyLibrary
         return newMatrix;
     }
 
-  public static double[] GetColumn(double[,] m, int colID)
+        public static byte[] GetColumn(byte[,] m, int colID)
+        {
+            int rows = m.GetLength(0);
+            byte[] column = new byte[rows];
+            for (int i = 0; i < rows; i++) column[i] = m[i, colID];
+            return column;
+        }
+
+        public static double[] GetColumn(double[,] m, int colID)
   {
       int rows = m.GetLength(0);
       double[] column = new double[rows];

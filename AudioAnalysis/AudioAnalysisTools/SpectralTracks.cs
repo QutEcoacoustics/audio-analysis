@@ -25,23 +25,104 @@ namespace AudioAnalysisTools
         /// <summary>
         /// the fractional peak cover; i.e. fraction of frames in freq bin that are a spectral peak.
         /// </summary>
-        public double[] SptSpectrum { get; private set; } 
+        public double[] SptSpectrum { get; private set; }
+        public double[] RhzSpectrum { get; private set; } // spectrum of horizontal ridges 
+        public double[] RvtSpectrum { get; private set; } // spectrum of vertical ridges 
+        public double[] RpsSpectrum { get; private set; } // spectrum of positive slope ridges 
+        public double[] RngSpectrum { get; private set; } // spectrum of negative slope ridges 
+
 
         /// <summary>
         /// CONSTRUCTOR
-        /// NOTE: Orientation of passed spectrogram is: row = frames, columns = frequency bins
+        /// NOTE: Orientation of passed spectrogram is: row = spectral frames, columns = frequency bins
         /// </summary>
-        /// <param name="spectrogram"></param>
+        /// <param name="dBSpectrogram"></param>
         /// <param name="framesPerSecond"></param>
         /// <param name="binWidth"></param>
         /// <param name="threshold"></param>
         /// <returns></returns>
-        public SpectralPeakTracks(double[,] spectrogram, double framesPerSecond, double threshold)
+        public SpectralPeakTracks(double[,] dBSpectrogram, double framesPerSecond, double dBThreshold)
         {
-            var rowCount = spectrogram.GetLength(0);
-            var colCount = spectrogram.GetLength(1);
+            var rowCount = dBSpectrogram.GetLength(0);
+            var colCount = dBSpectrogram.GetLength(1);
+            GetPeakTracksSpectrum(dBSpectrogram, dBThreshold);
 
-            this.Peaks = LocalSpectralPeaks(spectrogram, threshold);
+            GetRidgeSpectra(dBSpectrogram, dBThreshold);
+
+        }
+
+        public void GetRidgeSpectra(double[,] dbSpectrogramData, double dBThreshold)
+        {
+            var rowCount = dbSpectrogramData.GetLength(0);
+            var colCount = dbSpectrogramData.GetLength(1);
+
+
+            double ridgeThreshold = 1.0;
+            double[,] matrix = dbSpectrogramData;
+            //double[,] matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
+            // returns a byte matrix of ridge directions
+            // 0 = no ridge detected or below magnitude threshold.
+            // 1 = ridge direction = horizontal or slope = 0;
+            // 2 = ridge is positive slope or pi/4
+            // 3 = ridge is vertical or pi/2
+            // 4 = ridge is negative slope or 3pi/4. 
+            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
+
+            double[] spectrum = new double[colCount];
+            byte[] freqBin;
+
+            // accumulate info for the horizontal ridges
+            for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
+            {
+                freqBin = MatrixTools.GetColumn(hits, col);
+                int count = freqBin.Count(x => x==1);
+                if (count < 3) continue; // i.e. not a track.
+                spectrum[col] = count / (double)rowCount;
+            }
+            this.RhzSpectrum = spectrum;
+
+            // accumulate info for the vertical ridges
+            spectrum = new double[colCount];
+            for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
+            {
+                freqBin = MatrixTools.GetColumn(hits, col);
+                int count = freqBin.Count(x => x==3);
+                if (count < 3) continue; // i.e. not a track.
+                spectrum[col] = count / (double)rowCount;
+            }
+            this.RvtSpectrum = spectrum;
+
+            // accumulate info for the up slope ridges
+            spectrum = new double[colCount];
+            for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
+            {
+                freqBin = MatrixTools.GetColumn(hits, col);
+                int count = freqBin.Count(x => x==2);
+                if (count < 2) continue; // i.e. not a track.
+                spectrum[col] = count / (double)rowCount;
+            }
+            this.RpsSpectrum = spectrum;
+            // accumulate info for the down slope ridges
+            spectrum = new double[colCount];
+            for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
+            {
+                freqBin = MatrixTools.GetColumn(hits, col);
+                int count = freqBin.Count(x => x==4);
+                if (count < 2) continue; // i.e. not a track.
+                spectrum[col] = count / (double)rowCount;
+            }
+            this.RngSpectrum = spectrum;
+
+        }
+
+
+
+        public void GetPeakTracksSpectrum(double[,] dBSpectrogram, double dBThreshold)
+        {
+            var rowCount = dBSpectrogram.GetLength(0);
+            var colCount = dBSpectrogram.GetLength(1);
+
+            this.Peaks = LocalSpectralPeaks(dBSpectrogram, dBThreshold);
 
             double[] spectrum = new double[colCount];
             double[] freqBin;
@@ -58,14 +139,14 @@ namespace AudioAnalysisTools
                 cummulativeFrameCount += cover;                         // accumulate track frames over all frequency bins 
                 //this.TotalTrackCount += tracksInOneBin.TrackCount;    // accumulate counts over all frequency bins
             }
-
+            this.SptSpectrum = spectrum;
             this.TrackDensity = cummulativeFrameCount / (double)rowCount;
+
             //double avFramesPerTrack = 0.0;
             //if (totalTrackCount > 0) 
             //    avFramesPerTrack = cummulativeFrameCount / (double)totalTrackCount;
             //this.TotalTrackCount = totalTrackCount;
             //this.AvTrackDuration = TimeSpan.FromSeconds(avFramesPerTrack / framesPerSecond);
-            this.SptSpectrum = spectrum;
         }
 
 
