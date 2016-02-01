@@ -480,14 +480,27 @@ namespace AnalysisPrograms
         } // Execute()
 
 
-
+        /// <summary>
+        /// This method is designed only to read in Spectrogram ribbons for Georgia marine recordings. 
+        /// Used to prepare images for Aaron Rice.
+        /// </summary>
+        /// <param name="dataDirs"></param>
+        /// <param name="pattern"></param>
+        /// <param name="outputDirectory"></param>
+        /// <param name="opFileStem"></param>
+        /// <param name="title"></param>
+        /// <param name="tidalInfo"></param>
         public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, 
-                                                   string opFileStem, string title)
+                                                   string opFileStem, string title, SunAndMoon.SunMoonTides[] tidalInfo = null)
         {
             //get the ribon files
             FileInfo[] imageFiles = IndexMatrices.GetFilesInDirectories(dataDirs, pattern);
 
+            DateTimeOffset dto = new DateTimeOffset(2013, 3, 1, 0, 0, 0, TimeSpan.Zero);
+            TimeSpan oneday = new TimeSpan(24, 0, 0);
+
             var image = new Bitmap(imageFiles[0].FullName);
+
             int imageHt = image.Height;
             int imageCount = imageFiles.Length;
             var spacer = new Bitmap(image.Width, 1);
@@ -499,6 +512,15 @@ namespace AnalysisPrograms
             foreach (FileInfo imageFile in imageFiles)
             {
                 image = new Bitmap(imageFile.FullName);
+
+                // draw on the tidal and sun info IFF available.
+                if (tidalInfo != null)
+                {
+                    AddTidalInfo(image, tidalInfo, dto);
+                }
+                dto = dto.Add(oneday);
+                Console.WriteLine(dto.ToString());
+
                 imageList.Add(image);
                 imageList.Add(spacer);
             }
@@ -542,6 +564,34 @@ namespace AnalysisPrograms
             Console.WriteLine(string.Format("Final number of ribbons/days = {0}", imageFiles.Length));
 
         } //ConcatenateRibbonImages
+
+
+        static void AddTidalInfo(Bitmap image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
+        {
+            Pen yellowPen = new Pen(Brushes.Yellow);
+            Pen CyanPen   = new Pen(Brushes.Lime, 2);
+            Pen WhitePen  = new Pen(Brushes.White, 2);
+            Graphics spgCanvas = Graphics.FromImage(image);
+            Pen thisPen = yellowPen;
+
+            foreach (SunAndMoon.SunMoonTides smt in tidalInfo)
+            {
+                if (smt.Date == dto)
+                {
+                    foreach (KeyValuePair<string, DateTimeOffset> kvp in smt.dictionary)
+                    {
+                        string key = kvp.Key;
+                        DateTimeOffset dto2 = kvp.Value;
+                        thisPen = yellowPen;
+                        if (key == SunAndMoon.SunMoonTides.HIGHTIDE) thisPen = CyanPen;
+                        else if (key == SunAndMoon.SunMoonTides.LOWTIDE) thisPen = WhitePen;
+
+                        int minute = (int)Math.Round(dto2.TimeOfDay.TotalMinutes * 2); //IMPORTANT multiply by 2 because scale = 30s/px.
+                        spgCanvas.DrawLine(thisPen, minute, 0, minute, image.Height);
+                    }
+                }
+            }
+        }
 
 
     }
