@@ -299,7 +299,7 @@ namespace AnalysisPrograms
             }
 
 
-            // experiments with false colour images - categorising/discretising the colours
+            // Concatenate marine spectrogram ribbons and add tidal info if available.
             if (true)
             {
 
@@ -308,7 +308,7 @@ namespace AnalysisPrograms
                                            };
 
                 DirectoryInfo outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms");
-                string title = "Marine Spectrograms - off Georgia Coast, USA - Day 1= 01/March/2013";
+                string title = "Marine Spectrograms - 15km off Georgia Coast, USA.    Day 1= 01/March/2013      (Low tide=white; High tide=lime)";
                 //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
 
                 //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
@@ -317,7 +317,38 @@ namespace AnalysisPrograms
                 string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
                 string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
 
-                ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title);
+                FileInfo tidalDataFile = new FileInfo(@"C:\SensorNetworks\OutputDataSets\GeorgiaTides2013.txt");
+                //SunAndMoon.SunMoonTides[] tidalInfo = null;
+                SunAndMoon.SunMoonTides[] tidalInfo = SunAndMoon.ReadGeorgiaTidalInformation(tidalDataFile);
+
+
+
+                ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title, tidalInfo);
+            }
+
+
+            // Concatenate three images for Dan Stowell.
+            if (false)  // 
+            {
+                var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
+                string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
+                string fileName2 = @"GympieNP_20150701__ACI-ENT-EVN.png";
+                string fileName3 = @"Sturt-Mistletoe_20150702__ACI-ENT-EVN - Corrected.png";
+                var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
+                var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
+                var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
+
+                var imageList = new List<Image>();
+
+
+                imageList.Add(Bitmap.FromFile(image1Path.FullName));
+                imageList.Add(Bitmap.FromFile(image2Path.FullName));
+                imageList.Add(Bitmap.FromFile(image3Path.FullName));
+
+                Image combinedImage = ImageTools.CombineImagesVertically(imageList);
+
+                string fileName = String.Format("ThreeLongDurationSpectrograms.png");
+                combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
             }
 
 
