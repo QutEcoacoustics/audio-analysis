@@ -597,7 +597,7 @@ RVT:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 1.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

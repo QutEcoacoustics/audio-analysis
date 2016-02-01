@@ -319,8 +319,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     dataScale);
             }
 
-            // DEFINE the colour maps for the false-colour spectrograms
-            // Obtained values from spectrogramDrawingConfig. NOTE: WE REQUIRE LENGTH = 11 chars.
+            // DEFINE the DEFAULT colour maps for the false-colour spectrograms
+            // Then obtain values from spectrogramDrawingConfig. NOTE: WE REQUIRE LENGTH = 11 chars.
             string colorMap1 = "ACI-ENT-EVN";
             if ((config.ColorMap1 != null) && (config.ColorMap1.Length == 11))
             {

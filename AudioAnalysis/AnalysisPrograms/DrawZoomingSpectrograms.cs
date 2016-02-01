@@ -176,6 +176,11 @@ namespace AnalysisPrograms
 
             common.SuperTilingConfig = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramTilingConfig);
             var indexPropertiesPath = IndexProperties.Find(common.SuperTilingConfig, arguments.SpectrogramTilingConfig);
+
+            //#################################
+            // CHECK THIS CHANGE WITH ANTHONY
+            indexPropertiesPath = arguments.SpectrogramTilingConfig;
+
             Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
             common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
 
