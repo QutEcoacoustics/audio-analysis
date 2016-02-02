@@ -23,10 +23,10 @@ MaxTilesPerSuperTile: 12
 UseDistributionsForNormalization: false
 LdSpectrogramConfig:
     ColorMap1: "ACI-ENT-EVN" 
-    ColorMap2: "BGN-POW-EVN"
+    ColorMap2: "BGN-RHZ-RVT"
     # minutes
     XAxisTicInterval: 60
     # Hertz
     YAxisTicInterval: 1000
-IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+IndexPropertiesConfig: './HiRes.yml'
 ...
