@@ -580,7 +580,7 @@ SPT:
   Units: "tracks/s"
 RHZ:
   Name: spectralRHZ
-  Comment: "Spectrum of average number of horizontal spectral ridges / sec."
+  Comment: "Spectrum of average number of horizontal spectral ridges per sec."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
@@ -592,7 +592,7 @@ RHZ:
   Units: "tracks/s"
 RVT:
   Name: spectralRVT
-  Comment: "Spectrum of average number of vertical spectral ridges / sec."
+  Comment: "Spectrum of average number of vertical spectral ridges per sec."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
@@ -604,7 +604,7 @@ RVT:
   Units: "tracks/s"
 RPS:
   Name: spectralRPS
-  Comment: "Spectrum of average number of positive slope ridges / sec."
+  Comment: "Spectrum of average number of positive slope ridges per sec."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
@@ -616,7 +616,7 @@ RPS:
   Units: "tracks/s"
 RNG:
   Name: spectralRNG
-  Comment: "Spectrum of average number of negative slope ridges / sec."
+  Comment: "Spectrum of average number of negative slope ridges per sec."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
