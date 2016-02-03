@@ -936,6 +936,11 @@ namespace TowseyLibrary
             // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
             // Slope categories are 0 to 3.
             // We calculate the ridge magnitude for each possible ridge direction using masks.
+            // 0 = ridge direction = horizontal or slope = 0;
+            // 1 = ridge is positive slope or pi/4
+            // 2 = ridge is vertical or pi/2
+            // 3 = ridge is negative slope or 3pi/4. 
+
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -2233,6 +2238,46 @@ namespace TowseyLibrary
         public static void DrawReversedMatrix(double[,] matrix, string pathName)
         {
             Image bmp = DrawReversedMatrix(matrix);
+            bmp.Save(pathName);
+        }
+
+        public static double[,] ByteMatrix2DoublesMatrix(byte[,] mb)
+        {
+            int rows = mb.GetLength(0); //number of rows
+            int cols = mb.GetLength(1); //number
+
+            double[,] matrix = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    matrix[r, c] = (double)mb[r, c];
+                }
+            }
+                    return matrix;
+        }
+
+
+        public static void DrawMatrix(byte[,] mBytes, string pathName)
+        {
+            double[,] matrix = ByteMatrix2DoublesMatrix(mBytes);
+            Image bmp = DrawNormalisedMatrix(matrix);
+            bmp.Save(pathName);
+        }
+
+        /// <summary>
+        /// Draws matrix and save image
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawMatrix(double[] vector, string pathName)
+        {
+            double[,] matrix = new double[1, vector.Length];
+            for (int i = 0; i < vector.Length; i++)
+            {
+                matrix[0, i] = vector[i];
+            }
+            Image bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
         /// <summary>

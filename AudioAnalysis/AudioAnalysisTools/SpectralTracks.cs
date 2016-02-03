@@ -41,23 +41,20 @@ namespace AudioAnalysisTools
         /// <param name="binWidth"></param>
         /// <param name="threshold"></param>
         /// <returns></returns>
-        public SpectralPeakTracks(double[,] dBSpectrogram, double framesPerSecond, double dBThreshold)
+        public SpectralPeakTracks(double[,] dBSpectrogram, double framesPerSecond, double peakThreshold, double ridgeThreshold)
         {
-            var rowCount = dBSpectrogram.GetLength(0);
-            var colCount = dBSpectrogram.GetLength(1);
-            GetPeakTracksSpectrum(dBSpectrogram, dBThreshold);
+            GetPeakTracksSpectrum(dBSpectrogram, peakThreshold);
 
-            GetRidgeSpectra(dBSpectrogram, dBThreshold);
-
+            GetRidgeSpectra(dBSpectrogram, ridgeThreshold);
         }
 
-        public void GetRidgeSpectra(double[,] dbSpectrogramData, double dBThreshold)
+        public void GetRidgeSpectra(double[,] dbSpectrogramData, double ridgeThreshold)
         {
-            var rowCount = dbSpectrogramData.GetLength(0);
-            var colCount = dbSpectrogramData.GetLength(1);
+            int rowCount = dbSpectrogramData.GetLength(0);
+            int colCount = dbSpectrogramData.GetLength(1);
+            int spanCount = rowCount - 5; 
 
 
-            double ridgeThreshold = 1.0;
             double[,] matrix = dbSpectrogramData;
             //double[,] matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
             // returns a byte matrix of ridge directions
@@ -66,18 +63,26 @@ namespace AudioAnalysisTools
             // 2 = ridge is positive slope or pi/4
             // 3 = ridge is vertical or pi/2
             // 4 = ridge is negative slope or 3pi/4. 
-            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
+            //byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
+            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection(matrix, ridgeThreshold);
+
+            //image for debugging
+            //ImageTools.DrawMatrix(hits, @"C:\SensorNetworks\Output\BAC\HiResRidge\hitsSpectrogram.png");
+
 
             double[] spectrum = new double[colCount];
             byte[] freqBin;
 
-            // accumulate info for the horizontal ridges
+            //Now aggregate hits to get ridge info
+            //note that the Spectrograms were passed in flat-rotated orientation.
+            //Therefore need to assign ridge number to re-oriented values. 
+            // Accumulate info for the horizontal ridges
             for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
             {
                 freqBin = MatrixTools.GetColumn(hits, col);
-                int count = freqBin.Count(x => x==1);
-                if (count < 3) continue; // i.e. not a track.
-                spectrum[col] = count / (double)rowCount;
+                int count = freqBin.Count(x => x==3);
+                if (count < 2) continue; // i.e. not a track.
+                spectrum[col] = count / (double)spanCount;
             }
             this.RhzSpectrum = spectrum;
 
@@ -86,9 +91,9 @@ namespace AudioAnalysisTools
             for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
             {
                 freqBin = MatrixTools.GetColumn(hits, col);
-                int count = freqBin.Count(x => x==3);
-                if (count < 3) continue; // i.e. not a track.
-                spectrum[col] = count / (double)rowCount;
+                int count = freqBin.Count(x => x==1);
+                if (count < 2) continue; // i.e. not a track.
+                spectrum[col] = count / (double)spanCount;
             }
             this.RvtSpectrum = spectrum;
 
@@ -97,9 +102,9 @@ namespace AudioAnalysisTools
             for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
             {
                 freqBin = MatrixTools.GetColumn(hits, col);
-                int count = freqBin.Count(x => x==2);
-                if (count < 2) continue; // i.e. not a track.
-                spectrum[col] = count / (double)rowCount;
+                int count = freqBin.Count(x => x==4);
+                //if (count < 2) continue; // i.e. not a track.
+                spectrum[col] = count / (double)spanCount;
             }
             this.RpsSpectrum = spectrum;
             // accumulate info for the down slope ridges
@@ -107,9 +112,9 @@ namespace AudioAnalysisTools
             for (int col = 0; col < colCount; col++) // i.e. for each frequency bin
             {
                 freqBin = MatrixTools.GetColumn(hits, col);
-                int count = freqBin.Count(x => x==4);
-                if (count < 2) continue; // i.e. not a track.
-                spectrum[col] = count / (double)rowCount;
+                int count = freqBin.Count(x => x==2);
+                //if (count < 2) continue; // i.e. not a track.
+                spectrum[col] = count / (double)spanCount;
             }
             this.RngSpectrum = spectrum;
 

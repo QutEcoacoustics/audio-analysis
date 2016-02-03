@@ -585,7 +585,7 @@ RHZ:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 0.8
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -596,8 +596,8 @@ RVT:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 1.0
+  NormMin: 0.1
+  NormMax: 0.4
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -609,7 +609,7 @@ RPS:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 0.4
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -621,7 +621,7 @@ RNG:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.5
+  NormMax: 0.4
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

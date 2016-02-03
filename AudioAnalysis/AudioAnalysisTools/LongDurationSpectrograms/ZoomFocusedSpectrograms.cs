@@ -224,6 +224,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 spectra,
                 basename);
 
+            if (LDSpectrogram == null)
+            {
+                LoggedConsole.WriteLine("WARNING: NO SPECTROGRAM AT SCALE "+ imageScale);
+                return null;
+            }
+
+
             // now chrome spectrogram
             Graphics g2 = Graphics.FromImage(LDSpectrogram);
 
@@ -318,6 +325,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     imageScale,
                     dataScale);
             }
+            // check that have not compressed matrices to zero length
+            // Assume that will always have an ACI matrix
+            if((spectralSelection["ACI"].GetLength(0) == 0)||(spectralSelection["ACI"].GetLength(1) == 0))
+                return null;
+
 
             // DEFINE the DEFAULT colour maps for the false-colour spectrograms
             // Then obtain values from spectrogramDrawingConfig. NOTE: WE REQUIRE LENGTH = 11 chars.

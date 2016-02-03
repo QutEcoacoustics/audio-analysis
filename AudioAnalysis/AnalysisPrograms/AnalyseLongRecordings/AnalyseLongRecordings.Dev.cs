@@ -47,9 +47,11 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // audio2csv  "Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010" 
 
             // ARTIFICIAL TEST RECORDING
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
             //string outputPath    = @"C:\SensorNetworks\Output\FalseColourSpectrograms";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_1min_artificial.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Test\Test";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
@@ -57,12 +59,15 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // KOALA RECORDINGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"; //2 min recording
             //string recordingPath = @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3";
+            //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\HiRes";
 
             // TUI TERRACE RECORDINGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_TUITCE_20091215_220004.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_Dec2013";
             //string outputPath    = @"C:\SensorNetworks\Output\LSKiwi3\Test_07April2014";
+            //string outputPath = @"C:\SensorNetworks\Output\Test\TestKiwi";
+
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004.wav";
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
@@ -88,8 +93,12 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string outputPath = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016";
 
             // BAC recordings
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav";
-            string outputPath    = @"C:\SensorNetworks\Output\BAC\HiRes";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-085040.wav";
+            //string outputPath    = @"C:\SensorNetworks\Output\BAC\";
+
+            //BIRD50 recordings from Herve Glotin
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_testing_input\ID1268.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\BIRD50\";
 
             // EASTERN BRISTLE BIRD
             //string recordingPath = @"F:\SensorNetworks\WavFiles\EasternBristlebird\CURRUMBIN_20150529-142503+1000.wav";
