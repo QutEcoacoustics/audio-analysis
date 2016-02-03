@@ -142,6 +142,7 @@
     <Compile Include="AnalysisResult.cs" />
     <Compile Include="AnalysisResult2.cs" />
     <Compile Include="AnalysisSettings.cs" />
+    <Compile Include="AudioRecordingTooShortException.cs" />
     <Compile Include="FileSegment.cs" />
     <Compile Include="IAnalyser.cs" />
     <Compile Include="IAnalyser2.cs" />

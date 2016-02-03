@@ -165,6 +165,18 @@ namespace AnalysisBase
             // calculate the sub-segments of the given file segments that match what the analysis expects.
             var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
 
+            // do not allow the program to continue
+            // if there are no possible segments to process because the orginal file
+            // is too short.
+            var tooShort = fileSegments.FirstOrDefault(fileSegment => fileSegment.OriginalFileDuration < settings.SegmentMinDuration);
+            if (tooShort != null)
+            {
+                Log.Fatal("Provided audio recording is too short too analyze!");
+                throw new AudioRecordingTooShortException(
+                    "{0} is too short to analyze with current analysisSettings.SegmentMinDuration ({1})"
+                    .Format2(tooShort.OriginalFile.FullName, settings.SegmentMinDuration));
+            }
+
             // check last segment and remove if too short
             var finalSegment = analysisSegments[analysisSegments.Count() - 1];
             var duration = finalSegment.SegmentEndOffset - finalSegment.SegmentStartOffset;
