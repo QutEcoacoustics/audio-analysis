@@ -430,13 +430,21 @@ namespace AudioAnalysisTools.Indices
             ridgeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(ridgeSpectrogram, nhDecibelThreshold);
 
             double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
-            dBThreshold = 3.0;
-            var sptInfo = new SpectralPeakTracks(ridgeSpectrogram, framesStepsPerSecond, dBThreshold);
+
+            // thresholds in decibels
+            double peakThreshold  = 4.0;
+            double ridgeThreshold = 4.0;
+            var sptInfo = new SpectralPeakTracks(ridgeSpectrogram, framesStepsPerSecond, peakThreshold, ridgeThreshold);
             spectralIndices.SPT = sptInfo.SptSpectrum;
             spectralIndices.RHZ = sptInfo.RhzSpectrum;
             spectralIndices.RVT = sptInfo.RvtSpectrum;
             spectralIndices.RPS = sptInfo.RpsSpectrum;
             spectralIndices.RNG = sptInfo.RngSpectrum;
+
+            //images for debugging
+            //ImageTools.DrawMatrix(dspOutput3.amplitudeSpectrogram, @"C:\SensorNetworks\Output\BAC\HiResRidge\dspOutput3.amplitudeSpectrogram.png");
+            //ImageTools.DrawMatrix(ridgeSpectrogram,                @"C:\SensorNetworks\Output\BAC\HiResRidge\ridgeSpectrogram.png");
+            //ImageTools.DrawMatrix(sptInfo.RvtSpectrum,             @"C:\SensorNetworks\Output\BAC\HiResRidge\ridgeSpectrum.png");
 
             summaryIndices.SptDensity = sptInfo.TrackDensity;
             //summaryIndices.AvgSptDuration = sptInfo.AvTrackDuration;

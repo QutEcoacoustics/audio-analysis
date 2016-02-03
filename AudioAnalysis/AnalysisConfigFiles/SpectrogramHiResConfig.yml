@@ -1,6 +1,6 @@
 ---
 UnitsOfTime: "second"
-SpectralFrameDuration: 0.02
+# SpectralFrameDuration: 0.02
 TileWidth: 300
 # How to tile, valid values:
 # - PanoJsTilingProfile
@@ -23,7 +23,8 @@ MaxTilesPerSuperTile: 12
 UseDistributionsForNormalization: false
 LdSpectrogramConfig:
     ColorMap1: "ACI-ENT-EVN"
-    ColorMap2: "BGN-RHZ-RVT"
+    #ColorMap2: "BGN-POW-EVN"
+    ColorMap2: "RHZ-RVT-SPT"
     # minutes
     XAxisTicInterval: 60
     # Hertz

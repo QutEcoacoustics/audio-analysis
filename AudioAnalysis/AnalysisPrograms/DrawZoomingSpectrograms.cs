@@ -96,11 +96,17 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016\SpectrogramFocalZoom";
             //string opdir = @"C:\SensorNetworks\Output\KoalaMale\StBeesIndices2016";
 
+            // TEST recordings
+            //string ipdir = @"C:\SensorNetworks\Output\Test\Test\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\Test\TestHiResRidge";
 
             // BAC
-            string ipdir = @"C:\SensorNetworks\Output\BAC\HiRes\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\BAC\HiRes";
+            //string ipdir = @"C:\SensorNetworks\Output\BAC\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\BAC\HiResRidge";
 
+            // BIRD50
+            string ipdir = @"C:\SensorNetworks\Output\BIRD50\Towsey.Acoustic";
+            string opdir = @"C:\SensorNetworks\Output\BIRD50";
 
             // ECLIPSE FARMSTAY
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Eclipse\EclipseFarmstay.200ms\Towsey.Acoustic";
@@ -125,6 +131,7 @@ namespace AnalysisPrograms
             var opDir = new DirectoryInfo(opdir);
 
             //string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramScalingConfig.json";
+            //string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
             string config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
 
 
@@ -179,7 +186,7 @@ namespace AnalysisPrograms
 
             //#################################
             // CHECK THIS CHANGE WITH ANTHONY
-            indexPropertiesPath = arguments.SpectrogramTilingConfig;
+            //indexPropertiesPath = arguments.SpectrogramTilingConfig;
 
             Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
             common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);

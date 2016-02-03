@@ -125,14 +125,22 @@ namespace AudioAnalysisTools
             return hits;
         }
 
+        /// <summary>
+        /// Returns a byte matrix of ridge directions
+        /// 0 = no ridge detected or below magnitude threshold.
+        /// 1 = ridge direction = horizontal or slope = 0;
+        /// 2 = ridge is positive slope or pi/4
+        /// 3 = ridge is vertical or pi/2
+        /// 4 = ridge is negative slope or 3pi/4. 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="magnitudeThreshold"></param>
+        /// <returns></returns>
         public static byte[,] Sobel5X5RidgeDetectionExperiment(double[,] matrix, double magnitudeThreshold)
         {
-            //int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
-            //double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int halfLength = 2; // = 5/2
-            //double halfThreshold = magnitudeThreshold * 1.0;
 
             //A: Init MATRIX FOR INDICATING SPECTRAL RIDGES
             var directions = new byte[rows, cols];
