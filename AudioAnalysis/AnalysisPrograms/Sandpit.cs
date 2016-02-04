@@ -300,7 +300,7 @@ namespace AnalysisPrograms
 
 
             // Concatenate marine spectrogram ribbons and add tidal info if available.
-            if (true)
+            if (false)
             {
 
                 DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
@@ -352,7 +352,138 @@ namespace AnalysisPrograms
             }
 
 
-            Console.WriteLine("# Finished!");
+
+
+
+            // Combined audio2csv + zooming spectrogram task.
+            // This is used to analyse Herve Glotin's BIRD50 data set.
+            if (true)
+            {
+                // ############################# IMPORTANT ########################################
+                // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
+                // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),  
+                // to                SegmentMinDuration = TimeSpan.FromSeconds(1),
+                // THIS iS to analyse BIRD50 short recordings.
+
+
+                DirectoryInfo dataDir = new DirectoryInfo(@"F:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_training_input");
+                //DirectoryInfo dataDir = new DirectoryInfo(@"F:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_testing_input");
+
+                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
+                string csvOutputDir  = @"C:\SensorNetworks\Output\BIRD50\Test";
+                string zoomInputDir  = @"C:\SensorNetworks\Output\BIRD50\Test\Towsey.Acoustic";
+                string zoomOutputDir = @"C:\SensorNetworks\Output\BIRD50\Test";
+                FileInfo[] wavFiles = { new FileInfo(recordingPath) };
+
+                string audio2csvConfigPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
+                string hiResZoomConfigPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
+
+                // comment next two lines when debugging a sinle recording file
+                string match = @"*.wav";
+                wavFiles = dataDir.GetFiles(match, SearchOption.AllDirectories);
+
+
+
+                //LOOP THROUGH ALL WAV FILES
+                for(int i = 390; i < wavFiles.Length; i++)
+                {
+                    FileInfo file = wavFiles[i];
+                    recordingPath = file.FullName;
+                    string name = Path.GetFileNameWithoutExtension(file.FullName);
+                    csvOutputDir = @"C:\SensorNetworks\Output\BIRD50\"+name;
+                    zoomInputDir = @"C:\SensorNetworks\Output\BIRD50\" + name + @"\Towsey.Acoustic";
+                    zoomOutputDir = csvOutputDir;
+                    Console.WriteLine("\n\n");
+                    Console.WriteLine(String.Format(@">>>>{0}: File<{1}>", i, name));
+
+                    try
+                    {
+                        // A: analyse the recording files == audio2csv.
+                        var audio2csvArguments = new AnalyseLongRecordings.AnalyseLongRecording.Arguments
+                        {
+                            Source = recordingPath.ToFileInfo(),
+                            Config = audio2csvConfigPath.ToFileInfo(),
+                            Output = csvOutputDir.ToDirectoryInfo()
+                        };
+
+                        if (!audio2csvArguments.Source.Exists)
+                        {
+                            LoggedConsole.WriteWarnLine(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
+                        }
+                        if (!audio2csvArguments.Config.Exists)
+                        {
+                            LoggedConsole.WriteWarnLine(" >>>>>>>>>>>> WARNING! The Configuration file cannot be found! This will cause an exception.");
+                        }
+                        AnalyseLongRecordings.AnalyseLongRecording.Execute(audio2csvArguments);
+
+
+                        // B: Concatenate the summary indices and produce images
+                        // Use the Zoomingspectrograms action.
+
+                        // need to find out how long the recording is.
+                        string fileName = Path.GetFileNameWithoutExtension(audio2csvArguments.Source.FullName);
+                        fileName += @"__Towsey.Acoustic.ACI.csv";
+                        List<string> data = FileTools.ReadTextFile(Path.Combine(zoomInputDir, fileName));
+                        int lineCount = data.Count - 1;  // -1 for header.
+                        int imageWidth = lineCount;
+                        //assume scale is index calculation duration = 0.1s
+                        // i.e. image resolution  0.1s/px.
+                        double focalMinute = (double)lineCount / 600 / 2;
+                        if (focalMinute < 0.016666) focalMinute = 0.016666; // shortest recording = 1 second.
+
+
+
+                        var zoomingArguments = new DrawZoomingSpectrograms.Arguments
+                        {
+                            // use the default set of index properties in the AnalysisConfig directory.
+                            SourceDirectory = zoomInputDir.ToDirectoryInfo(),
+                            Output = zoomOutputDir.ToDirectoryInfo(),
+                            SpectrogramTilingConfig = hiResZoomConfigPath.ToFileInfo(),
+
+                            // draw a focused multi-resolution pyramid of images
+                            ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Focused,
+                            //FocusMinute = (int)focalMinute,
+                        };
+
+                        LoggedConsole.WriteLine("# Spectrogram Zooming config  : " + zoomingArguments.SpectrogramTilingConfig);
+                        LoggedConsole.WriteLine("# Input Directory             : " + zoomingArguments.SourceDirectory);
+                        LoggedConsole.WriteLine("# Output Directory            : " + zoomingArguments.Output);
+
+                        var common = new ZoomCommonArguments();
+                        common.SuperTilingConfig = Yaml.Deserialise<SuperTilingConfig>(zoomingArguments.SpectrogramTilingConfig);
+                        var indexPropertiesPath = IndexProperties.Find(common.SuperTilingConfig, zoomingArguments.SpectrogramTilingConfig);
+                        LoggedConsole.WriteLine("Using index properties file: " + indexPropertiesPath.FullName);
+                        common.IndexProperties = IndexProperties.GetIndexProperties(indexPropertiesPath);
+
+                        // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
+                        common.CheckForNeededFiles(zoomingArguments.SourceDirectory);
+                        // Create directory if not exists
+                        if (!zoomingArguments.Output.Exists)
+                        {
+                            zoomingArguments.Output.Create();
+                        }
+
+                        ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(zoomingArguments.SourceDirectory,
+                                                                              zoomingArguments.Output,
+                                                                              common,
+                                                                              TimeSpan.FromMinutes(focalMinute),
+                                                                              imageWidth);
+                    } // try block
+                    catch(Exception e)
+                    {
+                        LoggedConsole.WriteErrorLine(String.Format("ERROR!!!!! RECORDING {0}   FILE {1}", i, name));
+                        LoggedConsole.WriteErrorLine(String.Format(e.ToString()));
+
+                    }
+
+                } // end loop through all wav files
+             
+
+            }  // END combined audio2csv + zooming spectrogram task.
+
+
+
+            Console.WriteLine("# Finished Sandpit Task!");
             Console.ReadLine();
             System.Environment.Exit(0);
         }

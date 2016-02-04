@@ -645,7 +645,7 @@ namespace AnalysisPrograms
                 return new AnalysisSettings
                 {
                     SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(20),
+                    SegmentMinDuration = TimeSpan.FromSeconds(1),
                     SegmentMediaType = MediaTypes.MediaTypeWav,
                     SegmentOverlapDuration = TimeSpan.Zero,
                     SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
