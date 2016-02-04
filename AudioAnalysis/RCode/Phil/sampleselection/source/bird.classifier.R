@@ -17,12 +17,16 @@
 #
 
 
+
 BirdClassifier <- function () {
     # do all the steps needed for for bird classifier
     seconds <- BuildSecondList()
     seconds <- CalculateAnnotationCover(seconds)
     seconds <- CalculateHasBird(seconds)
     features <- CalculateBirdFeatures(seconds)
+    corr <- GetCorrelations(seconds, features)
+    features <- KeepSelectedFeatures(features)
+    PlotFeatures(features, seconds)
     model <- ClassifySeconds(seconds, features)
 }
 
@@ -36,7 +40,7 @@ ClassifySeconds <- function (seconds, features) {
     # is this right??
     # features <- ScaleDf(features)
     
-    data <- cbind(features, seconds$has.bird)
+    data <- as.data.frame(cbind(features, seconds$has.bird))
     colnames(data) <- c(colnames(features), 'has.bird')
     
     # 10% for testing
@@ -50,21 +54,112 @@ ClassifySeconds <- function (seconds, features) {
     
     model <- glm(has.bird ~.,family=binomial(link='logit'),data=train)
     summary(model)
-    return(model)
+    
+    test.results <- predict(model,newdata=test,type='response')
+    test.results <- ifelse(test.results > 0.5,1,0)
+    
+    misClasificError <- mean(test.results != test$has.bird)
+    print(paste('Accuracy',1-misClasificError))
+    
+    fitted.results <- predict(model,newdata=data,type='response')
+    fitted.results <- ifelse(fitted.results > 0.5,1,0)
+    
+    seconds$classified.has.bird <- fitted.results
+    seconds$is.train <- train.selection
+    return(seconds)
+    
+}
+
+InspectClassifiaction <- function (seconds) {
+    # creates a composite image with 2 rows of 1 sec spectrograms
+    # top row is seconds classified as having bird
+    # bottom row is seconds classified as not having bird
+    # from the test set
+    
+    # use only the testing
+    seconds <- seconds[!seconds$is.train,]
+    
+    
+    has.bird <- NULL
+    no.bird <- NULL
+    
+    for (s in 1:nrow(seconds)) {
+        
+        # create the spectrogram for this second
+        spectro <- Sp.CreateFromFile(path = AudioPath(seconds$wav.file[s]),
+                                     offset = seconds$file.sec[s],
+                                     duration = 1
+        )
+        
+        if (seconds$classified.has.bird[s]) {
+            has.bird <- cbind(has.bird, spectro$vals)
+        } else {
+            no.bird <- cbind(no.bird, spectro$vals)
+        }
+        
+    }
+    
+    # merge rows into 1
+    # we don't know wide either one is so find the wider one
+    width <- max(ncol(has.bird), ncol(no.bird))
+    height <- nrow(has.bird) + nrow(no.bird) + 1
+    
+    canvas <- matrix(0, nrow = height, ncol = width)
+    canvas[1:nrow(has.bird),1:ncol(has.bird)] <- has.bird
+    canvas[1:nrow(no.bird)+nrow(has.bird)+1,1:ncol(no.bird)] <- no.bird
+    
+    Sp.DrawVals(canvas, 1)
+    
+    
     
     
 }
 
 
-GetCorrelations <- function (seconds, features) {
+KeepSelectedFeatures <- function (f) {
+    # keep only the best features
+    selection <- c('H1m.nr', 'mm2.nr', 'sd.nr', 'amd.2.nr')
+    f <- f[,selection]
+    return(f)
+}
+
+
+GetCorrelations <- function (seconds, features, versions = c('wn', 'nr')) {
     # for each feature, find the correlation (absolute) 
     # between it and the bird cover for that second
     corrs <- apply(features, 2, function (col) {
         # TODO: significance??
         return(cor(seconds$bird.cover, col))
     })
+    
+    row.names <- names(corrs[1:(length(corrs)/length(versions))])
+    corrs <- matrix(corrs, ncol = length(versions), byrow = FALSE)
+    colnames(corrs) <- versions
+    rownames(corrs) <- row.names
 
     return(corrs)
+    
+}
+
+SelectFeatures <- function (seconds, features, num = 2) {
+    # given the correlations between features and bird cover, 
+    # selects the best features. 
+    # these will be the ones with the highest correlation for each 
+    # version. E.g. if there are different features for different levels of noise removal
+    # will choose exactly one of each feature
+    
+    correlations <- abs(GetCorrelations(seconds, features))
+    
+    # put correlations into matrix where rows are features and columns are using different preprocessing
+    corr.matrix = matrix(correlations, ncol = num, byrow = FALSE)
+    names.matrix = matrix(names(correlations), ncol = num, byrow = FALSE)
+    
+    best.col <- apply(corr.matrix, 1, which.max)
+    best <- matrix(c(1:nrow(corr.matrix), best.col), byrow = FALSE, ncol = 2)
+    
+    selected <- names.matrix[best]
+    
+    return(features[,selected])
     
 }
 
@@ -80,10 +175,13 @@ ScaleDf <- function (df) {
 
 PlotSeconds <- function (x, y, class) {
     plot(x, y, col=c("red","blue")[as.numeric(class)+1])
+    
+    print(paste("correlation:", cor(x, y)))
+    
 }
 
 
-PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spectro.size = .5, scale = TRUE) {
+PlotFeatures <- function (seconds, features, range = 1:30, section = NULL, spectro.size = .5, scale = TRUE) {
     # spectro.size: float [0,1]; the fraction of the vertical height of the graph to use for the spectrogram
     # 0.5 means that it will be half the size of the graph, or 1/3 of the total size
 
@@ -112,7 +210,7 @@ PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spect
     wav.fn <- unique(seconds$wav.file[range])
     if (length(wav.fn) == 1) {
         # if the range covers exactly 1 wave file
-        spectro <- Sp.CreateFromFile(wav.fn)
+        spectro <- Sp.CreateFromFile(AudioPath(wav.fn))
         sv <- PreprocessSpectroVals(spectro$vals)
         
         x <- 1:ncol(sv) * (w / ncol(sv)) + 0.5
@@ -129,7 +227,11 @@ PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spect
         points(features[range, cn[f]], col = colors[f])
         lines(features[range, cn[f]], col = colors[f], lwd= 5)
     }
-    legend("bottomright", legend = cn, col = colors, pch = 1)
+    
+    corr <- round(GetCorrelations(seconds, features), 3)
+    corr.range <- round(GetCorrelations(seconds[range,], features[range, ]), 3)
+    legend.names <- paste0(cn, "(", corr, ' | ', corr.range, ")")
+    legend("bottomright", legend = legend.names, col = colors, pch = 1)
     
     
     # plot the bird cover below
@@ -138,10 +240,26 @@ PlotFeatures <- function (features, seconds, range = 1:30, section = NULL, spect
     plot(seconds$bird.cover[range], ylab = 'number of seconds of annotation cover', xlab = 'seconds', col = colors[2], type = 'b', oma=c(1,1,0,1))
     #points(seconds$bird.cover.1[range], col = colors[1])
     #lines(seconds$bird.cover.1[range], col = colors[1])
+    
+
+    
     for (grid in 0:w) {
         abline(v = grid + 0.5, col = 'darkgrey')
         abline(v = grid + 0.5, col = 'white', lty = 2)
     } 
+    
+    if(!"classified.has.bird" %in% colnames(seconds)) {
+        seconds$classified.has.bird <- 0
+    } 
+    for (sec in 1:w) {
+        if (seconds$classified.has.bird[range][sec] > 0) {
+            rect(sec + 0.5, 0.9, sec+1.5, 1.1, col=rgb(1, 0, 0, alpha=0.5), density = NULL, border = NULL, lty = par("lty"), lwd = par("lwd"))
+        } 
+    }
+    
+    
+    
+    
     old.par <- par(old.par)
     
 }
@@ -158,33 +276,43 @@ PreprocessSpectroVals <- function (m) {
     
 }
 
+AudioPath <- function (fn, input.directory = "/Users/n8933464/Documents/SERF/mtlewis") {
+    af.path <- file.path(input.directory, 'wav', fn)
+    return(af.path)
+}
 
 
-CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/Documents/SERF/mtlewis") {
+CalculateBirdFeatures <- function (seconds) {
     
-    # go audio file by audio file
+    # all features are done on noise-reduced spectrogram except average of entropies (entropy then average)
+    feature.names <- c('Ht1', # Ht1 = temporal.entropy (average then entropy)
+                       'Hf1',  # Hf1 = spectral.entropy (average then entropy)
+                       'Ht2', # Ht2 = temporal.entropy (entropy then average) !
+                       'Hf2', # Hf2 = spectral.entropy (entropy then entropy) !
+                       'H1m', # H1m = max of Ht2 and Hf2
+                       'H2m', # H2m = max of Ht2 and Hf2
+                       'mm1', # mm1 = abs(mean - median of second)
+                       'mm2', # mm2 = mean - median of 30 seconds
+                       'sd', # sd = standard deviation of values in the second
+                       'amd.1', # amd.1 = average distance from median
+                       'amd.2')    # amd.2 = average distance from the 30 second median
     
-    # Ht1 = temporal.entropy (average then entropy)
-    # Hf1 = spectral.entropy (average then entropy)
-    # Ht2 = temporal.entropy (entropy then average)
-    # Hf2 = spectral.entropy (entropy then entropy)
-    # H2m = max of Ht2 and Hf2
-    # mm1 = abs(mean - median of second)
-    # mm2 = mean - median of 30 seconds
-    # sd = standard deviation of values in the second
-    # amd.1 = average difference from median
-    # amd.2 = average difference from the 30 second median
-    
+     
     empty <- rep(NA, nrow(seconds))
     
-    feature.names <- c('Ht1', 'Hf1', 'Ht2', 'Hf2', 'H1m', 'H2m', 'mm1', 'mm2', 'sd', 'amd.1', 'amd.2')
-    features <- matrix(rep(NA, length(feature.names)*nrow(seconds)), ncol = length(feature.names))
-    colnames(features) <- feature.names
+
+    empty.features <- matrix(rep(NA, length(feature.names)*nrow(seconds)), ncol = length(feature.names))
+    colnames(empty.features) <- feature.names
+    
+    features <- list(features.wn = empty.features,
+                     features.nr = empty.features)
+    
+    
+
     audio.files <- unique(seconds$wav.file)
     for (af in audio.files) {
-        af.path <- file.path(input.directory, 'wav', af)
+        af.path <- AudioPath(af)
         spectro <- Sp.CreateFromFile(af.path)
-        
         
         seconds.selection <- seconds$wav.file == af
         af.seconds <- seconds[seconds.selection, ]
@@ -194,67 +322,80 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
             stop('something went wrong')
         }
         
-        # noise removal
-        spectro.vals <- PreprocessSpectroVals(spectro$vals)
-        
-        
         # chop the spectrogram into bits
-        second.width <- ncol(spectro.vals) / num.secs
+        second.width <- ncol(spectro$vals) / num.secs
         
-        median.spectro.vals <- median(spectro.vals)
+        # noise removal
+        spectro.vals.wn <- Normalize(spectro$vals)
+        spectro.vals.wn <- NormaliseSpectrumNoise(spectro.vals.wn)
+        spectro.vals.wn <- Blur(spectro.vals.wn)
         
-        for (sec in 1:num.secs) {
-            
-            # row of seconds df
-            cur.sec <- which(seconds.selection)[sec]
-            
-            # spectro column offset of current second in the file spectrogram
-            start.offset <- floor((sec-1)*second.width)
-            end.offset <- floor((sec)*second.width)
-            cur.sec.spectro.vals <- spectro.vals[,start.offset:end.offset]
-            
-            H1 <- GetEntropy1(cur.sec.spectro.vals)
-            features[cur.sec, 'Ht1'] <- 1 - H1$Ht
-            features[cur.sec, 'Hf1'] <- 1 - H1$Hf
-            
-            H2 <- GetEntropy2(cur.sec.spectro.vals)
-            features[cur.sec, 'Ht2'] <- 1 - H2$Ht
-            features[cur.sec, 'Hf2'] <- 1 - H2$Hf
-            
+        # noise-removed version (not suitable for H-then-mean versions of entropy, only for mean-then-H)
+        spectro.vals.nr <- MedianSubtraction(spectro.vals.wn)
+        spectro.vals.nr <- Blur(spectro.vals.nr)
+        spectro.vals.nr <- MedianSubtraction(spectro.vals.nr)
+        spectro.vals.nr <- Blur(spectro.vals.nr)
 
+        
+        # list of two spectrograms: with noise and noise removed
+        spectro.vals.list <- list(wn = spectro.vals.wn, 
+                             nr = spectro.vals.nr)
+        
+        # for each of with noise and noise removed:
+        for (sv in 1:length(spectro.vals.list)) {
             
-            mean.val <- mean(cur.sec.spectro.vals)
-            med.val <- median(cur.sec.spectro.vals)
+            spectro.vals <- spectro.vals.list[[sv]]
             
-            features[cur.sec, 'mm1'] <- abs(mean.val - med.val)
+            # median of 30 sec file
+            median.spectro.vals <-  median(spectro.vals)
             
-            # this one should not be absolute, because on busy 30 seconds,
-            # median might be greater than mean of silent second
-            features[cur.sec, 'mm2'] <- mean.val - median.spectro.vals
-            
-            
-            # the mean squared 
-            features[cur.sec, 'sd'] <- sd(cur.sec.spectro.vals)
-            
-            # mean distance from the median
-            features[cur.sec, 'amd.1'] <- mean(abs(cur.sec.spectro.vals - med.val))
-            features[cur.sec, 'amd.2'] <- mean(abs(cur.sec.spectro.vals - median.spectro.vals))
-            
-
-            #if (seconds$bird.cover.1[cur.sec] == 0.0 && mm1 > 0.004 || seconds$bird.cover.1[cur.sec] == 1 && mm1 < 0.004) {
+            for (sec in 1:num.secs) {
+                
+                # row of seconds df
+                cur.sec <- which(seconds.selection)[sec]
+                
+                # spectro column offset of current second in the file spectrogram
+                start.offset <- floor((sec-1)*second.width)
+                end.offset <- floor((sec)*second.width)
+                
+                cur.sec.spectro.vals <- spectro.vals[,start.offset:end.offset]
+                
+                H1 <- GetEntropy1(cur.sec.spectro.vals)
+                features[[sv]][cur.sec, 'Ht1'] <- 1 - H1$Ht
+                features[[sv]][cur.sec, 'Hf1'] <- 1 - H1$Hf
+                
+                H2 <- GetEntropy2(cur.sec.spectro.vals)
+                features[[sv]][cur.sec, 'Ht2'] <- 1 - H2$Ht
+                features[[sv]][cur.sec, 'Hf2'] <- 1 - H2$Hf
+                
+                # mean/median of current second
+                mean.val <- mean(cur.sec.spectro.vals)
+                med.val <- median(cur.sec.spectro.vals)
+                
+                features[[sv]][cur.sec, 'mm1'] <- abs(mean.val - med.val)
+                
+                # this one should not be absolute, because on busy 30 seconds,
+                # median might be greater than mean of silent second
+                features[[sv]][cur.sec, 'mm2'] <- mean.val - median.spectro.vals
+                
+                features[[sv]][cur.sec, 'sd'] <- sd(cur.sec.spectro.vals)
+                
+                # mean distance from the median
+                features[[sv]][cur.sec, 'amd.1'] <- mean(abs(cur.sec.spectro.vals - med.val))
+                features[[sv]][cur.sec, 'amd.2'] <- mean(abs(cur.sec.spectro.vals - median.spectro.vals))
+                
+                #if (seconds$bird.cover.1[cur.sec] == 0.0 && mm1 > 0.004 || seconds$bird.cover.1[cur.sec] == 1 && mm1 < 0.004) {
                 #debug
                 #msg <- paste(seconds[cur.sec, c('day','hour', 'min', 'sec', 'has.bird')], collapse = ':')
                 #print(paste(features[cur.sec, 'mm2'], ' : ', msg))
                 #image(t(cur.sec.spectro.vals))
                 #Dot()
-            #}
-            
-
-            
-            Dot()
+                #}
+                
+                Dot()
+            }
+        
         }
-        
-        
         
   
         
@@ -263,15 +404,20 @@ CalculateBirdFeatures <- function (seconds, input.directory = "/Users/n8933464/D
         
     }
     
-    # add combo features 
+    for (sv in 1:length(features)) {
+        
+        # add combo features 
+        features.s <- scale(features[[sv]])
+        features[[sv]][, 'H1m'] <- apply(cbind(features.s[, 'Ht1'], features.s[, 'Hf1']), 1, max)
+        features[[sv]][, 'H2m'] <- apply(cbind(features.s[, 'Ht2'], features.s[, 'Hf2']), 1, max)
+        
+    }
     
-    features.s <- scale(features)
+    colnames(features[[2]]) <- paste0(colnames(features[[2]]), '.nr')
     
     
-    features[, 'H1m'] <- apply(cbind(features.s[, 'Ht1'], features.s[, 'Hf1']), 1, max)
-    features[, 'H2m'] <- apply(cbind(features.s[, 'Ht2'], features.s[, 'Hf2']), 1, max)
-    
-    return(features)
+    return(cbind(features[[1]], features[[2]]))
+
     
 }
 
