@@ -366,7 +366,7 @@ namespace AnalysisPrograms
                 // THIS iS to analyse BIRD50 short recordings.
 
 
-                DirectoryInfo dataDir = new DirectoryInfo(@"F:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_training_input");
+                DirectoryInfo dataDir = new DirectoryInfo(@"D:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_training_input");
                 //DirectoryInfo dataDir = new DirectoryInfo(@"F:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_testing_input");
 
                 string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
@@ -385,13 +385,13 @@ namespace AnalysisPrograms
 
 
                 //LOOP THROUGH ALL WAV FILES
-                for(int i = 390; i < wavFiles.Length; i++)
+                for(int i = 401; i < wavFiles.Length; i++)
                 {
                     FileInfo file = wavFiles[i];
                     recordingPath = file.FullName;
                     string name = Path.GetFileNameWithoutExtension(file.FullName);
-                    csvOutputDir = @"C:\SensorNetworks\Output\BIRD50\"+name;
-                    zoomInputDir = @"C:\SensorNetworks\Output\BIRD50\" + name + @"\Towsey.Acoustic";
+                    csvOutputDir = @"C:\SensorNetworks\Output\BIRD50\Training\" + name;
+                    zoomInputDir = @"C:\SensorNetworks\Output\BIRD50\Training\" + name + @"\Towsey.Acoustic";
                     zoomOutputDir = csvOutputDir;
                     Console.WriteLine("\n\n");
                     Console.WriteLine(String.Format(@">>>>{0}: File<{1}>", i, name));
