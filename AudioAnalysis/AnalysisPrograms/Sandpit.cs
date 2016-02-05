@@ -352,12 +352,30 @@ namespace AnalysisPrograms
             }
 
 
+            // Concatenate twelve images for Simon and Toby
+            if (true)  // 
+            {
+                var imageDirectory = new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1Images");
+                var imageFiles = imageDirectory.GetFiles();
+                var imageList = new List<Image>();
+
+                foreach (FileInfo file in imageFiles)
+                {
+                    imageList.Add(Bitmap.FromFile(file.FullName));
+                }
+
+                Image combinedImage = ImageTools.CombineImagesInLine(imageList);
+
+                string fileName = String.Format("Site1.png");
+                combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
+            }
+
 
 
 
             // Combined audio2csv + zooming spectrogram task.
             // This is used to analyse Herve Glotin's BIRD50 data set.
-            if (true)
+            if (false)
             {
                 // ############################# IMPORTANT ########################################
                 // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648

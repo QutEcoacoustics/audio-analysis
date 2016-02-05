@@ -105,19 +105,19 @@ namespace AnalysisPrograms
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
 
-            // ########################## MARINE RECORDINGS          
-            // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            //// ########################## MARINE RECORDINGS          
+            //// top level directory
+            ////DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            ////                           };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
             //                           };
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
-                                       };
-            string directoryFilter = "201303";
-            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
-            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
-            dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
-            string opFileStem = "CornellMarine";
-            indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
+            //string directoryFilter = "201303";
+            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
+            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            //dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
+            //string opFileStem = "CornellMarine";
+            //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
 
 
             // ########################## YVONNE'S RECORDINGS          
@@ -231,6 +231,21 @@ namespace AnalysisPrograms
 
             // ########################## END of EDDIE GAME'S RECORDINGS
 
+            // ########################## GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS          
+            // top level directory
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            //                           };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1"),
+                                       };
+            string directoryFilter = "Site2";
+            string opPath = @"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings";
+            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
+            string opFileStem = "Site1_20150709";
+
+            // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
+
 
 
             bool drawImages = true;
@@ -256,7 +271,7 @@ namespace AnalysisPrograms
                 EndDate         = dtoEnd,
                 DrawImages      = drawImages,
                 IndexPropertiesConfig = indexPropertiesConfig,
-                ConcatenateEverythingYouCanLayYourHandsOn = false,
+                ConcatenateEverythingYouCanLayYourHandsOn = true,
             };
             throw new NoDeveloperMethodException();
     }
@@ -311,7 +326,7 @@ namespace AnalysisPrograms
             }
 
             // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES.
-            string pattern = "*__Towsey.Acoustic.Indices.csv";
+            string pattern = "*_Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
             if (verbose)
             {
@@ -377,6 +392,8 @@ namespace AnalysisPrograms
             {
                 // get the IndexGenerationData file from the first directory
                 indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory);
+                if (indexGenerationData.RecordingStartDate == null) indexGenerationData.RecordingStartDate = startDate;
+
                 indexPropertiesConfig = arguments.IndexPropertiesConfig;
             }
 
@@ -391,8 +408,21 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteErrorLine("       This option is only currently used for the TNC data of Eddie Game.");
                 // concatenate the summary index files
                 FileInfo[] files = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
-                LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                string dateString = String.Format("{0}{1:D2}{2:D2}", ((DateTimeOffset)startDate).Year, ((DateTimeOffset)startDate).Month, ((DateTimeOffset)startDate).Day);
+                DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
+                if (!resultsDir.Exists) resultsDir.Create();
+
+                Dictionary<string, double[,]> dict = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories, (DateTimeOffset)startDate);
+                LDSpectrogramStitching.DrawSpectralIndexFiles(dict,
+                                                              indexGenerationData,
+                                                              indexPropertiesConfig,
+                                                              resultsDir,
+                                                              siteDescription,
+                                                              null);
+
+
+                //LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
                 return;
             }
 

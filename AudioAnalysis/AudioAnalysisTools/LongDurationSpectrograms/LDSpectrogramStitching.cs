@@ -131,19 +131,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="dto"></param>
         /// <param name="keys"></param>
         /// <returns></returns>
-        public static Dictionary<string, double[,]> ConcatenateSpectralIndexFiles(DirectoryInfo[] topLevelDirectories,
-                                                         string filePrefix,
-                                                         DateTimeOffset dto,
-                                                         string[] keys)
+        public static Dictionary<string, double[,]> ConcatenateSpectralIndexFiles(DirectoryInfo[] topLevelDirectories, DateTimeOffset dto)
         {
             string analysisType = "Towsey.Acoustic";
+
+            string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN;
+            string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
 
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
             //string opFileStem = dateString;
             //if (filePrefix != null)
             //    opFileStem = String.Format("{0}_{1}", filePrefix, dateString);
 
-            string fileStemPattern = "*" + dateString + "*__" + analysisType;
+            string fileStemPattern = "*" + dateString + "*_" + analysisType;
             TimeSpan indexCalcDuration = TimeSpan.FromSeconds(60); // ASSUMPTION!!!
             var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys, indexCalcDuration);
             return dictionary;
@@ -369,7 +370,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // assume that the last 8 digits of the passed filename contain a date. 
             string date = opFileStem.Substring(opFileStem.Length - 8);
-            string fileStemPattern = date + "*__" + analysisType;
+            string fileStemPattern = "*_" + date + "*_" + analysisType;
             var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(path, fileStemPattern, keys);
             if (dictionary.Count == 0)
             {
