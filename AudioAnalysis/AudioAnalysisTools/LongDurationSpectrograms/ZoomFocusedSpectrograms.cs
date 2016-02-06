@@ -190,9 +190,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 sourceMinuteOffset = dto.TimeOfDay + sourceMinuteOffset;
             }
 
-
             // calculate data duration from column count of abitrary matrix
-            var matrix = spectra["ACI"]; // assume this key will always be present!!
+            var kvp = spectra.First();
+            var matrix = kvp.Value;
+            //var matrix = spectra["ACI"]; // assume this key will always be present!!
             TimeSpan dataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
 
             TimeSpan recordingStartTime = TimeSpan.Zero; // default = zero minute of day i.e. midnight
