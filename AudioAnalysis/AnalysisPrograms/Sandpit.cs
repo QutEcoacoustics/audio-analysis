@@ -353,7 +353,7 @@ namespace AnalysisPrograms
 
 
             // Concatenate twelve images for Simon and Toby
-            if (true)  // 
+            if (false)  // 
             {
                 var imageDirectory = new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1Images");
                 var imageFiles = imageDirectory.GetFiles();
@@ -378,6 +378,7 @@ namespace AnalysisPrograms
             if (false)
             {
                 // ############################# IMPORTANT ########################################
+                // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
                 // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
                 // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),  
                 // to                SegmentMinDuration = TimeSpan.FromSeconds(1),
@@ -385,25 +386,26 @@ namespace AnalysisPrograms
 
 
                 DirectoryInfo dataDir = new DirectoryInfo(@"D:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_training_input");
-                //DirectoryInfo dataDir = new DirectoryInfo(@"F:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_testing_input");
+                //DirectoryInfo dataDir = new DirectoryInfo(@"D:\SensorNetworks\WavFiles\Glotin-Bird50\AmazonBird50_testing_input");
 
                 string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
-                string csvOutputDir  = @"C:\SensorNetworks\Output\BIRD50\Test";
-                string zoomInputDir  = @"C:\SensorNetworks\Output\BIRD50\Test\Towsey.Acoustic";
-                string zoomOutputDir = @"C:\SensorNetworks\Output\BIRD50\Test";
+                string csvOutputDir  = @"C:\SensorNetworks\Output\BIRD50\Training";
+                string zoomInputDir  = @"C:\SensorNetworks\Output\BIRD50\Training\Towsey.Acoustic";
+                string zoomOutputDir = csvOutputDir;
                 FileInfo[] wavFiles = { new FileInfo(recordingPath) };
 
                 string audio2csvConfigPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
                 string hiResZoomConfigPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
 
-                // comment next two lines when debugging a sinle recording file
+                // comment next two lines when debugging a single recording file
                 string match = @"*.wav";
                 wavFiles = dataDir.GetFiles(match, SearchOption.AllDirectories);
 
 
 
                 //LOOP THROUGH ALL WAV FILES
-                for(int i = 401; i < wavFiles.Length; i++)
+                //for (int i = 538; i < 539; i++)
+                for (int i = 0; i < wavFiles.Length; i++)
                 {
                     FileInfo file = wavFiles[i];
                     recordingPath = file.FullName;
@@ -499,6 +501,62 @@ namespace AnalysisPrograms
 
             }  // END combined audio2csv + zooming spectrogram task.
 
+
+
+            // To produce HIres spectrogram images
+            // This is used to analyse Herve Glotin's BIRD50 data set.
+            if (true)
+            {
+                // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
+                // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
+                // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),  
+                // to                SegmentMinDuration = TimeSpan.FromSeconds(1),
+                // THIS iS to analyse BIRD50 short recordings.
+                string histoDir = @"C:\SensorNetworks\Output\BIRD50";
+                string histoPath = Path.Combine(histoDir, "TrainingRecordingDurations.png");
+                //string histoPath = Path.Combine(histoDir, "TestingRecordingDurations.png");
+                // set up  histogram of recording durations
+                int histogramWidth = 600;
+                int[] recordingDurations = new int[histogramWidth];
+
+
+                // set up IP and OP directories
+                string inputDir = @"C:\SensorNetworks\Output\BIRD50\Training";
+                string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingImages";
+                string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+                int trainingCount = 924;
+                //int testCount     = 375;
+                int count = trainingCount;
+                //int count = testCount;
+                //count = 3;
+
+                for (int i = 1; i <= count; i++)
+                {
+
+                    //string fileStem = "ID0003";      //\ID0001\Towsey.Acoustic\
+                    string fileStem = String.Format("ID{0:d4}", i); // training images
+                    //string fileStem = String.Format("ID1{0:d3}", i); // testing images
+
+                    string dataDir = inputDir + @"\" + fileStem + @"\Towsey.Acoustic\";
+                    //string imageOutputDir = inputDir + @"\" + fileStem;
+
+                var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+                {
+                    // use the default set of index properties in the AnalysisConfig directory.
+                    InputDataDirectory = dataDir.ToDirectoryInfo(),
+                    OutputDirectory = imageOutputDir.ToDirectoryInfo(),
+                    IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
+                };
+
+                int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
+                if (secDuration >= recordingDurations.Length) secDuration = recordingDurations.Length - 1;
+                recordingDurations[secDuration]++;                    
+            }
+                string title = "Recording Duration: Width = "+ histogramWidth + "secs"; 
+                Image histoImage =  ImageTools.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
+                histoImage.Save(histoPath);
+
+            } // Herve Glotin's BIRD50 Dataset,   HIres spectrogram images
 
 
             Console.WriteLine("# Finished Sandpit Task!");

@@ -2515,7 +2515,7 @@ namespace TowseyLibrary
             //Font stringFont = new Font("Tahoma", 9);
             //SizeF stringSize = new SizeF();
 
-            imageWidth = 300;
+            //imageWidth = 300;
             int barWidth = imageWidth / histogram.Length;
             int upperBound = upperPercentileBin * barWidth;
 
@@ -2533,13 +2533,15 @@ namespace TowseyLibrary
             g.DrawLine(pen3, grid1, height - 1, grid1, 0);
             g.DrawLine(pen3, grid2, height - 1, grid2, 0);
             g.DrawLine(pen3, grid3, height - 1, grid3, 0);
-            g.DrawLine(pen1, 0, height-1, imageWidth, height - 1);
+            g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
             // draw mode bin and upper percentile bound
             g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
             g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
 
             g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
+            if (statistics != null)
+            { 
             string[] statKeys = statistics.Keys.ToArray();
             for (int s = 0; s < statKeys.Length; s++)
             {
@@ -2555,7 +2557,8 @@ namespace TowseyLibrary
                 }
 
                 g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid2, Y));
-            }
+            } // for loop
+            } // f(statistics != null)
 
             for (int b = 0; b < histogram.Length; b++)
             {
