@@ -20,6 +20,92 @@ require('rjson')
 
 g.access.log <- list()
 
+
+
+
+
+ReadOutput <- function (name = NULL, 
+                        purpose = NA, 
+                        include.meta = TRUE, 
+                        params = NULL, 
+                        dependencies = NULL, 
+                        false.if.missing = FALSE, 
+                        optional = FALSE, 
+                        use.last.accessed = TRUE, 
+                        version = NULL) {
+    # reads the output for type 'name' 
+    #
+    # Args:
+    #   name: string; Optional. the output to read, eg "clusters", "features" etc.  If ommited, will first ask the user which type of output they want
+    #   purpose: string; just to display to the user
+    #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
+    #   params: list; Optional. If supplied, will only consider returing output with the matching params
+    #   dependencies: list; optional. If supplied, will only consider returning output with the matching 
+    #   false.if.missing: bool; if true, will return false if the file is missing
+    #   optional: boolean; if true, an option is added to select none and return false
+    #   use.last.accessed: boolean; if true (default) will look for the version that was last written or read in this session
+    #   version: int; If the required version is known, then it can be supplied. This version will be used if it exists
+    #
+    # Value:
+    #   if include.meta, will return a list that has a 'data' key, that contains the data read in
+    #   if include.meta is false, will return the data read in, eg data frame if it's a csv
+    #
+    # Details:
+    #    1) if name is not supplied, will ask user, 
+    #    2) then if version is supplied, find the that version of the output type. If it doesn't exist, will return false or stop
+    #    3) looks for the last accessed version if it matches the version OR  params, dependencies
+    #    4) if no matching last accessed verion is found, it will ask the user to select a version
+    #       This means that for a particular set of params and dependencies, only one version of a particular output type can be used within the same run
+    #    5) if the file is found, then it will set the 'last accessed' flag 
+    #       on the chosen output and it dependencies
+    #    6) Output data-type is different depending on the name of the output, for example, binary object for clustering
+    #       and and CSV for features. This is defined in the GetType function
+    
+    if (is.null(name)) {
+        # if name is ommited from function call, get user input
+        # this should only happen when calling directly from the commandline
+        choices = GetOutputTypes()
+        choice = GetUserChoice(choices, choosing.what = "choose a type of output")
+        name = choices[choice]
+    }
+    
+    if (!is.na(purpose)) {
+        Report(1, 'Reading output for:', purpose)     
+    }
+    
+    if (use.last.accessed) {
+        meta.row <- GetLastAccessed(name, params, dependencies, version) 
+    } else {
+        meta.row <- FALSE
+    }
+    
+    if (!is.data.frame(meta.row) || optional) {
+        meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional = optional, version = version)
+        if (!is.data.frame(meta.row)) {
+            return(FALSE)
+        }
+    }
+    
+    SetLastAccessed.recursive(meta.row$name, meta.row$version)
+    type <- GetType(meta.row$name)
+    if (type == 'object') {   
+        val <- (ReadObject(meta.row$name, meta.row$version))
+    } else {
+        val <- (ReadCsv(meta.row$name, meta.row$version))
+    }
+    if (include.meta) {
+        meta <- ExpandMeta(meta.row)
+        meta$indirect.dependencies <- GetIndirectDependenciesStack(meta.row$name, meta.row$version)
+        meta$data <- val
+        return(meta)
+    } else {
+        return(val)
+    }
+}
+
+
+
+
 ClearAccessLog <- function () {
     g.access.log <<- list()  
 }
@@ -52,7 +138,7 @@ GetLastAccessed <- function (names, params = NULL, dependencies = NULL, version 
             
             params.match <- is.null(params) || g.access.log[[name]]$meta$params == toJSON(params)
             dependencies.match <- is.null(dependencies) || g.access.log[[name]]$meta$dependencies != toJSON(dependencies)
-            version.match <- is.null(dependencies) || g.access.log[[name]]$meta$version != version
+            version.match <- is.null(version) || g.access.log[[name]]$meta$version != version
             
             if (params.match && dependencies.match && version.match) {
                 if (last.accessed.date == FALSE || g.access.log[[name]]$date.accessed > last.accessed.date) {
@@ -283,7 +369,7 @@ GetType <- function (name) {
     # species.in.each.min and optimal.samples are lists
     
     
-    if (name %in% c('clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples')) {
+    if (name %in% c('clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples','silence.model')) {
         return('object')
     } else {
         return('csv')
@@ -305,84 +391,6 @@ GetOutputTypes <- function () {
 
 
 
-ReadOutput <- function (name = NULL, 
-                        purpose = NA, 
-                        include.meta = TRUE, 
-                        params = NULL, 
-                        dependencies = NULL, 
-                        false.if.missing = FALSE, 
-                        optional = FALSE, 
-                        use.last.accessed = TRUE, 
-                        version = NULL) {
-    # reads the output for type 'name' 
-    #
-    # Args:
-    #   name: string; Optional. the output to read, eg "clusters", "features" etc.  If ommited, will first ask the user which type of output they want
-    #   purpose: string; just to display to the user
-    #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
-    #   params: list; Optional. If supplied, will only consider returing output with the matching params
-    #   dependencies: list; optional. If supplied, will only consider returning output with the matching 
-    #   false.if.missing: bool; if true, will return false if the file is missing
-    #   optional: boolean; if true, an option is added to select none and return false
-    #   use.last.accessed: boolean; if true (default) will look for the version that was last written or read in this session
-    #   version: int; If the required version is known, then it can be supplied. This version will be used if it exists
-    #
-    # Value:
-    #   if include.meta, will return a list that has a 'data' key, that contains the data read in
-    #   if include.meta is false, will return the data read in, eg data frame if it's a csv
-    #
-    # Details:
-    #    1) if name is not supplied, will ask user, 
-    #    2) then if version is supplied, find the that version of the output type. If it doesn't exist, will return false or stop
-    #    3) looks for the last accessed version if it matches the version OR  params, dependencies
-    #    4) if no matching last accessed verion is found, it will ask the user to select a version
-    #       This means that for a particular set of params and dependencies, only one version of a particular output type can be used within the same run
-    #    5) if the file is found, then it will set the 'last accessed' flag 
-    #       on the chosen output and it dependencies
-    #    6) Output data-type is different depending on the name of the output, for example, binary object for clustering
-    #       and and CSV for features. This is defined in the GetType function
-    
-    if (is.null(name)) {
-        # if name is ommited from function call, get user input
-        # this should only happen when calling directly from the commandline
-        choices = GetOutputTypes()
-        choice = GetUserChoice(choices, choosing.what = "choose a type of output")
-        name = choices[choice]
-    }
-    
-    if (!is.na(purpose)) {
-        Report(1, 'Reading output for:', purpose)     
-    }
-
-    if (use.last.accessed) {
-        meta.row <- GetLastAccessed(name, params, dependencies, version) 
-    } else {
-        meta.row <- FALSE
-    }
-    
-    if (!is.data.frame(meta.row) || optional) {
-        meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional = optional, version = version)
-        if (!is.data.frame(meta.row)) {
-            return(FALSE)
-        }
-    }
-    
-    SetLastAccessed.recursive(meta.row$name, meta.row$version)
-    type <- GetType(meta.row$name)
-    if (type == 'object') {   
-        val <- (ReadObject(meta.row$name, meta.row$version))
-    } else {
-        val <- (ReadCsv(meta.row$name, meta.row$version))
-    }
-    if (include.meta) {
-        meta <- ExpandMeta(meta.row)
-        meta$indirect.dependencies <- GetIndirectDependenciesStack(meta.row$name, meta.row$version)
-        meta$data <- val
-        return(meta)
-    } else {
-        return(val)
-    }
-}
 
 WriteStructuredOutput <- function (x, check.before.overwrite = TRUE) {
     # writes output where the meta values for the output are included in the list

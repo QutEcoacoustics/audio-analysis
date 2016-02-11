@@ -23,22 +23,58 @@ BirdClassifier <- function () {
     seconds <- BuildSecondList()
     seconds <- CalculateAnnotationCover(seconds)
     seconds <- CalculateHasBird(seconds)
-    features <- CalculateBirdFeatures(seconds)
+    features <- CalculateSilenceFeatures(seconds)
     corr <- GetCorrelations(seconds, features)
     features <- KeepSelectedFeatures(features)
-    PlotFeatures(features, seconds)
-    model <- ClassifySeconds(seconds, features)
+    PlotFeatures(seconds, features)
+    seconds <- TrainModel(seconds, features)
+    InspectClassifiaction(seconds)
+}
+
+ClassifySeconds <- function (seconds = NULL, silence.features = NULL) {
+    # 
+    
+    if (is.null(seconds)) {
+        seconds <- ReadOutput('segment.events')
+    }
+    
+    if (!is.data.frame(seconds)) {
+        seconds.data <- seconds$data
+    } else {
+        seconds.data <- seconds
+    }
+    
+    if (is.null(silence.features) && is.list(seconds)) {
+        silence.features <- ReadOutput(name = 'silence.features', dependencies = list('segment.events' = seconds$version), false.if.missing = TRUE)
+    } 
+
+    
+    if (is.list(silence.features)) {
+        silence.features <- silence.features$data
+    } else if (is.matrix(silence.features)) {
+        silence.features <- as.data.frame(silence.features)
+    } else if (!is.data.frame(silence.features)) {
+        # read output didn't find it
+        silence.features <- CalculateSilenceFeatures(seconds = seconds.data)
+        silence.features <- as.data.frame(silence.features)
+    }
+
+
+
+    model <- ReadOutput('silence.model')
+    fitted.results <- predict(model$data,newdata=silence.features,type='response')
+    fitted.results <- ifelse(fitted.results > 0.5,1,0)
+    
+    seconds$has.bird <- fitted.results
+    return(seconds)
+    
 }
 
 
-
-ClassifySeconds <- function (seconds, features) {
-    # TODO: logistic regression to classify second as 'active' or 'quite'
+TrainModel <- function (seconds, features) {
+    # logistic regression to classify second as 'active' or 'quite'
     #       training/testing data uses the 'has.bird' flag, generated based on the annotation overlap
     #       
-    
-    # is this right??
-    # features <- ScaleDf(features)
     
     data <- as.data.frame(cbind(features, seconds$has.bird))
     colnames(data) <- c(colnames(features), 'has.bird')
@@ -66,18 +102,29 @@ ClassifySeconds <- function (seconds, features) {
     
     seconds$classified.has.bird <- fitted.results
     seconds$is.train <- train.selection
+    
+    # ideally we would keep track of the params for producing the features, 
+    # but that's probably too much effort
+    params = list()
+    dependencies = list()
+    
+    WriteOutput(model, 'silence.model', params = params, dependencies = dependencies)
+    
     return(seconds)
     
 }
 
-InspectClassifiaction <- function (seconds) {
+InspectClassification <- function (seconds, by.file = FALSE) {
     # creates a composite image with 2 rows of 1 sec spectrograms
     # top row is seconds classified as having bird
     # bottom row is seconds classified as not having bird
     # from the test set
     
     # use only the testing
-    seconds <- seconds[!seconds$is.train,]
+    if ('is.train' %in% colnames(seconds)) {
+        seconds <- seconds[!seconds$is.train,]     
+    }
+
     
     
     has.bird <- NULL
@@ -90,6 +137,8 @@ InspectClassifiaction <- function (seconds) {
                                      offset = seconds$file.sec[s],
                                      duration = 1
         )
+        
+        spectro$vals[1:nrow(spectro$vals),1] <- min(spectro$vals)
         
         if (seconds$classified.has.bird[s]) {
             has.bird <- cbind(has.bird, spectro$vals)
@@ -104,7 +153,7 @@ InspectClassifiaction <- function (seconds) {
     width <- max(ncol(has.bird), ncol(no.bird))
     height <- nrow(has.bird) + nrow(no.bird) + 1
     
-    canvas <- matrix(0, nrow = height, ncol = width)
+    canvas <- matrix(min(no.bird), nrow = height, ncol = width)
     canvas[1:nrow(has.bird),1:ncol(has.bird)] <- has.bird
     canvas[1:nrow(no.bird)+nrow(has.bird)+1,1:ncol(no.bird)] <- no.bird
     
@@ -277,12 +326,21 @@ PreprocessSpectroVals <- function (m) {
 }
 
 AudioPath <- function (fn, input.directory = "/Users/n8933464/Documents/SERF/mtlewis") {
-    af.path <- file.path(input.directory, 'wav', fn)
+    # given a filename and the input directory, will create the full path and return it. 
+    # if the fn already appears to be a full path, it will just return it. This allows processing
+    # of csvs with different formats(i.e. filename only or full path)
+    
+    # check if fn includes full path already
+    if (!grepl('/',audio.files[1])) {
+        af.path <- file.path(input.directory, 'wav', fn)
+    }
+        
+    
     return(af.path)
 }
 
 
-CalculateBirdFeatures <- function (seconds) {
+CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path')) {
     
     # all features are done on noise-reduced spectrogram except average of entropies (entropy then average)
     feature.names <- c('Ht1', # Ht1 = temporal.entropy (average then entropy)
@@ -300,6 +358,12 @@ CalculateBirdFeatures <- function (seconds) {
      
     empty <- rep(NA, nrow(seconds))
     
+    wavecol <- intersect(wavecol, colnames(seconds))
+    if (length(wavecol) != 1) {
+        wavecol <- GetUserChoice(colnames(seconds), 'wave column')
+    }
+    
+    
 
     empty.features <- matrix(rep(NA, length(feature.names)*nrow(seconds)), ncol = length(feature.names))
     colnames(empty.features) <- feature.names
@@ -307,23 +371,38 @@ CalculateBirdFeatures <- function (seconds) {
     features <- list(features.wn = empty.features,
                      features.nr = empty.features)
     
+
     
 
-    audio.files <- unique(seconds$wav.file)
+    audio.files <- unique(seconds[,wavecol]) #### csv format dependent ####
+    
+    # check if wave col includes full path already
+    if (grepl('/',audio.files[1])) {
+        full.path <- TRUE
+    } else {
+        full.path <- FALSE
+    }
+    
     for (af in audio.files) {
-        af.path <- AudioPath(af)
+        if (!full.path) {
+            af.path <- AudioPath(af) 
+        } else {
+            af.path <- af
+        }
+        
         spectro <- Sp.CreateFromFile(af.path)
         
-        seconds.selection <- seconds$wav.file == af
+        seconds.selection <- seconds[,wavecol] == af  #### csv format dependent ####
         af.seconds <- seconds[seconds.selection, ]
         num.secs <- sum(seconds.selection)
         # double check that the duration of the spectrogram matches the number of seconds
-        if (spectro$duration != num.secs) {
-            stop('something went wrong')
+        if (round(spectro$duration) != num.secs) {
+            #stop('something went wrong')
+            Report(5, "warning: file has", round(spectro$duration), 'seconds but csv has', num.secs)
         }
         
         # chop the spectrogram into bits
-        second.width <- ncol(spectro$vals) / num.secs
+        second.width <- ncol(spectro$vals) / num.secs  
         
         # noise removal
         spectro.vals.wn <- Normalize(spectro$vals)
@@ -393,13 +472,14 @@ CalculateBirdFeatures <- function (seconds) {
                 #}
                 
                 Dot()
-            }
+                
+            }  #end for each sec in file
         
-        }
+        }  # end for each version of file spectro (noise/nr)
         
   
         
-        Report(5, 'file complete (30 secs')
+        Report(5, 'file complete (',num.secs,' secs)')
  
         
     }
