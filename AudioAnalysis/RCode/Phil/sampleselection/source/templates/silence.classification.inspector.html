@@ -11,12 +11,17 @@
             body, html {
                 margin: 0px;
                 padding: 0px;
-                width: 300px;
             }
             img {
                 display: inline-block;
-                width: 100px;
-                height: 150px;
+                width: 50px;
+
+            }
+            .hasbird1 {
+                border: #009900 2px solid;
+            }
+            .hasbird0 {
+                border: #990000 2px solid;
             }
             
         
@@ -30,13 +35,18 @@
     <body>
 
         
-        <##startforeach{group}##>
-        <div class="cluster" title="cluster:', <##group##>, '">
+        <##startforeach{classified.has.bird}##>
+        <div class="cluster hasbird<##classified.has.bird##>" title="Has Bird: <##classified.has.bird##>">
+             <p>Has bird: <##classified.has.bird##></p>
              <##startforeach{}##>
-                 <img src="<##path##>" title="<##img.title##>" alt="" />
+                 <a class='sec' href="<##link##>" targed="_blank">
+                   <img src="<##img.path##>" title="<##img.title##>" alt="" />
+                   <div class='features'> 
+                   </div>
+                 </a>
              <##endforeach{}##>
         </div>
-        <##endforeach{group}##>
+        <##endforeach{classified.has.bird}##>
         
     </body>
 </html>

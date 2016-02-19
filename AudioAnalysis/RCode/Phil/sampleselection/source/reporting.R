@@ -35,6 +35,11 @@ SetReportMode <- function (console = TRUE, file = FALSE, socket = FALSE, filname
         g.report.file <<- FALSE
     }
     
+    if (class(g.report.socket) == 'socket') {
+        close.socket(g.report.socket)
+    }
+    g.report.socket <<- FALSE
+    
     if (socket) {
         while (!class(g.report.socket) == 'socket') {
             
@@ -57,15 +62,6 @@ SetReportMode <- function (console = TRUE, file = FALSE, socket = FALSE, filname
         }
         
          print(paste("outputting to socket on port", g.report.socket$port))
-
-        
-        
-        
-    } else {
-        if (class(g.report.socket) == 'socket') {
-            close.socket(g.report.socket)
-        }
-        g.report.socket <<- FALSE
     }
     
 

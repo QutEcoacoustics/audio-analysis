@@ -65,7 +65,7 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
 
 
 
-GetAudioFile <- function (site, date, mins) {
+GetAudioFile <- function (site, date, mins, verify = TRUE) {
     # for a given site, date and list of minutes
     # returns all the files needed 
     
@@ -85,14 +85,36 @@ GetAudioFile <- function (site, date, mins) {
         path <- file.path(day.folder$path, fn)
         return(path)
     })
-    return(as.character(selected.files))
+    selected.files <- as.character(selected.files)
     
-
-    
-    
+    return(selected.files)
+ 
 }
 
-
+GetAudioMeta <- function (path, val = NULL) {
+    # for a given audio file, 
+    # the meta data by reading the wave
+    require('tuneR')
+    w <- readWave(path)
+    
+    meta = list(
+        stereo = w@stereo,
+        bit = w@bit,
+        samp.rate = w@samp.rate,
+        duration = length(w@left) / w@samp.rate,
+        pcm = w@pcm
+    )
+    
+    if (is.character(val)) {
+        return(meta[[val]])
+    } else {
+        return(meta)
+    }
+    
+    
+    return(w)
+    
+}
 
 
 DateFromShortFormat <- function (date, decade = '20') {
@@ -146,6 +168,9 @@ DateTimeToFn <- function (site, start.datetime = NA, end.datetime = NA, start.da
     
     target.from.sec[1] <- distance.from.start.of.file
     target.to.sec[num.files] <- (target.diff + distance.from.start.of.file) %% (file.length * 60)
+    if (target.to.sec[num.files] == 0) {
+        target.to.sec[num.files] <- (file.length * 60)
+    }
     
     file.second.offsets <- 1:num.files * (file.length * 60) - (file.length * 60)
     # a vector of posixlt object at the start date time, the start date time plus file length (2nd file), start datetime plus 2 file lengths (3rd filename)

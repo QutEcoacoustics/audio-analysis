@@ -60,7 +60,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     if (!is.na(label)) {
         spec$label <- paste(spec$label, label, sep = " : ") 
     }
-    if (!is.na(img.path)) {
+    if (is.character(img.path)) {
         Sp.Draw(spec, img.path)      
     }
         
@@ -69,7 +69,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
 }
 
 Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512, 
-                               smooth = TRUE, db = TRUE, filename = FALSE, use.cache = TRUE, offset = NULL, duration = NULL) {
+                               smooth = TRUE, db = TRUE, filename = FALSE, use.cache = TRUE, offset = NULL, duration = NULL, msg = '') {
     # creates a spectrogram of the supplied audio file path
     # optionally only a section of it if offset and duration are supplied
     #
@@ -119,6 +119,8 @@ Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512,
     split <- strsplit(path, .Platform$file.sep)
     basepath <- BasePath(path)
     cache.id <- paste0(basepath,id, '.spectro')
+    
+    Report(5, msg, ':', cache.id)
     
     if (use.cache) {
         spectro <- ReadCache(cache.id)  
@@ -231,8 +233,8 @@ Sp.Create <- function(wav, frame.width = 512, draw = FALSE,
     
     #Timer(ptm, 'generating spectrogram',  len / samp.rate, 'second of audio')
     
-    if (draw) {
-        Sp.draw(spectro, filename)
+    if (draw || is.character(filename)) {
+        Sp.Draw(spectro, filename)
     }
     return(spectro)
 }

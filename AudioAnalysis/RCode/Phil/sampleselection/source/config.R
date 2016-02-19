@@ -114,3 +114,10 @@ g.tags.db.user <- 'root'
 g.tags.db.password <- 'root'
 g.tags.db.dbname <- 'speciestags'
 g.tags.db.unix.socket <- '/Applications/MAMP/tmp/mysql/mysql.sock'
+
+
+
+
+
+
+

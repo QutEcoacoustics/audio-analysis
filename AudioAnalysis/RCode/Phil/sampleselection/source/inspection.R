@@ -158,7 +158,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     all.groups <- all.groups[order(all.groups)]
     
     if (is.numeric(clusters)) {
-        # make sure that the cluster groups given are actually real groups
+        # make sure that the cluster groups given as a param are actually real groups
         groups.that.exist <- clusters %in% all.groups
         groups.that.dont.exist <- clusters[!groups.that.exist]
         if (length(groups.that.dont.exist) > 0) {
@@ -179,14 +179,9 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     
     selected.events <- clustered.events.data[clustered.events.data[,group.col] %in% clusters,]
     
+
     
-      
-    # !! -- !!
-    
-    temp.dir <- TempDirectory()
-    
-    
-    
+    # for each cluster, limit the number of segments shown
     for (group in clusters) {
         subset <- selected.events[group.col] == group
         num.before <- sum(subset)
@@ -199,75 +194,277 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
         selected.events <- selected.events[selected.events[group.col] != group | subset,]
     }
     
-    selected.events$spectro.fn <- rep('', nrow(selected.events))
     
     
     
-    # generate spectrograms in parallel
-    SetReportMode(socket = TRUE)
-    cl <- makeCluster(3)
-    registerDoParallel(cl)
-    temp.fns <- paste(selected.events$event.id, 'png', sep = '.')
-    selected.events$spectro.fn <- file.path(temp.dir, temp.fns)
-    nums <- 1:nrow(selected.events)
-    res <- foreach(site = selected.events$site, 
-                   start.date = selected.events$date,
-                   start.sec = selected.events$min * 60 + selected.events$start.sec,
-                   img.path = selected.events$spectro.fn,
-                   num = nums, .combine='c', .export=ls(envir=globalenv())) %dopar% Sp.CreateTargeted(site = site, 
-                                                                                                        start.date = start.date, 
-                                                                                                        start.sec = start.sec, 
-                                                                                                        duration = segment.duration, 
-                                                                                                        img.path = img.path,
-                                                                                                        msg = num)  
-    
-    
-#     for (e in 1:nrow(selected.events)) {
-#             temp.fn <- paste(selected.events$event.id[e], 'png', sep = '.')
-#             img.path <- file.path(temp.dir, temp.fn)
-#             selected.events$spectro.fn[e] <- img.path 
-#             # the duration, top and bottom frequency and rect color
-#             # can all be taken directly from the event. The start.sec of the rect
-#             # needs to be from the start of the spectrogram, which in this case is the padding
-#             Sp.CreateTargeted(site = selected.events$site[e], 
-#                               start.date = selected.events$date[e], 
-#                               start.sec = selected.events$min[e] * 60 + selected.events$start.sec[e], 
-#                               duration = segment.duration, 
-#                               img.path = img.path)
-#             
-#     }
+    spectro.list <- SaveSpectroImgsForInspection(selected.events, temp.dir)
 
-    col.names <- colnames(selected.events)
+    
+
+
+    col.names <- colnames(spectro.list)
     col.names[col.names == group.col] <- 'group'
     colnames(selected.events) <- col.names
     
     html.file <- paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html')
     
-    MakeHtmlInspector(selected.events, file.name =  html.file)
-    
-    
-    
-    
+    MakeHtmlInspector(selected.events, file.name =  html.file, group.col = 'group', template.file = segment.event.inspector.html)
     
 }
 
 
-MakeHtmlInspector <- function (spectrograms, title = 'Inspect Segments', file.name = 'inspect.segments.html') {
+
+SaveSpectroImgsForInspection <- function (events, temp.dir, use.parallel = TRUE) {
+    # given a list of events/segments with at least the columns:
+    #   event.id, file.path, file.sec, segment.duration
+    # OR
+    #   event.id, site, date, min, start.sec (which will use to figure out the file and offset second)
+    # generates a spectrogram for each segment, saves the image to the temp path, 
+    # then adds the image path (including filename in a new column)
+    # and returns the dataframe
+    
+    events$spectro.fn <- ''
+    
+
+    
+    temp.dir <- TempDirectory()
+    
+    temp.fns <- paste(events$event.id, 'png', sep = '.')
+    events$spectro.fn <- file.path(temp.dir, temp.fns)
+    nums <- 1:nrow(events)
+    
+    # there are 2 ways access audio for generating spectrograms: 
+    # either give the path of the audio file, or supply the site/date/sec
+    # here we choose the appropriate method depending on the columns in the data frame
+    
+    if (!use.parallel) {
+        SetReportMode(socket = FALSE) 
+        
+    if (all(c('site', 'date', 'min', 'start.sec') %in% colnames(events))) {
+        for (i in 1:nrow(events)) { 
+            Sp.CreateTargeted(site = events$site[i], 
+                              start.date = events$date[i], 
+                              start.sec = events$min[i] * 60 + events$start.sec[i], 
+                              duration = events$segment.duration[i], 
+                              img.path = events$spectro.fn[i],
+                              msg = nums[i])
+        } 
+        
+    } else if (all(c('file.path', 'file.sec', 'segment.duration') %in% colnames(events))) {
+            for (i in 1:nrow(events)) {
+                sp.path <- Sp.CreateFromFile(path = events$file.path[i], 
+                                             offset = events$file.sec[i], 
+                                             duration = events$segment.duration[i],
+                                             filename = events$spectro.fn[i],
+                                             msg = nums[i]) 
+                
+            }
+
+            
+        } else {
+            stop('wrong columns for SaveSpectroImgsForInspection')
+        }
+        
+        
+    } else {
+        
+        # generate spectrograms in parallel
+        require('parallel')
+        require('doParallel')
+        require('foreach')
+        SetReportMode(socket = TRUE)
+        cl <- makeCluster(3)
+        registerDoParallel(cl)
+        
+    if (all(c('site', 'date', 'min', 'start.sec') %in% colnames(events))) {
+        # method 1: create targeted
+        
+        res <- foreach(site = events$site, 
+                       start.date = events$date,
+                       start.sec = events$min * 60 + events$start.sec,
+                       duration = events$segment.duration,
+                       img.path = events$spectro.fn,
+                       num = nums, .combine='c', .export=ls(envir=globalenv())) %dopar% Sp.CreateTargeted(site = site, 
+                                                                                                          start.date = start.date, 
+                                                                                                          start.sec = start.sec, 
+                                                                                                          duration = duration, 
+                                                                                                          img.path = img.path,
+                                                                                                          msg = num)         
+    } else  if (all(c('file.path', 'file.sec', 'segment.duration') %in% colnames(events))) {
+            # method 2: create from audio file
+            
+            res <- foreach(path = events$file.path, 
+                           file.sec = events$file.sec,
+                           duration = events$segment.duration,
+                           img.path = events$spectro.fn,
+                           num = nums, .combine='c', .export=ls(envir=globalenv())) %dopar% Sp.CreateFromFile(path = path, 
+                                                                                                              offset = file.sec, 
+                                                                                                              duration = duration,
+                                                                                                              filename = img.path,
+                                                                                                              msg = num)  
+            
+            
+
+        } else {
+            stop('wrong columns for SaveSpectroImgsForInspection')
+        }
+        
+    }
+    
+    return(events$spectro.fn)
+    
+
+
+}
+
+HtmlInspector <- function (spectrograms, template.file, output.fn = NULL, singles = list('title' = 'inspect segments')) {
+    
+    template.path <- file.path('templates', template.file)
+    template <- readChar(template.path, file.info(template.path)$size)
+    # replace title with title
+    
+    
+    result <- HtmlInspector.InsertData(spectrograms, template, singles)
+    
+    if (!is.character(output.fn)) {
+        output.fn <- template.file
+    }
+    
+    output.path <- file.path(g.output.parent.dir, 'inspection', output.fn)
+    
+    fileConn<-file(output.path)
+    writeLines(result, fileConn)
+    close(fileConn)
+    return(output.path)
+    
+}
+
+HtmlInspector.InsertSingles.old <- function (singles, template) {
+    # given a list of single text replacements, inserts them into the template
+    for (name in names(singles)) {
+        template <- InsertIntoTemplate(singles[[name]], name, template)
+    }
+    return(template)
+}
+
+HtmlInspector.InsertData <- function (spectrograms, template, singles = data.frame()) {
+    
+    require(stringr)
+    
+    
+    # find first repeater
+    open.ex <- "<##startforeach\\{[0-9a-z.]*}##>"
+    open.loc <- str_locate(template, open.ex)
+    if (is.na(open.loc[1])) {
+        return(template)
+    }
+    open.txt <- str_sub(template, start = open.loc[1], end = open.loc[2])
+    rep.name <- str_sub(str_extract(open.txt, "\\{[0-9a-z.]*}"), start = 2, end = -2)
+    close.ex <- paste0("<##endforeach\\{",rep.name,"}##>")
+    close.loc <- str_locate(template, close.ex)
+    if (is.na(close.loc[1])) {
+        stop(paste('error in template: missing closing tag for ', open.txt))
+    }
+    repeater.txt.template <- str_sub(template, start = open.loc[2]+1, end = close.loc[1]-1)
+    
+    repeater.res <- ""
+    if (str_detect(repeater.txt.template, open.ex)) {
+        if (rep.name != '') {
+            groups <- unique(spectrograms[,rep.name])
+            
+            repeater.res <- rep(NA, length(groups))
+            
+            for (g in 1:length(groups)) {
+                subset <- spectrograms[spectrograms[,rep.name] == groups[g],]
+                sub.singles <- list()
+                sub.singles[[rep.name]] <- groups[g]
+                repeater.res[g] <- HtmlInspector.InsertData(subset, repeater.txt.template, singles = sub.singles)
+            }
+            
+            repeater.res <- paste(repeater.res, collapse = "\n")
+            
+        } 
+        # nothing happens if it is a repeater with a name and no nested repeater, 
+        # maybe need to fix this but I can't think why this would be ever needed
+        
+        
+    } else {
+        repeater.res <- HtmlInspector.InsertIntoTemplate(repeater.txt.template, spectrograms)
+        repeater.res <- paste(repeater.res, collapse = "\n")
+    }
+    
+    template <- paste0(str_sub(template, 1, open.loc[1]-1), repeater.res, str_sub(template, close.loc[2]+1, str_length(template)))
+    
+    # recurse back into this function in case there are multiple repeaters (I don't see why there should ever need to be)
+    # if it was the last one, then it will just return immediately
+    template <- HtmlInspector.InsertData(spectrograms, template)
+    
+    #lastly, insert singles
+    template <- HtmlInspector.InsertIntoTemplate(template, singles)
+    
+    return(template)
+
+    
+    
+}
+
+HtmlInspector.InsertIntoTemplate <- function (template, vals) {
+    # vals is a data frame where the column names match the template flags
+    # or a list where the names match
+    
+    vals <- as.data.frame(vals)
+    
+    if (nrow(vals) == 0) {
+        return(template)
+    }
+    
+    placeholder.name.ex <- '[0-9a-zA-Z._]+'
+    placeholders.ex <- paste0("<##",placeholder.name.ex,"##>") 
+    
+    placeholders <- unique(unlist(str_extract_all(template, placeholders.ex)))
+    placeholder.names <- unlist(str_extract_all(placeholders, placeholder.name.ex))
+    
+    verify <- placeholder.names %in% colnames(vals)
+    if (!all(verify)) {
+        Report(4, 'some flags from templage were not in the replacement list')
+    }
+    placeholders <- placeholders[verify]
+    placeholder.names <- placeholder.names[verify]
+    
+    for(i in 1:length(placeholders)) {
+        template <- str_replace_all(template, placeholders[i], vals[,placeholder.names[i]])
+    }
+    return(template)
+    
+}
+
+
+InsertIntoTemplate.old <- function (flag, text, template, delim = "###") {
+    # gsub is better?
+    split <- paste0(delim, flag, delim)
+    split.template <- unlist(strsplit(template, split, fixed = TRUE))
+    text <- rep(text, length(split.template))
+    text[length(text)] <- ''
+    return(paste0(split.template, text, collapse = ''))
+}
+
+
+
+MakeHtmlInspector.old <- function (spectrograms, title = 'Inspect Segments', file.name = 'inspect.segments.html', group.col = 'group') {
     
     template.file <- 'templates/segment.event.inspector.html'
     template <- readChar(template.file, file.info(template.file)$size)
     # replace title with title
 
     template <- InsertIntoTemplate('title', title, template)
-    groups <- unique(spectrograms$group)
+    groups <- unique(spectrograms[,group.col])
     rows = list()
     for (g in groups) {
-        s <- spectrograms[spectrograms$group == g,]
+        s <- spectrograms[spectrograms[,group.col] == g,]
         paths <- s$spectro.fn
         img.titles <- paste(s$event.id, s$site, s$date, s$min, sep = ' : ')
         img.tags <- paste0('    <img src="', paths, '" title="', img.titles, '" alt="" />', "\n") 
         rows[[g]] <- paste0(img.tags, collapse = '')
-        
     }
     
     # wrap each rows in a div
@@ -285,15 +482,6 @@ MakeHtmlInspector <- function (spectrograms, title = 'Inspect Segments', file.na
     close(fileConn)
     return(file.name)
     
-}
-
-InsertIntoTemplate <- function (flag, text, template, delim = "###") {
-    # gsub is better?
-    split <- paste0(delim, flag, delim)
-    split.template <- unlist(strsplit(template, split, fixed = TRUE))
-    text <- rep(text, length(split.template))
-    text[length(text)] <- ''
-    return(paste0(split.template, text, collapse = ''))
 }
 
 

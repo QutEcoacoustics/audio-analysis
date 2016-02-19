@@ -65,7 +65,14 @@ ClassifySeconds <- function (seconds = NULL, silence.features = NULL) {
     fitted.results <- predict(model$data,newdata=silence.features,type='response')
     fitted.results <- ifelse(fitted.results > 0.5,1,0)
     
-    seconds$has.bird <- fitted.results
+    seconds.data$classified.has.bird <- fitted.results
+    
+    if (is.list(seconds)) {
+        seconds$data <- seconds.data
+    } else {
+        seconds <- seconds.data
+    }
+    
     return(seconds)
     
 }
@@ -114,7 +121,100 @@ TrainModel <- function (seconds, features) {
     
 }
 
-InspectClassification <- function (seconds, by.file = FALSE) {
+InspectClassification <- function (seconds, features = NULL, rows = 10, random = FALSE) {
+    # creates a subset of the seconds df
+    # generates spectrograms for each second
+    # generates a html page to inspect it
+    #
+    # Args:
+    #   seconds: dataframe. Must contain the 'classified.has.bird' column
+    #   rows: integer; either the rows to use or how many rows to use
+    #   random: if rows is a single integer, and if true, will choose rows at random
+    #           if false will choose rows spaced evenly out across the dataframe. 
+    #           advantage of false is that it is deterministic so cached spectrograms 
+    #           will be used if run multiple times
+    
+    
+    # replace 'wave.path' with file.path for compatibility with inspection function
+    colnames(seconds)[colnames(seconds) == 'wave.path'] <- 'file.path'
+    seconds$segment.duration <- 1
+    
+    seconds$img.title <- paste(seconds$event.id, seconds$site, seconds$date, seconds$min, sep = ' : ')
+    
+    if (is.data.frame(features)) {
+        seconds$features <- paste(features, collapse = "\n")
+    }
+    
+    
+    if (length(rows) == 1) {
+        
+        if (random) {
+            selection <- seconds[sample(1:nrow(seconds), rows, replace=FALSE),]
+        } else {
+            selected.rows <- round(seq(1, nrow(seconds), (nrow(seconds) - 1) / (rows - 1)))
+            selection <- seconds[selected.rows,]
+        }
+        
+        
+    } else {
+        selection <- seconds[rows,]
+    }
+    
+
+    
+    spectro.list <- SaveSpectroImgsForInspection(selection, use.parallel = FALSE)
+    selection$img.path <- spectro.list
+    
+    return(HtmlInspector(selection, template.file = 'silence.classification.inspector.html', singles = list(title = 'Inspect Silence Classification')))
+    
+    
+    
+}
+
+InspectClassification.old <- function (seconds, by.file = FALSE) {
+    # creates a html page, with 2 columns
+    # left is no bird, right is bird
+
+    
+
+    for (s in 1:nrow(seconds)) {
+
+        # create the spectrogram for this second
+        spectro <- Sp.CreateFromFile(path = AudioPath(seconds$wave.path[s]),
+                                     offset = seconds$file.sec[s],
+                                     duration = 1
+        )
+        
+        spectro$vals[1:nrow(spectro$vals),1] <- min(spectro$vals)
+ 
+        
+        if (seconds$classified.has.bird[s]) {
+            has.bird <- cbind(has.bird, spectro$vals)
+        } else {
+            no.bird <- cbind(no.bird, spectro$vals)
+        }
+        
+    }
+    
+    # merge rows into 1
+    # we don't know wide either one is so find the wider one
+    width <- max(ncol(has.bird), ncol(no.bird))
+    height <- nrow(has.bird) + nrow(no.bird) + 1
+    
+    canvas <- matrix(min(no.bird), nrow = height, ncol = width)
+    canvas[1:nrow(has.bird),1:ncol(has.bird)] <- has.bird
+    canvas[1:nrow(no.bird)+nrow(has.bird)+1,1:ncol(no.bird)] <- no.bird
+    
+    Sp.DrawVals(canvas, 1)
+    
+    
+    
+    
+}
+
+
+
+InspectClassificationTesting <- function (seconds, by.file = FALSE) {
     # creates a composite image with 2 rows of 1 sec spectrograms
     # top row is seconds classified as having bird
     # bottom row is seconds classified as not having bird
@@ -331,12 +431,12 @@ AudioPath <- function (fn, input.directory = "/Users/n8933464/Documents/SERF/mtl
     # of csvs with different formats(i.e. filename only or full path)
     
     # check if fn includes full path already
-    if (!grepl('/',audio.files[1])) {
-        af.path <- file.path(input.directory, 'wav', fn)
+    if (!grepl('/',fn)) {
+        return(file.path(input.directory, 'wav', fn))
+    } else {
+        return(fn)
     }
-        
-    
-    return(af.path)
+
 }
 
 

@@ -12,6 +12,8 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     # Details:
     #   assumes files of 10 minute length
     
+    # todo: verfify audio exists for full expected duration for each file, and insert NAs for missing audio. 
+    
     if (is.null(min.list)) {
         min.list <- ReadOutput('target.min.ids')
     }
@@ -23,7 +25,7 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     # every 10th minute of the day
     audio.file.duration <- 10
     min.list.per.duration <- min.list$data[min.list$data$min %% audio.file.duration == 0, ]
-    wave.path.per.duration <- rep(NA, nrow(min.list.per.duration))
+    wave.path.per.duration <- audio.durations <- rep(NA, nrow(min.list.per.duration))
     for (i in 1:length(wave.path.per.duration)) {
         wave.path.per.duration[i] <- GetAudioFile(min.list.per.duration$site[i], min.list.per.duration$date[i], min.list.per.duration$min[i])
     }
@@ -32,11 +34,20 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     segment.list <- min.list$data[rep(1:nrow(min.list$data),each=num.per.min), ]
     segment.list$seg.num <- rep(1:num.per.min, nrow(min.list$data))
     segment.list$start.sec <- (segment.list$seg.num - 1) * (60/num.per.min)
-    
+    segment.list$file.sec <- rep(1:(audio.file.duration * num.per.min), length(wave.path.per.duration)) - 1
     segment.list <- AddEventIdColumn(segment.list)
     
     dependencies <- list('target.min.ids' = min.list$version)
     params <- list('num.per.min' = 60)
+    
+    # check duration of final audio file, since it is probably not exactly the right length
+    final.path <- wave.path.per.duration[length(wave.path.per.duration)]
+    duration.of.final <- floor(GetAudioMeta(final.path, 'duration'))
+    # remove any segments that don't have audio
+    include <- rep(TRUE, nrow(segment.list))
+    include[segment.list$wave.path == final.path][(duration.of.final+1):sum(segment.list$wave.path == final.path)] <- FALSE
+    segment.list <- segment.list[include,]
+    
     segment.list.version <- WriteOutput(x = segment.list, name = 'segment.events',params = params, dependencies = dependencies)
     
 }
