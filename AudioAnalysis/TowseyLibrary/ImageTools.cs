@@ -941,15 +941,43 @@ namespace TowseyLibrary
             // 2 = ridge is vertical or pi/2
             // 3 = ridge is negative slope or 3pi/4. 
 
+            double[] ridgeMagnitudes = Sobel5X5RidgeDetection(m);
 
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            if ((rows != cols)||(rows != 5)) // must be square 5X5 matrix 
+
+            if (ridgeMagnitudes == null) // something gone wrong
             {
                 isRidge = false;
                 magnitude = 0.0;
                 direction = 0.0;
                 return;
+            }
+
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax/2;
+            //direction = indexMax * Math.PI / (double)4;
+            direction = indexMax;
+        }
+
+        public static double[] Sobel5X5RidgeDetection(double[,] m)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+            // 0 = ridge direction = horizontal or slope = 0;
+            // 1 = ridge is positive slope or pi/4
+            // 2 = ridge is vertical or pi/2
+            // 3 = ridge is negative slope or 3pi/4. 
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            {
+                return null;
             }
 
             double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
@@ -982,16 +1010,7 @@ namespace TowseyLibrary
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
-
-            int indexMin, indexMax;
-            double diffMin, diffMax;
-            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
-
-            double threshold = 0; // dB
-            isRidge = (ridgeMagnitudes[indexMax] > threshold);
-            magnitude = diffMax/2;
-            //direction = indexMax * Math.PI / (double)4;
-            direction = indexMax;
+            return ridgeMagnitudes;
         }
 
         /// <summary>
@@ -2290,6 +2309,12 @@ namespace TowseyLibrary
             Image bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
+        public static void DrawMatrix(double[,] matrix, double lowerBound, double upperBound, string pathName)
+        {
+            Image bmp = DrawNormalisedMatrix(matrix, lowerBound, upperBound);
+            bmp.Save(pathName);
+        }
+
         /// <summary>
         /// Draws matrix after first normalising the data
         /// </summary>
@@ -2300,6 +2325,14 @@ namespace TowseyLibrary
             double[,] norm = DataTools.normalise(matrix);
             return DrawMatrixWithoutNormalisation(norm);
         }
+
+
+        public static Image DrawNormalisedMatrix(double[,] matrix, double lowerBound, double upperBound)
+        {
+            double[,] norm = DataTools.NormaliseInZeroOne(matrix, lowerBound, upperBound);
+            return DrawMatrixWithoutNormalisation(norm);
+        }
+
         /// <summary>
         /// Draws matrix after first normalising the data
         /// </summary>
@@ -2774,6 +2807,10 @@ namespace TowseyLibrary
         {
             return CombineImagesVertically(list.ToArray());
         }
+        public static Image CombineImagesVertically(List<Image> list, int maxWidth)
+        {
+            return CombineImagesVertically(list.ToArray(), maxWidth);
+        }
 
         /// <summary>
         /// Stacks the passed images one on top of the other. 
@@ -2805,6 +2842,38 @@ namespace TowseyLibrary
             }
             return (Image)compositeBmp;
         }
+
+        /// <summary>
+        /// Stacks the passed images one on top of the other. 
+        /// Assumes that all images have the same width.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static Image CombineImagesVertically(Image[] array, int maximumWidth)
+        {
+            //int width = array[0].Width;   // assume all images have the same width
+
+            int compositeHeight = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (null == array[i]) continue;
+                compositeHeight += array[i].Height;
+            }
+
+            Bitmap compositeBmp = new Bitmap(maximumWidth, compositeHeight, PixelFormat.Format24bppRgb);
+            int yOffset = 0;
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.DarkGray);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (null == array[i]) continue;
+                gr.DrawImage(array[i], 0, yOffset); //draw in the top image
+                yOffset += array[i].Height;
+            }
+            return (Image)compositeBmp;
+        }
+
 
         /// <summary>
         /// Stacks the passed images one on top of the other. 

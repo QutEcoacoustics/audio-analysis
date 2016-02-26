@@ -222,12 +222,16 @@ namespace AnalysisPrograms
 
         public static int DrawAggregatedSpectrograms(Arguments arguments, string fileStem)
         {
+            int sampleRate = 22050;
+            int frameWidth = 512;
+            double spectrogramScale = 0.1;
+            string analysisType = "Towsey.Acoustic";
+            string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
+
             LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
             LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             DirectoryInfo inputDirectory  = arguments.InputDataDirectory;
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
-            string analysisType = "Towsey.Acoustic";
-            double spectrogramScale = 0.1;
             TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
 
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
@@ -235,16 +239,12 @@ namespace AnalysisPrograms
 
 
             var sw = Stopwatch.StartNew();
-            string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
             //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
-
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
 
             var minuteOffset = TimeSpan.Zero;
             var xScale       = dataScale;
             string colorMap1 = null;
-            int sampleRate = 22050;
-            int frameWidth = 512;
 
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
 
@@ -319,8 +319,132 @@ namespace AnalysisPrograms
 
 
             return (int)(Math.Round(pixelWidth * spectrogramScale));
-        }
+        } // method DrawAggregatedSpectrograms()
 
+        public static int DrawRidgeSpectrograms(Arguments arguments, string fileStem)
+        {
+            LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+            LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+            DirectoryInfo inputDirectory = arguments.InputDataDirectory;
+            DirectoryInfo outputDirectory = arguments.OutputDirectory;
+            string analysisType = "Towsey.Acoustic";
+            double spectrogramScale = 0.1;
+            TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
+
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
+
+
+
+            var sw = Stopwatch.StartNew();
+            string[] keys = { "SPT", "RVT", "RHZ", "RPS", "RNG" };
+            //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
+
+            // read the csv files of the indices in keys array
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+
+            var minuteOffset = TimeSpan.Zero;
+            var xScale = dataScale;
+            string colorMap1 = null;
+            int sampleRate = 22050;
+            int frameWidth = 512;
+
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
+
+            cs1.FileName = fileStem;
+            cs1.BackgroundFilter = 0.75;
+            cs1.IndexCalculationDuration = dataScale;
+            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
+
+            cs1.spectrogramMatrices = spectra;
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                return 0;
+            }
+            else if (cs1.GetCountOfSpectrogramMatrices() != keys.Length)
+            {
+                LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   Missing indices in the dictionary. Some files do not exist?");
+                return 0;
+            }
+
+
+
+            sw.Stop();
+            LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+            //Font stringFont = new Font("Tahoma", 9);
+            Font stringFont = new Font("Arial", 14);
+            int pixelWidth = 0;
+
+            // constants for labels 
+            Brush[] brush = { Brushes.Blue, Brushes.LightGreen, Brushes.Red, Brushes.Orange, Brushes.Purple };
+            Color[] color = { Color.Blue, Color.LightGreen, Color.Red, Color.Orange, Color.Purple }; 
+            int labelWidth = 70;
+            int labelYvalue = 0;
+            int labelIndex = 0;
+            Image label = null;
+            Graphics g1 = null;
+            Bitmap ridges = null;
+            Graphics g2 = null;
+
+            foreach (string key in keys)
+            {
+                Bitmap greyScaleImage = (Bitmap)cs1.DrawGreyscaleSpectrogramOfIndex(key);
+                pixelWidth = greyScaleImage.Width;
+
+                int height = greyScaleImage.Height;
+                if (label == null)
+                {
+                    label = new Bitmap(labelWidth, height);
+                    g1 = Graphics.FromImage(label);
+                    g1.Clear(Color.Gray);
+
+                    ridges = new Bitmap(pixelWidth, height);
+                    g2 = Graphics.FromImage(ridges);
+                    g2.Clear(Color.White);
+                }
+                labelYvalue += 30;
+                g1.DrawString(key, stringFont, brush[labelIndex], new PointF(4, labelYvalue));
+                //g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0);//draw upper boundary
+                //g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
+
+
+
+
+                // transfer greyscale image to colour image
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < pixelWidth; x++)
+                    {
+                        Color col = greyScaleImage.GetPixel(x, y);
+                        if (col.G < 150)
+                            ridges.SetPixel(x, y, color[labelIndex]);
+                    }
+                }
+
+                labelIndex += 1;
+
+            } //foreach key
+
+            Image[] imagearray = { label, ridges };
+            Image labelledImage = ImageTools.CombineImagesInLine(imagearray);
+            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".Ridges.png");
+            labelledImage.Save(fileName);
+
+
+
+            //string colourMode = "NEGATIVE";
+            //string colourMap = "BGN-POW-EVN";
+            //bool withChrome = true;
+            //Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
+            //TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * spectrogramScale);
+
+            //string title = fileStem;
+            //Image titleImage = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+            //int trackHeight = 20;
+            //Bitmap timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
+
+            return (int)(Math.Round(pixelWidth * spectrogramScale));
+        } // method DrawRidgeSpectrograms()
 
 
     } // class DrawLongDurationSpectrograms

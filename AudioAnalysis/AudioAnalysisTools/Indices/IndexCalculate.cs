@@ -171,16 +171,11 @@ namespace AudioAnalysisTools.Indices
             // BGN noise from a longer length of recording - i.e. add noiseBuffer either side. Typical noiseBuffer value = 5 seconds
             // If the index calculation duration = 60 seconds, then caluclate BGN from the full 60 seconds of recording.
             int noiseBuffer    = (int)(BGNoiseNeighbourhood * sampleRate);
-            //int bgnSampleStart = sampleStart - noiseBuffer;
-            //int bgnSampleEnd   = sampleEnd + noiseBuffer;
-            //if (bgnSampleStart < 0) bgnSampleStart = 0;
-            //if (bgnSampleEnd >= signalLength) bgnSampleEnd = signalLength - 1;
-            //int bgnSubsegmentSampleCount = bgnSampleEnd - bgnSampleStart + 1;
             AudioRecording bgnRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, noiseBuffer);
 
 
             // GET SUB-SEGMENT for RIDGE calculation AND EXTRACT ENVELOPE and SPECTROGRAM FROM SUBSEGMENT
-            int bufferFrameCount = 4;
+            int bufferFrameCount = 2; // 2 because need to allow for edge effects when using 5x5 grid to find ridges.
             int ridgeBuffer = frameSize * bufferFrameCount;
             AudioRecording ridgeRecording = GetRecordingSubsegment(recording, sampleStart, sampleEnd, ridgeBuffer);
 
@@ -429,12 +424,8 @@ namespace AudioAnalysisTools.Indices
             ridgeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(ridgeSpectrogram, spectralDecibelBGN);
             ridgeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(ridgeSpectrogram, nhDecibelThreshold);
 
-            double framesStepsPerSecond = 1 / frameStepTimeSpan.TotalSeconds;
-
             // thresholds in decibels
-            double peakThreshold  = 4.0;
-            double ridgeThreshold = 4.0;
-            var sptInfo = new SpectralPeakTracks(ridgeSpectrogram, framesStepsPerSecond, peakThreshold, ridgeThreshold);
+            var sptInfo = new SpectralPeakTracks(ridgeSpectrogram, frameStepTimeSpan);
             spectralIndices.SPT = sptInfo.SptSpectrum;
             spectralIndices.RHZ = sptInfo.RhzSpectrum;
             spectralIndices.RVT = sptInfo.RvtSpectrum;
@@ -579,20 +570,42 @@ namespace AudioAnalysisTools.Indices
         // ########################################################################################################################################################################
 
 
+        /// <summary>
+        /// returns a subsample of a recording with buffer on either side.
+        /// Main complication is dealing with edge effects.
+        /// </summary>
+        /// <param name="recording"></param>
+        /// <param name="sampleStart"></param>
+        /// <param name="sampleEnd"></param>
+        /// <param name="sampleBuffer"></param>
+        /// <returns></returns>
         public static AudioRecording GetRecordingSubsegment(AudioRecording recording, int sampleStart, int sampleEnd, int sampleBuffer)
         {
-            int sampleRate = recording.SampleRate;
             int signalLength = recording.WavReader.Samples.Length;
             int subsampleStart = sampleStart - sampleBuffer;
             int subsampleEnd   = sampleEnd + sampleBuffer;
-            if (subsampleStart < 0) subsampleStart = 0;
-            if (subsampleEnd >= signalLength) subsampleEnd = signalLength - 1;
+            int subsampleDuration = sampleEnd - sampleStart + 1 + (2 * sampleBuffer);
+            if (subsampleStart < 0)
+            {
+                subsampleStart = 0;
+                subsampleEnd = subsampleDuration - 1;
+            }
+            if (subsampleEnd >= signalLength)
+            {
+                subsampleEnd = signalLength - 1;
+                subsampleStart = signalLength - subsampleDuration;
+            }
+            // catch case where subsampleDuration < recording length.
+            if (subsampleStart < 0)
+            {
+                subsampleStart = 0;
+            }
             int subsegmentSampleCount = subsampleEnd - subsampleStart + 1;
             AudioRecording subsegmentRecording = recording;
             if (subsegmentSampleCount <= signalLength)
             {
                 double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, subsampleStart, subsegmentSampleCount);
-                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, recording.SampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }
             return subsegmentRecording;
