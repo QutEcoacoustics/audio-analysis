@@ -70,8 +70,9 @@ namespace AnalysisPrograms
             [ArgDescription("DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
             public DateTimeOffset? EndDate { get; set; }
 
-            public TimeSpan? timeSpanOffsetHint = new TimeSpan(10, 0, 0);
-            [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. Set default to east coast Australia")]
+            private TimeSpan? timeSpanOffsetHint = null;
+
+            [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
             public TimeSpan? TimeSpanOffsetHint {
                 get { return timeSpanOffsetHint; }
                 set { timeSpanOffsetHint = value; }
