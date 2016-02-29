@@ -809,8 +809,8 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
 
         private static KeyValuePair<string, double[,]>? ReadInSingleCsvFile(DirectoryInfo ipdir, string fileName, string indexKey)
         {
-            Log.Info($"Starting to read CSV file for index {indexKey}");
-            Stopwatch timer = Stopwatch.StartNew();
+            //Log.Info($"Starting to read CSV file for index {indexKey}");
+            //Stopwatch timer = Stopwatch.StartNew();
 
             FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + indexKey + ".csv"));
             double[,] matrix;
@@ -829,8 +829,8 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
                 return null;
             }
 
-            timer.Stop();
-            Log.Info($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
+            //timer.Stop();
+            //Log.Info($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
             return new KeyValuePair<string, double[,]>(indexKey, matrix);
         }
 

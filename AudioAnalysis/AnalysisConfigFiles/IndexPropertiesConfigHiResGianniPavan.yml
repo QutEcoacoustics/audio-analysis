@@ -561,9 +561,9 @@ POW:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 20.0
+  NormMax: 15.0
   CalculateNormMin: true
-  CalculateNormMax: false
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "dB"
 SPT:
@@ -572,8 +572,8 @@ SPT:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 2.0
-  NormMax: 6.0
+  NormMin: 0.0
+  NormMax: 5.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -584,8 +584,8 @@ RHZ:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 2.0
-  NormMax: 8.0
+  NormMin: 0.0
+  NormMax: 4.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -596,8 +596,8 @@ RVT:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 2.0
-  NormMax: 10.0
+  NormMin: 0.0
+  NormMax: 8.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -608,8 +608,8 @@ RPS:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 2.0
-  NormMax: 10.0
+  NormMin: 0.0
+  NormMax: 4.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -620,8 +620,8 @@ RNG:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 2.0
-  NormMax: 5.0
+  NormMin: 0.0
+  NormMax: 4.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices

@@ -59,7 +59,7 @@ namespace AnalysisPrograms
                 CubeHelix.DrawTestImage();
                 LoggedConsole.WriteLine("FINSIHED");
             }
-            
+
             if (false)  // construct 3Dimage of audio
             {
                 //TowseyLibrary.Matrix3D.TestMatrix3dClass();
@@ -120,13 +120,13 @@ namespace AnalysisPrograms
 
 
             /// used to caluclate eigen values and singular valuse
-            if (false)  
+            if (false)
             {
 
                 SvdAndPca.TestEigenValues();
                 Log.WriteLine("FINSIHED");
-                 Console.ReadLine();
-                 System.Environment.Exit(0);
+                Console.ReadLine();
+                System.Environment.Exit(0);
             }
 
 
@@ -253,7 +253,7 @@ namespace AnalysisPrograms
                 };
 
                 string sitePattern = "Subdir2";
-                string dayPattern  = "F2*.txt";
+                string dayPattern = "F2*.txt";
 
                 List<string> dirList = new List<string>();
                 foreach (string dir in topLevelDirs)
@@ -375,7 +375,7 @@ namespace AnalysisPrograms
             //HERVE GLOTIN
             // Combined audio2csv + zooming spectrogram task.
             // This is used to analyse Herve Glotin's BIRD50 data set.
-            if (true)
+            if (false)
             {
                 // ############################# IMPORTANT ########################################
                 // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
@@ -383,23 +383,58 @@ namespace AnalysisPrograms
                 // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),  
                 // to                SegmentMinDuration = TimeSpan.FromSeconds(1),
                 // THIS iS to analyse BIRD50 short recordings.
-
-                int speciesCount = 50;
-                DirectoryInfo dataDir = new DirectoryInfo(@"D:\SensorNetworks\WavFiles\Glotin\Bird50\AmazonBird50_training_input");
-                //DirectoryInfo dataDir = new DirectoryInfo(@"D:\SensorNetworks\WavFiles\Glotin\Bird50\AmazonBird50_testing_input");
-
                 string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
-                string parentDir     = @"C:\SensorNetworks\Output\BIRD50";
-                string outputDir  = parentDir + @"\Training";
-                string csvDir  = outputDir + @"\Towsey.Acoustic";
-                string zoomOutputDir = outputDir;
-                string imageOutputDir = parentDir + @"\TrainingImages";
-                string speciesLabelsFile = parentDir + @"\AmazonBird50_training_output.csv";
 
-                // set file name format - depends on train or test
-                //string fileStem = "ID0003";      //\ID0001\Towsey.Acoustic\
-                string fileStemFormatString = "ID{0:d4}"; // for training files
-                //string fileStemFormatString = "ID1{0:d3}"; // for testing files
+                //// HERVE GLOTIN BIRD50 TRAINING RECORDINGS
+                //DirectoryInfo dataDir = new DirectoryInfo(@"D:\SensorNetworks\WavFiles\Glotin\Bird50\AmazonBird50_training_input");
+                //string parentDir = @"C:\SensorNetworks\Output\BIRD50";
+                //string speciesLabelsFile = parentDir + @"\AmazonBird50_training_output.csv";
+                //int speciesCount = 50;
+                //////set file name format -depends on train or test. E.g.  "ID0003";     
+                //string fileStemFormatString = "ID{0:d4}";   // for training files
+                //string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+                //string learningMode = "Train";
+
+                //// HERVE GLOTIN BIRD50 TESTING RECORDINGS
+                DirectoryInfo dataDir = new DirectoryInfo(@"D:\SensorNetworks\WavFiles\Glotin\Bird50\AmazonBird50_testing_input");
+                string parentDir = @"C:\SensorNetworks\Output\BIRD50";
+                string speciesLabelsFile = null;
+                int speciesCount = 50;
+                ////set file name format -depends on train or test. E.g.  "ID0003";     
+                string fileStemFormatString = "ID1{0:d3}"; // for testing files
+                string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+                string learningMode = "Test";
+
+
+                // HERVE GLOTIN BOMBYX WHALE RECORDINGS
+                //DirectoryInfo dataDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\WhaleFromGlotin");
+                //string parentDir = @"C:\SensorNetworks\Output\Glotin\Bombyx_SpermWhales";
+                //string speciesLabelsFile = null;
+                //int speciesCount = 0;
+                //////set file name format -depends on train or test. E.g.  "ID0003";     
+                //string fileStemFormatString = null;
+                ////string fileStemFormatString = "ID1{0:d3}"; // for testing files
+                //string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiResGianniPavan.yml";
+                //string learningMode = "Train";
+
+
+                // GIANNI PAVAN SASSAFRAS RECORDINGS
+                //DirectoryInfo dataDir = new DirectoryInfo(@"C:\SensorNetworks\WavFiles\GianniPavan\SABIOD - TEST SASSOFRATINO");
+                //string parentDir = @"C:\SensorNetworks\Output\GianniPavan";
+                //string speciesLabelsFile = null;
+                //int speciesCount = 0;
+                //string fileStemFormatString = null;
+                //string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiResGianniPavan.yml";
+                //string learningMode = "Train";
+
+
+                // ######################################################################
+
+                string outputDir      = parentDir + @"\" + learningMode;
+                string imageOutputDir = parentDir + @"\" + learningMode + "Images";
+                string csvDir         = outputDir + @"\Towsey.Acoustic";
+                string zoomOutputDir  = outputDir;
+
 
                 string audio2csvConfigPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
                 string hiResZoomConfigPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramHiResConfig.yml";
@@ -415,8 +450,14 @@ namespace AnalysisPrograms
                 // READ IN THE SPECIES LABELS FILE AND SET UP THE DATA
                 string[] fileID = new string[wavFiles.Length];
                 int[] speciesID = new int[speciesCount];
-                ReadGlotinsSpeciesLabelFile(speciesLabelsFile, wavFiles.Length, out fileID, out speciesID);
-
+                if (speciesLabelsFile != null)
+                {
+                    ReadGlotinsSpeciesLabelFile(speciesLabelsFile, wavFiles.Length, out fileID, out speciesID);
+                }
+                else // make seperate species name for each file
+                {
+                    speciesID = new int[wavFiles.Length];
+                }
 
 
                 //LOOP THROUGH ALL WAV FILES
@@ -428,8 +469,8 @@ namespace AnalysisPrograms
                     recordingPath = file.FullName;
                     string idName = Path.GetFileNameWithoutExtension(file.FullName);
                     string name = String.Format("{0}_Species{1:d2}", idName, speciesID[i]);
-                    outputDir = parentDir + @"\Training\" + name;
-                    csvDir    = parentDir + @"\Training\" + name + @"\Towsey.Acoustic";
+                    outputDir = parentDir + @"\" + learningMode + @"\" + name;
+                    csvDir    = parentDir + @"\" + learningMode + @"\" + name + @"\Towsey.Acoustic";
                     zoomOutputDir = outputDir;
                     Console.WriteLine("\n\n");
                     Console.WriteLine(String.Format(@">>>>{0}: File<{1}>", i, name));
@@ -460,8 +501,8 @@ namespace AnalysisPrograms
 
                         // need to find out how long the recording is.
                         string fileName = Path.GetFileNameWithoutExtension(audio2csvArguments.Source.FullName);
-                        fileName += @"__Towsey.Acoustic.ACI.csv";
-                        List<string> data = FileTools.ReadTextFile(Path.Combine(csvDir, fileName));
+                        string testFileName = fileName + @"__Towsey.Acoustic.ACI.csv";
+                        List<string> data = FileTools.ReadTextFile(Path.Combine(csvDir, testFileName));
                         int lineCount = data.Count - 1;  // -1 for header.
                         int imageWidth = lineCount;
                         //assume scale is index calculation duration = 0.1s
@@ -510,8 +551,9 @@ namespace AnalysisPrograms
 
 
                         // DRAW THE VARIOUS IMAGES
-                        string fileStem = String.Format(fileStemFormatString, (i + 1)); // training images
-                        string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+                        string fileStem = fileName;
+                        if (fileStemFormatString != null)
+                            fileStem = String.Format(fileStemFormatString, (i + 1)); // training images
 
                         var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                         {
@@ -520,6 +562,11 @@ namespace AnalysisPrograms
                             OutputDirectory = imageOutputDir.ToDirectoryInfo(),
                             IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
                         };
+                        // Create directory if not exists
+                        if (!LDFCSpectrogramArguments.OutputDirectory.Exists)
+                        {
+                            LDFCSpectrogramArguments.OutputDirectory.Create();
+                        }
 
                         // there are two possible tasks
                         // 1: draw the aggregated grey scale spectrograms 
@@ -533,7 +580,7 @@ namespace AnalysisPrograms
                         string[] copyArray = { "POW", "EVN", "SPT", "RHZ", "RVT", "RPS", "RNG" };
                         DirectoryInfo sourceDirectory = new DirectoryInfo(csvDir);
                         string destinationDirectory = parentDir + @"\TrainingClassifier";
-                        foreach(string key in copyArray)
+                        foreach (string key in copyArray)
                         {
                             // ID0002__Towsey.Acoustic.BGN.csv    fileName += @"__Towsey.Acoustic.ACI.csv";
                             string sourceFileName = String.Format(idName + "__Towsey.Acoustic." + key + ".csv");
@@ -554,7 +601,7 @@ namespace AnalysisPrograms
                     }
 
                 } // end loop through all wav files
-             
+
 
             }  // END combined audio2csv + zooming spectrogram task.
 
@@ -573,58 +620,141 @@ namespace AnalysisPrograms
                 string histoPath = Path.Combine(histoDir, "TrainingRecordingDurations.png");
                 //string histoPath = Path.Combine(histoDir, "TestingRecordingDurations.png");
                 // set up  histogram of recording durations
-                int histogramWidth = 600;
+                int histogramWidth = 600; // equivalent to ten minutes at 0.1 second resolution
                 int[] recordingDurations = new int[histogramWidth];
 
 
                 // set up IP and OP directories
-                string inputDir = @"C:\SensorNetworks\Output\BIRD50\Testing";
-                //string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingImages";
-                string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
+                string inputDir = @"C:\SensorNetworks\Output\BIRD50\Training";
+                string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingImages";
+                //string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
                 string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
-                //int count = 924; //trainingCount
-                int count = 375; //testCount
+
+                // comment next two lines when debugging a single recording file
+                var inputDirInfo = new DirectoryInfo(inputDir);
+                //string match = @"*.wav";
+                //DirectoryInfo[] directories = inputDirInfo.GetDirectories(match, SearchOption.AllDirectories);
+                DirectoryInfo[] directories = inputDirInfo.GetDirectories();
+                int count = directories.Length;
                 //count = 3;
 
                 //string fileStem = "ID0003";      //\ID0001\Towsey.Acoustic\
-                //string fileStemFormatString = "ID{0:d4}"; // for training files
-                string fileStemFormatString = "ID1{0:d3}"; // for testing files
+                string fileStemFormatString = "ID{0:d4}"; // for training files
+                //string fileStemFormatString = "ID1{0:d3}"; // for testing files
 
-                for (int i = 1; i <= count; i++)
+                for (int i = 0; i < count; i++)
                 {
 
-                    string fileStem = String.Format(fileStemFormatString, i); // training images
-                    //string fileStem = String.Format("ID{0:d4}", i); // training images
-                    //string fileStem = String.Format("ID1{0:d3}", i); // testing images
+                    string fileStem = String.Format(fileStemFormatString, (i + 1));
 
-                    string dataDir = inputDir + @"\" + fileStem + @"\Towsey.Acoustic\";
+                    string dataDir = directories[i].FullName + @"\Towsey.Acoustic\";
                     //string imageOutputDir = inputDir + @"\" + fileStem;
 
-                var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
-                {
-                    // use the default set of index properties in the AnalysisConfig directory.
-                    InputDataDirectory = dataDir.ToDirectoryInfo(),
-                    OutputDirectory = imageOutputDir.ToDirectoryInfo(),
-                    IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
-                };
+                    var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+                    {
+                        // use the default set of index properties in the AnalysisConfig directory.
+                        InputDataDirectory = dataDir.ToDirectoryInfo(),
+                        OutputDirectory = imageOutputDir.ToDirectoryInfo(),
+                        IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
+                    };
 
 
-                // there are two possible tasks
-                // 1: draw the aggregated grey scale spectrograms 
-                //int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
+                    // there are two possible tasks
+                    // 1: draw the aggregated grey scale spectrograms 
+                    int secDuration = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
 
-                // 2: draw the coloured ridge spectrograms 
-                int secDuration = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
+                    // 2: draw the coloured ridge spectrograms 
+                    DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
 
 
                     if (secDuration >= recordingDurations.Length) secDuration = recordingDurations.Length - 1;
-                recordingDurations[secDuration]++;                    
-            }
-                string title = "Recording Duration: Width = "+ histogramWidth + "secs"; 
-                Image histoImage =  ImageTools.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
+                    recordingDurations[secDuration]++;
+                }
+                string title = "Recording Duration: Width = " + histogramWidth + "secs";
+                Image histoImage = ImageTools.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
                 histoImage.Save(histoPath);
 
             } // Herve Glotin's BIRD50 Dataset,   HIres spectrogram images
+
+
+
+
+            if (true)
+            {
+                // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
+                // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
+                // need to change    SegmentMinDuration = TimeSpan.FromSeconds(20),  
+                // to                SegmentMinDuration = TimeSpan.FromSeconds(1),
+                // THIS iS to analyse BIRD50 short recordings.
+                string histoDir = @"C:\SensorNetworks\Output\BIRD50";
+                string histoPath = Path.Combine(histoDir, "TrainingRecordingDurations.png");
+                //string histoPath = Path.Combine(histoDir, "TestingRecordingDurations.png");
+                // set up  histogram of recording durations
+                //int histogramWidth = 600; // equivalent to ten minutes at 0.1 second resolution
+                int totalRecordingLength = 0;
+
+
+                // set up IP and OP directories
+                string inputDir = @"C:\SensorNetworks\Output\BIRD50\Training";
+                string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingImagesTEMP";
+                //string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
+                string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
+
+                // comment next two lines when debugging a single recording file
+                var inputDirInfo = new DirectoryInfo(inputDir);
+                //string match = @"*.wav";
+                //DirectoryInfo[] directories = inputDirInfo.GetDirectories(match, SearchOption.AllDirectories);
+                DirectoryInfo[] directories = inputDirInfo.GetDirectories();
+                int count = directories.Length;
+                //count = 619;
+
+                //string fileStem = "ID0003";      //\ID0001\Towsey.Acoustic\
+                string fileStemFormatString = "ID{0:d4}"; // for training files
+                //string fileStemFormatString = "ID1{0:d3}"; // for testing files
+
+                for (int i = 0; i < count; i++)
+                {
+
+                    string fileStem = String.Format(fileStemFormatString, (i + 1));
+                    Console.WriteLine("\n\n");
+                    Console.WriteLine(String.Format(@">>>>{0}: File<{1}>", i, fileStem));
+
+
+
+
+                    string dataDir = directories[i].FullName + @"\Towsey.Acoustic\";
+                    //string imageOutputDir = inputDir + @"\" + fileStem;
+
+                    var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+                    {
+                        // use the default set of index properties in the AnalysisConfig directory.
+                        InputDataDirectory = dataDir.ToDirectoryInfo(),
+                        OutputDirectory = imageOutputDir.ToDirectoryInfo(),
+                        IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
+                    };
+
+
+                    // there are two possible tasks
+                    // 1: draw the aggregated grey scale spectrograms 
+                    int rowCount = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, fileStem);
+
+                    // 2: draw the coloured ridge spectrograms 
+                    //DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
+
+
+                    //if (secDuration >= recordingDurations.Length)
+                    //    secDuration = recordingDurations.Length - 1;
+                    totalRecordingLength += rowCount;
+                    Console.WriteLine("Recording length = " + rowCount);
+                }
+                //string title = "Recording Duration: Width = " + histogramWidth + "secs";
+                //Image histoImage = ImageTools.DrawHistogram(title, recordingDurations, 95, null, histogramWidth, 50);
+                //histoImage.Save(histoPath);
+                Console.WriteLine("\nTotal recording length = " + totalRecordingLength);
+                Console.WriteLine("Av recording length = " + (totalRecordingLength / (double)count));
+
+            } // Herve Glotin's BIRD50 Dataset,   HIres spectrogram images
+
 
 
 
@@ -670,12 +800,12 @@ namespace AnalysisPrograms
                         if (speciesID[j] != speciesLabel) continue;
 
                         // get the file name
-                        FileInfo file = new FileInfo(Path.Combine(imageInputDir, fileID[j]+ ".Ridges.png"));
+                        FileInfo file = new FileInfo(Path.Combine(imageInputDir, fileID[j] + ".Ridges.png"));
                         Image bmp = ImageTools.ReadImage2Bitmap(file.FullName);
                         imageList.Add(bmp);
 
 
-                        speciesNumbers[i] ++;
+                        speciesNumbers[i]++;
                     } // end for loop j
 
                     Image combinedImage = ImageTools.CombineImagesVertically(imageList, 900);
@@ -695,6 +825,58 @@ namespace AnalysisPrograms
             } // Herve Glotin's BIRD50 Dataset,  Joins images of the same species
 
 
+            if (false)
+            {
+                // ############################# IMPORTANT ########################################
+                // THIS iS to produce histogram from Herve Glotin's SPERM WHALE BOMBYX recordings.
+                string filePath = @"C:\SensorNetworks\Output\Glotin\Bombyx_SpermWhales\SpermWhaleSpikes_EntropyTimeSeries_0.1secScale.txt";
+                string histoFileName = @"C:\SensorNetworks\Output\Glotin\Bombyx_SpermWhales\histogram.txt";
+                string weightedHistoFileName = @"C:\SensorNetworks\Output\Glotin\Bombyx_SpermWhales\weightedHistogram.txt";
+
+
+                var lines = FileTools.ReadTextFile(filePath);
+
+                double[] entropy = new double[lines.Count];
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    entropy[i] = Double.Parse(lines[i]);
+                }
+
+                bool[] peaks = new bool[lines.Count];
+                for (int i = 1; i < entropy.Length-1; i++)
+                {
+                    if ((entropy[i] > 0.3) && (entropy[i] > entropy[i-1]) && (entropy[i] > entropy[i+1]))
+                    {
+                        peaks[i] = true;
+                    }
+                }
+
+                int searchWindow = 16;  // i.e. 1.6 seconds given time scale = 0.1s per value.
+                int[] histogram = new int[searchWindow];
+                double[] weightedHistogram = new double[searchWindow];
+                int peakCount = 0;
+                for (int i = 0; i < peaks.Length - searchWindow; i++)
+                {
+                    if (!peaks[i]) continue;
+                    peakCount++;
+
+                    //accumulate peak distances in histogram
+                    for (int j = 1; j < searchWindow; j++)
+                    {
+                        if (peaks[i + j])
+                        {
+                            histogram[j] += 1;
+                            weightedHistogram[j] += ((entropy[i] + entropy[i+j])/(double)2);
+                        }
+                    }
+
+                }
+
+                FileTools.WriteArray2File(histogram, false, histoFileName);
+                FileTools.WriteArray2File(weightedHistogram, weightedHistoFileName);
+
+
+            } //if (true)
 
 
 
@@ -705,27 +887,27 @@ namespace AnalysisPrograms
 
 
         private static void ReadGlotinsSpeciesLabelFile(string speciesLabelsFile, int count, out string[] fileID, out int[] speciesID)
-        { 
+        {
             // READ IN THE SPECIES LABELS FILE AND SET UP THE DATA
-            var lines = FileTools.ReadTextFile(speciesLabelsFile);
+            var lines = new List<string>();
+            if (speciesLabelsFile != null) lines = FileTools.ReadTextFile(speciesLabelsFile);
 
             speciesID = new int[lines.Count];
             fileID = new string[lines.Count];
 
-            if (lines.Count != count)
+            if (((speciesLabelsFile != null)) && (lines.Count != count))
             {
                 Console.WriteLine("lineCount != count    {0}  !=  {1}", lines.Count, count);
                 return;
             }
 
-            for (int i = 0; i<lines.Count; i++)
+            for (int i = 0; i < lines.Count; i++)
             {
                 string[] words = lines[i].Split(',');
                 fileID[i] = words[0];
                 speciesID[i] = Int32.Parse(words[1]);
             }
         } // ReadGlotinsSpeciesLabelFile()
-
 
 
 

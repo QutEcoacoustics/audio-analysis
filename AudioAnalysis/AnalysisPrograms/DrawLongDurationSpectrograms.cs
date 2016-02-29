@@ -225,22 +225,48 @@ namespace AnalysisPrograms
             int sampleRate = 22050;
             int frameWidth = 512;
             double spectrogramScale = 0.1;
+            double backgroundFilter = 0.0; // 0.0 means small values are removed.
             string analysisType = "Towsey.Acoustic";
             string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
 
             LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
             LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
-            DirectoryInfo inputDirectory  = arguments.InputDataDirectory;
+            DirectoryInfo inputDirectory = arguments.InputDataDirectory;
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
             TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
-
-            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
-
-
 
             var sw = Stopwatch.StartNew();
             //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+            // note: the spectra are oriented as per visual orientation.
+            int rowCount = spectra[keys[0]].GetLength(1);
+
+
+
+            string newKey = "PHN";
+            if (! spectra.ContainsKey(newKey))
+            {
+                // create a composite index from three related indices - take the max
+                // Assume that the values are comparable so that max is meaningful.
+                double[,] phnIndex = CreateNewCompositeIndex(spectra, "RHZ-RPS-RNG");
+                // Name the index PHN because it is composite of positive, horiz and negative ridge values.
+                spectra.Add(newKey, phnIndex);
+            }
+
+            // read in index properties and create a new entry for "PHN"
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
+            if (! indexProperties.ContainsKey(newKey))
+            {
+                IndexProperties phnProperties = new IndexProperties();
+                phnProperties.Key = newKey;
+                phnProperties.Name = newKey;
+                phnProperties.NormMin = 2.0;
+                phnProperties.NormMax = 10.0;
+                phnProperties.CalculateNormMin = false;
+                phnProperties.CalculateNormMax = false;
+                indexProperties.Add(newKey, phnProperties);
+            }
+        
 
             var minuteOffset = TimeSpan.Zero;
             var xScale       = dataScale;
@@ -249,7 +275,7 @@ namespace AnalysisPrograms
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
 
             cs1.FileName = fileStem;
-            cs1.BackgroundFilter = 0.75;
+            cs1.BackgroundFilter = backgroundFilter;
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
 
@@ -268,6 +294,7 @@ namespace AnalysisPrograms
             //Font stringFont = new Font("Tahoma", 9);
             Font stringFont = new Font("Arial", 14);
             int pixelWidth = 0;
+
 
             foreach (string key in keys)
             {
@@ -305,7 +332,7 @@ namespace AnalysisPrograms
             int trackHeight = 20;
             Bitmap timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
-            colourMap = "RHZ-RVT-SPT";
+            colourMap = "PHN-RVT-SPT";
             Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
             list = new List<Image>();
             list.Add(titleImage); 
@@ -318,7 +345,7 @@ namespace AnalysisPrograms
             combinedImage.Save(fileName);
 
 
-            return (int)(Math.Round(pixelWidth * spectrogramScale));
+            return rowCount;
         } // method DrawAggregatedSpectrograms()
 
         public static int DrawRidgeSpectrograms(Arguments arguments, string fileStem)
@@ -445,6 +472,34 @@ namespace AnalysisPrograms
 
             return (int)(Math.Round(pixelWidth * spectrogramScale));
         } // method DrawRidgeSpectrograms()
+
+
+        public static double[,] CreateNewCompositeIndex(Dictionary<string, double[,]> spectra, string sourceFeatures)
+        {
+            string[] keys = sourceFeatures.Split('-');
+
+
+            int rowCount = spectra[keys[0]].GetLength(0);
+            int colCount = spectra[keys[0]].GetLength(1);
+            double[,] compositeIndex = new double[rowCount, colCount];
+            //double[] array = new double[keys.Length];
+
+            for (int row = 0; row < rowCount; row++)
+            {
+                for (int col = 0; col < colCount; col++)
+                {
+                    double value = 0.0;
+                    for (int i = 0; i < keys.Length; i++)
+                    {
+                        if (value < (spectra[keys[i]])[row, col])
+                             value = (spectra[keys[i]])[row, col];
+                    }
+                    compositeIndex[row, col] = value;                  
+                }
+            }
+            return compositeIndex;
+        }
+        
 
 
     } // class DrawLongDurationSpectrograms
