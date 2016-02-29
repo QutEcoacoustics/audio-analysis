@@ -136,8 +136,9 @@ namespace AudioAnalysisTools
 
 
             double[,] matrix = dbSpectrogramData;
-            ImageTools.DrawMatrix(matrix, @"C:\SensorNetworks\Output\BIRD50\temp\SpectrogramBeforeWeinerFilter.png");
+            //ImageTools.DrawMatrix(matrix, @"C:\SensorNetworks\Output\BIRD50\temp\SpectrogramBeforeWeinerFilter.png");
 
+            // DO NOT USE WIENER FILTERING because smooths the ridges and lose definition
             //matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
             //ImageTools.DrawMatrix(matrix, @"C:\SensorNetworks\Output\BIRD50\temp\hitsSpectrogramAfterWeinerFilter.png");
 

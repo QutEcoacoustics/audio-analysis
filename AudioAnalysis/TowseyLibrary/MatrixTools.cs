@@ -531,7 +531,9 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Filters background values by applying a polynomial that lies between y=x and y=x^2.
-        /// That is, y=x represents the unfiltered matrix and y=x^2 represents the maximally filtered matrix.
+        /// There are two extremes:
+        /// When filterCoeff >= 1.0, the matrix remains unchanged, that is, that is, y=x represents the unfiltered matrix.
+        /// When filterCoeff LT  0.1, the matrix is maximally filtered, i.e. y=x^2 represents the filtered matrix.
         /// In a grey scale image, this has the effect of diminshing the low amplitude values, thereby enhancing the highlights.
         /// 
         /// </summary>
