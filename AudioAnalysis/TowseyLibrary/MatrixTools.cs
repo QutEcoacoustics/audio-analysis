@@ -428,6 +428,48 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Noise reduce matrix by subtracting the median value and truncating negative values to zero.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] SubtractMedian(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[] array = DataTools.Matrix2Array(matrix);
+            double median = DataTools.GetMedian(array);
+
+            double[,] outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = matrix[r, c] - median;
+                    if (outM[r, c] < 0.0) outM[r, c] = 0.0;
+                }
+            }
+            return outM;
+        }
+
+        public static double[,] SubtractConstant(double[,] matrix, double constant)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = matrix[r, c] - constant;
+                    if (outM[r, c] < 0.0) outM[r, c] = 0.0;
+                }
+            }
+            return outM;
+        }
+
+        /// <summary>
         /// truncate values below threshold to zero.
         /// </summary>
         /// <param name="matrix"></param>
@@ -689,7 +731,7 @@ namespace TowseyLibrary
             //if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
             double min;
             double max;
-            MinMax(matrix, out min, out max);
+            DataTools.MinMax(matrix, out min, out max);
             if (max <= min) throw new ArgumentException("max="+max+" must be > min="+min);
             minCut = min;
             maxCut = max;
@@ -736,7 +778,9 @@ namespace TowseyLibrary
         }// end of GetPercentileCutoffs()
 
 
-//=============================================================================
+
+
+        //=============================================================================
 
 
   public static void writeMatrix(double[,] matrix, string format)

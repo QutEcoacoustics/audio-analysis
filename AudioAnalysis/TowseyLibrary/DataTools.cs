@@ -431,6 +431,21 @@ namespace TowseyLibrary
         }
 
 
+
+        /// <summary>
+        /// return median of an array 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double GetMedian(double[] v)
+        {
+            Array.Sort(v);
+            int halfway = v.Length / 2;
+
+            return v[halfway];
+        }
+
+
         /// <summary>
         /// counts the zero crossings in a signal
         /// 
