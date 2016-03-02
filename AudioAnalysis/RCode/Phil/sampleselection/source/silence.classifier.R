@@ -18,18 +18,54 @@
 
 
 
-BirdClassifier <- function () {
-    # do all the steps needed for for bird classifier
+
+RunBirdClassifier <- function () {
+    # does all the steps needed to run and inspect the classifier on existing serf data
+    
+    # classify the seconds
+    # reads output from disk, prompting for user choice if needed
+    res <- ClassifySeconds()
+    
+    InspectClassifiaction(res$data)
+    
+    
+}
+
+
+
+BuildBirdClassifier <- function () {
+    # do all the steps needed for for training and testing the model
+    
+    # builds a list of seconds based on the available training data
     seconds <- BuildSecondList()
+    
+    # adds a column with the score for annotation cover (estimate of bird activity)
     seconds <- CalculateAnnotationCover(seconds)
+    
+    # use the annotation cover score to label the training/testing data as bird or not
+    # using an arbitrary threshold of annotation cover score
     seconds <- CalculateHasBird(seconds)
+    
+    # calculate the features used to classifry
     features <- CalculateSilenceFeatures(seconds)
+    
+    # just for run, get the correlations between the annotation cover and each feature
     corr <- GetCorrelations(seconds, features)
+    
+    # after manual inspection of all the experimental features, keep some and discard others
     features <- KeepSelectedFeatures(features)
+    
+    # plots the scaled value for the features against the bird cover
+    # and against the specrogram for manual inspection
     PlotFeatures(seconds, features)
+    
+    # train the model
     seconds <- TrainModel(seconds, features)
+    
+    # inspect the classification result, but rendering spectrograms of each class
     InspectClassifiaction(seconds)
 }
+
 
 ClassifySeconds <- function (seconds = NULL, silence.features = NULL) {
     # 
@@ -133,6 +169,21 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
     #           if false will choose rows spaced evenly out across the dataframe. 
     #           advantage of false is that it is deterministic so cached spectrograms 
     #           will be used if run multiple times
+
+    
+    if (length(rows) == 1) {
+        
+        if (random) {
+            seconds <- seconds[sample(1:nrow(seconds), rows, replace=FALSE),]
+        } else {
+            selected.rows <- round(seq(1, nrow(seconds), (nrow(seconds) - 1) / (rows - 1)))
+            seconds <- seconds[selected.rows,]
+        }
+        
+        
+    } else {
+        selection <- seconds[rows,]
+    }
     
     
     # replace 'wave.path' with file.path for compatibility with inspection function
@@ -145,70 +196,21 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
         seconds$features <- paste(features, collapse = "\n")
     }
     
+    seconds$link <- BawLink(site = seconds$site, 
+                                         date = seconds$date, 
+                                         start.sec = seconds$file.sec, 
+                                         end.sec = seconds$file.sec + seconds$segment.duration, 
+                                         margin = 5)
     
-    if (length(rows) == 1) {
-        
-        if (random) {
-            selection <- seconds[sample(1:nrow(seconds), rows, replace=FALSE),]
-        } else {
-            selected.rows <- round(seq(1, nrow(seconds), (nrow(seconds) - 1) / (rows - 1)))
-            selection <- seconds[selected.rows,]
-        }
-        
-        
-    } else {
-        selection <- seconds[rows,]
-    }
     
 
     
-    spectro.list <- SaveSpectroImgsForInspection(selection, use.parallel = FALSE)
-    selection$img.path <- spectro.list
-    
-    return(HtmlInspector(selection, template.file = 'silence.classification.inspector.html', singles = list(title = 'Inspect Silence Classification')))
-    
-    
-    
-}
-
-InspectClassification.old <- function (seconds, by.file = FALSE) {
-    # creates a html page, with 2 columns
-    # left is no bird, right is bird
 
     
-
-    for (s in 1:nrow(seconds)) {
-
-        # create the spectrogram for this second
-        spectro <- Sp.CreateFromFile(path = AudioPath(seconds$wave.path[s]),
-                                     offset = seconds$file.sec[s],
-                                     duration = 1
-        )
-        
-        spectro$vals[1:nrow(spectro$vals),1] <- min(spectro$vals)
- 
-        
-        if (seconds$classified.has.bird[s]) {
-            has.bird <- cbind(has.bird, spectro$vals)
-        } else {
-            no.bird <- cbind(no.bird, spectro$vals)
-        }
-        
-    }
+    spectro.list <- SaveSpectroImgsForInspection(seconds, use.parallel = FALSE)
+    seconds$img.path <- spectro.list
     
-    # merge rows into 1
-    # we don't know wide either one is so find the wider one
-    width <- max(ncol(has.bird), ncol(no.bird))
-    height <- nrow(has.bird) + nrow(no.bird) + 1
-    
-    canvas <- matrix(min(no.bird), nrow = height, ncol = width)
-    canvas[1:nrow(has.bird),1:ncol(has.bird)] <- has.bird
-    canvas[1:nrow(no.bird)+nrow(has.bird)+1,1:ncol(no.bird)] <- no.bird
-    
-    Sp.DrawVals(canvas, 1)
-    
-    
-    
+    return(HtmlInspector(seconds, template.file = 'silence.classification.inspector.html', singles = list(title = 'Inspect Silence Classification')))
     
 }
 
@@ -224,8 +226,6 @@ InspectClassificationTesting <- function (seconds, by.file = FALSE) {
     if ('is.train' %in% colnames(seconds)) {
         seconds <- seconds[!seconds$is.train,]     
     }
-
-    
     
     has.bird <- NULL
     no.bird <- NULL
@@ -258,9 +258,6 @@ InspectClassificationTesting <- function (seconds, by.file = FALSE) {
     canvas[1:nrow(no.bird)+nrow(has.bird)+1,1:ncol(no.bird)] <- no.bird
     
     Sp.DrawVals(canvas, 1)
-    
-    
-    
     
 }
 

@@ -1,8 +1,12 @@
-
+# depending on the environment (e.g. which computer, which disk is plugged in)
+# paths may differ. 
+# for each source of data (e.g. cahce, original audio etc) a list of paths is given, one for each environment
+# the paths are checked one by one to find the one that exists
 
 paths <- list(
     audio = c("/Volumes/My Passport/Phil#61/Audio/OriginalAudio/TaggedRecordings",
-             "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
+             "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings",
+             "D:/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
               '/Users/n8933464/Documents/sample_selection_output/cache'),
@@ -11,8 +15,22 @@ paths <- list(
     
 
 
-# path to cache
-
+TestPaths <- function () {
+  errors <- character()
+  for (path.group in 1:length(paths)) {
+    exists <- sapply(paths[[path.group]], file.exists)
+    if (!any(exists)) {
+      errors <- cbind(errors, names(paths)[path.group])
+    }
+  }
+  
+  if (length(errors) > 0) {
+    errors <- paste(errors, collapse = ", ")
+    warning(paste("path not defined for ", errors, ". This will cause problems if you need that data"))
+  }
+  
+}
+TestPaths()
 
 
 

@@ -4,9 +4,10 @@ g.hash.dir <- file.path(g.output.parent.dir, 'hash')
 g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')
 
 
-g.cachepath <- c(
-    '/Volumes/files/qut_data/cache'
-    )
+#g.cachepath <- c(
+#    '/Volumes/files/qut_data/cache',
+#    '/Users/n8933464/Documents/sample_selection_output/cache'
+#    )
 
 
 
@@ -87,12 +88,7 @@ ReadOutput <- function (name = NULL,
     }
     
     SetLastAccessed.recursive(meta.row$name, meta.row$version)
-    type <- GetType(meta.row$name)
-    if (type == 'object') {   
-        val <- (ReadObject(meta.row$name, meta.row$version))
-    } else {
-        val <- (ReadCsv(meta.row$name, meta.row$version))
-    }
+    val <- ReadOutputFile(meta.row$name, meta.row$version)
     if (include.meta) {
         meta <- ExpandMeta(meta.row)
         meta$indirect.dependencies <- GetIndirectDependenciesStack(meta.row$name, meta.row$version)
@@ -102,6 +98,7 @@ ReadOutput <- function (name = NULL,
         return(val)
     }
 }
+
 
 
 
@@ -369,7 +366,7 @@ GetType <- function (name) {
     # species.in.each.min and optimal.samples are lists
     
     
-    if (name %in% c('clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples','silence.model')) {
+    if (name %in% c('clustering', 'clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples','silence.model')) {
         return('object')
     } else {
         return('csv')
@@ -503,48 +500,87 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
     
 }
 
-
+ReadOutputFile <- function (name, version) {
+  # given a name and version, figures out if it should be saved as csv or R object
+  # then calls the relevant function
+  type <- GetType(name)
+  path <- OutputPath(name, version, unzip = TRUE)
+  if (type == 'object') {   
+    val <- ReadObject(path)
+  } else {
+    val <- ReadCsv(path)
+  }
+  return(val)
+}
 WriteOutputFile <- function (x, name, v.num) {
+  # given some data, the name (type of output) and version
+  # figures out whether to save as csv or object
+  # then calls the relevant function
     type <- GetType(name)
+    path <- OutputPath(name, v.num)
     if (type == 'object') {    
-        return(WriteObject(x, name, v.num))
+        WriteObject(x, path)
     } else {
-        return(WriteCsv(x, name, v.num))
+        WriteCsv(x, path)
+    }
+    if (file.exists(path) && file.exists(ZipPath(path))) {
+      # confirm that the save has worked (path exists) then
+      # delete any zipped version
+      file.remove(ZipPath(path))
     }
     
 }
 
-ReadObject <- function (name, version) {
-    path <- OutputPath(name, version, 'object')
-    if (file.exists(path)) {  
-        load(path)
-        return(x) # this is the name of the variable used when saving
-    } 
-    return(FALSE) 
+
+ReadObject <- function (path) {
+  if (file.exists(path)) {  
+    load(path)
+    return(x) # this is the name of the variable used when saving
+  } 
+  return(FALSE) 
 }
-WriteObject <- function (x, name, version) {
-    path <- OutputPath(name, version, 'object')
-    f <- save(x, file = path) 
+WriteObject <- function (x, path) {
+  f <- save(x, file = path)
 }
+
+
 # read/write wrappers for csv with correct options set
-ReadCsv <- function (name, v.num) {
-    path <- OutputPath(name, v.num, 'csv')
+ReadCsv <- function (path) {
     return(read.csv(path, header = TRUE, stringsAsFactors=FALSE))
 }
-WriteCsv <- function (x, name, v.num) {
-    path <- OutputPath(name, v.num, 'csv')
-    write.csv(x, path, row.names = FALSE)
+WriteCsv <- function (x, path) {
+  write.csv(x, path, row.names = FALSE)
 }
 
 
-OutputPath <- function (name, version, ext = NA) {
+OutputPath <- function (name, version, ext = NA, unzip.file = FALSE) {
+  # returns the path to the file for the name and version
+  # 
+  # Args:
+  #   name: string
+  #   version: int
+  #   ext: string; the file extension. If ommitted, will check the correc type for the name of the output
+  #   unzip.file: boolean; if true, and the file has been zipped, will first unzip the file
+  
     if (!is.character(ext)) {
         ext <- GetType(name)    
     }
     fn <- paste(as.character(name), sprintf("%03d", as.integer(version)), ext, sep = '.')
-    return(file.path(g.output.master.dir, fn))
+    
+    path <- file.path(g.output.master.dir, fn)
+    if (!file.exists(path) && unzip.file) {
+      zipped.path <- ZipPath(path)
+      success <- unzip(zipped.path, junkpaths = TRUE, exdir = g.output.master.dir)
+      if (success < 2 & file.exists(path)) {
+        file.remove(zipped.path)
+      }
+    }
+    
+    return(path)
 }
-
+ZipPath <- function (path) {
+  return(paste0(path, '.zip'))
+}
 
 ReadMeta <- function () {
 
@@ -721,7 +757,7 @@ VerifyMeta <- function (meta = NULL) {
     }
     files.exist <- apply(meta, 1, function (row) {
         path <- OutputPath(row['name'], row['version'])
-        return(file.exists(path))
+        return(file.exists(path) || file.exists(paste0(path, '.zip')))
     })
     meta$file.exists <- as.integer(files.exist)
     WriteMeta(meta)
@@ -857,5 +893,50 @@ WriteCache <- function (x, cache.id) {
 }
 
 
+ZipOldFiles <- function () {
+  #
   
+  meta <- ReadMeta()
+  
+  for (r in 1:nrow(meta)) {
+    
+    meta.time <- as.POSIXlt(meta$date[r], tz = Sys.timezone())
+    now <- Sys.time()
+    diff <- difftime(now, meta.time, tz = Sys.timezone(), units = 'days')
+    
+    if (diff > 30) {
+      
+      file.path <- OutputPath(meta$name[r], meta$version[r])
+      file.path.zip <- paste0(file.path, '.zip')
+      
+      if (file.exists(file.path) && !file.exists(file.path.zip)) {
+        
+        # zip the file
+        # flags here http://linux.die.net/man/1/zip
+        # recursive, compression level 9 (max/slowest), exclude file info, junk paths
+        success <- zip(file.path.zip, file.path, flags = '-r9Xj')
+        print(success)
+        
+        if (success < 2 && file.exists(file.path.zip)) {
+          # error codes: http://www.info-zip.org/FAQ.html#error-codes
+          # remove the non-zipped file
+          Report(3, r, "of", nrow(meta), " files zipped:", file.path)
+          file.remove(file.path)
+        } else {
+          Report(1, 'something went wrong, zip file not there')
+        }
+        
+      }
+      
+      
+    }
+    
+    
+    
+  }
+  
+  
+  
+  
+}
     
