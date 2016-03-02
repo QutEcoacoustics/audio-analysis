@@ -679,7 +679,7 @@ namespace AnalysisPrograms
 
 
 
-            if (true)
+            if (false)
             {
                 // In order to analyse the short recordings in BIRD50 dataset, need following change to code:
                 // need to modify    AudioAnalysis.AnalysisPrograms.AcousticIndices.cs #line648
@@ -825,6 +825,159 @@ namespace AnalysisPrograms
             } // Herve Glotin's BIRD50 Dataset,  Joins images of the same species
 
 
+            //HERVE GLOTIN
+            // To produce observe feature spectra or TEMPLATES for each species
+            // This is used to analyse Herve Glotin's BIRD50 data set.
+            if (true)
+            {
+                // set up IP and OP directories
+                string inputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingCSV";
+                //string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
+                string OutputDir = @"C:\SensorNetworks\Output\BIRD50\SpeciesTEMPLATES_6dbThreshold"; 
+                //string imagOutputDireOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
+                string speciesLabelsFile = @"C:\SensorNetworks\Output\BIRD50\AmazonBird50_training_output.csv";
+                string countsArrayOutputFilePath = @"C:\SensorNetworks\Output\BIRD50\AmazonBird50_training_Counts.txt";
+                int speciesCount = 50;
+                int instanceCount = 924; //trainingCount
+                //int instanceCount = 375; //testCount
+                //instanceCount = 2;
+
+                // background threshold value that is subtracted from all spectrograms.
+                double bgnThreshold = 9.0;
+
+                // frequency bins to collate.
+                int startBin = 8;
+                int endBin = 233;
+                int newArrayLength = endBin - startBin + 1;
+
+                // READ IN THE SPECIES LABELS FILE AND SET UP THE DATA
+                string[] fileID = new string[instanceCount];
+                int[] speciesID = new int[speciesCount];
+                ReadGlotinsSpeciesLabelFile(speciesLabelsFile, instanceCount, out fileID, out speciesID);
+
+
+                // INIT array of species counts
+                int[] speciesNumbers = new int[speciesCount];
+
+                // loop through all 50 species
+                for (int i = 0; i < speciesCount; i++)
+                {
+                    int speciesLabel = i + 1;
+                    Console.WriteLine("Species " + speciesLabel);
+
+                    // set up the image list for one species
+                    List<Image> imageList = new List<Image>();
+
+                    // dictionary to store feature spectra.
+                    string[] keyArray = { "SPT", "RHZ", "RVT", "RPS", "RNG" };
+                    string header = "SPT,RHZ,RVT,RPS,RNG";
+                    var dictionary = new Dictionary<string, double[]>();
+
+                    for (int j = 0; j < instanceCount; j++)
+                    {
+                        if (speciesID[j] != speciesLabel) continue;
+
+                        // get the spectral index files
+                        foreach (string key in keyArray)
+                        {
+                            string name = String.Format("{0}_Species{1:d2}.{2}.csv", fileID[j], speciesLabel, key);
+                            FileInfo file = new FileInfo(Path.Combine(inputDir, name));
+
+                            if (file.Exists)
+                            {
+                                double[] array = null;
+                                int binCount;
+                                double[,] matrix = IndexMatrices.ReadSpectrogram(file, out binCount);
+                                //double[,] noiseReducedM = MatrixTools.SubtractMedian(matrix);
+                                double[,] noiseReducedM = MatrixTools.SubtractConstant(matrix, bgnThreshold);
+                                //noiseReducedM = matrix;
+
+                                // create or get the array of spectral values.
+                                if (dictionary.ContainsKey(key))
+                                {
+                                    array = dictionary[key];
+                                } else // create a new array
+                                {
+                                    array = new double[newArrayLength];
+                                }
+
+                                // transfer spectral values to array.
+                                int rows = noiseReducedM.GetLength(0);
+                                int cols = noiseReducedM.GetLength(1);
+                                for (int r = 0; r < rows; r++)
+                                {
+                                    for (int c = startBin; c <= endBin; c++)
+                                    {
+                                        array[c-startBin] += noiseReducedM[r, c];
+                                    }
+                                }
+                                dictionary[key] = array;
+
+                            } //if (file.Exists)
+                        } //foreach (string key in keyArray)
+
+                        speciesNumbers[i]++;
+                    } // end for loop j over all instances
+
+
+                    // normalise the arrays 
+                    foreach (string key in keyArray)
+                    {
+                        // normalise vector to unit area
+                        dictionary[key] = DataTools.filterMovingAverage(dictionary[key], 3);
+                        dictionary[key] = DataTools.Normalise2Probabilites(dictionary[key]);
+                    }
+
+
+                    // initialise stringbuffer
+                    var lines = new List<string>(); 
+                    lines.Add(header);
+                    for (int c = 0; c < newArrayLength; c++)
+                    {
+                        string line = "";
+                        foreach (string key in keyArray)
+                        {
+                            line += dictionary[key][c] + ",";
+
+
+                            //Image bmp = ImageTools.ReadImage2Bitmap(file.FullName);
+                            //imageList.Add(bmp);
+                        }
+                        lines.Add(line);
+                    }
+
+                    string outputFileName = String.Format("Species{0}.SpectralFeatures.csv", speciesLabel);
+                    string path = Path.Combine(OutputDir, outputFileName);
+                    FileTools.WriteTextFile(path, lines.ToArray());
+
+                    // now make images
+                    var images = new List<Image>();
+                    int scalingFactor = 10;
+                    foreach (string key in keyArray)
+                    {
+                        string label = String.Format("{0} {1} ({2})", speciesLabel, key, speciesNumbers[i]);
+                        Image image = ImageTools.DrawGraph(label, dictionary[key], newArrayLength, 100, scalingFactor);
+                        images.Add(image);
+                    }
+                    Image combinedImage = ImageTools.CombineImagesVertically(images);
+                    outputFileName = String.Format("Species{0}.SpectralFeatures.png", speciesLabel);
+                    path = Path.Combine(OutputDir, outputFileName);
+                    combinedImage.Save(path);
+
+
+                } // end for loop i over all 50 species
+
+                int sum = speciesNumbers.Sum();
+                Console.WriteLine("Sum of species number array = " + sum);
+                bool addLineNumbers = true;
+                FileTools.WriteArray2File(speciesNumbers, addLineNumbers, countsArrayOutputFilePath);
+
+
+            } // Herve Glotin's BIRD50 Dataset,  Joins images of the same species
+
+
+
+
             if (false)
             {
                 // ############################# IMPORTANT ########################################
@@ -877,6 +1030,121 @@ namespace AnalysisPrograms
 
 
             } //if (true)
+            
+            // To CALCULATE MUTUAL INFORMATION BETWEEN SPECIES DISTRIBUTION AND FREQUENCY INFO
+            if (false)
+            {
+                // set up IP and OP directories
+                string parentDir = @"C:\SensorNetworks\Output\BIRD50";
+                string key = "RHZ";  //"RHZ";
+                int valueResolution = 6;
+                string miFileName = parentDir + @"\MutualInformation."+ valueResolution + "catNoSkew." + key + ".txt";
+                //double[] bounds = { 0.0, 3.0, 6.0 };
+                //double[] bounds = { 0.0, 2.0, 4.0, 8.0 };
+                double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0 }; // noSkew
+                //double[] bounds = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 };
+                //double[] bounds = { 0.0, 1.0, 2.0, 4.0, 6.0, 10.0 }; // skew left
+                //double[] bounds = { 0.0, 2.0, 4.0, 5.0, 6.0, 8.0 }; // skew centre
+                //double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0 }; // noSkew
+
+                string inputDir = parentDir + @"\TrainingCSV";
+                int speciesNumber = 50;
+
+                string speciesCountFile = parentDir + @"\AmazonBird50_training_Counts.txt"; //
+                var lines = FileTools.ReadTextFile(speciesCountFile);
+                int[] speciesCounts = new int[speciesNumber];
+                for (int i = 0; i < speciesNumber; i++)
+                {
+                    string[] words = lines[i].Split(','); 
+                    speciesCounts[i] = Int32.Parse(words[1]);
+                }
+                double Hspecies = DataTools.Entropy_normalised(speciesCounts);
+                Console.WriteLine("Species Entropy = " + Hspecies);
+
+                int freqBinCount = 256;
+                int reducedBinCount = freqBinCount;
+                //int reductionFactor = 1;
+                //reducedBinCount = freqBinCount / reductionFactor;
+                reducedBinCount = 100 + (156 / 2); // exotic style
+                // data structure to contain probability info
+                int[,,] probSgivenF = new int[reducedBinCount, speciesNumber, valueResolution];
+
+                DirectoryInfo inputDirInfo = new DirectoryInfo(inputDir);
+                string pattern = "*." + key + ".csv";
+                FileInfo[] filePaths = inputDirInfo.GetFiles(pattern);
+
+                // read through all the files
+                int fileCount = filePaths.Length;
+                //fileCount = 3;
+                for (int i = 0; i < fileCount; i++)
+                {
+                    //ID0001_Species01.EVN.csv
+                    char[] delimiters = { '.', 's' };
+                    string fileName = filePaths[i].Name;
+                    string[] parts = fileName.Split(delimiters);
+                    int speciesID = Int32.Parse(parts[1]);
+                    double[,] matrix = null;
+                    if (filePaths[i].Exists)
+                    {
+                        int binCount;
+                        matrix = IndexMatrices.ReadSpectrogram(filePaths[i], out binCount);
+
+                        // column reduce the matrix
+                        // try max pooling
+                        //matrix = Sandpit.MaxPoolMatrixColumns(matrix, reducedBinCount);
+                        //matrix = Sandpit.MaxPoolMatrixColumnsByFactor(matrix, reductionFactor);
+                        matrix = Sandpit.ExoticMaxPoolingMatrixColumns(matrix, reducedBinCount);
+                    }
+
+                    Console.WriteLine("Species ID = " + speciesID);
+
+                    int rowCount = matrix.GetLength(0);
+                    reducedBinCount = matrix.GetLength(1);
+
+                    // calculate the conditional probabilities
+                    // set up data structure to contain probability info
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        var rowVector = MatrixTools.GetRow(matrix, r);
+                        for (int c = 0; c < reducedBinCount; c++)
+                        {
+                            int valueCategory = 0;
+                            for (int bound = 1; bound < bounds.Length; bound++)
+                            {
+                                if (rowVector[c] > bounds[bound]) valueCategory = bound;
+                            }
+                            probSgivenF[c, speciesID-1, valueCategory] ++;
+                        }
+                    }
+                }
+
+                // now process info in probabilities in data structure
+                double[] mi = new double[reducedBinCount];
+                for (int i = 0; i < reducedBinCount; i++)
+                {
+                    var m = new double[speciesNumber, valueResolution];
+
+
+                    for (int r = 0; r < speciesNumber; r++)
+                    {
+                        for (int c = 0; c < valueResolution; c++)
+                        {
+                            m[r, c] = probSgivenF[i, r, c];
+                        }
+                    }
+                    double[]  array = DataTools.Matrix2Array(m);
+                    double entropy = DataTools.Entropy_normalised(array);
+                    mi[i] = entropy;
+                }
+
+                for (int i = 0; i < reducedBinCount; i++)
+                {
+                    Console.WriteLine(String.Format("Bin{0}  {1}", i, mi[i]));
+                }
+                FileTools.WriteArray2File(mi, miFileName);
+
+            } // CALCULATE MUTUAL INFORMATION
+
 
 
 
@@ -909,6 +1177,78 @@ namespace AnalysisPrograms
             }
         } // ReadGlotinsSpeciesLabelFile()
 
+
+        public static double[,] MaxPoolMatrixColumns(double[,] matrix, int reducedColCount)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            double[,] returnMatrix = new double[rows, reducedColCount];
+            for (int r = 0; r < rows; r++)
+            {
+                var rowVector = MatrixTools.GetRow(matrix, r);
+                int[] bounds = { 8, 23, 53, 113, 233 };
+                // ie reduce the 256 vector to 4 values
+                for (int c = 0; c < reducedColCount; c++)
+                {
+                    int length = bounds[c + 1] - bounds[c];
+                    double[] subvector = DataTools.Subarray(rowVector, bounds[c], length);
+                    int max = DataTools.GetMaxIndex(subvector);
+                    returnMatrix[r, c] = subvector[max];
+                }
+            }
+
+            return returnMatrix;
+        }
+        public static double[,] ExoticMaxPoolingMatrixColumns(double[,] matrix, int reducedColCount)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            double[,] returnMatrix = new double[rows, reducedColCount];
+            for (int r = 0; r < rows; r++)
+            {
+                var rowVector = MatrixTools.GetRow(matrix, r);
+                // ie reduce the second half of vector by factor of two.
+                for (int c = 0; c < 100; c++)
+                {
+                    returnMatrix[r, c] = rowVector[c];
+                }
+
+                int offset = 0;
+                for (int c = 100; c < reducedColCount; c++)
+                {
+                    returnMatrix[r, c] = rowVector[c + offset];
+                    offset += 1;
+                }
+            }
+
+            return returnMatrix;
+        }
+
+        public static double[,] MaxPoolMatrixColumnsByFactor(double[,] matrix, int factor)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int reducedColCount = cols / factor;
+
+            double[,] returnMatrix = new double[rows, reducedColCount];
+            for (int r = 0; r < rows; r++)
+            {
+                var rowVector = MatrixTools.GetRow(matrix, r);
+                int lowerBound = 0;
+                // ie reduce the 256 vector to 4 values
+                for (int c = 0; c < reducedColCount; c++)
+                {
+                    double[] subvector = DataTools.Subarray(rowVector, lowerBound, factor);
+                    int max = DataTools.GetMaxIndex(subvector);
+                    returnMatrix[r, c] = subvector[max];
+                    lowerBound += factor;
+                }
+            }
+
+            return returnMatrix;
+        }
 
 
     }
