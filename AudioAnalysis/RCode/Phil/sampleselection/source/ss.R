@@ -72,6 +72,7 @@ source('reporting.R')
 source('noise.reduction.R')
 source('tests/test.all.R')
 source('silence.classifier.R')
+source('baw.R')
 
 
 

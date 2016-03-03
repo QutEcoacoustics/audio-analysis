@@ -26,7 +26,7 @@ RunBirdClassifier <- function () {
     # reads output from disk, prompting for user choice if needed
     res <- ClassifySeconds()
     
-    InspectClassifiaction(res$data)
+    InspectClassification(res$data)
     
     
 }
@@ -182,7 +182,7 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
         
         
     } else {
-        selection <- seconds[rows,]
+        seconds <- seconds[rows,]
     }
     
     
@@ -190,7 +190,10 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
     colnames(seconds)[colnames(seconds) == 'wave.path'] <- 'file.path'
     seconds$segment.duration <- 1
     
-    seconds$img.title <- paste(seconds$event.id, seconds$site, seconds$date, seconds$min, sep = ' : ')
+    seg.time <- SetTime(seconds$min, seconds$start.sec)
+    seg.sec.of.day <- seconds$min * 60 + seconds$start.sec
+    
+    seconds$img.title <- paste(seconds$event.id, seconds$site, seconds$date, seg.time, seconds$min, sep = ' : ')
     
     if (is.data.frame(features)) {
         seconds$features <- paste(features, collapse = "\n")
@@ -198,8 +201,8 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
     
     seconds$link <- BawLink(site = seconds$site, 
                                          date = seconds$date, 
-                                         start.sec = seconds$file.sec, 
-                                         end.sec = seconds$file.sec + seconds$segment.duration, 
+                                         start.sec = seg.sec.of.day, 
+                                         end.sec = seg.sec.of.day + seconds$segment.duration, 
                                          margin = 5)
     
     
