@@ -10,6 +10,11 @@ g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')
 #    )
 
 
+# TODO: allow file of meta data to be saved along with a dataframe, to be read and returned
+# e.g. explanation of column names
+# file should be arbitrary, maybe json?
+# probably best to save as separate file rather than in the meta file
+
 
 require('rjson')
 

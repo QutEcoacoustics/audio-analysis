@@ -127,7 +127,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     #    each clustergroup will have its own row
     #
     
-    events <- ReadOutput('segment.events') #
+    events <- ReadOutput('filtered.segment.events') #
     clustered.events <- ReadOutput('clustered.events')  # contains only group and event id and min id
     
     
@@ -166,7 +166,7 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
         }
         clusters <- clusters[groups.that.exist]
     } else {
-        # no clusters specified by user, so 
+        # no clusters specified as function param, so 
         clusters <- all.groups
     }
     
@@ -178,6 +178,8 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     }
     
     selected.events <- clustered.events.data[clustered.events.data[,group.col] %in% clusters,]
+    
+    selected.events$segment.duration <- segment.duration
     
 
     
@@ -202,19 +204,34 @@ InspectClusters.segment <- function (clusters = NULL, num.segments = 5, max.clus
     
 
 
-    col.names <- colnames(spectro.list)
+    col.names <- colnames(selected.events)
     col.names[col.names == group.col] <- 'group'
     colnames(selected.events) <- col.names
     
+    seg.time <- SetTime(selected.events$min, selected.events$start.sec)
+    seg.sec.of.day <- selected.events$min * 60 + selected.events$start.sec
+    
+    
+    selected.events$spectro.img.path <- spectro.list
+    selected.events$img.title <- paste(selected.events$event.id, selected.events$site, selected.events$date, seg.time, selected.events$min, sep = ' : ')
+    
+    
+    selected.events$link <- BawLink(site = selected.events$site, 
+                            date = selected.events$date, 
+                            start.sec = seg.sec.of.day, 
+                            end.sec = seg.sec.of.day + 1, 
+                            margin = 2)
+    
+    
     html.file <- paste0('inspect.segments.', format(Sys.time(), format="%y%m%d_%H%M%S"), '.html')
     
-    MakeHtmlInspector(selected.events, file.name =  html.file, group.col = 'group', template.file = segment.event.inspector.html)
+    HtmlInspector(selected.events, template.file = 'segment.event.inspector.html', output.fn =  html.file)
     
 }
 
 
 
-SaveSpectroImgsForInspection <- function (events, temp.dir, use.parallel = TRUE) {
+SaveSpectroImgsForInspection <- function (events, temp.dir, use.parallel = FALSE) {
     # given a list of events/segments with at least the columns:
     #   event.id, file.path, file.sec, segment.duration
     # OR
@@ -339,13 +356,6 @@ HtmlInspector <- function (spectrograms, template.file, output.fn = NULL, single
     
 }
 
-HtmlInspector.InsertSingles.old <- function (singles, template) {
-    # given a list of single text replacements, inserts them into the template
-    for (name in names(singles)) {
-        template <- InsertIntoTemplate(singles[[name]], name, template)
-    }
-    return(template)
-}
 
 HtmlInspector.InsertData <- function (spectrograms, template, singles = data.frame()) {
     

@@ -211,12 +211,12 @@ GraphProgressions <- function (progressions,
     legend("bottomright",  legend = legend.names, 
            col = legend.cols, 
            pch = pch,
-           lty = line.styles, text.col = "black", lwd = 2, cex=1.4)
+           lty = line.styles, text.col = "black", lwd = 2, cex=1)
     
     if (!is.null(fn)) {
         dev.off()   
     }
-    
+    return(true)
     
 }
 
@@ -303,9 +303,9 @@ GetRankingLegendName <- function (ranking.code) {
         "X4" = "EC",
         "X8" = "EC.TD",
         "X5" = "Ranked by clusters (δ = 0.1)",
-        "X6" = "CL",
+        "X6" = "Ranked by clusters (δ = 1)",
         "X9" = "Ranked by clusters (δ = 0.1) with Temporal Dispersal",
-        "X10" = "CL.TD"
+        "X10" = "Ranked by clusters (δ = 1) with Temporal Dispersal"
     )
     
     if (ranking.code %in% names(codes)) {

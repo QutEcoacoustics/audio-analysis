@@ -17,23 +17,28 @@
 #
 
 
+RemoveSilentSegments <- function () {
+    # reads in segements, runs classifier, removes silent segments
+    # saves as new output
+    res <- ClassifySegments(save = TRUE)
+}
 
 
-RunBirdClassifier <- function () {
-    # does all the steps needed to run and inspect the classifier on existing serf data
+
+
+RunSilenceClassifier <- function () {
+    # does all the steps needed to run and inspect the classifier on new data
     
     # classify the seconds
     # reads output from disk, prompting for user choice if needed
-    res <- ClassifySeconds()
+    res <- ClassifySegments()
     
     InspectClassification(res$data)
     
     
 }
 
-
-
-BuildBirdClassifier <- function () {
+BuildSilenceClassifier <- function () {
     # do all the steps needed for for training and testing the model
     
     # builds a list of seconds based on the available training data
@@ -66,50 +71,61 @@ BuildBirdClassifier <- function () {
     InspectClassifiaction(seconds)
 }
 
-
-ClassifySeconds <- function (seconds = NULL, silence.features = NULL) {
-    # 
+ClassifySegments <- function (segments = NULL, silence.features = NULL, save = FALSE) {
+    # given a list of seconds and a list of features
+    # uses the logistic regression model previously saved to classify the seconds
     
-    if (is.null(seconds)) {
-        seconds <- ReadOutput('segment.events')
+    if (is.null(segments)) {
+        segments <- ReadOutput('segment.events')
     }
     
-    if (!is.data.frame(seconds)) {
-        seconds.data <- seconds$data
+    if (!is.data.frame(segments)) {
+        segments.data <- segments$data
     } else {
-        seconds.data <- seconds
+        segments.data <- segments
     }
     
-    if (is.null(silence.features) && is.list(seconds)) {
-        silence.features <- ReadOutput(name = 'silence.features', dependencies = list('segment.events' = seconds$version), false.if.missing = TRUE)
+    if (is.null(silence.features) && is.list(segments)) {
+        silence.features <- ReadOutput(name = 'silence.features', dependencies = list('segment.events' = segments$version), false.if.missing = TRUE)
     } 
-
     
     if (is.list(silence.features)) {
-        silence.features <- silence.features$data
+        silence.features.data <- silence.features$data
     } else if (is.matrix(silence.features)) {
-        silence.features <- as.data.frame(silence.features)
+        silence.features.data <- as.data.frame(silence.features)
     } else if (!is.data.frame(silence.features)) {
         # read output didn't find it
-        silence.features <- CalculateSilenceFeatures(seconds = seconds.data)
-        silence.features <- as.data.frame(silence.features)
+        silence.features <- CalculateSilenceFeatures(seconds = segments.data)
+        silence.features.data <- as.data.frame(silence.features$data)
+        
+        # TODO: update to specify whether to save the features
+        
     }
-
-
 
     model <- ReadOutput('silence.model')
-    fitted.results <- predict(model$data,newdata=silence.features,type='response')
+    fitted.results <- predict(model$data,newdata=silence.features.data,type='response')
     fitted.results <- ifelse(fitted.results > 0.5,1,0)
     
-    seconds.data$classified.has.bird <- fitted.results
+    segments.data$classified.has.bird <- fitted.results
     
-    if (is.list(seconds)) {
-        seconds$data <- seconds.data
-    } else {
-        seconds <- seconds.data
+
+    if (save) {
+        
+        # filter results
+        before <- nrow(segments.data)
+        segments.data <- segments.data[segments.data$classified.has.bird > 0, ]
+        Report(5, 'silent segments removed (', nrow(segments.data), 'of', before, ' rows remain)' )
+        dependencies <- list(silence.features = silence.features$version, silence.model = model$version)
+        WriteOutput(segments.data, 'filtered.segment.events', dependencies = dependencies)
     }
     
-    return(seconds)
+    if (is.list(segments)) {
+        segments$data <- segments.data
+    } else {
+        segments <- segments.data
+    }
+    
+    return(segments)
     
 }
 
@@ -203,7 +219,7 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
                                          date = seconds$date, 
                                          start.sec = seg.sec.of.day, 
                                          end.sec = seg.sec.of.day + seconds$segment.duration, 
-                                         margin = 5)
+                                         margin = 2)
     
     
 

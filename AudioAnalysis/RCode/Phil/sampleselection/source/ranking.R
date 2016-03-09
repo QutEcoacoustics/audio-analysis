@@ -413,7 +413,7 @@ IterateOnSparseMatrix <- function (events, multipliers = NA, min.ids,  decay.rat
     # Args:
     #   events: data.frame
     #   multipliers: ?
-    #   decay.rate: after each iteration, a cluster-minute pair will have the value decay.rate^(num times this cluster has been included in previously ranked minutes)
+    #   decay.rate: after each iteration, a cluster-minute pair will have the (1/value decay.rate)^(num times this cluster has been included in previously ranked minutes)
     #   temporal.dispersal: list; in the form list(a = amount, t = threshold)
     
     # that should find the most species in the shortest number of minute

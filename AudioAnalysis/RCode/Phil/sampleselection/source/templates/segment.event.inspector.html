@@ -11,9 +11,8 @@
             body, html {
                 margin: 0px;
                 padding: 0px;
-                width: 300px;
             }
-            img {
+            img, a {
                 display: inline-block;
                 width: 100px;
                 height: 150px;
@@ -33,7 +32,9 @@
         <##startforeach{group}##>
         <div class="cluster" title="cluster:', <##group##>, '">
              <##startforeach{}##>
-                 <img src="<##path##>" title="<##img.title##>" alt="" />
+                <a class='sec' href="<##link##>" target="_blank">
+                 <img src="<##spectro.img.path##>" title="<##img.title##>" alt="" />
+                </a>
              <##endforeach{}##>
         </div>
         <##endforeach{group}##>

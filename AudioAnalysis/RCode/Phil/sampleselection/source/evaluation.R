@@ -9,6 +9,21 @@ Batch1 <- function () {
 }
 
 EvaluateSamples <- function (use.last.accessed = FALSE, versions = NULL, subset.rankings = NULL) {
+    # Entry point for evaluation. Reads ranking data from disk and evaluates the ranking against ground truth data
+    #
+    # Args:
+    #   use.last.accessed: boolean; whether to prompt for user input when choosing the ranking data version
+    #   versions: ints; which versions of ranking to read (makes user input unecessary)
+    #   subset.rankings: ranking output might have multiple rankings in a single file. Subset rankings says which ranking methods to use. 
+    #
+    # Value: nothing
+    #
+    # Details:
+    #   A set of rankings (i.e. a set of minutes ranked from 1 to num minutes) are read from disk. 
+    #   The species accumulation curve (SAC) is calculated for that ranking
+    #   Comparison species accumulation curves are also calculated for the same set of minutes, e.g. Random at dawn, optimal
+    #   The SACs are plotted against each other.
+    #   If multiple sets of rankings are supplied, they are each processed separately. Rankings from the same set can be included on the same plot.
     
     if (is.numeric(versions)) {  
         results <- list()
@@ -64,15 +79,11 @@ ChooseRankingsToComapre <- function (ranks, subset.rankings = NULL) {
     # given a ranking output which may contain many rankings
     # on the same data done with different ranking algorithms 
     # creates a subset
-    
     colnames(ranks$data) <- ConsistentRankNames(colnames(ranks$data))
-    
     if (!is.null(subset.rankings)) {
-
         subset.rankings <- ConsistentRankNames(subset.rankings)    
         ranks$data <- ranks$data[,subset.rankings]    
     }
-
     return(ranks)  
 }
 

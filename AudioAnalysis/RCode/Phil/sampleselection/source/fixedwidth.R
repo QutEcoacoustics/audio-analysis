@@ -53,6 +53,8 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
 }
 
 
+
+
 ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coefficients = 16, parallel = TRUE) {
     # extracts "spectral dynamic features" of each segemnt in segment list
     # spectral dynamic features are fft coefficients of the spectrogram values in the time domain of each 
