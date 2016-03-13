@@ -1,16 +1,26 @@
+g.plot.path <- '/Users/n8933464/Documents/sample_selection_output/plots'
 
-Summary <- function (days, fn = NULL, method = 1) {
+
+
+PlotProgressionSummary <- function (days, fn = NULL, method = 1) {
     # given a list of evaluation results, including random at dawn and some ranking methods 
     # calculates the average improvement over random at dawn
     # 
     # Args
-    #   days; list: the evaluation results from many days
-    #   fn: string; where to save it
+    #   days; list: the evaluation results from many days.
+    #   fn: string; where to save it. If ommitted, will output to screen.
     #   method: 1 or 2;  percent over RAD should be relative to itself (1) or relative to the % of total (2)
+    #
+    # Details:
+    #   The format for days is a list of days. Each value is a data frame of species progressions (1 per column),
+    #   The columns each day's data frame must be the same. 
+    #   For each ranking method in each day, the difference from random.at.dawn is calculated. 
+    #   This difference is averages across days for each ranking method. 
+    #   A plot of the average difference is drawn for each ranking method
+    
   
     if (!is.null(fn)) {
-        path <- '/Users/n8933464/Documents/sample_selection_output/plots'
-        fn <- file.path(path, fn)
+        fn <- file.path(g.plot.path, fn)
         png(filename = fn,
             width = 1400, height = 700, units = "px", pointsize = 13,
             bg = "white",  res = NA,
@@ -51,8 +61,6 @@ Summary <- function (days, fn = NULL, method = 1) {
             m[,d] <-  percent.improvement
         }
         
-        
-        
         res.mean <- apply(m, 1, mean)
         if (min(res.mean) < min.val) {
             min.val <- min(res.mean)
@@ -60,7 +68,6 @@ Summary <- function (days, fn = NULL, method = 1) {
         if (max(res.mean) > max.val) {
             max.val <- max(res.mean)
         }
-        
         
         results[[cur.to.score]] <- res.mean
     }
@@ -102,7 +109,7 @@ Summary <- function (days, fn = NULL, method = 1) {
     
 }
 
-GraphProgressions <- function (progressions, 
+PlotProgressions <- function (progressions, 
                                cutoff = 120, 
                                heading = NULL,
                                fn = NULL) {
@@ -339,5 +346,77 @@ PlotLine <- function (line, col.rgb, sd = NA, sd.col = NA, lty = 'solid', pch = 
 
 }
 
+
+
+PlotProgressions3d.1 <- function (progressions, cutoff = 180) {
+    
+    num.clusters <- as.numeric(dimnames(progressions)$num.clusters)
+    sample.num <- 1:ncol(progressions)
+    
+    #x <- rep(sample.num, length(num.clusters))
+    #z <- rep(num.clusters, times = 1, each = length(sample.num))
+    #x <- rep(sample.num, times = 1, each = length(num.clusters))
+    #z <- rep(num.clusters, times = length(sample.num), each = 1)
+    #y <- as.vector(progressions)
+    
+    persp(z = t(progressions), 
+          xlab = 'sample num', ylab = 'num groups', zlab = 'species found',
+          main = 'sample progressions for different number of cluster groups', sub = NULL,
+          theta = -35, phi = 25, r = sqrt(3), d = 1,
+          scale = TRUE, expand = 1,
+          col = "white", border = NULL, ltheta = -135, lphi = 0,
+          shade = NA, box = TRUE, axes = TRUE, nticks = 5,
+          ticktype = "simple")
+    
+}
+
+
+PlotProgressions3d <- function (progressions, cutoff = 120) {
+    
+    require('rgl')
+    
+    if (ncol(progressions) > cutoff) {
+        progressions <- progressions[,1:cutoff]
+    }
+    
+    
+    
+    
+    image(progressions)
+    View(progressions)
+    
+    num.clusters <- as.numeric(dimnames(progressions)$num.clusters)
+    sample.num <- 1:ncol(progressions)
+    
+    # x <- rep(sample.num, length(num.clusters))
+    # z <- rep(num.clusters, times = 1, each = length(sample.num))
+    # x <- rep(sample.num, times = 1, each = length(num.clusters))
+    # z <- rep(num.clusters, times = length(sample.num), each = 1)
+    # y <- as.vector(t(progressions))
+    
+    z <- 1:length(num.clusters) * 4
+    x <- sample.num
+    y <- t(progressions)
+    
+    ylim <- range(y)
+    ylen <- ylim[2] - ylim[1] + 1
+    colorlut <- terrain.colors(ylen,alpha=0) # height color lookup table
+    col <- colorlut[ y-ylim[1]+1 ] # assign colors to heights for each point
+    open3d(mouseMode = c('trackball', 'polar', 'xAxis'))
+    rgl.surface(x, z, y, color=col, alpha=0.9, back="lines")
+    
+    
+    #axes3d()
+    bbox3d(zlen = length(z),
+           zlab = as.character(num.clusters),
+           zunit="pretty", 
+           expand=1.03,
+           draw_front=FALSE)  
+    
+    rgl.surface(x, z, matrix(0, length(x), length(z)), color=c('black'), back="fill")
+    
+    
+    
+}
 
 

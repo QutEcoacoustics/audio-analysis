@@ -335,6 +335,17 @@ SaveSpectroImgsForInspection <- function (events, temp.dir, use.parallel = FALSE
 }
 
 HtmlInspector <- function (spectrograms, template.file, output.fn = NULL, singles = list('title' = 'inspect segments')) {
+    # Creates a html file based on a template and a dataframe of spectrograms. 
+    # The html file can be opened to view the spectrograms in the browser laid out in a way defined by the template
+    #
+    # Args:
+    #   spectrograms: dataframe; contains the data that will be inserted in a reapeater
+    #   template.file: string; The name of the file that will be used as the template, 
+    #                          which is basically a html file with some specially delimeted flags 
+    #                          showing where the data should be inserted. 
+    #   output.fn: string; where the html file should be saved
+    #   singles: list; extra data that is not contained in the data.frame that will be inserted as singles (e.g. page title)
+    
     
     template.path <- file.path('templates', template.file)
     template <- readChar(template.path, file.info(template.path)$size)
@@ -358,6 +369,14 @@ HtmlInspector <- function (spectrograms, template.file, output.fn = NULL, single
 
 
 HtmlInspector.InsertData <- function (spectrograms, template, singles = data.frame()) {
+    # Recursive function to insert repeating data from a data frame and singles from a list
+    #
+    # Args:
+    #   spectrograms: dataframe
+    #   template: string; The actual template text (not the file name). Since this is recursive, 
+    #                     it can be the entire template or just the part from inside a repeater 
+    #                     in a deeper recursion level
+    #   singles: list
     
     require(stringr)
     
@@ -419,8 +438,13 @@ HtmlInspector.InsertData <- function (spectrograms, template, singles = data.fra
 }
 
 HtmlInspector.InsertIntoTemplate <- function (template, vals) {
-    # vals is a data frame where the column names match the template flags
-    # or a list where the names match
+    #  Given a template and some vals, will replace the template flags with the appropriate vals
+    #
+    #  Args:
+    #     template: string: the text containing some placeholder flags that need to be replaced with values
+    #     vals: data frame; The column names match the placeholder names in the template. If there is more 
+    #                       one row then the template text will be repeated so that there is one 
+    #                       copy of the template per row. 
     
     vals <- as.data.frame(vals)
     
@@ -449,50 +473,6 @@ HtmlInspector.InsertIntoTemplate <- function (template, vals) {
 }
 
 
-InsertIntoTemplate.old <- function (flag, text, template, delim = "###") {
-    # gsub is better?
-    split <- paste0(delim, flag, delim)
-    split.template <- unlist(strsplit(template, split, fixed = TRUE))
-    text <- rep(text, length(split.template))
-    text[length(text)] <- ''
-    return(paste0(split.template, text, collapse = ''))
-}
-
-
-
-MakeHtmlInspector.old <- function (spectrograms, title = 'Inspect Segments', file.name = 'inspect.segments.html', group.col = 'group') {
-    
-    template.file <- 'templates/segment.event.inspector.html'
-    template <- readChar(template.file, file.info(template.file)$size)
-    # replace title with title
-
-    template <- InsertIntoTemplate('title', title, template)
-    groups <- unique(spectrograms[,group.col])
-    rows = list()
-    for (g in groups) {
-        s <- spectrograms[spectrograms[,group.col] == g,]
-        paths <- s$spectro.fn
-        img.titles <- paste(s$event.id, s$site, s$date, s$min, sep = ' : ')
-        img.tags <- paste0('    <img src="', paths, '" title="', img.titles, '" alt="" />', "\n") 
-        rows[[g]] <- paste0(img.tags, collapse = '')
-    }
-    
-    # wrap each rows in a div
-    rows <- paste0('<div class="cluster" title="cluster:', groups, '">',"\n" ,rows, '</div>')
-    
-    # merge into a single string
-    rows <- paste(rows, collapse = "\n\n")
-    
-    template <- InsertIntoTemplate('content', rows, template)
-    
-    output.file <- file.path(g.output.parent.dir, 'inspection', file.name)
-   
-    fileConn<-file(output.file)
-    writeLines(template, fileConn)
-    close(fileConn)
-    return(file.name)
-    
-}
 
 
 

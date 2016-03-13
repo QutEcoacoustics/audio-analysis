@@ -110,8 +110,6 @@ SS.fixedwidth <- function () {
     # evaluate ranked samples
     EvaluateSamples()
     
-    
-    
 }
 
 
