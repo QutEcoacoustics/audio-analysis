@@ -2604,11 +2604,11 @@ namespace TowseyLibrary
 
         public static Image DrawGraph(string label, double[] histogram, int imageWidth, int height, int scalingFactor)
         {
-            double sum = histogram.Sum();
+            //double sum = histogram.Sum();
             Pen pen1 = new Pen(Color.White);
-            Pen pen2 = new Pen(Color.Red);
+            //Pen pen2 = new Pen(Color.Red);
             Pen pen3 = new Pen(Color.Wheat);
-            Pen pen4 = new Pen(Color.Purple);
+            //Pen pen4 = new Pen(Color.Purple);
             SolidBrush brush = new SolidBrush(Color.Red);
             Font stringFont = new Font("Arial", 9);
             //Font stringFont = new Font("Tahoma", 9);
@@ -2642,7 +2642,7 @@ namespace TowseyLibrary
             for (int b = 0; b < histogram.Length; b++)
             {
                 int X = b * barWidth;
-                int Y = (int)Math.Ceiling((histogram[b] * height * scalingFactor / (double)sum));
+                int Y = (int)Math.Ceiling(histogram[b] * height * scalingFactor);
                 g.FillRectangle(brush, X, height - Y - 1, barWidth, Y);
             }
             return bmp;
@@ -2945,9 +2945,12 @@ namespace TowseyLibrary
             for (int i = 0; i < array.Length; i++)
             {
                 compositeWidth += array[i].Width;
+                if (height < array[i].Height)
+                    height = array[i].Height; 
             }
 
-            Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
+            //Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
+            var compositeBmp = new Bitmap(compositeWidth, height);
             int xOffset = 0;
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
@@ -2956,9 +2959,34 @@ namespace TowseyLibrary
             {
                 gr.DrawImage(array[i], xOffset, 0); //draw in the top spectrogram
                 xOffset += array[i].Width;
+
+                string name = String.Format("TESTIMAGE" + i + ".png");
+                array[i].Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", name));
             }
+
+            string fileName2 = String.Format("TESTIMAGE3.png");
+            compositeBmp.Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", fileName2));
+
             return (Image)compositeBmp;
         }
+
+
+
+        //public static void METHOD(string[] titleArray, int imageWidth, int imageHeight)
+        //{
+        //    // now make images
+        //    var images = new List<Image>();
+        //    int scalingFactor = 20;
+        //    foreach (string key in titleArray)
+        //    {
+        //        string label = String.Format("{0} {1} ({2})", speciesLabel, key, speciesNumbers[i]);
+        //        Image image = ImageTools.DrawGraph(label, dictionary[key], imageWidth, imageHeight, scalingFactor);
+        //        images.Add(image);
+        //    }
+        //    Image combinedImage = ImageTools.CombineImagesVertically(images);
+        //}
+
+
 
         public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {
