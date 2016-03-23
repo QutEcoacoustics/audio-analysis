@@ -295,6 +295,25 @@ namespace TowseyLibrary
             }
             return v;
         }
+        /*
+         * converts a matrix to a vector by concatenating columns.
+         */
+        public static byte[] Matrix2Array(byte[,] M)
+        {
+            int ht = M.GetLength(0);
+            int width = M.GetLength(1);
+            byte[] v = new byte[ht * width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = M[row, col];
+                }
+            }
+            return v;
+        }
 
         /*
          * converts a 3-D matrix to a vector by concatenating columns and columns.

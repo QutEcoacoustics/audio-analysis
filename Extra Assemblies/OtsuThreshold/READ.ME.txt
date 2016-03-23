@@ -1,0 +1,5 @@
+The following URL has much info and information about the Otsu threshold used in image processing.
+It produces an optimal binarisation of a grey scale image.
+
+
+http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
