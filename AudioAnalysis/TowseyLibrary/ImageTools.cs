@@ -1656,7 +1656,6 @@ namespace TowseyLibrary
         }// end of Shapes2()
 
 
-
         public static double[,] Shapes3(double[,] m)
         {
             double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //detect blobs of high acoustic energy
