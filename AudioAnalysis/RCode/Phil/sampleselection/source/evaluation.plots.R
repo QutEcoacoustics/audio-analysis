@@ -12,8 +12,8 @@ PlotProgressionSummary <- function (days, fn = NULL, method = 1) {
     #   method: 1 or 2;  percent over RAD should be relative to itself (1) or relative to the % of total (2)
     #
     # Details:
-    #   The format for days is a list of days. Each value is a data frame of species progressions (1 per column),
-    #   The columns each day's data frame must be the same. 
+    #   The format for days is a list of days. Each value (day) is a data frame of species progressions (1 per column),
+    #   The columns of each day's data frame must be the same. 
     #   For each ranking method in each day, the difference from random.at.dawn is calculated. 
     #   This difference is averages across days for each ranking method. 
     #   A plot of the average difference is drawn for each ranking method
@@ -132,6 +132,9 @@ PlotProgressions <- function (progressions,
     
     #ranked.count.progressions <- NA
     
+    # !! temp ... For some reason saving to file doesn't include the legend
+    fn <- NULL
+    
     if (!is.null(fn)) {
         png(filename = fn,
             width = 800, height = 600, units = "px", pointsize = 13,
@@ -215,10 +218,11 @@ PlotProgressions <- function (progressions,
     legend.names <- p.names
     legend.names[!is.comparison.curve] <- sapply(legend.names[!is.comparison.curve], GetRankingLegendName)
     
+    # todo: figure out why this is not working when saving plot
     legend("bottomright",  legend = legend.names, 
            col = legend.cols, 
            pch = pch,
-           lty = line.styles, text.col = "black", lwd = 2, cex=1)
+           lty = line.styles, text.col = "black", lwd = 1, cex=1)
     
     if (!is.null(fn)) {
         dev.off()   
@@ -273,6 +277,7 @@ GetLineStyleName <- function (name) {
 }
 
 GetPch <- function (name) {
+    # the symbol used on the line, so we don't rely only on colours
     # http://www.statmethods.net/advgraphs/parameters.html
     styles.1 <- list(
         'optimal' = NA,

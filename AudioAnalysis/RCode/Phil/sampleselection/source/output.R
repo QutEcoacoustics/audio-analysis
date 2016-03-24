@@ -930,18 +930,303 @@ ZipOldFiles <- function () {
         } else {
           Report(1, 'something went wrong, zip file not there')
         }
-        
       }
-      
-      
+    }
+  }
+}
+
+
+D3Inspector <- function () {
+    
+    data <- DataVis()
+    html.file <- 'inspect.data.html'
+    HtmlInspector(NULL, template.file = 'output.inspector.html', output.fn =  html.file, singles = list(data = data))
+    
+}
+
+
+DataVis <- function () {
+    # Converts data to json for use with D3 and SVG
+    #
+    # Details:
+    #   Final format will be something like this:
+    #
+    #   {'name':{'id':1,
+    #            'format':'csv',
+    #            'versions':[{"v":1,'params':{},'links':{'name':1},'cols':['a','b']}],
+    #           }
+    #   } 
+    #   
+    
+    m <- ReadMeta()
+    group.names <- unique(m$name)
+    
+    # for some stupid reason this returns a named character vector with no way to remove names
+    # which then gets encoded in json wrong if you select with single square brackets
+    group.format <- sapply(m$name, GetType)
+    data <- list()
+    
+    for (g in 1:length(group.names)) {
+        cur <-group.names[g]
+        data[[g]] <- list(name = cur,
+                          format = group.format[[g]],
+                          versions = list())
+        
+        versions <- m[m$name == cur,]
+        for (v in 1:nrow(versions)) {
+            data[[g]][['versions']][[v]] <- list(v = versions$version[v],
+                                                 params = fromJSON(versions$params[v]),
+                                                 links = fromJSON(versions$dependencies[v]),
+                                                 date = versions$date[v])
+        }
+    }
+
+    data <- toJSON(data)
+    
+    return(data)
+    
+    
+    
+    
+    
+}
+
+DataVisFlat <- function () {
+    # Converts data to json for use with D3 and SVG
+    #
+    # Details:
+    #   Final format will be something like this:
+    #      
+    #   {
+    #      "groups":{
+    #          'names':['name1','name2','name3'], // the different types of data
+    #          'format':['csv','object','csv']  // the format of the data
+    #          'count':[1,2,10] // how many of each group there is
+    #          },
+    #      "group_links":{
+    #          "from":[from1, from2,from3], // this is redundant, and will be based on the version links
+    #          "to":[to1,to2,to3]   
+    #          },
+    #      "versions":{
+    #          'group':[0,1,1], // index of the group
+    #          'params':[{'name':val},{'name':val},{'name':val}],
+    #          'version':[1,1,1,],
+    #          'cols':[['a','b','c'],['a','b','c'],['a','b','c']] // the column names of the csv (if applicable)
+    #      },
+    #      "version_links":{
+    #          "from":[], // the index within the versions list
+    #          "to":[]
+    #      }
+    #   }
+    #
+    
+    m <- ReadMeta()
+    group.names <- unique(m$name)
+    group.format <- sapply(m$name, GetType)
+    group.count <- tabulate(as.factor(m$name)) #todo: check that this is in the same order as unique
+    
+    version.links <- GetLinks(m, TRUE)
+
+    
+    # map to index of groups list, not meta rows
+    group.map <- function (m.row) {
+        return(which(group.names == m$name[m.row]))
+    }
+    group.links <- data.frame(from = sapply(version.links$from, group.map),
+                        to = sapply(version.links$to, group.map))
+    group.links <- unique(group.links)
+    
+    group.links <- as.list(group.links)
+    version.links <- as.list(version.links)
+    
+    versions <- list(group = sapply(1:nrow(m), group.map))
+    versions$params <- unname(sapply(m$params, fromJSON))
+    versions$version <- m$version
+    
+    # TODO: cols
+    
+    groups <- list(names = group.names,
+                   format = group.format,
+                   count = group.count)
+    
+    all.data <- list(groups = groups, 
+                     group_links = group.links,
+                     versions = versions,
+                     version_links = version.links)
+    
+    all.data <- toJSON(all.data)
+    
+    return(all.data)
+    
+
+
+    
+    
+}
+
+
+
+MakeDataGraph <- function (include.versions = FALSE) {
+    
+    # converts the meta table to json directed graph
+    #
+    # Args: 
+    #     as.json: boolean; whether it should be returned as a list(false) or json(true)
+    
+    m <- ReadMeta()
+    
+    if (!include.versions) {
+        m <- m[m$version == 1,]
+    }
+    
+    if (include.versions) {
+        label <- title <- paste(m$name, m$version, sep = ":")
+    } else {
+        label <- title <- m$name
+    }
+
+
+    
+    nodes <- data.frame(id = 1:nrow(m), 
+                        label = label,
+                        title = title,
+                        shape = "square",
+                        color = "green",
+                        size = 15)
+    
+    if (include.versions) {
+        nodes$group <- m$name
+    }
+    
+    edges <- GetLinks(m, include.versions = include.versions)
+    edges$arrows <- "middle"
+    
+    
+    visNetwork(nodes, edges, width = "100%")
+}
+
+MakeDataGraph.cola <- function (format = 'df') {
+    # converts the meta table to json directed graph
+    #
+    # Args: 
+    #     as.json: boolean; whether it should be returned as a list(false) or json(true)
+    
+    m <- ReadMeta()
+    
+    if (format %in% c('list','json')) {
+        nodes <- list()
+        for (r in 1:nrow(m)) {
+            nodes[[r]] <- list(
+                'name'= paste(m[r,'name'],':',m[r,'version'])
+            )
+        }   
+    } else if (format =='df') {
+        
+        nodes <- data.frame(id = 1:nrow(m), 
+                            title = paste(m$name, m$version, sep = ":"),
+                            shape = "square",
+                            color = "green",
+                            size = 5)
+        
+        
+    }
+    
+
+    
+    edges <- GetLinks(m)
+
+    
+    #graph.json <- toJSON(graph)
+    # save json
+    #fileConn<-file(file.path(g.output.meta.dir, "data_graph.json"))
+    #writeLines(graph.json, fileConn)
+    #close(fileConn)
+
+    visNetwork(nodes, edges) %>% visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE)
+    
+    
+    
+}
+
+GetLinks <- function (m, include.versions, as.list = FALSE, index.from = 1) {
+    # produces a list of dependency links by row number of meta
+    # for output to directed-graph visualization
+    #
+    # Args: 
+    #   as.list: boolean; Whether the format should be as a list (e.g. for conversion to json)
+    #                     or a dataframe (e.g. for use with htmlwidgets in R)
+    #   index.from: int;  the source/destination pointer to the rows of the meta should start counting rows from 0 or 1?
+    #
+    # Details:
+    #   https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-visNetwork.html
+    #   http://www.htmlwidgets.org/showcase_visNetwork.html
+    #   http://visjs.org/docs/network/
+    
+    
+    # max length for links will be half square of number of nodes
+    # changing length of list is slow, so initialise to max then trim at the end
+    max.links <- (nrow(m) * nrow(m)) / 2
+    
+    link.list <-  list()
+    length(link.list) <- max.links
+    link.df <- data.frame(from = numeric(max.links), to = numeric(max.links))
+
+
+    
+    # store current index of dependencies separately for efficiency
+    cur.d <- 0 
+    
+    for (r in 1:nrow(m)) {
+        dependencies <- DependenciesToDf(m[r,'dependencies'])
+        for (local.d in seq_len(nrow(dependencies))) {
+            # add link
+            
+            cur.d <- cur.d + 1
+            
+            # source row is the index (starting from 0) of the node of the dependency
+            # which is the same as the meta row of the dependency - 1
+            if (include.versions) {
+                link.source <- which(m$name == dependencies$name[local.d] & m$version == dependencies$version[local.d])
+            } else {
+                link.source <- which(m$name == dependencies$name[local.d])
+            }
+
+            link.source <- link.source + index.from - 1
+            if (length(link.source) > 0) {
+                if (length(link.source) > 1) {
+                    msg <- paste('corrupted meta: ', 
+                                 dependencies$name[local.d], 
+                                 'version', dependencies$version[local.d], 
+                                 'exists', length(link.source), 'times, on rows', paste(link.source,sep=","))
+                    stop(msg)
+                }
+            } else {
+                stop('missing dependency')
+            }
+            
+            
+            link.target <- r + index.from - 1
+            link.list[[cur.d]] <- list(source = link.source, target = link.target)
+            link.df[cur.d,] <- c(link.source, link.target)
+        }
+    }
+    
+    # trim the list 
+    length(link.list) <- cur.d
+    # trim the df
+    link.df <- link.df[1:cur.d,]
+ 
+    
+    if (as.list) {
+        return(link.list)
+    } else {
+        return(link.df)
     }
     
     
     
-  }
-  
-  
-  
-  
 }
+
+
+
     

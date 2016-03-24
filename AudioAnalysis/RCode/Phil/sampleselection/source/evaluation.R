@@ -13,6 +13,16 @@ Batch1 <- function () {
     return(EvaluateSamples(versions = batch, subset.rankings = subset.rankings))
 }
 
+Batch1 <- function () {
+    # specific set of rankings to compare
+    res <- EvaluateSamples(versions = batch, subset.rankings = NULL)
+    PlotProgressionSummary(res)
+}
+
+
+
+
+
 EvaluateSamples <- function (use.last.accessed = FALSE, versions = NULL, subset.rankings = NULL) {
     # Entry point for evaluation. Reads ranking data from disk and evaluates the ranking against ground truth data
     #

@@ -60,10 +60,6 @@ g.minute.ranges <- c(0, 1439)
 # which sites to include in sample selection
 g.sites <- c('NE','NW','SE','SW')
 
-
-
-
-
 g.target <- list(
     'NE' = list(
         '2010-10-13' = c(0, 1439),

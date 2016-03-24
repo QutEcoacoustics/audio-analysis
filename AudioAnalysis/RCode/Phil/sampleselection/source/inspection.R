@@ -382,11 +382,11 @@ HtmlInspector.InsertData <- function (spectrograms, template, singles = data.fra
     
     
     # find first repeater
-    open.ex <- "<##startforeach\\{[0-9a-z.]*}##>"
+    open.ex <- "<##startforeach\\{[0-9a-z.]*\\}##>"
     open.loc <- str_locate(template, open.ex)
-    if (is.na(open.loc[1])) {
-        return(template)
-    }
+    if (!is.na(open.loc[1])) {
+        
+    
     open.txt <- str_sub(template, start = open.loc[1], end = open.loc[2])
     rep.name <- str_sub(str_extract(open.txt, "\\{[0-9a-z.]*}"), start = 2, end = -2)
     close.ex <- paste0("<##endforeach\\{",rep.name,"}##>")
@@ -427,6 +427,8 @@ HtmlInspector.InsertData <- function (spectrograms, template, singles = data.fra
     # recurse back into this function in case there are multiple repeaters (I don't see why there should ever need to be)
     # if it was the last one, then it will just return immediately
     template <- HtmlInspector.InsertData(spectrograms, template)
+    
+    }
     
     #lastly, insert singles
     template <- HtmlInspector.InsertIntoTemplate(template, singles)
