@@ -349,13 +349,14 @@ HtmlInspector <- function (spectrograms, template.file, output.fn = NULL, single
     
     template.path <- file.path('templates', template.file)
     template <- readChar(template.path, file.info(template.path)$size)
-    # replace title with title
+    
+    template <- HtmlInspector.InsertIncludes(template, dirname(template.path))
     
     
     result <- HtmlInspector.InsertData(spectrograms, template, singles)
     
     if (!is.character(output.fn)) {
-        output.fn <- template.file
+        output.fn <- basename(template.file)
     }
     
     output.path <- file.path(g.output.parent.dir, 'inspection', output.fn)
@@ -433,10 +434,39 @@ HtmlInspector.InsertData <- function (spectrograms, template, singles = data.fra
     #lastly, insert singles
     template <- HtmlInspector.InsertIntoTemplate(template, singles)
     
+    
     return(template)
 
     
     
+}
+
+HtmlInspector.InsertIncludes <- function (template, path) {
+    
+    placeholder.name.ex <- '[0-9a-zA-Z._]+'
+    placeholders.ex <- paste0("<##:",placeholder.name.ex,"##>") 
+    
+    placeholders <- unique(unlist(str_extract_all(template, placeholders.ex)))
+    placeholder.names <- unlist(str_extract_all(placeholders, placeholder.name.ex))
+    
+    if (length(placeholder.names) == 0) {
+        return(template)
+    }
+    
+    include.paths <- file.path(path, placeholder.names)
+    
+    verify = file.exists(include.paths)
+    if (!all(verify)) {
+        Report(4, 'some flags from templage were not in the replacement list')
+    }
+    placeholders <- placeholders[verify]
+    include.paths <- include.paths[verify]
+    
+    for(i in 1:length(placeholders)) {
+        file.text <- readChar(include.paths[i], file.info(include.paths[i])$size)
+        template <- str_replace_all(template, placeholders[i], file.text)
+    } 
+    return(template)
 }
 
 HtmlInspector.InsertIntoTemplate <- function (template, vals) {

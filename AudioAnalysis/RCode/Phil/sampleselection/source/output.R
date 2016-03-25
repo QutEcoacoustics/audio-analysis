@@ -940,7 +940,7 @@ D3Inspector <- function () {
     
     data <- DataVis()
     html.file <- 'inspect.data.html'
-    HtmlInspector(NULL, template.file = 'output.inspector.html', output.fn =  html.file, singles = list(data = data))
+    HtmlInspector(NULL, template.file = 'output.inspector/output.inspector.html', output.fn =  html.file, singles = list(data = data))
     
 }
 

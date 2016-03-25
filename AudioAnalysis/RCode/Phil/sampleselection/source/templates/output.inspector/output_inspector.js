@@ -13,28 +13,44 @@ oi.config = {
     grey: 0.2,
 };
 
-oi.init = function () {
+oi.init = function (data, trim) {
 
-    this.svg = d3.select("body")
+
+    oi.config.total_width = d3.select("body").node().getBoundingClientRect().width;
+
+    oi.groups = data;
+
+    oi.svg = d3.select("body")
         .append("svg")
         .attr("width", oi.config.total_width)
         .attr("height", oi.config.total_height)
         .classed('canvas',true);
 
-    this.g_names = Object.keys(data);
+    oi.g_names = Object.keys(oi.groups);
 
-    this.makeGroupMap();
-    this.setupOrder();
-    this.setNumRows();
+    oi.makeGroupMap();
+    oi.setupGroups();
 
-    this.setupGroups();
+
+
+
+    if (typeof(trim) === 'string') {
+        oi.trim(trim);
+    }
+
+
+    oi.setupOrder();
+    oi.setNumRows();
+    oi.setupRows();
+
+    oi.optimisePositions();
+
+
     oi.draw();
 
 
-    this.tooltip = d3.select('body').append('div')
+    oi.tooltip = d3.select('body').append('div')
         .style('position', 'absolute')
-        .style('padding', '0 10px')
-        .style('background', 'white')
         .style('opacity', 0)
         .classed('tooltip', true)
 
@@ -48,7 +64,7 @@ oi.init = function () {
 oi.setupOrder = function () {
 
     // first initialise the rows to 0
-    data.forEach(function (g) {
+    oi.groups.forEach(function (g) {
         g.row = 0;
     });
 
@@ -62,7 +78,7 @@ oi.setupOrder = function () {
     var finished = false;
     while(!finished) {
         finished = true;
-        data.forEach(function (g) {
+        oi.groups.forEach(function (g) {
 
             var d_rows = [], // the row of each of this group's version's dependencies
                 d_rows_max; // the max of d_rows
@@ -87,10 +103,9 @@ oi.setupOrder = function () {
  * sets the total number of rows based on the row numbers of each group
  */
 oi.setNumRows = function () {
-    oi.num_rows = 0;
-    oi.g_names.forEach(function(g){
-        oi.num_rows = Math.max(oi.num_rows, data[g].row);
-    });
+    oi.num_rows = Math.max.apply(null, oi.groups.map(function (g) {
+        return g.row;
+    }));
 };
 
 
@@ -100,8 +115,8 @@ oi.setNumRows = function () {
  */
 oi.makeGroupMap = function () {
     oi.group_map = {};
-    for (var g = 0; g < data.length; g++) {
-        oi.group_map[data[g].name] = g;
+    for (var g = 0; g < oi.groups.length; g++) {
+        oi.group_map[oi.groups[g].name] = g;
     }
 };
 
@@ -111,23 +126,68 @@ oi.makeGroupMap = function () {
  * @returns {*}
  */
 oi.getGroup = function (name) {
-    return(data[oi.group_map[name]]);
+    return(oi.groups[oi.group_map[name]]);
 };
 
 
 /**
- * Draw each group on the svg
+ * adds extra properties to the data to make everything work
  */
 oi.setupGroups = function () {
 
-    var r, row_groups, row_y, g_x, v_width, num_v_in_row, next_x;
+    oi.groups.forEach(function (g) {
 
-    // keep a list of all versions so we can iterate over all of them
-    oi.versions = [];
+        g.hidden = false;
+
+        g.versions.forEach(function(v, j) {
+
+            // unique string to identify this version
+            v.id = g.name + v.v;
+            v.group = g; //!! circular!
+            v.state = 1;
+
+            // up links and down links will create circular references. Hopefully won't cause problems!
+            // a 'link' is an object with properties from, to, line.
+            v.up_links = oi.getVs(v.links).map(function (up_v) {
+                return {
+                    from: up_v,
+                    to: v
+                };
+            });
+            v.down_links = []; // to be populated after all
+
+        });
+
+    });
+
+    // now that all versions have a list of up links,
+    // populate the corresponding versions' down links
+    // circular as hell!!
+    oi.groups.forEach(function (g) {
+        g.versions.forEach(function(v) {
+            v.up_links.forEach(function (up_link) {
+                up_link.from.down_links.push(up_link);
+            });
+        });
+    });
+
+
+
+};
+
+
+/**
+ * Sets values related to the rows
+ * - width of versions in order to fit in rows
+ *
+ */
+oi.setupRows = function () {
+
+    var r, row_groups, row_y, v_width, num_v_in_row;
 
     for (r = 1; r <= oi.num_rows; r++) {
 
-        row_groups = data.filter(function (g) {
+        row_groups = oi.groups.filter(function (g) {
             return g.row == r;
         });
 
@@ -146,13 +206,11 @@ oi.setupGroups = function () {
 
             var g_x;
 
-
-
-                if (i == 0) {
-                    g_x = oi.config.group_spacing;
-                } else {
-                    g_x = row_groups[i-1].pos.x + row_groups[i-1].pos.w + oi.config.group_spacing;
-                }
+            if (i == 0) {
+                g_x = oi.config.group_spacing;
+            } else {
+                g_x = row_groups[i-1].pos.x + row_groups[i-1].pos.w + oi.config.group_spacing;
+            }
 
 
 
@@ -166,54 +224,81 @@ oi.setupGroups = function () {
             g.versions.forEach(function(v, j) {
 
                 // unique string to identify this version
-                v.id = g.name + v.v;
+
                 v.pos = {
                     x:j * v_width,
                     h:oi.config.group_height - oi.config.group_title_height,
                     w:v_width
                 };
-                v.group_name = g.name;
-                v.group = g; //!! circular!
-                v.group_pos = g.pos;
                 v.globalPos = function () {
                     return({
-                        x: this.pos.x + this.group_pos.x,
-                        y: this.group_pos.y + oi.config.group_title_height
+                        x: this.pos.x + this.group.pos.x,
+                        y: this.group.pos.y + oi.config.group_title_height
                     })
-
                 };
-                v.state = 1;
-
-                oi.versions.push(v);
-
-
-                // up links and down links will create circular references. Hopefully won't cause problems!
-                // a 'link' is an object with properties from, to, line.
-                v.up_links = oi.getVs(v.links).map(function (up_v) {
-                    return {
-                        from: up_v,
-                        to: v
-                    };
-                });
-                v.down_links = []; // to be populated after all
-
             });
-
         });
     }
+};
 
-    // now that all versions have a down_list, populate it
-    // circular as hell!!
-    oi.versions.forEach(function(v) {
-        v.up_links.forEach(function (up_link) {
-            up_link.from.down_links.push(up_link);
+/**
+ * Removes groups that are not dependencies or dependents of the given group
+ * @param group_name
+ */
+oi.trim = function (group_name) {
+
+    // list of versions and lines to activate
+    var g, chain, combined_chain = [];
+
+    // initialise hidden to true for all groups
+    oi.groups.forEach(function (g) {
+        g.hidden = true;
+        g.versions.forEach(function (v) {
+            v.hidden = true;
         });
     });
 
-    oi.optimisePositions();
+    // get a chain of links that come from the given group
+    oi.getGroup(group_name).versions.forEach( function (v) {
+        chain = [];
+        oi.getChain(v, true, chain);
+        oi.getChain(v, false, chain);
+        combined_chain = combined_chain.concat(chain);
+    });
+
+
+    // set the groups connecting to each link in that chain to not hidden
+    combined_chain.forEach(function (l) {
+        l.from.group.hidden = false;
+        l.to.group.hidden = false;
+        l.from.hidden = false;
+        l.to.hidden = false;
+    });
+
+    // remove links to or from versions that are hidden
+    oi.groups.forEach(function (g) {
+        g.versions.forEach(function (v) {
+            v.up_links = v.up_links.filter(function(l) {
+                return (!(l.from.hidden || l.to.hidden));
+            });
+            v.down_links = v.down_links.filter(function(l) {
+                return (!(l.from.hidden || l.to.hidden));
+            });
+        });
+        g.versions = g.versions.filter(function (v) {
+            return !v.hidden;
+        });
+    });
+
+    // remove groups that are hidden
+    oi.groups = oi.groups.filter(function (g) {
+        return (!g.hidden);
+    });
+
+    // re-create the group map
+    oi.makeGroupMap();
 
 };
-
 
 /**
 
@@ -259,7 +344,7 @@ oi.optimisePositions1 = function () {
 };
 
 oi.getRow = function (row_num) {
-    return data.filter(function (g) {
+    return oi.groups.filter(function (g) {
         return g.row == row_num;
     });
 }
@@ -282,14 +367,12 @@ oi.optimisePositions = function () {
     while(still_moving && count < 100) {
 
         count++;
-        //order = util.randomArray(data.length);
-        data.forEach(function (g) {
+        //order = util.randomArray(oi.groups.length);
+        oi.groups.forEach(function (g) {
             oi.setForces([g], true, true);
         });
-
         still_moving = oi.moveTowardsOptimal();
-
-        oi.draw();
+       
 
     }
 
@@ -297,9 +380,32 @@ oi.optimisePositions = function () {
         oi.fixOverlapping(r);
     }
 
+    oi.center();
+
 };
+
+
+oi.center = function () {
+    var min_left, max_right, shift;
+    min_left = Math.min.apply(null, oi.groups.map(function (g) {
+        return g.pos.x;
+    }));
+
+    max_right = Math.max.apply(null, oi.groups.map(function (g) {
+        return g.pos.x + g.pos.w;
+    }));
+
+    shift = ((oi.config.total_width - max_right) - min_left) / 2;
+
+    oi.groups.forEach(function (g) {
+        g.pos.x += shift;
+    });
+};
+
 /**
- * get the position for the group that minimises the total link offsets
+ * get the position for the groups that minimises the total link offsets
+ * groups is an array of groups. If contains more than one group, will set the
+ * forces as if they are fixed relative to each other
  */
 oi.setForces = function (groups, up_links, down_links) {
 
@@ -338,7 +444,7 @@ oi.setForces = function (groups, up_links, down_links) {
 oi.moveTowardsOptimal = function () {
     var has_moved = false,
         change;
-    data.forEach(function (g) {
+    oi.groups.forEach(function (g) {
         change = (g.pos.optimal_dist * 0.4)
         g.pos.x = g.pos.x + change;
         if (Math.abs(change) > 1) {
@@ -361,10 +467,10 @@ oi.moveTowardsOptimal = function () {
 oi.fixOverlapping = function (row) {
     // TODO: make this work faster
     var moved,
-    row_groups = oi.getRow(row),
-    ok = false,
-    count = 0,
-    max_iterations = 50;
+        row_groups = oi.getRow(row),
+        ok = false,
+        count = 0,
+        max_iterations = 50;
     while(!ok && count < max_iterations) {
         ok = true;
         count++;
@@ -464,7 +570,7 @@ oi.draw = function () {
     oi.svg.selectAll("rect").remove();
     oi.svg.selectAll("line").remove();
     for (var r = 1; r <= oi.num_rows; r++) {
-        data.filter(function (g) {
+        oi.groups.filter(function (g) {
             return g.row == r;
         }).forEach(function (g) {
             oi.drawGroup(g);
@@ -484,22 +590,20 @@ oi.draw = function () {
  */
 oi.drawGroup = function (obj) {
     var res;
-    obj.el = oi.svg.append('g');
+    obj.el = oi.svg.append('g')
+        .attr("class", 'group');
     obj.el.append('rect')
-        .attr("class", 'group')
         .attr("height", obj.pos.h)
         .attr("width", obj.pos.w)
         .attr("rx", 5)
-        .attr("ry", 5)
-        .attr('x',0)
-        .attr('y',0);
+        .attr("ry", 5);
     text = obj.el.append('text')
         .text(obj.name)
-        .attr('y', oi.config.group_title_height / 2)
+        .attr('y', oi.config.group_title_height / 2 + 5)
         .attr('x',obj.pos.w / 2)
-    util.scaleTextToFit(text.node(), obj.pos.w - 4, oi.config.group_title_height);
+    util.scaleTextToFit(text.node(), obj.pos.w - 4, oi.config.group_title_height - 5);
 
-    oi.setPos(obj);
+    oi.setPos(obj.el, obj.pos.x, obj.pos.y);
 
 };
 
@@ -511,19 +615,18 @@ oi.drawGroup = function (obj) {
  */
 oi.drawV = function (obj, parent) {
     var res = {};
-    res.rect = parent.append('rect')
+    obj.el = parent.append('g')
         .attr("class", 'version')
-        .attr("x", obj.pos.x)
-        .attr("y", oi.config.group_title_height)
+    oi.setPos(obj.el, obj.pos.x, oi.config.group_title_height);
+    obj.el.append('rect')
         .attr("height", obj.pos.h)
         .attr("width", obj.pos.w);
-    res.text = parent.append('text')
+    obj.el.append('text')
         .text(obj.v)
-        .attr("x", obj.pos.x + obj.pos.w / 2)
-        .attr("y", oi.config.group_title_height + 20)
-        .attr('fill', '#990000')
+        .attr("x",  obj.pos.w / 2)
+        .attr("y", 20)
         .attr('class', 'v_num');
-    res.rect.on("mouseover", function (v) {
+    obj.el.on("mouseover", function (v) {
             return (function () {
                 oi.vMouseOver(v);
             });
@@ -534,15 +637,15 @@ oi.drawV = function (obj, parent) {
                 oi.vClick(v);
             });
         }(obj));
-    obj.el = res;
+
 };
 
 /**
  *
  * @param g
  */
-oi.setPos = function (g) {
-    g.el.attr("transform", 'translate('+ g.pos.x+','+ g.pos.y+')')
+oi.setPos = function (el, x, y) {
+    el.attr("transform", 'translate('+ x+','+ y+')')
 };
 
 /**
@@ -568,9 +671,12 @@ oi.vMouseOver = function (v) {
  * - hides tooltip
  */
 oi.vMouseOut = function () {
+
+    oi.classAll('over', false);
+    oi.classAll('off', false);
+
     oi.tooltip.transition()
         .style('opacity', 0)
-    oi.removeClassFromAll('over');
 };
 
 
@@ -593,11 +699,13 @@ oi.vClick = function (v) {
 
 
     // set all version state to 1
-    oi.versions.forEach(function (cur_v) {
-        cur_v.state = 1;
+    oi.groups.foreach(function(g) {
+        g.versions.forEach(function (cur_v) {
+            cur_v.state = 1;
+        });
     });
 
-    oi.removeClassFromAll('active');
+    oi.classAll('active', false);
 
 
     // set cur version state to v.state
@@ -614,15 +722,19 @@ oi.vClick = function (v) {
 
 };
 
-oi.removeClassFromAll = function (class_name) {
-    oi.svg.selectAll('rect').classed(class_name, false);
-    oi.svg.selectAll('line').classed(class_name, false);
+oi.classAll = function (class_name, on) {
+    oi.svg.selectAll('.version').classed(class_name, on);
+    oi.svg.selectAll('.group').classed(class_name, on);
+    oi.svg.selectAll('line').classed(class_name, on);
 };
 
 oi.activate = function (v, class_name, activate_down) {
     // keep track of which have been activated, so we don't get in a loop
 
-    v.el.rect.classed(class_name, true);
+    // set all to 'off'
+    oi.classAll('off', true);
+
+    v.el.classed(class_name, true);
 
     // list of versions and lines to activate
     var active_links = [];
@@ -634,16 +746,36 @@ oi.activate = function (v, class_name, activate_down) {
     }
 
     active_links.forEach(function (l) {
+
+        // remove the 'off' class from these and add the given class
+
         l.line.classed(class_name, true);
-        l.from.el.rect.classed(class_name, true);
-        l.to.el.rect.classed(class_name, true);
+        l.from.el.classed(class_name, true);
+        l.to.el.classed(class_name, true);
+        l.to.group.el.classed(class_name, true);
+        l.from.group.el.classed(class_name, true);
+
+
+
+        l.line.classed('off', false);
+        l.from.el.classed('off', false);
+        l.to.el.classed('off', false);
+        l.to.group.el.classed('off', false);
+        l.from.group.el.classed('off', false);
+
     });
 
 };
 
-oi.getChain = function (v, up, active_links) {
-
-
+/**
+ * recursive function that adds the links of the
+ * version v to the link_list, then calls this same function on
+ * the linked versions. At the en, link_list will contain all the links in the chain
+ * @param v
+ * @param up
+ * @param link_list
+ */
+oi.getChain = function (v, up, link_list) {
 
     var links;
 
@@ -651,17 +783,11 @@ oi.getChain = function (v, up, active_links) {
 
     // check for loops
     links.forEach(function (l){
-        if (active_links.indexOf(links[l]) == -1) {
-            active_links.push(l);
-            oi.getChain((up ? l.from : l.to), up, active_links);
+        if (link_list.indexOf(links[l]) == -1) {
+            link_list.push(l);
+            oi.getChain((up ? l.from : l.to), up, link_list);
         }
     });
-
-
-
-    return links;
-
-
 };
 
 
@@ -669,21 +795,31 @@ oi.getChain = function (v, up, active_links) {
 
 oi.tooltipText = function (v) {
 
-    template =  "<p> version: [v] </p>" +
-        "<p> date: [d] </p>";
+
+
+    info = {};
+    info['<span>'+v.v+'</span>'] = v.date;
+
+    html =  oi.tooltipDl(info, 'info') +
+        oi.tooltipDl(v.params, 'params');
+    console.log(html);
+    return(html);
 
 
 
-    map = {
-        "[d]": v.date,
-        "[v]": v.v
-    }
+};
+/**
+ * Returns a html description list of the params for the version
+ * @param params
+ */
+oi.tooltipDl = function (params, class_name) {
 
-    return(template.replace(/\[[a-z]\]/gi, function(matched){
-        return map[matched];
-    }));
-
-
+    var html = '';
+    Object.keys(params).forEach(function(p_name) {
+        html += '<tr><td class="name">'+p_name+'</td><td class="val">'+params[p_name]+'</td></tr>'
+    });
+    html = '<table class="'+class_name+'">'+html+'</table>';
+    return html;
 
 };
 
@@ -721,7 +857,7 @@ oi.getVs = function (v_list) {
  */
 oi.drawLinks = function () {
 
-    data.forEach(function (g) {
+    oi.groups.forEach(function (g) {
         g.versions.forEach(function (v) {
             v.up_links.forEach(function(link) {
 
@@ -758,13 +894,13 @@ util.randomArray = function (size) {
         a.push(i);
     }
 
-        var j, x, i;
-        for (i = a.length; i; i -= 1) {
-            j = Math.floor(Math.random() * i);
-            x = a[i - 1];
-            a[i - 1] = a[j];
-            a[j] = x;
-        }
+    var j, x, i;
+    for (i = a.length; i; i -= 1) {
+        j = Math.floor(Math.random() * i);
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+    }
 
     return a;
 };
@@ -781,8 +917,8 @@ util.scaleTextToFit = function (text_node, width, height) {
 };
 
 
-      
-oi.init();
+
+oi.init(data, 'features');
       
 
       

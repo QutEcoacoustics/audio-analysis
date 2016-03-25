@@ -1,0 +1,129 @@
+            body, html {
+                margin: 0px;
+                padding: 0px;
+                font-family: arial;
+                text-anchor: middle;
+                alignment-baseline: middle;
+            }
+
+            line {
+                pointer-events: none;
+            }
+
+            .canvas {
+                display: block;
+                margin: auto auto;
+            }
+
+            .group, .version {
+                fill-opacity: 0.4;
+                stroke-opacity: 0.4;
+                transition: fill-opacity 0.4s, stroke-opacity 0.4s;
+            }
+
+            .group rect, .version rect {
+                fill: #d9d1ba;
+                stroke: #73664f;
+                stroke-width: 1px;
+            }
+
+            line {
+                stroke: #73664f;
+                stroke-opacity: 0.2;
+                stroke-width: 1px;
+            }
+
+            .version.over {
+                fill-opacity: 1;
+                stroke-opacity: 1;
+                transition: fill-opacity 0.4s, stroke-opacity 0.4s;
+            }
+
+            .group.over {
+                fill-opacity: 0.6;
+                stroke-opacity: 0.6;
+                transition: fill-opacity 0.4s, stroke-opacity 0.4s;
+            }
+
+            .group.off, .version.off {
+                fill-opacity: 0.1;
+                stroke-opacity: 0.2;
+                transition: fill-opacity 1.2s, stroke-opacity 1.2s;
+            }
+
+            .version.off {
+                transition: fill-opacity 0.6s, stroke-opacity 0.6s;
+            }
+
+            .version.over rect  {
+                stroke: #167db6;
+                stroke-width: 2px;
+                fill: #73664f;
+            }
+
+
+            .version.active rect  {
+                stroke: #a62424;
+                stroke-width: 2px;
+                fill: #a62424;
+            }
+
+            .version.over text,.version.active text  {
+                fill: #d9d1ba;
+                stroke: none;
+            }
+
+            line.over {
+                stroke-opacity: 0.8;
+                stroke: #167db6;
+                stroke-width: 2px;
+            }
+
+            line.off {
+                stroke-opacity: 0.1;
+                stroke: #93866f;
+                stroke-width: 1px;
+            }
+            .version.active {
+                fill-opacity: 1;
+            }
+
+            line.active {
+                stroke-opacity: 0.8;
+                stroke: #a62424;
+                stroke-width: 2px;
+            }
+
+
+
+
+            .tooltip {
+                box-shadow: 2px 2px 6px 1px rgba(0,0,0,0.2);
+                padding: 10px;
+                background: white;
+                color: #333333;
+                font-size: 12px;
+            }
+
+            .tooltip .info {
+                border-bottom: dashed #880000 1px;
+                padding-bottom: 5px;
+                margin-bottom: 5px;
+            }
+
+            .tooltip td  {
+                display: table-cell;
+            }
+
+            .tooltip td.name {
+                color: #007700;
+                padding-right: 5px;
+                display: table-cell;
+                text-align: right
+            }
+
+            .tooltip td.name:after {
+                content: ":";
+                padding: 4px;
+
+            }
