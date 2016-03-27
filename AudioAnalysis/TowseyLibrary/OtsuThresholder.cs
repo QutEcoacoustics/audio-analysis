@@ -8,8 +8,143 @@ using System.Drawing;
 namespace TowseyLibrary
 {
 
+    /// <summary>
+    /// Go to following link for info on Otsu threshold
+    /// http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
+    /// </summary>
     public class OtsuThresholder
     {
+
+        public static Arguments Dev()
+        {
+            // INPUT and OUTPUT DIRECTORIES
+
+
+
+            // set up IP and OP directories
+            //string InputFile = @"C:\Work\GitHub\audio-analysis\Extra Assemblies\OtsuThreshold\harewood.jpg";
+            //string InputFile = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png";
+            string InputFile = @"C:\SensorNetworks\Output\SERF\SERF_IndicesFor2013June19\SERF_20130619_064615_000_0156h.png";
+            //string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
+            string OutputDir = @"C:\SensorNetworks\Output\ThresholdingExperiments";
+            string outputFilename = "binary3.png";
+            //string imagOutputDireOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
+
+
+
+            FileInfo ipImage = new FileInfo(InputFile);
+            DirectoryInfo opDir = new DirectoryInfo(OutputDir);
+
+            //FileInfo fiSpectrogramConfig = null;
+            FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
+
+            return new Arguments
+            {
+                InputImageFile = ipImage,
+                OutputDirectory = opDir,
+                OutputFileName = new FileInfo(Path.Combine(opDir.FullName, outputFilename)),
+                SpectrogramConfigPath = fiSpectrogramConfig,
+                // background threshold value that is subtracted from all spectrograms.
+                BgnThreshold = 3.0
+            };
+            throw new Exception();
+        } //Dev()
+
+
+
+        public class Arguments
+        {
+            public FileInfo InputImageFile { get; set; }
+
+            public DirectoryInfo OutputDirectory { get; set; }
+
+            public FileInfo OutputFileName { get; set; }
+
+            public FileInfo SpectrogramConfigPath { get; set; }
+
+            public double BgnThreshold { get; set; }
+        }
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="arguments"></param>
+        public static void Execute(Arguments arguments)
+        {
+            if (arguments == null)
+            {
+                arguments = Dev();
+                bool verbose = true; // assume verbose if in dev mode
+                if (verbose)
+                {
+                    string date = "# DATE AND TIME: " + DateTime.Now;
+                    LoggedConsole.WriteLine("Test of OtsuThresholder class");
+                    LoggedConsole.WriteLine(date);
+                    LoggedConsole.WriteLine();
+                } // if (verbose)
+            } // if 
+
+            // Load Source image
+            Image srcImage = null;
+
+            try
+            {
+                srcImage = ImageTools.ReadImage2Bitmap(arguments.InputImageFile.FullName);
+            }
+            catch (IOException ioE)
+            {
+                Console.Error.WriteLine(ioE);
+                System.Environment.Exit(1);
+            }
+
+            int width = srcImage.Width;
+            int height = srcImage.Height;
+
+            // Get raw image data
+            byte[,] M = ConvertColourImageToGreyScaleMatrix((Bitmap)srcImage);
+
+
+            // Sanity check image
+            if ((width * height) != (M.GetLength(0) * M.GetLength(1)))
+            {
+                Console.Error.WriteLine("Unexpected image data size.");
+                System.Environment.Exit(1);
+            }
+
+            // Output Image info
+            //Console.WriteLine("Loaded image: '%s', width: %d, height: %d, num bytes: %d\n", filename, width, height, srcData.Length);
+
+
+            byte[] vector = DataTools.Matrix2Array(M);
+            byte[] outputArray;
+
+            // Create Otsu Thresholder
+            OtsuThresholder thresholder = new OtsuThresholder();
+            int threshold = thresholder.CalculateThreshold(vector, out outputArray);
+
+            Console.WriteLine("Threshold: {0:d}", threshold);
+
+            
+            byte[,] M2 = DataTools.Array2Matrix(outputArray, width, height);
+
+            Image opImage = ConvertMatrixToGreyScaleImage(M2);
+
+            Image histoImage = CreateHistogramFrame(thresholder, height);
+
+            Image[] imageArray = { srcImage, opImage, histoImage };
+
+            Image images = ImageTools.CombineImagesInLine(imageArray);
+
+            images.Save(arguments.OutputFileName.FullName);
+        }
+
+
+
+        // =========================  OtsuTHRESHOLD class proper.
+
         private int[] histData;
         private int maxLevelValue;
         private int threshold;
@@ -22,7 +157,7 @@ namespace TowseyLibrary
             histData = new int[256];
         }
 
-        public int[] getHistData()
+        public int[] GetHistData()
         {
             return histData;
         }
@@ -113,98 +248,12 @@ namespace TowseyLibrary
 
         // ================================================= STATIC METHODS =====================================================
 
-        /// <summary>
-        /// Go to following link for info on Otsu threshold
-        /// http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
-        /// </summary>
-        /// <param name="filename"></param>
-        public static void OtsuThreshold(String filename)
-    {
-
-        // Load Source image
-		Image srcImage = null;
-
-		try
-		{
-			FileInfo imgFile = new FileInfo(filename);
-			srcImage = ImageTools.ReadImage2Bitmap(imgFile.FullName);
-		}
-		catch (IOException ioE)
-		{
-            Console.Error.WriteLine(ioE);
-			System.Environment.Exit(1);
-		}
-
-		int width = srcImage.Width;
-		int height = srcImage.Height;
-
-        // Get raw image data
-        byte[,] M = ConvertColourImageToGreyScaleMatrix((Bitmap)srcImage);
-
-
-		    // Sanity check image
-		    if ((width * height)  !=  (M.GetLength(0)* M.GetLength(1)))
-            {
-                Console.Error.WriteLine("Unexpected image data size.");
-                System.Environment.Exit(1);
-		    }
-
-            // Output Image info
-            //Console.WriteLine("Loaded image: '%s', width: %d, height: %d, num bytes: %d\n", filename, width, height, srcData.Length);
-
-
-        byte[] vector = DataTools.Matrix2Array(M);
-        byte[] output;
-
-        // Create Otsu Thresholder
-            OtsuThresholder thresholder = new OtsuThresholder();
-		int threshold = thresholder.CalculateThreshold(vector, out output);
-
-        Console.WriteLine("Threshold: %d\n", threshold);
-
-		// Create GUI
-		//GreyFrame srcFrame = new GreyFrame(width, height, srcData);
-		//GreyFrame dstFrame = new GreyFrame(width, height, dstData);
-		//GreyFrame histFrame = CreateHistogramFrame(thresholder);
-
-		//JPanel infoPanel = new JPanel();
-		//infoPanel.add(histFrame);
-
-		//JPanel panel = new JPanel(new BorderLayout(5, 5));
-		//panel.setBorder(new javax.swing.border.EmptyBorder(5, 5, 5, 5));
-		//panel.add(infoPanel, BorderLayout.NORTH);
-		//panel.add(srcFrame, BorderLayout.WEST);
-		//panel.add(dstFrame, BorderLayout.EAST);
-		//panel.add(new JLabel("A.Greensted - http://www.labbookpages.co.uk", JLabel.CENTER), BorderLayout.SOUTH);
-
-		//JFrame frame = new JFrame("Blob Detection Demo");
-		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//frame.getContentPane().add(panel);
-		//frame.pack();
-		//frame.setVisible(true);
-
-		// Save Images
-		//try
-		//{
-		//	int dotPos = filename.lastIndexOf(".");
-		//	String basename = filename.substring(0,dotPos);
-
-		//	javax.imageio.ImageIO.write(dstFrame.getBufferImage(), "PNG", new File(basename+"_BW.png"));
-		//	javax.imageio.ImageIO.write(histFrame.getBufferImage(), "PNG", new File(basename+"_hist.png"));
-		//}
-		//catch (IOException ioE)
-		//{
-		//	Console.Error.WriteLine("Could not write image " + filename);
-		//}
-
-    }
-
 
         public static byte[,] ConvertColourImageToGreyScaleMatrix(Bitmap image)
         {
             int width = image.Width;
             int height = image.Height;
-            byte[,] m = new byte[width, height];
+            byte[,] m = new byte[height, width];
             for (int r = 0; r < height; r++)
             {
                 for (int c = 0; c < width; c++)
@@ -221,39 +270,54 @@ namespace TowseyLibrary
             return m;
         }
 
+        public static Bitmap ConvertMatrixToGreyScaleImage(byte[,] M)
+        {
+            int width = M.GetLength(1);
+            int height = M.GetLength(0);
+            Bitmap image = new Bitmap(width, height);
+            for (int r = 0; r < height; r++)
+            {
+                for (int c = 0; c < width; c++)
+                {
+                    Color color = Color.FromArgb(M[r, c], M[r, c], M[r, c]);
+                    image.SetPixel(c, r, color);
+                }
+
+            }
+            return image;
+        }
 
 
-    private Image CreateHistogramFrame(OtsuThresholder thresholder)
+        private static Image CreateHistogramFrame(OtsuThresholder thresholder, int height)
     {
-        int width = 256;
-        int height = 100;
-        int numPixels = width * height;
-        byte[] histPlotData = new byte[numPixels];
+        int width = 256; // histogram is one byte width wide.
 
-        int[] histData = thresholder.getHistData();
+        int[] histData = thresholder.GetHistData();
         int max = thresholder.getMaxLevelValue();
         int threshold = thresholder.getThreshold();
         var image = new Bitmap(width, height);
 
 
-        for (int l = 0; l < width; l++)
+        for (int col = 0; col < width; col++)
         {
-            int ptr = (numPixels - width) + l;
-            int val = (100 * histData[l]) / max;
+            //int ptr = (numPixels - width) + col;
+            int val = (height * histData[col]) / max;
 
-            if (l == threshold)
+            if (col == threshold)
             {
-                for (int i = 0; i < 100; i++, ptr -= width)
-                        histPlotData[ptr] = (byte)128;
+                for (int i = 0; i < height; i++) image.SetPixel(col, i, Color.Gray);
             }
             else
             {
-                for (int i = 0; i < 100; i++, ptr -= width)
-                        histPlotData[ptr] = (byte)((val < i) ? (byte)255 : 0);
+                for (int i = 1; i <= val; i++)
+                        image.SetPixel(col, height - i, Color.White);
+                    //histPlotData[ptr] = (byte)((val < i) ? (byte)255 : 0);
             }
-        }
+                for (int i = 0; i < height; i++) image.SetPixel(0, i, Color.Gray);
 
-        return image;
+            }
+
+            return image;
     }
 
 
@@ -264,61 +328,61 @@ namespace TowseyLibrary
         /// The input is an array of bytes, srcData that stores the greyscale image.
         /// 
         /// </summary>
-        public static double OtsuThreshold(byte[] srcData)
-        {
-            double threshold = 0;
+        //public static double OtsuThreshold(byte[] srcData)
+        //{
+        //    double threshold = 0;
 
-            int scaleResolution = 256;
-            int[] histData = new int[scaleResolution];
+        //    int scaleResolution = 256;
+        //    int[] histData = new int[scaleResolution];
 
-            // Calculate histogram
-            int ptr = 0;
-            while (ptr < srcData.Length)
-            {
-                int h = 0xFF & srcData[ptr]; // convert grey scale value to an int. Index for histogram.
-                histData[h]++;
-                ptr++;
-            }
+        //    // Calculate histogram
+        //    int ptr = 0;
+        //    while (ptr < srcData.Length)
+        //    {
+        //        int h = 0xFF & srcData[ptr]; // convert grey scale value to an int. Index for histogram.
+        //        histData[h]++;
+        //        ptr++;
+        //    }
 
-            // Total number of pixels
-            int total = srcData.Length;
+        //    // Total number of pixels
+        //    int total = srcData.Length;
 
-            float sum = 0;
-            for (int t = 0; t < scaleResolution; t++)
-                sum += t * histData[t];
+        //    float sum = 0;
+        //    for (int t = 0; t < scaleResolution; t++)
+        //        sum += t * histData[t];
 
-            float sumB = 0;
-            int wB = 0;
-            int wF = 0;
+        //    float sumB = 0;
+        //    int wB = 0;
+        //    int wF = 0;
 
-            float varMax = 0;
-            threshold = 0;
+        //    float varMax = 0;
+        //    threshold = 0;
 
-            for (int t = 0; t < scaleResolution; t++)
-            {
-                wB += histData[t];               // Weight Background
-                if (wB == 0) continue;
+        //    for (int t = 0; t < scaleResolution; t++)
+        //    {
+        //        wB += histData[t];               // Weight Background
+        //        if (wB == 0) continue;
 
-                wF = total - wB;                 // Weight Foreground
-                if (wF == 0) break;
+        //        wF = total - wB;                 // Weight Foreground
+        //        if (wF == 0) break;
 
-                sumB += (float)(t * histData[t]);
+        //        sumB += (float)(t * histData[t]);
 
-                float mB = sumB / wB;            // Mean Background
-                float mF = (sum - sumB) / wF;    // Mean Foreground
+        //        float mB = sumB / wB;            // Mean Background
+        //        float mF = (sum - sumB) / wF;    // Mean Foreground
 
-                // Calculate Between Class Variance
-                float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
+        //        // Calculate Between Class Variance
+        //        float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
 
-                // Check if new maximum found
-                if (varBetween > varMax)
-                {
-                    varMax = varBetween;
-                    threshold = t;
-                }
-            } // for
-            return threshold;
-        } // OtsuThreshold()
+        //        // Check if new maximum found
+        //        if (varBetween > varMax)
+        //        {
+        //            varMax = varBetween;
+        //            threshold = t;
+        //        }
+        //    } // for
+        //    return threshold;
+        //} // OtsuThreshold()
 
 
     } // class OtsuThresholder

@@ -2959,12 +2959,14 @@ namespace TowseyLibrary
                 gr.DrawImage(array[i], xOffset, 0); //draw in the top spectrogram
                 xOffset += array[i].Width;
 
-                string name = String.Format("TESTIMAGE" + i + ".png");
-                array[i].Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", name));
+                //string name = String.Format("TESTIMAGE" + i + ".png");
+                //array[i].Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", name));
             }
 
-            string fileName2 = String.Format("TESTIMAGE3.png");
-            compositeBmp.Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", fileName2));
+            // this was done in Berlin beacuse could not get images to save properly.
+
+            //string fileName2 = String.Format("TESTIMAGE3.png");
+            //compositeBmp.Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", fileName2));
 
             return (Image)compositeBmp;
         }
