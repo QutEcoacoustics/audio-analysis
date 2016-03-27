@@ -295,6 +295,27 @@ namespace TowseyLibrary
             }
             return v;
         }
+
+        /*
+         * converts a matrix to a vector by concatenating columns.
+         */
+        public static byte[,] Array2Matrix(byte[] array, int width, int height)
+        {
+            byte[,] M = new byte[height, width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < height; row++)
+                {
+                    M[row, col] = array[id++];
+                }
+            }
+            return M;
+        }
+
+
+
         /*
          * converts a matrix to a vector by concatenating columns.
          */

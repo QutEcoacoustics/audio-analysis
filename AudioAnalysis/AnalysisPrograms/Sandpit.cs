@@ -874,10 +874,22 @@ namespace AnalysisPrograms
             //HERVE GLOTIN
             // To produce observe feature spectra or SPECTRAL FEATURE TEMPLATES for each species
             // This is used to analyse Herve Glotin's BIRD50 data set.
-            if (true)
+            if (false)
             {
                 BirdClefExperiment1.Execute(null);
             } // Herve Glotin's BIRD50 Dataset
+
+
+
+            //OTSU TRHESHOLDING FROM JIE XIE
+            // Used to threshold spectrograms to binary.
+            //  Jie uses the algorithm in his last 2016 papers. 
+            // 
+            if (true)
+            {
+                OtsuThresholder.Execute(null);
+            } 
+
 
 
 
