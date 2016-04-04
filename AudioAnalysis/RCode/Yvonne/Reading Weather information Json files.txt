@@ -1,0 +1,143 @@
+#library(rjson)
+#"C:\Users\n0572527\ownCloud\Shared\Ecoacoustics\Resources\Weather\20160204T042921.305Z_IDQ60801.94566.json"
+setwd("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\")
+#setwd("C:\\Work\\Latest Observations\\Tewantin\\")
+#raw.data <- readLines("94570-2016 ... .txt", warn = "F",
+#                      skipNul = T)
+#data <- fromJSON(raw.data)
+library(jsonlite)
+#data <- fromJSON("94570-2016 ... .txt")
+folder <- "C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\"
+TewantinFiles <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+                      pattern = "*_IDQ60801.94570.json")
+GympieFiles <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+                            pattern = "*_IDQ60801.94566.json")
+# Read in all Gympie weather data
+data <- fromJSON(GympieFiles[1])
+data <- as.data.frame(data)
+for (i in seq_along(GympieFiles)) {
+  Name <- GympieFiles[i]
+  fileContents <- fromJSON(Name)
+  fileContents <- as.data.frame(fileContents)
+  data <- rbind(data, fileContents)
+  print(i)
+}
+data <- data[order(data$observations.data.local_date_time_full),]
+
+# Remove all but the unique rows
+data <- subset(data,!duplicated(data$observations.data.local_date_time_full))
+data <- data[,c(8,9,10,13,14,16,17,18,20,21,22,29,31,32,33,37,38,45,46)]
+names(data)
+# calculate the rain per half hour from the rain trace
+rain <- as.numeric(data[1,16])
+for (i in 2:length(data[,16])) {
+  ra <- as.numeric(data[i,16]) - as.numeric(data[(i-1),16])
+  if  (substr((data[i,7]),4,10) == "09:30am") {
+    ra <- as.numeric(data[i,16])
+  }
+  if (ra < 0 & !is.na(ra)) {
+    ra <- as.numeric(data[i,16])
+  }
+  rain <- c(rain, ra)
+}
+max(rain)
+data[,20] <- rain
+colnames(data)[20] <- "rain"
+write.csv(data, "Gympie_weather1.csv", row.names = FALSE)
+############
+# TEWANTIN 
+############
+# Read in all Tewantin weather data
+data <- fromJSON(TewantinFiles[1])
+data <- as.data.frame(data)
+for (i in seq_along(TewantinFiles)) {
+  Name <- TewantinFiles[i]
+  fileContents <- fromJSON(Name)
+  fileContents <- as.data.frame(fileContents)
+  data <- rbind(data, fileContents)
+  print(i)
+}
+data <- data[order(data$observations.data.local_date_time_full),]
+
+# Remove all but the unique rows
+data <- subset(data,!duplicated(data$observations.data.local_date_time_full))
+data <- data[,c(8,9,10,13,14,16,17,18,20,21,22,29,31,32,33,37,38,45,46)]
+names(data)
+# calculate the rain per half hour from the rain trace
+rain <- as.numeric(data[1,16])
+for (i in 2:length(data[,16])) {
+  ra <- as.numeric(data[i,16]) - as.numeric(data[(i-1),16])
+  if  (substr((data[i,7]),4,10) == "09:30am") {
+    ra <- as.numeric(data[i,16])
+  }
+  if (ra < 0 & !is.na(ra)) {
+    ra <- as.numeric(data[i,16])
+  }
+  rain <- c(rain, ra)
+}
+max(rain)
+data[,20] <- rain
+colnames(data)[20] <- "rain"
+write.csv(data, "Tewantin_weather.csv", row.names = FALSE)
+########################################################
+# Prepare PCA coefficients and plot diel weather plot
+########################################################
+pca.weather.coefficients <- read.csv("pca_weather_coefficients.csv", header=T)
+ds6 <- pca.weather.coefficients[,2:4]
+##### Normalise the dataset ################ 
+normalise <- function (x, xmin, xmax) {
+  y <- (x - xmin)/(xmax - xmin)
+}
+ds.coef_min_max <- ds6
+min.values <- NULL
+max.values <- NULL
+for (i in 1:length(ds6)) {
+  min <- unname(quantile(ds6[,i], probs = 0.0, na.rm = TRUE))
+  max <- unname(quantile(ds6[,i], probs = 1.0, na.rm = TRUE))
+  min.values <- c(min.values, min)
+  max.values <- c(max.values, max)
+  ds.coef_min_max[,i]  <- normalise(ds.coef_min_max[,i], min, max)
+}
+library(raster)
+# gympie pca weather plot
+aspect=0.4
+png("Gympie_weather_diel.png",
+    width = 1000*aspect, height = 100, units="mm",
+    res=80)
+r <- g <- b <- raster(ncol=1440, nrow=111)
+values(r) <- ds.coef_min_max[1:(length(ds.coef_min_max$normIndices.PC1)/2),1]
+values(g) <- ds.coef_min_max[1:(length(ds.coef_min_max$normIndices.PC1)/2),2]
+values(b) <- ds.coef_min_max[1:(length(ds.coef_min_max$normIndices.PC1)/2),3]
+co <- rep(0,length(red)) # added
+red <- round(values(r)*255,0) # added
+green <- round(values(g)*255,0) # added
+blue <- round(values(b)*255,0) #added
+colouring <- cbind(red, green, blue, co) # added
+colouring <- as.data.frame(colouring) # added
+for (i in 1:length(red)) {
+  colouring$co[i] <- rgb(red[i],green[i],blue[i],max=255) 
+}
+
+colOutput <- matrix(colouring$co, ncol = 1440, byrow = TRUE)
+colours <- unique(colOutput)
+
+rgb = rgb <-stack(r*255, g*255, b*255)
+# plot RGB
+par(mar=c(0,0,0,0))
+plotRGB(rgb, asp=0.4)
+par(new=TRUE)
+x <- 1:1440
+y <- rep(111,1440)
+par(mar=c(0,0,0,0), oma=c(4,2,3,9), cex=0.8, cex.axis=1.2)
+plot(1:1440, y, type="n", xlab="", ylab="", axes=F)
+at <- seq(1, 1441, by = 240)
+at[2:length(at)] <- at[2:length(at)]-1 
+axis(1, at = at, labels = c("00:00",
+                            "04:00","08:00","12:00","16:00","20:00",
+                            "24:00"), cex.axis=1.5)
+axis(4, at = c(111-0,111-10,111-41,111-72,111-102), 
+     labels=c("22 Jun 2015","1 Jul 2015","1 Aug 2015", "1 Sept 2015", "1 Oct 2015"), 
+     cex.axis=1.5, las=2)
+mtext(side=3,line=1,"Gympie Weather data", cex = 1.8)
+mtext(side=3, line = -1.5, "Normalised pca coefficients",cex=1.5)
+dev.off()
