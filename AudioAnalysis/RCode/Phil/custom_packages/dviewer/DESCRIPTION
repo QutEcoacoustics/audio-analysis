@@ -1,0 +1,9 @@
+Package: dviewer
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Philip Eichinski
+Maintainer: Philip Eichinski <philip.eichinski@qut.edu.au>
+Description: Uses the dviewer javascript library with a html widget
+License: None
+LazyData: TRUE

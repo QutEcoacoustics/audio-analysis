@@ -25,12 +25,6 @@
 #
 ##
 
-#require(data.table) 
-#require(dplyr) 
-#require(rattle)
-
-require('foreach')
-require('doParallel')
 
 
 
@@ -43,6 +37,28 @@ dev.flush()
 #options(error = NULL)
 options(error = traceback)
 #options(error = utils::recover)
+
+
+
+
+# re-install local packages
+MyPackages <- function () {
+    library("devtools")
+    library(roxygen2)
+    install("../../templator")
+    require('templator')
+}
+#MyPackages()
+require('templator')
+
+#require(data.table) 
+#require(dplyr) 
+#require(rattle)
+
+require('foreach')
+require('doParallel')
+
+
 
 
 source('config.R')  #must be first

@@ -1,0 +1,14 @@
+ dependencies:
+  - name: d3
+    version: 3
+    src: htmlwidgets/lib/d3
+    script:
+        - d3.v3.min.js
+  - name: dviewer
+    version: 0.0.1
+    src: htmlwidgets/lib/dviewer-0.0.1
+    script:
+        - dviewer.js
+    stylesheet:
+        - dviewer.css
+

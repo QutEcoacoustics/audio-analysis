@@ -26,10 +26,6 @@ require('rjson')
 
 g.access.log <- list()
 
-
-
-
-
 ReadOutput <- function (name = NULL, 
                         purpose = NA, 
                         include.meta = TRUE, 
@@ -465,6 +461,10 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
     # search for a previous version with the same params and same dependencies
     # if found, confirm overwrite and update meta with new date
     # if not found, create a new meta row
+    
+    callstack <- as.character(sys.calls())
+    # remove this function from call stack
+    length(callstack) <- length(callstack) - 1
 
     if (any(matching.p.and.d)) {
         # todo: check if this file is the dependency of other files. If so, maybe not safe to overwrite?
@@ -479,6 +479,7 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
             return(FALSE)
         } else {
             meta$date[matching.p.and.d] <- DateTime()
+            meta$callstack <- callstack
             new.v.num <- meta$version[matching.p.and.d]
             meta.row <- meta[matching.p.and.d, ]
         }
@@ -489,7 +490,15 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
             new.v.num <- 1
         }
         
-        meta.row <- MakeMetaRow(name, new.v.num, params, dependencies) 
+        if (is.data.frame(x)) {
+            col.names = colnames(x)
+        } else {
+            col.names = NULL
+        }
+        
+
+        
+        meta.row <- MakeMetaRow(name, new.v.num, params, dependencies, col.names = col.names, callstack = callstack) 
         meta <- rbind(meta, meta.row)
         
     }
@@ -505,8 +514,9 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
     
 }
 
+
 ReadOutputFile <- function (name, version) {
-  # given a name and version, figures out if it should be saved as csv or R object
+  # given a name and version, figures out if it was as csv or R object
   # then calls the relevant function
   type <- GetType(name)
   path <- OutputPath(name, version, unzip = TRUE)
@@ -566,7 +576,7 @@ OutputPath <- function (name, version, ext = NA, unzip.file = FALSE) {
   #   version: int
   #   ext: string; the file extension. If ommitted, will check the correc type for the name of the output
   #   unzip.file: boolean; if true, and the file has been zipped, will first unzip the file
-  
+
     if (!is.character(ext)) {
         ext <- GetType(name)    
     }
@@ -575,9 +585,11 @@ OutputPath <- function (name, version, ext = NA, unzip.file = FALSE) {
     path <- file.path(g.output.master.dir, fn)
     if (!file.exists(path) && unzip.file) {
       zipped.path <- ZipPath(path)
-      success <- unzip(zipped.path, junkpaths = TRUE, exdir = g.output.master.dir)
-      if (success < 2 & file.exists(path)) {
-        file.remove(zipped.path)
+      if (file.exists(zipped.path)) {
+          success <- unzip(zipped.path, junkpaths = TRUE, exdir = g.output.master.dir)
+          if (success < 2 & file.exists(path)) {
+              file.remove(zipped.path)
+          } 
       }
     }
     
@@ -599,11 +611,32 @@ ReadMeta <- function () {
     return(meta)
 }
 
+
+#TODO: every time the meta is written, make a copy of the old meta (1 per day)
+ArchiveMeta <- function () {
+    
+}
+
 EmptyMeta <- function () {
     return(data.frame(name = character(), version = integer(), params = character(), dependencies = character(), date = character()))
 }
 
-MakeMetaRow <- function (name, v.num, params = list(), dependencies = list(), date = NA) {
+#' Makes a 1-row data frame for the metdata of a saved output
+#' @param name string 
+#' @param v.num int 
+#' @param params list, 
+#' @param dependencies list 
+#' @param date string 
+#' @param col.names character vector
+#' @param callstack character vector
+
+MakeMetaRow <- function (name, 
+                         v.num, 
+                         params = list(), 
+                         dependencies = list(), 
+                         date = NA, 
+                         col.names = NULL, 
+                         callstack = NULL) {
     if (is.list(params)) {
         params <- toJSON(params)
     }
@@ -613,7 +646,13 @@ MakeMetaRow <- function (name, v.num, params = list(), dependencies = list(), da
     if (is.na(date)) {
         date <- DateTime()
     }
-    row <- data.frame(name = name, version = v.num, params = params, dependencies = dependencies, date = date, file.exists = NA)
+    if (is.character(col.names)) {
+        col.names = toJSON(col.names)
+    }
+    if (is.character(callstack)) {
+        callstack = toJSON(callstack)
+    }
+    row <- data.frame(name = name, version = v.num, params = params, dependencies = dependencies, date = date, file.exists = NA, col.names = col.names, callstack = callstack)
     return(row)
 }
 
@@ -765,6 +804,14 @@ VerifyMeta <- function (meta = NULL) {
         return(file.exists(path) || file.exists(paste0(path, '.zip')))
     })
     meta$file.exists <- as.integer(files.exist)
+    
+    if (!"col.names" %in% colnames(meta)) {
+        meta$col.names = '';
+    }
+    if (!"callstack" %in% colnames(meta)) {
+        meta$callstack = '';
+    }
+    
     WriteMeta(meta)
     return(meta)
 }
@@ -936,12 +983,39 @@ ZipOldFiles <- function () {
 }
 
 
+
+# this function goes through and adds the col names of existing meta values, 
+# in case they were created before the addition of the col.names column of the meta csv
+AddColsToMeta <- function () {
+    meta <- ReadMeta()
+    for (r in 1:nrow(meta)) {
+        col.names <- GetColNames(meta$name[r], meta$version[r])
+        if (is.character(col.names)) {
+            meta$col.names[r] <- toJSON(col.names)
+        }
+    }
+    WriteMeta(meta)
+}
+
+
 D3Inspector <- function () {
-    
+    require('dviewer')
     data <- DataVis()
-    html.file <- 'inspect.data.html'
-    HtmlInspector(NULL, template.file = 'output.inspector/output.inspector.html', output.fn =  html.file, singles = list(data = data))
-    
+    SaveDemoVisData(data)
+    dataGraph(data);
+}
+
+SaveDemoVisData <- function (test_data) {
+    path.to.package.source = '../../custom_packages/dviewer/data'
+    save(test_data, file = file.path(path.to.package.source, 'test_data.rda'))
+}
+
+
+D3Inspector1 <- function () {
+    require('templator')
+    data <- DataVis()
+    output.path <- file.path(g.output.parent.dir, 'inspection', 'inspect.data.html')
+    HtmlInspector(template.path = 'templates/output.inspector', output.path =  output.path, singles = list(data = data))
 }
 
 
@@ -974,23 +1048,63 @@ DataVis <- function () {
         
         versions <- m[m$name == cur,]
         for (v in 1:nrow(versions)) {
+        #Report(5, 'adding: ', group.names[g], versions[v])
             data[[g]][['versions']][[v]] <- list(v = versions$version[v],
                                                  params = fromJSON(versions$params[v]),
                                                  links = fromJSON(versions$dependencies[v]),
-                                                 date = versions$date[v])
+                                                 date = versions$date[v], 
+                                                 exists = versions$file.exists[v])
+            
+            # add colnames if they are there
+            if (is.character(versions$col.names[v]) && !is.na(versions$col.names[v])) {
+                data[[g]][['versions']][[v]]$colnames = as.list(fromJSON(versions$col.names[v]))
+            }
+            
+
+            # if (versions$file.exists[v]) {
+            #     df <- ReadOutputFile(versions$name[v], versions$version[v])
+            #     
+            #     if (is.data.frame(df)) {
+            #         data[[g]][['versions']][[v]]$cols <- colnames(df)
+            #     }
+            # }
+
         }
     }
 
     data <- toJSON(data)
     
     return(data)
-    
-    
-    
-    
-    
+
 }
 
+
+GetColNames <- function (name, version) {
+    # Gets the column names for the specified output file
+    # 
+    # Args:
+    #   name: the name of the output file
+    #   version: int, the version of the output file
+    #
+    # Value: character vector
+    #
+    # Details:
+    #   Checks if the file is a csv
+    #   Checks if the file exists
+    #   reads only the first line
+    #   will cause the zip archiver to unzip the file. 
+    # 
+    if (GetType(name) == 'csv') {
+        path <- OutputPath(name, version, unzip = TRUE)
+        if (file.exists(path)) {
+            header.line <- readLines(path, n=1)
+            col.names <- read.table(textConnection(header.line), sep = ",", stringsAsFactors = FALSE)
+            return(as.character(col.names))
+        }
+    }
+    return(NULL)
+}    
+    
 DataVisFlat <- function () {
     # Converts data to json for use with D3 and SVG
     #
@@ -1063,91 +1177,34 @@ DataVisFlat <- function () {
     
     
 }
-
-
-
 MakeDataGraph <- function (include.versions = FALSE) {
-    
     # converts the meta table to json directed graph
     #
     # Args: 
     #     as.json: boolean; whether it should be returned as a list(false) or json(true)
     
     m <- ReadMeta()
-    
     if (!include.versions) {
         m <- m[m$version == 1,]
     }
-    
     if (include.versions) {
         label <- title <- paste(m$name, m$version, sep = ":")
     } else {
         label <- title <- m$name
     }
-
-
-    
     nodes <- data.frame(id = 1:nrow(m), 
                         label = label,
                         title = title,
                         shape = "square",
                         color = "green",
                         size = 15)
-    
     if (include.versions) {
         nodes$group <- m$name
     }
-    
     edges <- GetLinks(m, include.versions = include.versions)
     edges$arrows <- "middle"
-    
-    
     visNetwork(nodes, edges, width = "100%")
 }
-
-MakeDataGraph.cola <- function (format = 'df') {
-    # converts the meta table to json directed graph
-    #
-    # Args: 
-    #     as.json: boolean; whether it should be returned as a list(false) or json(true)
-    
-    m <- ReadMeta()
-    
-    if (format %in% c('list','json')) {
-        nodes <- list()
-        for (r in 1:nrow(m)) {
-            nodes[[r]] <- list(
-                'name'= paste(m[r,'name'],':',m[r,'version'])
-            )
-        }   
-    } else if (format =='df') {
-        
-        nodes <- data.frame(id = 1:nrow(m), 
-                            title = paste(m$name, m$version, sep = ":"),
-                            shape = "square",
-                            color = "green",
-                            size = 5)
-        
-        
-    }
-    
-
-    
-    edges <- GetLinks(m)
-
-    
-    #graph.json <- toJSON(graph)
-    # save json
-    #fileConn<-file(file.path(g.output.meta.dir, "data_graph.json"))
-    #writeLines(graph.json, fileConn)
-    #close(fileConn)
-
-    visNetwork(nodes, edges) %>% visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE)
-    
-    
-    
-}
-
 GetLinks <- function (m, include.versions, as.list = FALSE, index.from = 1) {
     # produces a list of dependency links by row number of meta
     # for output to directed-graph visualization
