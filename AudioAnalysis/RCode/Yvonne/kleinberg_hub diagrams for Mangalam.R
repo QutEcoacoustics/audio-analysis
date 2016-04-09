@@ -1,14 +1,28 @@
-rm(month, rainfall.gympie, rainfall.tewantin, temperature.max,
-   temperature.min, temperature.max.tewantin, temperature.min.tewantin)
+#################################################
+# This code plots network diagrams and calculates centrality measures
+# from cluster lists
+# 8 April 2016
+#################################################
 setwd("C:\\Work\\Mangalam_data\\")
 data <- read.csv("Minute_cluster mapping - all.csv", header = TRUE)
 #View(data)
+
+# transpose data table
 data <- t(data)
+
+# packages needed for plot
 library(igraph)
-require(igraph)
+library(qgraph)
+
+# packages needed to plot table
+library(gridBase)
+library(grid)
+library(gridExtra)
+
 ####################################
 # Set up layout with first data set
 ###################################
+i=1
 site <- data[1,i]
 site
 A <- unname(data[2:(length(data[,1])-1),i])
@@ -41,11 +55,6 @@ g <- graph_from_data_frame(g1, directed=TRUE, vertices = NULL)
 #auth <- authority_score(g)$vector
 #hub <- hub.score(g)$vector
 
-#source("map.R")
-#par(mar=c(0,0,0,0))
-#plot(g, layout=layout, vertex.size=map(hub, c(1,4)), 
-#     edge.arrow.size=.22)
-
 df <- NULL
 datafr <- NULL
 
@@ -59,118 +68,69 @@ for (j in 1:max(A)) {
   }
 }
 
-#install.packages('qgraph')
-library(qgraph)
-require(qgraph)
+betweenness <- read.csv("betweenness_across_sites.csv", header = T) 
+closeness <- read.csv("closeness_across_sites.csv", header = T)
 
-pdf(paste("plots_star_",site,".pdf",sep = ""))
+node_names <- c("day","day","day","day","day","day","night",
+                "night","night","day","night","night","night",
+                "night","day","day","day","day","night","night",
+                "day","day","day","day","night","day","day")
 
-par(mar=c(20,20,20,20))
-nodeNames <- c("day","day","day","day","day","day","night",
-               "night","night","day","night","night","night",
-               "night","day","day","day","day","night","night",
-               "day","day","day","day","night","day","day")
 colour <- c("lightyellow2", "lightyellow2","lightyellow2",
-        "lightyellow2","lightyellow2", "lightyellow2",
-        "grey70","grey70","grey70","lightyellow2",
-        "grey70","grey70","grey70","grey70","lightyellow2",
-        "lightyellow2","lightyellow2","lightyellow2",
-        "grey70","grey70","lightyellow2","lightyellow2",
-        "lightyellow2","lightyellow2","grey70","lightyellow2",
-        "lightyellow2")
-qgraph(datafr, node.width=0.6, asize=1.6,  
+            "lightyellow2","lightyellow2", "lightyellow2",
+            "grey70","grey70","grey70","lightyellow2",
+            "grey70","grey70","grey70","grey70","lightyellow2",
+            "lightyellow2","lightyellow2","lightyellow2",
+            "grey70","grey70","lightyellow2","lightyellow2",
+            "lightyellow2","lightyellow2","grey70","lightyellow2",
+            "lightyellow2")
+
+minimum_list <- c(0:7,10,20)
+
+#########################################################
+pdf(paste("plots_star2_",site,".pdf",sep = ""),height = 8.25,
+    width = 11.67)
+
+for (k in minimum_list) {
+
+# Set the layout matrix to divide page into two frames one
+# for the plot and one for the table
+m <- rbind(c(1,1,2),
+           c(1,1,2),
+           c(1,1,2))
+layout(m)
+#layout.show(2)
+
+# collect required statistics  
+x <- data.frame(1:27)
+x[,1] <- node_names
+x[,2] <- round(betweenness[,i],1)
+x[,3] <- round(closeness[,i],3)
+colnames(x) <- c("Time of day", "Betweenness", "Closeness")
+
+# plot alternating plots and tables
+par(mar=c(1,1,0,0))
+qgraph(datafr, node.width=0.9, asize=1.6,  
        bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE, cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE, minimum=0, 
+       normalize=TRUE, cut=20, edge.label.cex=1.2, 
+       directed=TRUE, weighted=TRUE, minimum=k, 
        layout=layout, curve=1.7, fade=FALSE,
        edge.color="black", maximum=800, color=colour, 
-       edge.labels=T,legend=T,
-       nodeNames=nodeNames)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6,  
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE,minimum=1, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color=colour,"black", maximum=800, color=colour,
        edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6, 
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE, minimum=2, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colour,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6,  
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE, minimum=3, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colour,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6, 
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE, minimum=4, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colour,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6,  
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE, minimum=5, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colour,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6, 
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE, minimum=6, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colours,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6,  
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE, minimum=7, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colour,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6, 
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE,minimum=10, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colour,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
-qgraph(datafr, node.width=0.6,asize=1.6,  
-       bidirectional=FALSE, nNodes=27, #threshold=10, 
-       normalize=TRUE,cut=20, edge.label.cex=0.8, 
-       directed=TRUE, weighted=TRUE,minimum=20, 
-       layout=layout, curve=1.7, fade=FALSE,
-       edge.color="black", maximum=800, color=colour,
-       edge.labels=T)
-mtext(paste("                                                                                                                                                    ",
-            site),side = 1, line = 18, cex = 0.8)
+mtext(paste("   ",
+            site," 2015"),side = 1, line = -1, cex = 1)
+# plot table in second frame 
+frame()
+# Navigate to the next viewport only needs to be done once
+if (k==minimum_list[1]) {
+  vps <- baseViewports()
+  pushViewport(vps$inner, vps$figure, vps$plot)
+}
+# Plot table
+grid.table(x)
+}
 dev.off()
-
+###############################################################
 # Transition matrix
 transmat <- matrix(datafr[,3],nrow=27)
 #View(transmat)
