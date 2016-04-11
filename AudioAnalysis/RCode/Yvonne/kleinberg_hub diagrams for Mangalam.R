@@ -10,7 +10,7 @@ data <- read.csv("Minute_cluster mapping - all.csv", header = TRUE)
 # transpose data table
 data <- t(data)
 
-# packages needed for plot
+# packages needed for plots
 library(igraph)
 library(qgraph)
 
@@ -33,7 +33,11 @@ g <- graph_from_data_frame(g1, directed=TRUE, vertices = NULL)
 #layout <- layout.fruchterman.reingold(g)
 #layout <- layout.circle(g)
 #layout <- layout.drl(g)
-layout <- layout.star(g,21)
+#layout <- layout.star(g,21)
+
+# set up empty empty matrices for authority and hub scores
+auth_score <- matrix(data=NA,nrow=27,ncol=12)
+hub_score <- matrix(data = NA, nrow=27, ncol=12)
 
 #####################################
 # Complete all with the same layout
@@ -41,21 +45,16 @@ layout <- layout.star(g,21)
 for(i in 1:12) {
 site <- data[1,i]
 site
-A <- unname(data[2:(length(data[,1])-1),i])
-B <- unname(data[3:length(data[,1]), i])
+A <- as.numeric(unname(data[2:(length(data[,1])-1),i]))
+B <- as.numeric(unname(data[3:length(data[,1]), i]))
 g1 <- data.frame(A=A,B=B)
 
 g <- graph_from_data_frame(g1, directed=TRUE, vertices = NULL)
-
+layout <- layout.fruchterman.reingold(g)
 #plot(g, layout=layout, vertex.size=20, edge.arrow.size=.01)
 #plot(g, layout=layout, edge.arrow.size=.08,
 #     vertex.label=V(g)$name)
 
-#source("http://michael.hahsler.net/SMU/ScientificCompR/code/map.R")
-#auth <- authority_score(g)$vector
-#hub <- hub.score(g)$vector
-
-df <- NULL
 datafr <- NULL
 
 A <- as.numeric(A)
@@ -63,13 +62,28 @@ B <- as.numeric(B)
 for (j in 1:max(A)) {
   for(k in 1:max(B)) {
     a <- which(as.integer(A)==j & as.integer(B)==k) 
-    df <- c(j, k, length(a))
-    datafr <- rbind(datafr, df)
+    datafr <- rbind(datafr, c(j,k, length(a)))
+  }
+}
+
+#source("http://michael.hahsler.net/SMU/ScientificCompR/code/map.R")
+auth <- authority_score(g)$vector
+hub <- hub.score(g)$vector
+for (l in 1:27) {
+  a_score <- which(names(auth)==as.character(l))
+  h_score <- which(names(hub)==as.character(l))
+  if(length(a_score)>0) {
+    auth_score[l,i] <- auth[a_score]
+  }
+  if(length(h_score)>0) {
+    hub_score[l,i] <- hub[h_score] 
   }
 }
 
 betweenness <- read.csv("betweenness_across_sites.csv", header = T) 
 closeness <- read.csv("closeness_across_sites.csv", header = T)
+hubscore <- read.csv("hub_scores.csv", header = T)
+authscore <- read.csv("authority_scores.csv", header = T)
 
 node_names <- c("day","day","day","day","day","day","night",
                 "night","night","day","night","night","night",
@@ -88,7 +102,7 @@ colour <- c("lightyellow2", "lightyellow2","lightyellow2",
 minimum_list <- c(0:7,10,20)
 
 #########################################################
-pdf(paste("plots_star2_",site,".pdf",sep = ""),height = 8.25,
+pdf(paste("plots_3_",site,".pdf",sep = ""),height = 8.25,
     width = 11.67)
 
 for (k in minimum_list) {
@@ -105,8 +119,10 @@ layout(m)
 x <- data.frame(1:27)
 x[,1] <- node_names
 x[,2] <- round(betweenness[,i],1)
-x[,3] <- round(closeness[,i],3)
-colnames(x) <- c("Time of day", "Betweenness", "Closeness")
+x[,3] <- round(closeness[,i],2)
+x[,4] <- round(authscore[,i],1)
+x[,5] <- round(hubscore[,i],1)
+colnames(x) <- c("Time", "Btnss", "Clnss", "Auth", "Hub")
 
 # plot alternating plots and tables
 par(mar=c(1,1,0,0))
@@ -155,3 +171,22 @@ closeness <- central[,2]
 stats <- cbind(betweenness,closeness)
 #write.csv(stats, paste("stats_",site,sep = "",".csv"))
 }
+colnames(auth_score) <- colnms
+colnames(hub_score) <- colnms
+write.csv(auth_score, "authority_scores.csv", row.names = FALSE)
+write.csv(hub_score, "hub_scores.csv", row.names = FALSE)
+############################
+# occupancy matrix
+############################
+occupancy <- NULL
+for (i in 1:12) {
+  A <- unname(data[2:(length(data[,1])-1),i])
+  a <- tabulate(as.numeric(A), nbins = 27)
+  occupancy <- cbind(occupancy, a)
+}
+colnms <- NULL
+for (i in 1:12) {
+  colnms <- c(colnms, data[1,i])
+}
+colnames(occupancy) <- colnms
+write.csv(occupancy, "occupancy_matrix.csv",row.names = FALSE)
