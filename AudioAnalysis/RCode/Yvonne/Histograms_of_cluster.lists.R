@@ -12,7 +12,7 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hierarchical\\")
 setwd("C:\\Work\\CSV files\\DataSet_Exp2_new_new\\Hybrid\\")
 #cluster.list <- read.csv("Cluster_list_kmeans_22June-16July2015_5,7,9,10,11,12,13,17,18_30Gympie NP1 .csv", header = T)
-setof6 <- c(6,8,10,12,14,16) # set which columns are to be used
+setof6 <- c(6,8,10,12,14,16) # set which columns are to be used for kmeans
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\kmeans")
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hybrid12days")
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\hclust")
