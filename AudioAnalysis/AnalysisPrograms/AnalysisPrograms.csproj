@@ -229,6 +229,8 @@
     <Compile Include="DrawEasyImage.cs" />
     <Compile Include="ConcatenateIndexFiles.cs" />
     <Compile Include="DrawZoomingSpectrograms.cs" />
+    <Compile Include="HerveGlotinCollaboration.cs" />
+    <Compile Include="HighResolutionAcousticIndices.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
