@@ -225,8 +225,9 @@ for (j in c(1,3,5,7,9,11)) {    #(j in c(1,2,3,4,5)) {
 a <- as.numeric(unname(data[2:length(data[,1]),j]))
 b <- as.numeric(unname(data[2:length(data[,1]),(j+1)]))
 a <- c(a, b)
-png(paste("same_2day_dot_matrix_plot", data[1,j],".png"), width=2000, 
-    height=2000, units="px")
+png(paste("same_2day_dot_matrix_plot", data[1,j],".png"), 
+    width=3500, height=3500, units="px")
+
 for (i in 1:length(a)) {
   if(a[i]==1) {
     a[i] <- "A"  
@@ -413,7 +414,7 @@ for (i in 1:length(b)) {
   }
 }
 par(cex=2, mar=c(2.2,2.2,2.2,2.2), mgp=c(1.2,0.2,0), tck=-0.01)
-dotPlot(a, a,  
+dotPlot(a, a, wsize = 2,
         xlab = paste(data[1,j],data[1,(j+1)],
                      sep = "   "), xaxt="n",
         ylab = paste(data[1,j],data[1,(j+1)],

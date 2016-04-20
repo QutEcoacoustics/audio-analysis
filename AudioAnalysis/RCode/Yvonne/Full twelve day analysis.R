@@ -116,16 +116,12 @@ write.csv(all.indices, "Woondum_dataSet_upto10Oct2015.csv")
 file1 <- read.csv("Gympie_dataSet_upto10Oct2015.csv", header = T)
 file2 <- read.csv("Woondum_dataSet_upto10Oct2015.csv", header = T)
 
-length1 <- length(file1$X)
-length2 <- length(file2$X)
 total.length <- length1 + length2
 minute.of.day <- rep(0:1439, total.length/1440)
 site <- rep(c("GympieNP", "Woondum3"), each = total.length/2, 
             length = total.length)
 
 # generate a sequence of dates
-start <-  strptime("20150622", format="%Y%m%d")
-finish <-  strptime("20151011", format="%Y%m%d")
 dates <- seq(start, finish, by = "1440 mins")
 any(is.na(dates)) #FALSE
 date.list <- NULL
@@ -144,15 +140,15 @@ write.csv(concat, "Gympie_Woondum_dataset_22June2015_10Oct2015.csv", row.names =
 # select out the twelve days and save file
 twelve <- concat[c(54721:59040, 100801:103680, 106561:108000,
              214561:218880, 260641:263520, 266401:267840),]
-write.csv(concat, "Gympie_Woondum_twelve_day_dataset.csv", row.names = FALSE)
+write.csv(twelve, "Gympie_Woondum_twelve_day_dataset.csv", row.names = FALSE)
 
 ################################################
 # STEP 2:  Correlation Matrix
 ################################################
-setwd("C:\\Work\\CSV files\\DataSet_Exp2a")
 AcousticDS <- read.csv("Gympie_Woondum_dataset_22June2015_10Oct2015.csv", header=T)
+setwd("C:\\Work\\CSV files\\FourMonths_repeat\\Correlation_Matrix")
+AcousticDS_noNA <- AcousticDS[complete.cases(AcousticDS), ]
 
-#AcousticDS_noNA <- AcousticDS[complete.cases(AcousticDS), ]
 a <- round(abs(cor(AcousticDS_noNA[,2:16][,unlist(lapply(AcousticDS_noNA[,2:16], 
                                                          is.numeric))])),2)
 write.table(a, file = paste("Correlation_matrix_final.csv",sep=""), 
@@ -162,6 +158,7 @@ write.table(a, file = paste("Correlation_matrix_final.csv",sep=""),
 # STEP 3:  # PRINCIPAL COMPONENT ANALYSIS 
 ################################################
 # Set indices
+
 ds6 <- AcousticDS[,c(3,4,7,10,11,15,16)] # without Mid-frequency cover
 
 normalise <- function (x, xmin, xmax) {
@@ -214,9 +211,10 @@ dev.off()
 ################################################
 # STEP 4: Kmeans on twelve days
 ################################################
-setwd("C:\\Work\\CSV files\\DataSet_Exp2a\\Kmeans\\x")
-AcousticDS <- read.csv("Gympie_Woondum_twelve_day_dataset.csv", header = T)
-ds6 <- AcousticDS[,c(3,4,7,10,11,15,16)] # without Mid-frequency cover
+AcousticDS <- read.csv("C:\\Work\\CSV files\\FourMonths_repeat\\Gympie_Woondum_twelve_day_dataset.csv", header = T)
+setwd("C:\\Work\\CSV files\\FourMonths_repeat\\Kmeans")
+index.list <- c(4,7,10,11,15,16)
+ds6 <- AcousticDS[,c(index.list)] #############
 
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
@@ -249,7 +247,7 @@ png(
 )
 
 ds3.norm_2_98noNA <- ds3.norm_2_98 #[complete.cases(ds3.norm_2_98), ]
-ds3.norm_2_98noNA <- ds3.norm_2_98noNA[,1:7] # replace 7 with length(ds3)
+ds3.norm_2_98noNA <- ds3.norm_2_98noNA[,1:6] # replace 7 with length(ds3)
 par(mfrow=c(3,1), mar=c(5,7,2,11), cex.main=2, 
     cex.axis=2, cex.lab=2)
 
@@ -301,7 +299,7 @@ for (i in 2:(length(variance)+1)) {
   column.names <- c(column.names,col.names)
 }
 colnames(clusters) <- column.names
-
+View(clusters)
 write.csv(clusters, file = "kmeans_clust.csv")
 kmean_clust <- read.csv("kmeans_clust.csv", header=T)
 

@@ -1,7 +1,8 @@
 # Cluster Volatility
-
+setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
 site <- "GympieNP"
 date <- "22-28 June 2015"
+indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to20150628-064559+1000.csv", header=T)
 
 clusterList <- read.csv("Cluster_list 22-28 June 2015_5,7,9,10,11,12,13,14,15,17,18Gympie NP1 .csv", header=T)
 clusterList <- clusterList[,2]
@@ -24,7 +25,6 @@ dateLabel <- unique(substr(indices$rec.date, 1,10))
 dateLabel <- dateLabel[1:length(datePos)]
 
 #################################
-
 counter <- 0
 count <- NULL
 uniqueClust <- NULL
@@ -112,4 +112,3 @@ abline(v=(seq(0,1440,360)), lty=3)
 
 #write.csv(timeSeries, file = paste("Time_series_stability", 
 #                                   site, date, ".csv", sep = ""))
-
