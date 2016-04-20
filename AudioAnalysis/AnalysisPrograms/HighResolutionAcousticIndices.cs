@@ -43,7 +43,8 @@ namespace AnalysisPrograms
         public static Arguments Dev()
         {
 
-            string debugRecordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3";
+            //string debugRecordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3";
+            string debugRecordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000_0min.wav";
 
             string dataDir   = @"C:\SensorNetworks\WavFiles\TestRecordings";
             string parentDir = @"C:\SensorNetworks\Output\Frogs\Test2016";
@@ -58,7 +59,7 @@ namespace AnalysisPrograms
             string spectrogramConfig     = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml";
             string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
             string audio2csvConfigPath   = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
-
+            
             return new Arguments
             {
                 DebugRecording = new FileInfo(debugRecordingPath),
@@ -158,7 +159,7 @@ namespace AnalysisPrograms
 
             FileInfo[] wavFiles = { arguments.DebugRecording };
 
-            // comment next two lines when debugging a single recording file
+            // ####################### COMMENT THE NEXT TW0 LINES when debugging a single recording file
             //string match = @"*.mp3";
             //wavFiles = arguments.InputDataDirectory.GetFiles(match, SearchOption.AllDirectories);
 
@@ -201,14 +202,14 @@ namespace AnalysisPrograms
 
 
                     // B: Concatenate the summary indices and produce images
-                    // Use the Zoomingspectrograms action.
-
                     // need to find out how long the recording is.
                     string fileName = Path.GetFileNameWithoutExtension(audio2csvArguments.Source.FullName);
-                    string testFileName = fileName + @"__Towsey.Acoustic.ACI.csv";
-                    List<string> data = FileTools.ReadTextFile(Path.Combine(arguments.CsvDirectory.FullName, testFileName));
+                    string match = fileName + @"__Towsey.Acoustic.???.csv";
+                    FileInfo[] files = arguments.CsvDirectory.GetFiles(match, SearchOption.AllDirectories);
+                    List<string> data = FileTools.ReadTextFile(files.First().FullName);
                     int lineCount = data.Count - 1;  // -1 for header.
                     int imageWidth = lineCount;
+
                     //assume scale is index calculation duration = 0.1s
                     // i.e. image resolution  0.1s/px. or 600px/min
                     double focalMinute = (double)lineCount / 600 / 2;
@@ -255,6 +256,7 @@ namespace AnalysisPrograms
 
 
                     // DRAW THE VARIOUS IMAGES
+                    // i.e. greyscale images, ridge spectrogram and two-maps spectrograms.
                     string fileStem = fileName;
 
                     var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
@@ -276,23 +278,6 @@ namespace AnalysisPrograms
 
                     // 2: draw the coloured ridge spectrograms 
                     secDuration = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, fileStem);
-
-                    // copy files
-                    // POW, EVN, SPT, RHZ, RVT, RPS, RNG
-                    string[] copyArray = { "POW", "EVN", "SPT", "RHZ", "RVT", "RPS", "RNG" };
-                    DirectoryInfo sourceDirectory = arguments.CsvDirectory;
-                    string destinationDirectory = arguments.OutputDirectory.FullName + @"\TrainingClassifier";
-                    foreach (string key in copyArray)
-                    {
-                        // ID0002__Towsey.Acoustic.BGN.csv    fileName += @"__Towsey.Acoustic.ACI.csv";
-                        string sourceFileName = String.Format(name + "__Towsey.Acoustic." + key + ".csv");
-                        string sourcePath = Path.Combine(sourceDirectory.FullName, sourceFileName);
-                        string nameOfParentDirectory = sourceDirectory.Parent.Name;
-                        string destinationFileName = String.Format(nameOfParentDirectory + "." + key + ".csv");
-                        string destinationPath = Path.Combine(destinationDirectory, destinationFileName);
-                        File.Copy(sourcePath, destinationPath, true);
-                    }
-
 
                 } // try block
                 catch (Exception e)
