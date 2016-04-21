@@ -108,6 +108,12 @@ Output  to  directory: {1}
                 LoggedConsole.WriteLine("# IndexProperties Cfg: " + indicesPropertiesConfig.FullName);
             }
 
+            DirectoryInfo[] searchPaths = { configFile.Directory };
+            FileInfo ipConfig = ConfigFile.ResolveConfigFile((string)configuration.IndexPropertiesConfig, searchPaths);
+            LoggedConsole.WriteLine("# IndexProperties Cfg: " + ipConfig);
+            FileInfo spectrogramConfig = ConfigFile.ResolveConfigFile((string)configuration.SpectrogramConfig, searchPaths);
+            LoggedConsole.WriteLine("# Spectrogram     Cfg: " + spectrogramConfig);
+
             // min score for an acceptable event
             double scoreThreshold = 0.2;
             if (((double?)configuration[AnalysisKeys.EventThreshold]) != null)
@@ -128,6 +134,7 @@ Output  to  directory: {1}
                     throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
             }
+
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles)

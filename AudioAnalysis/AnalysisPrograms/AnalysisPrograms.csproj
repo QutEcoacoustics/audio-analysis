@@ -215,6 +215,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticHiResIndicesPlusRecognisers.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecording.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Arguments.cs" />

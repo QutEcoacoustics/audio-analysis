@@ -47,11 +47,11 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // audio2csv  "Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3"  "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg"  "C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010" 
 
             // ARTIFICIAL TEST RECORDING
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
             //string outputPath    = @"C:\SensorNetworks\Output\FalseColourSpectrograms";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_1min_artificial.wav";
-            string outputPath = @"C:\SensorNetworks\Output\Test\Test";
+            //string outputPath = @"C:\SensorNetworks\Output\Test\Test";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
@@ -79,8 +79,12 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3";
+            //string recordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000_0min.wav";
+
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\Canetoad";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices";
+            string outputPath    = @"C:\SensorNetworks\Output\Frogs\Test2016";
 
             // ECLIPSE FARMSTAY
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
@@ -104,11 +108,15 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"F:\SensorNetworks\WavFiles\EasternBristlebird\CURRUMBIN_20150529-142503+1000.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\BristleBird";
 
+
+
+
+
+            // CONFIG FILES ######################################################################################################
             // Use these configs for Summary and Spectral Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Italy.Acoustic.Parallel.yml";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiRes.yml";
-
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiResPlusRecognisers.yml";
 
             // Use these configs for Call recognition Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
