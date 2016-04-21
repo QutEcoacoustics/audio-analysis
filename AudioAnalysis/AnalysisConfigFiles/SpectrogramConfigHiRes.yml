@@ -7,19 +7,6 @@ TileWidth: 300
 # - AbsoluteDateTilingProfile
 TilingProfile: AbsoluteDateTilingProfile
 ScaleUnits: "SecondsPerPixel"
-SpectralIndexScale: 
-    - 60
-    - 24
-    - 12
-    - 6
-    - 4
-    - 2
-    - 1
-    - 0.6
-    - 0.4
-    - 0.2
-    - 0.1
-MaxTilesPerSuperTile: 12
 UseDistributionsForNormalization: false
 LdSpectrogramConfig:
     ColorMap1: "ACI-ENT-EVN"

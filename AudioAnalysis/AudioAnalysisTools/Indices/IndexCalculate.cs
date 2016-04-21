@@ -376,12 +376,13 @@ namespace AudioAnalysisTools.Indices
             double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, higherBinBound);
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
-            // vii: calculate RAIN and CICADA indices.
-            if (!warned)
-            {
-                Logger.Warn("Rain and cicada index caculation is disabled");
-                warned = true;
-            }
+
+            // vii: calculate RAIN and CICADA indices.  //################ NO LONGER USED - NO WARNING REQUIRED
+            //if (!warned)
+            //{
+            //    Logger.Warn("Rain and cicada index calculation is disabled");
+            //    warned = true;
+            //}
 
             ////Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
 

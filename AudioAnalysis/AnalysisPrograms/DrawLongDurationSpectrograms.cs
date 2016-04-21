@@ -219,37 +219,48 @@ namespace AnalysisPrograms
         } // Execute()
 
 
-
-        public static int DrawAggregatedSpectrograms(Arguments arguments, string fileStem)
+        /// <summary>
+        /// The integer returned from this method is the count of time-frames in the spectrogram.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <param name="fileStem"></param>
+        /// <param name="spectra"></param>
+        /// <returns>Count of time-frames</returns>
+        public static int DrawAggregatedSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
             int sampleRate = 22050;
             int frameWidth = 512;
             double spectrogramScale = 0.1;
-            double backgroundFilter = 0.0; // 0.0 means small values are removed.
+            //double backgroundFilter = 0.0; // 0.0 means small values are removed.
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
             string analysisType = "Towsey.Acoustic";
             string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
 
-            LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
-            LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+            //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+            //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             DirectoryInfo inputDirectory = arguments.InputDataDirectory;
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
             TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
 
-            var sw = Stopwatch.StartNew();
-            //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
-            // note: the spectra are oriented as per visual orientation.
-            int rowCount = spectra[keys[0]].GetLength(1);
+            if (spectra == null)
+            {
+                var sw = Stopwatch.StartNew();
+                //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
+                spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+                sw.Stop();
+                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+            }
 
-
-
+            // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
+            int frameCount = spectra[keys[0]].GetLength(1);
+            
             string newKey = "PHN";
             if (! spectra.ContainsKey(newKey))
             {
                 // create a composite index from three related indices - take the max
                 // Assume that the values are comparable so that max is meaningful.
                 double[,] phnIndex = CreateNewCompositeIndex(spectra, "RHZ-RPS-RNG");
-                // Name the index PHN because it is composite of positive, horiz and negative ridge values.
+                // Name the index PHN because it is composite of Positive, Horiz and Negative ridge values.
                 spectra.Add(newKey, phnIndex);
             }
 
@@ -280,7 +291,6 @@ namespace AnalysisPrograms
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
 
             cs1.spectrogramMatrices = spectra;
-            //cs1.ReadCSVFiles(configuration.InputDirectoryInfo, fileStem); // reads all known files spectral indices
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("WARNING:  "+fileStem +":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
@@ -288,8 +298,6 @@ namespace AnalysisPrograms
             }
 
 
-            sw.Stop();
-            LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
             List<Image> list = new List<Image>();
             //Font stringFont = new Font("Tahoma", 9);
             Font stringFont = new Font("Arial", 14);
@@ -319,8 +327,6 @@ namespace AnalysisPrograms
             string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
             combinedImage.Save(fileName);
 
-
-
             string colourMode = "NEGATIVE";
             string colourMap  = "BGN-POW-EVN";
             bool   withChrome = true;
@@ -345,29 +351,43 @@ namespace AnalysisPrograms
             combinedImage.Save(fileName);
 
 
-            return rowCount;
+            return frameCount;
         } // method DrawAggregatedSpectrograms()
 
-        public static int DrawRidgeSpectrograms(Arguments arguments, string fileStem)
+
+        /// <summary>
+        /// The integer returned from this method is the number of seconds duration of the spectrogram.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <param name="fileStem"></param>
+        /// <param name="spectra"></param>
+        /// <returns></returns>
+        public static int DrawRidgeSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
-            LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
-            LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+            //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+            //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             DirectoryInfo inputDirectory = arguments.InputDataDirectory;
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
             string analysisType = "Towsey.Acoustic";
             double spectrogramScale = 0.1;
+            //double backgroundFilter = 0.0; // 0.0 means small values are removed.
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
             TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
 
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
 
 
-
-            var sw = Stopwatch.StartNew();
             string[] keys = { "SPT", "RVT", "RHZ", "RPS", "RNG" };
-            //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
 
             // read the csv files of the indices in keys array
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+            if (spectra == null)
+            {
+                var sw = Stopwatch.StartNew();
+                //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
+                spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+                sw.Stop();
+                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+            }
 
             var minuteOffset = TimeSpan.Zero;
             var xScale = dataScale;
@@ -378,7 +398,7 @@ namespace AnalysisPrograms
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
 
             cs1.FileName = fileStem;
-            cs1.BackgroundFilter = 0.75;
+            cs1.BackgroundFilter = backgroundFilter;
             cs1.IndexCalculationDuration = dataScale;
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
 
@@ -388,16 +408,12 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
                 return 0;
             }
-            else if (cs1.GetCountOfSpectrogramMatrices() != keys.Length)
+            else if (cs1.GetCountOfSpectrogramMatrices() < keys.Length)
             {
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   Missing indices in the dictionary. Some files do not exist?");
                 return 0;
             }
 
-
-
-            sw.Stop();
-            LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
             //Font stringFont = new Font("Tahoma", 9);
             Font stringFont = new Font("Arial", 14);
             int pixelWidth = 0;
@@ -434,9 +450,6 @@ namespace AnalysisPrograms
                 //g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0);//draw upper boundary
                 //g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
 
-
-
-
                 // transfer greyscale image to colour image
                 for (int y = 0; y < height; y++)
                 {
@@ -449,26 +462,12 @@ namespace AnalysisPrograms
                 }
 
                 labelIndex += 1;
-
             } //foreach key
 
             Image[] imagearray = { label, ridges };
             Image labelledImage = ImageTools.CombineImagesInLine(imagearray);
             string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".Ridges.png");
             labelledImage.Save(fileName);
-
-
-
-            //string colourMode = "NEGATIVE";
-            //string colourMap = "BGN-POW-EVN";
-            //bool withChrome = true;
-            //Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
-            //TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * spectrogramScale);
-
-            //string title = fileStem;
-            //Image titleImage = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
-            //int trackHeight = 20;
-            //Bitmap timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
             return (int)(Math.Round(pixelWidth * spectrogramScale));
         } // method DrawRidgeSpectrograms()
