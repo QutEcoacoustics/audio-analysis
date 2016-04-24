@@ -225,6 +225,7 @@
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
+    <Compile Include="CallRecogniser.cs" />
     <Compile Include="Canetoad.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
     <Compile Include="DrawEasyImage.cs" />

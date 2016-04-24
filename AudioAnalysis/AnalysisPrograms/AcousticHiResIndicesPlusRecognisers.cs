@@ -410,7 +410,88 @@ namespace AnalysisPrograms
                 {
                     tracks.AddRange(indexCalculateResult.Tracks);
                 }
+            } // END calculation of indices for each subsegment
+
+
+            // #################################################################
+            // store spectral matrices for later production of spectrogram images.
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+
+
+            // #################################################################
+            // get a list of ID names of species recognisers from config file
+            List<string> speciesList = new List<string>();
+            speciesList.Add("Bufo_marinus");
+            speciesList.Add("Phascolarctos_cinereus"); 
+
+            // Loop through recognisers and accumulate the output
+            var scoreTracks = new List<Image>(); 
+            foreach (string name in speciesList)
+            {
+                CallRecogniser output = CallRecogniser.DoCallRecognition(name, recording, dictionaryOfSpectra);
+                scoreTracks.Add(output.ScoreTrack);
             }
+            Image scoreTrackImage = ImageTools.CombineImagesVertically(scoreTracks);
+
+
+            // PRODUCE Hi-RESOLUTION SPECTROGRAM IMAGES 
+       //     if (analysisSettings.ImageFile != null)
+       //     {
+
+                // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
+                //string csvPath1 = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+                {
+                    InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+                    OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages"),
+                    SpectrogramConfigPath = acousticIndicesParsedConfiguration.SpectrogramConfigFile,
+                    IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
+                };
+
+                // Create directory if not exists
+                if (!LDFCSpectrogramArguments.OutputDirectory.Exists)
+                {
+                    LDFCSpectrogramArguments.OutputDirectory.Create();
+                }
+
+                // 1. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
+                int filler = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, recording.FileName, dictionaryOfSpectra);
+
+                // 2: DRAW the coloured ridge spectrograms 
+                DirectoryInfo inputDirectory = LDFCSpectrogramArguments.InputDataDirectory;
+                FileInfo ipConfig = LDFCSpectrogramArguments.IndexPropertiesConfig;
+                string fileStem = recording.FileName;
+                double scale = 0.1;
+                Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(inputDirectory, ipConfig, fileStem, scale, dictionaryOfSpectra);
+                var opImages = new List<Image>();
+                opImages.Add(ridgeSpectrogram);
+                opImages.Add(scoreTrackImage);
+                // combine and save
+                Image opImage = ImageTools.CombineImagesVertically(opImages);
+                string fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".Ridges.png");
+                opImage.Save(fileName);
+           // } // if (analysisSettings.ImageFile != null)
+
+
+            // #################################################################
+            // Write the segment spectrogram (typically of one minute duration) to CSV
+            // DO NOT DO THIS UNLESS YOU REQUIRE zoomed spectrograms at a resolution greater than 0.2 seconds/pixel
+            // HOWEVER Anthony and I have agreed not to do this anymore. 
+            //bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
+            //if (saveSonogramData)
+            //{
+            //    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+            //    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
+            //}
+
+
+            // #################################################################
+            // NOW COMPRESS THE HI-RESOLUTION SPECTRAL INDICES TO LOW RES
+
+
+
+            // #################################################################
+            // Now place LOW RESOLUTIOn INDICES INTO analysisResults before returning. 
 
             if (analysisSettings.SummaryIndicesFile != null)
             {
@@ -427,68 +508,8 @@ namespace AnalysisPrograms
                         analysisResults.SpectralIndices);
             }
 
-            // Write the segment spectrogram (typically of one minute duration) to CSV
-            // DO NOT DO THIS UNLESS YOU REQUIRE zoomed spectrograms at a resolution greater than 0.2 seconds/pixel
-            // HOWEVER Anthony and I have agreed not to do this anymore. 
-            bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
-            if (saveSonogramData || analysisSettings.ImageFile != null) 
-            {
-                var sonoConfig = new SonogramConfig(); // default values config
-                sonoConfig.SourceFName = recording.FilePath;
-                sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-                sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
-                sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
-                ////sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
-                ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-                var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-                
-                // remove the DC row of the spectrogram
-                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-
-                if (analysisSettings.ImageFile != null)
-                {
-                    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
-                    
-                    // NOTE: hits (SPT in this case) is intentionally not supported
-                    var image = DrawSonogram(sonogram, null, trackScores, tracks);
-                    image.Save(imagePath, ImageFormat.Png);
-                    analysisResults.ImageFile = new FileInfo(imagePath);
-                }
-
-                if (saveSonogramData)
-                {
-                    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
-                    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
-                }
-            }
 
 
-            // #################################################################
-            // PRODUCE SPECTROGRAM IMAGES 
-            // store spectral matrices for later production of spectrogram images.
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
-
-            // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
-            //string csvPath1 = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
-            var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
-            {
-                InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
-                OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages"),
-                SpectrogramConfigPath = acousticIndicesParsedConfiguration.SpectrogramConfigFile,
-                IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
-            };
-
-            // Create directory if not exists
-            if (!LDFCSpectrogramArguments.OutputDirectory.Exists)
-            {
-                LDFCSpectrogramArguments.OutputDirectory.Create();
-            }
-
-            // 1. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
-            int filler = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, recording.FileName, dictionaryOfSpectra);
-
-            // 2: DRAW the coloured ridge spectrograms 
-            filler = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(LDFCSpectrogramArguments, recording.FileName, dictionaryOfSpectra);
 
             return analysisResults;
         }

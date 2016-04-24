@@ -368,13 +368,27 @@ namespace AnalysisPrograms
             //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             DirectoryInfo inputDirectory = arguments.InputDataDirectory;
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
-            string analysisType = "Towsey.Acoustic";
+            FileInfo      indexPropertiesConfig = arguments.IndexPropertiesConfig;
             double spectrogramScale = 0.1;
+            TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
+            // draw the spectrogram images
+            var labelledImage = DrawRidgeSpectrograms(inputDirectory, indexPropertiesConfig, fileStem, spectrogramScale, spectra = null);
+            // combine and save
+            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".Ridges.png");
+            labelledImage.Save(fileName);
+
+            return (int)(Math.Round(labelledImage.Width * spectrogramScale));
+        } // method DrawRidgeSpectrograms()
+
+
+        public static Image DrawRidgeSpectrograms(DirectoryInfo inputDirectory, FileInfo ipConfig, string fileStem, double scale, Dictionary<string, double[,]> spectra = null)
+        {
+            string analysisType = "Towsey.Acoustic";
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
-            TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
+            TimeSpan dataScale = TimeSpan.FromSeconds(scale);
 
-            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
 
 
             string[] keys = { "SPT", "RVT", "RHZ", "RPS", "RNG" };
@@ -406,26 +420,23 @@ namespace AnalysisPrograms
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
-                return 0;
+                return null;
             }
             else if (cs1.GetCountOfSpectrogramMatrices() < keys.Length)
             {
                 LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   Missing indices in the dictionary. Some files do not exist?");
-                return 0;
+                return null;
             }
 
-            //Font stringFont = new Font("Tahoma", 9);
-            Font stringFont = new Font("Arial", 14);
+            Font stringFont = new Font("Tahoma", 8);
+            //Font stringFont = new Font("Arial", 6);
             int pixelWidth = 0;
 
             // constants for labels 
-            Brush[] brush = { Brushes.Blue, Brushes.LightGreen, Brushes.Red, Brushes.Orange, Brushes.Purple };
-            Color[] color = { Color.Blue, Color.LightGreen, Color.Red, Color.Orange, Color.Purple }; 
-            int labelWidth = 70;
-            int labelYvalue = 0;
+            Brush[] brush = { Brushes.Blue, Brushes.Green, Brushes.Red, Brushes.Orange, Brushes.Purple };
+            Color[] color = { Color.Blue, Color.Green, Color.Red, Color.Orange, Color.Purple };
+            int labelYvalue = 3;
             int labelIndex = 0;
-            Image label = null;
-            Graphics g1 = null;
             Bitmap ridges = null;
             Graphics g2 = null;
 
@@ -435,18 +446,14 @@ namespace AnalysisPrograms
                 pixelWidth = greyScaleImage.Width;
 
                 int height = greyScaleImage.Height;
-                if (label == null)
+                if (ridges == null)
                 {
-                    label = new Bitmap(labelWidth, height);
-                    g1 = Graphics.FromImage(label);
-                    g1.Clear(Color.Gray);
-
                     ridges = new Bitmap(pixelWidth, height);
                     g2 = Graphics.FromImage(ridges);
                     g2.Clear(Color.White);
                 }
-                labelYvalue += 30;
-                g1.DrawString(key, stringFont, brush[labelIndex], new PointF(4, labelYvalue));
+                g2.DrawString(key, stringFont, brush[labelIndex], new PointF(1, labelYvalue));
+                labelYvalue += 10;
                 //g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0);//draw upper boundary
                 //g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
 
@@ -464,12 +471,7 @@ namespace AnalysisPrograms
                 labelIndex += 1;
             } //foreach key
 
-            Image[] imagearray = { label, ridges };
-            Image labelledImage = ImageTools.CombineImagesInLine(imagearray);
-            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".Ridges.png");
-            labelledImage.Save(fileName);
-
-            return (int)(Math.Round(pixelWidth * spectrogramScale));
+            return ridges;
         } // method DrawRidgeSpectrograms()
 
 
