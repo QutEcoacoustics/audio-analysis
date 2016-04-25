@@ -1,8 +1,11 @@
-﻿using AnalysisBase;
+﻿using Acoustics.Shared;
+using AnalysisBase;
+using AudioAnalysisTools;
 using AudioAnalysisTools.WavTools;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TowseyLibrary;
@@ -12,26 +15,35 @@ namespace AnalysisPrograms
     public class CallRecogniser
     {
         public Image ScoreTrack; 
-        public List<string> HitList;
+        public List<AcousticEvent> Events;
 
 
-        public static CallRecogniser DoCallRecognition(string name, AudioRecording recording, Dictionary<string, double[,]> dictionaryOfSpectra)
+        public static CallRecogniser DoCallRecognition(string name, AnalysisSettings analysisSettings, AudioRecording recording, Dictionary<string, double[,]> dictionaryOfSpectra)
         {
+            //var kvp = spectra.First();
+            //var matrix = kvp.Value;
+
             var recogniser = new CallRecogniser();
             var key = dictionaryOfSpectra.Keys.First();
             int imageWidth = dictionaryOfSpectra[key].GetLength(1);
             double[] scores = null;
+            List<AcousticEvent> predictedEvents = null;
 
             if (name == "Bufo_marinus")
             {
-
+                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml");
+                //analysisSettings.Configuration = Yaml.Deserialise(configFile);
                 //Dictionary<string, string> configuration = analysisSettings.Configuration;
-                //Canetoad.CanetoadResults results = Canetoad.Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
+                Canetoad.CanetoadResults results = Canetoad.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+
+                scores = results.Plot.data;
+                predictedEvents = results.Events;
+
                 //var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
 
-
-                scores = new double[6000];
-                for(int i= 0; i < 6000; i++) scores[i] = i / (double)6000.0;
+                //scores = new double[6000];
+                //for(int i= 0; i < 6000; i++) scores[i] = i / (double)6000.0;
             }
             else if (name == "Phascolarctos_cinereus")
             {
@@ -42,11 +54,17 @@ namespace AnalysisPrograms
             else
             {
                 recogniser.ScoreTrack = null;
-                recogniser.HitList    = null;
+                recogniser.Events     = null;
             }
 
+            recogniser.ScoreTrack = GenerateScoreTrackImage(name, scores, imageWidth);
+            recogniser.Events = predictedEvents;
+            return recogniser;
+        }
 
 
+        public static Image GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
+        {
 
             // reduce score array down to imageWidth;
             double[] scoreValues = new double[imageWidth];
@@ -75,11 +93,11 @@ namespace AnalysisPrograms
                 }
             }
             g2.DrawString(name, stringFont, brush, new PointF(1, 1));
-            g2.DrawRectangle(new Pen(Color.Gray), 0, 0, imageWidth-1, trackHeight-1);
-            recogniser.ScoreTrack = trackImage;
-
-
-            return recogniser;
+            g2.DrawRectangle(new Pen(Color.Gray), 0, 0, imageWidth - 1, trackHeight - 1);
+            return trackImage;
         }
+
+
+
     }
 }

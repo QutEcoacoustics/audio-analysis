@@ -149,6 +149,21 @@ namespace TowseyLibrary
             return opPath;
         }
 
+        public static int CountLinesOfTextFile(string fName)
+        {
+            int count = 0;
+            using (TextReader reader = new StreamReader(fName))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    //read one line at a time in string array
+                    count++;
+                }//end while
+            }//end using
+            return count;
+        }// end CountLinesOfTextFile()
+
 
 
         public static List<string> ReadTextFile(string fName)

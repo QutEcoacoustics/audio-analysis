@@ -241,6 +241,7 @@ namespace AnalysisPrograms
             DirectoryInfo inputDirectory = arguments.InputDataDirectory;
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
             TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
 
             if (spectra == null)
             {
@@ -254,31 +255,6 @@ namespace AnalysisPrograms
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
             int frameCount = spectra[keys[0]].GetLength(1);
             
-            string newKey = "PHN";
-            if (! spectra.ContainsKey(newKey))
-            {
-                // create a composite index from three related indices - take the max
-                // Assume that the values are comparable so that max is meaningful.
-                double[,] phnIndex = CreateNewCompositeIndex(spectra, "RHZ-RPS-RNG");
-                // Name the index PHN because it is composite of Positive, Horiz and Negative ridge values.
-                spectra.Add(newKey, phnIndex);
-            }
-
-            // read in index properties and create a new entry for "PHN"
-            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
-            if (! indexProperties.ContainsKey(newKey))
-            {
-                IndexProperties phnProperties = new IndexProperties();
-                phnProperties.Key = newKey;
-                phnProperties.Name = newKey;
-                phnProperties.NormMin = 2.0;
-                phnProperties.NormMax = 10.0;
-                phnProperties.CalculateNormMin = false;
-                phnProperties.CalculateNormMax = false;
-                indexProperties.Add(newKey, phnProperties);
-            }
-        
-
             var minuteOffset = TimeSpan.Zero;
             var xScale       = dataScale;
             string colorMap1 = null;
@@ -327,9 +303,61 @@ namespace AnalysisPrograms
             string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
             combinedImage.Save(fileName);
 
+            // Draw False-colour Spectrograms
+            combinedImage = DrawFalseColourSpectrograms(fileStem, spectrogramScale, arguments.IndexPropertiesConfig, spectra);
+            fileName = Path.Combine(outputDirectory.FullName, fileStem + ".TwoMaps.png");
+            combinedImage.Save(fileName);
+
+            return frameCount;
+        } // method DrawAggregatedSpectrograms()
+
+
+        public static Image DrawFalseColourSpectrograms(string fileStem, double spectrogramScale, FileInfo indexPropertiesConfig, Dictionary<string, double[,]> spectra = null)
+        {
+            string newKey = "PHN";
+            if (!spectra.ContainsKey(newKey))
+            {
+                // create a composite index from three related indices - take the max
+                // Assume that the values are comparable so that max is meaningful.
+                double[,] phnIndex = CreateNewCompositeIndex(spectra, "RHZ-RPS-RNG");
+                // Name the index PHN because it is composite of Positive, Horiz and Negative ridge values.
+                spectra.Add(newKey, phnIndex);
+            }
+
+            // read in index properties and create a new entry for "PHN"
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            if (!indexProperties.ContainsKey(newKey))
+            {
+                IndexProperties phnProperties = new IndexProperties();
+                phnProperties.Key = newKey;
+                phnProperties.Name = newKey;
+                phnProperties.NormMin = 2.0;
+                phnProperties.NormMax = 10.0;
+                phnProperties.CalculateNormMin = false;
+                phnProperties.CalculateNormMax = false;
+                indexProperties.Add(newKey, phnProperties);
+            }
+
+            // note: the spectra are oriented as per visual orientation, i.e. xAxis = time framesDictionary<string, Int16>.KeyCollection keys = AuthorList.Keys
+            string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');
+            int frameCount = spectra[keys[0]].GetLength(1);
+
+            int sampleRate = 22050;
+            int frameWidth = 512;
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
+            var minuteOffset = TimeSpan.Zero;
+            TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
+            var xScale = dataScale;
             string colourMode = "NEGATIVE";
-            string colourMap  = "BGN-POW-EVN";
-            bool   withChrome = true;
+            string colourMap = "BGN-POW-EVN";
+            bool withChrome = true;
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colourMap);
+            cs1.FileName = fileStem;
+            cs1.BackgroundFilter = backgroundFilter;
+            cs1.IndexCalculationDuration = dataScale;
+            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
+            cs1.spectrogramMatrices = spectra;
+
             Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
             TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * spectrogramScale);
 
@@ -340,20 +368,15 @@ namespace AnalysisPrograms
 
             colourMap = "PHN-RVT-SPT";
             Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
-            list = new List<Image>();
-            list.Add(titleImage); 
+            var list = new List<Image>();
+            list.Add(titleImage);
             list.Add(image1);
-            list.Add(timeScale); 
+            list.Add(timeScale);
             list.Add(image2);
 
-            combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
-            fileName = Path.Combine(outputDirectory.FullName, fileStem + ".TwoMaps.png");
-            combinedImage.Save(fileName);
-
-
-            return frameCount;
-        } // method DrawAggregatedSpectrograms()
-
+            Image combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
+            return combinedImage;
+        }
 
         /// <summary>
         /// The integer returned from this method is the number of seconds duration of the spectrogram.
@@ -452,7 +475,7 @@ namespace AnalysisPrograms
                     g2 = Graphics.FromImage(ridges);
                     g2.Clear(Color.White);
                 }
-                g2.DrawString(key, stringFont, brush[labelIndex], new PointF(1, labelYvalue));
+                g2.DrawString(key, stringFont, brush[labelIndex], new PointF(0, labelYvalue));
                 labelYvalue += 10;
                 //g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0);//draw upper boundary
                 //g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary

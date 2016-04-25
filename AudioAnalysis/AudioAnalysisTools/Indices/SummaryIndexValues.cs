@@ -206,7 +206,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Used to check that the keys in the indexProperties dictionary corerspond to Properties in the SpectralIndexValues class.
+        /// Used to check that the keys in the indexProperties dictionary correspond to Properties in the SpectralIndexValues class.
         /// Call this method before entering a loop because do not want the error message at every iteration through loop.
         /// </summary>
         /// <param name="indexProperties">
