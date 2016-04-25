@@ -47,7 +47,7 @@ SaveIntermediateCsvFiles: false
 # Next two parameters are used only when creating images for zooming spectrograms.
 # Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-SaveSonogramData: false
+SaveSonogramData: true
 # Frame step. units=samples
 # NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
 #       FrameStep is NOT used when calculating Summary and Spectral indices.
@@ -57,7 +57,7 @@ SaveSonogramData: false
 FrameStep: 441
 
 # One-minute spectrograms can be saved in any analysis task.
-SaveSonogramImages: false
+SaveSonogramImages: true
 
 DisplayCsvImage: false
 DoNoiseReduction: true

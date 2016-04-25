@@ -198,7 +198,7 @@ Output  to  directory: {1}
             analyser.BeforeAnalyze(analysisSettings);
 
             // 7. ####################################### DO THE ANALYSIS ###################################
-            LoggedConsole.WriteLine("STARTING ANALYSIS ...");
+            LoggedConsole.WriteLine("START ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
 
             // ##############################################################################################
@@ -286,16 +286,23 @@ Output  to  directory: {1}
                     throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
                 }
 
-                // this arbitrary amount - a sheer guess... who knows if it will work.
-                if (mergedIndicesResults.Length > 5000)
+                var basename = Path.GetFileNameWithoutExtension(fileNameBase);
+                string analysisType = "Towsey.AcousticHiResIndicesPlusRecognisers";
+
+                // CHECK SIZE OF THE SUMMARY INDEX FILES
+                string fileName = String.Format("{0}__{1}.Indices.csv", basename, analysisType);
+                string path = Path.Combine(instanceOutputDirectory.FullName, fileName);
+                int lineCount = TowseyLibrary.FileTools.CountLinesOfTextFile(path);
+                // this arbitrary amount of data.
+                if (lineCount > 5000)
                 {
                     Log.Warn("Summary Indices Image not able to be drawn - there are too many indices to render");
                 }
                 else
                 {
-                    var basename = Path.GetFileNameWithoutExtension(fileNameBase);
                     string imageTitle = $"SOURCE:{basename},   (c) QUT;  ";
 
+                    // Draw Tracks-Image of Summary indices
                     Bitmap tracksImage =
                         DrawSummaryIndices.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
@@ -303,14 +310,36 @@ Output  to  directory: {1}
                             imageTitle,
                             analysisSettings.SegmentMaxDuration.Value,
                             fileSegment.OriginalFileStartDate);
-                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "Indices", ImagefileExt);
+                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
                     tracksImage.Save(imagePath);
+                }
+
+
+                // CHECK SIZE OF THE SPECTRAL INDEX FILES
+                fileName = String.Format("{0}__{1}.ACI.csv", basename, analysisType);
+                path = Path.Combine(instanceOutputDirectory.FullName, fileName);
+                lineCount = TowseyLibrary.FileTools.CountLinesOfTextFile(path);
+                // this arbitrary amount of data
+                if (lineCount > 5000)
+                {
+                    Log.Warn("Spectral Indices Image not able to be drawn - there are too many indices to render");
+                }
+                else
+                {
+
+                    // Draw FalseColour Spectrograms - .2Maps.png
+                    double spectrogramScale = 0.1;
+                    string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
+                    Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(instanceOutputDirectory, basename + "__" + analysisType, keys);
+
+                    Image combinedImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(basename, spectrogramScale, indicesPropertiesConfig, spectra);
+                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "TwoMaps", ImagefileExt);
+                    combinedImage.Save(imagePath);
                 }
             }
 
             // 14. wrap up, write stats
-            LoggedConsole.WriteLine(
-                "INDICES CSV file(s) = " + (indicesFile?.Name ?? "<<No indices result, no file!>>"));
+            LoggedConsole.WriteLine("INDICES CSV file(s) = " + (indicesFile?.Name ?? "<<No indices result, no file!>>"));
             LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
                                     numberOfRowsOfIndices);
             LoggedConsole.WriteLine(string.Empty);
