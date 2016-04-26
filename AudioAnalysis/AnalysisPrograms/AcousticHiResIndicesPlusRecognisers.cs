@@ -423,7 +423,7 @@ namespace AnalysisPrograms
             List<string> speciesList = new List<string>();
             speciesList.Add("Bufo_marinus");
             speciesList.Add("Phascolarctos_cinereus");
-            speciesList.Add("Littoria_fallax");
+            speciesList.Add("Litoria_fallax");
 
             // Loop through recognisers and accumulate the output
             var scoreTracks = new List<Image>();
