@@ -47,9 +47,9 @@ namespace AnalysisPrograms
                 scores = results.Plot.data;
                 predictedEvents = results.Events;
             }
-            else if (name == "Littoria_fallax")
+            else if (name == "Litoria_fallax")
             {
-                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml");
+                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Litoria_fallax.yml");
                 Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
                 Canetoad.CanetoadResults results = Canetoad.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
                 scores = results.Plot.data;
