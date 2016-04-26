@@ -228,9 +228,28 @@ namespace AnalysisPrograms
         /// <returns>Count of time-frames</returns>
         public static int DrawAggregatedSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
+            // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
+            int frameCount = spectra["ACI"].GetLength(1);
+            double spectrogramScale = 0.1;
+            TimeSpan timeScale = TimeSpan.FromSeconds(spectrogramScale);
+            DirectoryInfo outputDirectory = arguments.OutputDirectory;
+
+            Image combinedImage = DrawGrayScaleSpectrograms(arguments, fileStem, timeScale, spectra);
+            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
+            combinedImage.Save(fileName);
+
+            // Draw False-colour Spectrograms
+            combinedImage = DrawFalseColourSpectrograms(fileStem, timeScale, arguments.IndexPropertiesConfig, spectra);
+            fileName = Path.Combine(outputDirectory.FullName, fileStem + ".TwoMaps.png");
+            combinedImage.Save(fileName);
+
+            return frameCount;
+        } // method DrawAggregatedSpectrograms()
+
+        public static Image DrawGrayScaleSpectrograms(Arguments arguments, string fileStem, TimeSpan dataScale, Dictionary<string, double[,]> spectra = null)
+        {
             int sampleRate = 22050;
             int frameWidth = 512;
-            double spectrogramScale = 0.1;
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
             string analysisType = "Towsey.Acoustic";
@@ -239,8 +258,6 @@ namespace AnalysisPrograms
             //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
             //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             DirectoryInfo inputDirectory = arguments.InputDataDirectory;
-            DirectoryInfo outputDirectory = arguments.OutputDirectory;
-            TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
 
             if (spectra == null)
@@ -254,9 +271,9 @@ namespace AnalysisPrograms
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
             int frameCount = spectra[keys[0]].GetLength(1);
-            
+
             var minuteOffset = TimeSpan.Zero;
-            var xScale       = dataScale;
+            var xScale = dataScale;
             string colorMap1 = null;
 
             var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
@@ -269,8 +286,8 @@ namespace AnalysisPrograms
             cs1.spectrogramMatrices = spectra;
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
-                LoggedConsole.WriteLine("WARNING:  "+fileStem +":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
-                return 0;
+                LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                return null;
             }
 
 
@@ -300,19 +317,10 @@ namespace AnalysisPrograms
             } //foreach key
 
             Image combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
-            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
-            combinedImage.Save(fileName);
+            return combinedImage;
+        } // method DrawGrayScaleSpectrograms()
 
-            // Draw False-colour Spectrograms
-            combinedImage = DrawFalseColourSpectrograms(fileStem, spectrogramScale, arguments.IndexPropertiesConfig, spectra);
-            fileName = Path.Combine(outputDirectory.FullName, fileStem + ".TwoMaps.png");
-            combinedImage.Save(fileName);
-
-            return frameCount;
-        } // method DrawAggregatedSpectrograms()
-
-
-        public static Image DrawFalseColourSpectrograms(string fileStem, double spectrogramScale, FileInfo indexPropertiesConfig, Dictionary<string, double[,]> spectra = null)
+        public static Image DrawFalseColourSpectrograms(string fileStem, TimeSpan dataScale, FileInfo indexPropertiesConfig, Dictionary<string, double[,]> spectra = null)
         {
             string newKey = "PHN";
             if (!spectra.ContainsKey(newKey))
@@ -346,7 +354,6 @@ namespace AnalysisPrograms
             int frameWidth = 512;
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
             var minuteOffset = TimeSpan.Zero;
-            TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
             var xScale = dataScale;
             string colourMode = "NEGATIVE";
             string colourMap = "BGN-POW-EVN";
@@ -359,7 +366,7 @@ namespace AnalysisPrograms
             cs1.spectrogramMatrices = spectra;
 
             Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
-            TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * spectrogramScale);
+            TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
 
             string title = fileStem;
             Image titleImage = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);

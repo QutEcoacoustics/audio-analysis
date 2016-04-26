@@ -8,7 +8,7 @@
 #
 #
 
-AnalysisName: Towsey.AcousticHiResIndicesPlusRecognisers
+AnalysisName: Towsey.HiResIndices
 #SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
 SegmentDuration: 1
 SegmentOverlap: 0
@@ -43,11 +43,10 @@ DisplayWeightedIndices: false
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 
-# SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
-# Next two parameters are used only when creating images for zooming spectrograms.
-# Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
-# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-SaveSonogramData: true
+SaveRidgeSpectrograms: true
+SaveGrayScaleSpectrograms: false
+SaveTwoMapsSpectrograms: true
+
 # Frame step. units=samples
 # NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
 #       FrameStep is NOT used when calculating Summary and Spectral indices.
@@ -57,7 +56,7 @@ SaveSonogramData: true
 FrameStep: 441
 
 # One-minute spectrograms can be saved in any analysis task.
-SaveSonogramImages: true
+SaveSonogramImages: false
 
 DisplayCsvImage: false
 DoNoiseReduction: true

@@ -287,7 +287,7 @@ Output  to  directory: {1}
                 }
 
                 var basename = Path.GetFileNameWithoutExtension(fileNameBase);
-                string analysisType = "Towsey.AcousticHiResIndicesPlusRecognisers";
+                string analysisType = analysisSettings.Configuration[AnalysisKeys.AnalysisName];
 
                 // CHECK SIZE OF THE SUMMARY INDEX FILES
                 string fileName = String.Format("{0}__{1}.Indices.csv", basename, analysisType);
@@ -300,15 +300,17 @@ Output  to  directory: {1}
                 }
                 else
                 {
-                    string imageTitle = $"SOURCE:{basename},   (c) QUT;  ";
+                    string imageTitle = $"{basename},   (c) QUT;  ";
 
                     // Draw Tracks-Image of Summary indices
+                    // set time scale resolution for drawing of summary index tracks
+                    TimeSpan timeScale = TimeSpan.FromSeconds(0.1);
                     Bitmap tracksImage =
                         DrawSummaryIndices.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
                             indicesFile,
                             imageTitle,
-                            analysisSettings.SegmentMaxDuration.Value,
+                            timeScale,
                             fileSegment.OriginalFileStartDate);
                     var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
                     tracksImage.Save(imagePath);
@@ -326,12 +328,12 @@ Output  to  directory: {1}
                 }
                 else
                 {
-
                     // Draw FalseColour Spectrograms - .2Maps.png
-                    double spectrogramScale = 0.1;
                     string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
                     Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(instanceOutputDirectory, basename + "__" + analysisType, keys);
 
+                    // set time scale for drawing of spectral images
+                    TimeSpan spectrogramScale = TimeSpan.FromSeconds(60.0);
                     Image combinedImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(basename, spectrogramScale, indicesPropertiesConfig, spectra);
                     var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "TwoMaps", ImagefileExt);
                     combinedImage.Save(imagePath);

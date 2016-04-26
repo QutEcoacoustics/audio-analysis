@@ -122,12 +122,12 @@ namespace AnalysisPrograms
 
             public static string AdditionalNotes()
             {
-                return "NOTE: This class has two distinct options";
+                return "NOTE: This class calculates high-resolution acoustic spectral indices AND it runs species call recognisers.";
             }
         }
 
         // OTHER CONSTANTS
-        public const string AnalysisName = "AcousticHiResIndicesPlusRecognisers";
+        public const string AnalysisName = "HiResIndices";
 
         // TASK IDENTIFIERS
         public const string TaskAnalyse = AnalysisName;
@@ -418,16 +418,22 @@ namespace AnalysisPrograms
 
 
             // #################################################################
+            // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
             // get a list of ID names of species recognisers from config file
             List<string> speciesList = new List<string>();
             speciesList.Add("Bufo_marinus");
             speciesList.Add("Phascolarctos_cinereus");
+            speciesList.Add("Littoria_fallax");
 
             // Loop through recognisers and accumulate the output
             var scoreTracks = new List<Image>();
             var events = new List<AcousticEvent>();
             foreach (string name in speciesList)
             {
+                // ########################### TODO SHOULD NOT NEED THE NEXT LINE #######################
+                // SEEM TO HAVE LOST SAMPLES
+                if(recording.WavReader.Samples == null) recording = new AudioRecording(audioFile.FullName);
+
                 CallRecogniser output = CallRecogniser.DoCallRecognition(name, analysisSettings, recording, dictionaryOfSpectra);
                 if (output.ScoreTrack != null) scoreTracks.Add(output.ScoreTrack);
                 if (output.Events != null) events.AddRange(output.Events);
@@ -449,11 +455,10 @@ namespace AnalysisPrograms
             // Instead of saving the standard spectrogram images, in this analysis we save the Hi-Res Indices spectrogram images.
             FileInfo ipConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
 
-            bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
-            if (saveSonogramData)
+            bool saveRidgeSpectrograms = (bool?)analysisSettings.Configuration["SaveRidgeSpectrograms"] ?? false;
+            if (saveRidgeSpectrograms)
             {
                 // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
-                //string csvPath1 = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
                 var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                 {
                     InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
@@ -468,13 +473,11 @@ namespace AnalysisPrograms
                     LDFCSpectrogramArguments.OutputDirectory.Create();
                 }
 
-                // 1. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
-                int filler = DrawLongDurationSpectrograms.DrawAggregatedSpectrograms(LDFCSpectrogramArguments, recording.FileName, dictionaryOfSpectra);
-
-                // 2: DRAW the coloured ridge spectrograms 
+                // 1: DRAW the coloured ridge spectrograms 
                 DirectoryInfo inputDirectory = LDFCSpectrogramArguments.InputDataDirectory;
                 string fileStem = recording.FileName;
                 double scale = 0.1;
+                TimeSpan timeScale = TimeSpan.FromSeconds(scale);
                 Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(inputDirectory, ipConfig, fileStem, scale, dictionaryOfSpectra);
                 var opImages = new List<Image>();
                 opImages.Add(ridgeSpectrogram);
@@ -484,10 +487,28 @@ namespace AnalysisPrograms
                 string fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".Ridges.png");
                 opImage.Save(fileName);
 
-                //following two lines used to be used to save the standard spectrogram images
+                // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
+                bool saveGrayScaleSpectrograms = (bool?)analysisSettings.Configuration["SaveGrayScaleSpectrograms"] ?? false;
+                if (saveGrayScaleSpectrograms)
+                {
+                    opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(LDFCSpectrogramArguments, fileStem, timeScale, dictionaryOfSpectra);
+                    fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
+                    opImage.Save(fileName);
+                }
+
+                // 3. DRAW False-colour Spectrograms
+                bool saveTwoMapsSpectrograms = (bool?)analysisSettings.Configuration["SaveTwoMapsSpectrograms"] ?? false;
+                if (saveTwoMapsSpectrograms)
+                {                    
+                    opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(fileStem, timeScale, LDFCSpectrogramArguments.IndexPropertiesConfig, dictionaryOfSpectra);
+                    fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".TwoMaps.png");
+                    opImage.Save(fileName);
+                }
+
+                // 4. Following two lines used to be used to save the standard spectrogram images
                 //    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
                 //    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
-            } // if (analysisSettings.ImageFile != null)
+            } // if (saveRidgeSpectrograms)
 
 
             // #################################################################
@@ -510,6 +531,7 @@ namespace AnalysisPrograms
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
             var spectralIndexValues = new SpectralIndexValues(spectrumLength, indexProperties);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+
             // I am sure there is a better way to do this but I can't figure it out!
             spectralIndexValues.BGN = MatrixTools.GetColumn(spectralSelection["BGN"], 0);
             spectralIndexValues.POW = MatrixTools.GetColumn(spectralSelection["POW"], 0);
@@ -525,6 +547,8 @@ namespace AnalysisPrograms
             // next two not needed for images
             //spectralIndexValues.DIF = MatrixTools.GetRow(spectralSelection["DIF"], 0);
             //spectralIndexValues.SUM = MatrixTools.GetRow(spectralSelection["SUM"], 0);
+            spectralIndexValues.StartOffset = analysisResults.SpectralIndices[0].StartOffset;
+            spectralIndexValues.SegmentDuration = analysisResults.SpectralIndices[0].SegmentDuration;
 
             var siv = new SpectralIndexValues[1];
             siv[0] = spectralIndexValues;
@@ -577,12 +601,12 @@ namespace AnalysisPrograms
         public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
             var lines = new List<string>();
-            string line = "Start,Duration,Name,MinFreq,MaxFreq,Score,Score2";
+            string line = "Start,Duration,SpeciesName,CallType,MinFreq,MaxFreq,Score,Score2";
             lines.Add(line);
             foreach (EventBase baseEvent in results)
             {
                 AcousticEvent ae = (AcousticEvent)baseEvent;
-                line = String.Format("{0},{1:f2},{2},{3},{4},{5:f2},{6:f1}", ae.StartOffset, ae.Duration, ae.Name, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
+                line = String.Format("{0},{1:f2},{2},{3},{4},{5},{6:f2},{7:f1}", ae.StartOffset, ae.Duration, ae.SpeciesName, ae.Name, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
                 lines.Add(line);
             }
 
