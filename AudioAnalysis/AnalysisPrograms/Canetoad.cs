@@ -474,6 +474,7 @@ namespace AnalysisPrograms
 
             events.ForEach(ae =>
                     {
+                        ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
                         ae.SegmentStartOffset = segmentStartOffset;
                         ae.SegmentDuration = recordingDuration;
                         ae.Name = "AdvertCall";

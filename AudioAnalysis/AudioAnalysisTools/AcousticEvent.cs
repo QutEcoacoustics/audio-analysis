@@ -136,6 +136,7 @@ namespace AudioAnalysisTools
 
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
+        public string SpeciesName { get; set; }
         public string Name { get; set; }
         public string Name2 { get; set; }
 

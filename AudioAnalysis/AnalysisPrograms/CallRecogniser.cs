@@ -36,25 +36,33 @@ namespace AnalysisPrograms
                 //Dictionary<string, string> configuration = analysisSettings.Configuration;
                 Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
                 Canetoad.CanetoadResults results = Canetoad.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
-
                 scores = results.Plot.data;
                 predictedEvents = results.Events;
-
-                //var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
-
-                //scores = new double[6000];
-                //for(int i= 0; i < 6000; i++) scores[i] = i / (double)6000.0;
             }
             else if (name == "Phascolarctos_cinereus")
             {
-                scores = new double[6000];
-                RandomNumber rn = new RandomNumber();
-                for (int i = 0; i < 6000; i++) scores[i] = rn.GetDouble();
+                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.yml");
+                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
+                KoalaMale.KoalaMaleResults results = KoalaMale.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+                scores = results.Plot.data;
+                predictedEvents = results.Events;
+            }
+            else if (name == "Littoria_fallax")
+            {
+                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml");
+                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
+                Canetoad.CanetoadResults results = Canetoad.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+                scores = results.Plot.data;
+                predictedEvents = results.Events;
             }
             else
             {
+                //scores = new double[6000];
+                //for(int i= 0; i < 6000; i++) scores[i] = i / (double)6000.0;
+                //RandomNumber rn = new RandomNumber();
+                //for (int i = 0; i < 6000; i++) scores[i] = rn.GetDouble();
                 recogniser.ScoreTrack = null;
-                recogniser.Events     = null;
+                recogniser.Events = null;
             }
 
             recogniser.ScoreTrack = GenerateScoreTrackImage(name, scores, imageWidth);
