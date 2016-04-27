@@ -473,7 +473,7 @@ namespace AnalysisPrograms
             //FROG DATA SET
             // To produce observe feature spectra
             // This is used to analyse frog recordings of Lin Schwarzkopf.
-            if (true)
+            if (false)
             {
                 HighResolutionAcousticIndices.Execute(null);
             } 
