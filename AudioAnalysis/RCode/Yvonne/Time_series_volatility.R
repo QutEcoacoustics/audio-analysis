@@ -7,6 +7,7 @@ indices <- read.csv("Towsey_Summary_Indices_Gympie NP1 20150622-000000+1000to201
 clusterList <- read.csv("Cluster_list 22-28 June 2015_5,7,9,10,11,12,13,14,15,17,18Gympie NP1 .csv", header=T)
 clusterList <- clusterList[,2]
 
+# Set time period and interval
 n <- 15
 interval <- 2*n + 1
  
@@ -49,7 +50,7 @@ for(i in length(count):2) {
   count[i] <- 2*n - count[i]
 }
 # Find normalised counts
-normalisedCount <- dataFrame[1:length(count),1] 
+normalisedCount <- NULL
 
 for (i in 1:length(count)) {
   normalisedCount[i] <- count[i]*(uniqueClust[i])
