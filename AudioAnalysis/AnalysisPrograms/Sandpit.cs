@@ -423,6 +423,60 @@ namespace AnalysisPrograms
                 combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
             }
 
+            // Concatenate two images but add labels for EcoCongress.
+            if (true)  // 
+            {
+                //var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
+                //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
+                //string fileName2 = @"GympieNP_20150701__ACI-ENT-EVN.png";
+                //string fileName3 = @"Sturt-Mistletoe_20150702__ACI-ENT-EVN - Corrected.png";
+                //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
+                //string fileName2 = @"GympieNP_20150701__ACI-ENT-EVN.png";
+
+                var imageDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress\24hour-2mapSpectrograms");
+                //string fileName1 = @"NW_12140a87_101013-0000.ACI-ENT-EVN.png";
+                //string fileName2 = @"SW_f8c71440_101013-0000.ACI-ENT-EVN.png";
+                string fileName1 = @"NW_6905bee9_101014-0000.ACI-ENT-EVN.png";
+                string fileName2 = @"SW_e8abdd2a_101014-0000.ACI-ENT-EVN.png";
+
+                var opDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress");
+
+
+                var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
+                var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
+                //var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
+
+                Image image1 = Bitmap.FromFile(image1Path.FullName);
+                int width = image1.Width;
+                int height = 40;
+
+                Brush brush = Brushes.Black;
+                Font stringFont = new Font("Tahoma", 20);
+
+                Image title1 = new Bitmap(width, height);
+                Graphics g1 = Graphics.FromImage(title1);
+                g1.Clear(Color.LightGray);
+                string name1 = "Closed canopy, dense Eucalyptus forest";
+                g1.DrawString(name1, stringFont, brush, new PointF(5, 5));
+
+                Image title2 = new Bitmap(width, height);
+                Graphics g2 = Graphics.FromImage(title2);
+                g2.Clear(Color.LightGray);
+                string name2 = "Open Melaleuca paperbark forest";
+                g2.DrawString(name2, stringFont, brush, new PointF(5, 5));
+
+                var imageList = new List<Image>();
+                imageList.Add(title1);
+                imageList.Add(image1);
+                imageList.Add(title2);
+                imageList.Add(Bitmap.FromFile(image2Path.FullName));
+
+                Image combinedImage = ImageTools.CombineImagesVertically(imageList);
+
+                string fileName = String.Format("Comparison SERF NWandSW 2010Oct14.png");
+                combinedImage.Save(Path.Combine(opDirectory.FullName, fileName));
+            }
+
 
             // Concatenate twelve images for Simon and Toby
             if (false)  // 
