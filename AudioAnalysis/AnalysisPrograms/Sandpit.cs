@@ -433,13 +433,21 @@ namespace AnalysisPrograms
                 //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
                 //string fileName2 = @"GympieNP_20150701__ACI-ENT-EVN.png";
 
-                var imageDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress\24hour-2mapSpectrograms");
+                //var imageDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress\24hour-2mapSpectrograms");
                 //string fileName1 = @"NW_12140a87_101013-0000.ACI-ENT-EVN.png";
                 //string fileName2 = @"SW_f8c71440_101013-0000.ACI-ENT-EVN.png";
-                string fileName1 = @"NW_6905bee9_101014-0000.ACI-ENT-EVN.png";
-                string fileName2 = @"SW_e8abdd2a_101014-0000.ACI-ENT-EVN.png";
+                //string fileName1 = @"NW_6905bee9_101014-0000.ACI-ENT-EVN.png";
+                //string fileName2 = @"SW_e8abdd2a_101014-0000.ACI-ENT-EVN.png";
+
+
+                var imageDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress\DotPlotsInColour");
+                string fileName1 = @"colour_dot_plot_NW_13Oct.png";
+                string fileName2 = @"colour_dot_plot_SW_13Oct.png";
+                string name1 = "Closed canopy, dense Eucalyptus forest (13th Oct 2010)";
+                string name2 = "Open Melaleuca paperbark forest (13th Oct 2010)";
 
                 var opDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress");
+                string opFileName = String.Format("Comparison SERF DotPlots NWandSW 2010Oct13.png");
 
 
                 var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
@@ -456,25 +464,27 @@ namespace AnalysisPrograms
                 Image title1 = new Bitmap(width, height);
                 Graphics g1 = Graphics.FromImage(title1);
                 g1.Clear(Color.LightGray);
-                string name1 = "Closed canopy, dense Eucalyptus forest";
                 g1.DrawString(name1, stringFont, brush, new PointF(5, 5));
+
+
+                //Graphics g = Graphics.FromImage(image1);
+                //g.DrawImage(title1, 0, 0);
 
                 Image title2 = new Bitmap(width, height);
                 Graphics g2 = Graphics.FromImage(title2);
                 g2.Clear(Color.LightGray);
-                string name2 = "Open Melaleuca paperbark forest";
                 g2.DrawString(name2, stringFont, brush, new PointF(5, 5));
+                //g.DrawImage(title2, 0, 0);
 
                 var imageList = new List<Image>();
-                imageList.Add(title1);
+                //imageList.Add(title1);
                 imageList.Add(image1);
-                imageList.Add(title2);
+                //imageList.Add(title2);
                 imageList.Add(Bitmap.FromFile(image2Path.FullName));
 
-                Image combinedImage = ImageTools.CombineImagesVertically(imageList);
-
-                string fileName = String.Format("Comparison SERF NWandSW 2010Oct14.png");
-                combinedImage.Save(Path.Combine(opDirectory.FullName, fileName));
+                //Image combinedImage = ImageTools.CombineImagesVertically(imageList);
+                Image combinedImage = ImageTools.CombineImagesInLine(imageList);
+                combinedImage.Save(Path.Combine(opDirectory.FullName, opFileName));
             }
 
 
