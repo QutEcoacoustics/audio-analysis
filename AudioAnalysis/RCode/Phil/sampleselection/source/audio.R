@@ -62,17 +62,40 @@ Audio.Targeted <- function (site, start.date, start.sec, duration, save = FALSE)
     
 } 
 
+GetFullPath <- function (fn, site, date) {
+    # returns the full path to an audio file, given the filename, site and date
+    audio.dir <- Path('audio')
+    path <- GetAnalysisOutputPath(as.character(site), as.character(date), audio.dir)$path
+    return(file.path(path, as.character(fn)))
+}
 
 
+GetAudioFileBatch <- function (df) {
+    # given the site, date and minute, 
+    # returns the audio file
+    # 
+    # Args:
+    #   df: data.frame. Must have the columns site, date and min
+    #
+    # Value:
+    #   character vector
+    
+    res <- character(nrow(df))
+    multiple = FALSE
+    for (i in 1:nrow(df)) {
+        res[i] <- GetAudioFile(df$site[i], df$date[i], df$min[i])
+    }
+    return(res)
+    
+}
 
-GetAudioFile <- function (site, date, mins, verify = TRUE) {
+GetAudioFile <- function (site, date, mins) {
     # for a given site, date and list of minutes
     # returns all the files needed 
     
     audio.dir <- Path('audio')
     
     day.folder <- GetAnalysisOutputPath(site, date, audio.dir)
-    
     
     # files are done every 10 mins, so min should be rounded DOWN to the nearest min ending with 0
     mins <- floor(mins/10)*10;
@@ -480,4 +503,75 @@ FixNames <- function () {
     }
     
 }
+
+
+
+ConvertToMins <- function (replace.existing = FALSE) {
+    # converts audio from 10-min files to 1-min files
+    # and renames them to site_date_min.wav
+    #
+    
+    require('stringr')
+
+    #destination <- '/Users/n8933464/Documents/SERF/serf_audio'
+    destination <- '/Volumes/files/qut_data/SERF/serf_audio' 
+    sites <- c('NE', 'NW', 'SE', 'SW')
+    dates <- c('2010-10-13', '2010-10-14', '2010-10-15', '2010-10-16', '2010-10-17')
+    mins <- 0:143
+    
+    # minimum number length of file
+    # last file might be shorter than 1 minute
+    min.length.for.file <- 1
+    
+    for(site in sites) {
+        for (date in dates) {
+            for (m10 in mins) {
+
+                Dot();
+                
+                fns <- sapply(0:9, function (m) {
+                    realmin <- str_pad(m10*10 + m, 4, 'left', "0")
+                    fn <- paste0(paste(site, date, realmin, sep = "_"), '.wav')
+                    path <- file.path(destination, fn)
+                    return(path)
+                })
+                
+                if (!replace.existing && all(sapply(fns, file.exists))) {
+                    # continue to next 10 min file
+                    next
+                }
+                
+                
+                source <- GetAudioFile(site,date,m10*10)   
+                audio <- readWave(source)
+                
+                for (m in 0:9) {
+                    
+                    temp <- audio
+                    start.sample <- m*60*audio@samp.rate
+                    end.sample <- start.sample + 60*audio@samp.rate
+                    
+                    # the last minute might be slightly short
+                    if (end.sample > length(audio@left)) {
+                        end.sample <- length(audio@left)
+                        if (end.sample - start.sample < min.length.for.file * audio@samp.rate ) {
+                            # just in case the 10 minute file terminates early (for example the last file before midnight)
+                            break
+                        }
+                    }
+ 
+                    
+                    temp@left <- audio@left[start.sample:end.sample]
+                    
+                    writeWave(temp, fns[m+1])
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
 

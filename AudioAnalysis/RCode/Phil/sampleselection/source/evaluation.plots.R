@@ -244,7 +244,8 @@ GetColorForName <- function (name) {
         'c.3' = c(0.7,0.1,0.9),
         'c.4' = c(0.8,0.2,0.2),
         'c.5' = c(0,0.2,0.8),
-        'c.6' = c(0.25,0.6,0.0)
+        'c.6' = c(0.25,0.6,0.0),
+        'c.7' = c(0.25,0.6,0.2)
     )
     if (name %in% names(colors.1)) {
         return(colors.1[[name]])
@@ -267,7 +268,8 @@ GetLineStyleName <- function (name) {
         'c.3' = 'solid',
         'c.4' = 'solid',
         'c.5' = 'solid',
-        'c.6' = 'solid'
+        'c.6' = 'solid',
+        'c.7' = 'solid'
     )
     if (name %in% names(styles.1)) {
         return(styles.1[[name]])
@@ -291,7 +293,8 @@ GetPch <- function (name) {
         'c.3' = 17,
         'c.4' = 18,
         'c.5' = 19,
-        'c.6' = 20
+        'c.6' = 20,
+        'c.7' = 15
     )
     if (name %in% names(styles.1)) {
         return(styles.1[[name]])
@@ -304,7 +307,7 @@ GetPch <- function (name) {
 MapColor <- function (rank.name) {
     # maps ranking method names to colour names
     # this can change between papers, but keep consistent within a paper
-    map <- list('X4' = 'c.1', 'X8' = 'c.2', 'X5' = 'c.3', 'X6' = 'c.4', 'X9' = 'c.5', 'X10' = 'c.6')
+    map <- list('X4' = 'c.1', 'X8' = 'c.2', 'X5' = 'c.3', 'X6' = 'c.4', 'X9' = 'c.5', 'X10' = 'c.6', 'X11' = 'c.7')
     return(map[[rank.name]]) 
 }
 
@@ -317,7 +320,8 @@ GetRankingLegendName <- function (ranking.code) {
         "X5" = "Ranked by clusters (δ = 0.1)",
         "X6" = "Ranked by clusters (δ = 1)",
         "X9" = "Ranked by clusters (δ = 0.1) with Temporal Dispersal",
-        "X10" = "Ranked by clusters (δ = 1) with Temporal Dispersal"
+        "X10" = "Ranked by clusters (δ = 1) with Temporal Dispersal",
+        "X11" = "Ranked by clusters (δ = 0.6) with Temporal Dispersal"
     )
     
     if (ranking.code %in% names(codes)) {

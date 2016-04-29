@@ -606,5 +606,10 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
 
 
 
-
+ClustersInOptimal <- function () {
+    
+    
+    
+    
+}
 

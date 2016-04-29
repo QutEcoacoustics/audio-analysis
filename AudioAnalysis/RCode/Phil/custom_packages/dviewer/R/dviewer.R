@@ -3,7 +3,7 @@
 #' @import htmlwidgets
 #' @import rjson
 #' @export
-dataGraph <- function(data, trim = FALSE,
+dataGraph <- function(data, group = FALSE,
                   width = NULL, height = NULL) {
 
     if (is.list(data)) {
@@ -12,7 +12,7 @@ dataGraph <- function(data, trim = FALSE,
 
     # create a list that contains the settings
     settings <- list(
-        trim = trim
+        group = group
     )
 
     # pass the data and settings using 'x'
@@ -22,7 +22,7 @@ dataGraph <- function(data, trim = FALSE,
     )
 
     # create the widget
-    htmlwidgets::createWidget("dviewer", x, width = width, height = height)
+    return(htmlwidgets::createWidget("dviewer", x, width = width, height = height))
 }
 
 #' Standard functions to make the html widget work with shiny

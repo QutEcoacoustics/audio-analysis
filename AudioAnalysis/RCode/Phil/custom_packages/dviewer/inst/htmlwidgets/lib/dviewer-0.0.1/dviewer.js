@@ -37,7 +37,7 @@ oi.init = function (id, data, selected_group) {
     oi.selectGroup(selected_group);
     oi.tooltipInit();
     d3.select(window).on('resize', oi.resize);
-    ff.init();
+    ff.init(selected_group);
 
 };
 
@@ -311,9 +311,10 @@ oi.setHidden = function (group_name, cutoff_date) {
         // get a chain of links that come from the given group
         oi.getGroup(group_name).all_versions.forEach( function (v) {
             chain = [];
-            if (v.date >= cutoff_date) {
+            if (v.date >= cutoff_date || typeof(cutoff_date) !== 'string') {
                 oi.getChain(v, true, chain, true);
                 oi.getChain(v, false, chain, true);
+                v.hidden = false;
             }
             combined_chain = combined_chain.concat(chain);
         });
@@ -326,6 +327,8 @@ oi.setHidden = function (group_name, cutoff_date) {
             l.from.hidden = false;
             l.to.hidden = false;
         });
+
+
 
         selected_group.selected = true;
 
@@ -755,6 +758,7 @@ oi.drawGroup = function (obj) {
     text = obj.el.append('text')
         .text(obj.name);
     oi.setPos(obj.el, obj.cur_pos.x, obj.cur_pos.y, 0);
+    obj.el.transition();
 };
 
 /**
@@ -1140,7 +1144,7 @@ oi.getVs = function (v_list) {
 
 ff = {};
 
-ff.init = function () {
+ff.init = function (group) {
 
     ff.el = oi.container.append('div')
         .attr('id', 'ff')
@@ -1148,10 +1152,18 @@ ff.init = function () {
 
     ff.cutoff_date = null;
 
+    ff.selected_group = group;
+
     ff.createGroupSelector();
 
+
+
     ff.el.call(d3.behavior.drag().on('drag', function (d,i) {
-        console.log(d);
+        // there might be a better way to do this
+        // prevent drag element when dragging range slider
+        target = d3.event.sourceEvent.target;
+        //target = d3.event.sourceEvent.srcElement
+        if (target.tagName == 'INPUT') return;
         d.x += d3.event.dx;
         d.y += d3.event.dy;
         d3.select(this).style("transform", "translate(" + d.x + "px," + d.y + "px)");
@@ -1160,7 +1172,9 @@ ff.init = function () {
 };
 
 
-ff.createGroupSelector = function (group) {
+ff.createGroupSelector = function () {
+
+    var o;
 
     ff.group_selector = ff.el.append('div')
         .attr('id', 'group_selector')
@@ -1174,14 +1188,22 @@ ff.createGroupSelector = function (group) {
         .attr('val', '')
         .text('all');
 
-    oi.groups.forEach(function (g) {
-        ff.group_selector.append('option')
+    oi.all_groups.forEach(function (g) {
+        o = ff.group_selector.append('option')
             .attr('val', g.name)
             .text(g.name);
+        if (typeof(ff.selected_group) === 'string' && ff.selected_group === g.name) {
+            o.attr('selected', "selected");
+            ff.createDateSelector(ff.selected_group);
+        }
 
     });
 
 };
+
+
+
+
 
 /**
  * Add a date range selector
@@ -1268,7 +1290,16 @@ ff.setCutoffDate = function (date) {
 
 
 ff.dateMsg = function (date) {
-    var ms_ago = new Date() - new Date(date);
+
+
+    var ms_ago = new Date() - util.parseDate(date);
+
+
+    // firefox (and Rstudio) can't parse date using the supplied format,
+    // so we need to manually parse
+
+
+
     var mins_ago = ms_ago / (1000 * 60);
     var hours_ago = mins_ago / 60;
     var days_ago = hours_ago / 24;
@@ -1332,9 +1363,19 @@ util.shallowClone = function (obj) {
 
 
 /**
- * converts date to the number of days ago
+ * returns a date object given a string in the form yyyy-mm-dd hh:mm:ss
+ * or yyyy-mm-dd hh:mm
  * @param date
  */
-util.daysAgo = function (date) {
-
+util.parseDate = function (date_str) {
+    s1 = date_str.split(" ");
+    dd = s1[0].split('-');
+    tt = s1[1].split(':');
+    if (tt.length === 2) {
+        tt.push('00');
+    }
+    // since we are not storing timezone in the datetime string,
+    // create the date using UTC
+    date_obj = new Date(Date.UTC(dd[0], dd[1] - 1, dd[2], tt[0], tt[1], tt[2]));
+    return(date_obj);
 };

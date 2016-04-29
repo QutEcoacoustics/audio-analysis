@@ -100,8 +100,9 @@ RankSamples <- function (mins = NULL, clustered.events = NULL) {
     ranking.methods[[8]] <- RankSamples8 # event count only with temporar dispersal
     ranking.methods[[9]] <- RankSamples9 # same as 5 but with temporal dispersal
     ranking.methods[[10]] <- RankSamples10 # same as 6 but with temporal dispersal
+    ranking.methods[[11]] <- RankSamples11 # medium decay rate, with temporal dispersal
     
-    use.ranking.methods <- c(5,6,9,10)
+    use.ranking.methods <- c(8,9,10,11)
     #use.ranking.methods <- c(9)
     
 
@@ -398,7 +399,15 @@ RankSamples10 <- function (events, min.ids) {
     return(IterateOnSparseMatrix(events, decay.rate = 1, min.ids = min.ids, temporal.dispersal = list(t = 30, a = 1)))
     
 }
-
+RankSamples11 <- function (events, min.ids) {
+    # rank samples using sparse matrix iterator
+    # multiplyer is 1 for all minutes.  i.e. work only on number of clusters
+    # decay rate of 0.6 means that clusteres that have been already found are worth 0.6*the number of times they have been already found
+    # not whether they are used before
+    
+    return(IterateOnSparseMatrix(events, decay.rate = 0.6, min.ids = min.ids, temporal.dispersal = list(t = 30, a = 1)))
+    
+}
 
 EventCountByMin <- function (min.ids, events.per.group.per.min) {
     ## ??

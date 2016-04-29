@@ -479,7 +479,7 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
             return(FALSE)
         } else {
             meta$date[matching.p.and.d] <- DateTime()
-            meta$callstack <- callstack
+            meta$callstack[matching.p.and.d] <- callstack
             new.v.num <- meta$version[matching.p.and.d]
             meta.row <- meta[matching.p.and.d, ]
         }
@@ -648,6 +648,8 @@ MakeMetaRow <- function (name,
     }
     if (is.character(col.names)) {
         col.names = toJSON(col.names)
+    } else {
+        col.names = ''
     }
     if (is.character(callstack)) {
         callstack = toJSON(callstack)
@@ -733,9 +735,10 @@ ChooseOutputVersion <- function (names, params, dependencies, false.if.missing =
         # we only have one thing to choose from, so choose it for them
         # but show them which one is being chosen
         Report(4, 'only one file to choose from, returing it:')
-        ReportAnimated(5, choices[1], duration = 3)
+        ReportAnimated(5, choices[1], duration = 1)
         which.version <- 1
     } else {
+        D3Inspector(names[1])
         which.version <- GetUserChoice(choices, optional = optional)   
     }
     
@@ -918,19 +921,16 @@ CachePath <- function (cache.id) {
 ReadCache <- function (cache.id) {
     path <- CachePath(cache.id)
     if (file.exists(path)) {
-        load(path)
-#         result <- tryCatch({
-#             load(path)
-#         }, warning = function (w) {
-#             print('warning: corrupt cache file')
-#             print(w)
-#         }, error = function (e) {
-#             print('error: corrupt cache file')
-#             print(e)
-#         } , finally =  {
-#            
-#         })
-        if (exists('x')) {
+         x <- tryCatch({
+             load(path)
+             return(x)
+         }, error = function (e) {
+             msg <- paste('Load from cache failed. possible corrupt cache file', e)
+             print(msg)
+             warning(msg)
+             return(NULL)
+         })
+        if (exists('x') && !is.null(x)) {
             Report(6, 'successfully read file from cache')
             return(x)  # this is the name of the variable used when saving   
         }
@@ -998,11 +998,12 @@ AddColsToMeta <- function () {
 }
 
 
-D3Inspector <- function () {
+D3Inspector <- function (group = FALSE) {
     require('dviewer')
     data <- DataVis()
-    SaveDemoVisData(data)
-    dataGraph(data);
+    #SaveDemoVisData(data)
+    print(dataGraph(data, group));
+    a = 1;
 }
 
 SaveDemoVisData <- function (test_data) {
@@ -1056,7 +1057,7 @@ DataVis <- function () {
                                                  exists = versions$file.exists[v])
             
             # add colnames if they are there
-            if (is.character(versions$col.names[v]) && !is.na(versions$col.names[v])) {
+            if (is.character(versions$col.names[v]) && !is.na(versions$col.names[v]) && nzchar(versions$col.names[v])) {
                 data[[g]][['versions']][[v]]$colnames = as.list(fromJSON(versions$col.names[v]))
             }
             

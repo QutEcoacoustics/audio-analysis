@@ -25,10 +25,8 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     # every 10th minute of the day
     audio.file.duration <- 10
     min.list.per.duration <- min.list$data[min.list$data$min %% audio.file.duration == 0, ]
-    wave.path.per.duration <- audio.durations <- rep(NA, nrow(min.list.per.duration))
-    for (i in 1:length(wave.path.per.duration)) {
-        wave.path.per.duration[i] <- GetAudioFile(min.list.per.duration$site[i], min.list.per.duration$date[i], min.list.per.duration$min[i])
-    }
+    wave.path.per.duration <- GetAudioFileBatch(min.list.per.duration)
+
     min.list$data$wave.path <- wave.path.per.duration[rep(1:length(wave.path.per.duration),each=audio.file.duration)]
     
     segment.list <- min.list$data[rep(1:nrow(min.list$data),each=num.per.min), ]
@@ -47,6 +45,10 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     include <- rep(TRUE, nrow(segment.list))
     include[segment.list$wave.path == final.path][(duration.of.final+1):sum(segment.list$wave.path == final.path)] <- FALSE
     segment.list <- segment.list[include,]
+    
+    # drop the wave.path col, because it's dependant on the location of the audio
+    # which might change
+    segment.list <- segment.list[,-(which('wave.path',colnames(segment.list)))]
     
     segment.list.version <- WriteOutput(x = segment.list, name = 'segment.events',params = params, dependencies = dependencies)
     
@@ -73,14 +75,14 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     
     segment.length = 60 / segment.list$params$num.per.min
     
+    segment.list$wave.path <- GetAudioFileBatch(segment.list)
+    
     files <- unique(segment.list$wave.path)
 
     # ensure that each file appears as a single continuous run in the segment list
     # this will make sure we can match segments to results
-    each <- nrow(segment.list) / length(files)
-    if (!isTRUE(all.equal(segment.list$wave.path, rep(files, each = each)))) {
-        stop('problem with the segment list')
-    }
+
+
     
     # todo: calculate this from wave length and segment length
     num.segments.per.file <- 600
@@ -89,7 +91,7 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     SetReportMode() # reset to console only
     if (parallel) {
         SetReportMode(socket = TRUE)
-        cl <- makeCluster(3)
+        cl <- makeCluster(2)
         registerDoParallel(cl)
         res <- foreach(file = files, .combine='rbind', .export=ls(envir=globalenv())) %dopar% ExtractSDFForFile(file, 
                                                                                  segments = segment.list,
@@ -100,12 +102,24 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
        
     } else {
         SetReportMode(socket = FALSE)
-        res <- foreach(file = files, .combine='rbind') %do% ExtractSDFForFile(file, 
-                                                                                 segments = segment.list,
-                                                                                 num.fbands = num.fbands, 
-                                                                                 max.f = max.f, 
-                                                                                 min.f = min.f, 
-                                                                                 num.coefficients = num.coefficients)
+        # res <- foreach(file = files, .combine='rbind', .export=ls(envir=globalenv())) %do% ExtractSDFForFile(file, 
+        #                                                                          segments = segment.list,
+        #                                                                          num.fbands = num.fbands, 
+        #                                                                          max.f = max.f, 
+        #                                                                          min.f = min.f, 
+        #                                                                          num.coefficients = num.coefficients)
+        res <- data.frame()
+        for (f in 1:length(files)) {
+            row.res <- ExtractSDFForFile(files[f], 
+                                         segments = segment.list,
+                                         num.fbands = num.fbands, 
+                                         max.f = max.f, 
+                                         min.f = min.f, 
+                                         num.coefficients = num.coefficients) 
+            
+
+            res <- rbind(res, row.res)
+        }
     }
     SetReportMode() # reset to console only
 

@@ -56,6 +56,7 @@ Path <- function (path.name) {
 
 BasePath <- function (full.path, ds = "/") {
     # hack to get around full.names bug
+    # TODO: maybe use platform file sepatartor like this: split <- strsplit(path, .Platform$file.sep)
     path <- unlist(strsplit(full.path, ds, fixed = FALSE, perl = FALSE, useBytes = FALSE))
     basepath <- path[[length(path)]]
     return(basepath)

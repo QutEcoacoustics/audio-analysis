@@ -97,7 +97,7 @@ SS.fixedwidth <- function () {
     
     # Step 1: 
     # generate a list of minutes to use in as the target
-    CreateTargetMinutes()
+    # CreateTargetMinutes()
     
     # Step 2:
     # generate a list of 1-second segments
@@ -114,6 +114,7 @@ SS.fixedwidth <- function () {
     # Step 5
     # Cluster Segments
     ClusterEvents()
+    
     
     # Step 5.1
     # inspect clusters

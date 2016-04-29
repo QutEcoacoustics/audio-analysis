@@ -116,7 +116,7 @@ Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512,
         id <- paste0(id, "duration=",duration)
     }
     
-    split <- strsplit(path, .Platform$file.sep)
+
     basepath <- BasePath(path)
     cache.id <- paste0(basepath,id, '.spectro')
     
