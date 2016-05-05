@@ -17,6 +17,7 @@ using Acoustics.Shared;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Tools;
     using PowerArgs;
 
 
@@ -85,6 +86,77 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("FINSIHED");
                 Console.ReadLine();
                 System.Environment.Exit(0);
+            }
+
+            // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
+            if (true)  
+            {
+
+                /*
+                NOTE FROM ANTHONY:
+                there's two ways you could use this
+                a) generate a report for a file
+                b) while running another analysis, automatically switch channels
+
+                Either way, the only way this realistically works for a large number of files is by blocking them into one minute chunks
+                as always. Thus, you need tell me which mode you want and either way, i expect to see some API like this:
+                DudChannelDetector.Analyze(WavReader wavReader)
+                and 
+                DudChannelDetector.Aggregate(xxxx[] minutes) 
+                */
+
+
+                FileInfo audioFileL = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20151029_064553_Gympie_bad.2hours.LEFT.wav");
+                FileInfo audioFileR = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20151029_064553_Gympie_bad.2hours.RIGHT.wav");
+                //FileInfo audioFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20151029_064553_Gympie_bad_1MinExtractAt4h06min.wav");
+                //FileInfo audioFileL = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20151029_064553_Gympie_bad_1MinExtractAt4h06min.LEFT.wav");
+                //FileInfo audioFileR = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20151029_064553_Gympie_bad_1MinExtractAt4h06min.RIGHT.wav");
+                //FileInfo ipFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20150819_133146_gym_good_1MinExtractAt5h40min.wav");
+                //FileInfo audioFileL = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20150819_133146_gym_good_1MinExtractAt5h40min.LEFT.wav");
+                //FileInfo audioFileR = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20150819_133146_gym_good_1MinExtractAt5h40min.RIGHT.wav");
+                //FileInfo audioFileL = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20150725_064552_Gympie_bad_1MinExtractAt5h16m.LEFT.wav");
+                //FileInfo audioFileR = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20150725_064552_Gympie_bad_1MinExtractAt5h16m.RIGHT.wav");
+                //FileInfo ipFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Gympie\20150725_064552_Gympie_bad_1MinExtractAt5h16m.wav");
+                var opDirectory = new DirectoryInfo(@"C:\SensorNetworks\output\");
+
+                int targetSampleRateHz = 22050;
+                string outputMediaType = "Audio/wav";
+
+                var startOffset = TimeSpan.Zero;
+                var endOffset   = TimeSpan.FromSeconds(60);
+                var request = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz, Channel = 1 };
+                //request.opDirectory
+                //var preparedFile = AudioFilePreparer.PrepareFile(opDirectory, source, outputMediaType, request, TempFileHelper.TempDir());
+                //which could probably be simplified down to
+                //var request = new AudioUtilityRequest { Channel = 1 };
+                //var preparedFile1 = AudioFilePreparer.PrepareFile(opDirectory, audioFile, outputMediaType, request, opDirectory);
+                //for the left channel
+                //and Channel = 2 for the right channel
+
+                //request = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz, Channel = 2 };
+                //var preparedFile2 = AudioFilePreparer.PrepareFile(opDirectory, audioFile, outputMediaType, request, opDirectory);
+
+
+
+                //you'd then use wavreader on the resulting preparedFile
+                //the channel select functionality does not currently exist in AnalyzeLongRecording.   I need to add it
+                var recordingL = new AudioRecording(audioFileL);
+                var recordingR = new AudioRecording(audioFileR);
+                var samplesL = recordingL.WavReader.Samples;
+                var samplesR = recordingR.WavReader.Samples;
+                double zeroCrossingFractionL = DataTools.ZeroCrossings(samplesL) / (double)samplesL.Length;
+                double zeroCrossingFractionR = DataTools.ZeroCrossings(samplesR) / (double)samplesR.Length;
+
+                double mean1;
+                double stde1;
+                NormalDist.AverageAndSD(samplesL, out mean1, out stde1);
+                double mean2;
+                double stde2;
+                NormalDist.AverageAndSD(samplesR, out mean2, out stde2);
+                double t = Statistics.tStatistic(mean1, stde1, samplesL.Length, mean2, stde2, samplesR.Length);
+                string stats = Statistics.tStatisticAndSignificance(mean1, stde1, samplesL.Length, mean2, stde2, samplesR.Length);
+                Console.WriteLine(stats);
+
             }
 
 

@@ -418,6 +418,7 @@ namespace AnalysisPrograms
 
 
             // #################################################################
+            // GET LIST OF INDIVIDUAL SPECIES TO RECOGNISE
             // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
             // get a list of ID names of species recognisers from config file
             List<string> speciesList = new List<string>();
@@ -435,8 +436,8 @@ namespace AnalysisPrograms
                 if(recording.WavReader.Samples == null) recording = new AudioRecording(audioFile.FullName);
 
                 CallRecogniser output = CallRecogniser.DoCallRecognition(name, analysisSettings, recording, dictionaryOfSpectra);
-                if (output.ScoreTrack != null) scoreTracks.Add(output.ScoreTrack);
-                if (output.Events != null) events.AddRange(output.Events);
+                if ((output != null) && (output.ScoreTrack != null)) scoreTracks.Add(output.ScoreTrack);
+                if ((output != null) && (output.Events != null))     events.AddRange(output.Events);
             }
             Image scoreTrackImage = ImageTools.CombineImagesVertically(scoreTracks);
 
@@ -479,15 +480,17 @@ namespace AnalysisPrograms
                 double scale = 0.1;
                 TimeSpan timeScale = TimeSpan.FromSeconds(scale);
                 Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(inputDirectory, ipConfig, fileStem, scale, dictionaryOfSpectra);
-                var opImages = new List<Image>();
-                opImages.Add(ridgeSpectrogram);
-                opImages.Add(scoreTrackImage);
+                //var opImages = new List<Image>();
+                //opImages.Add(ridgeSpectrogram);
+                //opImages.Add(scoreTrackImage);
                 // combine and save
-                Image opImage = ImageTools.CombineImagesVertically(opImages);
+                //Image opImage = ImageTools.CombineImagesVertically(opImages);
                 string fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".Ridges.png");
-                opImage.Save(fileName);
+                //opImage.Save(fileName);
+                ridgeSpectrogram.Save(fileName);
 
                 // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
+                Image opImage = null;
                 bool saveGrayScaleSpectrograms = (bool?)analysisSettings.Configuration["SaveGrayScaleSpectrograms"] ?? false;
                 if (saveGrayScaleSpectrograms)
                 {
@@ -501,6 +504,10 @@ namespace AnalysisPrograms
                 if (saveTwoMapsSpectrograms)
                 {                    
                     opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(fileStem, timeScale, LDFCSpectrogramArguments.IndexPropertiesConfig, dictionaryOfSpectra);
+                    var opImages = new List<Image>();
+                    opImages.Add(opImage);
+                    opImages.Add(scoreTrackImage);
+                    opImage = ImageTools.CombineImagesVertically(opImages);
                     fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".TwoMaps.png");
                     opImage.Save(fileName);
                 }

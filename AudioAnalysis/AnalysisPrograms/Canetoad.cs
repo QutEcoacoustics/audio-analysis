@@ -481,7 +481,10 @@ namespace AnalysisPrograms
                         if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
                         { ae.Name = "ReleaseCall";
                             if (ae.Score < (eventThreshold + 0.3))
-                            { ae.Name = "Short Oscil"; }
+                            {
+                                ae.Name = "Short Oscil";
+                                //events.Remove(ae);
+                            }
                         }
 
                         // remove release call if its score is too low.
