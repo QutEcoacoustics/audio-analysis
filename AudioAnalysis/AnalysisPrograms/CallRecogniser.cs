@@ -49,6 +49,7 @@ namespace AnalysisPrograms
             }
             else if (name == "Litoria_fallax")
             {
+                return null;
                 var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Litoria_fallax.yml");
                 Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
                 Canetoad.CanetoadResults results = Canetoad.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
@@ -57,12 +58,7 @@ namespace AnalysisPrograms
             }
             else
             {
-                //scores = new double[6000];
-                //for(int i= 0; i < 6000; i++) scores[i] = i / (double)6000.0;
-                //RandomNumber rn = new RandomNumber();
-                //for (int i = 0; i < 6000; i++) scores[i] = rn.GetDouble();
-                recogniser.ScoreTrack = null;
-                recogniser.Events = null;
+                return null;
             }
 
             recogniser.ScoreTrack = GenerateScoreTrackImage(name, scores, imageWidth);
@@ -84,7 +80,7 @@ namespace AnalysisPrograms
             }
 
             int trackHeight = 20;
-            Brush brush = Brushes.Blue;
+            Brush brush = Brushes.Red;
             Color[] color = { Color.Blue, Color.LightGreen, Color.Red, Color.Orange, Color.Purple };
             Font stringFont = new Font("Tahoma", 8);
             //Font stringFont = new Font("Arial", 6);
