@@ -455,73 +455,86 @@ namespace AnalysisPrograms
             // PRODUCE Hi-RESOLUTION SPECTROGRAM IMAGES 
             // Instead of saving the standard spectrogram images, in this analysis we save the Hi-Res Indices spectrogram images.
             FileInfo ipConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
+            double defaultScale = 0.1;
+            double? hiResScale = (double?)analysisSettings.Configuration["IndexCalculationDuration"] ?? defaultScale;
+            TimeSpan hiResTimeScale = TimeSpan.FromSeconds((double)hiResScale);
+
+            // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
+            var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+            {
+                InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+                OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages"),
+                SpectrogramConfigPath = acousticIndicesParsedConfiguration.SpectrogramConfigFile,
+                IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
+                ColourMap1 = "BGN-POW-EVN",
+                ColourMap2 = "PHN-RVT-SPT", //PHN is new derived index
+                //ColourMap2 = "RHZ-RPS-RNG",
+                                
+                TemporalScale = hiResTimeScale,
+            };
+            // Create output directory if it does not exist
+            if (!LDFCSpectrogramArguments.OutputDirectory.Exists)
+            {
+                LDFCSpectrogramArguments.OutputDirectory.Create();
+            }
+
+            string fileName = null;
+            string fileStem = recording.FileName;
 
             bool saveRidgeSpectrograms = (bool?)analysisSettings.Configuration["SaveRidgeSpectrograms"] ?? false;
             if (saveRidgeSpectrograms)
             {
-                // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
-                var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
-                {
-                    InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
-                    OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages"),
-                    SpectrogramConfigPath = acousticIndicesParsedConfiguration.SpectrogramConfigFile,
-                    IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
-                };
-
-                // Create directory if not exists
-                if (!LDFCSpectrogramArguments.OutputDirectory.Exists)
-                {
-                    LDFCSpectrogramArguments.OutputDirectory.Create();
-                }
-
                 // 1: DRAW the coloured ridge spectrograms 
                 DirectoryInfo inputDirectory = LDFCSpectrogramArguments.InputDataDirectory;
-                string fileStem = recording.FileName;
-                double scale = 0.1;
-                TimeSpan timeScale = TimeSpan.FromSeconds(scale);
-                Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(inputDirectory, ipConfig, fileStem, scale, dictionaryOfSpectra);
+                Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(inputDirectory, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
                 //var opImages = new List<Image>();
                 //opImages.Add(ridgeSpectrogram);
                 //opImages.Add(scoreTrackImage);
                 // combine and save
                 //Image opImage = ImageTools.CombineImagesVertically(opImages);
-                string fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".Ridges.png");
+                fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".Ridges.png");
                 //opImage.Save(fileName);
                 ridgeSpectrogram.Save(fileName);
+            } // if (saveRidgeSpectrograms)
 
-                // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
-                Image opImage = null;
-                bool saveGrayScaleSpectrograms = (bool?)analysisSettings.Configuration["SaveGrayScaleSpectrograms"] ?? false;
-                if (saveGrayScaleSpectrograms)
-                {
-                    opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(LDFCSpectrogramArguments, fileStem, timeScale, dictionaryOfSpectra);
-                    fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
-                    opImage.Save(fileName);
-                }
+            // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
+            Image opImage = null;
+            bool saveGrayScaleSpectrograms = (bool?)analysisSettings.Configuration["SaveGrayScaleSpectrograms"] ?? false;
+            if (saveGrayScaleSpectrograms)
+            {
+                opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(LDFCSpectrogramArguments, fileStem, hiResTimeScale, dictionaryOfSpectra);
+                fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
+                opImage.Save(fileName);
+            }
 
-                // 3. DRAW False-colour Spectrograms
-                bool saveTwoMapsSpectrograms = (bool?)analysisSettings.Configuration["SaveTwoMapsSpectrograms"] ?? false;
-                if (saveTwoMapsSpectrograms)
-                {                    
-                    opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(fileStem, timeScale, LDFCSpectrogramArguments.IndexPropertiesConfig, dictionaryOfSpectra);
-                    var opImages = new List<Image>();
-                    opImages.Add(opImage);
-                    opImages.Add(scoreTrackImage);
-                    opImage = ImageTools.CombineImagesVertically(opImages);
-                    fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".TwoMaps.png");
-                    opImage.Save(fileName);
-                }
+            // 3. DRAW False-colour Spectrograms
+            bool saveTwoMapsSpectrograms = (bool?)analysisSettings.Configuration["SaveTwoMapsSpectrograms"] ?? false;
+            if (saveTwoMapsSpectrograms)
+            {                    
+                opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(LDFCSpectrogramArguments, fileStem, dictionaryOfSpectra);
+                var opImages = new List<Image>();
+                opImages.Add(opImage);
+                opImages.Add(scoreTrackImage);
+                opImage = ImageTools.CombineImagesVertically(opImages);
+                fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".TwoMaps.png");
+                opImage.Save(fileName);
+            }
 
-                // 4. Following two lines used to be used to save the standard spectrogram images
+            // 4. Following two lines used to be used to save the standard spectrogram images
+            bool saveSonogramImages = (bool?)analysisSettings.Configuration["SaveSonogramImages"] ?? false;
+            if (saveSonogramImages)
+            {
                 //    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
                 //    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
-            } // if (saveRidgeSpectrograms)
+                LoggedConsole.WriteErrorLine("WARNING: STANDARD SPECTRGRAMS ARE NOT SAVED IN THIS TASK.");
+            }
 
 
             // #################################################################
             // NOW COMPRESS THE HI-RESOLUTION SPECTRAL INDICES TO LOW RES
-            TimeSpan imageScale = TimeSpan.FromSeconds(60);
-            TimeSpan dataScale = TimeSpan.FromSeconds(0.1);
+            double? lowResolution = (double?)analysisSettings.Configuration["LowResolution"] ?? 60.0;
+            TimeSpan imageScale = TimeSpan.FromSeconds((double)lowResolution);
+            TimeSpan dataScale = hiResTimeScale;
             var spectralSelection = IndexMatrices.CompressIndexSpectrograms(dictionaryOfSpectra, imageScale, dataScale);
             // check that have not compressed matrices to zero length
             double[,] matrix = spectralSelection.First().Value;
@@ -536,9 +549,10 @@ namespace AnalysisPrograms
             int windowLength   = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
             int spectrumLength = windowLength / 2;
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
-            var spectralIndexValues = new SpectralIndexValues(spectrumLength, indexProperties);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
 
+            // Init a new spectral indices class and populate it with spectral indices
+            var spectralIndexValues = new SpectralIndexValues(spectrumLength, indexProperties);
             // I am sure there is a better way to do this but I can't figure it out!
             spectralIndexValues.BGN = MatrixTools.GetColumn(spectralSelection["BGN"], 0);
             spectralIndexValues.POW = MatrixTools.GetColumn(spectralSelection["POW"], 0);
@@ -562,13 +576,13 @@ namespace AnalysisPrograms
             analysisResults.SpectralIndices = siv;
 
             //TODO TODO TODO
-            // need to same thing for analysisResults.SummaryIndices
+            // ALSO NEED TO COMPRESS THE analysisResults.SummaryIndices To LOW RESOLUTION
             var summaryIndexValues = new SummaryIndexValues();
             //summaryIndexValues.BackgroundNoise = ETC;
             // ETC
-            //var sumiv = new SummaryIndexValues[1];
-            //sumiv[0] = summaryIndexValues;
-            //analysisResults.SummaryIndices = sumiv;
+            //var summaryiv = new SummaryIndexValues[1];
+            //summaryiv[0] = summaryIndexValues;
+            //analysisResults.SummaryIndices = summaryiv;
 
 
 

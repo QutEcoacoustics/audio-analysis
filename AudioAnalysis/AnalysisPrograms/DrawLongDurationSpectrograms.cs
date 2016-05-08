@@ -65,6 +65,13 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".yml")]
             //[ArgPosition(1)]
             public FileInfo SpectrogramConfigPath { get; set; }
+
+            public string ColourMap1 { get; set; }
+            public string ColourMap2 { get; set; }
+
+            public TimeSpan TemporalScale { get; set; }
+
+
         }
 
         /// <summary>
@@ -320,31 +327,47 @@ namespace AnalysisPrograms
             return combinedImage;
         } // method DrawGrayScaleSpectrograms()
 
+
+        public static Image DrawFalseColourSpectrograms(DrawLongDurationSpectrograms.Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
+        {
+            //DirectoryInfo inputDirectory = args.InputDataDirectory;
+            FileInfo indexPropertiesConfig = args.IndexPropertiesConfig;
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
+        }
+
+        /// <summary>
+        /// Draws two false colour spectrograms using a default set of arguments
+        /// </summary>
+        /// <param name="fileStem"></param>
+        /// <param name="dataScale"></param>
+        /// <param name="indexPropertiesConfig"></param>
+        /// <param name="spectra"></param>
+        /// <returns></returns>
         public static Image DrawFalseColourSpectrograms(string fileStem, TimeSpan dataScale, FileInfo indexPropertiesConfig, Dictionary<string, double[,]> spectra = null)
         {
-            string newKey = "PHN";
-            if (!spectra.ContainsKey(newKey))
-            {
-                // create a composite index from three related indices - take the max
-                // Assume that the values are comparable so that max is meaningful.
-                double[,] phnIndex = CreateNewCompositeIndex(spectra, "RHZ-RPS-RNG");
-                // Name the index PHN because it is composite of Positive, Horiz and Negative ridge values.
-                spectra.Add(newKey, phnIndex);
-            }
-
             // read in index properties and create a new entry for "PHN"
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-            if (!indexProperties.ContainsKey(newKey))
-            {
-                IndexProperties phnProperties = new IndexProperties();
-                phnProperties.Key = newKey;
-                phnProperties.Name = newKey;
-                phnProperties.NormMin = 2.0;
-                phnProperties.NormMax = 10.0;
-                phnProperties.CalculateNormMin = false;
-                phnProperties.CalculateNormMax = false;
-                indexProperties.Add(newKey, phnProperties);
-            }
+
+            DrawLongDurationSpectrograms.Arguments args = new DrawLongDurationSpectrograms.Arguments();
+            //args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+            //args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
+            args.SpectrogramConfigPath = null;
+            args.IndexPropertiesConfig = indexPropertiesConfig;
+            args.ColourMap1 = "ACI-ENT-EVN";
+            args.ColourMap2 = "BGN-POW-EVN";
+            args.TemporalScale = dataScale;
+
+            return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
+        }
+
+
+
+        public static Image DrawFalseColourSpectrograms(DrawLongDurationSpectrograms.Arguments args, string fileStem,
+                                                        Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
+        {
+            // create new spectral index "PHN" if it does not exist.
+            DrawLongDurationSpectrograms.CreatePhnIndex(indexProperties, spectra);
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time framesDictionary<string, Int16>.KeyCollection keys = AuthorList.Keys
             string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');
@@ -354,11 +377,11 @@ namespace AnalysisPrograms
             int frameWidth = 512;
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
             var minuteOffset = TimeSpan.Zero;
-            var xScale = dataScale;
+            var dataScale = args.TemporalScale;
             string colourMode = "NEGATIVE";
-            string colourMap = "BGN-POW-EVN";
+            string colourMap = args.ColourMap1 ?? "BGN-POW-EVN";
             bool withChrome = true;
-            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colourMap);
+            var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colourMap);
             cs1.FileName = fileStem;
             cs1.BackgroundFilter = backgroundFilter;
             cs1.IndexCalculationDuration = dataScale;
@@ -373,7 +396,7 @@ namespace AnalysisPrograms
             int trackHeight = 20;
             Bitmap timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
-            colourMap = "PHN-RVT-SPT";
+            colourMap = args.ColourMap2 ?? "PHN-RVT-SPT";
             Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
             var list = new List<Image>();
             list.Add(titleImage);
@@ -504,6 +527,33 @@ namespace AnalysisPrograms
             return ridges;
         } // method DrawRidgeSpectrograms()
 
+
+
+        public static void CreatePhnIndex(Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra)
+        {
+            string newKey = "PHN";
+            if (!spectra.ContainsKey(newKey))
+            {
+                // create a composite index from three related indices - take the max
+                // Assume that the values are comparable so that max is meaningful.
+                double[,] phnIndex = CreateNewCompositeIndex(spectra, "RHZ-RPS-RNG");
+                // Name the index PHN because it is composite of Positive, Horiz and Negative ridge values.
+                spectra.Add(newKey, phnIndex);
+            }
+
+
+            if (!indexProperties.ContainsKey(newKey))
+            {
+                IndexProperties phnProperties = new IndexProperties();
+                phnProperties.Key = newKey;
+                phnProperties.Name = newKey;
+                phnProperties.NormMin = 2.0;
+                phnProperties.NormMax = 10.0;
+                phnProperties.CalculateNormMin = false;
+                phnProperties.CalculateNormMax = false;
+                indexProperties.Add(newKey, phnProperties);
+            }
+        }
 
         public static double[,] CreateNewCompositeIndex(Dictionary<string, double[,]> spectra, string sourceFeatures)
         {
