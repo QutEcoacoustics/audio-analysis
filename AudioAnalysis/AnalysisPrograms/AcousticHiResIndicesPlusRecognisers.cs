@@ -419,16 +419,11 @@ namespace AnalysisPrograms
 
             // #################################################################
             // GET LIST OF INDIVIDUAL SPECIES TO RECOGNISE
-            // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-            // get a list of ID names of species recognisers from config file
-            List<string> speciesList = new List<string>();
-            speciesList.Add("Bufo_marinus");
-            speciesList.Add("Phascolarctos_cinereus");
-            speciesList.Add("Litoria_fallax");
-
-            // Loop through recognisers and accumulate the output
+            // Get list of ID names from config file
+            List<string> speciesList = analysisSettings.Configuration["SpeciesList"] ?? null;
             var scoreTracks = new List<Image>();
             var events = new List<AcousticEvent>();
+            // Loop through recognisers and accumulate the output
             foreach (string name in speciesList)
             {
                 // ########################### TODO SHOULD NOT NEED THE NEXT LINE #######################
