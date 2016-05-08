@@ -23,6 +23,7 @@ for(c in 1:length(ref)) {
   data[27,ref] <- " 4"
 }
 
+
 #View(data)
 ############################
 # occupancy matrix
@@ -57,10 +58,10 @@ library(gridExtra)
 i=2
 site <- data[1,i]
 site
-# Caution must be taken here to choose a day that has a complete
-# list of clusters ie. Day 2 because this sets the layout for the
+# CAUTION must be taken here to choose a day that has a complete
+# list of clusters because this sets the layout for the
 # number of points in the network graph and this must equal the
-# maximum number of clusters
+# maximum number of clusters in order to be suitable for all plots
 A <- unname(data[2:(length(data[,1])-1),i])
 B <- unname(data[3:length(data[,1]), i])
 g1 <- data.frame(A=A,B=B)
@@ -1118,76 +1119,32 @@ ymin <- 0
 ymax <- 1440
 asratio = (ymax-ymin)/(xmax-xmin)
 cols <- c(
-  '0' = "#F2F2F2FF",
-  '1' = "#00B917",
-  '2' = "#788231",
-  '3' = "#FF0000",
-  '4' = "#01FFFE",
-  '5' = "#FE8900",
-  '6' = "#006401",
-  '7' = "#FFDB66",
-  '8' = "#010067",
-  '9' = "#95003A",
-  '10' = "#007DB5",
-  '11' = "#BE9970",
-  '12' = "#774D00",
-  '13' = "#90FB92",
-  '14' = "#0076FF",
-  '15' = "#FF937E",
-  '16' = "#6A826C",
-  '17' = "#FF029D",
-  '18' = "#0000FF",
-  '19' = "#7A4782",
-  '20' = "#7E2DD2",
-  '21' = "#0E4CA1",
-  '22' = "#FFA6FE",
-  '23' = "#A42400",
-  '24' = "#00AE7E",
-  '25' = "#BB8800",
-  '26' = "#BE9970",
-  '27' = "#263400",
-  '28' = "#C28C9F",
-  '29' = "#FF74A3",
-  '30' = "#01D0FF",
-  "31" = "#6B6882",
-  '32' = "#E56FFE",
-  '33' = "#85A900",
-  '34' = "#968AE8",
-  '35' = "#43002C",
-  '36' = "#DEFF74",
-  '37' = "#00FFC6",
-  '38' = "#FFE502",
-  '39' = "#620E00",
-  '40' = "#008F9C",
-  '41' = "#98FF52",
-  '42' = "#7544B1",
-  '43' = "#B500FF",
-  '44' = "#00FF78",
-  '45' = "#FF6E41",
-  '46' = "#005F39",
-  '47' = "#004754",
-  '48' = "#5FAD4E",
-  '49' = "#A75740",
-  '50' = "#A5FFD2",
-  '51' = "#FFB167",
-  '52' = "#009BFF")
+  '0' = "#F2F2F2FF", '1' = "#00B917", '2' = "#788231",   '3' = "#FF0000",
+  '4' = "#01FFFE",   '5' = "#FE8900", '6' = "#006401",   '7' = "#FFDB66",
+  '8' = "#010067",   '9' = "#95003A", '10' = "#007DB5", '11' = "#BE9970",
+  '12' = "#774D00", '13' = "#90FB92", '14' = "#0076FF", '15' = "#FF937E",
+  '16' = "#6A826C", '17' = "#FF029D", '18' = "#0000FF", '19' = "#7A4782",
+  '20' = "#7E2DD2", '21' = "#0E4CA1", '22' = "#FFA6FE", '23' = "#A42400",
+  '24' = "#00AE7E", '25' = "#BB8800", '26' = "#BE9970", '27' = "#263400",
+  '28' = "#C28C9F", '29' = "#FF74A3", '30' = "#01D0FF", "31" = "#6B6882",
+  '32' = "#E56FFE", '33' = "#85A900", '34' = "#968AE8", '35' = "#43002C",
+  '36' = "#DEFF74", '37' = "#00FFC6", '38' = "#FFE502", '39' = "#620E00",
+  '40' = "#008F9C", '41' = "#98FF52", '42' = "#7544B1", '43' = "#B500FF",
+  '44' = "#00FF78", '45' = "#FF6E41", '46' = "#005F39", '47' = "#004754",
+  '48' = "#5FAD4E", '49' = "#A75740", '50' = "#A5FFD2", '51' = "#FFB167",
+  '52' = "#009BFF", '53' = "#91D0CB") 
 
-#,,,,
-#,,,,
-#,,,,"#91D0CB"
-#,,,,
-#,,,,
-#,,,,
-#,,
-for(day.ref in 1:222) {
-  data <- g_c_30[2:1441,day.ref]
+min <- 1440 # should be 1440 in most cases
+num_clus <- 30
+for(day.ref in 1:12) {
+  data1 <- g_c_30[2:(min+1),day.ref]
   #r <- raster(xmn = 0, xmx = 1440, ymn = 0, ymx =1440, 
   #            nrows =1440, ncols = 1440, crs=NA)
-  t <- rep(0,(1440*1440))
-  for (i in 1:1440) { 
-    for (j in 1:1440) {  
-      if(data[i]==data[j]) { 
-        t[((i-1)*1440)+j] <- data[i]
+  t <- rep(0,(min*min))
+  for (i in 1:min) { 
+    for (j in 1:min) {  
+      if(data1[i]==data1[j]) { 
+        t[((i-1)*min)+j] <- data1[i]
       }
     }
   }
@@ -1202,11 +1159,9 @@ for(day.ref in 1:222) {
   #t <- t[length(t):1]
   library(graphics)
   t <- as.numeric(t)
-  t1 <- matrix(t, nrow = 1440, byrow = T)
+  #t1 <- matrix(t, nrow = min, byrow = T)
   #r[] <- t
-  png(paste("colour_dot_plot", date1[day.ref],".png"),
-      width=1658, height=ceiling(1658*asratio), 
-      units = "px")
+  png(paste("colour_dot_plot", date1[day.ref],".png"), width=(min+218), height=ceiling((min+218)*asratio), units = "px")
   #colours <- c("#F2F2F2FF","#00FF00","#001544","#FF0000",
   #             "#01FFFE","#FE8900","#006401","#FFDB66",
   #             "#010067","#95003A","#007DB5","#9E008E",
@@ -1217,12 +1172,12 @@ for(day.ref in 1:222) {
   #             "#C28C9F","#00B917","#FFA6FE")
                
   par(cex=1, oma=c(3,3,3,3))
-  score <- matrix(data = t, nrow=1440, ncol=1440)
-  score1 <- matrix(data = t, nrow=1440, ncol=1440, byrow = T)
+  score <- matrix(data = t, nrow=min, ncol=min)
+  score1 <- matrix(data = t, nrow=min, ncol=min, byrow = T)
   image.plot(1:nrow(score1), 1:ncol(score1), 
-        score1, col=cols[1:31], axes=FALSE,
-        ann=F, xaxt="n",legend.shrink = 0.5,
-        yaxt="n", asp=1)
+        score1, col=cols[1:(num_clus+1)], axes=FALSE,
+        ann=F, xaxt="n",legend.shrink = 0.45,
+        yaxt="n", asp=1, legend.cex=2, pty="s")
   #legend(1445, 980, legend = 1:30, fill = cols[2:31], bty = "n")
   title(paste(date1[day.ref]), cex.main=3)
   #plot basemap
@@ -1246,19 +1201,19 @@ for(day.ref in 1:222) {
   axis(1, line = -5.5, at = at, #line=NA,
        labels = c("2","4","6","8","10","12","14","16","18","20",
        "22", "24"), cex.axis=2.1, outer = TRUE,
-       las=T)
+       las=T, pos = NA)
   at <- seq(0, 1440, by = 10)
   axis(1, line = -5.5, at = at, tick = TRUE,
        labels = FALSE, outer=TRUE)
-  abline (v=seq(120,1440,120), h=seq(120,1440,120), 
+  abline (v=seq(120,min,120), h=seq(120,min,120), 
           lty=2, lwd=0.1, xpd=FALSE)
   at <- seq(0, 1440, by = 120)
-  axis(2, line = 0, at = at, 
+  axis(2, line = 0.01, at = at, 
        labels = c("0","2","4","6","8","10",
                   "12","14","16","18","20",
        "22", "24"), cex.axis=2.1, las=T, pos=NA)
   at <- seq(0, 1440, by = 10)
-  axis(2, line = 0, at = at, tick = TRUE,
+  axis(2, line = 0.01, at = at, tick = TRUE,
        labels = FALSE, pos=NA)
   par(usr=c(xmin,xmax,ymin,ymax))
   
@@ -1267,7 +1222,111 @@ for(day.ref in 1:222) {
 library(munsell)
 plot_hex(cols) #this plots the colours
 ##############################################
-#library(raster)
+library(fields);   library(graphics)
+setwd("C:\\Work\\CSV files\\FourMonths_repeat\\Dot_matrix_plot\\")
+xmin <- 0
+xmax <- 1440
+ymin <- 0
+ymax <- 1440
+asratio = (ymax-ymin)/(xmax-xmin)
+cols <- c(
+  '0' = "#F2F2F2FF", '1' = "#00B917", '2' = "#788231",   '3' = "#FF0000",
+  '4' = "#01FFFE",   '5' = "#FE8900", '6' = "#006401",   '7' = "#FFDB66",
+  '8' = "#010067",   '9' = "#95003A", '10' = "#007DB5", '11' = "#BE9970",
+  '12' = "#774D00", '13' = "#90FB92", '14' = "#0076FF", '15' = "#FF937E",
+  '16' = "#6A826C", '17' = "#FF029D", '18' = "#0000FF", '19' = "#7A4782",
+  '20' = "#7E2DD2", '21' = "#0E4CA1", '22' = "#FFA6FE", '23' = "#A42400",
+  '24' = "#00AE7E", '25' = "#BB8800", '26' = "#BE9970", '27' = "#263400",
+  '28' = "#C28C9F", '29' = "#FF74A3", '30' = "#01D0FF", "31" = "#6B6882",
+  '32' = "#E56FFE", '33' = "#85A900", '34' = "#968AE8", '35' = "#43002C",
+  '36' = "#DEFF74", '37' = "#00FFC6", '38' = "#FFE502", '39' = "#620E00",
+  '40' = "#008F9C", '41' = "#98FF52", '42' = "#7544B1", '43' = "#B500FF",
+  '44' = "#00FF78", '45' = "#FF6E41", '46' = "#005F39", '47' = "#004754",
+  '48' = "#5FAD4E", '49' = "#A75740", '50' = "#A5FFD2", '51' = "#FFB167",
+  '52' = "#009BFF", '53' = "#91D0CB") 
+
+min <- 1435 # should be 1440 in most cases
+data <- data 
+date1 <- data[1,1:12]
+num_clus <- 27
+for(day.ref in 12:12) {
+  data1 <- data[2:(min+1),day.ref]
+  #r <- raster(xmn = 0, xmx = 1440, ymn = 0, ymx =1440, 
+  #            nrows =1440, ncols = 1440, crs=NA)
+  t <- rep(0,(min*min))
+  for (i in 1:min) { 
+    for (j in 1:min) {  
+      if(data1[i]==data1[j]) { 
+        t[((i-1)*min)+j] <- data1[i]
+      }
+    }
+  }
+
+  t <- as.numeric(t)
+  #t1 <- matrix(t, nrow = min, byrow = T)
+  #r[] <- t
+  png(paste("colour_dot_plot2", date1[day.ref],".png"), 
+      width=1666, 
+      height=ceiling(1666*asratio), units = "px")
+  #colours <- c("#F2F2F2FF","#00FF00","#001544","#FF0000",
+  #             "#01FFFE","#FE8900","#006401","#FFDB66",
+  #             "#010067","#95003A","#007DB5","#9E008E",
+  #             "#774D00","#90FB92","#0076FF","#FF937E",
+  #             "#6A826C","#FF029D","#0000FF","#7A4782",
+  #             "#7E2DD2","#85A900","#FF0056","#A42400",
+  #             "#00AE7E","#683D3B", "#004754","#263400",
+  #             "#C28C9F","#00B917","#FFA6FE")
+  
+  par(cex=1, oma=c(3,3,3,3))
+  score <- matrix(data = t, nrow=min, ncol=min)
+  score1 <- matrix(data = t, nrow=min, ncol=min, byrow = T)
+  image.plot(1:nrow(score1), 1:ncol(score1), 
+             score1, col=cols[1:(num_clus+1)], axes=FALSE,
+             ann=F, xaxt="n", legend.shrink = 0.48,
+             yaxt="n", asp=1, pty="s")
+  title(paste(date1[day.ref]), cex.main=3)
+  #plot basemap
+  
+  #plot(r,xlim=c(xmin,xmax), 
+  #     ylim=c(ymin,ymax), asp=1, xaxs="i", 
+  #     yaxs="i", box=FALSE,
+  #     main=paste(date1[day.ref],date[day.ref], sep = "  "), 
+  #     xaxt="n", yaxt="n", frame.plot=F, useRaster=F, 
+  #     las=T, axes=FALSE, cex.main=3,
+  #     col=colours)
+  #c("#F2F2F2FF", "#E3A931", "#9976DF", "#57CB40",
+  #     "#DC6BDF", "#AFC632", "#6080DB", "#7CCFED", 
+  #     "#C73C59", "#D83C42","#51C587", "#D84195",
+  #     "#68AA41", "#B151A7", "#ACA437", "#CA93D7",
+  #     "#5D7725", "#E23572", "#3A8556", "#44BAC5",
+  #     "#72A2DA", "#DA7F2F", "#407697", "#E67456", 
+  #      "#7C6CA5", "#966E22", "#DE7AB0", "#A85739",
+  #     "#945684", "#E57383", '#FFB6C1'))
+  at <- seq(120, 1440, by = 120)
+  axis(1, line = -5.5, at = at, #line=NA,
+       labels = c("2","4","6","8","10","12","14","16","18","20",
+                  "22", "24"), cex.axis=2.1, outer = TRUE,
+       las=T, pos = NA)
+  at <- seq(0, 1440, by = 10)
+  axis(1, line = -5.5, at = at, tick = TRUE,
+       labels = FALSE, outer=TRUE)
+  abline (v=seq(120, 1440, 120), h=seq(120, min, 120), 
+          lty=2, lwd=0.1, xpd=FALSE)
+  at <- seq(0, 1440, by = 120)
+  axis(2, line = .05, at = at, 
+       labels = c("0","2","4","6","8","10",
+                  "12","14","16","18","20",
+                  "22","24"), cex.axis=2.1, las=T, pos = NA)
+  at <- seq(0, 1440, by = 10)
+  axis(2, line = 0.05, at = at, tick = TRUE,
+       labels = FALSE)
+  par(usr=c(xmin, xmax, ymin, ymax))
+  dev.off()
+}
+library(munsell)
+plot_hex(cols) #this plots the colours
+
+##############################################
 colours <- c("#F2F2F2FF","#00FF00","#001544","#FF0000",
              "#01FFFE","#FE8900","#006401","#FFDB66",
              "#010067","#95003A","#007DB5","#9E008E",
@@ -1307,19 +1366,20 @@ for(day.ref in 12:12) {
   t <- as.numeric(t)
   r[] <- t
   png(paste("colour4_dot_matrix_plot", data1[1,day.ref],".png"),
-      width=1480, height=ceiling(1480*asratio))
+      width=1658, height=ceiling(1658*asratio))
   
   #plot basemap
   par(cex=1, oma=c(3,3,3,3))
-  score <- matrix(data = t, nrow=1440, ncol=1440)
-  score1 <- matrix(data = t, nrow=1440, ncol=1440, byrow = T)
+  score <- matrix(data = t, nrow=min, ncol=min)
+  score1 <- matrix(data = t, nrow=min, ncol=min, byrow = T)
   r <- raster(score)
   plot(r,xlim=c(xmin,xmax), ylim=c(ymin,ymax),
          asp=1,xaxs="i",yaxs="i", box=FALSE,
        main=paste(data1[1,day.ref], sep = "  "), 
        xaxt="n", yaxt="n", frame.plot=F,
        useRaster=T, las=T, axes=FALSE, cex.main=3,
-       col=colours[1:28], at <- seq(120, 1440, by = 120))
+       col=colours[1:28], at <- seq(120, min, by = 120))
+  at <- seq(0, 1440, by = 120)
   labels <- c("2","4","6","8","10","12",
               "14","16","18","20","22","24")
   axis(1, line = -129, at = at, labels = labels, 
@@ -1327,7 +1387,7 @@ for(day.ref in 12:12) {
   at <- seq(0, 1440, by = 10)
   axis(1, line = -129, at = at, tick = TRUE,
        labels = FALSE, outer=TRUE)
-  abline (v=seq(0,1440,120), h=seq(0,1440,120), 
+  abline (v=seq(0,1440,120), h=seq(0,min,120), 
           lty=2, lwd=0.2)
   at <- seq(0, 1440, by = 120)
   labels <- c("24","22","20","18","16","14",
