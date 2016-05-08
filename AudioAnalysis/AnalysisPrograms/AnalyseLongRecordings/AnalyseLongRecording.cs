@@ -334,6 +334,7 @@ Output  to  directory: {1}
 
                     // set time scale for drawing of spectral images
                     TimeSpan spectrogramScale = TimeSpan.FromSeconds(60.0);
+                    // Draw two false-colour spectrograms (2maps.png) using two default colour maps
                     Image combinedImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(basename, spectrogramScale, indicesPropertiesConfig, spectra);
                     var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "TwoMaps", ImagefileExt);
                     combinedImage.Save(imagePath);
