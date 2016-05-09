@@ -241,6 +241,7 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="BirdClefExperiment1.cs" />
+    <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />
