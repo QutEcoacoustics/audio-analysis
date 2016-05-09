@@ -630,6 +630,14 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(destination, lines);
         }
 
+/*
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            Csv.WriteToCsv(destination, results);
+        }
+
+*/
+
         public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
             Csv.WriteToCsv(destination, results);
