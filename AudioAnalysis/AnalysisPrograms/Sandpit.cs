@@ -89,7 +89,7 @@ namespace AnalysisPrograms
             }
 
             // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
-            if (true)  
+            if (false)  
             {
 
                 /*
@@ -424,7 +424,7 @@ namespace AnalysisPrograms
             }
 
             // Concatenate two images but add labels for EcoCongress.
-            if (true)  // 
+            if (false)  // 
             {
                 //var imageDirectory = new DirectoryInfo(@"H:\Documents\SensorNetworks\MyPapers\2016_QMUL_SchoolMagazine");
                 //string fileName1 = @"TNC_Musiamunat_20150702_BAR10__ACI-ENT-EVNCropped.png";
@@ -508,47 +508,12 @@ namespace AnalysisPrograms
 
 
 
+
+
             // Concatenate images for Karl-Heinz Frommolt
-            if (false)  // 
+            if (true)  // 
             {
-                string parentDir = @"C:\SensorNetworks\Output\Frommolt";
-                DirectoryInfo dataDir = new DirectoryInfo(parentDir + @"\AnalysisOutput\mono");
-                var imageDirectory = new DirectoryInfo(parentDir + @"\ConcatImageOutput");
-
-                //string indexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigHiRes.yml";
-
-                string channel = "channel_0";
-                //string dirMatch = "Monitoring_Rosin_2012*T*+0200_.merged.wav.channel_0.wav"; 
-                string dirMatch = "Monitoring_Rosin_2012*T220000+0200_.merged.wav.channel_0.wav"; 
-                 DirectoryInfo[] subDirectories = dataDir.GetDirectories(dirMatch, SearchOption.AllDirectories);
-
-                //string fileMatch = @"*__ACI-ENT-EVN.png";
-                string fileMatch = @"*__2Maps.png";
-
-                var imageList = new List<Image>();
-
-                FileInfo[] imageFiles = subDirectories[10].GetFiles(fileMatch, SearchOption.AllDirectories);
-                Image image = Bitmap.FromFile(imageFiles[0].FullName);
-
-                int width = 1;
-                int height = image.Height;
-                Bitmap spacerImage = new Bitmap(width, height);
-                Graphics g = Graphics.FromImage(spacerImage);
-                g.Clear(Color.DarkGray);
-
-
-                for (int d= 0; d < subDirectories.Length; d++)
-                {
-                    imageFiles = subDirectories[d].GetFiles(fileMatch, SearchOption.AllDirectories);
-
-                    image = Bitmap.FromFile(imageFiles[0].FullName);
-                    imageList.Add(image);
-                    imageList.Add(spacerImage);
-                }
-
-                Image combinedImage = ImageTools.CombineImagesInLine(imageList);
-                string fileName = String.Format(channel+".png");
-                combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
+                FrommoltProject.ConcatenateDays();
             }
 
 
