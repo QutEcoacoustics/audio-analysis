@@ -525,9 +525,11 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Invalid formats are: wv (audio/x-wv).");
+
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails["Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv"];
+
         }
 
         [TestMethod]
