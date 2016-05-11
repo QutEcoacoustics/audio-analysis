@@ -505,7 +505,28 @@
                     return null;
                 }
 
-                throw new FormatException(string.Format("Failed parsing '{0}' to get {1}.", text, propertyName));
+                throw new FormatException($"Failed parsing '{text}' to get {propertyName}.");
+            }
+
+            return parsed;
+        }
+
+        protected long? ParseLongStringWithException(string text, string propertyName, IEnumerable<string> expectedNonNumeric = null)
+        {
+            long parsed = 0;
+            if (!long.TryParse(text, out parsed))
+            {
+                if (expectedNonNumeric != null && expectedNonNumeric.Contains(text))
+                {
+                    if (this.Log.IsDebugEnabled)
+                    {
+                        this.Log.DebugFormat("Property '{0}' value '{1}' was found in '{2}', returning null.",
+                            propertyName, text, string.Join(", ", expectedNonNumeric));
+                    }
+                    return null;
+                }
+
+                throw new FormatException($"Failed parsing '{text}' to get {propertyName}.");
             }
 
             return parsed;

@@ -102,10 +102,10 @@
                     "Lewins Rail Kekkek.webm",
                     new AudioUtilityInfo
                         {
-                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.7),
+                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.257),
                             SampleRate = 22050,
                             ChannelCount = 1,
-                            BitsPerSecond = 43032,
+                            BitsPerSecond = 66000,
                             MediaType = MediaTypes.MediaTypeWebMAudio,
                             //BitsPerSample = 32 // only relevant to PCM data
                         }
@@ -390,17 +390,24 @@
             }
         }
 
-        public static DirectoryInfo GetResourcesBaseDir()
+        public static string GetResourcesBaseDir()
         {
-            return AppConfigHelper.GetDir("BaseTestResourcesDir", true);
+            return AppConfigHelper.GetString("BaseTestResourcesDir");
+        }
+
+        public static FileInfo GetExe(string exePath)
+        {
+            //var resourcesBaseDir = TestHelper.GetResourcesBaseDir();
+
+            //return new FileInfo(Path.Combine(exePath, resourcesBaseDir));
+            return new FileInfo(exePath);
         }
 
         public static FileInfo GetTestAudioFile(string filename)
         {
             return
                 new FileInfo(
-                    Path.Combine(
-                        GetResourcesBaseDir().FullName, AppConfigHelper.GetString("TestAudioDir"), filename));
+                    Path.Combine(AppConfigHelper.GetString("TestAudioDir"), filename));
         }
 
         public static FileInfo GetAnalysisConfigFile(string identifier)
@@ -408,11 +415,11 @@
             return
                new FileInfo(
                    Path.Combine(
-                       GetResourcesBaseDir().FullName, AppConfigHelper.GetString("AnalysisConfigDir"), identifier + ".cfg"));
+                       GetResourcesBaseDir(), AppConfigHelper.GetString("AnalysisConfigDir"), identifier + ".cfg"));
 
         }
 
-        public static void CheckAudioUtilityInfo(AudioUtilityInfo expected, AudioUtilityInfo actual)
+        public static void CheckAudioUtilityInfo(AudioUtilityInfo expected, AudioUtilityInfo actual, int epsilonDurationMilliseconds = 150)
         {
             if (expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
             {
@@ -446,7 +453,7 @@
 
             Assert.AreEqual(expected.MediaType, actual.MediaType);
             Assert.AreEqual(expected.ChannelCount.Value, actual.ChannelCount.Value);
-            Assert.AreEqual(expected.Duration.Value.TotalMilliseconds, actual.Duration.Value.TotalMilliseconds, TimeSpan.FromMilliseconds(150).TotalMilliseconds);
+            Assert.AreEqual(expected.Duration.Value.TotalMilliseconds, actual.Duration.Value.TotalMilliseconds, TimeSpan.FromMilliseconds(epsilonDurationMilliseconds).TotalMilliseconds);
             Assert.AreEqual(expected.SampleRate.Value, actual.SampleRate.Value);
         }
 
@@ -468,9 +475,7 @@
 
         public static IAudioUtility GetAudioUtilitySox()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var soxExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.SoxExe));
+            var soxExe = GetExe(AppConfigHelper.SoxExe);
 
             var sox = new SoxAudioUtility(soxExe);
 
@@ -479,10 +484,8 @@
 
         public static IAudioUtility GetAudioUtilityFfmpeg()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var ffmpegExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfmpegExe));
-            var ffprobeExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfprobeExe));
+            var ffmpegExe = GetExe(AppConfigHelper.FfmpegExe);
+            var ffprobeExe = GetExe(AppConfigHelper.FfprobeExe);
            
             var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
 
@@ -491,9 +494,7 @@
 
         public static IAudioUtility GetAudioUtilityWavunpack()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var wavunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
+            var wavunpackExe = GetExe(AppConfigHelper.WvunpackExe);
 
             var util = new WavPackAudioUtility(wavunpackExe);
 
@@ -502,9 +503,7 @@
 
         public static IAudioUtility GetAudioUtilityMp3Splt()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var mp3SpltExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.Mp3SpltExe));
+            var mp3SpltExe = GetExe(AppConfigHelper.Mp3SpltExe);
             
             var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
 
@@ -513,9 +512,7 @@
 
         public static IAudioUtility GetAudioUtilityShntool()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var shntoolExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.ShntoolExe));
+            var shntoolExe = GetExe(AppConfigHelper.ShntoolExe);
 
             var shntool = new ShntoolAudioUtility(shntoolExe);
 

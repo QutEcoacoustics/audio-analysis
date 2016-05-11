@@ -218,6 +218,7 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        [Ignore]
         public void SegmentsWavCorrectly1Shntool()
         {
             var expected = new AudioUtilityInfo
@@ -252,6 +253,7 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        [Ignore]
         public void SegmentsWavCorrectly2Shntool()
         {
             var expected = new AudioUtilityInfo
@@ -285,6 +287,7 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        [Ignore]
         public void SegmentsWavCorrectly3Shntool()
         {
             var expected = new AudioUtilityInfo
@@ -318,6 +321,7 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        [Ignore]
         public void SegmentsWavCorrectly4Shntool()
         {
             var expected = new AudioUtilityInfo
@@ -351,6 +355,7 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        [Ignore]
         public void SegmentsWavCorrectly5Shntool()
         {
             var expected = new AudioUtilityInfo
@@ -385,6 +390,7 @@ namespace Acoustics.Test.Tools
         }
 
         [TestMethod]
+        [Ignore]
         public void SegmentsWavCorrectly6Shntool()
         {
             var expected = new AudioUtilityInfo
