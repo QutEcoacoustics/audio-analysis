@@ -4,7 +4,8 @@
 # 8 April 2016
 #################################################
 setwd("C:\\Work\\Mangalam_data\\")
-data <- read.csv("Minute_cluster mapping - all.csv", header = TRUE)
+data <- read.csv("Minute_cluster mapping - all.csv", 
+                 header = TRUE)
 # transpose data table
 data <- t(data)
 
@@ -22,7 +23,6 @@ ref <- unlist(which(data[27,]=="4"))
 for(c in 1:length(ref)) {
   data[27,ref] <- " 4"
 }
-
 
 #View(data)
 ############################
@@ -66,10 +66,12 @@ A <- unname(data[2:(length(data[,1])-1),i])
 B <- unname(data[3:length(data[,1]), i])
 g1 <- data.frame(A=A,B=B)
 
+# graph_from_data_frame is a function from the igraph package
 g <- graph_from_data_frame(g1, directed=TRUE, vertices = NULL)
 #layout_qgraph <- layout.fruchterman.reingold(g)
 #layout_qgraph <- layout.circle(g)
 #layout_qgraph <- layout.drl(g)
+# layout.star is also a function from the igraph package
 layout_qgraph <- layout.star(g, 21)
 
 # set up empty empty matrices for authority and hub scores
