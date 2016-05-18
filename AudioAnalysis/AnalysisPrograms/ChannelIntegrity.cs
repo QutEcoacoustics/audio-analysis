@@ -43,13 +43,16 @@ namespace AnalysisPrograms
             var result = new ChannelIntegrityIndexes();
 
             // do some sanity checks
-            
+            if (recording.WavReader.Channels != 2)
+            {
+                throw new InvalidOperationException("The channel integrity analyzer requires exactly two channels");
+            }
 
 
             // actual analysis
-            double[] channelLeft = { }; // TODO - broken
-            double[] channelRight = { }; // TODO - broken
-            double epsilon = Double.NaN; // TODO - broken
+            double[] channelLeft = recording.WavReader.GetChannel(0);
+            double[] channelRight = recording.WavReader.GetChannel(1);
+            double epsilon = recording.WavReader.Epsilon;
             double differenceIndex = ChannelIntegrity.DifferenceIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
             result.ChannelDifference = differenceIndex;
 

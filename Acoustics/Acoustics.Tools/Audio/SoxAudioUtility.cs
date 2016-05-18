@@ -6,7 +6,7 @@
     using System.IO;
     using System.Linq;
 
-    using Acoustics.Shared;
+    using Shared;
 
     /// <summary>
     /// Soxi (sound exchange information) Audio utility.
@@ -120,46 +120,22 @@
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes
-        {
-            get
-            {
-                return new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
-            }
-        }
+        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
 
         /// <summary>
         /// Gets the invalid source media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidSourceMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidSourceMediaTypes => null;
 
         /// <summary>
         /// Gets the valid output media types.
         /// </summary>
-        protected override IEnumerable<string> ValidOutputMediaTypes
-        {
-            get
-            {
-                return new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
-            }
-        }
+        protected override IEnumerable<string> ValidOutputMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
 
         /// <summary>
         /// Gets the invalid output media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidOutputMediaTypes => null;
 
         /// <summary>
         /// The construct modify args.
@@ -191,27 +167,10 @@
             if (request.TargetSampleRate.HasValue)
             {
                 var targetSampleRateHz = request.TargetSampleRate.Value.ToString(CultureInfo.InvariantCulture);
-                rate = string.Format("rate {0} -s -a {1}", resampleQuality, targetSampleRateHz);
+                rate = $"rate {resampleQuality} -s -a {targetSampleRateHz}";
             }
 
-            // mix down to mono
-            var remix = string.Empty;
-            if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
-            {
-                /*
-                 * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are 
-                 * optional and default to 1 and to the number of input channels respectively. Thus
-                 *    sox input.wav output.wav remix −
-                 * performs a mix-down of all input channels to mono.
-                */
-                remix = "remix -";
-            }
-
-            // get a single channel
-            if (request.Channel.HasValue)
-            {
-                remix = "remix " + request.Channel.Value;
-            }
+            var remix = FormatChannelSelection(request);
 
             // offsets
             var trim = string.Empty;
@@ -255,7 +214,49 @@
             // −q, −−no−show−progress
             // Run in quiet mode when SoX wouldn’t otherwise do so. This is the opposite of the −S option.
 
-            return string.Format(" -q -V4 \"{0}\" \"{1}\" {2} {3} {4} {5}", source.FullName, output.FullName, trim, rate, remix, bandpass);
+            // SoX will encode complex files in the WAVE_FORMAT_EXTENSIBLE encoding by default - even if the source file way not WAVE_FORMAT_EXTENSIBLE.
+            // Since we largely don't care about any of the advanced features provided by WAVE_FORMAT_EXTENSIBLE  we're going to tell sox to always output
+            // WAVE_FORMAT_PCM.
+            // More info:
+            // https://sourceforge.net/p/sox/mailman/message/5863667/
+            // http://www-mmsp.ece.mcgill.ca/documents/audioformats/wave/wave.html
+            // http://sox.sourceforge.net/soxformat.html
+            string forceOutput = string.Empty;
+            if (MediaTypes.GetMediaType(output.Extension) == MediaTypes.MediaTypeWav)
+            {
+                forceOutput = "-t wavpcm ";
+            }
+
+            return $" -q -V4 \"{source.FullName}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
+        }
+
+        private static string FormatChannelSelection(AudioUtilityRequest request)
+        {
+            /*
+             * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are 
+             * optional and default to 1 and to the number of input channels respectively. Thus
+             *    sox input.wav output.wav remix −
+             * performs a mix-down of all input channels to mono.
+            */
+
+            var remix = string.Empty;
+            var mixDown = request.MixDownToMono.HasValue && request.MixDownToMono.Value;
+            if (mixDown && request.Channels.NotNull())
+            {
+                remix = "remix " + string.Join(",", request.Channels);
+            }
+            // mix down to mono
+            else if (mixDown)
+            {
+                remix = "remix -";
+            }
+            // get a channels but don't mix down
+            else if (request.Channels.NotNull())
+            {
+                remix = "remix " + string.Join(" ", request.Channels);
+            }
+
+            return remix;
         }
 
         /// <summary>
@@ -359,39 +360,6 @@
                 }
             }
 
-            if (result.RawData.ContainsKey(keyBitRate))
-            {
-                var stringValue = result.RawData[keyBitRate];
-
-                var hadK = false;
-                if (stringValue.Contains("k"))
-                {
-                    stringValue = stringValue.Replace("k", string.Empty);
-                    hadK = true;
-                }
-
-                var hadM = false;
-                if (stringValue.Contains("M"))
-                {
-                    stringValue = stringValue.Replace("M", string.Empty);
-                    hadM = true;
-                }
-
-                var value = double.Parse(stringValue);
-
-                if (hadK)
-                {
-                    value = value * 1000;
-                }
-
-                if (hadM)
-                {
-                    value = value * 1000 * 1000;
-                }
-
-                result.BitsPerSecond = Convert.ToInt32(value);
-            }
-
             if (result.RawData.ContainsKey(keySampleRate))
             {
                 result.SampleRate = ParseIntStringWithException(result.RawData[keySampleRate], "sox.samplerate");
@@ -413,15 +381,64 @@
 
             result.MediaType = GetMediaType(result.RawData, source.Extension);
 
+            if (result.RawData.ContainsKey(keyBitRate))
+            {
+                var stringValue = result.RawData[keyBitRate];
+
+                var hadK = false;
+                if (stringValue.Contains("k"))
+                {
+                    stringValue = stringValue.Replace("k", string.Empty);
+                    hadK = true;
+                }
+
+                var hadM = false;
+                if (stringValue.Contains("M"))
+                {
+                    stringValue = stringValue.Replace("M", string.Empty);
+                    hadM = true;
+                }
+
+                var value = double.Parse(stringValue);
+                if (hadK)
+                {
+                    value = value * 1000;
+                }
+
+                if (hadM)
+                {
+                    value = value * 1000 * 1000;
+                }
+                
+                result.BitsPerSecond = Convert.ToInt32(value);
+
+                if (result.MediaType == MediaTypes.MediaTypeWav)
+                {
+                    // deal with inaccuracy - calculate it a second way
+                    var estimatedBitRate = result.SampleRate * result.ChannelCount * (result.BitsPerSample);
+                    int roundedBitRate = (int)((double)estimatedBitRate).RoundToSignficantDigits(3);
+                    if (roundedBitRate != result.BitsPerSecond.Value)
+                    {
+                        throw new InvalidOperationException(
+                            $"SoxAudioUtlity could not accurately predict BitPerSecond. Parsed BitsPerSecond: {result.BitsPerSecond}, predicted: {estimatedBitRate}");
+                    }
+
+                    // use estimated bit rate
+                    result.BitsPerSecond = estimatedBitRate;
+                }
+
+            }
+
             return result;
         }
 
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
+            AudioUtilityInfo info = null;
+
             // check that if output is mp3, the bit rate and sample rate are set valid amounts.
             if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
             {
-
                 if (request.TargetSampleRate.HasValue)
                 {
                     // sample rate is set - check it
@@ -430,7 +447,7 @@
                 else
                 {
                     // sample rate is not set, get it from the source file
-                    var info = this.Info(source);
+                    info = this.Info(source);
                     if (!info.SampleRate.HasValue)
                     {
                         throw new ArgumentException("Sample rate for output mp3 may not be correct, as sample rate is not set, and cannot be determined from source file.");
@@ -440,16 +457,20 @@
                 }
             }
 
-            // check that a channel number, if set, is available
-            if (request != null && request.Channel.HasValue && request.Channel.Value > 1)
+            if (request != null && request.Channels.NotNull())
             {
-                var info = this.Info(source);
-                if (info.ChannelCount > request.Channel.Value)
+                if (request.Channels.Length == 0)
                 {
-                    var msg = "Requested channel number was out of range. Requested channel " + request.Channel.Value
-                              + " but there are only " + info.ChannelCount + " channels in " + source + ".";
+                    throw new ChannelSelectionOperationNotImplemented("Sox utility cannot choose 0 channels");
+                }
 
-                    throw new ArgumentOutOfRangeException("request", request.Channel.Value, msg);
+                int max = request.Channels.Max();
+                int min = request.Channels.Min();
+                info = info ?? this.Info(source);
+                if (max > info.ChannelCount || min < 1)
+                {
+                    var msg = $"Requested channel number was out of range. Requested channel {max} but there are only {info.ChannelCount} channels in {source}.";
+                    throw new ChannelNotAvailableException(nameof(request.Channels), request.Channels.ToCommaSeparatedList(), msg);
                 }
             }
         }

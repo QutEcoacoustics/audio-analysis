@@ -141,10 +141,10 @@ namespace AudioAnalysisTools.DSP
             return ExtractEnvelopeAndFFTs(recording.WavReader.Samples, recording.SampleRate, epsilon, frameSize, frameStep);
         }
 
-        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, double epsilon, int frameSize, double overlap)
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            return ExtractEnvelopeAndFFTs(signal, sr, epsilon, frameSize, frameStep);
+            return ExtractEnvelopeAndFFTs(signal, sampleRate, epsilon, frameSize, frameStep);
         }
 
 
@@ -157,11 +157,11 @@ namespace AudioAnalysisTools.DSP
         /// 4) the power of the Hamming Window, i.e. sum of squared window values.
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="sr"></param>
+        /// <param name="sampleRate"></param>
         /// <param name="frameSize"></param>
         /// <param name="overlap"></param>
         /// <returns></returns>
-        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sr, double epsilon, int frameSize, int frameStep)
+        public static EnvelopeAndFFT ExtractEnvelopeAndFFTs(double[] signal, int sampleRate, double epsilon, int frameSize, int frameStep)
         {
             //int frameStep = (int)(frameSize * (1 - overlap));
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, frameSize, frameStep);
@@ -230,7 +230,7 @@ namespace AudioAnalysisTools.DSP
             // Remove the DC column ie column zero from amplitude spectrogram.
             double[,] amplSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
 
-            int nyquistFreq = sr / 2;
+            int nyquistFreq = sampleRate / 2;
             double binWidth = nyquistFreq / (double)amplSpectrogram.GetLength(1);
             int nyquistBin = amplSpectrogram.GetLength(1) - 1;
 

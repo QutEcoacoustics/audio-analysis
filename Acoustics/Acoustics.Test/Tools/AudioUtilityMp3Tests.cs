@@ -199,7 +199,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 11025,
             };
@@ -400,7 +400,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 11025,
             };
@@ -607,7 +607,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 44100,
             };

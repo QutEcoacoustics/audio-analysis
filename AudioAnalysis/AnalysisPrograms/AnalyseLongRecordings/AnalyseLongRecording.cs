@@ -130,7 +130,7 @@ Output  to  directory: {1}
             }
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles)
+            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
             {
                 // create and delete directories
                 DeleteFinished = !saveIntermediateWavFiles,  

@@ -41,6 +41,10 @@ namespace AnalysisBase
     /// </remarks>
     public class AnalysisCoordinator
     {
+        private readonly int[] channelSelection;
+
+        private readonly bool mixDownToMono;
+
         private const string StartingItem = "Starting item {0}: {1}.";
         private const string CancelledItem = "Cancellation requested for {0} analysis {1}. Finished item {2}: {3}.";
 
@@ -76,6 +80,22 @@ namespace AnalysisBase
             this.DeleteFinished = false;
             this.SubFoldersUnique = true;
             this.IsParallel = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalysisCoordinator"/> class but also allows for advanced channel mapping options.
+        /// </summary>
+        /// <param name="sourcePreparer"></param>
+        /// <param name="saveIntermediateWavFiles"></param>
+        /// <param name="saveImageFiles"></param>
+        /// <param name="saveIntermediateCsvFiles"></param>
+        /// <param name="channelSelection"></param>
+        /// <param name="mixDownToMono"></param>
+        public AnalysisCoordinator(ISourcePreparer sourcePreparer, bool saveIntermediateWavFiles, bool saveImageFiles, bool saveIntermediateCsvFiles, int[] channelSelection, bool mixDownToMono = true) :
+            this(sourcePreparer, saveIntermediateWavFiles, saveImageFiles, saveIntermediateCsvFiles)
+        {
+            this.channelSelection = channelSelection;
+            this.mixDownToMono = mixDownToMono;
         }
 
         /// <summary>
@@ -352,7 +372,8 @@ namespace AnalysisBase
                 end,
                 localCopyOfSettings.SegmentTargetSampleRate,
                 tempDir, 
-                mixDownToMono: true);
+                this.channelSelection, 
+                this.mixDownToMono);
 
             var preparedFilePath = preparedFile.OriginalFile;
             var preparedFileDuration = preparedFile.OriginalFileDuration;
