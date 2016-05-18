@@ -107,16 +107,14 @@
                 if (this.EndOffset.HasValue && this.StartOffset >= this.EndOffset.Value)
                 {
                     throw new InvalidStartOrEndException(
-                        string.Format("StartOffset {0} must be less than EndOffset {1}.",
-                        this.StartOffset, this.EndOffset.Value));
+                        $"StartOffset {this.StartOffset} must be less than EndOffset {this.EndOffset.Value}.");
                 }
 
                 // check that min duration is less than max duration
                 if (this.SegmentDurationMinimum >= this.SegmentDuration)
                 {
                     throw new InvalidDurationException(
-                        string.Format("SegmentDurationMinimum {0} must be less than SegmentDuration {1}.",
-                        this.SegmentDurationMinimum, this.SegmentDuration));
+                        $"SegmentDurationMinimum {this.SegmentDurationMinimum} must be less than SegmentDuration {this.SegmentDuration}.");
                 }
 
                 // check that mix down to mono and a a channel haven't both been specified
@@ -219,6 +217,7 @@
                     fileSegment.SegmentEndOffset.Value,
                     settings.SegmentTargetSampleRate,
                     settings.AnalysisInstanceTempDirectory, 
+                    null, 
                     mixDownToMono);
             LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.OriginalFile.Name);
         }

@@ -228,19 +228,19 @@
         protected override void CheckRequestValid(
             FileInfo source, string sourceMediaType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
-            if (request.Channel.HasValue)
+            if (request.Channels.NotNull())
             {
-                throw new ArgumentException("Shntool cannot modify the channel.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Shntool cannot modify the channels.");
             }
 
             if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
             {
-                throw new ArgumentException("Shntool cannot mix down the channels to mono.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Shntool cannot mix down the channels to mono.");
             }
 
             if (request.TargetSampleRate.HasValue)
             {
-                throw new ArgumentException("Shntool cannot modify the sample rate.", "request");
+                throw new ArgumentException("Shntool cannot modify the sample rate.", nameof(request));
             }
         }
 

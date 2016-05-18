@@ -117,13 +117,7 @@
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> ValidSourceMediaTypes => null;
 
         /// <summary>
         /// Gets the invalid source media types.
@@ -139,24 +133,12 @@
         /// <summary>
         /// Gets the valid output media types.
         /// </summary>
-        protected override IEnumerable<string> ValidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> ValidOutputMediaTypes => null;
 
         /// <summary>
         /// Gets the invalid output media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidOutputMediaTypes
-        {
-            get
-            {
-                return new[] { MediaTypes.MediaTypeWavpack };
-            }
-        }
+        protected override IEnumerable<string> InvalidOutputMediaTypes => new[] { MediaTypes.MediaTypeWavpack };
 
         /// <summary>
         /// The construct modify args.
@@ -213,10 +195,10 @@
                 args.AppendFormat(ArgsChannelCount, 1);
             }
 
-            if (request.Channel.HasValue)
+            if (request.Channels.NotNull())
             {
                 // request.Channel starts at 1, ffmpeg starts at 0.
-                args.AppendFormat(ArgsMapChannel, request.Channel.Value - 1);
+                args.AppendFormat(ArgsMapChannel, request.Channels.Single() - 1);
             }
 
             if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
@@ -372,10 +354,11 @@
         /// </param>
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
+            AudioUtilityInfo info = null;
+
             // check that if output is mp3, the bit rate and sample rate are set valid amounts.
             if (request != null && outputMediaType == MediaTypes.MediaTypeMp3)
             {
-
                 if (request.TargetSampleRate.HasValue)
                 {
                     // sample rate is set - check it
@@ -384,7 +367,7 @@
                 else
                 {
                     // sample rate is not set, get it from the source file
-                    var info = this.Info(source);
+                    info = this.Info(source);
                     if (!info.SampleRate.HasValue)
                     {
                         throw new ArgumentException("Sample rate for output mp3 may not be correct, as sample rate is not set, and cannot be determined from source file.");
@@ -395,15 +378,20 @@
             }
 
             // check that a channel number, if set, is available
-            if (request != null && request.Channel.HasValue && request.Channel.Value > 1)
+            if (request != null && request.Channels.NotNull())
             {
-                var info = this.Info(source);
-                if (info.ChannelCount > request.Channel.Value)
+                if (request.Channels.Length != 1)
                 {
-                    var msg = "Requested channel number was out of range. Requested channel " + request.Channel.Value
-                              + " but there are only " + info.ChannelCount + " channels in " + source + ".";
+                    throw new ChannelSelectionOperationNotImplemented("FFmpeg utility cannot choose more than one channel");
+                }
 
-                    throw new ArgumentOutOfRangeException("request", request.Channel.Value, msg);
+                int max = request.Channels.Max();
+                int min = request.Channels.Min();
+                info = info ?? this.Info(source);
+                if (max > info.ChannelCount || min < 1)
+                {
+                    var msg = $"Requested channel number was out of range. Requested channel {max} but there are only {info.ChannelCount} channels in {source}.";
+                    throw new ArgumentOutOfRangeException(nameof(request), request.Channels.ToCommaSeparatedList(), msg);
                 }
             }
         }

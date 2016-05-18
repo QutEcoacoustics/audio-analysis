@@ -34,6 +34,7 @@ namespace AudioAnalysisTools
     using System.Text;
 
     using Acoustics.Tools;
+    using Acoustics.Tools.Wav;
 
     using AnalysisBase.ResultBases;
 
@@ -115,47 +116,31 @@ namespace AudioAnalysisTools
             ZeroCrossingIndex(channelL, channelR, out zeroCrossingFractionL, out zeroCrossingFractionR);
         }
 
-
-
-        public static void SeparateChannels(Arguments args, FileInfo ipFile , out double[] samplesL, out double[] samplesR, out double epsilon)
+        public static void SeparateChannels(
+            Arguments args,
+            FileInfo ipFile,
+            out double[] samplesL,
+            out double[] samplesR,
+            out double epsilon)
         {
             //you'd then use wavreader on the resulting preparedFile
             //the channel select functionality does not currently exist in AnalyzeLongRecording.   I need to add it.
             var request = new AudioUtilityRequest
-            {
-                OffsetStart = args.StartOffset,
-                OffsetEnd = args.EndOffset,
-                TargetSampleRate = args.SamplingRate,
-                Channel = 1,
-                MixDownToMono = false
-        };
-            var audioFileL = AudioFilePreparer.PrepareFile(args.OpDir, ipFile, args.OutputMediaType, request, args.OpDir);
+                {
+                    OffsetStart = args.StartOffset,
+                    OffsetEnd = args.EndOffset,
+                    TargetSampleRate = args.SamplingRate,
+                    Channels = new[] { 1, 2 },
+                    MixDownToMono = false
+                };
+            var audioFile = AudioFilePreparer.PrepareFile(args.OpDir, ipFile, args.OutputMediaType, request, args.OpDir);
 
-            request = new AudioUtilityRequest
-            {
-                OffsetStart = args.StartOffset,
-                OffsetEnd = args.EndOffset,
-                TargetSampleRate = args.SamplingRate,
-                Channel = 2,
-                MixDownToMono = false
-            };
-            
-            var audioFileR = AudioFilePreparer.PrepareFile(args.OpDir, ipFile, args.OutputMediaType, request, args.OpDir);
+            var wavReader = new WavReader(audioFile);
 
-            //which could probably be simplified down to
-            //var request = new AudioUtilityRequest { Channel = 1 };
-            //var preparedFile1 = AudioFilePreparer.PrepareFile(opDirectory, audioFile, outputMediaType, request, opDirectory);
-            // Channel = 1 for the left channel and Channel = 2 for the right channel
-
-            //request = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz, Channel = 2 };
-            //var preparedFile2 = AudioFilePreparer.PrepareFile(opDirectory, audioFile, outputMediaType, request, opDirectory);
-
-
-            var recordingL = new AudioRecording(audioFileL);
-            var recordingR = new AudioRecording(audioFileR);
-            samplesL = recordingL.WavReader.Samples;
-            samplesR = recordingR.WavReader.Samples;
-            epsilon = Math.Pow(0.5, recordingL.BitsPerSample - 1);
+            var recording = new AudioRecording(wavReader);
+            samplesL = recording.WavReader.GetChannel(0);
+            samplesR = recording.WavReader.GetChannel(1);
+            epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
         }
 
         public static double DifferenceIndex(double[] channelL, double[] channelR, double epsilon, int sampleRate)

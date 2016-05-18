@@ -162,24 +162,12 @@ namespace Acoustics.Tools.Audio
         /// <summary>
         /// Gets the valid output media types.
         /// </summary>
-        protected override IEnumerable<string> ValidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> ValidOutputMediaTypes => null;
 
         /// <summary>
         /// Gets the invalid output media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidOutputMediaTypes => null;
 
         /// <summary>
         /// Segment a <paramref name="source"/> audio file.
@@ -229,7 +217,7 @@ namespace Acoustics.Tools.Audio
             var soxRequest = request;
 
 
-            // do specialised convert and/or segment
+            // do specialized convert and/or segment
             if (sourceMediaType == MediaTypes.MediaTypeWavpack)
             {
                 // convert and segment wavpack file to wav
@@ -281,11 +269,14 @@ namespace Acoustics.Tools.Audio
                 // if output is correct, just copy it.
                 // will not overwrite, will throw exception if the output file already exists.
                 // do not overwrite!!!
-                // However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
-                if (!output.Exists)
-                {
-                    File.Copy(soxOutputFile.FullName, output.FullName);
-                }
+
+                // AT: disabled these changes from Towsey. Effectively means previous runs can cache files - if files are faulty it corrupts analysis.
+                //// However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
+                //if (!output.Exists)
+                //{
+                //    File.Copy(soxOutputFile.FullName, output.FullName);
+                //}
+                File.Copy(soxOutputFile.FullName, output.FullName);
             }
 
             // tidy up

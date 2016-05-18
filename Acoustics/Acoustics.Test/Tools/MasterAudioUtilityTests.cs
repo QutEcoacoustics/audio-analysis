@@ -362,7 +362,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             return exe;
         }
 
-        private static IAudioUtility GetAudioUtility()
+        public static IAudioUtility GetAudioUtility()
         {
             var ffmpeg = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
             var mp3Splt = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
@@ -547,7 +547,13 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             }
         }
 
-        private static void Modify(string filename, AudioUtilityInfo sourceExpected, AudioUtilityRequest request, string outputMimeType, AudioUtilityInfo outputExpected)
+        public static void Modify(
+            string filename,
+            AudioUtilityInfo sourceExpected,
+            AudioUtilityRequest request,
+            string outputMimeType,
+            AudioUtilityInfo outputExpected,
+            Action<AudioUtilityInfo, AudioUtilityInfo> additionalTests = null)
         {
             var source = TestHelper.GetTestAudioFile(filename);
 
@@ -568,6 +574,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 var outputInfo = util.Info(output);
                 var outputInfoText = GetDurationInfo(outputInfo);
 
+                additionalTests?.Invoke(sourceExpected, sourceInfo);
 
                 TestHelper.DeleteTempDir(dir);
             }
