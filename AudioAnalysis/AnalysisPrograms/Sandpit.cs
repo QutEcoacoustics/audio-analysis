@@ -55,6 +55,16 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString());
 
+
+
+            // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
+            if (true)
+            {
+                LDSpectrogramClusters.ExtractSOMClusters2();
+            }
+
+
+
             if (false)  // 
             {
                 CubeHelix.DrawTestImage();
@@ -89,7 +99,7 @@ namespace AnalysisPrograms
             }
 
             // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
-            if (true)  
+            if (false)  
             {
                 ChannelIntegrity.Execute(null);
             }

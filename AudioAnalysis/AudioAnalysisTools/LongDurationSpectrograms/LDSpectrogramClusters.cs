@@ -171,16 +171,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// This method merges the LDSpectrogram IMAGES derived from a sequence of consecutive 6-12 hour recording, 
-        /// that have a total duration of 24 hours. This was necesarry to deal with Jason's new regime of doing 24-hour recordings 
-        /// in shorter blocks of 3-12 hours. 
-        /// This method differes form the above in that we are concatnating already prepared images as opposed to the index.csv files.
-        /// The time scale is added in afterwards - must poverwrite the previous time scale and title bar.
+        /// This method rearranges the content of a false-colour spectrogram according to the acoustic cluster or acoustic state to which each minute belongs.
+        /// The time scale is added in afterwards - must overwrite the previous time scale and title bar.
+        /// THis method was writtent to examine the cluster content of recordings analysed by Mangalam using a 10x10 SOM.
+        /// The output image was used in the paper presented by Mangalam to BDVA2015 in Tasmania. (Big data, visual analytics).
         /// </summary>
-        public static void ExtractSOMClusters()
+        public static void ExtractSOMClusters1()
         {
-            // create an array that contains the names of csv file to be read.
-            // The file names must be in the temporal order rquired for the resulting spectrogram image.
             string opDir = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\";
 
             //string fileStem = @"BYR2_20131016";
@@ -224,7 +221,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // read in the assignment of cluster numbers to cluster LABEL
 
-            string[] clusterLabel = { "A","B","C","D","E","F","G","H","I", "J","K","L","M","N","O", "P", "Q", "R", "S","T","U","V","W","X", "Y","Z","@" };
+            string[] clusterLabel = { "A","B","C","D","E","F","G","H","I", "J","K","L","M","N","O", "P", "Q", "R", "S","T","U","V","W","X", "Y","Z","a" };
 
             // read the data file
             List<string> lines = FileTools.ReadTextFile(clusterFile);
@@ -337,6 +334,167 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             opImage.Save(Path.Combine(opDir, opFileName));
         }
+
+
+
+
+        /// <summary>
+        /// This method rearranges the content of a false-colour spectrogram according to the acoustic cluster or acoustic state to which each minute belongs.
+        /// The time scale is added in afterwards - must overwrite the previous time scale and title bar.
+        /// THis method was writtent to examine the cluster content of recordings analysed by Mangalam using a 10x10 SOM.
+        /// The output image was used in the paper presented by Michael Towsey to Ecoacoustics Congress 2016, at Michigan State University.
+        /// </summary>
+        public static void ExtractSOMClusters2()
+        {
+            string opDir = @"C:\SensorNetworks\Output\Mangalam_EcoAcCongress2016\";
+            string clusterFile = opDir + "Minute_cluster mapping - all.csv";
+            string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_BDVA2015\SERF-SE_20101013.ACI-ENT-EVN.png";
+            //string fileStem = "NW_14Oct";
+            string fileStem = "SW_14Oct";
+            string opFileName = fileStem + ".SOMClusters.png";
+
+            int clusterCount = 27;  // from Yvonne's method
+            List<Pen> pens = ImageTools.GetColorPalette(clusterCount);
+            Pen whitePen = new Pen(Color.White);
+            Pen blackPen = new Pen(Color.Black);
+            //SizeF stringSize = new SizeF();
+            Font stringFont = new Font("Arial", 12, FontStyle.Bold);
+            //Font stringFont = new Font("Tahoma", 9);
+
+
+            // ###############################################################
+            // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
+            int sampleRate = 22050;
+            int frameWidth = 256;
+            int nyquist = sampleRate / 2;
+            int herzInterval = 1000;
+            TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
+            double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            string title = String.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
+            TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
+            TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
+            int trackheight = 20;
+            // ###############################################################
+
+            // read in the assignment of cluster numbers to cluster LABEL
+
+            string[] clusterLabel = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a" };
+            int nodeCount = 100;
+            // read the data file
+            List<string> lines = FileTools.ReadTextFile(clusterFile);
+            int lineCount = lines.Count;
+            int[] clusterHistogram = new int[clusterCount];
+
+            //read in the image
+            FileInfo fi = new FileInfo(inputImagePath);
+            if (!fi.Exists) Console.WriteLine("\n\n >>>>>>>> FILE DOES NOT EXIST >>>>>>: " + fi.Name);
+
+            Console.WriteLine("Reading file: " + fi.Name);
+            Bitmap ipImage = ImageTools.ReadImage2Bitmap(fi.FullName);
+            int imageWidth = ipImage.Width;
+            int imageHt = ipImage.Height;
+
+            //init the output image
+            Image opImage = new Bitmap(imageWidth, imageHt);
+            Graphics gr = Graphics.FromImage(opImage);
+            gr.Clear(Color.Black);
+
+            // construct cluster histogram
+            for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
+            {
+                string[] words = lines[lineNumber].Split(',');
+                int clusterID = Int32.Parse(words[2]);
+                clusterHistogram[clusterID - 1]++;
+            }
+            // ranks cluster counts in descending order
+            Tuple<int[], int[]> tuple = DataTools.SortArray(clusterHistogram);
+            int[] sortOrder = tuple.Item1;
+
+            // this loop re
+            int opColumn = 0;
+            int clusterStartColumn = 0;
+            for (int id = 0; id < clusterCount; id++)
+            {
+                int sortID = sortOrder[id];
+
+                // create node array to store column images for this cluster
+                List<Bitmap>[] nodeArray = new List<Bitmap>[nodeCount];
+                for (int n = 0; n < nodeCount; n++) nodeArray[n] = new List<Bitmap>();
+
+
+
+                Console.WriteLine("Reading CLUSTER: " + (sortID + 1) + "  Label=" + clusterLabel[sortID]);
+
+                // read through the entire list of minutes
+                for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
+                {
+                    if (lineNumber == 0) clusterStartColumn = opColumn;
+
+                    string[] words = lines[lineNumber].Split(',');
+                    int clusterID = Int32.Parse(words[2]) - 1; // -1 because matlab arrays start at 1.
+                    int nodeID = Int32.Parse(words[1]) - 1;
+                    if ((clusterID) == sortID)
+                    {
+                        // get image column
+                        Rectangle rectangle = new Rectangle(lineNumber, 0, 1, imageHt);
+                        Bitmap column = ipImage.Clone(rectangle, ipImage.PixelFormat);
+
+                        nodeArray[nodeID].Add(column);
+                    }
+                }
+
+                // cycle through the nodes and get the column images.
+                // the purpose is to draw the column images in order of node number
+                for (int n = 0; n < nodeCount; n++)
+                {
+                    int imageCount = nodeArray[n].Count;
+                    if (nodeArray[n].Count == 0) continue;
+
+                    for (int i = 0; i < imageCount; i++)
+                    {
+                        Bitmap column = nodeArray[n][i];
+                        gr.DrawImage(column, opColumn, 0);
+                        gr.DrawLine(pens[id], opColumn, trackheight, opColumn, trackheight + trackheight);
+                        gr.DrawLine(pens[id], opColumn, imageHt - trackheight, opColumn, imageHt);
+                        opColumn++;
+                    }
+                    //gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt - 10);
+                }
+
+                //FileInfo fi = new FileInfo(topLevelDirectory + name);
+                //Console.WriteLine("Reading file: " + fi.Name);
+
+                if (id >= clusterCount - 1) break;
+                gr.DrawLine(whitePen, opColumn - 1, 0, opColumn - 1, imageHt - trackheight - 1);
+                gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
+                gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
+
+                int location = opColumn - (opColumn - clusterStartColumn) / 2;
+                gr.DrawString(clusterLabel[sortID], stringFont, Brushes.Black, new PointF(location - 10, imageHt - 19));
+            }
+
+
+            ////Draw the title bar
+            Image titleBar = DrawTitleBarOfClusterSpectrogram(title, imageWidth);
+            gr.DrawImage(titleBar, 0, 0);
+            ////Draw the x-axis time scale bar
+            //int trackHeight = 20;
+            //TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
+            //Bitmap timeBmp = Image_Track.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
+
+            //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
+            //Graphics gr = Graphics.FromImage(spgmImage);
+            ////gr.Clear(Color.Black);
+            //gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
+            //gr.DrawImage(timeBmp, 0, 20); //draw in the top spectrogram
+            //gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
+
+            opImage.Save(Path.Combine(opDir, opFileName));
+        }
+
+
+
 
         public static Image DrawTitleBarOfClusterSpectrogram(string title, int width)
         {
