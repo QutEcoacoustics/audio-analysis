@@ -354,10 +354,6 @@ namespace AnalysisPrograms
                 ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title);
             }
 
-
-<<<<<<< 6b3abed651991a0d50c957404cadec0b5147cc86
-            Console.WriteLine("# Finished!");
-=======
             // Concatenate three images for Dan Stowell.
             if (false)  // 
             {
@@ -468,7 +464,7 @@ namespace AnalysisPrograms
 
 
 
-
+            /*
             // Concatenate images for Karl-Heinz Frommolt
             if (false)  // 
             {
@@ -885,11 +881,11 @@ namespace AnalysisPrograms
 
             } // CALCULATE MUTUAL INFORMATION
 
-
+            */
 
 
             Console.WriteLine("# Finished Sandpit Task!");
->>>>>>> Create new class to check audio-channel integrity
+
             Console.ReadLine();
             System.Environment.Exit(0);
         }
