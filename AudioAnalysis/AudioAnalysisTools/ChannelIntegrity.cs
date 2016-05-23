@@ -109,7 +109,11 @@ namespace AudioAnalysisTools
             double epsilon;
             SeparateChannels(arguments, ipFile, out channelL, out channelR, out epsilon);
 
-            double differenceIndex = DifferenceIndex(channelL, channelR, epsilon, arguments.SamplingRate);
+            double similarityIndex;
+            double similarityIndexDecibel;
+            SimilarityIndex(channelL, channelR, epsilon, arguments.SamplingRate, out similarityIndex, out similarityIndexDecibel);
+            //double similarityIndex = SimilarityIndex2(channelL, channelR, epsilon, arguments.SamplingRate);
+
 
             double zeroCrossingFractionL;
             double zeroCrossingFractionR;
@@ -143,7 +147,44 @@ namespace AudioAnalysisTools
             epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
         }
 
-        public static double DifferenceIndex(double[] channelL, double[] channelR, double epsilon, int sampleRate)
+        public static void SimilarityIndex(double[] channelL, double[] channelR, double epsilon, int sampleRate, 
+                                             out double similarityIndex, out double decibelIndex)
+        {
+            //var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
+            int frameSize = 512;
+            int frameStep = 512;
+
+            var dspOutputL = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
+            var avSpectrumL = MatrixTools.GetColumnsAverages(dspOutputL.amplitudeSpectrogram);
+
+            var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelR, sampleRate, epsilon, frameSize, frameStep);
+            var avSpectrumR = MatrixTools.GetColumnsAverages(dspOutputR.amplitudeSpectrogram);
+
+            similarityIndex = 0.0;
+            decibelIndex    = 0.0;
+            for (int i = 0; i < avSpectrumR.Length; i++)
+            {
+                double min = Math.Min(avSpectrumL[i], avSpectrumR[i]);
+                double max = Math.Max(avSpectrumL[i], avSpectrumR[i]);
+                double index = 0;
+                if (max <= 0.000001) max = 0.000001;  // to prevent division by zero.
+
+                // index = min / max; 
+                index = (min*min) / (max*max); 
+                similarityIndex += index; 
+
+                double dBmin = 20 * Math.Log10(min);
+                double dBmax = 20 * Math.Log10(max);
+                decibelIndex += (dBmax - dBmin); 
+            }
+
+            similarityIndex  /= (double)(avSpectrumR.Length);
+            decibelIndex     /= (double)(avSpectrumR.Length);
+
+            //return similarityIndex / (double)(avSpectrumR.Length);
+        }
+
+        public static double SimilarityIndex2(double[] channelL, double[] channelR, double epsilon, int sampleRate)
         {
             //var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
             int frameSize = 512;
@@ -152,10 +193,10 @@ namespace AudioAnalysisTools
             var dspOutputL = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
             var spgrmL = dspOutputL.amplitudeSpectrogram;
 
-            var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
+            var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelR, sampleRate, epsilon, frameSize, frameStep);
             var spgrmR = dspOutputR.amplitudeSpectrogram;
 
-            double differenceIndex = 0;
+            double similarityIndex = 0;
             // get spgrm dimensions - assume both spgrms have same dimensions
             int rowCount = spgrmL.GetLength(0);
             int colCount = spgrmL.GetLength(1);
@@ -169,12 +210,13 @@ namespace AudioAnalysisTools
                     if (max <= 0.000001)
                     { index = min / 0.000001; } // to prevent division by zero.
                     else
-                    { index = min / max; }
-                    differenceIndex += index; // / Math.Max(L, R);
+                    //{ index = min / max; }
+                    { index = (min * min) / (max * max); }
+                    similarityIndex += index; // / Math.Max(L, R);
                 }
             }
 
-            return differenceIndex / (double)(rowCount * colCount);
+            return similarityIndex / (double)(rowCount * colCount);
         }
 
 
@@ -210,6 +252,8 @@ namespace AudioAnalysisTools
 
         public double ZeroCrossingFractionRight { get; set; }
 
-        public double ChannelDifference { get; set; }
+        public double ChannelSimilarity { get; set; }
+
+        public double ChannelDiffDecibels { get; set; }
     }
 }
