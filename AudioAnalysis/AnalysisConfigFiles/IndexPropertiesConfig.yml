@@ -452,6 +452,46 @@ EventsTotalThresholded:
   NormMax: 25
   ProjectID: Acoustic Indices
   Units: ""
+ZeroCrossingFractionLeft:
+  Name: Zero Crossing Fraction Left
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ZeroCrossingFractionRight:
+  Name: Zero Crossing Fraction Right
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ChannelSimilarity:
+  Name: Channel Similarity
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ChannelDiffDecibels:
+  Name: Channel Difference in decibels
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
 FileName:
   Name: File Name
   Comment: "FILLER TO STOP WARNING MESSAGE! File Name"

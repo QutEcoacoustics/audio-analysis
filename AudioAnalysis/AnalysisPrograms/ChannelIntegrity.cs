@@ -40,7 +40,10 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
-            var result = new ChannelIntegrityIndexes();
+            var result = new ChannelIntegrityIndexes()
+                {
+                    StartOffset = analysisSettings.SegmentStartOffset.Value
+                };
 
             // do some sanity checks
             if (recording.WavReader.Channels != 2)
@@ -53,8 +56,14 @@ namespace AnalysisPrograms
             double[] channelLeft = recording.WavReader.GetChannel(0);
             double[] channelRight = recording.WavReader.GetChannel(1);
             double epsilon = recording.WavReader.Epsilon;
-            double differenceIndex = ChannelIntegrity.DifferenceIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
-            result.ChannelDifference = differenceIndex;
+
+            double similarityIndex;
+            double decibelIndex;
+            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value, out similarityIndex, out decibelIndex);
+
+            //double similarityIndex = ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
+            result.ChannelSimilarity = similarityIndex;
+            result.ChannelDiffDecibels = decibelIndex;
 
             double zeroCrossingFractionLeft;
             double crossingFractionRight;
@@ -109,7 +118,7 @@ namespace AnalysisPrograms
             SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }
