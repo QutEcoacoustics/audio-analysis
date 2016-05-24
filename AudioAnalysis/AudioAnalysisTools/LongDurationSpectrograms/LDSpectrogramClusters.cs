@@ -348,10 +348,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             string opDir = @"C:\SensorNetworks\Output\Mangalam_EcoAcCongress2016\";
             string clusterFile = opDir + "Minute_cluster mapping - all.csv";
-            string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_EcoAcCongress2016\SERF Spectrogram SW 2010Oct14.png";
-            //string fileStem = "NW_14Oct";
-            string fileStem = "SW_14Oct";
-            string opFileName = fileStem + ".SOMClusters.png";
+            //string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_EcoAcCongress2016\SERF Spectrogram SW 2010Oct14.png";
+            string inputImagePath = @"C:\SensorNetworks\Output\Mangalam_EcoAcCongress2016\SERF Spectrogram NW 2010Oct14.png";
+            string fileStem = "NW_14Oct";
+            //string fileStem = "SW_14Oct";
+            string opFileName = fileStem + ".SOM27AcousticClusters.png";
             string title = String.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
 
             int clusterCount = 27;  // from Yvonne's method
