@@ -143,8 +143,7 @@ namespace AnalysisPrograms.Production
 
     public class SourceAndConfigArguments : SourceArguments
     {
-        [ArgDescription("The path to the config file")]
-        [Production.ArgExistingFile()]
+        [ArgDescription("The path to the config file. If not found it will attempt to use the default config file of the same name.")]
         [ArgRequired]
         [ArgPosition(2)]
         public FileInfo Config { get; set; }
