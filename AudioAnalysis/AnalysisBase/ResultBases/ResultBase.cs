@@ -60,6 +60,7 @@ namespace AnalysisBase.ResultBases
         /// Gets the StartOffsetSecond.
         /// This is an representation of <c>SegmentStartOffset</c>.
         /// </summary>
+        [Obsolete]
         public Single StartOffsetSecond { get; private set; }
 
         /// <summary>
