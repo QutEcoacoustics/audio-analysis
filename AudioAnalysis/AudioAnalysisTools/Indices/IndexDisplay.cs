@@ -124,7 +124,7 @@
 
             const int TrackHeight = DrawSummaryIndices.DefaultTrackHeight;
             int scaleLength = 0;
-            var arrayOfBitmaps = new Image[dictionaryOfCsvFile.Keys.Count];
+            var bitmapList = new List<Tuple<IndexProperties, Image>>(dictionaryOfCsvFile.Keys.Count);
                 // accumulate the individual tracks in a List
 
             foreach (string key in dictionaryOfCsvFile.Keys)
@@ -160,11 +160,13 @@
                 scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array, errors);
 
-                if (arrayOfBitmaps.Length > ip.Order) // THIS IF CONDITION IS A HACK. THERE IS A BUG SOMEWHERE.
-                    arrayOfBitmaps[ip.Order] = bitmap;
+                bitmapList.Add(Tuple.Create(ip, bitmap));
             }
 
-            var listOfBitmaps = arrayOfBitmaps.Where(b => b != null).ToList();
+            var listOfBitmaps = bitmapList
+                .OrderBy(tuple => tuple.Item1.Order)
+                .Select(tuple => tuple.Item2)
+                .Where(b => b != null).ToList();
 
 
             //set up the composite image parameters

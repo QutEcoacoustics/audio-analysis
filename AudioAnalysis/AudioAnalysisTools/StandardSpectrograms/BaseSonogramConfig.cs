@@ -35,6 +35,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public double WindowOverlap { get; set; } // Percent overlap of frames
         public double WindowPower   { get; set; } // Power of the Hamming Window
 
+        /// <summary>
+        /// The channel to extract from the WavReader
+        /// </summary>
+        public int Channel { get; set; } = 0;
+
         private int sampleRate = 0;
         public int SampleRate
         {

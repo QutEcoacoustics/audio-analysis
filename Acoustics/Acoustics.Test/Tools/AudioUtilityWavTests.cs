@@ -1,17 +1,17 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace Acoustics.Test.Tools
+﻿namespace Acoustics.Test.Tools
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
+    using System.Text;
 
     using Acoustics.Shared;
     using Acoustics.Tools;
 
     using EcoSounds.Mvc.Tests;
+
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class AudioUtilityWavTests
@@ -198,7 +198,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 17460,
             };
@@ -606,7 +606,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 17460,
             };
@@ -807,7 +807,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 17460,
             };
@@ -1008,7 +1008,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 17460,
             };

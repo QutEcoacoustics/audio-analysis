@@ -3,21 +3,29 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
 
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
+    using Acoustics.Tools.Wav;
+
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using MSTestExtensions;
+
+    using TowseyLibrary;
 
     /// <summary>
     /// The test helper.
     /// </summary>
     public static class TestHelper
     {
-        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo>
-            {
+        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo> {
                 {
                     "06Sibylla.asf",
                     new AudioUtilityInfo
@@ -142,6 +150,90 @@
                             ChannelCount = 1,
                             BitsPerSecond = 158000,
                             MediaType = MediaTypes.MediaTypeWavpack,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.wav",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 2822400,
+                            MediaType = MediaTypes.MediaTypeWav,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.flac",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 693000,
+                            MediaType = MediaTypes.MediaTypeFlacAudio,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.mp3",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 125000,
+                            MediaType = MediaTypes.MediaTypeMp3,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.ogg",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 693000,
+                            MediaType = MediaTypes.MediaTypeOggAudio,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.wv",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 1275000,
+                            MediaType = MediaTypes.MediaTypeWavpack,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "different_channels_tone.wav",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(30.0),
+                            SampleRate = 22050,
+                            ChannelCount = 2,
+                            BitsPerSecond = 705000,
+                            MediaType = MediaTypes.MediaTypeWav,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "different_channels_tone.mp3",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(30.07),
+                            SampleRate = 22050,
+                            ChannelCount = 2,
+                            BitsPerSecond = 64000,
+                            MediaType = MediaTypes.MediaTypeMp3,
                             BitsPerSample = 16
                         }
                 }
@@ -441,12 +533,12 @@
                 Assert.Fail("BitsPerSecond");
             }
 
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(expected.MediaType));
+            Assert.IsTrue(!String.IsNullOrWhiteSpace(expected.MediaType));
             Assert.IsTrue(expected.ChannelCount.HasValue);
             Assert.IsTrue(expected.Duration.HasValue);
             Assert.IsTrue(expected.SampleRate.HasValue);
 
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(actual.MediaType));
+            Assert.IsTrue(!String.IsNullOrWhiteSpace(actual.MediaType));
             Assert.IsTrue(actual.ChannelCount.HasValue);
             Assert.IsTrue(actual.Duration.HasValue);
             Assert.IsTrue(actual.SampleRate.HasValue);
@@ -517,6 +609,55 @@
             var shntool = new ShntoolAudioUtility(shntoolExe);
 
             return shntool;
+        }
+
+        public static void AssertFrequencyInSignal(WavReader wavReader, double[] signal, int[] frequencies, int variance = 1)
+        {
+            var fft = DSP_Frames.ExtractEnvelopeAndFFTs(signal, wavReader.SampleRate, wavReader.Epsilon, 512, 0.0);
+
+            var histogram = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(fft.amplitudeSpectrogram);
+
+            var max = histogram.Max();
+            double threshold = max * 0.8;
+            var highBins = frequencies.Select(f => (int)(f / fft.FreqBinWidth)).ToArray();
+
+            bool isOk = true;
+            for (int bin = 0; bin < histogram.Length; bin++)
+            {
+                var value = histogram[bin];
+                if (value > threshold)
+                {
+                    bool anyMatch = false;
+                    foreach (var highBin in highBins)
+                    {
+                        if ((bin >= highBin - variance) && (bin <= highBin + variance))
+                        {
+                            anyMatch = true;
+                            break;
+                        }
+                    }
+                    isOk = anyMatch;
+                }
+
+                if (!isOk)
+                {
+                    break;
+                }
+            }
+
+            BaseTest.Assert.IsTrue(isOk);
+        }
+
+        public static void WavReaderAssertions(WavReader reader, AudioUtilityInfo info)
+        {
+            BaseTest.Assert.AreEqual(info.ChannelCount.Value, reader.Channels);
+            BaseTest.Assert.AreEqual(info.BitsPerSample.Value, reader.BitsPerSample);
+            BaseTest.Assert.AreEqual(info.SampleRate.Value, reader.SampleRate);
+            BaseTest.Assert.AreEqual(info.Duration.Value.TotalMilliseconds, reader.Time.TotalMilliseconds, 150);
+            BaseTest.Assert.AreEqual(
+                (int)(info.Duration.Value.TotalSeconds * info.SampleRate.Value),
+                reader.BlockCount,
+                100);
         }
     }
 

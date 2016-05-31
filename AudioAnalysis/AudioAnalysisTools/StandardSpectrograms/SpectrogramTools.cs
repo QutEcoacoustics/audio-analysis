@@ -590,6 +590,26 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
             return avgSpectrum;
         } 
+        public static double[] CalculateSumSpectrumFromSpectrogram(double[,] spectrogram)
+        {
+            int frameCount = spectrogram.GetLength(0);
+            int freqBinCount = spectrogram.GetLength(1);
+            
+            // for average  of the spectral bins
+            double[] sumSpectrum = new double[freqBinCount];
+
+            // for all frequency bins
+            for (int j = 0; j < freqBinCount; j++)
+            {
+                for (int r = 0; r < frameCount; r++)
+                {
+                    // add to store for the bin
+                    sumSpectrum[j] += spectrogram[r, j];
+                }
+            }
+
+            return sumSpectrum;
+        } 
 
 
 

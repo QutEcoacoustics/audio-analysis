@@ -184,7 +184,7 @@
 
             var sbFormats = new StringBuilder();
 
-            if (validMediaTypes != null && validMediaTypes.Count() > 0)
+            if (validMediaTypes != null && validMediaTypes.Any())
             {
                 var formats = string.Join(
                     ", ", validMediaTypes.Select(m => MediaTypes.GetExtension(m) + " (" + m + ")").ToArray());
@@ -192,7 +192,7 @@
                 sbFormats.AppendFormat(ValidFormatsAre, formats);
             }
 
-            if (invalidMediaTypes != null && invalidMediaTypes.Count() > 0)
+            if (invalidMediaTypes != null && invalidMediaTypes.Any())
             {
                 var formats = string.Join(
                     ", ", invalidMediaTypes.Select(m => MediaTypes.GetExtension(m) + " (" + m + ")").ToArray());

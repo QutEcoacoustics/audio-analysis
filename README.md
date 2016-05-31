@@ -20,3 +20,19 @@ installed.
 Not all BLOBs are stored in git-lfs. So far only the audio files in 
 `Acoustics\Acoustics.Test\TestResources` have been added.
 
+## Required Software
+
+### .Net Solutions
+
+- Visual Studio 2015
+- Resharper Ulitmate (Academic License)
+- [Code Contracts](https://visualstudiogallery.msdn.microsoft.com/1ec7db13-3363-46c9-851f-1ce455f66970)
+
+### R
+	
+- R
+- R Studio
+
+### Matalab
+
+- Matlab
