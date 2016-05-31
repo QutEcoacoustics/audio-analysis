@@ -1,39 +1,48 @@
-﻿using Acoustics.Tools;
-using AudioAnalysisTools.DSP;
-using AudioAnalysisTools.WavTools;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ChannelIntegrity.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Purpose of this class is to determine whether one of the signal channels in a stereo recording
+//   has microphone problems due to rain or whatever.
+//   It contains two main methods:
+//   (1) a method to calculate the difference between the amplitdue spectrograms of each channel
+//   (2) a method to calculate the zero crossing rate in each channel.
+//   Yvonne found method (1) in the R.SEEWAVE library called SIMSPEC.
+//   Yvonne also found that a threshold of 0.2 separates good from bad recordings but it does
+//   not determine which channel is bad.
+//   Michael found that the zero crossing rate is higher for dud channels - at least in the few recordings provided by Yvonne.
+//   These two methods are therefore called in series and info found is used to determine channel integrity.
+//   NOTE FROM ANTHONY (May 2016):
+//   there's two ways you could use this
+//   a) generate a report for a file
+//   b) while running another analysis, automatically switch channels
+//   Either way, the only way this realistically works for a large number of files is by blocking them into one minute chunks
+//   as always.Thus, you need tell me which mode you want and either way, i expect to see some API like this:
+//   DudChannelDetector.Analyze(WavReader wavReader)
+//   and
+//   DudChannelDetector.Aggregate(xxxx[] minutes)
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AudioAnalysisTools
 {
-    /// <summary>
-    /// Purpose of this class is to determine whether one of the signal channels in a stero recording 
-    /// has microphone problems due to rain or whatever.
-    /// 
-    /// It contains two main methods: 
-    /// (1) a method to calculate the difference between the amplitdue spectrograms of each channel
-    /// (2) a method to calculate the zero crossing rate in each channel.
-    /// Yvonne found method (1) in the R.SEEWAVE library called SIMSPEC.
-    /// Yvone also found that a threshold of 0.2 separates good from bad recordings but it does
-    ///    not determine which channel is bad.
-    /// Michael found that the zero crossing rate is higher for dud channels - at least in the few recordings provided by Yvonne.
-    /// These two methods are therefore called in series and info found is used to determine channel integrity.
-    /// 
-    /// NOTE FROM ANTHONY (May 2016):
-    ///        there's two ways you could use this
-    ///        a) generate a report for a file
-    ///        b) while running another analysis, automatically switch channels
-    ///
-    ///        Either way, the only way this realistically works for a large number of files is by blocking them into one minute chunks
-    ///        as always.Thus, you need tell me which mode you want and either way, i expect to see some API like this:
-    ///        DudChannelDetector.Analyze(WavReader wavReader)
-    ///        and
-    ///        DudChannelDetector.Aggregate(xxxx[] minutes) 
-    /// </summary>
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using Acoustics.Tools;
+
+    using AnalysisBase.ResultBases;
+
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
+
+    using TowseyLibrary;
+
+
     public static class ChannelIntegrity
     {
 
@@ -208,5 +217,14 @@ namespace AudioAnalysisTools
             Console.WriteLine(stats);
         }
 
+    }
+
+    public class ChannelIntegrityIndexes : SummaryIndexBase
+    {
+        public double ZeroCrossingFractionLeft { get; set; }
+
+        public double ZeroCrossingFractionRight { get; set; }
+
+        public double ChannelDifference { get; set; }
     }
 }
