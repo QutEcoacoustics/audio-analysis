@@ -102,10 +102,18 @@ namespace System
 
         public static T JsonClone<T>(this T source)
         {
-            var settings = JsonConvert.DefaultSettings();
+            // No settings actually set elsewhere in solution
+            //var settings = JsonConvert.DefaultSettings();
 
             var serialized = JsonConvert.SerializeObject(source);
             return JsonConvert.DeserializeObject<T>(serialized);
+        }
+
+        public static bool NotNull(this object obj) => obj != null;
+
+        public static T[] AsArray<T>(this T item)
+        {
+            return new[] { item };
         }
 
         #endregion

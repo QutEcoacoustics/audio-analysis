@@ -59,11 +59,12 @@
         /// <param name="temporaryFilesDirectory">
         ///     The directory for temporary files.
         /// </param>
+        /// <param name="channelSelection"></param>
         /// <param name="mixDownToMono"></param>
         /// <returns>
         /// The prepared file.
         /// </returns>
-        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, bool? mixDownToMono);
+        FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, int[] channelSelection, bool? mixDownToMono);
 
         /// <summary>
         /// Calculate the file segments for analysis.
