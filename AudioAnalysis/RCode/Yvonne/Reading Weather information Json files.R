@@ -1,13 +1,13 @@
 #library(rjson)
-setwd("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\")
+setwd("C:\\Work\\Weather Data\\")
 #setwd("C:\\Work\\Latest Observations\\Tewantin\\")
 options(scipen=999)
 library(jsonlite)
 
 folder <- "C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\"
-TewantinFiles <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+TewantinFiles <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                       pattern = "*_IDQ60801.94570.json")
-GympieFiles <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+GympieFiles <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                             pattern = "*_IDQ60801.94566.json")
 # Read in all Gympie weather data
 data <- fromJSON(GympieFiles[1])
@@ -58,6 +58,7 @@ colnames(gympie.data) <- headings
 write.csv(gympie.data, "Gympie_weather1.csv", row.names = FALSE)
 gympie_weather <- read.csv("Gympie_weather1.csv")
 
+gympie_weather_matrix <- read.csv("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\gympie_weather_matrix.csv")
 ##############################################
 # produce a table containing the weather data 
 # reconstructed into a form useful for package 
@@ -76,6 +77,9 @@ for(i in 1:length(list)) {
     stop
   }
 }
+#set ref to determine the date of the last row
+ref3 <- substr(gympie_weather[length(gympie_weather[,1]),8],1,8)
+
 ref2 <- 50-ref1
 # generate a list of column names for the gympie_matrix
 columnNames <- NULL
@@ -90,7 +94,7 @@ for (i in 1:length(list)) {
 columnNames <- c("date", columnNames)
 
 no.of.rows <- length(gympie_weather$name)
-gympie_matrix <- matrix(data = NA, nrow=floor(no.of.rows/48), 
+gympie_matrix <- matrix(data = NA, nrow=floor(no.of.rows/50), 
                         ncol = 1+10*48)
 colnames(gympie_matrix) <- columnNames
 
@@ -104,9 +108,11 @@ for(j in 1:length(gympie_matrix[,1])) {
     gympie_matrix[j,(seq2[k]+7)] <- as.character(gympie_weather[count,18])
     count <- count + 1
   }
-  gympie_matrix[j,1] <- substr(gympie_weather[(count-1),8],1,8)
+  ifelse(ref1==0, 
+         gympie_matrix[j,1] <- substr(gympie_weather[(count-1),8],1,8),
+         gympie_matrix[j,1] <- substr(gympie_weather[(count-49),8],1,8))
 }
-write.csv(gympie_matrix, "gympie_weather_matrix.csv", row.names = FALSE)
+write.csv(gympie_matrix, paste("gympie_weather_matrix_", ref3, ".csv"), row.names = FALSE)
 
 ###############################################
 # TEWANTIN WEATHER DATA

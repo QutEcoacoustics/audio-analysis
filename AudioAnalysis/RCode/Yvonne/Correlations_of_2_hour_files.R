@@ -4,7 +4,7 @@
 
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
 clusters_30 <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
-cl <- clusters_30[,1:30]
+cl <- clusters_30[ ,1:30]
 #View(cl)
 
 i = 7
@@ -147,6 +147,3 @@ clusters_100 <- read.csv("hybrid_clust_knn_17500_3_k100_2hour_full111days.csv",h
 cor_100 <- cor(clusters_100[,1:100])
 View(cor_100)
 write.csv(cor_100, "cor_hybrid_clust_knn_17500_3_k100.csv")
-
-
-

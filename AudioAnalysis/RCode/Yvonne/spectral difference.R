@@ -12,19 +12,16 @@ library(seewave)
 
 sampling_rate <- 22050
 
-sourceDir <- "E:\\Cooloola\\20151025\\GympieNP\\"
-sourceDir <- "D:\\Cooloola\\20160131\\Woondum3\\"
-sourceDir <- "D:\\Cooloola\\20160131\\GympieNP\\"
-sourceDir <- "G:\\Data\\"
-sourceDir <- "D:\\Cooloola\\20160207\\GympieNP\\"
-sourceDir <- "D:\\Cooloola\\20160306\\WoondumNP\\"
-sourceDir <- "D:\\Cooloola\\20151229\\Woondum3\\"
-sourceDir <- "D:\\Cooloola\\20151220\\GympieNP\\"
-sourceDir <- "D:\\Cooloola\\20151220\\Woondum3\\"
-sourceDir <- "D:\\Cooloola\\20151229\\GympieNP\\"
-sourceDir <- "D:\\Cooloola\\20151229\\Woondum3\\"
-sourceDir <- "E:\\Cooloola\\2015_09_27\\GympieNP\\"
-setwd(paste(substr(sourceDir,1,31),sep=""))
+sourceDir <- "D:\\Cooloola\\2015_08_30\\Woondum3\\"
+sourceDir <- "D:\\Cooloola\\2015_08_23\\Woondum3\\"
+sourceDir <- "F:\Cooloola\\20151122\\GympieNP\\"
+#http://stackoverflow.com/questions/29060491/how-to-create-a-time-series-analysis-where-y-axis-are-categorical-variable
+
+sourceDir <- "D:\\Cooloola\\2015_08_02\\GympieNP\\"
+sourceDir <- "D:\\Cooloola\\2015_08_09\\GympieNP\\"
+sourceDir <- "D:\\Cooloola\\2015_08_09\\Woondum3\\"
+sourceDir <- "D:\\Cooloola\\2015_06_21\\Woondum3\\"
+sourceDir <- "D:\\Cooloola\\2015_06_28\\Woondum3\\"
 setwd(paste(sourceDir))
 # Obtain a list of the original wave files
 myFiles <- list.files(full.names=TRUE, pattern="*.wav$", path=sourceDir)
@@ -32,79 +29,86 @@ myFiles
 myFilesShort <- list.files(full.names=FALSE, pattern="*.wav$", path=sourceDir)
 myFilesShort
 
-site <- substr(sourceDir, 22, 25)
-site <- "Gymp"
+site <- substr(sourceDir, 24, 27)
+site
+
 for (n in 1:length(myFilesShort)) {
   lgth <- file.size(myFiles[n])/(sampling_rate*4)
   seqA <- seq(0, lgth, 60)
   similarity <- NULL
-  zro_crs_left <- NULL
-  zro_crs_right <- NULL
-  
-  for(i in 2:length(seqA)) {  
+  #zro_crs_left <- NULL
+  #zro_crs_right <- NULL
+  similarity1 <- read.csv(
+    paste(site, "_", substr(myFilesShort[n],1,15), 
+                               "_simspec.csv", sep = ""), 
+                                header = TRUE)
+  for(i in 2:length(seqA)) {
     wave2 <- readWave(myFiles[n], from = seqA[i-1], to = seqA[i], 
                       units = "seconds")
     #play(wave1)
     # prepare separate left and right channel objects
     wave_left <- mono(wave2, "left")
     wave_right <- mono(wave2, "right")
+    rm(wave2)
     
-    # generate a frequency spectrum 
-    spec_left <- spec(wave=wave_left, f=sampling_rate, wl=512, 
-                  plot = FALSE)
-    spec_right <- spec(wave=wave_right, f=sampling_rate, wl=512, 
-                  plot = FALSE)
+    # generate a frequency spectrum (note: meanspec can be used
+    # instead of spec and this could be used in conjunction with
+    # cutspec to select out a particular frequency range
+    spec_left <- meanspec(wave=wave_left, f=sampling_rate, wl=512, 
+                      plot = FALSE)
+    spec_right <- meanspec(wave=wave_right, f=sampling_rate, wl=512, 
+                       plot = FALSE)
     
     sim <- simspec(spec_left, spec_right)
     similarity <- c(similarity, sim)
     
     # zero crossing rate
-    z_c_left <- zcr(wave_left, wl = NULL)
-    z_c_right <- zcr(wave_right, wl = NULL)
+    #z_c_left <- zcr(wave_left, wl = NULL)
+    #z_c_right <- zcr(wave_right, wl = NULL)
     
-    zro_crs_left <- c(zro_crs_left, z_c_left)
-    zro_crs_right <- c(zro_crs_right, z_c_right)
+    #zro_crs_left <- c(zro_crs_left, z_c_left)
+    #zro_crs_right <- c(zro_crs_right, z_c_right)
   }
-  combined <- cbind(similarity, zro_crs_left, zro_crs_right)
-  
-  write.csv(combined, paste(site, "_",  
+  #combined <- cbind(similarity, zro_crs_left, zro_crs_right)
+  similarity <- cbind(similarity1, similarity)
+  write.csv(similarity, paste(site, "_meanspec",  
               substr(myFilesShort[n], 1,15), 
               "_simspec.csv", sep=""), 
               row.names = F)
 
-  png(paste("file_", site,"_", substr(myFilesShort[n], 1,15), 
-            ".png", sep = ""), width=1000, height=500)
-  par(mar=c(3,4,2,5))
-  plot(similarity, type="l", ylim=c(0, 65), axes=FALSE, 
-       xlab = "", ylab = "", bty = "n", lwd = 1.3,
-       main=paste(site, "_", substr(myFilesShort[n], 1,15)))
-  abline(h = 20, col = "red", lw = 0.5)
-  axis(2, ylim=c(0,65), col="black", las=1)
-  mtext("Similarity (%)", side=2, line=2.5)
-  box()
+  # png(paste("file_", site,"_", substr(myFilesShort[n], 1,15), 
+  #          ".png", sep = ""), width=1000, height=500)
+  # par(mar=c(3,4,2,5))
+  # plot(similarity, type="l", ylim=c(0, 65), axes=FALSE, 
+  #     xlab = "", ylab = "", bty = "n", lwd = 1.3,
+  #     main=paste(site, "_", substr(myFilesShort[n], 1,15)))
+  # abline(h = 20, col = "red", lw = 0.5)
+  # axis(2, ylim=c(0,65), col="black", las=1)
+  # mtext("Similarity (%)", side=2, line=2.5)
+  # box()
   
   # plot the left channel zero crossing rate
-  par(new=TRUE)
-  plot(zro_crs_left, xlab="", ylab="", type="o",
-       ylim=c(0, 0.65), lwd = 1.3, pch=16, cex=0.2,
-       axes=FALSE, col="blue", lty=1)
-  mtext("Zero crossing rate", side = 4, line = 3.6)
-  axis(4, ylim=c(0, 0.65), las=1, line = 0)
+  # par(new=TRUE)
+  # plot(zro_crs_left, xlab="", ylab="", type="o",
+  #     ylim=c(0, 0.65), lwd = 1.3, pch=16, cex=0.2,
+  #     axes=FALSE, col="blue", lty=1)
+  # mtext("Zero crossing rate", side = 4, line = 3.6)
+  # axis(4, ylim=c(0, 0.65), las=1, line = 0)
   
-  par(new=TRUE)
+  # par(new=TRUE)
   # plot the right channel zero crossing rate
-  plot(zro_crs_right, xlab="", ylab="", type="o",
-       ylim=c(0, 0.65), lwd = 1.3, pch= 16, cex=0.2,
-       axes=FALSE, col="darkgreen", lty=1)
+  # plot(zro_crs_right, xlab="", ylab="", type="o",
+  #       ylim=c(0, 0.65), lwd = 1.3, pch= 16, cex=0.2,
+  #       axes=FALSE, col="darkgreen", lty=1)
   
   # plot the time axis
-  axis(1, at = pretty(1:floor(lgth/60),20), 
-       pretty(1:floor(lgth/60),20))
-  mtext("Time (minutes)", side=1, line = 2)
+  # axis(1, at = pretty(1:floor(lgth/60),20), 
+  #       pretty(1:floor(lgth/60),20))
+  # mtext("Time (minutes)", side=1, line = 2)
   
-  legend("bottomleft", legend=c("LR Similarity", "ZCR - left", "ZCR - right"),
-         text.col = c("black", "blue", "darkgreen"), 
-         bg = "white", bty = "n",
-         lty = c(1,1,1), col = c("black", "blue", "darkgreen"))
-  dev.off()
+  #legend("bottomleft", legend=c("LR Similarity", "ZCR - left", "ZCR - right"),
+  #       text.col = c("black", "blue", "darkgreen"), 
+  #      bg = "white", bty = "n",
+  #       lty = c(1,1,1), col = c("black", "blue", "darkgreen"))
+  #dev.off()
 }
