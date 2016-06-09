@@ -111,7 +111,8 @@ namespace AudioAnalysisTools
 
             double similarityIndex;
             double similarityIndexDecibel;
-            SimilarityIndex(channelL, channelR, epsilon, arguments.SamplingRate, out similarityIndex, out similarityIndexDecibel);
+            double decibelBiasIndex;
+            SimilarityIndex(channelL, channelR, epsilon, arguments.SamplingRate, out similarityIndex, out similarityIndexDecibel, out decibelBiasIndex);
             //double similarityIndex = SimilarityIndex2(channelL, channelR, epsilon, arguments.SamplingRate);
 
 
@@ -148,7 +149,7 @@ namespace AudioAnalysisTools
         }
 
         public static void SimilarityIndex(double[] channelL, double[] channelR, double epsilon, int sampleRate, 
-                                             out double similarityIndex, out double decibelIndex)
+                                             out double similarityIndex, out double decibelIndex, out double decibelBiasIndex)
         {
             //var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
             int frameSize = 512;
@@ -162,6 +163,7 @@ namespace AudioAnalysisTools
 
             similarityIndex = 0.0;
             decibelIndex    = 0.0;
+            decibelBiasIndex = 0.0;
             for (int i = 0; i < avSpectrumR.Length; i++)
             {
                 double min = Math.Min(avSpectrumL[i], avSpectrumR[i]);
@@ -175,11 +177,16 @@ namespace AudioAnalysisTools
 
                 double dBmin = 20 * Math.Log10(min);
                 double dBmax = 20 * Math.Log10(max);
-                decibelIndex += (dBmax - dBmin); 
+                decibelIndex += (dBmax - dBmin);
+
+                double dbLeft = 20 * Math.Log10(avSpectrumL[i]);
+                double dbRight = 20 * Math.Log10(avSpectrumR[i]);
+                decibelBiasIndex += (dbLeft - dbRight);
             }
 
             similarityIndex  /= (double)(avSpectrumR.Length);
             decibelIndex     /= (double)(avSpectrumR.Length);
+            decibelBiasIndex /= (double)(avSpectrumR.Length);
 
             //return similarityIndex / (double)(avSpectrumR.Length);
         }
@@ -255,5 +262,7 @@ namespace AudioAnalysisTools
         public double ChannelSimilarity { get; set; }
 
         public double ChannelDiffDecibels { get; set; }
+
+        public double ChannelBiasDecibels { get; set; }
     }
 }

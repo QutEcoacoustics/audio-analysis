@@ -59,11 +59,13 @@ namespace AnalysisPrograms
 
             double similarityIndex;
             double decibelIndex;
-            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value, out similarityIndex, out decibelIndex);
+            double decibelBiasIndex;
+            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value, out similarityIndex, out decibelIndex, out decibelBiasIndex);
 
             //double similarityIndex = ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
             result.ChannelSimilarity = similarityIndex;
             result.ChannelDiffDecibels = decibelIndex;
+            result.ChannelBiasDecibels = decibelBiasIndex;
 
             double zeroCrossingFractionLeft;
             double crossingFractionRight;

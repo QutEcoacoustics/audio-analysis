@@ -492,6 +492,16 @@ ChannelDiffDecibels:
   NormMax: 10.0
   ProjectID: Channel Integrity
   Units: "decibels"
+ChannelBiasDecibels:
+  Name: Channel Bias in decibels
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -10.0
+  NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
 FileName:
   Name: File Name
   Comment: "FILLER TO STOP WARNING MESSAGE! File Name"
