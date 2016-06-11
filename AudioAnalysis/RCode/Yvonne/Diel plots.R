@@ -1,6 +1,7 @@
 # 19 December 2015
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\")
 pca.coefficients <- read.csv("pca_coefficients.csv", header=T)
+#pca.coefficients <- read.csv("pca_coefficients_snr_evn_aci_enp-ecv.csv", header=T)
 ds6 <- pca.coefficients[,2:4]
 
 ##### Normalise the dataset ################ 

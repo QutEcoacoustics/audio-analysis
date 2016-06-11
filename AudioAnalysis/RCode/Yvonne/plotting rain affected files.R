@@ -17,7 +17,7 @@ library(stats)
 statistics <- matrix(data="NA", ncol = 5, nrow = length(myFiles))
 
 for(i in 1:length(myFiles)) {
-  name <- substr(myFilesShort[i], 21, 40)
+  name <- substr(myFilesShort[i], 19, 38)
   file <- read.csv(myFiles[i])
   sim_mean <- mean(file[,1])
   sim_sd <- sd(file[,1])
@@ -37,7 +37,6 @@ statistics <- cbind(name, sim_mean, zcr_l, zcr_r, sim_sd)
 #statistics_ordered <-  statistics[o, ]
 write.csv(statistics, "statistics.csv")
 ##############################
-
 gymp <- which(substr(statistics[,1], 1,4) == "Gymp")
 statistics_gymp <- statistics[gymp,]
 
@@ -74,13 +73,14 @@ sequence_gym <- c(sequence_gym, length_gym)
 
 for(i in 1:(length(sequence_gym)-1)) {
   i=i
+  x <- minutes1[1:length(minutes1)]  #-1]
   start <- sequence_gym[i]
   finish <- sequence_gym[i+1]  
   name <- paste(statistics_gymp[start],"_plot.png", sep = "")
   png(name, height = 1000, width = 2200)
   par(oma=c(20,3,6,2), mar=c(0,1,0,1), mfrow=c(4,1), 
       cex.axis=2)
-  x <- minutes1
+
   plot(x = x[start:finish], y = statistics_gymp[start:finish,2], type = "l",
        xlab = "", ylab = "", xaxt="n", ylim = c(10,70))
   abline(v=minutes1[which_midnight], col="red", lty=2)
@@ -89,7 +89,6 @@ for(i in 1:(length(sequence_gym)-1)) {
         cex = 3)
   abline(h=40, col="red")
   
-  x <- minutes1
   plot(x = x[start:finish], y = statistics_gymp[start:finish,5], 
        type = "l", xlab = "", ylab = "", xaxt="n", 
        ylim = c(0,20))
@@ -97,7 +96,6 @@ for(i in 1:(length(sequence_gym)-1)) {
   abline(h=14, col="red")
   
   #par(new=TRUE)
-  x <- minutes1
   plot(x = x[start:finish], y = statistics_gymp[start:finish,3], type = "l",
        xlab = "", ylab = "", xaxt="n", lwd=0.2,
        ylim = c(0.07,0.5))
@@ -159,7 +157,7 @@ for(i in 1:(length(sequence_woon)-1)) {
   png(name, height = 1000, width = 2200)
   par(oma=c(20,3,6,2), mar=c(0,1,0,1), mfrow=c(4,1), 
       cex.axis=2)
-  x <- minutes1
+  x <- minutes1[1:length(minutes1)]  #-1]
   plot(x = x[start:finish], y = statistics_woon[start:finish,2], type = "l",
        xlab = "", ylab = "", xaxt="n", ylim = c(10,70))
   abline(v=minutes1[which_midnight], col="red", lty=2)
