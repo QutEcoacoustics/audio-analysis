@@ -161,15 +161,11 @@ namespace AnalysisPrograms
             {
                 LDSpectrogramStitching.StitchPartialSpectrograms();
                 LDSpectrogramStitching.StitchPartialSpectrograms();
-
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
             }
 
 
             // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
-            if (true)
+            if (false)
             {
                 string dir = @"H:\Documents\SensorNetworks\MyPapers\2016_EcoAcousticCongress_Abstract\TransitionMatrices";
                 string filename = @"transition_matrix_BYR4_16Oct.csv";
