@@ -270,13 +270,18 @@ namespace Acoustics.Tools.Audio
                 // will not overwrite, will throw exception if the output file already exists.
                 // do not overwrite!!!
 
-                // AT: disabled these changes from Towsey. Effectively means previous runs can cache files - if files are faulty it corrupts analysis.
-                //// However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
-                //if (!output.Exists)
-                //{
-                //    File.Copy(soxOutputFile.FullName, output.FullName);
-                //}
+                // AT: the following code by Towsey is extremely dangerous in parallel code. It Effectively means previous runs can cache files - if files are faulty it corrupts analysis.
+                // AT: This code is allowed in DEBUG for ease of use. It should not be subverted in RELEASE
+#if DEBUG
+                // However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
+                if (soxOutputFile.Exists)
+                {
+                    Log.Warn($"MsaterAudioUtility is trying to create a file ({soxOutputFile}) that already exists. THIS IS NOT OK! If this happens in RELEASE the program will crash");
+                }
+                File.Copy(soxOutputFile.FullName, output.FullName, true);
+#else
                 File.Copy(soxOutputFile.FullName, output.FullName);
+#endif
             }
 
             // tidy up
