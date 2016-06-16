@@ -474,7 +474,7 @@ ZeroCrossingFractionRight:
   Units: ""
 ChannelSimilarity:
   Name: Channel Similarity
-  Comment: ""
+  Comment: "similarityIndex = (min*min)/(max*max), where min=min of two channels and max = max of the two. Summed over all freq bins"
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
@@ -484,22 +484,62 @@ ChannelSimilarity:
   Units: ""
 ChannelDiffDecibels:
   Name: Channel Difference in decibels
-  Comment: ""
+  Comment: "decibelIndex = dBmax-dBmin, where dBmin=min of two channels and dBmax = max of the two. Summed over all freq bins"
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 10.0
+  NormMin: -8.0
+  NormMax: 8.0
   ProjectID: Channel Integrity
   Units: "decibels"
-ChannelBiasDecibels:
-  Name: Channel Bias in decibels
-  Comment: ""
+AverageDecibelBias:
+  Name: Average Channel Bias in decibels
+  Comment: "avDecibelBias += (dbLeft-dbRight). Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -8.0
+  NormMax: 8.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+MedianDecibelBias:
+  Name: Median Channel Bias in decibels
+  Comment: "medianDecibelBias += (medianOfLeftSpectrum-medianOfRightSpectrum). Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -0.2
+  NormMax: 0.2
+  ProjectID: Channel Integrity
+  Units: "decibels"
+LowFreqDecibelBias:
+  Name: Low Freq Channel dB Bias
+  Comment: "lowFreqDbBias += (dbLeft-dbRight). Summed over low freq bins, 0-2kHz"
   DataType: double
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: -10.0
   NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+MidFreqDecibelBias:
+  Name: Mid-Freq Channel dB Bias
+  Comment: "midFreqDbBias += (dbLeft-dbRight). Summed over mid freq bins, 2-7kHz"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -10.0
+  NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+HighFreqDecibelBias:
+  Name: High Freq Channel dB Bias
+  Comment: "highFreqDbBias += (dbLeft-dbRight). Summed over high freq bins, 7khz-nyquist"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -5.0
+  NormMax: 5.0
   ProjectID: Channel Integrity
   Units: "decibels"
 FileName:
