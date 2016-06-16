@@ -51,13 +51,14 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms".ToDirectoryInfo()
 
             // ARTIFICIAL TEST RECORDING
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
-            //Output = @"C:\SensorNetworks\Output\Test\Test2".ToDirectoryInfo()
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
 
             //CHANNEL INTEGRITY 
-            string recordingPath = @"Y:\Yvonne\Cooloola\2015Oct04\GympieNP\20151001-064550+1000.wav";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ChannelIntegrity.yml";
-            string outputPath = @"C:\SensorNetworks\Output\ChannelIntegrity";
+            //string recordingPath = @"Y:\Yvonne\Cooloola\2015Oct04\GympieNP\20151001-064550+1000.wav";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ChannelIntegrity.yml";
+            //string outputPath = @"C:\SensorNetworks\Output\ChannelIntegrity";
 
             //MARINE 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav";
