@@ -40,7 +40,7 @@ namespace AnalysisPrograms
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
-            var result = new ChannelIntegrityIndexes()
+            var result = new ChannelIntegrityIndices()
                 {
                     StartOffset = analysisSettings.SegmentStartOffset.Value
                 };
@@ -59,19 +59,31 @@ namespace AnalysisPrograms
 
             double similarityIndex;
             double decibelIndex;
-            double decibelBiasIndex;
-            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value, out similarityIndex, out decibelIndex, out decibelBiasIndex);
+            double avDecibelBias;
+            double medianDecibelBias;
+            double lowDecibelBias;
+            double midDecibelBias;
+            double highDecibelBias;
+
+            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value, out similarityIndex,
+                                              out decibelIndex, out avDecibelBias, out medianDecibelBias,
+                                              out lowDecibelBias, out midDecibelBias, out highDecibelBias);
 
             //double similarityIndex = ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
-            result.ChannelSimilarity = similarityIndex;
+            result.ChannelSimilarity   = similarityIndex;
             result.ChannelDiffDecibels = decibelIndex;
-            result.ChannelBiasDecibels = decibelBiasIndex;
+            result.AverageDecibelBias  = avDecibelBias;
+            result.MedianDecibelBias   = medianDecibelBias;
+            result.LowFreqDecibelBias  = lowDecibelBias;
+            result.MidFreqDecibelBias  = midDecibelBias;
+            result.HighFreqDecibelBias = highDecibelBias;
+
 
             double zeroCrossingFractionLeft;
-            double crossingFractionRight;
-            ChannelIntegrity.ZeroCrossingIndex(channelLeft, channelRight, out zeroCrossingFractionLeft, out crossingFractionRight);
+            double zeroCrossingFractionRight;
+            ChannelIntegrity.ZeroCrossingIndex(channelLeft, channelRight, out zeroCrossingFractionLeft, out zeroCrossingFractionRight);
             result.ZeroCrossingFractionLeft = zeroCrossingFractionLeft;
-            result.ZeroCrossingFractionRight = crossingFractionRight;
+            result.ZeroCrossingFractionRight = zeroCrossingFractionRight;
 
             // finish the analyzer
             analysisResults.Events = new EventBase[0];

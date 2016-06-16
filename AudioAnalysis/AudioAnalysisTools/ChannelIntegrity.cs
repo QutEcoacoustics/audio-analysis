@@ -112,14 +112,25 @@ namespace AudioAnalysisTools
 
             double similarityIndex;
             double similarityIndexDecibel;
-            double decibelBiasIndex;
-            SimilarityIndex(channelL, channelR, epsilon, arguments.SamplingRate, out similarityIndex, out similarityIndexDecibel, out decibelBiasIndex);
+            double avDecibelBias;
+            double medianDecibelBias;
+            double lowDecibelBias;
+            double midDecibelBias;
+            double hiDecibelBias;
+            SimilarityIndex(channelL, channelR, epsilon, arguments.SamplingRate, out similarityIndex, out similarityIndexDecibel,
+                                                                                 out avDecibelBias, out medianDecibelBias,
+                                                                                 out lowDecibelBias, out midDecibelBias, out hiDecibelBias);
             //double similarityIndex = SimilarityIndex2(channelL, channelR, epsilon, arguments.SamplingRate);
-
 
             double zeroCrossingFractionL;
             double zeroCrossingFractionR;
             ZeroCrossingIndex(channelL, channelR, out zeroCrossingFractionL, out zeroCrossingFractionR);
+
+            Console.WriteLine(String.Format("Zero crossings: L={0:f3}   R={1:f3}", zeroCrossingFractionL, zeroCrossingFractionR));
+            Console.WriteLine(String.Format("Similarity Index: SimIndex={0:f3}   SimIndexdB={1:f3}   avBiasdB={2:f3}   medianBiasdB={3:f3}", 
+                                                similarityIndex, similarityIndexDecibel, avDecibelBias, medianDecibelBias));
+            Console.WriteLine(String.Format("dB Bias Index: low band={0:f3}   mid band={1:f3}   high band={2:f3}",
+                                                lowDecibelBias, midDecibelBias, hiDecibelBias));
         }
 
         public static void SeparateChannels(
@@ -150,46 +161,85 @@ namespace AudioAnalysisTools
         }
 
         public static void SimilarityIndex(double[] channelL, double[] channelR, double epsilon, int sampleRate, 
-                                             out double similarityIndex, out double decibelIndex, out double decibelBiasIndex)
+                                             out double similarityIndex, out double decibelIndex, 
+                                             out double avDecibelBias, out double medianDecibelBias,
+                                             out double lowFreqDbBias, out double midFreqDbBias, out double hiFreqDbBias)
         {
             //var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFFTs(subsegmentRecording, frameSize, frameStep);
             int frameSize = 512;
             int frameStep = 512;
+            frameSize *= 16; // take longer window to get low freq
+            frameStep *= 16;
 
             var dspOutputL = DSP_Frames.ExtractEnvelopeAndFFTs(channelL, sampleRate, epsilon, frameSize, frameStep);
             var avSpectrumL = MatrixTools.GetColumnsAverages(dspOutputL.amplitudeSpectrogram);
+            //var medianSpectrumL = MatrixTools.GetColumnMedians(dspOutputL.amplitudeSpectrogram);
 
             var dspOutputR = DSP_Frames.ExtractEnvelopeAndFFTs(channelR, sampleRate, epsilon, frameSize, frameStep);
             var avSpectrumR = MatrixTools.GetColumnsAverages(dspOutputR.amplitudeSpectrogram);
+            //var medianSpectrumR = MatrixTools.GetColumnMedians(dspOutputR.amplitudeSpectrogram);
 
-            similarityIndex = 0.0;
-            decibelIndex    = 0.0;
-            decibelBiasIndex = 0.0;
+            similarityIndex   = 0.0;
+            decibelIndex      = 0.0;
             for (int i = 0; i < avSpectrumR.Length; i++)
             {
                 double min = Math.Min(avSpectrumL[i], avSpectrumR[i]);
                 double max = Math.Max(avSpectrumL[i], avSpectrumR[i]);
-                double index = 0;
                 if (max <= 0.000001) max = 0.000001;  // to prevent division by zero.
 
                 // index = min / max; 
-                index = (min*min) / (max*max); 
+                double index = (min*min) / (max*max); 
                 similarityIndex += index; 
 
                 double dBmin = 20 * Math.Log10(min);
                 double dBmax = 20 * Math.Log10(max);
                 decibelIndex += (dBmax - dBmin);
+            }
+            similarityIndex /= (double)(avSpectrumR.Length);
+            decibelIndex    /= (double)(avSpectrumR.Length);
+
+            double medianLeft  = Statistics.GetMedian(avSpectrumL);
+            double medianRight = Statistics.GetMedian(avSpectrumR);
+            medianDecibelBias = medianLeft - medianRight;
+
+            // init values
+            avDecibelBias = 0.0;
+            lowFreqDbBias = 0.0;
+            // calculate the freq band bounds for 2kHz and 7khz.
+            int lowBound = frameSize * 2000 / sampleRate;
+            int midBound = frameSize * 7000 / sampleRate;
+            for (int i = 0; i < lowBound; i++)
+            {
+
+                double dbLeft  = 20 * Math.Log10(avSpectrumL[i]);
+                double dbRight = 20 * Math.Log10(avSpectrumR[i]);
+                avDecibelBias += (dbLeft - dbRight);
+                lowFreqDbBias += (dbLeft - dbRight);
+            }
+
+            midFreqDbBias = 0.0;
+            for (int i = lowBound; i < midBound; i++)
+            {
 
                 double dbLeft = 20 * Math.Log10(avSpectrumL[i]);
                 double dbRight = 20 * Math.Log10(avSpectrumR[i]);
-                decibelBiasIndex += (dbLeft - dbRight);
+                avDecibelBias += (dbLeft - dbRight);
+                midFreqDbBias += (dbLeft - dbRight);
             }
 
-            similarityIndex  /= (double)(avSpectrumR.Length);
-            decibelIndex     /= (double)(avSpectrumR.Length);
-            decibelBiasIndex /= (double)(avSpectrumR.Length);
+            hiFreqDbBias = 0.0;
+            for (int i = midBound; i < avSpectrumR.Length; i++)
+            {
 
-            //return similarityIndex / (double)(avSpectrumR.Length);
+                double dbLeft = 20 * Math.Log10(avSpectrumL[i]);
+                double dbRight = 20 * Math.Log10(avSpectrumR[i]);
+                avDecibelBias += (dbLeft - dbRight);
+                hiFreqDbBias  += (dbLeft - dbRight);
+            }
+            avDecibelBias /= (double)(avSpectrumR.Length);
+            lowFreqDbBias /= (double)(lowBound);
+            midFreqDbBias /= (double)(midBound- lowBound);
+            hiFreqDbBias  /= (double)(avSpectrumR.Length - midBound);
         }
 
         public static double SimilarityIndex2(double[] channelL, double[] channelR, double epsilon, int sampleRate)
@@ -254,7 +304,7 @@ namespace AudioAnalysisTools
 
     }
 
-    public class ChannelIntegrityIndexes : SummaryIndexBase
+    public class ChannelIntegrityIndices : SummaryIndexBase
     {
         public double ZeroCrossingFractionLeft { get; set; }
 
@@ -264,6 +314,14 @@ namespace AudioAnalysisTools
 
         public double ChannelDiffDecibels { get; set; }
 
-        public double ChannelBiasDecibels { get; set; }
+        public double AverageDecibelBias { get; set; }
+
+        public double MedianDecibelBias { get; set; }
+
+        public double LowFreqDecibelBias { get; set; }
+
+        public double MidFreqDecibelBias { get; set; }
+
+        public double HighFreqDecibelBias { get; set; }
     }
 }
