@@ -306,18 +306,18 @@ EntropyOfCoVSpectrum:
   Units: ""
   IncludeInComboIndex: false
   ComboWeight: 0.0
-#ClusterCount:
-#  Name: Cluster Count
-#  Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
-#  DataType: int
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0
-#  NormMax: 50
-#  ProjectID: Acoustic Indices
-#  Units: ""
-#  IncludeInComboIndex: true
-#  ComboWeight: 0.3
+ClusterCount:
+  Name: Cluster Count
+  Comment: "Number of spectrum clusters in one minute audio segment as determined by a clustering algorithm."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 50
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: true
+  ComboWeight: 0.3
 #AvgClusterDuration:
 #  Name: av Cluster Duration
 #  Comment: "Average duration in ms of the spectrum cluster sequences."
@@ -330,18 +330,18 @@ EntropyOfCoVSpectrum:
 #  Units: "ms"
 #  IncludeInComboIndex: false
 #  ComboWeight: 0.0
-#ThreeGramCount:
-#  Name: 3-gram Count
-#  Comment: "Number of different tri-gram cluster sequences."
-#  DataType: int
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0
-#  NormMax: 1000
-#  ProjectID: Acoustic Indices
-#  Units: ""
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
+ThreeGramCount:
+  Name: 3-gram Count
+  Comment: "Number of different tri-gram cluster sequences."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 1000
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
 SptDensity:
   Name: SPT density
   Comment: "Average number of spectral peaks tracks traversing a frame."
@@ -378,30 +378,30 @@ SptDensity:
 #  Units: "s"
 #  IncludeInComboIndex: false
 #  ComboWeight: 0.0
-RainIndex:
-  Name: Rain Index
-  Comment: "OBSOLETE! DEPRACATED! Rain score calculated every 10 sec and 6 values averaged over the minute."
-  DataType: double
-  DefaultValue: 0.0
-  DoDisplay: false
-  NormMin: 0
-  NormMax: 1.0
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-CicadaIndex:
-  Name: Cicada Index
-  Comment: "OBSOLETE! DEPRACATED! Cicada score calculated every 10 sec and 6 values averaged over the minute."
-  DataType: double
-  DefaultValue: 0.0
-  DoDisplay: false
-  NormMin: 0
-  NormMax: 1.0
-  ProjectID: Acoustic Indices
-  Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
+#RainIndex:
+#  Name: Rain Index
+#  Comment: "OBSOLETE! DEPRACATED! Rain score calculated every 10 sec and 6 values averaged over the minute."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: false
+#  NormMin: 0
+#  NormMax: 1.0
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
+#CicadaIndex:
+#  Name: Cicada Index
+#  Comment: "OBSOLETE! DEPRACATED! Cicada score calculated every 10 sec and 6 values averaged over the minute."
+#  DataType: double
+#  DefaultValue: 0.0
+# DoDisplay: false
+#  NormMin: 0
+# NormMax: 1.0
+# ProjectID: Acoustic Indices
+#  Units: ""
+#  IncludeInComboIndex: false
+#  ComboWeight: 0.0
 NDSI:
   Name: NDSI
   Comment: "Normalised Difference Soundscape Index) calculated from PSD - originated from Stuart Gage."
@@ -582,6 +582,18 @@ BGN:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "dB"
+CLS:
+  Name: spectralCLS
+  Comment: "Spectral cluster count."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 50.0
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: ""
 CVR:
   Name: spectralCVR
   Comment: "Freq bin COVER: Spectrum of the fraction of active elements in each freq bin where amplitude > threshold = 3 dB."
