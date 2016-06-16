@@ -118,7 +118,7 @@ namespace AudioAnalysisTools.Indices
         {
             string recordingFileName = recording.FileName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
-            int signalLength = recording.WavReader.Samples.Length;
+            int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate   = recording.WavReader.SampleRate; 
             TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
@@ -376,11 +376,11 @@ namespace AudioAnalysisTools.Indices
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
             // vii: calculate RAIN and CICADA indices.
-            if (!warned)
-            {
-                Logger.Warn("Rain and cicada index caculation is disabled");
-                warned = true;
-            }
+            //if (!warned)
+            //{
+            //    Logger.Warn("Rain and cicada index calculation is disabled");
+            //    warned = true;
+            //}
 
             ////Dictionary<string, double> dict = RainIndices.GetIndices(signalEnvelope, subsegmentTimeSpan, frameStepTimeSpan, amplitudeSpectrogram, LowFreqBound, MidFreqBound, freqBinWidth);
 
@@ -468,26 +468,35 @@ namespace AudioAnalysisTools.Indices
 
 
             // ######################################################################################################################################################
-            // return if activeFrameCount too small or segmentCount == 0  because no point doing clustering
-            if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0))
+            // return if (activeFrameCount too small || segmentCount == 0 || short index calc duration) because no point doing clustering
+            if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0) || (indexCalculationDuration.TotalSeconds < 10))
             {
-                //summaryIndices.ClusterCount = 0;
-                //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
-                //summaryIndices.ThreeGramCount = 0;
                 result.Sg = sonogram;
                 result.Hits = hits;
                 result.TrackScores = scores;
+
+                // IN ADDITION return if indexCalculationDuration < 10 seconds because no point doing clustering on short time segment
+                // NOTE: Activity was calculated with 3dB threshold AFTER backgroundnoise removal.
+                summaryIndices.ClusterCount = 0;
+                //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
+                summaryIndices.ThreeGramCount = 0;
+                //spectralIndices.CLS = new double[freqBinCount];
                 return result;
             }
 
-            /*
             // #######################################################################################################################################################
             // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
 
-            // for deriving binary spectrogram
-            const double BinaryThreshold = 0.06;
+            // SET CLUSTERING VERBOSITY.
+            SpectralClustering.Verbose = true;
 
-            // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
+            // NOTE: The midBandAmplSpectrogram is derived from the amplitudeSpectrogram by removing low freq band.
+            // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
+            // Set threshold for deriving binary spectrogram - DEFAULT=0.06 prior to June2016
+            const double BinaryThreshold = 0.12;
+
+            // ACTIVITY THRESHOLD - require activity in at least N freq bins to include the spectrum for training
+            //                      DEFAULT was N=2 prior to June 2016. Incerased threshold to reduce cluster count for noise.
             const double RowSumThreshold = 2.0;
             var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
             var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), BinaryThreshold, RowSumThreshold);
@@ -505,16 +514,16 @@ namespace AudioAnalysisTools.Indices
             if (data.trainingData.Count <= 8)     
             {
                 clusterInfo.clusterHits2 = null;
-                //summaryIndices.ClusterCount = 0;
+                summaryIndices.ClusterCount = 0;
                 //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
-                //summaryIndices.ThreeGramCount = 0;
+                summaryIndices.ThreeGramCount = 0;
             }
             else
             {
                 clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, WtThreshold, HitThreshold, data.selectedFrames);
-                //summaryIndices.ClusterCount = clusterInfo.clusterCount;
+                summaryIndices.ClusterCount = clusterInfo.clusterCount;
                 //summaryIndices.AvgClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameTimeSpan.TotalSeconds); // av cluster duration
-                //summaryIndices.ThreeGramCount = clusterInfo.triGramUniqueCount;
+                summaryIndices.ThreeGramCount = clusterInfo.triGramUniqueCount;
 
                 double[] clusterSpectrum = clusterInfo.clusterSpectrum;
                 spectralIndices.CLS = SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor);
@@ -523,9 +532,9 @@ namespace AudioAnalysisTools.Indices
             // xv: STORE CLUSTERING IMAGES
             if (returnSonogramInfo)
             {
-                ////bool[] selectedFrames = tuple_Clustering.Item3;
-                ////scores.Add(DataTools.Bool2Binary(selectedFrames));
-                ////List<double[]> clusterWts = tuple_Clustering.Item4;
+                //bool[] selectedFrames = tuple_Clustering.Item3;
+                //scores.Add(DataTools.Bool2Binary(selectedFrames));
+                //List<double[]> clusterWts = tuple_Clustering.Item4;
                 int[] clusterHits = clusterInfo.clusterHits2;
                 string label = string.Format(clusterInfo.clusterCount + " Clusters");
                 if (clusterHits == null)
@@ -535,7 +544,7 @@ namespace AudioAnalysisTools.Indices
 
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0)); // location of cluster hits
             }
-            */
+           
 
 
             result.Sg = sonogram;

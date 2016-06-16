@@ -131,7 +131,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                 Source = recordingPath.ToFileInfo(),
                 Config = configPath.ToFileInfo(),
                 Output = outputPath.ToDirectoryInfo(),
-                MixDownToMono = false
+                MixDownToMono = true
             };
 
             if (!arguments.Source.Exists)
