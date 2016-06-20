@@ -51,7 +51,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //Output = @"C:\SensorNetworks\Output\FalseColourSpectrograms".ToDirectoryInfo()
 
             // ARTIFICIAL TEST RECORDING
-            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_4min_artificial.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
             string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
             string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
 

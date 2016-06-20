@@ -496,7 +496,7 @@ namespace AudioAnalysisTools.Indices
             const double BinaryThreshold = 0.12;
 
             // ACTIVITY THRESHOLD - require activity in at least N freq bins to include the spectrum for training
-            //                      DEFAULT was N=2 prior to June 2016. Incerased threshold to reduce cluster count for noise.
+            //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
             const double RowSumThreshold = 2.0;
             var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
             var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), BinaryThreshold, RowSumThreshold);
