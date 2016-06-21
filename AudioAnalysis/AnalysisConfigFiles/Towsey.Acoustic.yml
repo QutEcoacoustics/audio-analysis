@@ -33,8 +33,8 @@ FrameLength: 512
 ResampleRate: 22050
 
 #Default values in code are LowFreqBound=500Hz & MidFreqBound=4000
-LowFreqBound: 500
-MidFreqBound: 4000
+LowFreqBound: 1000
+MidFreqBound: 8000
 
 DisplayWeightedIndices: false
 
