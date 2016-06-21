@@ -462,8 +462,11 @@ namespace AnalysisPrograms
                 // ##############################################################################################################
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
+                string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+                string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT;
+                string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
                 var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday, 
-                                                                         indexGenerationData.IndexCalculationDuration, verbose);
+                                                                         indexGenerationData.IndexCalculationDuration, keys, verbose);
                 if (spectralDict.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
@@ -474,7 +477,9 @@ namespace AnalysisPrograms
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
-                    LDSpectrogramStitching.DrawSpectralIndexFiles(spectralDict, 
+                    var sgConfig = LdSpectrogramConfig.GetDefaultConfig(colorMap1, colorMap2);
+                    LDSpectrogramStitching.DrawSpectralIndexFiles(spectralDict,
+                                                                  sgConfig,
                                                                   indexGenerationData, 
                                                                   indexPropertiesConfig, 
                                                                   resultsDir, 

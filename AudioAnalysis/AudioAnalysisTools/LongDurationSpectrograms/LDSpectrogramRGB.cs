@@ -1354,7 +1354,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
-            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_POW_CVR;   // assigns indices to RGB
+            string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_POW_EVN;   // assigns indices to RGB
 
             //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
             

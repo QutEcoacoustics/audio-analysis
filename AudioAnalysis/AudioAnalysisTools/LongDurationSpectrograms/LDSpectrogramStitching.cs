@@ -82,6 +82,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// ONLY Use this concatenation method when you want to concatenate the files for a fixed single day.
         /// The files to be concatenated must be somewhere in the subdirectory structure of the passed list of data directories
+        /// Read them into a dictionary
         /// </summary>
         /// <param name="directories"></param>
         /// <param name="opDir"></param>
@@ -92,14 +93,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                          string filestem,
                                          DateTimeOffset dto,
                                          TimeSpan indexCalcTimeSpan,
+                                         string[] keys,
                                          bool verbose = false)
         {
             // 1. PATTERN SEARCH FOR CORRECT CSV FILES
-            // Assume that the required files are in subdirectories of given site. Read them into a dictionary
-            string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_EVN;
-            string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
-
             string analysisType = "Towsey.Acoustic";
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
 
@@ -159,6 +156,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// It only merges files for the passed fixed date. i.e only 24 hours 
         /// </summary>
         public static void DrawSpectralIndexFiles(Dictionary<string, double[,]> dictionary,
+                                                  LdSpectrogramConfig sgConfig,
                                                   IndexGenerationData indexGenerationData,
                                                   FileInfo indexPropertiesConfigFileInfo,
                                                   DirectoryInfo opDir,
@@ -182,7 +180,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
             opDir, // topLevelDirectories[0], // this should not be required but it is - because things have gotten complicated !
             opDir,
-            LdSpectrogramConfig.GetDefaultConfig(),
+            sgConfig,
             indexPropertiesConfigFileInfo,
             indexGenerationData,
             opFileStem,
