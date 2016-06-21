@@ -115,7 +115,8 @@
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
             SiteDescription siteDescription = null,
-            List<ErroneousIndexSegments> errors = null
+            List<ErroneousIndexSegments> errors = null,
+            bool verbose = false
             )
         {
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary();
@@ -142,9 +143,12 @@
                     }
                     else
                     {
-                        Logger.Warn(
-                            "A index properties configuration could not be found for {0} (not even in the translation directory). Property is ignored and not rendered"
-                                .Format2(key));
+                        if (verbose)
+                        {
+                            Logger.Warn(
+                              "A index properties configuration could not be found for {0} (not even in the translation directory). Property is ignored and not rendered"
+                                  .Format2(key));
+                        }
                         continue;
                     }
                 }

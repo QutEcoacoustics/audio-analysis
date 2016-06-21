@@ -91,7 +91,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                          DirectoryInfo opDir,
                                          string filestem,
                                          DateTimeOffset dto,
-                                         TimeSpan indexCalcTimeSpan)
+                                         TimeSpan indexCalcTimeSpan,
+                                         bool verbose = false)
         {
             // 1. PATTERN SEARCH FOR CORRECT CSV FILES
             // Assume that the required files are in subdirectories of given site. Read them into a dictionary
@@ -103,7 +104,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
 
             string fileStemPattern = "*" + dateString + "*__" + analysisType;
-            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories.ToArray(), fileStemPattern, keys, indexCalcTimeSpan);
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories.ToArray(), fileStemPattern, keys, indexCalcTimeSpan, verbose);
 
             // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
             string opFileStem = String.Format("{0}_{1}", filestem, dateString);
@@ -134,7 +135,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Dictionary<string, double[,]> ConcatenateSpectralIndexFiles(DirectoryInfo[] topLevelDirectories,
                                                          string filePrefix,
                                                          DateTimeOffset dto,
-                                                         string[] keys)
+                                                         string[] keys,
+                                                         bool verbose = false)
         {
             string analysisType = "Towsey.Acoustic";
 
@@ -145,7 +147,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string fileStemPattern = "*" + dateString + "*__" + analysisType;
             TimeSpan indexCalcDuration = TimeSpan.FromSeconds(60); // ASSUMPTION!!!
-            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys, indexCalcDuration);
+            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(topLevelDirectories, fileStemPattern, keys, indexCalcDuration, verbose);
             return dictionary;
         }
 
@@ -161,7 +163,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                   FileInfo indexPropertiesConfigFileInfo,
                                                   DirectoryInfo opDir,
                                                   SiteDescription siteDescription,
-                                                  List<ErroneousIndexSegments> segmentErrors = null)
+                                                  List<ErroneousIndexSegments> segmentErrors = null,
+                                                  bool Verbose = false)
         {
             // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
@@ -189,7 +192,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             indexDistributions,
             siteDescription,
             segmentErrors,
-            ImageChrome.With);
+            ImageChrome.With,
+            Verbose);
         }
 
 
@@ -284,7 +288,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                 FileInfo indexPropertiesConfigFileInfo,
                                                 DirectoryInfo opDir,
                                                 SiteDescription siteDescription,
-                                                List<ErroneousIndexSegments> erroneousSegments = null // info if have fatal errors i.e. no signal
+                                                List<ErroneousIndexSegments> erroneousSegments = null, // info if have fatal errors i.e. no signal
+                                                bool verbose = false
             )
         {
             DateTimeOffset dto = (DateTimeOffset)indexGenerationData.RecordingStartDate;
@@ -306,8 +311,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                  indexGenerationData.IndexCalculationDuration,
                                  indexGenerationData.RecordingStartDate,
                                  siteDescription,
-                                 erroneousSegments
-                                 );
+                                 erroneousSegments,
+                                 verbose);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
             tracksImage.Save(imagePath);
         }
