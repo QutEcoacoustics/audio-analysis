@@ -1347,7 +1347,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
             SiteDescription siteDescription = null,
             List<ErroneousIndexSegments> segmentErrors = null,
-            ImageChrome imageChrome = ImageChrome.With)
+            ImageChrome imageChrome = ImageChrome.With,
+            bool Verbose = false)
         {
             LdSpectrogramConfig config = ldSpectrogramConfig;
 
@@ -1389,17 +1390,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             if (indexSpectrograms == null)
             {
                 var sw = Stopwatch.StartNew();
-                Logger.Info("Reading spectra files from disk");
+                if (Verbose) Logger.Info("Reading spectra files from disk");
                 
                 // reads all known files spectral indices
                 cs1.ReadCSVFiles(inputDirectory, fileStem, cs1.spectrogramKeys);
                 DateTime now2 = DateTime.Now;
                 sw.Stop();
-                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture) + " seconds");
+                if (Verbose)
+                {
+                    LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds.ToString(CultureInfo.InvariantCulture) + " seconds");
+                }
             }
             else
             {
-                Logger.Info("Spectra loaded from memory");
+                if (Verbose)
+                {
+                    Logger.Info("Spectra loaded from memory");
+                }
                 cs1.LoadSpectrogramDictionary(indexSpectrograms);
             }
 

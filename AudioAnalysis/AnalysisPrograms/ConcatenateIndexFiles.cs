@@ -94,6 +94,8 @@ namespace AnalysisPrograms
                 set { concatenateEverythingYouCanLayYourHandsOn = value; }
             }
 
+            internal bool Verbose { get; set; }
+
         }
 
         /// <summary>
@@ -110,15 +112,15 @@ namespace AnalysisPrograms
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
             //                           };
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
-                                       };
-            string directoryFilter = "201303";
-            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
-            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
-            dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
-            string opFileStem = "CornellMarine";
-            indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
+            //                           };
+            //string directoryFilter = "201303";
+            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
+            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            //dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
+            //string opFileStem = "CornellMarine";
+            //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
 
 
             // ########################## YVONNE'S RECORDINGS          
@@ -127,28 +129,26 @@ namespace AnalysisPrograms
             //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
             //                           };
 
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
-            //                             new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
-            //                           };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\Output\YvonneResults\DataFiles_62_93\2015Nov1"),
+                                       };
 
-            // below directory was to check a bug - missing 6 hours of recording
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
+            //below directory was to check a bug - missing 6 hours of recording
+            //DirectoryInfo[] dataDirs = {
+            //    new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
             //                           };
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola\2015July26\Woondum3"),
             //                           };
             //string directoryFilter = "20150725-000000+1000.wav";
 
-            // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            //string directoryFilter = "Woondum3";
+            //The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
+            string directoryFilter = "Woondum3";
             //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
 
-            //string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
-            //string opPath = @"C:\SensorNetworks\Output\YvonneResults\FixACI bug3";
+            string opPath = @"G:\SensorNetworks\Output\YvonneResults\ConcatenatedFiles_62_93";
 
-            //dtoStart = new DateTimeOffset(2015, 07, 25, 0, 0, 3, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2015, 07, 28, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
-            //string opFileStem = directoryFilter;
+            dtoStart = new DateTimeOffset(2015, 10, 26, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2015, 10, 28, 0, 0, 0, TimeSpan.Zero);
+            string opFileStem = directoryFilter;
 
 
             /*
@@ -252,12 +252,14 @@ namespace AnalysisPrograms
                 InputDataDirectories = dataDirs,
                 OutputDirectory = new DirectoryInfo(opPath),
                 DirectoryFilter = directoryFilter,
-                FileStemName    = opFileStem,
-                StartDate       = dtoStart,
-                EndDate         = dtoEnd,
-                DrawImages      = drawImages,
+                FileStemName = opFileStem,
+                StartDate = dtoStart,
+                EndDate = dtoEnd,
+                DrawImages = drawImages,
                 IndexPropertiesConfig = indexPropertiesConfig,
                 ConcatenateEverythingYouCanLayYourHandsOn = false,
+                TimeSpanOffsetHint = TimeSpan.FromHours(10),
+                Verbose = true,
             };
             throw new NoDeveloperMethodException();
     }
@@ -269,8 +271,11 @@ namespace AnalysisPrograms
             if (arguments == null)
             {
                 arguments = Dev();
-                verbose = true; // assume verbose if in dev mode
+                verbose = true; // default is verbose if in dev mode
             }
+
+            verbose = arguments.Verbose;
+            IndexMatrices.Verbose = verbose;
 
             if (verbose)
             {
@@ -450,14 +455,15 @@ namespace AnalysisPrograms
                                                                  indexPropertiesConfig, 
                                                                  resultsDir, 
                                                                  siteDescription,
-                                                                 indexErrors
-                                                                 );
+                                                                 indexErrors,
+                                                                 verbose);
                 }
 
                 // ##############################################################################################################
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
-                var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday, indexGenerationData.IndexCalculationDuration);
+                var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday, 
+                                                                         indexGenerationData.IndexCalculationDuration, verbose);
                 if (spectralDict.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
@@ -473,7 +479,8 @@ namespace AnalysisPrograms
                                                                   indexPropertiesConfig, 
                                                                   resultsDir, 
                                                                   siteDescription,
-                                                                  indexErrors);
+                                                                  indexErrors,
+                                                                  verbose);
                 }
 
             } // over days
