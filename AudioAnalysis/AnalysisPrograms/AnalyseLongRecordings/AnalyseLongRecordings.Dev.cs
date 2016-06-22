@@ -118,6 +118,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // Use these configs for Summary and Spectral Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Italy.Acoustic.Parallel.yml";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
+            // Use this config when doing high resolution indices PLUS species recognisers
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiResPlusRecognisers.yml";
 
             // Use these configs for Call recognition Indices
