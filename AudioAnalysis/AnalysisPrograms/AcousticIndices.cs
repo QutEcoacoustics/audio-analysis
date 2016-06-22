@@ -390,8 +390,11 @@ namespace AnalysisPrograms
                     acousticIndicesParsedConfiguration.IndexCalculationDuration,
                     acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                     acousticIndicesParsedConfiguration.IndexPropertiesFile);
-                
+
                 /* ###################################################################### */
+
+                indexCalculateResult.SummaryIndexValues.FileName = analysisSettings.SourceFile.Name;
+                indexCalculateResult.SpectralIndexValues.FileName = analysisSettings.SourceFile.Name;
 
                 analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;

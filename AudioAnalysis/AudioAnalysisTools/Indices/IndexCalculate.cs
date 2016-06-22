@@ -44,11 +44,12 @@ namespace AudioAnalysisTools.Indices
         public const int DefaultWindowSize = 256;
 
         // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
-        public static int DefaultLowFreqBound = 500;
+        // The midband, 1000Hz to 8000Hz, covers the bird-band in SERF & Gympie recordings.
+        public static int DefaultLowFreqBound = 1000;
 
-        public static int DefaultMidFreqBound = 4000;
+        public static int DefaultMidFreqBound = 8000;
 
-        public static int DefaultHighFreqBound = 8010;
+        public static int DefaultHighFreqBound = 11000;
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -311,13 +312,13 @@ namespace AudioAnalysisTools.Indices
             // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI 
             spectralIndices.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
 
-            // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that contain anthropophony.
+            // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that likely contain anthropogenic noise.
             int lowerBinBound = (int)Math.Ceiling(LowFreqBound / dspOutput1.FreqBinWidth);
             // calculate bin id of upper boundary of bird-band. This is to avoid high freq artefacts due to mp3 compression.
-            int higherBinBound = (int)Math.Ceiling(HihFreqBound / dspOutput1.FreqBinWidth);
+            int upperBinBound = (int)Math.Ceiling(MidFreqBound / dspOutput1.FreqBinWidth);
             // calculate number of freq bins in the reduced bird-band.
             //int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
-            int reducedFreqBinCount = higherBinBound - lowerBinBound;
+            int midBandBinCount = upperBinBound - lowerBinBound + 1;
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
             // original sample rate can be anything 11.0-44.1 kHz.
@@ -337,7 +338,7 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.ACI = aciSpectrum;
 
             // remove low freq band of ACI spectrum and store average ACI value
-            double[] reducedAciSpectrum = DataTools.Subarray(aciSpectrum, lowerBinBound, reducedFreqBinCount);
+            double[] reducedAciSpectrum = DataTools.Subarray(aciSpectrum, lowerBinBound, midBandBinCount);
             result.SummaryIndexValues.AcousticComplexity = reducedAciSpectrum.Average();
 
             // iii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
@@ -360,7 +361,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // v: ENTROPY OF AVERAGE SPECTRUM & VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
-            var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, reducedFreqBinCount);
+            var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, midBandBinCount);
             // ENTROPY of spectral averages - Reverse the values i.e. calculate 1-Hs and 1-Hv, and 1-Hcov for energy concentration
             summaryIndices.EntropyOfAverageSpectrum = 1 - tuple.Item1;
             // ENTROPY of spectrum of Variance values
@@ -372,7 +373,7 @@ namespace AudioAnalysisTools.Indices
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
-            double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, higherBinBound);
+            double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, upperBinBound);
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
             // vii: calculate RAIN and CICADA indices.
@@ -486,11 +487,12 @@ namespace AudioAnalysisTools.Indices
 
             // #######################################################################################################################################################
             // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
+            //                   In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
 
             // SET CLUSTERING VERBOSITY.
-            SpectralClustering.Verbose = true;
+            //SpectralClustering.Verbose = true;
 
-            // NOTE: The midBandAmplSpectrogram is derived from the amplitudeSpectrogram by removing low freq band.
+            // NOTE: The midBandAmplSpectrogram is derived from the amplitudeSpectrogram by removing low freq band AND high freq band.
             // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
             // Set threshold for deriving binary spectrogram - DEFAULT=0.06 prior to June2016
             const double BinaryThreshold = 0.12;
@@ -498,7 +500,7 @@ namespace AudioAnalysisTools.Indices
             // ACTIVITY THRESHOLD - require activity in at least N freq bins to include the spectrum for training
             //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
             const double RowSumThreshold = 2.0;
-            var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, upperBinBound);
             var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), BinaryThreshold, RowSumThreshold);
 
             SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
