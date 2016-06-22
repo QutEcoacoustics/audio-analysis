@@ -61,7 +61,7 @@ namespace AnalysisBase.ResultBases
         /// This is an representation of <c>SegmentStartOffset</c>.
         /// </summary>
         [Obsolete]
-        public Single StartOffsetSecond { get; private set; }
+        internal Single StartOffsetSecond { get; private set; }
 
         /// <summary>
         /// Gets the StartOffsetMinute.

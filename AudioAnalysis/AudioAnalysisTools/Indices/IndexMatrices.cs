@@ -52,7 +52,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        public static Dictionary<string, double[]> GetSummaryIndexFilesAndConcatenateWithTimeCheck(FileInfo[] paths, TimeSpan indexCalcDuration)
+        public static Tuple<Dictionary<string, double[]>, string[]> GetSummaryIndexFilesAndConcatenateWithTimeCheck(FileInfo[] paths, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
             DateTimeOffset startDTO;
@@ -76,19 +76,27 @@ namespace AudioAnalysisTools.Indices
             var dictionary = new Dictionary<string, double[]>();
             int[] rowCounts = new int[paths.Length];
 
-            // cycle through remaining files
+            var listOfFileNames = new List<string>();
+
+            // cycle through files
             for (int i = 0; i < paths.Length; i++)
             {
                 file = paths[i];
                 if (file.Exists)
                 {
                     //####################################################################
-                    // REMEMBER THIS
-                    // ALTERNATIVE WAY TO DO HTIS WHOLE BUSINESS
-                    //var rowsOfCsvFile = Csv.ReadFromCsv<IndexSummaryValues>(file);
-                    //var ACIvlauesForOneDAY = rowsOfCsvFile.Select(x => x.ACI).ToArray();
+                    // NOTE: Using Csv.ReadFromCsv() ONLY to read in the file names as strings.
+                    //       Using CsvTools.ReadCSVFile2Dictionary(file.FullName) to read in all double values
+                    // THIS IS A TERRIBLE HACK.
+                    // TODO TODO TODO TODO 
+                    // DO THIS PROPERLY i.e. DEPRACATE CALL TO CSVTOOLS
+                    // JOB FOR A RAINY DAY.
+                    var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(file, throwOnMissingField: false);
+                    //var AciValues = rowsOfCsvFile.Select(x => x.AcousticComplexity).ToArray();
+                    var fileNameValues = rowsOfCsvFile.Select(x => x.FileName).ToArray();
+                    listOfFileNames.AddRange(fileNameValues);
 
-                    // ##################################### NEXT LINE STILL USING DEPRACATED METHOD
+                    // ##################################### NEXT LINE STILL USING DEPRACATED METHOD to read in doubles.
                     var intermediateDictionary = CsvTools.ReadCSVFile2Dictionary(file.FullName);
 
                     if(headers == null) headers = intermediateDictionary.Keys.ToArray(); // only take headers in first file at start of day
@@ -114,6 +122,7 @@ namespace AudioAnalysisTools.Indices
 
                     if (i == paths.Length-1) break;
 
+                    // calculate the partial elapsed time indiced by file names.
                     TimeSpan partialElapsedTime = dtoArray[i+1] - dtoArray[i];
                     int partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
                     //int partialMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
@@ -142,6 +151,7 @@ namespace AudioAnalysisTools.Indices
                 }
             }
 
+
             // ########### NOW DO FINAL CHECK ON ROW-COUNT OF CONCATENATED FILES
             // IMPORTANT: IT IS ASSUMED THAT A FULL 24 HOURS OF DATA HAS BEEN CONCATENATED
 
@@ -164,18 +174,19 @@ namespace AudioAnalysisTools.Indices
                 dictionary = RepairDictionaryOfArrays(dictionary, actualDataRowCount, expectedRowCount);
             }
             //FileTools.WriteMatrix2File(M, @"C:\Users\towsey\temp\delete2.csv");
-
-            return dictionary;
+            var tuple = new Tuple<Dictionary<string, double[]>, string[]>(dictionary, listOfFileNames.ToArray());
+            return tuple;
         }
 
 
         public static Dictionary<string, double[]> RepairDictionaryOfArrays(Dictionary<string, double[]> dictionary, int rowCount, int requiredCount)
         {
+            int differenceCount = Math.Abs(rowCount - requiredCount);
             if (rowCount > requiredCount)
             {
                 if (IndexMatrices.Verbose)
                 {
-                    LoggedConsole.WriteLine("  About to append {0} rows", requiredCount);
+                    LoggedConsole.WriteLine("  About to remove end {0} rows", differenceCount);
                 }
                 int countToRemove = rowCount - requiredCount;
                 dictionary = RemoveValuesFromArraysInDictionary(dictionary, countToRemove);
@@ -185,7 +196,7 @@ namespace AudioAnalysisTools.Indices
             {
                 if (IndexMatrices.Verbose)
                 {
-                    LoggedConsole.WriteLine("  About to append {0} rows", requiredCount);
+                    LoggedConsole.WriteLine("  About to append {0} rows", differenceCount);
                 }
                 int countToAdd = requiredCount - rowCount;
                 dictionary = PadDictionaryArraysWithNulls(dictionary, countToAdd);
@@ -194,7 +205,7 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-
+        
         /// <summary>
         /// WARNING! This method assumes that the total data required is 24 hours long and will trim csv files accordingly.
         /// 
@@ -202,6 +213,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
+        /*
         public static Tuple<string[], double[,]> GetSummaryIndexFilesAndConcatenateWithTimeCheck1(FileInfo[] paths)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
@@ -293,7 +305,7 @@ namespace AudioAnalysisTools.Indices
             return opTuple;
         }
 
-
+*/
 
         static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
         {
@@ -558,8 +570,8 @@ namespace AudioAnalysisTools.Indices
                 M = RepairMatrixRowCount(M, numberOfMinutesInDay);
                 if (Verbose)
                 {
-                    LoggedConsole.WriteLine("WARNING: ROW COUNT EXCEEDS 1440 MINUTES IN DAY from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
-                    string str = String.Format("   Final Cummulative Row Count = {0}   Removing rows to correct length!", cummulativeRowCount);
+                    LoggedConsole.WriteLine("WARNING: ROW COUNT EXCEEDS 1440 MINUTES from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck() ");
+                    string str = String.Format("   Final Cummulative Row Count = {0}   Removing excess rows!", cummulativeRowCount);
                     LoggedConsole.WriteLine(str);
                 }
 

@@ -119,7 +119,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// Do not delete this method yet. Although it is not referenced, it may be when I come to debug the eddie Game use case.
+        /// Do not delete this method yet. Although it is not referenced, it may be when I come to debug the Eddie Game use case.
         /// 
         /// Assumes that the required spectral index files can be found using search patterns that utilise 
         /// the filePrefix,  the passed dateTimeOffset, the analysis type and the passed keys.  
@@ -253,14 +253,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(FileInfo[] files, DirectoryInfo opDir, FileInfo indicesCsvfile, TimeSpan indexCalcTimeSpan)
         {
-            // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
-            //var summaryDataTuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
-            //string[] headers = summaryDataTuple.Item1;
-            //double[,] summaryIndices = summaryDataTuple.Item2;
-            //Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.ConvertCsvData2DictionaryOfColumns(headers, summaryIndices);
+            var tuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcTimeSpan);
 
-            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcTimeSpan);
+            // write out the list of file names to JSON ifle
+            var fileNames = tuple.Item2;
+            FileInfo path = new FileInfo(indicesCsvfile + "_FileNames.json");
+            Json.Serialise(path, fileNames);
 
+            Dictionary<string, double[]> dictionaryOfCsvColumns = tuple.Item1;
             if (dictionaryOfCsvColumns.Count == 0)
             {
                 LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
@@ -271,7 +271,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
-            //CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
             CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfCsvColumns, indicesCsvfile);
 
             // insert some transformed data columns etc
@@ -443,8 +442,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
             TimeSpan indexCalcDuration = TimeSpan.FromSeconds(60); // an assumption for Eddie games recordings
-            Dictionary<string, double[]> dictionaryOfCsvColumns = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcDuration);
- 
+            var tuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcDuration);
+            Dictionary<string, double[]> dictionaryOfCsvColumns = tuple.Item1;
+            var arrayOfFileNames = tuple.Item2; // which source files the index values were derived from.
+
             string[] headers = dictionaryOfCsvColumns.Keys.ToArray();
             if (dictionaryOfCsvColumns.Count == 0)
             {
