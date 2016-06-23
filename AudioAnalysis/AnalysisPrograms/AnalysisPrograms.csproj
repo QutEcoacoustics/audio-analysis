@@ -226,6 +226,8 @@
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="CallRecogniser.cs" />
+    <Compile Include="Litoria_fallax.cs" />
+    <Compile Include="Limnodynastes_convex.cs" />
     <Compile Include="Canetoad.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
     <Compile Include="DrawEasyImage.cs" />

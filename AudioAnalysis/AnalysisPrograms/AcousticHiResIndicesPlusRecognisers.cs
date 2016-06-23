@@ -565,6 +565,7 @@ namespace AnalysisPrograms
             //spectralIndexValues.SUM = MatrixTools.GetRow(spectralSelection["SUM"], 0);
             spectralIndexValues.StartOffset = analysisResults.SpectralIndices[0].StartOffset;
             spectralIndexValues.SegmentDuration = analysisResults.SpectralIndices[0].SegmentDuration;
+            spectralIndexValues.FileName = analysisSettings.SourceFile.Name;
 
             var siv = new SpectralIndexValues[1];
             siv[0] = spectralIndexValues;
