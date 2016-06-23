@@ -41,6 +41,10 @@ namespace AnalysisPrograms
     using AudioAnalysisTools;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Reflection;
+
+    using log4net;
+
     using TowseyLibrary;
 
 
@@ -64,10 +68,10 @@ namespace AnalysisPrograms
             [ArgDescription("File stem name for output files.")]
             public string FileStemName { get; set; }
 
-            [ArgDescription("DateTime at which concatenation begins. If null, then start with earliest available file.")]
+            [ArgDescription("DateTimeOffset at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? StartDate { get; set; }
 
-            [ArgDescription("DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
+            [ArgDescription("DateTimeOffset at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? EndDate { get; set; }
 
             private TimeSpan? timeSpanOffsetHint = null;
@@ -82,10 +86,10 @@ namespace AnalysisPrograms
             //[ArgDescription("Draw images of summary and spectral indices after concatenating them")]
             internal bool DrawImages { get; set; }
 
-            //[ArgDescription("User specified file containing a list of indices and their properties.")]
-            //[Production.ArgExistingFile(Extension = ".yml")]
-            //[ArgPosition(1)]
-            internal FileInfo IndexPropertiesConfig { get; set; }
+            [ArgDescription("User specified file containing a list of indices and their properties.")]
+            [Production.ArgExistingFile(Extension = ".yml")]
+            [ArgPosition(1)]
+            public FileInfo IndexPropertiesConfig { get; set; }
 
             private bool concatenateEverythingYouCanLayYourHandsOn = false;
             [ArgDescription("Set this true when want to concatenate longer than 24-hour recordings as in case of PNG data.")]
@@ -264,6 +268,8 @@ namespace AnalysisPrograms
             throw new NoDeveloperMethodException();
     }
 
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public static void Execute(Arguments arguments)
         {
             bool verbose = false; // default
@@ -273,6 +279,9 @@ namespace AnalysisPrograms
                 arguments = Dev();
                 verbose = true; // default is verbose if in dev mode
             }
+
+            Log.Warn("DrawImages option hard coded to be on in this version");
+            arguments.DrawImages = true;
 
             verbose = arguments.Verbose;
             IndexMatrices.Verbose = verbose;
