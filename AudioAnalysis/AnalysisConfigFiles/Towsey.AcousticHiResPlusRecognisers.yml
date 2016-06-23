@@ -34,8 +34,8 @@ FrameStep: 0
 ResampleRate: 22050
 
 #Default values in code are LowFreqBound=500Hz & MidFreqBound=4000
-LowFreqBound: 500
-MidFreqBound: 2000
+LowFreqBound: 1000
+MidFreqBound: 8000
 
 DisplayWeightedIndices: false
 
@@ -47,8 +47,8 @@ HiResColourMap1: BGN-POW-EVN
 # PHN = combination of positive, horizontal and negative slope indices.
 HiResColourMap2: PHN-RVT-SPT
 SaveTwoMapsSpectrograms: true
-SaveRidgeSpectrograms: false
-SaveGrayScaleSpectrograms: false
+SaveRidgeSpectrograms: true
+SaveGrayScaleSpectrograms: true
 # One-minute standard spectrograms. WE DO NOT DO THIS ANY MORE.
 SaveSonogramImages: false
 # SAVE INTERMEDIARY FILES
@@ -65,8 +65,9 @@ DisplayCsvImage: false
 # ######################## LIST OF REQUIRED SPECIES RECOGNISERS
 SpeciesList:
 - Bufo_marinus
-- Phascolarctos_cinereus
+# - Phascolarctos_cinereus   # Koala
 - Litoria_fallax
+- Limnodynastes_convexiusculus
 
 
 # if true, an unambiguous date time must be provided in the source file's name.

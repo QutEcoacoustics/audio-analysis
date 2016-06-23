@@ -12,20 +12,29 @@ using TowseyLibrary;
 
 namespace AnalysisPrograms
 {
+    /// <summary>
+    /// This class is called from AcousticHiResIndicesPlusRecognisers.cls which is derived from IAnalyse2. 
+    /// It is called as follows:
+    ///   CallRecogniser output = CallRecogniser.DoCallRecognition(name, analysisSettings, recording, dictionaryOfHiResSpectralIndices);
+    /// Note that the high resolution spectral indices are calculated before calling the DoCallRecognition() method.
+    /// The DoCallRecognition() method simply directs the analysis to the required species.
+    /// The required species recognisers are listed in the config file <Towsey.AcousticHiResPlusRecognisers.yml>
+    /// In addition, a separate config file is required for each species/call type to be recognised, for example, <Canetoad.yml>. 
+    /// </summary>
     public class CallRecogniser
     {
         public Image ScoreTrack; 
         public List<AcousticEvent> Events;
 
 
-        public static CallRecogniser DoCallRecognition(string name, AnalysisSettings analysisSettings, AudioRecording recording, Dictionary<string, double[,]> dictionaryOfSpectra)
+        public static CallRecogniser DoCallRecognition(string name, AnalysisSettings analysisSettings, AudioRecording recording, Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices)
         {
             //var kvp = spectra.First();
             //var matrix = kvp.Value;
 
             var recogniser = new CallRecogniser();
-            var key = dictionaryOfSpectra.Keys.First();
-            int imageWidth = dictionaryOfSpectra[key].GetLength(1);
+            var key = dictionaryOfHiResSpectralIndices.Keys.First();
+            int imageWidth = dictionaryOfHiResSpectralIndices[key].GetLength(1);
             double[] scores = null;
             List<AcousticEvent> predictedEvents = null;
 
@@ -39,20 +48,27 @@ namespace AnalysisPrograms
                 scores = results.Plot.data;
                 predictedEvents = results.Events;
             }
-            else if (name == "Phascolarctos_cinereus")
+            else if (name == "Limnodynastes_convexiusculus")
+            {
+                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Limnodynastes_convexiusculus.yml");
+                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
+                Limnodynastes_convex.LimConResults results = Limnodynastes_convex.Analysis(dictionaryOfHiResSpectralIndices, recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+                scores = results.Plot.data;
+                predictedEvents = results.Events; 
+            }
+            else if (name == "Litoria_fallax")
+            {
+                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Litoria_fallax.yml");
+                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
+                Litoria_fallax.LitoriaFallaxResults results = Litoria_fallax.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+                scores = results.Plot.data;
+                predictedEvents = results.Events; 
+            }
+            else if (name == "Phascolarctos_cinereus") // KOALA
             {
                 var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.yml");
                 Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
                 KoalaMale.KoalaMaleResults results = KoalaMale.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
-                scores = results.Plot.data;
-                predictedEvents = results.Events;
-            }
-            else if (name == "Litoria_fallax")
-            {
-                return null;
-                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Litoria_fallax.yml");
-                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
-                Canetoad.CanetoadResults results = Canetoad.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
                 scores = results.Plot.data;
                 predictedEvents = results.Events;
             }
