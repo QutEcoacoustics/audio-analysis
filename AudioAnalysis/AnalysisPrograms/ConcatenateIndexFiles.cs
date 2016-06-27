@@ -88,7 +88,6 @@ namespace AnalysisPrograms
 
             [ArgDescription("User specified file containing a list of indices and their properties.")]
             [Production.ArgExistingFile(Extension = ".yml")]
-            [ArgPosition(1)]
             public FileInfo IndexPropertiesConfig { get; set; }
 
             private bool concatenateEverythingYouCanLayYourHandsOn = false;
