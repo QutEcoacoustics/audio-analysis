@@ -38,6 +38,16 @@ And help for a specific action:
 
     $ AnalysisPrograms.exe help audio2csv
 
+## Gotchas 
+
+ - **Never** finish a double quoted argument with a backslash (`\`). The parsing rules for such 
+cases are complicated and outside of our control. See 
+[here](https://msdn.microsoft.com/en-us/library/system.environment.getcommandlineargs.aspx) for 
+details.
+ - You can test arguments with the `echoargs.EXE` program
+ - If an input argument is an array (e.g. `directoryinfo[]`) any commas in the argument will delimit
+the values. For example `"Y:\Results\abc, 123, doo-dah-dee"` will be parsed as
+`"Y:\Results\abc"`, `" 123"`, `" doo-dah-dee"`. 
 ## Sub-program types
 There are, in broad terms, these types of sub-programs:
 
@@ -89,6 +99,7 @@ Action:
     -sta    -startdate                                  [nullable`1]       DateTime at which concatenation begins. If null, then start with earliest available file.
     -en     -enddate                                    [nullable`1]       DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.
     -ti     -timespanoffsethint                         [nullable`1]       TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET
+    -in     -indexpropertiesconfig                      [file]             User specified file containing a list of indices and their properties.
     -con    -concatenateeverythingyoucanlayyourhandson  [switch]           Set this true when want to concatenate longer than 24-hour recordings as in case of PNG data.
 ```
 
