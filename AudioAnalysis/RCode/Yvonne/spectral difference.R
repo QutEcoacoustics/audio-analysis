@@ -100,7 +100,7 @@ sourceDir <- "F:\\Cooloola\\2015_11_29\\GympieNP\\"
 sourceDir <- "F:\\Cooloola\\2015_11_29\\Woondum3\\"
 sourceDir <- "F:\\Cooloola\\2015_12_06\\GympieNP\\"
 sourceDir <- "F:\\Cooloola\\2015_12_06\\Woondum3\\"
-sourceDir <- "F:\\Cooloola\\2015_12_13\\GympieNP\\"
+sourceDir <- "E:\\Cooloola\\2015_12_13\\GympieNP\\"
 sourceDir <- "F:\\Cooloola\\2015_12_13\\Woondum3\\"
 sourceDir <- "E:\\Cooloola\\2015_12_29\\GympieNP\\"
 sourceDir <- "E:\\Cooloola\\2015_12_29\\Woondum3\\"
@@ -148,7 +148,30 @@ sourceDir <- "D:\\Cooloola\\2016_05_29\\GympieNP\\" # set
 sourceDir <- "D:\\Cooloola\\2016_05_29\\Woondum3\\" # set
 sourceDir <- "D:\\Cooloola\\2016_06_05\\GympieNP\\" # set
 sourceDir <- "D:\\Cooloola\\2016_06_05\\Woondum3\\" # set
+sourceDir <- "E:\\Cooloola\\2015_10_04\\GympieNP\\"
+sourceDir <- "E:\\Cooloola\\2015_10_04\\GympieNP\\"
+sourceDir <- "E:\\Cooloola\\2015_10_11\\GympieNP\\"
+sourceDir <- "E:\\Cooloola\\2015_10_11\\Woondum3\\"
+sourceDir <- "E:\\Cooloola\\2015_06_21\\GympieNP\\"
+sourceDir <- "E:\\Cooloola\\2015_06_21\\Woondum3\\"
+sourceDir <- "E:\\Cooloola\\2015_06_28\\GympieNP\\" #
+sourceDir <- "E:\\Cooloola\\2015_06_28\\Woondum3\\"
+sourceDir <- "F:\\Cooloola\\2015_12_20\\GympieNP\\"
+sourceDir <- "E:\\Cooloola\\2015_08_02\\Woondum3\\"
+sourceDir <- "E:\\Cooloola\\2015_08_16\\Woondum3\\"
+sourceDir <- "D:\\Cooloola\\2015_11_22\\GympieNP\\"
+sourceDir <- "F:\\Cooloola\\2016_06_12\\GympieNP\\"
+sourceDir <- "D:\\Cooloola\\2015_10_25\\Woondum3\\"
+sourceDir <- "F:\\Cooloola\\2016_06_12\\Woondum3\\"
+sourceDir <- "D:\\Cooloola\\2015_08_02\\GympieNP\\"
+sourceDir <- "E:\\Cooloola\\2015_12_20\\GympieNP\\"
+sourceDir <- "F:\\Cooloola\\2015_10_25\\Woondum3\\"
+sourceDir <- "D:\\Cooloola\\2016_06_19\\GympieNP\\"
+sourceDir <- "D:\\Cooloola\\2016_06_19\\Woondum3\\"
+
+
 setwd(paste(sourceDir))
+
 # Obtain a list of the original wave files
 myFiles <- list.files(full.names=TRUE, pattern="*.wav$", path=sourceDir)
 myFiles
@@ -161,7 +184,7 @@ site
 for (n in 1:length(myFilesShort)) {
   n=n
   lgth <- file.size(myFiles[n])/(sampling_rate*4)
-  if(lgth > 1200) { 
+  if(lgth >= 600) { 
     seqA <- seq(0, lgth, 60)
     seqB <- seq(seqA[10], seqA[length(seqA)], 600)
     seqC <- seqB-60

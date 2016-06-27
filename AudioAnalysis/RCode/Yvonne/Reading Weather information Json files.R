@@ -25,22 +25,6 @@ data <- data[order(data$observations.data.local_date_time_full),]
 data <- subset(data,!duplicated(data$observations.data.local_date_time_full))
 data <- data[,c(8,9,10,13,14,16,17,18,20,21,22,29,31,32,33,37,38,45,46)]
 names(data)
-
-# calculate the rain per half hour from the rain trace (column 16)
-rain <- as.numeric(data[1,16])
-for (i in 2:length(data[,16])) {
-  ra <- as.numeric(data[i,16]) - as.numeric(data[(i-1),16])
-  if  (substr((data[i,7]),4,10) == "09:30am") {
-    ra <- as.numeric(data[i,16])
-  }
-  if (ra < 0 & !is.na(ra)) {
-    ra <- as.numeric(data[i,16])
-  }
-  rain <- c(rain, ra)
-}
-max(rain)
-data[,20] <- rain
-colnames(data)[20] <- "rain"
 # remove data not on the half hour
 minutes <- as.data.frame(substr(data[,7],8,8))
 min.to.remove <-c("1", "2", "3", "4", "5", "6","7","8","9")
@@ -48,12 +32,29 @@ refer <- which(minutes[,] %in% min.to.remove)
 
 gympie.data <- data[-c(refer),]
 headings <- c("name", "state", "time_zone","sort_order",
-           "wmo", "history_product", "date_time",
-           "date_time_full", "lat","lon","apparent_t",
-           "gust_kmh", "air_temp","dewpt","press",
-           "rain_trace","rel_hum", "wind_dir",            
-           "wind_spd_kmh", "rain")
+              "wmo", "history_product", "date_time",
+              "date_time_full", "lat","lon","apparent_t",
+              "gust_kmh", "air_temp","dewpt","press",
+              "rain_trace","rel_hum", "wind_dir",            
+              "wind_spd_kmh")
 colnames(gympie.data) <- headings
+
+# calculate the rain per half hour from the rain trace (column 16)
+rain <- as.numeric(gympie.data[1,16])
+for (i in 2:length(gympie.data[,16])) {
+  ra <- as.numeric(gympie.data[i,16]) - as.numeric(gympie.data[(i-1),16])
+  if  (substr((gympie.data[i,7]),4,10) == "09:30am") {
+    ra <- as.numeric(gympie.data[i,16])
+  }
+  if (ra < 0 & !is.na(ra)) {
+    ra <- as.numeric(gympie.data[i,16])
+  }
+  rain <- c(rain, ra)
+}
+rain <- data.frame(rain)
+max(rain)
+gympie.data[,20] <- rain
+colnames(data)[20] <- "rain"
 
 write.csv(gympie.data, "Gympie_weather1.csv", row.names = FALSE)
 gympie_weather <- read.csv("Gympie_weather1.csv")
