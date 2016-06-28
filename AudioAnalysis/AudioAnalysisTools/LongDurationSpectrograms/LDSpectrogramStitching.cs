@@ -161,6 +161,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                   FileInfo indexPropertiesConfigFileInfo,
                                                   DirectoryInfo opDir,
                                                   SiteDescription siteDescription,
+                                                  FileInfo sunriseDataFile = null,
                                                   List<ErroneousIndexSegments> segmentErrors = null,
                                                   bool Verbose = false)
         {
@@ -189,6 +190,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             summaryIndices,
             indexDistributions,
             siteDescription,
+            sunriseDataFile,
             segmentErrors,
             ImageChrome.With,
             Verbose);
@@ -285,6 +287,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                 FileInfo indexPropertiesConfigFileInfo,
                                                 DirectoryInfo opDir,
                                                 SiteDescription siteDescription,
+                                                FileInfo sunriseDatafile = null,
                                                 List<ErroneousIndexSegments> erroneousSegments = null, // info if have fatal errors i.e. no signal
                                                 bool verbose = false
             )
@@ -301,13 +304,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string startTime = string.Format("{0:d2}{1:d2}h", start.Hours, start.Minutes);
             if((start.Hours == 0) && (start.Minutes == 0)) startTime = "midnight";
             string titletext = string.Format("SOURCE: \"{0}\".     Starts at {1}                       (c) QUT.EDU.AU", opFileStem, startTime);
-            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndices(
+            Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
                                  IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
                                  dictionaryOfCsvColumns,
                                  titletext,
                                  indexGenerationData.IndexCalculationDuration,
                                  indexGenerationData.RecordingStartDate,
-                                 siteDescription,
+                                 sunriseDatafile,
                                  erroneousSegments,
                                  verbose);
             var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
@@ -398,7 +401,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             SummaryIndexBase[] summaryIndices = null;
             List<ErroneousIndexSegments> segmentErrors = null;
-
+            FileInfo sunriseDataFile = null;
 
             Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
             topLevelDirectory,
@@ -412,6 +415,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             summaryIndices,
             indexDistributions,
             siteDescription,
+            sunriseDataFile,
             segmentErrors,
             ImageChrome.With);
         }
@@ -475,7 +479,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string imageTitle =
                 $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
             Bitmap tracksImage =
-                DrawSummaryIndices.DrawImageOfSummaryIndices(
+                IndexDisplay.DrawImageOfSummaryIndices(
                     IndexProperties.GetIndexProperties(indexPropertiesConfig),
                     dictionaryOfCsvColumns,
                     imageTitle,
@@ -517,7 +521,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan minOffset = TimeSpan.Zero; // assume first recording in sequence started at midnight
             // X-axis timescale
             int pixelColumnsPerHour = 60;
-            int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
+            int trackHeight = IndexDisplay.DefaultTrackHeight;
             // ********************* set the above parameters
             //######################################################
 

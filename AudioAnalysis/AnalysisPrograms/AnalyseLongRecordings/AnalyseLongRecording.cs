@@ -301,7 +301,7 @@ Output  to  directory: {1}
                     string imageTitle = $"SOURCE:{basename},   (c) QUT;  ";
 
                     Bitmap tracksImage =
-                        DrawSummaryIndices.DrawImageOfSummaryIndices(
+                        IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
                             indicesFile,
                             imageTitle,

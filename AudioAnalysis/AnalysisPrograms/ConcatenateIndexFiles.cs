@@ -90,6 +90,10 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".yml")]
             public FileInfo IndexPropertiesConfig { get; set; }
 
+            [ArgDescription("User specified file containing times of sunrise & sunset for recording location. Must be correct format!")]
+            [Production.ArgExistingFile(Extension = ".csv")]
+            public FileInfo SunRiseDataFile { get; set; }
+
             private bool concatenateEverythingYouCanLayYourHandsOn = false;
             [ArgDescription("Set this true when want to concatenate longer than 24-hour recordings as in case of PNG data.")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn {
@@ -153,6 +157,7 @@ namespace AnalysisPrograms
             dtoEnd   = new DateTimeOffset(2015, 10, 28, 0, 0, 0, TimeSpan.Zero);
             string opFileStem = directoryFilter;
 
+            string BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv";
 
             /*
             // ########################## LENN'S RECORDINGS          
@@ -262,6 +267,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = indexPropertiesConfig,
                 ConcatenateEverythingYouCanLayYourHandsOn = false,
                 TimeSpanOffsetHint = TimeSpan.FromHours(10),
+                SunRiseDataFile = new FileInfo(BrisbaneSunriseDatafile),
                 Verbose = true,
             };
             throw new NoDeveloperMethodException();
@@ -369,6 +375,15 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
                 LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
+
+                if (arguments.SunRiseDataFile.Exists)
+                {
+                    LoggedConsole.WriteLine("# Sunrise/sunset data file = " + arguments.TimeSpanOffsetHint.ToString());
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("####### WARNING ####### The sunrise/sunset data file does not exist >> " + arguments.TimeSpanOffsetHint.ToString());
+                }
             }
 
             // create top level output directory if it does not exist.
@@ -463,6 +478,7 @@ namespace AnalysisPrograms
                                                                  indexPropertiesConfig, 
                                                                  resultsDir, 
                                                                  siteDescription,
+                                                                 arguments.SunRiseDataFile,
                                                                  indexErrors,
                                                                  verbose);
                 }
@@ -492,6 +508,7 @@ namespace AnalysisPrograms
                                                                   indexPropertiesConfig, 
                                                                   resultsDir, 
                                                                   siteDescription,
+                                                                  arguments.SunRiseDataFile,
                                                                   indexErrors,
                                                                   verbose);
                 }
