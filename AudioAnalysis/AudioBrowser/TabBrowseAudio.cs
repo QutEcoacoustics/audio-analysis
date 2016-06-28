@@ -688,12 +688,12 @@ namespace AudioBrowser
         /// <returns></returns>
         public static Bitmap ConstructImageOfIndexTracks(List<string> headers, List<double[]> values, string title, double[] order)
         {
-            int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
+            int trackHeight = IndexDisplay.DefaultTrackHeight;
 
 
             // accumulate the individual tracks
             int duration = values[0].Length;    // time in minutes - 1 value = 1 pixel
-            int imageWidth = duration + DrawSummaryIndices.TrackEndPanelWidth;
+            int imageWidth = duration + IndexDisplay.TrackEndPanelWidth;
 
             var listOfBitmaps = new List<Bitmap>();
             double threshold = 0.0;
@@ -720,7 +720,7 @@ namespace AudioBrowser
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
 
             TimeSpan timeDuration = TimeSpan.FromMinutes(duration);
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(timeDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, imageWidth, trackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(timeDuration, TimeSpan.Zero, IndexDisplay.TimeScale, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image

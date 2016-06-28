@@ -170,8 +170,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public List<ErroneousIndexSegments> ErroneousSegments { get; private set; }
 
-
-
+        /// <summary>
+        /// A file from which can be obtained information about sunrise and sunset times for the recording site.
+        /// The csv file needs to be in the correct format and typically should contain 365 lines.
+        /// Have not attempted to deal with leap years!
+        /// </summary>
+        public FileInfo SunriseDataFile { get; set; }
 
 
 
@@ -1061,7 +1065,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
-                suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SiteName, cs.Latitude, cs.Longitude);
+                suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
             }
 
             //draw the composite bitmap
@@ -1346,6 +1350,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             SummaryIndexBase[] summaryIndices = null,
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = null,
             SiteDescription siteDescription = null,
+            FileInfo sunriseDataFile = null,
             List<ErroneousIndexSegments> segmentErrors = null,
             ImageChrome imageChrome = ImageChrome.With,
             bool Verbose = false)
@@ -1366,6 +1371,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.SiteName  = siteDescription?.SiteName;
             cs1.Latitude  = siteDescription?.Latitude;
             cs1.Longitude = siteDescription?.Longitude;
+            cs1.SunriseDataFile = sunriseDataFile;
 
             cs1.ErroneousSegments = segmentErrors;
 
@@ -1456,11 +1462,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     fileStem,
                     analysisType + ".Indices",
                     "csv");
-                imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
+                imageX = IndexDisplay.DrawHighAmplitudeClippingTrack(indicesFile.ToFileInfo());
             }
             else
             {
-                imageX = DrawSummaryIndices.DrawHighAmplitudeClippingTrack(summaryIndices);
+                imageX = IndexDisplay.DrawHighAmplitudeClippingTrack(summaryIndices);
             }
 
             if (imageX != null)
