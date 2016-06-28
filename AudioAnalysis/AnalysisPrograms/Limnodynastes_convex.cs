@@ -402,9 +402,33 @@ namespace AnalysisPrograms
             int dominantBin = (int)Math.Round(1950 / herzPerBin);
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
+            int freqMin = 1950 - 200;
+            int freqMax = 1950 + 200;
 
-           // ###################################################################################################################################
-           // WARNING: TODO TODO TODO = FROM HERE ON this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
+            int rhzRowCount = spg.GetLength(0);
+            int rhzColCount = spg.GetLength(1);
+
+            for (int c = 0; c < rhzColCount; c++)
+            {
+                double[] column = MatrixTools.GetColumn(spg, c);
+                int indexMax1 = 0;
+                DataTools.getMaxIndex(column, out indexMax1);
+                if (indexMax1 < dominantBinMin) continue;
+                if (indexMax1 > dominantBinMax) continue;
+
+                // now find the oter two peaks
+                double[] subColumn = DataTools.Subarray(column, 2, dominantBinMax - 2);
+                int indexMax2 = 0;
+                DataTools.getMaxIndex(column, out indexMax2);
+
+
+                for (int r = dominantBinMin; r <= dominantBinMax; r++)
+                {
+                }
+            }
+
+            // ###################################################################################################################################
+            // WARNING: TODO TODO TODO = FROM HERE ON this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
 
