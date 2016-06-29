@@ -407,19 +407,31 @@ namespace AnalysisPrograms
 
             int rhzRowCount = spg.GetLength(0);
             int rhzColCount = spg.GetLength(1);
+            var list = new List<Point>();
 
-            for (int c = 0; c < rhzColCount; c++)
+            // loop through all spectra.
+            for (int c = 1; c < rhzColCount-1; c++)
             {
                 double[] column = MatrixTools.GetColumn(spg, c);
+                // reverse matrix because want low freq bins at beginning.
+                column = DataTools.reverseArray(column);
                 int indexMax1 = 0;
                 DataTools.getMaxIndex(column, out indexMax1);
                 if (indexMax1 < dominantBinMin) continue;
                 if (indexMax1 > dominantBinMax) continue;
 
-                // now find the oter two peaks
-                double[] subColumn = DataTools.Subarray(column, 2, dominantBinMax - 2);
-                int indexMax2 = 0;
-                DataTools.getMaxIndex(column, out indexMax2);
+                // want a spectral peak.
+                if (spg[indexMax1, c] < spg[indexMax1, c - 1]) continue;
+                if (spg[indexMax1, c] < spg[indexMax1, c + 1]) continue;
+                list.Add(new Point(indexMax1, c));
+
+                Console.WriteLine("Row {0}, Col {1}  ", indexMax1, c);
+
+
+                // now find the other two peaks
+                //double[] subColumn = DataTools.Subarray(column, 2, dominantBinMax - 2);
+                //int indexMax2 = 0;
+                //DataTools.getMaxIndex(column, out indexMax2);
 
 
                 for (int r = dominantBinMin; r <= dominantBinMax; r++)
