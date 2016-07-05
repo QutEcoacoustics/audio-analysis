@@ -90,7 +90,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000.mp3";
             //string recordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000_0min.wav";
 
-            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016June\Test";
+            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\SamfordTest";
 
