@@ -474,7 +474,7 @@ namespace AnalysisPrograms
             // now construct the standard decibel spectrogram WITHOUT noise removal, and look for LimConvex
             // get frame parameters for the analysis
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
-            int frameSize = rhzRowCount;
+            int frameSize = rhzRowCount * 2;
             int frameStep = frameSize; // this default = zero overlap
             //var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, frameSize, frameStep);
             //// Generate deciBel spectrogram
@@ -484,7 +484,7 @@ namespace AnalysisPrograms
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.FileName,
-                WindowSize = frameSize * 2,
+                WindowSize = frameSize,
                 WindowOverlap = 0.0,
                 NoiseReductionType = NoiseReductionType.NONE
             };
@@ -505,7 +505,7 @@ namespace AnalysisPrograms
             //scores.Add(new Plot("Max Frequency", freqPeaks, 0.0));  // location of peaks for spectral images
 
             bool returnSonogramInfo = true; // TEMPORARY ################################
-            double factor = sonogram.FrameCount / (double)rhzColCount; 
+            double timeSpanOfFrame = frameSize / (double)sampleRate; 
             if (returnSonogramInfo)
             {
                 string file2Path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.Spectrogram.png";
@@ -513,7 +513,9 @@ namespace AnalysisPrograms
                 int height = sonoBmp.Height;
                 foreach (Point point in list)
                 {
-                    sonoBmp.SetPixel((int)Math.Round(point.Y * factor), height - point.X - 1, Color.Red);
+                    double timeSpanSecs = point.Y * 0.1;
+                    int frameSpan = (int)Math.Round(timeSpanSecs / timeSpanOfFrame);
+                    sonoBmp.SetPixel(frameSpan, height - point.X - 1, Color.Red);
                 }
                 // mark off every tenth frequency bin
                 for (int r = 0; r < 20; r++)
