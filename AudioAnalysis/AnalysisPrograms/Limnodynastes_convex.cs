@@ -394,155 +394,164 @@ namespace AnalysisPrograms
 
             //KeyValuePair<string, double[,]> kvp = dictionaryOfHiResSpectralIndices.First();
             var spg = dictionaryOfHiResSpectralIndices["RHZ"];
-            int binCount = spg.GetLength(0);
-            int sampleRate = recording.SampleRate;
-            double herzPerBin = sampleRate / 2 / (double)binCount;
-            int hzBuffer  = 200;
-            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
-            int dominantBin = (int)Math.Round(1950 / herzPerBin);
-            int dominantBinMin = dominantBin - binBuffer;
-            int dominantBinMax = dominantBin + binBuffer;
-            int freqMin = 1950 - 200;
-            int freqMax = 1950 + 200;
-
             int rhzRowCount = spg.GetLength(0);
             int rhzColCount = spg.GetLength(1);
+
+            int sampleRate = recording.SampleRate;
+            double herzPerBin = sampleRate / 2 / (double)rhzRowCount;
+            int dominantFrequency = 1850;
+            int hzBuffer  = 250;
+            int bottomBin = 5;
+            int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
+            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
+            int dominantBinMin = dominantBin - binBuffer;
+            int dominantBinMax = dominantBin + binBuffer;
+
+            //  freqBin + rowID = binCount - 1;
+            // therefore: rowID = binCount - freqBin - 1;
+            int minRowID  = rhzRowCount - dominantBinMax - 1;
+            int maxRowID  = rhzRowCount - dominantBinMin - 1;
+            int bottomRow = rhzRowCount - bottomBin - 1;
+
             var list = new List<Point>();
 
-            // loop through all spectra.
+            // loop through all spectra/columns of the hi-res spectrogram.
             for (int c = 1; c < rhzColCount-1; c++)
             {
-                double[] column = MatrixTools.GetColumn(spg, c);
-                // reverse matrix because want low freq bins at beginning.
-                column = DataTools.reverseArray(column);
-                int indexMax1 = 0;
-                DataTools.getMaxIndex(column, out indexMax1);
-                if (indexMax1 < dominantBinMin) continue;
-                if (indexMax1 > dominantBinMax) continue;
+                double maxAmplitude = -Double.MaxValue;
+                int idOfRowWithMaxAmplitude = 0;
+
+                for (int r = minRowID; r <= bottomRow; r++)
+                {
+                    if (spg[r, c] > maxAmplitude)
+                    {
+                        maxAmplitude = spg[r, c];
+                        idOfRowWithMaxAmplitude = r;
+                    }
+                }
+
+                if (idOfRowWithMaxAmplitude < minRowID) continue;
+                if (idOfRowWithMaxAmplitude > maxRowID) continue;
 
                 // want a spectral peak.
-                if (spg[indexMax1, c] < spg[indexMax1, c - 1]) continue;
-                if (spg[indexMax1, c] < spg[indexMax1, c + 1]) continue;
-                list.Add(new Point(indexMax1, c));
+                if (spg[idOfRowWithMaxAmplitude, c] < spg[idOfRowWithMaxAmplitude, c - 1]) continue;
+                if (spg[idOfRowWithMaxAmplitude, c] < spg[idOfRowWithMaxAmplitude, c + 1]) continue;
+                // peak should exceed thresold amplitude
+                if (spg[idOfRowWithMaxAmplitude, c] < 3.0) continue;
 
-                Console.WriteLine("Row {0}, Col {1}  ", indexMax1, c);
+                // convert row ID to freq bin ID
+                int freqBinID = rhzRowCount - idOfRowWithMaxAmplitude - 1;
+                list.Add(new Point(freqBinID, c));
+                // we now have a list of potential hits for LimCon. This needs to be filtered.
 
-
-                // now find the other two peaks
-                //double[] subColumn = DataTools.Subarray(column, 2, dominantBinMax - 2);
-                //int indexMax2 = 0;
-                //DataTools.getMaxIndex(column, out indexMax2);
-
-
-                for (int r = dominantBinMin; r <= dominantBinMax; r++)
-                {
-                }
+                Console.WriteLine("Bin {0}, Col {1}  ", freqBinID, c);
             }
 
-            // ###################################################################################################################################
-            // WARNING: TODO TODO TODO = FROM HERE ON this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
-            int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
-            int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
+            // draw a debug image.
+            if (true)
+            {
+                // put red dot where max is
+                string filePath = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.CombinedGreyScale.png";
+                Bitmap bmp = new Bitmap(filePath);
+                foreach (Point point in list)
+                {
+                    bmp.SetPixel(point.Y + 70, 1911 - point.X, Color.Red);
+                }
+                // mark off every tenth frequency bin
+                for (int r = 0; r < 26; r++)
+                {
+                    bmp.SetPixel(68, 1911 - (r * 10), Color.Blue);
+                    bmp.SetPixel(69, 1911 - (r * 10), Color.Blue);
+                }
+                // mark off upper bound and lower frequency bound
+                bmp.SetPixel(69, 1911 - dominantBinMin, Color.Lime);
+                bmp.SetPixel(69, 1911 - dominantBinMax, Color.Lime);
+                //bmp.SetPixel(69, 1911 - maxRowID, Color.Lime);
+                bmp.Save(filePath + ".png");
+            }
 
-            // BETTER TO CALCULATE THIS. IGNORE USER!
-            // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
 
-            // duration of DCT in seconds 
-            double dctDuration = double.Parse(configDict[AnalysisKeys.DctDuration]);
+            // now construct the standard decibel spectrogram WITHOUT noise removal, and look for LimConvex
+            // get frame parameters for the analysis
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            int frameSize = rhzRowCount;
+            int frameStep = frameSize; // this default = zero overlap
+            //var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, frameSize, frameStep);
+            //// Generate deciBel spectrogram
+            //double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon);
 
-            // minimum acceptable value of a DCT coefficient
-            double dctThreshold = double.Parse(configDict[AnalysisKeys.DctThreshold]);
-
-            // ignore oscillations below this threshold freq
-            int minOscilFreq = int.Parse(configDict[AnalysisKeys.MinOscilFreq]);
-
-            // ignore oscillations above this threshold freq
-            int maxOscilFreq = int.Parse(configDict[AnalysisKeys.MaxOscilFreq]);
-
-            // min duration of event in seconds 
-            double minDuration = double.Parse(configDict[AnalysisKeys.MinDuration]);
-
-            // max duration of event in seconds                 
-            double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);
-
-            // min score for an acceptable event
-            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
-
-            // this default framesize seems to work for Canetoad
-            const int FrameSize = 512;
-            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate,
-                FrameSize,
-                maxOscilFreq);
-            //windowOverlap = 0.75; // previous default
-
-            // i: MAKE SONOGRAM
+            // i: Init SONOGRAM config
             var sonoConfig = new SonogramConfig
-                                 {
-                                     SourceFName = recording.FileName,
-                                     WindowSize = FrameSize,
-                                     WindowOverlap = windowOverlap,
-                                     NoiseReductionType = NoiseReductionType.NONE
-                                 };
-
-            // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration();
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-
-            /* #############################################################################################################################################
-             * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-             * 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-             * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-             * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-             */
-
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
+            {
+                SourceFName = recording.FileName,
+                WindowSize = frameSize * 2,
+                WindowOverlap = 0.0,
+                NoiseReductionType = NoiseReductionType.NONE
+            };
+            // init sonogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
 
-            // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
+            // remove the DC row of the spectrogram
+            sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
+            //scores.Add(new Plot("Decibels", DataTools.normalise(dBArray), ActivityAndCover.DEFAULT_ActivityThreshold_dB));
+            //scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
-            // ######################################################################
-            // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            minDuration = 1.0;
-            double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
-            double[,] hits;
-            Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram,
-                minHz,
-                maxHz,
-                dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
-                dctThreshold,
-                eventThreshold,
-                minDuration,
-                maxDuration,
-                out scores,
-                out events,
-                out hits);
+            // convert spectral peaks to frequency
+            //var tuple_DecibelPeaks = SpectrogramTools.HistogramOfSpectralPeaks(deciBelSpectrogram);
+            //int[] peaksBins = tuple_DecibelPeaks.Item2;
+            //double[] freqPeaks = new double[peaksBins.Length];
+            //int binCount = sonogram.Data.GetLength(1);
+            //for (int i = 1; i < peaksBins.Length; i++) freqPeaks[i] = (lowerBinBound + peaksBins[i]) / (double)nyquistBin;
+            //scores.Add(new Plot("Max Frequency", freqPeaks, 0.0));  // location of peaks for spectral images
 
-            events.ForEach(ae =>
-                    {
-                        ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
-                        ae.SegmentStartOffset = segmentStartOffset;
-                        ae.SegmentDuration = recordingDuration;
-                        ae.Name = "AdvertCall";
-                    });
+            bool returnSonogramInfo = true; // TEMPORARY ################################
+            double factor = sonogram.FrameCount / (double)rhzColCount; 
+            if (returnSonogramInfo)
+            {
+                string file2Path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.Spectrogram.png";
+                Bitmap sonoBmp = (Bitmap)sonogram.GetImage();
+                int height = sonoBmp.Height;
+                foreach (Point point in list)
+                {
+                    sonoBmp.SetPixel((int)Math.Round(point.Y * factor), height - point.X - 1, Color.Red);
+                }
+                // mark off every tenth frequency bin
+                for (int r = 0; r < 20; r++)
+                {
+                    sonoBmp.SetPixel(0, height - (r * 10) - 1, Color.Blue);
+                    sonoBmp.SetPixel(1, height - (r * 10) - 1, Color.Blue);
+                }
+                // mark off upper bound and lower frequency bound
+                sonoBmp.SetPixel(0, height - dominantBinMin, Color.Lime);
+                sonoBmp.SetPixel(0, height - dominantBinMax, Color.Lime);
+                sonoBmp.Save(file2Path);  
+            }
+
+
+            double[] scores = new double[rhzColCount]; // predefinition of score array
+            foreach (Point point in list)
+            {
+                scores[point.Y] = point.X / (double)60.0;
+            }
+            double eventThreshold = 0.4;
+
+
+            //events.ForEach(ae =>
+            //        {
+            //            ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
+            //            ae.SegmentStartOffset = segmentStartOffset;
+            //            ae.SegmentDuration = recordingDuration;
+            //            ae.Name = "AdvertCall";
+            //        });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
             return new LimConResults
                        {
                            Sonogram = sonogram, 
-                           Hits = hits, 
+                           Hits = null, 
                            Plot = plot, 
-                           Events = events, 
-                           RecordingDuration = recordingDuration
+                           Events = null, 
+                           RecordingDuration = recording.Duration()
                        };
         } // Analysis()
 

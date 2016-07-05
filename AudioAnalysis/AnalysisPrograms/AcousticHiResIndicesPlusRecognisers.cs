@@ -521,7 +521,7 @@ namespace AnalysisPrograms
             {
                 //    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
                 //    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
-                LoggedConsole.WriteErrorLine("WARNING: STANDARD SPECTRGRAMS ARE NOT SAVED IN THIS TASK.");
+                LoggedConsole.WriteErrorLine("WARNING: STANDARD SPECTROGRAMS ARE NOT SAVED IN THIS TASK.");
             }
 
 
