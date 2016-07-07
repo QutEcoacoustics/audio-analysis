@@ -441,13 +441,13 @@ namespace AnalysisPrograms
 
                 // convert row ID to freq bin ID
                 int freqBinID = rhzRowCount - idOfRowWithMaxAmplitude - 1;
-                list.Add(new Point(freqBinID, c));
+                list.Add(new Point(c, freqBinID));
                 // we now have a list of potential hits for LimCon. This needs to be filtered.
 
-                Console.WriteLine("Bin {0}, Col {1}  ", freqBinID, c);
+                Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             }
 
-            // draw a debug image.
+            // superimpose point on RHZ HiRes spectrogram for debug purposes
             if (true)
             {
                 // put red dot where max is
@@ -455,7 +455,7 @@ namespace AnalysisPrograms
                 Bitmap bmp = new Bitmap(filePath);
                 foreach (Point point in list)
                 {
-                    bmp.SetPixel(point.Y + 70, 1911 - point.X, Color.Red);
+                    bmp.SetPixel(point.X + 70, 1911 - point.Y, Color.Red);
                 }
                 // mark off every tenth frequency bin
                 for (int r = 0; r < 26; r++)
@@ -504,19 +504,115 @@ namespace AnalysisPrograms
             //for (int i = 1; i < peaksBins.Length; i++) freqPeaks[i] = (lowerBinBound + peaksBins[i]) / (double)nyquistBin;
             //scores.Add(new Plot("Max Frequency", freqPeaks, 0.0));  // location of peaks for spectral images
 
+            // create new list of LimCon hits in the standard spectrogram.
+            double timeSpanOfFrameInSeconds = frameSize / (double)sampleRate;
+            var newList = new List<int[]>();
+            int lastFrameID = sonogram.Data.GetLength(0) - 1;
+            int lastBinID   = sonogram.Data.GetLength(1) - 1;
+
+            foreach (Point point in list)
+            {
+                double timeSpanInSecs = (point.X * 0.1) + 0.05; // convert point.Y to center of time-block.
+                int frameSpan = (int)Math.Round(timeSpanInSecs / timeSpanOfFrameInSeconds);
+
+                // location of max point is uncertain, so search in neighbourhood.
+                // NOTE: sonogram.data matrix is time*freqBin
+                double maxValue = -Double.MaxValue;
+                int idOfTMax = frameSpan;
+                int idOfFMax = point.Y;
+                for (int deltaT = -3; deltaT <= 3; deltaT++)
+                {
+                    for (int deltaF = -1; deltaF <= 1; deltaF++)
+                    {
+                        int newT = frameSpan + deltaT;
+                        if (newT < 0)
+                        {
+                            newT = 0;
+                        }
+                        else if (newT > lastFrameID)
+                        { newT = lastFrameID; }
+
+                        double value = sonogram.Data[newT, point.Y + deltaF];
+                        if (value > maxValue)
+                        {
+                            maxValue = value;
+                            idOfTMax = frameSpan + deltaT;
+                            idOfFMax = point.Y   + deltaF;
+                        }
+                    }
+                }
+
+                // newList.Add(new Point(frameSpan, point.Y));
+                int[] array = new int[4];
+                array[0] = idOfTMax;
+                array[1] = idOfFMax;
+                newList.Add(array);
+            }
+
+            // Now obtain more of spectrogram to see if have peaks at two other places characteristic of Limnodynastes convex.
+            // In the D.Stewart CD, there are peaks close to:
+            //1. 1950 Hz
+            //2. 1460 hz
+            //3.  970 hz    These are 490 Hz apart.
+            // For Limnodynastes convex, in the JCU recording, there are peaks close to:
+            //1. 1780 Hz
+            //2. 1330 hz
+            //3.  880 hz    These are 450 Hz apart.
+
+            // So strategy is to look for three peaks separated by same amount and in the vicinity of the above,
+            //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
+            //We have found top/highest peak - now find the other two.
+            int secondDominantFrequency = 1380;
+            int secondDominantBin = (int)Math.Round(secondDominantFrequency / herzPerBin);
+            int thirdDominantFrequency = 900;
+            int thirdDominantBin       = (int)Math.Round(thirdDominantFrequency / herzPerBin);
+
+
+            // First extract a sub-matrix.
+            foreach (int[] array in newList)
+            {
+                // NOTE: sonogram.data matrix is time*freqBin
+                int T = array[0];
+                int F = array[1];
+                double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, T - 1, 0, T + 1, F);
+                // convert to vector
+                var spectrum = MatrixTools.GetColumnsAverages(subMatrix);
+
+                for (int i = 0; i < 18; i++)
+                    spectrum[i] = -100.0;
+
+
+                DataTools.writeBarGraph(spectrum);
+                bool[] peaks = DataTools.GetPeaks(spectrum);
+                if ((peaks[F - 9]) || (peaks[F - 10]) || (peaks[F - 11]))
+                {
+                    array[2] = F - 10;
+                }
+
+                if ((peaks[F - 19]) || (peaks[F - 20]) || (peaks[F - 21]))
+                {
+                    array[3] = F - 20;
+                }
+            }
+
+
+
+
+
+
             bool returnSonogramInfo = true; // TEMPORARY ################################
-            double timeSpanOfFrame = frameSize / (double)sampleRate; 
             if (returnSonogramInfo)
             {
                 string file2Path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.Spectrogram.png";
                 Bitmap sonoBmp = (Bitmap)sonogram.GetImage();
                 int height = sonoBmp.Height;
-                foreach (Point point in list)
+                foreach (int[] array in newList)
                 {
-                    double timeSpanSecs = point.Y * 0.1;
-                    int frameSpan = (int)Math.Round(timeSpanSecs / timeSpanOfFrame);
-                    sonoBmp.SetPixel(frameSpan, height - point.X - 1, Color.Red);
+                    sonoBmp.SetPixel(array[0], height - array[1] - 1, Color.Red);
+                    sonoBmp.SetPixel(array[0], height - array[2] - 1, Color.Green);
+                    sonoBmp.SetPixel(array[0], height - array[3] - 1, Color.Yellow);
                 }
+
                 // mark off every tenth frequency bin
                 for (int r = 0; r < 20; r++)
                 {
@@ -531,9 +627,10 @@ namespace AnalysisPrograms
 
 
             double[] scores = new double[rhzColCount]; // predefinition of score array
+            double nomalisationConstant = 60.0;
             foreach (Point point in list)
             {
-                scores[point.Y] = point.X / (double)60.0;
+                scores[point.X] = point.Y / nomalisationConstant;
             }
             double eventThreshold = 0.4;
 
