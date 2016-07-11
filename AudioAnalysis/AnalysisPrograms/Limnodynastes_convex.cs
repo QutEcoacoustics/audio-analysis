@@ -272,7 +272,7 @@ namespace AnalysisPrograms
 
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            LimConResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+            LimConResults results = Analysis(audioFile, configuration, analysisSettings);
             
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
 
@@ -351,11 +351,11 @@ namespace AnalysisPrograms
         /// <param name="configDict"></param>
         /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        internal static LimConResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
+        internal static LimConResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, AnalysisSettings analysisSettings)
         {
             Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices = null;
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
-            return Analysis(dictionaryOfHiResSpectralIndices, recording, configDict, segmentStartOffset);
+            return Analysis(dictionaryOfHiResSpectralIndices, recording, configDict, analysisSettings);
         }
 
 
@@ -376,7 +376,7 @@ namespace AnalysisPrograms
             Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices,
             AudioRecording recording,
             Dictionary<string, string> configDict,
-            TimeSpan segmentStartOffset)
+            AnalysisSettings analysisSettings)
         {
             // WARNING: TODO TODO TODO = this end of this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
 
@@ -391,6 +391,10 @@ namespace AnalysisPrograms
 
             // So strategy is to look for three peaks separated by same amount and in the vicinity of the above,
             //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
+
+            var outputDir = analysisSettings.AnalysisInstanceOutputDirectory;
+            TimeSpan segmentStartOffset = analysisSettings.SegmentStartOffset ?? TimeSpan.Zero;
+
 
             //KeyValuePair<string, double[,]> kvp = dictionaryOfHiResSpectralIndices.First();
             var spg = dictionaryOfHiResSpectralIndices["RHZ"];
@@ -447,11 +451,17 @@ namespace AnalysisPrograms
                 Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             }
 
+            // DEBUG ONLY // ################################ TEMPORARY ################################
             // superimpose point on RHZ HiRes spectrogram for debug purposes
-            if (true)
+            bool drawOnHiResSpectrogram = true; 
+            //string filePath = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.CombinedGreyScale.png";
+            var fileName = Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name);
+            string filePath = outputDir.FullName + @"\SpectrogramImages\" + fileName + ".CombinedGreyScale.png";
+            var debugImage = new FileInfo(filePath);
+            if (!debugImage.Exists) drawOnHiResSpectrogram = false;
+            if (drawOnHiResSpectrogram)
             {
                 // put red dot where max is
-                string filePath = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.CombinedGreyScale.png";
                 Bitmap bmp = new Bitmap(filePath);
                 foreach (Point point in list)
                 {
@@ -467,8 +477,9 @@ namespace AnalysisPrograms
                 bmp.SetPixel(69, 1911 - dominantBinMin, Color.Lime);
                 bmp.SetPixel(69, 1911 - dominantBinMax, Color.Lime);
                 //bmp.SetPixel(69, 1911 - maxRowID, Color.Lime);
-                bmp.Save(filePath + ".png");
+                bmp.Save(filePath);
             }
+            // END DEBUG ################################ TEMPORARY ################################
 
 
             // now construct the standard decibel spectrogram WITHOUT noise removal, and look for LimConvex
@@ -476,6 +487,8 @@ namespace AnalysisPrograms
             double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
             int frameSize = rhzRowCount * 2;
             int frameStep = frameSize; // this default = zero overlap
+            double frameDurationInSeconds = frameSize / (double)sampleRate;
+            double frameStepInSeconds     = frameStep / (double)sampleRate;
             //var dspOutput = DSP_Frames.ExtractEnvelopeAndFFTs(recording, frameSize, frameStep);
             //// Generate deciBel spectrogram
             //double[,] deciBelSpectrogram = MFCCStuff.DecibelSpectra(dspOutput.amplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon);
@@ -567,45 +580,99 @@ namespace AnalysisPrograms
             int thirdDominantFrequency = 900;
             int thirdDominantBin       = (int)Math.Round(thirdDominantFrequency / herzPerBin);
 
-
+            var acousticEvents = new List<AcousticEvent>();
             // First extract a sub-matrix.
             foreach (int[] array in newList)
             {
                 // NOTE: sonogram.data matrix is time*freqBin
                 int T = array[0];
-                int F = array[1];
-                double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, T - 1, 0, T + 1, F);
+                int F1bin = array[1];
+                double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, T - 1, 0, T + 1, F1bin);
+                double F1power = subMatrix[1, F1bin];
                 // convert to vector
                 var spectrum = MatrixTools.GetColumnsAverages(subMatrix);
 
-                for (int i = 0; i < 18; i++)
-                    spectrum[i] = -100.0;
+                // debug - checking what the spectrum looks like.
+                //for (int i = 0; i < 18; i++)
+                //    spectrum[i] = -100.0;
+                //DataTools.writeBarGraph(spectrum);
 
-
-                DataTools.writeBarGraph(spectrum);
+                // locate the peaks in lower frequency bands, F2 and F3
                 bool[] peaks = DataTools.GetPeaks(spectrum);
-                if ((peaks[F - 9]) || (peaks[F - 10]) || (peaks[F - 11]))
+                int F1AndF2Gap = 10; // 10 = number of freq bins
+                int F2bin = 0;
+                double F2power = -100.0; // dB
+                for (int i = -1; i <= 1; i++)
                 {
-                    array[2] = F - 10;
+                    if (peaks[F1bin - F1AndF2Gap + i])
+                    {
+                        F2bin = F1bin - F1AndF2Gap + i;
+                        F2power = subMatrix[1, F2bin];
+                    }
                 }
+                if (F2bin == 0) continue;
+                if (F2power == -100.0) continue;
+                array[2] = F2bin;
 
-                if ((peaks[F - 19]) || (peaks[F - 20]) || (peaks[F - 21]))
+                int F1AndF3Gap = 20; // 10 = number of freq bins
+                int F3bin = 0;
+                double F3power = -100.0;
+                for (int i = -1; i <= 1; i++)
                 {
-                    array[3] = F - 20;
+                    if (peaks[F1bin - F1AndF3Gap + i])
+                    {
+                        F3bin = F1bin - F1AndF3Gap + i;
+                        F3power = subMatrix[1, F3bin];
+                    }
                 }
+                if (F3bin == 0) continue;
+                if (F3power == -100.0) continue;
+                array[3] = F3bin;
+
+                // good LimnoConvex call has declining power at the low freq peaks.
+                if ((F3power > F2power) || (F2power > F1power)) continue;
+
+                //freq Bin ID must be converted back to Matrix row ID
+                //  freqBin + rowID = binCount - 1;
+                // therefore: rowID = binCount - freqBin - 1;
+                minRowID = rhzRowCount - F1bin - 1;
+                maxRowID = rhzRowCount - F3bin - 1;
+                var oblong = new Oblong(minRowID - 1, T-1, maxRowID + 1, T+1);
+                int nyquist = recording.Nyquist;
+                int binCount = F1bin - F3bin + 1;
+                int frameCount = 3;
+                var ae = new AcousticEvent(oblong, recording.Nyquist, binCount, frameDurationInSeconds, frameStepInSeconds, frameCount);
+                acousticEvents.Add(ae);
             }
 
-
-
-
-
-
-            bool returnSonogramInfo = true; // TEMPORARY ################################
-            if (returnSonogramInfo)
+            // now add in extra info to the acoustic events
+            acousticEvents.ForEach(ae =>
             {
-                string file2Path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30_0min.Spectrogram.png";
+                ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
+                ae.SegmentStartOffset = segmentStartOffset;
+                ae.SegmentDuration = recording.Duration();
+                ae.Name = "LimnoConvex";
+            });
+
+
+            // DEBUG ONLY ################################ TEMPORARY ################################
+            // Draw a standard spectrogram and mark of hites etc.
+            bool createStandardDebugSpectrogram = true;
+            var imageDir = new DirectoryInfo(outputDir.FullName + @"\SpectrogramImages");
+            if (!imageDir.Exists) imageDir.Create();
+            if (createStandardDebugSpectrogram)
+            {
+                var fileName2 = Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name);
+                string filePath2 = Path.Combine(imageDir.FullName, fileName + ".Spectrogram.png");
                 Bitmap sonoBmp = (Bitmap)sonogram.GetImage();
                 int height = sonoBmp.Height;
+                Pen pen = new Pen(Color.Red);
+                Graphics g = Graphics.FromImage(sonoBmp);
+                foreach (AcousticEvent ae in acousticEvents)
+                {
+                    g.DrawRectangle(pen, ae.Oblong.ColumnLeft, ae.Oblong.RowTop, ae.Oblong.ColWidth-1, ae.Oblong.RowWidth);
+                }
+
                 foreach (int[] array in newList)
                 {
                     sonoBmp.SetPixel(array[0], height - array[1] - 1, Color.Red);
@@ -622,8 +689,9 @@ namespace AnalysisPrograms
                 // mark off upper bound and lower frequency bound
                 sonoBmp.SetPixel(0, height - dominantBinMin, Color.Lime);
                 sonoBmp.SetPixel(0, height - dominantBinMax, Color.Lime);
-                sonoBmp.Save(file2Path);  
+                sonoBmp.Save(filePath2);  
             }
+            // END DEBUG ################################ TEMPORARY ################################
 
 
             double[] scores = new double[rhzColCount]; // predefinition of score array
@@ -635,21 +703,13 @@ namespace AnalysisPrograms
             double eventThreshold = 0.4;
 
 
-            //events.ForEach(ae =>
-            //        {
-            //            ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
-            //            ae.SegmentStartOffset = segmentStartOffset;
-            //            ae.SegmentDuration = recordingDuration;
-            //            ae.Name = "AdvertCall";
-            //        });
-
             var plot = new Plot(AnalysisName, scores, eventThreshold);
             return new LimConResults
                        {
                            Sonogram = sonogram, 
                            Hits = null, 
                            Plot = plot, 
-                           Events = null, 
+                           Events = acousticEvents, 
                            RecordingDuration = recording.Duration()
                        };
         } // Analysis()

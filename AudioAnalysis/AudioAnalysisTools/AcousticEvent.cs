@@ -211,17 +211,20 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// This constructor currently works ONLY for linear Herzt scale events
+        /// This constructor currently works ONLY for linear Herzt scale events.
         /// </summary>
-        /// <param name="o"></param>
-        /// <param name="frameOffset">seconds between frame starts i.e. inverse of frames per second. Sets the time scale for an event</param>
-        /// <param name="binWidth">sets the frequency scale for an event</param>
-        public AcousticEvent(Oblong o, int NyquistFrequency, int binCount, double frameDuation, double frameOffset, int frameCount) : this()
+        /// <param name="o">An oblong initialised with bin and frame numbers marking location of the event</param>
+        /// <param name="NyquistFrequency">to set the freq scale</param>
+        /// <param name="binCount">to set the freq scale</param>
+        /// <param name="frameDuration">tseconds duration of a frame - to set the time scale</param>
+        /// <param name="frameStep">seconds between frame starts i.e. frame step; i.e. inverse of frames per second. Sets the time scale for an event</param>
+        /// <param name="frameCount">to set the time scale</param>
+        public AcousticEvent(Oblong o, int NyquistFrequency, int binCount, double frameDuration, double frameStep, int frameCount) : this()
         {
             this.Oblong = o;
             this.FreqBinWidth = NyquistFrequency / (double)binCount;
-            this.FrameDuration = frameDuation;
-            this.FrameOffset = frameOffset;
+            this.FrameDuration = frameDuration;
+            this.FrameOffset = frameStep;
             this.FreqBinCount = binCount;
             this.FrameCount = frameCount;
 
@@ -233,10 +236,6 @@ namespace AudioAnalysisTools
             
             this.MinFreq = (int)Math.Round(o.ColumnLeft * this.FreqBinWidth);
             this.MaxFreq = (int)Math.Round(o.ColumnRight * this.FreqBinWidth);
-            ////if (doMelscale) // convert min max Hz to mel scale
-            ////{
-            ////}
-
             this.HitElements = o.HitElements;
         }
 
