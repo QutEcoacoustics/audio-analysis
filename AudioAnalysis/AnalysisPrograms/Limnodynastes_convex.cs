@@ -477,7 +477,8 @@ namespace AnalysisPrograms
                 bmp.SetPixel(69, 1911 - dominantBinMin, Color.Lime);
                 bmp.SetPixel(69, 1911 - dominantBinMax, Color.Lime);
                 //bmp.SetPixel(69, 1911 - maxRowID, Color.Lime);
-                bmp.Save(filePath);
+                string opFilePath = outputDir.FullName + @"\SpectrogramImages\" + fileName + ".CombinedGreyScaleAnnotated.png";
+                bmp.Save(opFilePath);
             }
             // END DEBUG ################################ TEMPORARY ################################
 
@@ -556,7 +557,7 @@ namespace AnalysisPrograms
                 }
 
                 // newList.Add(new Point(frameSpan, point.Y));
-                int[] array = new int[4];
+                int[] array = new int[2];
                 array[0] = idOfTMax;
                 array[1] = idOfFMax;
                 newList.Add(array);
@@ -592,6 +593,11 @@ namespace AnalysisPrograms
                 // convert to vector
                 var spectrum = MatrixTools.GetColumnsAverages(subMatrix);
 
+                // use the following code to get estimate of background noise
+                double[,] powerMatrix = MatrixTools.Submatrix(sonogram.Data, T - 2, 10, T + 2, F1bin);
+                double averagePower = (MatrixTools.GetRowAverages(powerMatrix)).Average();
+                double score = F1power - averagePower;
+
                 // debug - checking what the spectrum looks like.
                 //for (int i = 0; i < 18; i++)
                 //    spectrum[i] = -100.0;
@@ -602,7 +608,7 @@ namespace AnalysisPrograms
                 int F1AndF2Gap = 10; // 10 = number of freq bins
                 int F2bin = 0;
                 double F2power = -100.0; // dB
-                for (int i = -1; i <= 1; i++)
+                for (int i = -2; i <= 2; i++)
                 {
                     if (peaks[F1bin - F1AndF2Gap + i])
                     {
@@ -612,12 +618,12 @@ namespace AnalysisPrograms
                 }
                 if (F2bin == 0) continue;
                 if (F2power == -100.0) continue;
-                array[2] = F2bin;
+                score += (F2power - averagePower);
 
                 int F1AndF3Gap = 20; // 10 = number of freq bins
                 int F3bin = 0;
                 double F3power = -100.0;
-                for (int i = -1; i <= 1; i++)
+                for (int i = -2; i <= 2; i++)
                 {
                     if (peaks[F1bin - F1AndF3Gap + i])
                     {
@@ -627,25 +633,48 @@ namespace AnalysisPrograms
                 }
                 if (F3bin == 0) continue;
                 if (F3power == -100.0) continue;
-                array[3] = F3bin;
 
-                // good LimnoConvex call has declining power at the low freq peaks.
-                if ((F3power > F2power) || (F2power > F1power)) continue;
+                score += (F3power - averagePower);
+                score /= 3;
+
+                // good LimnoConvex call has strongest F1 power
+                if ((F3power > F1power) || (F2power > F1power)) continue;
 
                 //freq Bin ID must be converted back to Matrix row ID
                 //  freqBin + rowID = binCount - 1;
                 // therefore: rowID = binCount - freqBin - 1;
-                minRowID = rhzRowCount - F1bin - 1;
+                minRowID = rhzRowCount - F1bin - 2;
                 maxRowID = rhzRowCount - F3bin - 1;
+                int F1RowID  = rhzRowCount - F1bin - 1;
+                int F2RowID = rhzRowCount - F2bin - 1;
+                int F3RowID = rhzRowCount - F3bin - 1;
+
                 var oblong = new Oblong(minRowID - 1, T-1, maxRowID + 1, T+1);
                 int nyquist = recording.Nyquist;
+                int topBin = F1bin + 2;
                 int binCount = F1bin - F3bin + 1;
                 int frameCount = 3;
                 var ae = new AcousticEvent(oblong, recording.Nyquist, binCount, frameDurationInSeconds, frameStepInSeconds, frameCount);
+                var pointF1 = new Point(1, topBin - F1bin);
+                var pointF2 = new Point(1, topBin - F2bin);
+                var pointF3 = new Point(1, topBin - F3bin);
+                ae.Points = new List<Point>();
+                ae.Points.Add(pointF1);
+                ae.Points.Add(pointF2);
+                ae.Points.Add(pointF3);
+                //tried using HitElements but did not do what I wanted later on.
+                //ae.HitElements = new HashSet<Point>();
+                //ae.HitElements = new SortedSet<Point>();
+                //ae.HitElements.Add(pointF1);
+                //ae.HitElements.Add(pointF2);
+                //ae.HitElements.Add(pointF3);
+                ae.Score = score;
+                ae.MinFreq = 9.0;
+                ae.MaxFreq = 999.0;
                 acousticEvents.Add(ae);
             }
 
-            // now add in extra info to the acoustic events
+            // now add in extra common info to the acoustic events
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
@@ -653,6 +682,20 @@ namespace AnalysisPrograms
                 ae.SegmentDuration = recording.Duration();
                 ae.Name = "LimnoConvex";
             });
+
+            double[] scores = new double[rhzColCount]; // predefinition of score array
+            double nomalisationConstant = 18.0; // eighteen decibels
+            double compressionFactor = rhzColCount / (double)sonogram.Data.GetLength(0);
+            foreach (AcousticEvent ae in acousticEvents)
+            {
+                ae.ScoreNormalised = ae.Score / nomalisationConstant;
+                if (ae.ScoreNormalised > 1.0) ae.ScoreNormalised = 1.0;
+                int frameID = ae.Oblong.ColumnLeft + 1;
+                int hiresFrameID = (int)Math.Floor(frameID * compressionFactor);
+                scores[hiresFrameID] = ae.ScoreNormalised;
+            }
+            double eventThreshold = 0.4;
+            var plot = new Plot(AnalysisName, scores, eventThreshold);
 
 
             // DEBUG ONLY ################################ TEMPORARY ################################
@@ -671,13 +714,18 @@ namespace AnalysisPrograms
                 foreach (AcousticEvent ae in acousticEvents)
                 {
                     g.DrawRectangle(pen, ae.Oblong.ColumnLeft, ae.Oblong.RowTop, ae.Oblong.ColWidth-1, ae.Oblong.RowWidth);
+                    //ae.DrawPoint(sonoBmp, ae.HitElements.[0], Color.OrangeRed);
+                    //ae.DrawPoint(sonoBmp, ae.HitElements[1], Color.Yellow);
+                    //ae.DrawPoint(sonoBmp, ae.HitElements[2], Color.Green);
+                    ae.DrawPoint(sonoBmp, ae.Points[0], Color.OrangeRed);
+                    ae.DrawPoint(sonoBmp, ae.Points[1], Color.Yellow);
+                    ae.DrawPoint(sonoBmp, ae.Points[2], Color.Green);
                 }
 
+                // draw on the original hits
                 foreach (int[] array in newList)
                 {
-                    sonoBmp.SetPixel(array[0], height - array[1] - 1, Color.Red);
-                    sonoBmp.SetPixel(array[0], height - array[2] - 1, Color.Green);
-                    sonoBmp.SetPixel(array[0], height - array[3] - 1, Color.Yellow);
+                    sonoBmp.SetPixel(array[0], height - array[1], Color.Blue);
                 }
 
                 // mark off every tenth frequency bin
@@ -694,16 +742,6 @@ namespace AnalysisPrograms
             // END DEBUG ################################ TEMPORARY ################################
 
 
-            double[] scores = new double[rhzColCount]; // predefinition of score array
-            double nomalisationConstant = 60.0;
-            foreach (Point point in list)
-            {
-                scores[point.X] = point.Y / nomalisationConstant;
-            }
-            double eventThreshold = 0.4;
-
-
-            var plot = new Plot(AnalysisName, scores, eventThreshold);
             return new LimConResults
                        {
                            Sonogram = sonogram, 

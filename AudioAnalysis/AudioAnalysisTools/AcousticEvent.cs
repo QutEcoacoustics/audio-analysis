@@ -154,6 +154,12 @@ namespace AudioAnalysisTools
         /// <summary> second score if required</summary>
         public double Score2 { get; set; } // e.g. for Birgits recognisers
 
+        /// <summary>
+        /// A list of points that can be used to identifies features in spectrogram relative to the Event.
+        /// i.e. Points can be outside of events and can have negative values.
+        /// Point location is relative to the top left corner of the event.
+        /// </summary>
+        public List<Point> Points { get; set; }
 
         public double Periodicity  { get; set; } // for events which have an oscillating acoustic energy - used for frog calls
         public double DominantFreq { get; set; } // the dominant freq in the event - used for frog calls
@@ -284,6 +290,25 @@ namespace AudioAnalysisTools
 
             if (this.Oblong == null) this.Oblong = AcousticEvent.ConvertEvent2Oblong(this);
         }
+
+
+        /// <summary>
+        /// Passed point is relative to top-left corner of the Acoustic Event.
+        /// Oblong needs to be set for this method to work
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="point"></param>
+        /// <param name="colour"></param>
+        public void DrawPoint(Bitmap bmp, Point point, Color colour)
+        {
+            if (bmp == null) return;
+            if (point == null) return;
+            if (this.Oblong == null) return;
+            int row = this.Oblong.RowTop  + point.Y;
+            int col = this.Oblong.ColumnLeft + point.X;
+            bmp.SetPixel(col, row, colour);
+        }
+
 
 
         /// <summary>
