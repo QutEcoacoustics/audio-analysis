@@ -83,15 +83,15 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
             // OTHER FROGS
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSp\53 Litoria fallax.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogRecording_2.wav";
             //string recordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000.mp3";
             //string recordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000_0min.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_TockAndRachet_GympieDam_JasonsDad.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_TockAndRachet_GympieDam_JasonsDad.wav";
 
-            string outputPath    = @"C:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test";
+            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\SamfordTest";
 
