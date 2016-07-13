@@ -534,7 +534,7 @@ namespace AnalysisPrograms
                 double maxValue = -Double.MaxValue;
                 int idOfTMax = frameSpan;
                 int idOfFMax = point.Y;
-                for (int deltaT = -3; deltaT <= 3; deltaT++)
+                for (int deltaT = -4; deltaT <= 4; deltaT++)
                 {
                     for (int deltaF = -1; deltaF <= 1; deltaF++)
                     {
@@ -588,13 +588,13 @@ namespace AnalysisPrograms
                 // NOTE: sonogram.data matrix is time*freqBin
                 int T = array[0];
                 int F1bin = array[1];
-                double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, T - 1, 0, T + 1, F1bin);
+                double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, T - 2, 0, T + 2, F1bin);
                 double F1power = subMatrix[1, F1bin];
                 // convert to vector
                 var spectrum = MatrixTools.GetColumnsAverages(subMatrix);
 
                 // use the following code to get estimate of background noise
-                double[,] powerMatrix = MatrixTools.Submatrix(sonogram.Data, T - 2, 10, T + 2, F1bin);
+                double[,] powerMatrix = MatrixTools.Submatrix(sonogram.Data, T - 3, 10, T + 3, F1bin);
                 double averagePower = (MatrixTools.GetRowAverages(powerMatrix)).Average();
                 double score = F1power - averagePower;
 
@@ -607,37 +607,42 @@ namespace AnalysisPrograms
                 bool[] peaks = DataTools.GetPeaks(spectrum);
                 int F1AndF2Gap = 10; // 10 = number of freq bins
                 int F2bin = 0;
-                double F2power = -100.0; // dB
-                for (int i = -2; i <= 2; i++)
+                double F2power = -200.0; // dB
+                for (int i = -3; i <= 2; i++)
                 {
-                    if (peaks[F1bin - F1AndF2Gap + i])
+                    int bin = F1bin - F1AndF2Gap + i;
+                    if ((peaks[bin])&&(F2power < subMatrix[1, bin]))
                     {
-                        F2bin = F1bin - F1AndF2Gap + i;
-                        F2power = subMatrix[1, F2bin];
+                        F2bin = bin;
+                        F2power = subMatrix[1, bin];
                     }
                 }
                 if (F2bin == 0) continue;
-                if (F2power == -100.0) continue;
+                if (F2power == -200.0) continue;
                 score += (F2power - averagePower);
 
                 int F1AndF3Gap = 20; // 10 = number of freq bins
                 int F3bin = 0;
-                double F3power = -100.0;
-                for (int i = -2; i <= 2; i++)
+                double F3power = -200.0;
+                for (int i = -5; i <= 2; i++)
                 {
-                    if (peaks[F1bin - F1AndF3Gap + i])
+                    int bin = F1bin - F1AndF3Gap + i;
+                    if ((peaks[bin]) && (F3power < subMatrix[1, bin]))
                     {
-                        F3bin = F1bin - F1AndF3Gap + i;
-                        F3power = subMatrix[1, F3bin];
+                        F3bin = bin;
+                        F3power = subMatrix[1, bin];
                     }
                 }
                 if (F3bin == 0) continue;
-                if (F3power == -100.0) continue;
+                if (F3power == -200.0) continue;
 
                 score += (F3power - averagePower);
                 score /= 3;
 
-                // good LimnoConvex call has strongest F1 power
+                // ignore events where SNR < 3 dB
+                if (score < 3.0) continue;
+
+                // ignore events with wrong power distribution. A good LimnoConvex call has strongest F1 power
                 if ((F3power > F1power) || (F2power > F1power)) continue;
 
                 //freq Bin ID must be converted back to Matrix row ID
@@ -654,7 +659,11 @@ namespace AnalysisPrograms
                 int topBin = F1bin + 2;
                 int binCount = F1bin - F3bin + 1;
                 int frameCount = 3;
+
+                // Got to here so start initialising an acoustic event
                 var ae = new AcousticEvent(oblong, recording.Nyquist, binCount, frameDurationInSeconds, frameStepInSeconds, frameCount);
+                ae.StartOffset = TimeSpan.FromSeconds(T * frameStepInSeconds);
+                ae.Duration = frameCount * frameStepInSeconds;
                 var pointF1 = new Point(1, topBin - F1bin);
                 var pointF2 = new Point(1, topBin - F2bin);
                 var pointF3 = new Point(1, topBin - F3bin);
@@ -669,8 +678,8 @@ namespace AnalysisPrograms
                 //ae.HitElements.Add(pointF2);
                 //ae.HitElements.Add(pointF3);
                 ae.Score = score;
-                ae.MinFreq = 9.0;
-                ae.MaxFreq = 999.0;
+                ae.MinFreq = Math.Round((topBin - F3bin) * herzPerBin);
+                ae.MaxFreq = Math.Round(topBin * herzPerBin);
                 acousticEvents.Add(ae);
             }
 
@@ -719,13 +728,13 @@ namespace AnalysisPrograms
                     //ae.DrawPoint(sonoBmp, ae.HitElements[2], Color.Green);
                     ae.DrawPoint(sonoBmp, ae.Points[0], Color.OrangeRed);
                     ae.DrawPoint(sonoBmp, ae.Points[1], Color.Yellow);
-                    ae.DrawPoint(sonoBmp, ae.Points[2], Color.Green);
+                    ae.DrawPoint(sonoBmp, ae.Points[2], Color.LimeGreen);
                 }
 
                 // draw on the original hits
                 foreach (int[] array in newList)
                 {
-                    sonoBmp.SetPixel(array[0], height - array[1], Color.Blue);
+                    sonoBmp.SetPixel(array[0], height - array[1], Color.Cyan);
                 }
 
                 // mark off every tenth frequency bin
