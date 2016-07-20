@@ -210,9 +210,6 @@ namespace AudioAnalysisTools
 
         public static void CorrectEvent(AnalysisResult2 result, EventBase eventToBeFixed, int totalEventsSoFar, int totalEventsInResultSoFar)
         {
-            // TODO: check with michael what this should be (totalEventsSoFa or totalEventsInResultSoFar)
-            eventToBeFixed.EventCount = totalEventsSoFar;
-
             // just in case the event was in a segment longer than 60 seconds, rebase values
             ////eventToBeFixed.StartOffsetMinute = (int)(absoluteOffset / 60);
             //eventToBeFixed.EventStartSeconds = resultStartSeconds % 60;
