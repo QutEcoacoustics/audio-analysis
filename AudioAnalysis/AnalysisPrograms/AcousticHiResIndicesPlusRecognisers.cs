@@ -615,15 +615,29 @@ namespace AnalysisPrograms
         }
 
 
+        /// <summary>
+        /// Writes a csv file containing results for all species detections
+        /// Previous csv files coded by Anthony had the following headings:
+        /// EventStartSeconds, EventEndSeconds, Duration, MinHz	MaxHz, FreqBinCount, FreqBinWidth, FrameDuration, FrameCount, SegmentStartOffset,
+        /// 	   Score	EventCount	FileName	StartOffset	SegmentDuration	StartOffsetMinute	Bottom	Top	Left	Right	HitElements
+        /// </summary>
+        /// <param name="destination"></param>
+        /// <param name="results"></param>
         public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
             var lines = new List<string>();
-            string line = "Start,Duration,SpeciesName,CallType,MinFreq,MaxFreq,Score,Score2";
+            //string line = "Start,Duration,SpeciesName,CallType,MinFreq,MaxFreq,Score,Score2";
+            string line = "EvStartSec,evEndSec,Duration,MinFreq,MaxFreq,SegmentStartOffset,SegmentDuration,Score,Score2,CallName,SpeciesName,FileName";
+
+
             lines.Add(line);
             foreach (EventBase baseEvent in results)
             {
                 AcousticEvent ae = (AcousticEvent)baseEvent;
-                line = String.Format("{0},{1:f2},{2},{3},{4},{5},{6:f2},{7:f1}", ae.StartOffset, ae.Duration, ae.SpeciesName, ae.Name, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
+                line = String.Format("{0},{1:f2},{2:f3},{3},{4},{5},{6},{7:f3},{8:f2},{9},{10},{11}", 
+                                     ae.StartOffset, ae.TimeEnd, ae.Duration, ae.MinFreq,     ae.MaxFreq, 
+                                     ae.SegmentStartOffset, ae.SegmentDuration,
+                                     ae.Score,       ae.Score2,  ae.Name,     ae.SpeciesName, ae.FileName);
                 lines.Add(line);
             }
 

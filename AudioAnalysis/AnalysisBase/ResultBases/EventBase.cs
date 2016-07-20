@@ -21,8 +21,8 @@ namespace AnalysisBase.ResultBases
         private TimeSpan segmentStartOffset;
 
         /// <summary>
-        /// Gets or sets the time the current audio segment is offset from the start of the file.
-        /// This MUST BE SET before EventStartSeconds.
+        /// Gets or sets the time the current audio segment is offset from the start of the file/recording.
+        /// 
         /// </summary>
         public TimeSpan SegmentStartOffset
         {
@@ -43,9 +43,9 @@ namespace AnalysisBase.ResultBases
 
         /// <summary>
         /// Gets or sets the Event's Start Seconds.
-        /// This field is relative to the segment.
-        /// The version of this number that is relative to the start of the original file can be found in <c>StartOffset</c>.
-        /// Setting this field will update <c>StartOffset</c>.
+        /// IMPORTANT: This field is time offset relative to the current segment.
+        ///            The  time offset relative to the start of the original file can be found in <c>ResultBase.StartOffset</c>.
+        /// Setting this field will update <c>ResultBase.StartOffset</c>.
         /// </summary>
         public double EventStartSeconds
         {
@@ -61,17 +61,15 @@ namespace AnalysisBase.ResultBases
             }
         }
 
-        //AudioAnalysisTools.Keys.MIN_HZ
-        public double? MinHz { get; set; }
-
         /// <summary>
-        /// AudioAnalysisTools.Keys.EVENT_COUNT,        //1
-        /// .
-        /// Not intended to be set by Analyzers.
+        /// AudioAnalysisTools.Keys.MIN_HZ
+        /// NOTE: When MinHz is set to null, this indicates that the event is broad band or has undefined frequency. The event is an instant.
+        ///       When MinHz has a value, this indicates the event is a point in time/frequency space.
         /// </summary>
-        public int EventCount { get; set; }
+        public double? MinHz { get; protected set; }
 
-
+        //// THIS IS REMOVED because the IComparer on ResultBase should achieve a similar effect,
+        //// provided both EventStartSeconds and SegmentStartOffset are set.
 //        /// <summary>
 //        /// events should be sorted based on their EventStartSeconds property
 //        /// </summary>

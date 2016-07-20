@@ -287,6 +287,24 @@ namespace TowseyLibrary
             return overlap;
         }
 
+
+
+        public static Oblong RotateOblongForStandardSpectrogram(Oblong oblong, int rowCount, int colCount)
+        {
+            // Translate time dimension = frames = matrix rows.
+            int newTopRow = rowCount - oblong.ColumnRight;
+            int newBottomRow = rowCount - oblong.ColumnLeft;
+
+            //Translate freq dimension = freq bins = matrix columns.
+            int newLeftCol = oblong.RowTop;
+            int newRightCol = oblong.RowBottom;
+
+            return new Oblong(newTopRow, newBottomRow, newLeftCol, newRightCol);
+        }
+
+
+
+
         /// <summary>
         /// Reurns the distribution of the column-centroids.
         ///     The rectangular shapes are assumed to exist in a matrix

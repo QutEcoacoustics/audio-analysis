@@ -73,11 +73,13 @@ namespace AudioAnalysisTools
 
         public static readonly Color DefaultBorderColor = Color.FromArgb(255, Color.Crimson);
 
-        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.Black);
+        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.DarkGray);
 
-        /// <summary>in seconds
-        /// within current recording.
-        /// Proxied to EventStartSeconds
+        /// <summary>
+        /// Units = seconds
+        /// Time offset from start of current segment to start of event.
+        /// NOTE: AcousticEvents do not have a notion of time offset wrt start of recording ; - only to start of current recording segment.
+        /// Proxied to EventBase.EventStartSeconds
         /// </summary>
         public double TimeStart
         {
@@ -91,12 +93,18 @@ namespace AudioAnalysisTools
             }
         }
 
-        /// <summary>in seconds</summary>
+        /// <summary>
+        /// Units = seconds
+        /// Time offset from start of current segment to end of the event.
+        /// Written into the csv file under column "EventEndSeconds"
+        /// This field is NOT in EventBase. EventBase only requires TimeStart
+        ///  because it is designed to also accomodate points.
+        /// </summary>
         public double TimeEnd { get; set; }   //within current recording
-        
+
         /// <summary>
         /// units = Hertz
-        /// Proxied to MinHz
+        /// Proxied to EventBase.MinHz
         /// </summary>
         public double MinFreq 
         {
@@ -129,6 +137,8 @@ namespace AudioAnalysisTools
         public double FreqBinWidth { get; private set; }    //required for freq-binID conversions
         /// <summary> Frame duration in seconds</summary>
         public double FrameDuration { get; private set; }
+
+
         /// <summary> Time between frame starts in seconds. Inverse of FramesPerSecond</summary>
         public double FrameOffset { get; set; }
         /// <summary> Number of frame starts per second. Inverse of the frame offset</summary>
@@ -293,34 +303,15 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Passed point is relative to top-left corner of the Acoustic Event.
-        /// Oblong needs to be set for this method to work
-        /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="point"></param>
-        /// <param name="colour"></param>
-        public void DrawPoint(Bitmap bmp, Point point, Color colour)
-        {
-            if (bmp == null) return;
-            if (point == null) return;
-            if (this.Oblong == null) return;
-            int row = this.Oblong.RowTop  + point.Y;
-            int col = this.Oblong.ColumnLeft + point.X;
-            bmp.SetPixel(col, row, colour);
-        }
-
-
-
-        /// <summary>
-        /// calculates the matrix/image indices of the acoustic event, when given the time/freq scales.
-        /// This method called only by previous method:- SetTimeAndFreqScales(int samplingRate, int windowSize, int windowOffset)
+        /// Calculates the matrix/image indices of the acoustic event, when given the time/freq scales.
+        /// This method called only by previous method:- Acousticevent.SetTimeAndFreqScales()
+        /// Translate time/freq dimensions to coordinates in a matrix.
+        /// columns of matrix are the freq bins. Origin is top left - as per matrix in the sonogram class.
         /// </summary>
         /// <returns></returns>
         public static Oblong ConvertEvent2Oblong(AcousticEvent ae)
         {
-            //translate time/freq dimensions to coordinates in a matrix.
-            //columns of matrix are the freq bins. Origin is top left - as per matrix in the sonogram class.
-            //Translate time dimension = frames = matrix rows.
+            // Translate time dimension = frames = matrix rows.
             int topRow; int bottomRow;
             Time2RowIDs(ae.TimeStart, ae.Duration, ae.FrameOffset, out topRow, out bottomRow);
 
@@ -330,7 +321,6 @@ namespace AudioAnalysisTools
 
             return new Oblong(topRow, leftCol, bottomRow, rightCol);
         }
-
 
         /// <summary>
         /// Sets the passed score and also a value normalised between a min and a max.
@@ -350,6 +340,61 @@ namespace AudioAnalysisTools
         {
             return " min-max=" + this.MinFreq + "-" + this.MaxFreq + ",  " + this.Oblong.ColumnLeft + "-" + this.Oblong.ColumnRight;
         }
+
+
+
+        public void DrawEvent(Bitmap sonogram)
+        {
+            Contract.Requires(this.BorderColour != null);
+            //Contract.Requires(this.HitElements == null || (this.HitElements != null && this.HitColour != null));
+            Graphics g = Graphics.FromImage(sonogram);
+
+            var borderPen = new Pen(this.BorderColour);
+            var scorePen = new Pen(this.ScoreColour);
+
+            // calculate top and bottom freq bins
+            int minFreqBin = (int)Math.Round(this.MinFreq / this.FreqBinWidth);
+            int maxFreqBin = (int)Math.Round(this.MaxFreq / this.FreqBinWidth);
+            int height = maxFreqBin - minFreqBin + 1;
+            int y = sonogram.Height - maxFreqBin - 1;
+
+            // calculate start and end time frames
+            int t1 = 0;
+            int tWidth = 0;
+            double duration = this.TimeEnd - this.TimeStart;
+            if ((duration != 0.0) && (this.FramesPerSecond != 0.0))
+            {
+                t1 = (int)Math.Round(this.TimeStart * this.FramesPerSecond); // temporal start of event
+                tWidth = (int)Math.Round(duration * this.FramesPerSecond);
+            }
+            else if (this.Oblong != null)
+            {
+                t1 = this.Oblong.RowTop; // temporal start of event
+                tWidth = this.Oblong.RowBottom - t1 + 1;
+            }
+
+            // 14-Feb-12 - Anthony - changed default brush so border would actually render with color
+            g.DrawRectangle(borderPen, t1, y, tWidth, height);
+
+            //if (this.HitElements != null)
+            //{
+            //    foreach (var hitElement in this.HitElements)
+            //    {
+            //        imageToReturn.SetPixel(hitElement.X, sonogramHeight - hitElement.Y, HitColour.Value);
+            //    }
+            //}
+
+            //draw the score bar to indicate relative score
+            int scoreHt = (int)Math.Round(height * this.ScoreNormalised);
+            int y1 = y + height - 1;
+            int y2 = y1 - scoreHt;
+            g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
+            //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
+            //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
+            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
+        }
+
+
 
         public void DrawEvent(Graphics g, Bitmap imageToReturn, double framesPerSecond, double freqBinWidth, int sonogramHeight)
         {
@@ -401,6 +446,27 @@ namespace AudioAnalysisTools
         }
 
 
+
+
+
+        /// <summary>
+        /// Passed point is relative to top-left corner of the Acoustic Event.
+        /// Oblong needs to be set for this method to work
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="point"></param>
+        /// <param name="colour"></param>
+        public void DrawPoint(Bitmap bmp, Point point, Color colour)
+        {
+            if (bmp == null) return;
+            if (point == null) return;
+            int maxFreqBin = (int)Math.Round(this.MaxFreq / this.FreqBinWidth);
+            int row = bmp.Height - maxFreqBin - 1 + point.Y;
+            int t1 = (int)Math.Round(this.TimeStart * this.FramesPerSecond); // temporal start of event
+            int col = t1 + point.X;
+            if (row >= bmp.Height) row = bmp.Height - 1;
+            bmp.SetPixel(col, row, colour);
+        }
 
 
 
