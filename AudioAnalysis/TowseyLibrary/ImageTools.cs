@@ -2733,7 +2733,7 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
-        public static Image CombineImagesVertically(Image[] array)
+        public static System.Drawing.Image CombineImagesVertically(System.Drawing.Image[] array)
         {
             int width = array[0].Width;   // assume all images have the same width
 
@@ -2742,11 +2742,14 @@ namespace TowseyLibrary
             {
                 if (null == array[i]) continue;
                 compositeHeight += array[i].Height;
+
+                if (width < array[i].Width)
+                    width = array[i].Width;
             }
 
-            Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
+            System.Drawing.Bitmap compositeBmp = new System.Drawing.Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
             int yOffset = 0;
-            Graphics gr = Graphics.FromImage(compositeBmp);
+            System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
 
             for (int i = 0; i < array.Length; i++)
@@ -2755,7 +2758,7 @@ namespace TowseyLibrary
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top image
                 yOffset += array[i].Height;
             }
-            return (Image)compositeBmp;
+            return (System.Drawing.Image)compositeBmp;
         }
 
         /// <summary>

@@ -492,6 +492,40 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
+        /// <summary>
+        /// There can be issues with this method because images are not at same dpi.
+        /// https://msdn.microsoft.com/en-us/library/system.drawing.bitmap.setresolution(v=vs.110).aspx
+        /// I.e. resolution = 96dpi rather than 120 dpi
+        /// 
+        /// If having resolution problems i.e. the bitmap does not draw at the correct size into the larger Graphics canvas,
+        ///  then may need to comment out the line: ((Bitmap)image).SetResolution(96, 96);
+        /// </summary>
+        public static void ConcatenateFalsecolourSpectrograms()
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun");
+            FileInfo[] files = dirInfo.GetFiles();
+            FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun.png");
+
+            int width = 785;
+            System.Drawing.Image spacer = new Bitmap(width, 4);
+            System.Drawing.Graphics g = Graphics.FromImage(spacer);
+            g.Clear(Color.White);
+
+            var imageList = new List<Image>();
+            foreach (FileInfo file in files)
+            {
+                System.Drawing.Image image = ImageTools.ReadImage2Bitmap(file.FullName);
+                ((Bitmap)image).SetResolution(96, 96); 
+                imageList.Add(image);
+                imageList.Add(spacer);
+            }
+
+            var opImage = ImageTools.CombineImagesVertically(imageList);
+            opImage.Save(opPath.FullName);
+        }
+
+
+
 
 
         // ##############################################################################################################

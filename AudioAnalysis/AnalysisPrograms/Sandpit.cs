@@ -88,7 +88,7 @@ namespace AnalysisPrograms
             }
 
             // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
-            if (true)  
+            if (false)  
             {
                 ChannelIntegrity.Execute(null);
             }
@@ -156,14 +156,6 @@ namespace AnalysisPrograms
             }
 
 
-
-            if (false)  // concatenating spectrogram images with gaps between them.
-            {
-                LDSpectrogramStitching.StitchPartialSpectrograms();
-                LDSpectrogramStitching.StitchPartialSpectrograms();
-            }
-
-
             // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
             if (false)
             {
@@ -192,11 +184,15 @@ namespace AnalysisPrograms
 
 
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
-            if (false)
+            if (true)
             {
                 //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
-                //LDSpectrogramStitching.ConcatenateSpectralIndexImages();
+                LDSpectrogramStitching.ConcatenateFalsecolourSpectrograms();
                 //LDSpectrogramClusters.ExtractSOMClusters();
+
+                // concatenating spectrogram images with gaps between them.
+                // Currently set for the recording protocol of Gianna Pavan(10 minutes every 30 minutes).
+                //LDSpectrogramStitching.StitchPartialSpectrograms();
             } // end if (true)
 
 
