@@ -506,20 +506,26 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo[] files = dirInfo.GetFiles();
             FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun.png");
 
+            double verticalScaleReduction = 0.4;
             int width = 785;
-            System.Drawing.Image spacer = new Bitmap(width, 4);
+            System.Drawing.Image spacer = new Bitmap(width, 8);
+            // float standardresolution = 96;
+            float standardresolution = ((Bitmap)spacer).VerticalResolution;
             System.Drawing.Graphics g = Graphics.FromImage(spacer);
-            g.Clear(Color.White);
+            g.Clear(Color.LightGray);
 
             var imageList = new List<Image>();
             foreach (FileInfo file in files)
             {
                 System.Drawing.Image image = ImageTools.ReadImage2Bitmap(file.FullName);
-                ((Bitmap)image).SetResolution(96, 96); 
+                float verticalresolution = ((Bitmap)image).VerticalResolution;
+                float horizontalresolution = ((Bitmap)image).HorizontalResolution;
+                ((Bitmap)image).SetResolution(standardresolution, (float)(verticalresolution / verticalScaleReduction)); 
                 imageList.Add(image);
                 imageList.Add(spacer);
             }
 
+            double verticalScale = 0.8;
             var opImage = ImageTools.CombineImagesVertically(imageList);
             opImage.Save(opPath.FullName);
         }

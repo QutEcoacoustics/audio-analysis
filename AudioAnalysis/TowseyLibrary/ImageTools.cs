@@ -2735,13 +2735,17 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static System.Drawing.Image CombineImagesVertically(System.Drawing.Image[] array)
         {
-            int width = array[0].Width;   // assume all images have the same width
+            float standardresolution = 96;
+            int width = array[0].Width;
+            float verticalresolution   = ((Bitmap)array[0]).VerticalResolution;
+            //float horizontalresolution = ((Bitmap)array[0]).HorizontalResolution;
+            float verticalScalingFactor = standardresolution / verticalresolution;
 
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
             {
                 if (null == array[i]) continue;
-                compositeHeight += array[i].Height;
+                compositeHeight += (int)Math.Round(array[i].Height * verticalScalingFactor);
 
                 if (width < array[i].Width)
                     width = array[i].Width;
@@ -2756,7 +2760,7 @@ namespace TowseyLibrary
             {
                 if (null == array[i]) continue;
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top image
-                yOffset += array[i].Height;
+                yOffset += (int)Math.Round(array[i].Height * verticalScalingFactor);
             }
             return (System.Drawing.Image)compositeBmp;
         }
