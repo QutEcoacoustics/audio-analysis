@@ -2,23 +2,21 @@
 AnalysisName: Towsey.Litoria_fallax
 SpeciesName: Litoria_fallax
 # min and max of the freq band to search
-MinHz: 400          
-MaxHz: 900
+MinHz: 3500          
+MaxHz: 4500
 # duration of DCT in seconds 
-DctDuration: 0.75
+DctDuration: 0.2
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.45
+DctThreshold: 0.6
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 7        
-MaxOcilFreq: 20
-# Minimum and maximum duration for the length of a true advertisement call.
-# The min duration setting of 5 seconds should not be changed because it is boundary between advert calls ( >5s duration) and release calls (<5s duration).
-# The min duration for a release call will be set = to the DCT duration in the code. 
-MinDuration: 5.0
-MaxDuration: 30.0
+MinOcilFreq: 40        
+MaxOcilFreq: 60
+# Minimum and maximum duration for the length of a true call.
+MinDuration: 0.1
+MaxDuration: 0.5
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.40
+EventThreshold: 0.30
 ################################################################################
 DoNoiseReduction: false
 #BgNoiseThreshold: 3.0

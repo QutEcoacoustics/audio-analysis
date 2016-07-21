@@ -462,7 +462,7 @@ namespace AnalysisPrograms
                 list.Add(new Point(c, freqBinID));
                 // we now have a list of potential hits for LimCon. This needs to be filtered.
 
-                Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
+                // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             }
 
             // DEBUG ONLY // ################################ TEMPORARY ################################
