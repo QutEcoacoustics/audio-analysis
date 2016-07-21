@@ -82,8 +82,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
 
             // OTHER FROGS
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSp\53 Litoria fallax.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogRecording_2.wav";

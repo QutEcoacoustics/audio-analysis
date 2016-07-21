@@ -49,6 +49,7 @@ namespace AnalysisPrograms
         #region Constants
 
         public const string AnalysisName = "Litoria_fallax";
+        public const string AbbreviatedName = "L.fallax";
 
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
         //public const int RESAMPLE_RATE = 17640;
@@ -401,8 +402,9 @@ namespace AnalysisPrograms
             // min score for an acceptable event
             double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
 
-            // this default framesize seems to work for Canetoad
-            const int FrameSize = 512;
+            // The default was 512 for Canetoad.
+            // Framesize = 128 seems to work for Littoria fallax.
+            const int FrameSize = 128;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
                 FrameSize,
@@ -441,9 +443,9 @@ namespace AnalysisPrograms
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            minDuration = 1.0;
+            //minDuration = 1.0;
             double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
+            List<AcousticEvent> acousticEvents;
             double[,] hits;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
@@ -457,24 +459,43 @@ namespace AnalysisPrograms
                 minDuration,
                 maxDuration,
                 out scores,
-                out events,
+                out acousticEvents,
                 out hits);
 
-            events.ForEach(ae =>
+            acousticEvents.ForEach(ae =>
                     {
                         ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
                         ae.SegmentStartOffset = segmentStartOffset;
                         ae.SegmentDuration = recordingDuration;
-                        ae.Name = "AdvertCall";
+                        ae.Name = AbbreviatedName;
                     });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
+
+
+
+            // DEBUG ONLY ################################ TEMPORARY ################################
+            // Draw a standard spectrogram and mark of hites etc.
+            bool createStandardDebugSpectrogram = true;
+            if (createStandardDebugSpectrogram)
+            {
+                string fileName = "LittoriaFallaxDEBUG";
+                string path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages";
+                var imageDir = new DirectoryInfo(path);
+                if (!imageDir.Exists) imageDir.Create();
+                string filePath2 = Path.Combine(imageDir.FullName, fileName + ".png");
+                Image sonoBmp = DrawSonogram(sonogram, hits, plot, acousticEvents, eventThreshold);                
+                sonoBmp.Save(filePath2);
+            }
+            // END DEBUG ################################ TEMPORARY ################################
+
+
             return new LitoriaFallaxResults
             {
                            Sonogram = sonogram, 
                            Hits = hits, 
                            Plot = plot, 
-                           Events = events, 
+                           Events = acousticEvents, 
                            RecordingDuration = recordingDuration
                        };
         } // Analysis()

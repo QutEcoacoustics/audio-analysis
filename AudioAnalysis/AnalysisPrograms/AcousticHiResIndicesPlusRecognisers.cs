@@ -499,7 +499,7 @@ namespace AnalysisPrograms
             {
                 opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(LDFCSpectrogramArguments, fileStem, hiResTimeScale, dictionaryOfSpectra);
                 fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
-                opImage.Save(fileName);
+                //opImage.Save(fileName);
             }
 
             // 3. DRAW False-colour Spectrograms
