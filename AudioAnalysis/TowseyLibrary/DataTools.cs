@@ -593,16 +593,17 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static System.Tuple<int[], double[]> SortArray(double[] array)
         {
+            double[] clone = (double[])array.Clone();
             int[] rankOrder = new int[array.Length];
-            double[] sort   = new double[array.Length];
+            double[] sort   = new double[clone.Length];
             for (int i = 0; i < array.Length; i++)
             {
-                int maxIndex = DataTools.GetMaxIndex(array);
+                int maxIndex = DataTools.GetMaxIndex(clone);
                 rankOrder[i] = maxIndex;
-                sort[i] = array[maxIndex];
+                sort[i] = clone[maxIndex];
                 //if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
-                array[maxIndex] = -Double.MaxValue;
+                clone[maxIndex] = -Double.MaxValue;
             }
             return Tuple.Create(rankOrder, sort);
         }

@@ -255,21 +255,47 @@ namespace AnalysisRunner
         ///     The target Sample Rate Hz.
         /// </param>
         /// <param name="temporaryFilesDirectory"></param>
+        /// <param name="channelSelection"></param>
         /// <param name="mixDownToMono"></param>
         /// <returns>
         /// The prepared file. The returned FileSegment will have the OriginalFile and OriginalFileDuration set - 
         /// these are the path to the segmented file and the duration of the segmented file.
         /// The start and end offsets will not be set.
         /// </returns>
-        public FileSegment PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz, DirectoryInfo temporaryFilesDirectory, bool? mixDownToMono)
+        public FileSegment PrepareFile(
+            DirectoryInfo outputDirectory,
+            FileInfo source,
+            string outputMediaType,
+            TimeSpan startOffset,
+            TimeSpan endOffset,
+            int targetSampleRateHz,
+            DirectoryInfo temporaryFilesDirectory,
+            int[] channelSelection = null,
+            bool? mixDownToMono = null)
         {
-            var request = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz, MixDownToMono = mixDownToMono};
-            var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, request, temporaryFilesDirectory);
+            var request = new AudioUtilityRequest
+                {
+                    OffsetStart = startOffset,
+                    OffsetEnd = endOffset,
+                    TargetSampleRate = targetSampleRateHz,
+                    MixDownToMono = mixDownToMono,
+                    Channels = channelSelection
+                };
+            var preparedFile = AudioFilePreparer.PrepareFile(
+                outputDirectory,
+                source,
+                outputMediaType,
+                request,
+                temporaryFilesDirectory);
 
             var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
             var preparedFileInfo = audioUtility.Info(preparedFile);
 
-            return new FileSegment(preparedFile) { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFileSampleRate = request.OriginalSampleRate };
+            return new FileSegment(preparedFile)
+                {
+                    OriginalFileDuration = preparedFileInfo.Duration.Value,
+                    OriginalFileSampleRate = request.OriginalSampleRate
+                };
         }
     }
 }

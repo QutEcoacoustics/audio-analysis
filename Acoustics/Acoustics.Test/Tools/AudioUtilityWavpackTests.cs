@@ -422,7 +422,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 1,
+                Channels = 1.AsArray(),
                 OffsetStart = TimeSpan.FromMinutes(2) + TimeSpan.FromSeconds(27),
                 TargetSampleRate = 17460,
             };

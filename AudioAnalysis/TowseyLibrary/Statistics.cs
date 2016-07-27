@@ -15,6 +15,14 @@ namespace TowseyLibrary
 
 
 
+        public static double GetMedian(double[] v)
+        {
+            System.Tuple<int[], double[]> tuple = DataTools.SortArray(v);
+            double median = tuple.Item2[v.Length / 2];
+            return median;
+        }
+
+
         /// <summary>
         /// Analyses an array of events or hits, represented by a binary of matrix.
         /// Assumes a Poisson distribution

@@ -16,7 +16,7 @@
 
     using TowseyLibrary;
 
-    public static class DrawSummaryIndices
+    public static class IndexDisplay
     {
         public const int DefaultTrackHeight = 20;
         public const int TrackEndPanelWidth = 250; // pixels. This is where name of index goes in track image
@@ -51,7 +51,7 @@
         {
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             dictIP = InitialiseIndexProperties.GetDictionaryOfSummaryIndexProperties(dictIP);
-            return DrawSummaryIndices.DrawImageOfSummaryIndices(
+            return IndexDisplay.DrawImageOfSummaryIndices(
                 dictIP,
                 csvFile,
                 title,
@@ -62,72 +62,72 @@
         /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
-        /// <param name="listOfIndexProperties">
-        /// </param>
-        /// <param name="csvFile">
-        /// </param>
-        /// <param name="titleText">
-        /// </param>
-        /// <param name="indexGenerationData">
-        /// </param>
-        /// <param name="siteDescription">
-        /// </param>
-        /// <returns>
-        /// </returns>
+        /// <param name="listOfIndexProperties"></param>
+        /// <param name="csvFile"></param>
+        /// <param name="titleText"></param>
+        /// <param name="indexCalculationDuration"></param>
+        /// <param name="recordingStartDate"></param>
+        /// <param name="siteDescription"></param>
+        /// <returns></returns>
         public static Bitmap DrawImageOfSummaryIndices(
             Dictionary<string, IndexProperties> listOfIndexProperties,
             FileInfo csvFile,
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
-            SiteDescription siteDescription = null)
+            FileInfo sunriseDataFile = null)
         {
             if (!csvFile.Exists)
             {
                 return null;
             }
 
-            Dictionary<string, double[]> dictionaryOfCsvFile = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
-            return DrawSummaryIndices.DrawImageOfSummaryIndices(
+            Dictionary<string, double[]> dictionary = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
+            return IndexDisplay.DrawImageOfSummaryIndices(
                 listOfIndexProperties,
-                dictionaryOfCsvFile,
+                dictionary,
                 titleText,
                 indexCalculationDuration,
                 recordingStartDate,
-                siteDescription);
+                sunriseDataFile = null
+                );
         }
 
+
         /// <summary>
-        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// Converts summary indices to a tracks image
         /// </summary>
         /// <param name="listOfIndexProperties"></param>
-        /// <param name="dictionaryOfCsvFile"></param>
+        /// <param name="dictionaryOfSummaryIndices"></param>
         /// <param name="titleText"></param>
         /// <param name="indexCalculationDuration"></param>
         /// <param name="recordingStartDate"></param>
-        /// <param name="siteDescription"></param>
-        /// <param name="dt"></param>
+        /// <param name="sunriseDataFile"></param>
+        /// <param name="errors"></param>
+        /// <param name="verbose"></param>
         /// <returns></returns>
         public static Bitmap DrawImageOfSummaryIndices(
-            Dictionary<string, IndexProperties> listOfIndexProperties,
-            Dictionary<string, double[]> dictionaryOfCsvFile,
+            Dictionary<string, IndexProperties> listOfIndexProperties,  
+
+            Dictionary<string, double[]> dictionaryOfSummaryIndices,
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
-            SiteDescription siteDescription = null,
-            List<ErroneousIndexSegments> errors = null
+            FileInfo sunriseDataFile = null,
+            List<ErroneousIndexSegments> errors = null,
+            bool verbose = false
             )
         {
             Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary();
                 // to translate past keys into current keys
 
 
-            const int TrackHeight = DrawSummaryIndices.DefaultTrackHeight;
+            const int TrackHeight = IndexDisplay.DefaultTrackHeight;
             int scaleLength = 0;
-            var arrayOfBitmaps = new Image[dictionaryOfCsvFile.Keys.Count];
-                // accumulate the individual tracks in a List
+            var bitmapList = new List<Tuple<IndexProperties, Image>>(dictionaryOfSummaryIndices.Keys.Count);
 
-            foreach (string key in dictionaryOfCsvFile.Keys)
+            // accumulate the individual tracks in a List
+            foreach (string key in dictionaryOfSummaryIndices.Keys)
             {
                 string correctKey = key;
                 if (!listOfIndexProperties.ContainsKey(key))
@@ -142,9 +142,12 @@
                     }
                     else
                     {
-                        Logger.Warn(
-                            "A index properties configuration could not be found for {0} (not even in the translation directory). Property is ignored and not rendered"
-                                .Format2(key));
+                        if (verbose)
+                        {
+                            Logger.Warn(
+                              "A index properties configuration could not be found for {0} (not even in the translation directory). Property is ignored and not rendered"
+                                  .Format2(key));
+                        }
                         continue;
                     }
                 }
@@ -156,21 +159,23 @@
                 }
 
                 string name = ip.Name;
-                double[] array = dictionaryOfCsvFile[key];
+                double[] array = dictionaryOfSummaryIndices[key];
                 scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array, errors);
 
-                if (arrayOfBitmaps.Length > ip.Order) // THIS IF CONDITION IS A HACK. THERE IS A BUG SOMEWHERE.
-                    arrayOfBitmaps[ip.Order] = bitmap;
+                bitmapList.Add(Tuple.Create(ip, bitmap));
             }
 
-            var listOfBitmaps = arrayOfBitmaps.Where(b => b != null).ToList();
+            var listOfBitmaps = bitmapList
+                .OrderBy(tuple => tuple.Item1.Order)
+                .Select(tuple => tuple.Item2)
+                .Where(b => b != null).ToList();
 
 
             //set up the composite image parameters
             int X_offset = 2;
             int graphWidth = X_offset + scaleLength;
-            int imageWidth = X_offset + scaleLength + DrawSummaryIndices.TrackEndPanelWidth;
+            int imageWidth = X_offset + scaleLength + IndexDisplay.TrackEndPanelWidth;
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = TrackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
             Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, TrackHeight, titleText);
@@ -185,11 +190,7 @@
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = Image_Track.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, TrackHeight);
-
-                if (siteDescription != null)
-                {
-                    suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, siteDescription);
-                }
+                suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
             }
 
             //draw the composite bitmap
@@ -239,7 +240,7 @@
 
             int dataLength = array1.Length;
             int trackWidth = dataLength;
-            int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
+            int trackHeight = IndexDisplay.DefaultTrackHeight;
             Color[] grayScale = ImageTools.GrayScale();
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);

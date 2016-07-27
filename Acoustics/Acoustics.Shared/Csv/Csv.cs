@@ -105,20 +105,26 @@ namespace Acoustics.Shared.Csv
 
         /// <summary>
         /// This has not been tested yet! Contact anthony if you have problems.
+        /// IMPORTANT NOTE:
+        /// If I get an exception, how do I tell what line the exception is on?
+        /// There is a lot of information held in Exception.Data["CsvHelper"]
+        /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static IEnumerable<T> ReadFromCsv<T>(FileInfo source)
+        public static IEnumerable<T> ReadFromCsv<T>(FileInfo source, bool throwOnMissingField = true)
         {
             Contract.Requires(source != null);
 
             // using CSV Helper
             using (var stream = source.OpenText())
             {
-                var reader = new CsvReader(stream, DefaultConfiguration);
+                var configuration = DefaultConfiguration;
+                configuration.WillThrowOnMissingField = false;
+                var reader = new CsvReader(stream, configuration);
 
-                IEnumerable<T> results = reader.GetRecords<T>().ToArray();
+                IEnumerable<T> results = reader.GetRecords<T>();
                 foreach (var result in results)
                 {
                     yield return result;

@@ -17,6 +17,8 @@ namespace Acoustics.Shared
 
         public static FileInfo ResolveConfigFile(FileInfo file, params DirectoryInfo[] searchPaths)
         {
+            Contract.Requires<ArgumentNullException>(file != null);
+
             return ResolveConfigFile(file.FullName, searchPaths);
         }
 
@@ -30,7 +32,13 @@ namespace Acoustics.Shared
                 return configFile;
             }
 
-            throw new FileNotFoundException("The specified config file could not be found", file);
+            var searchedIn =
+                searchPaths
+                .Select(x => x.FullName)
+                .Concat(new []{ ConfigFolder, Directory.GetCurrentDirectory() })
+                .Aggregate(string.Empty, (lines, dir) => lines += "\n\t" + dir);
+            var message = $"The specified config file ({file}) could not be found.\nSearched in: {searchedIn}";
+            throw new FileNotFoundException(message, file);
         }
 
         public static bool TryResolveConfigFile(string file, DirectoryInfo[] searchPaths, out FileInfo configFile)

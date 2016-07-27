@@ -41,6 +41,10 @@ namespace AnalysisPrograms
     using AudioAnalysisTools;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Reflection;
+
+    using log4net;
+
     using TowseyLibrary;
 
 
@@ -64,10 +68,10 @@ namespace AnalysisPrograms
             [ArgDescription("File stem name for output files.")]
             public string FileStemName { get; set; }
 
-            [ArgDescription("DateTime at which concatenation begins. If null, then start with earliest available file.")]
+            [ArgDescription("DateTimeOffset at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? StartDate { get; set; }
 
-            [ArgDescription("DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
+            [ArgDescription("DateTimeOffset at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? EndDate { get; set; }
 
             private TimeSpan? timeSpanOffsetHint = null;
@@ -82,10 +86,13 @@ namespace AnalysisPrograms
             //[ArgDescription("Draw images of summary and spectral indices after concatenating them")]
             internal bool DrawImages { get; set; }
 
-            //[ArgDescription("User specified file containing a list of indices and their properties.")]
-            //[Production.ArgExistingFile(Extension = ".yml")]
-            //[ArgPosition(1)]
-            internal FileInfo IndexPropertiesConfig { get; set; }
+            [ArgDescription("User specified file containing a list of indices and their properties.")]
+            [Production.ArgExistingFile(Extension = ".yml")]
+            public FileInfo IndexPropertiesConfig { get; set; }
+
+            [ArgDescription("User specified file containing times of sunrise & sunset for recording location. Must be correct format!")]
+            [Production.ArgExistingFile(Extension = ".csv")]
+            public FileInfo SunRiseDataFile { get; set; }
 
             private bool concatenateEverythingYouCanLayYourHandsOn = false;
             [ArgDescription("Set this true when want to concatenate longer than 24-hour recordings as in case of PNG data.")]
@@ -93,6 +100,8 @@ namespace AnalysisPrograms
                 get { return concatenateEverythingYouCanLayYourHandsOn; }
                 set { concatenateEverythingYouCanLayYourHandsOn = value; }
             }
+
+            internal bool Verbose { get; set; }
 
         }
 
@@ -110,15 +119,15 @@ namespace AnalysisPrograms
             // top level directory
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
             //                           };
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
-                                       };
-            string directoryFilter = "201303";
-            string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
-            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
-            dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
-            string opFileStem = "CornellMarine";
-            indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
+            //                           };
+            //string directoryFilter = "201303";
+            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
+            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            //dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
+            //string opFileStem = "CornellMarine";
+            //indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesMarineConfig.yml");
 
 
             // ########################## YVONNE'S RECORDINGS          
@@ -127,29 +136,28 @@ namespace AnalysisPrograms
             //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
             //                           };
 
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Sep23-154123 - Yvonne, Indices, ICD=60.0, #55, #56, #57\Yvonne\Cooloola"),
-            //                             new DirectoryInfo(@"Y:\Results\2015Oct19-142156 - Yvonne, Indices, ICD=60.0, #62"),
-            //                           };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\Output\YvonneResults\DataFiles_62_93\2015Nov1"),
+                                       };
 
-            // below directory was to check a bug - missing 6 hours of recording
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
+            //below directory was to check a bug - missing 6 hours of recording
+            //DirectoryInfo[] dataDirs = {
+            //    new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola"),
             //                           };
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Aug06-123245 - Yvonne, Indices, ICD=60.0, #48\Yvonne\Cooloola\2015July26\Woondum3"),
             //                           };
             //string directoryFilter = "20150725-000000+1000.wav";
 
-            // The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            //string directoryFilter = "Woondum3";
+            //The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
+            string directoryFilter = "Woondum3";
             //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
 
-            //string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
-            //string opPath = @"C:\SensorNetworks\Output\YvonneResults\FixACI bug3";
+            string opPath = @"G:\SensorNetworks\Output\YvonneResults\ConcatenatedFiles_62_93";
 
-            //dtoStart = new DateTimeOffset(2015, 07, 25, 0, 0, 3, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2015, 07, 28, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
-            //string opFileStem = directoryFilter;
+            dtoStart = new DateTimeOffset(2015, 10, 26, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd   = new DateTimeOffset(2015, 10, 28, 0, 0, 0, TimeSpan.Zero);
+            string opFileStem = directoryFilter;
 
+            string BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv";
 
             /*
             // ########################## LENN'S RECORDINGS          
@@ -252,15 +260,20 @@ namespace AnalysisPrograms
                 InputDataDirectories = dataDirs,
                 OutputDirectory = new DirectoryInfo(opPath),
                 DirectoryFilter = directoryFilter,
-                FileStemName    = opFileStem,
-                StartDate       = dtoStart,
-                EndDate         = dtoEnd,
-                DrawImages      = drawImages,
+                FileStemName = opFileStem,
+                StartDate = dtoStart,
+                EndDate = dtoEnd,
+                DrawImages = drawImages,
                 IndexPropertiesConfig = indexPropertiesConfig,
                 ConcatenateEverythingYouCanLayYourHandsOn = false,
+                TimeSpanOffsetHint = TimeSpan.FromHours(10),
+                SunRiseDataFile = new FileInfo(BrisbaneSunriseDatafile),
+                Verbose = true,
             };
             throw new NoDeveloperMethodException();
     }
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void Execute(Arguments arguments)
         {
@@ -269,8 +282,14 @@ namespace AnalysisPrograms
             if (arguments == null)
             {
                 arguments = Dev();
-                verbose = true; // assume verbose if in dev mode
+                verbose = true; // default is verbose if in dev mode
             }
+
+            Log.Warn("DrawImages option hard coded to be on in this version");
+            arguments.DrawImages = true;
+
+            verbose = arguments.Verbose;
+            IndexMatrices.Verbose = verbose;
 
             if (verbose)
             {
@@ -356,6 +375,15 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
                 LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
+
+                if (arguments.SunRiseDataFile.Exists)
+                {
+                    LoggedConsole.WriteLine("# Sunrise/sunset data file = " + arguments.TimeSpanOffsetHint.ToString());
+                }
+                else
+                {
+                    LoggedConsole.WriteLine("####### WARNING ####### The sunrise/sunset data file does not exist >> " + arguments.TimeSpanOffsetHint.ToString());
+                }
             }
 
             // create top level output directory if it does not exist.
@@ -450,14 +478,19 @@ namespace AnalysisPrograms
                                                                  indexPropertiesConfig, 
                                                                  resultsDir, 
                                                                  siteDescription,
-                                                                 indexErrors
-                                                                 );
+                                                                 arguments.SunRiseDataFile,
+                                                                 indexErrors,
+                                                                 verbose);
                 }
 
                 // ##############################################################################################################
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
-                var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday, indexGenerationData.IndexCalculationDuration);
+                string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+                string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT;
+                string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
+                var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday, 
+                                                                         indexGenerationData.IndexCalculationDuration, keys, verbose);
                 if (spectralDict.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
@@ -468,12 +501,16 @@ namespace AnalysisPrograms
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
-                    LDSpectrogramStitching.DrawSpectralIndexFiles(spectralDict, 
+                    var sgConfig = LdSpectrogramConfig.GetDefaultConfig(colorMap1, colorMap2);
+                    LDSpectrogramStitching.DrawSpectralIndexFiles(spectralDict,
+                                                                  sgConfig,
                                                                   indexGenerationData, 
                                                                   indexPropertiesConfig, 
                                                                   resultsDir, 
                                                                   siteDescription,
-                                                                  indexErrors);
+                                                                  arguments.SunRiseDataFile,
+                                                                  indexErrors,
+                                                                  verbose);
                 }
 
             } // over days

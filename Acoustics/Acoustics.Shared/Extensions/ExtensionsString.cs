@@ -355,9 +355,7 @@ namespace System
 
         public static string ToCommaSeparatedList<T>(this IEnumerable<T> items)
         {
-            if (items == null || !items.Any())
-                return string.Empty;
-            return items.Select(a => a.ToString()).Aggregate((a, b) => a + "," + b);
+            return items == null ? string.Empty : items.Aggregate(string.Empty, (seed, b) => seed  + b + ",");
         }
 
         public static string Format(this string format, params object[] args)

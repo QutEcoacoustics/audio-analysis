@@ -5,6 +5,7 @@ using System.Text;
 
 namespace AudioAnalysisTools.WavTools
 {
+    [Obsolete]
     public sealed class TowseyWavReader
     {
         public const string wavFExt = ".wav";

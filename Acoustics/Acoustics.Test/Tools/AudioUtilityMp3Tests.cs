@@ -199,7 +199,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 11025,
             };
@@ -400,7 +400,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 11025,
             };
@@ -489,6 +489,11 @@ namespace Acoustics.Test.Tools
         [TestMethod]
         public void SegmentsMp3Correctly3Master()
         {
+            /*
+             *
+             * mp3splt accuracy varies with the quality of the input file!
+             * 
+             */
             var expected = new AudioUtilityInfo
             {
                 Duration = TimeSpan.FromSeconds(48),
@@ -501,6 +506,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
+                OffsetStart = TimeSpan.Zero,
                 OffsetEnd = TimeSpan.FromSeconds(48),
                 TargetSampleRate = 11025
             };
@@ -516,7 +522,7 @@ namespace Acoustics.Test.Tools
 
             File.Delete(output.FullName);
 
-            TestHelper.CheckAudioUtilityInfo(expected, actual);
+            TestHelper.CheckAudioUtilityInfo(expected, actual, 380);
         }
 
         [TestMethod]
@@ -601,7 +607,7 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
-                Channel = 2,
+                Channels = 2.AsArray(),
                 OffsetStart = TimeSpan.FromSeconds(27),
                 TargetSampleRate = 44100,
             };

@@ -112,11 +112,11 @@ namespace AudioAnalysisTools.Indices
         public double EntropyOfCoVSpectrum { get; set; }
 
         // meaningless when calculated over short
-        // public int ClusterCount { get; set; }
+        public int ClusterCount { get; set; }
 
         // public TimeSpan AvgClusterDuration { get; set; }
 
-        // public int ThreeGramCount { get; set; }
+        public int ThreeGramCount { get; set; }
 
         // public double SptPerSecond { get; set; }
 
@@ -127,9 +127,9 @@ namespace AudioAnalysisTools.Indices
 
         public double SptDensity { get; set; }
 
-        public double RainIndex { get; set; }
+        //public double RainIndex { get; set; }
 
-        public double CicadaIndex { get; set; }
+        //public double CicadaIndex { get; set; }
 
         private static Dictionary<string, Func<SummaryIndexValues, object>> CachedSelectors { get; set; }
 
@@ -258,7 +258,7 @@ namespace AudioAnalysisTools.Indices
 
         public double[] SUM { get; set; }
 
-        // public double[] CLS { get; set; }
+        public double[] CLS { get; set; }
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
         {
             return CachedSelectors;

@@ -2733,29 +2733,36 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
-        public static Image CombineImagesVertically(Image[] array)
+        public static System.Drawing.Image CombineImagesVertically(System.Drawing.Image[] array)
         {
-            int width = array[0].Width;   // assume all images have the same width
+            float standardresolution = 96;
+            int width = array[0].Width;
+            float verticalresolution   = ((Bitmap)array[0]).VerticalResolution;
+            //float horizontalresolution = ((Bitmap)array[0]).HorizontalResolution;
+            float verticalScalingFactor = standardresolution / verticalresolution;
 
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
             {
                 if (null == array[i]) continue;
-                compositeHeight += array[i].Height;
+                compositeHeight += (int)Math.Round(array[i].Height * verticalScalingFactor);
+
+                if (width < array[i].Width)
+                    width = array[i].Width;
             }
 
-            Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
+            System.Drawing.Bitmap compositeBmp = new System.Drawing.Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
             int yOffset = 0;
-            Graphics gr = Graphics.FromImage(compositeBmp);
+            System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
 
             for (int i = 0; i < array.Length; i++)
             {
                 if (null == array[i]) continue;
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top image
-                yOffset += array[i].Height;
+                yOffset += (int)Math.Round(array[i].Height * verticalScalingFactor);
             }
-            return (Image)compositeBmp;
+            return (System.Drawing.Image)compositeBmp;
         }
 
         /// <summary>
