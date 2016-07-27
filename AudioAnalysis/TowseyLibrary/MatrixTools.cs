@@ -1055,6 +1055,21 @@ namespace TowseyLibrary
       return colSums;
   }
 
+        public static double[] GetColumnMedians(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[] colMedians = new double[cols];
+            for (int j = 0; j < cols; j++)
+            {
+
+                double[] column = MatrixTools.GetColumn(m, j);
+                System.Tuple<int[], double[]> tuple = DataTools.SortArray(column);
+                colMedians[j] = tuple.Item2[rows/2];
+            }
+            return colMedians;
+        }
+
   public static double[] GetColumnsAverages(double[,] m)
   {
       int rows = m.GetLength(0);

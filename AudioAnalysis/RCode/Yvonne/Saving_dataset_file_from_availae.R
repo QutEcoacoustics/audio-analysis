@@ -77,8 +77,6 @@ for (i in seq_along(file.ref)) {
   print(i)
 }
 
-
-
 #write.csv(all.indices, file=paste("dataSet_", paste(dates, collapse="_"),".csv", sep =""))
 write.csv(all.indices, "dataSet_upto20Sept2015.csv")
 

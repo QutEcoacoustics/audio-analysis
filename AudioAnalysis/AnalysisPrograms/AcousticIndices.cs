@@ -336,6 +336,12 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
 
+            if (recording.WavReader.Channels > 1)
+            {
+                throw new InvalidOperationException(@"A multi-channel recording MUST be mixed down to MONO before calculating acoustic indices! 
+ Set <AnalyseLongRecording.Arguments.MixDownToMono = true> in the AnalyseLongRecording.Dev class");
+            }
+
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
@@ -384,8 +390,11 @@ namespace AnalysisPrograms
                     acousticIndicesParsedConfiguration.IndexCalculationDuration,
                     acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                     acousticIndicesParsedConfiguration.IndexPropertiesFile);
-                
+
                 /* ###################################################################### */
+
+                indexCalculateResult.SummaryIndexValues.FileName = analysisSettings.SourceFile.Name;
+                indexCalculateResult.SpectralIndexValues.FileName = analysisSettings.SourceFile.Name;
 
                 analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;

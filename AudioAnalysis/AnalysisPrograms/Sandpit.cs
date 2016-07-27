@@ -87,6 +87,13 @@ namespace AnalysisPrograms
                 System.Environment.Exit(0);
             }
 
+            // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
+            if (false)  
+            {
+                ChannelIntegrity.Execute(null);
+            }
+
+
 
 
 
@@ -149,20 +156,8 @@ namespace AnalysisPrograms
             }
 
 
-
-            if (false)  // concatenating spectrogram images with gaps between them.
-            {
-                LDSpectrogramStitching.StitchPartialSpectrograms();
-                LDSpectrogramStitching.StitchPartialSpectrograms();
-
-                Log.WriteLine("FINSIHED");
-                Console.ReadLine();
-                System.Environment.Exit(0);
-            }
-
-
             // quickie to calculate entropy of some matrices - used for Yvonne acoustic transition matrices
-            if (true)
+            if (false)
             {
                 string dir = @"H:\Documents\SensorNetworks\MyPapers\2016_EcoAcousticCongress_Abstract\TransitionMatrices";
                 string filename = @"transition_matrix_BYR4_16Oct.csv";
@@ -189,11 +184,15 @@ namespace AnalysisPrograms
 
 
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
-            if (false)
+            if (true)
             {
                 //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
-                //LDSpectrogramStitching.ConcatenateSpectralIndexImages();
+                LDSpectrogramStitching.ConcatenateFalsecolourSpectrograms();
                 //LDSpectrogramClusters.ExtractSOMClusters();
+
+                // concatenating spectrogram images with gaps between them.
+                // Currently set for the recording protocol of Gianna Pavan(10 minutes every 30 minutes).
+                //LDSpectrogramStitching.StitchPartialSpectrograms();
             } // end if (true)
 
 
@@ -347,10 +346,9 @@ namespace AnalysisPrograms
                 ConcatenateIndexFiles.ConcatenateRibbonImages(dataDirs, match, outputDirectory, opFileStem, title);
             }
 
-
             Console.WriteLine("# Finished!");
+            
             Console.ReadLine();
-            System.Environment.Exit(0);
         }
 
 

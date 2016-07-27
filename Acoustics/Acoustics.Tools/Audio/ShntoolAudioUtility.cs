@@ -57,46 +57,22 @@
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes
-        {
-            get
-            {
-                return new[] { MediaTypes.MediaTypeWav };
-            }
-        }
+        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeWav };
 
         /// <summary>
         /// Gets the invalid source media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidSourceMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidSourceMediaTypes => null;
 
         /// <summary>
         /// Gets the valid output media types.
         /// </summary>
-        protected override IEnumerable<string> ValidOutputMediaTypes
-        {
-            get
-            {
-                return new[] { MediaTypes.MediaTypeWav };
-            }
-        }
+        protected override IEnumerable<string> ValidOutputMediaTypes => new[] { MediaTypes.MediaTypeWav };
 
         /// <summary>
         /// Gets the invalid output media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidOutputMediaTypes => null;
 
         /// <summary>
         /// The construct modify args.
@@ -160,6 +136,9 @@
             const string SamplePerSecond = "Samples/sec:";
             const string FileName = "File name:";
             const string BitsPerSecond = "Average bytes/sec:";
+            const string WavDataSize = "Data size:";
+
+            long wavDataSizeBytes = 0;
 
             foreach (var line in std.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -194,6 +173,13 @@
                     result.BitsPerSecond = ParseIntStringWithException(line.Replace(BitsPerSecond, string.Empty).Trim(), "shntool.BitsPerSecond") * 8;
                 }
 
+                if (line.StartsWith(WavDataSize))
+                {
+                    wavDataSizeBytes = ParseLongStringWithException(
+                        line.Replace(WavDataSize, string.Empty).Replace("bytes", string.Empty).Trim(), 
+                        "shntool.DataSize").Value;
+                }
+
                 result.MediaType = MediaTypes.MediaTypeWav;
 
                 if (line.Contains(":"))
@@ -202,6 +188,23 @@
                         line.Substring(0, line.IndexOf(":", StringComparison.Ordinal)).Trim(),
                         line.Substring(line.IndexOf(":", StringComparison.Ordinal) + 1).Trim());
                 }
+            }
+
+            // shntool is bloody annoying - for CD quality files it estimates the duration to print out.
+            // See http://linux.die.net/man/1/shntool, https://github.com/flacon/shntool/blob/4c6fc2e58c830080f6f9112935325ad281b784ff/src/core_wave.c#L268
+            // and https://github.com/flacon/shntool/blob/4c6fc2e58c830080f6f9112935325ad281b784ff/src/core_mode.c#L781
+            // for explanations.
+            // For now, we just have to sanity check it's reported duration.
+
+            // exact duration = dataSize * 8 / bitrate
+            // bitrate = samplesPerSecond * channels * bitsPerSample
+            var bitrate = result.SampleRate.Value * result.ChannelCount.Value * result.BitsPerSample.Value;
+            var exactDuration = TimeSpan.FromSeconds((double)(wavDataSizeBytes * 8) / bitrate);
+
+            if ((exactDuration - result.Duration.Value) > TimeSpan.FromMilliseconds(100))
+            {
+                this.Log.Warn("Shntool reported a bad duration because it parsed a file as CD quality. Actual duration has been returned");
+                result.Duration = exactDuration;
             }
 
             return result;
@@ -225,19 +228,19 @@
         protected override void CheckRequestValid(
             FileInfo source, string sourceMediaType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
-            if (request.Channel.HasValue)
+            if (request.Channels.NotNull())
             {
-                throw new ArgumentException("Shntool cannot modify the channel.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Shntool cannot modify the channels.");
             }
 
             if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
             {
-                throw new ArgumentException("Shntool cannot mix down the channels to mono.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Shntool cannot mix down the channels to mono.");
             }
 
             if (request.TargetSampleRate.HasValue)
             {
-                throw new ArgumentException("Shntool cannot modify the sample rate.", "request");
+                throw new ArgumentException("Shntool cannot modify the sample rate.", nameof(request));
             }
         }
 

@@ -10,6 +10,7 @@
     /// <summary>
     /// Analysis Results.
     /// </summary>
+    [Obsolete]
     public class AnalysisResult
     {
         /// <summary>

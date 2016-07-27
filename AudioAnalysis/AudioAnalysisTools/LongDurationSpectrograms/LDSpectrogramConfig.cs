@@ -140,6 +140,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
 
+        /// <summary>
+        /// </summary>
+        /// <returns></returns>
+        public static LdSpectrogramConfig GetDefaultConfig(string colourMap1, string colourMap2)
+        {
+            var ldSpectrogramConfig = new LdSpectrogramConfig
+            {
+                YAxisTicInterval = 1000,
+                XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                ColorMap1 = colourMap1,
+                ColorMap2 = colourMap2,
+            };
+            return ldSpectrogramConfig;
+        }
+
+
 
         public static string[] GetKeys(string colorMap1, string colorMap2)
         {

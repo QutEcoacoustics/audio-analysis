@@ -226,6 +226,7 @@
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="Canetoad.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
+    <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="DrawEasyImage.cs" />
     <Compile Include="ConcatenateIndexFiles.cs" />
     <Compile Include="DrawZoomingSpectrograms.cs" />

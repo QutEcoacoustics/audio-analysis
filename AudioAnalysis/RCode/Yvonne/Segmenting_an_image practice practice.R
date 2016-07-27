@@ -28,6 +28,22 @@ library(raster)
 colourName <- "colourBlock.png"
 colourBlock <- brick(colourName, package="raster")
 plotRGB(colourBlock)
+
+cols <- c(
+  '0' = "#F2F2F2FF", '1' = "#00B917", '2' = "#788231",   '3' = "#FF0000",
+  '4' = "#01FFFE",   '5' = "#FE8900", '6' = "#006401",   '7' = "#FFDB66",
+  '8' = "#010067",   '9' = "#95003A", '10' = "#007DB5", '11' = "#BE9970",
+  '12' = "#774D00", '13' = "#90FB92", '14' = "#0076FF", '15' = "#FF937E",
+  '16' = "#6A826C", '17' = "#FF029D", '18' = "#0000FF", '19' = "#7A4782",
+  '20' = "#7E2DD2", '21' = "#0E4CA1", '22' = "#FFA6FE", '23' = "#A42400",
+  '24' = "#00AE7E", '25' = "#BB8800", '26' = "#BE9970", '27' = "#263400",
+  '28' = "#C28C9F", '29' = "#FF74A3", '30' = "#01D0FF", "31" = "#6B6882",
+  '32' = "#E56FFE", '33' = "#85A900", '34' = "#968AE8", '35' = "#43002C",
+  '36' = "#DEFF74", '37' = "#00FFC6", '38' = "#FFE502", '39' = "#620E00",
+  '40' = "#008F9C", '41' = "#98FF52", '42' = "#7544B1", '43' = "#B500FF",
+  '44' = "#00FF78", '45' = "#FF6E41", '46' = "#005F39", '47' = "#004754",
+  '48' = "#5FAD4E", '49' = "#A75740", '50' = "#A5FFD2", '51' = "#FFB167",
+  '52' = "#009BFF", '53' = "#91D0CB")
 ##### Code for 1st day #########################
 # make rasterRBG from a 24 hour spectrogram
 # 22 June 2015 Gympie NP
@@ -50,7 +66,7 @@ b <- brick(b1, package="raster")
 sourceImage <- brick(b1, package="raster")
 #e <- extent(0, 1469, 0, 334)
 #e <- extent(0, 1650, 0, 334)
-b2 <- brick(b1, package="raster",norows=334,ncols=1650)
+b2 <- brick(b1, package="raster",norows=334, ncols=1650)
 #s <- b2
 s <- image1
 # Make an empty brickRaster with extra columns for white lines
@@ -81,16 +97,23 @@ for (i in 1:40) {
   length <- sum(current.minute.list <= 1440)
   if (length > 0) {
     for (j in 1:length) {
-      #replacementBlock <- getValuesBlock(sourceImage, row=1, 
-      #                    nrows=334, col=current.minute.list[j], 
-      #                    ncols=1)
-      #s[1:334, length2] <- replacementBlock
       replacementBlock <- getValuesBlock(sourceImage, row=1, 
                           nrows=334, col=current.minute.list[j], 
                           ncols=1)
       s[1:334, length2] <- replacementBlock
       block <- getValuesBlock(colourBlock, row=1,
                           nrows=40, col=i, ncols = 1)
+      # Alternative method using a list of hexadecimal colour strings
+      rgb <- col2rgb(unname(cols[i+1]))
+      block <- matrix(data="NA", ncol = 3, nrow = 40)
+      block1 <- cbind(rgb[1], rgb[2], rgb[3])
+      for(k in 1:40) {
+        block[k,1:3] <- block1
+      }
+      for(l in 1:3) {
+      block[,l] <- as.integer(block[,l])
+      }
+      ###### end alternative
       s[1:40, length2] <- block[,1:3]
       length2 <- length2 + 1
     }    

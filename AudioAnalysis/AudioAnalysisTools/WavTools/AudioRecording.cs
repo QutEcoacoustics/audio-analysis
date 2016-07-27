@@ -19,7 +19,7 @@
 
 	public class AudioRecording : IDisposable
 	{
-        private WavReader wavReader = null;
+        private readonly WavReader wavReader = null;
         
         #region Properties
 		public string FileName { get; private set; }
@@ -87,15 +87,9 @@
         ///     Audio must be in wav format.
         ///     Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
-        public WavReader WavReader
-        {
-            get
-            {
-                return this.wavReader;
-            }
-        }
+        public WavReader WavReader => this.wavReader;
 
-        /// <summary>
+	    /// <summary>
         /// NOTE: from Michael Towsey May 2014
         /// WARNING!!!! THIS METHOD IS UNSAFE AND SHOULD BE DEPRACATED
         /// It subsamples without first removing high frequency content.

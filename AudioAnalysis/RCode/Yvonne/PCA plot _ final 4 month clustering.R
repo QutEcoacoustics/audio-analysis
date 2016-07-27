@@ -9,7 +9,8 @@ cluster.list <- read.csv(file ="hybrid_clust_17500_30.csv", header=T)
 indices <- read.csv("C:\\Work\\CSV files\\FourMonths\\final_dataset_22June2015_10 Oct2015.csv", header=T)
 
 ds3 <- indices[,c(3,4,7,10,11,15,16,25)] # without Mid-frequency cover
-
+#ds3 <- indices[,c(4,7,11,15,16,25)] # this is the one in k folder referred to as
+# snr_evn_aci_enp_evn
 #clust <- as.character(unname(unlist(unique(cluster.list)))) 
 site <- "GympieNP&WoondumNP"
 date <- paste(indices$rec.date[1], 
@@ -17,8 +18,8 @@ date <- paste(indices$rec.date[1],
               sep = "_")
 
 ############## replace NA values
-site1 <- ds3[1:(length(ds3$BackgroundNoise)/2),]
-site2 <- ds3[((length(ds3$BackgroundNoise)/2)+1):(length(ds3$BackgroundNoise)),]
+site1 <- ds3[1:(length(ds3[,1])/2),]
+site2 <- ds3[((length(ds3[,1])/2)+1):(length(ds3[,1])),]
 for(i in 1:(ncol(site1)-1)) {  # columns
   for(j in 1:nrow(site1)) {  # rows
     if (is.na(site1[j,i])) {
@@ -116,6 +117,10 @@ normIndices$PC7 <- normIndices.pca$x[,7]
 plot(normIndices.pca)
 biplot(normIndices.pca)
 
+pca.coef <- cbind(cluster.list,normIndices$PC1,normIndices$PC2,normIndices$PC3,normIndices$PC4,normIndices$PC5,
+                  normIndices$PC6,normIndices$PC7)
+write.csv(pca.coef, "pca_coefficients_*", row.names = F)
+
 # assign colours to time-periods
 normIndices <- within(normIndices, levels(fourhour.class) <- c("red","orange","yellow","green","blue","violet"))
 normIndices <- within(normIndices, levels(hour.class) <- 
@@ -162,9 +167,6 @@ normIndices <- within(normIndices, levels(x) <- colours)
 #dat <- data.frame(x = rnorm(1:10), y = rnorm(1:10))
 #fooPlot(dat, col = "red")
 
-pca.coef <- cbind(cluster.list,normIndices$PC1,normIndices$PC2,normIndices$PC3,normIndices$PC4,normIndices$PC5,
-              normIndices$PC6,normIndices$PC7)
-write.csv(pca.coef, "pca_coefficients.csv", row.names = F)
 
 #### Plotting PC1 & PC2 Principal Component Plots with base plotting system
 png('pca_plot PC1_PC2_2_98_3,4,7,10,11,15,16.png', 

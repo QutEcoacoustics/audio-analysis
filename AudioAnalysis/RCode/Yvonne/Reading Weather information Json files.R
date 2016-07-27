@@ -1,16 +1,13 @@
 #library(rjson)
-#"C:\Users\n0572527\ownCloud\Shared\Ecoacoustics\Resources\Weather\20160204T042921.305Z_IDQ60801.94566.json"
-setwd("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\")
+setwd("C:\\Work\\Weather Data\\")
 #setwd("C:\\Work\\Latest Observations\\Tewantin\\")
-#raw.data <- readLines("94570-2016 ... .txt", warn = "F",
-#                      skipNul = T)
-#data <- fromJSON(raw.data)
+options(scipen=999)
 library(jsonlite)
-#data <- fromJSON("94570-2016 ... .txt")
+
 folder <- "C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\"
-TewantinFiles <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+TewantinFiles <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                       pattern = "*_IDQ60801.94570.json")
-GympieFiles <- list.files(path=folder,recursive = TRUE, full.names = FALSE,
+GympieFiles <- list.files(path=folder,recursive = TRUE, full.names = TRUE,
                             pattern = "*_IDQ60801.94566.json")
 # Read in all Gympie weather data
 data <- fromJSON(GympieFiles[1])
@@ -28,29 +25,96 @@ data <- data[order(data$observations.data.local_date_time_full),]
 data <- subset(data,!duplicated(data$observations.data.local_date_time_full))
 data <- data[,c(8,9,10,13,14,16,17,18,20,21,22,29,31,32,33,37,38,45,46)]
 names(data)
-
-# calculate the rain per half hour from the rain trace (column 16)
-rain <- as.numeric(data[1,16])
-for (i in 2:length(data[,16])) {
-  ra <- as.numeric(data[i,16]) - as.numeric(data[(i-1),16])
-  if  (substr((data[i,7]),4,10) == "09:30am") {
-    ra <- as.numeric(data[i,16])
-  }
-  if (ra < 0 & !is.na(ra)) {
-    ra <- as.numeric(data[i,16])
-  }
-  rain <- c(rain, ra)
-}
-max(rain)
-data[,20] <- rain
-colnames(data)[20] <- "rain"
 # remove data not on the half hour
 minutes <- as.data.frame(substr(data[,7],8,8))
 min.to.remove <-c("1", "2", "3", "4", "5", "6","7","8","9")
 refer <- which(minutes[,] %in% min.to.remove)
 
 gympie.data <- data[-c(refer),]
+headings <- c("name", "state", "time_zone","sort_order",
+              "wmo", "history_product", "date_time",
+              "date_time_full", "lat","lon","apparent_t",
+              "gust_kmh", "air_temp","dewpt","press",
+              "rain_trace","rel_hum", "wind_dir",            
+              "wind_spd_kmh")
+colnames(gympie.data) <- headings
+
+# calculate the rain per half hour from the rain trace (column 16)
+rain <- as.numeric(gympie.data[1,16])
+for (i in 2:length(gympie.data[,16])) {
+  ra <- as.numeric(gympie.data[i,16]) - as.numeric(gympie.data[(i-1),16])
+  if  (substr((gympie.data[i,7]),4,10) == "09:30am") {
+    ra <- as.numeric(gympie.data[i,16])
+  }
+  if (ra < 0 & !is.na(ra)) {
+    ra <- as.numeric(gympie.data[i,16])
+  }
+  rain <- c(rain, ra)
+}
+rain <- data.frame(rain)
+max(rain)
+gympie.data[,20] <- rain
+colnames(data)[20] <- "rain"
+
 write.csv(gympie.data, "Gympie_weather1.csv", row.names = FALSE)
+gympie_weather <- read.csv("Gympie_weather1.csv")
+
+gympie_weather_matrix <- read.csv("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Resources\\Weather\\gympie_weather_matrix.csv")
+##############################################
+# produce a table containing the weather data 
+# reconstructed into a form useful for package 
+# TraMineR
+##############################################
+list <- c("0000","0030","0100","0130","0200","0230","0300","0330",
+          "0400","0430","0500","0530","0600","0630","0700","0730",
+          "0800","0830","0900","0930","1000","1030","1100","1130",
+          "1200","1230","1300","1330","1400","1430","1500","1530",
+          "1600","1630","1700","1730","1800","1830","1900","1930",
+          "2000","2030","2100","2130","2200","2230","2300","2330")
+#set ref to determine the time of the first row
+for(i in 1:length(list)) {
+  if(substr(gympie_weather[1,8],9,12)==list[i]) {
+    ref1 <- i
+    stop
+  }
+}
+#set ref to determine the date of the last row
+ref3 <- substr(gympie_weather[length(gympie_weather[,1]),8],1,8)
+
+ref2 <- 50-ref1
+# generate a list of column names for the gympie_matrix
+columnNames <- NULL
+for (i in 1:length(list)) {
+  lab <- c(paste(list[i], "aprnt_t"), paste(list[i],"gust_kmh"), 
+           paste(list[i],"air_temp"), paste(list[i],"dewpt"),
+           paste(list[i],"press"), paste(list[i], "rain_trace"),
+           paste(list[i], "rel_hum"), paste(list[i],"wind_dir"),
+           paste(list[i], "wind_spd_kmh"), paste(list[i], "rain"))
+  columnNames <- c(columnNames, lab)
+}
+columnNames <- c("date", columnNames)
+
+no.of.rows <- length(gympie_weather$name)
+gympie_matrix <- matrix(data = NA, nrow=floor(no.of.rows/50), 
+                        ncol = 1+10*48)
+colnames(gympie_matrix) <- columnNames
+
+# fill matrix with weather data
+#seq1 <- seq(ref2, length(gympie_weather$name),48)
+seq2 <- seq(2,472,10)
+count <- ref2
+for(j in 1:length(gympie_matrix[,1])) {
+  for(k in 1:length(seq2)) {
+    gympie_matrix[j,seq2[k]:(seq2[k]+9)] <- unlist(gympie_weather[count,11:20], use.names = F)
+    gympie_matrix[j,(seq2[k]+7)] <- as.character(gympie_weather[count,18])
+    count <- count + 1
+  }
+  ifelse(ref1==0, 
+         gympie_matrix[j,1] <- substr(gympie_weather[(count-1),8],1,8),
+         gympie_matrix[j,1] <- substr(gympie_weather[(count-49),8],1,8))
+}
+write.csv(gympie_matrix, paste("gympie_weather_matrix_", ref3, ".csv"), row.names = FALSE)
+
 ###############################################
 # TEWANTIN WEATHER DATA
 ###############################################
