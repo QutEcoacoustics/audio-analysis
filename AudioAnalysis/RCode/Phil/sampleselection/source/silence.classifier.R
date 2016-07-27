@@ -31,14 +31,10 @@ RemoveSilentSegments <- function () {
 
 RunSilenceClassifier <- function () {
     # does all the steps needed to run and inspect the classifier on new data
-    
     # classify the seconds
     # reads output from disk, prompting for user choice if needed
     res <- ClassifySegments()
-    
     InspectClassification(res$data)
-    
-    
 }
 
 BuildSilenceClassifier <- function () {
@@ -54,7 +50,7 @@ BuildSilenceClassifier <- function () {
     # using an arbitrary threshold of annotation cover score
     seconds <- CalculateHasBird(seconds)
     
-    # calculate the features used to classifry
+    # calculate the features used to classify
     features <- CalculateSilenceFeatures(seconds)
     
     # just for run, get the correlations between the annotation cover and each feature
@@ -65,16 +61,18 @@ BuildSilenceClassifier <- function () {
     
     # plots the scaled value for the features against the bird cover
     # and against the specrogram for manual inspection
-    PlotFeatures(seconds, features)
+    # PlotFeatures(seconds, features)
     
     # train the model
     seconds <- TrainModel(seconds, features)
     
+    return(seconds)
+    
     # inspect the classification result, but rendering spectrograms of each class
-    InspectClassifiaction(seconds)
+    InspectClassification(seconds)
 }
 
-ClassifySegments <- function (segments = NULL, silence.features = NULL, save = FALSE) {
+ClassifySegments <- function (segments = NULL, silence.features = NULL, use.saved.features = FALSE, save.features = TRUE, save.classified = TRUE) {
     # given a list of seconds and a list of features
     # uses the logistic regression model previously saved to classify the seconds
     
@@ -88,7 +86,10 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, save = F
         segments.data <- segments
     }
     
-    if (is.null(silence.features) && is.list(segments)) {
+    
+    # TODO: add audio path here
+    
+    if (is.null(silence.features) && is.list(segments) && use.saved.features) {
         silence.features <- ReadOutput(name = 'silence.features', dependencies = list('segment.events' = segments$version), false.if.missing = TRUE)
     } 
     
@@ -98,14 +99,19 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, save = F
         silence.features.data <- as.data.frame(silence.features)
     } else if (!is.data.frame(silence.features)) {
         # read output didn't find it
+        
+        #!! temp test
+        # segments.data <- tail(segments.data, 15000)
+        
+        
         silence.features.data <- CalculateSilenceFeatures(seconds = segments.data)
         
-        silence.features.data <- KeepSelectedFeatures(silence.features)
+        silence.features.data <- KeepSelectedFeatures(silence.features.data)
         
         
         # TODO: update to specify whether to save the features
         # if we are using the segments read from the system, we can save silence features with dependencies
-        if (is.list(segments) && 'version' %in% names(segments)) {
+        if (save.features && is.list(segments) && 'version' %in% names(segments)) {
             WriteOutput(silence.features.data, 'silence.features', dependencies = list(segment.events = segments$version))
         }
 
@@ -118,7 +124,7 @@ ClassifySegments <- function (segments = NULL, silence.features = NULL, save = F
     segments.data$classified.has.bird <- fitted.results
     
 
-    if (save) {
+    if (save.classified) {
         
         # filter results
         before <- nrow(segments.data)
@@ -204,18 +210,16 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
             seconds <- seconds[selected.rows,]
         }
         
-        
     } else {
         seconds <- seconds[rows,]
     }
-    
     
     # replace 'wave.path' with file.path for compatibility with inspection function
     colnames(seconds)[colnames(seconds) == 'wave.path'] <- 'file.path'
     seconds$segment.duration <- 1
     
-    seg.time <- SetTime(seconds$min, seconds$start.sec)
-    seg.sec.of.day <- seconds$min * 60 + seconds$start.sec
+    seg.time <- SetTime(seconds$min, seconds$sec)
+    seg.sec.of.day <- seconds$min * 60 + seconds$sec
     
     seconds$img.title <- paste(seconds$event.id, seconds$site, seconds$date, seg.time, seconds$min, sep = ' : ')
     
@@ -224,7 +228,7 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
     }
     
     seconds$link <- BawLink(site = seconds$site, 
-                                         date = seconds$date, 
+                                         date = paste(seconds$year,seconds$month,seconds$day,sep='-'), 
                                          start.sec = seg.sec.of.day, 
                                          end.sec = seg.sec.of.day + seconds$segment.duration, 
                                          margin = 2)
@@ -240,6 +244,8 @@ InspectClassification <- function (seconds, features = NULL, rows = 10, random =
     return(HtmlInspector(seconds, template.file = 'silence.classification.inspector.html', singles = list(title = 'Inspect Silence Classification')))
     
 }
+
+
 
 InspectClassificationTesting <- function (seconds, by.file = FALSE) {
     # creates a composite image with 2 rows of 1 sec spectrograms
@@ -288,7 +294,7 @@ InspectClassificationTesting <- function (seconds, by.file = FALSE) {
 
 KeepSelectedFeatures <- function (f) {
     # keep only the best features
-    selection <- c('H1m.nr', 'mm2.nr', 'sd.nr', 'amd.2.nr')
+    selection <- c('Ht1.nr','Hf1.nr', 'mm2.nr', 'sd.nr', 'amd.2.nr')
     f <- f[,selection]
     return(f)
 }
@@ -375,7 +381,7 @@ PlotFeatures <- function (seconds, features, range = 1:30, section = NULL, spect
     wav.fn <- unique(seconds$wav.file[range])
     if (length(wav.fn) == 1) {
         # if the range covers exactly 1 wave file
-        spectro <- Sp.CreateFromFile(AudioPath(wav.fn))
+        spectro <- Sp.CreateFromFile(wav.fn)
         sv <- PreprocessSpectroVals(spectro$vals)
         
         x <- 1:ncol(sv) * (w / ncol(sv)) + 0.5
@@ -439,7 +445,10 @@ PreprocessSpectroVals <- function (m) {
     
 }
 
-AudioPath <- function (fn, input.directory = NULL) {
+
+# TODO: completely redo this
+# because it is confusing. 
+AudioPath <- function (fn = NULL, input.directory = NULL) {
     # given a filename and the input directory, will create the full path and return it. 
     # if the fn already appears to be a full path, it will just return it. This allows processing
     # of csvs with different formats(i.e. filename only or full path)
@@ -455,10 +464,63 @@ AudioPath <- function (fn, input.directory = NULL) {
     } else {
         return(fn[3])
     }
-
 }
 
-CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path')) {
+CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path'), parallel = 1) {
+    
+    #debugging
+    #seconds <- seconds[1:4000,]
+     
+    empty <- rep(NA, nrow(seconds))
+    
+    wavecol <- intersect(wavecol, colnames(seconds))
+    if (length(wavecol) != 1) {
+        # add wave col
+        wavecol <- 'wave.path'
+        seconds[, wavecol] <- GetAudioFileBatch(seconds)
+    }
+
+    audio.files <- as.character(unique(seconds[,wavecol])) 
+    
+    SetReportMode() # reset to console only
+    if (parallel > 1) {
+        SetReportMode(socket = TRUE)
+        cl <- makeCluster(parallel)
+        registerDoParallel(cl)
+        res <- foreach(f = audio.files,
+                       .combine='rbind',
+                       .export=ls(envir=globalenv())) %dopar% CalculateSilenceFeaturesForFile(f, seconds, wavecol)
+
+    } else {
+        SetReportMode(socket = FALSE)
+        res <- data.frame()
+        for (f in audio.files) {
+            row.res <- CalculateSilenceFeaturesForFile(f, seconds, wavecol)
+            res <- rbind(res, row.res)
+        }
+    }
+    SetReportMode() # reset to console only
+    
+    # Don't scale!! this is wrong!
+    # features <- scale(res)
+    
+    # add combo features
+    # create a new columns c that equals max of a and b respectively
+    # entropy.features <- data.frame(a = c('Ht1','Ht2','Ht1.nr','Ht2.nr'), 
+    #                               b = c('Hf1','Hf2','Hf1.nr','Hf2.nr'),
+    #                               c = c('H1m','H2m','H1m.nr','H2m.nr'),
+    #                               stringsAsFactors = FALSE)
+    # for (r in 1:nrow(entropy.features)) {
+    #    features[, entropy.features[r,'c']] <- apply(cbind(features[, entropy.features[r,'a']], features[, entropy.features[r,'b']]), 1, max)
+    # }
+
+    return(res)
+
+    
+}
+
+CalculateSilenceFeaturesForFile <- function (af.path, seconds, wavecol, segment.duration = 1) {
+    
     
     # all features are done on noise-reduced spectrogram except average of entropies (entropy then average)
     feature.names <- c('Ht1', # Ht1 = temporal.entropy (average then entropy)
@@ -473,149 +535,119 @@ CalculateSilenceFeatures <- function (seconds, wavecol = c('wav.file','wave.path
                        'amd.1', # amd.1 = average distance from median
                        'amd.2')    # amd.2 = average distance from the 30 second median
     
-     
-    empty <- rep(NA, nrow(seconds))
-    
-    wavecol <- intersect(wavecol, colnames(seconds))
-    if (length(wavecol) != 1) {
-        wavecol <- GetUserChoice(colnames(seconds), 'wave column')
-    }
-    
+    # TODO: Currently, TDCCs and Silence features are generating spectrograms with different cache ids, 
+    # meaning that the cache gets bigger than necessary and also the total pipeline takes longer than necessary. I think this is because the frame width is different
+    # consider using the same frame width for tdccs as for silence features (would probably need to re-train model). I am not sure how much difference it makes for either. 
     
 
-    empty.features <- matrix(rep(NA, length(feature.names)*nrow(seconds)), ncol = length(feature.names))
+    
+    spectro <- Sp.CreateFromFile(af.path)
+    
+
+    
+    seconds.selection <- seconds[,wavecol] == af.path
+    af.seconds <- seconds[seconds.selection, ]
+    # number of seconds to iterate over is either the number of seconds in the audio file
+    # or the number of seconds in the seconds list with this file. They should normally be the same
+    # but we need to make sure that we don't try to calculate features for a second that doesn't exist (if the file is a bit longer than expected)
+    num.secs <- min(c(sum(seconds.selection),round(spectro$duration / segment.duration)))
+    
+    empty.features <- matrix(rep(NA, length(feature.names)*nrow(af.seconds)), ncol = length(feature.names))
     colnames(empty.features) <- feature.names
     
-    features <- list(features.wn = empty.features,
-                     features.nr = empty.features)
+    second.width <- round(spectro$frames.per.sec)
     
-
+    # frequency normalizaion
+    spectro.vals.wn <- Normalize(spectro$vals)
+    spectro.vals.wn <- NormaliseSpectrumNoise(spectro.vals.wn)
+    spectro.vals.wn <- Blur(spectro.vals.wn)
     
-
-    audio.files <- unique(seconds[,c('site', 'date', wavecol)]) #### csv format dependent ####
+    # noise-removed version (not suitable for H-then-mean versions of entropy, only for mean-then-H)
+    spectro.vals.nr <- MedianSubtraction(spectro.vals.wn)
+    spectro.vals.nr <- Blur(spectro.vals.nr)
+    spectro.vals.nr <- MedianSubtraction(spectro.vals.nr)
+    spectro.vals.nr <- Blur(spectro.vals.nr)
     
     
-
+    # list of two spectrograms: with noise and noise removed
+    spectro.vals.list <- list(wn = spectro.vals.wn, 
+                              nr = spectro.vals.nr)
     
+    # two empty featuresets: one for noise and one for noise removed
+    features <- list(empty.features, empty.features)
     
-    for (af in 1:nrow(audio.files)) {
-
-        af.path <- AudioPath(audio.files[af,]) 
-
+    # for each of with noise and noise removed:
+    for (sv in 1:length(spectro.vals.list)) {
         
-        # TODO: Currently, TDCCs and Silence features are generating spectrograms with different cache ids, 
-        # meaning that the cache gets bigger than necessary and also the total pipeline takes longer than necessary. I think this is because the frame width is different
-        # consider using the same frame width for tdccs as for silence features (would probably need to re-train model). I am not sure how much difference it makes for either. 
-        spectro <- Sp.CreateFromFile(af.path)
+        spectro.vals <- spectro.vals.list[[sv]]
         
-        seconds.selection <- seconds[,wavecol] == audio.files[af,wavecol]  #### csv format dependent ####
-        af.seconds <- seconds[seconds.selection, ]
-        num.secs <- sum(seconds.selection)
-        # double check that the duration of the spectrogram matches the number of seconds
-        if (round(spectro$duration) != num.secs) {
-            #stop('something went wrong')
-            Report(5, "warning: file has", round(spectro$duration), 'seconds but csv has', num.secs)
-        }
+        # median of file
+        median.spectro.vals <-  median(spectro.vals)
         
-        # chop the spectrogram into bits
-        second.width <- ncol(spectro$vals) / num.secs
-        
-        # noise removal
-        spectro.vals.wn <- Normalize(spectro$vals)
-        spectro.vals.wn <- NormaliseSpectrumNoise(spectro.vals.wn)
-        spectro.vals.wn <- Blur(spectro.vals.wn)
-        
-        # noise-removed version (not suitable for H-then-mean versions of entropy, only for mean-then-H)
-        spectro.vals.nr <- MedianSubtraction(spectro.vals.wn)
-        spectro.vals.nr <- Blur(spectro.vals.nr)
-        spectro.vals.nr <- MedianSubtraction(spectro.vals.nr)
-        spectro.vals.nr <- Blur(spectro.vals.nr)
-
-        
-        # list of two spectrograms: with noise and noise removed
-        spectro.vals.list <- list(wn = spectro.vals.wn, 
-                             nr = spectro.vals.nr)
-        
-        # for each of with noise and noise removed:
-        for (sv in 1:length(spectro.vals.list)) {
+        for (sec in 1:num.secs) {
             
-            spectro.vals <- spectro.vals.list[[sv]]
+            if (basename(af.path) == 'NE_2010-10-17_0019.wav' && sec == 60) {
+                print('now')
+            }
             
-            # median of 30 sec file
-            median.spectro.vals <-  median(spectro.vals)
+            # spectro column offset of current second in the file spectrogram
+            start.offset <- floor((sec-1)*second.width)+1
             
-            for (sec in 1:num.secs) {
-                
-                # row of seconds df
-                cur.sec <- which(seconds.selection)[sec]
-                
-                # spectro column offset of current second in the file spectrogram
-                start.offset <- floor((sec-1)*second.width)
-                end.offset <- floor((sec)*second.width)
-                
-                cur.sec.spectro.vals <- spectro.vals[,start.offset:end.offset]
-                
-                H1 <- GetEntropy1(cur.sec.spectro.vals)
-                features[[sv]][cur.sec, 'Ht1'] <- 1 - H1$Ht
-                features[[sv]][cur.sec, 'Hf1'] <- 1 - H1$Hf
-                
-                H2 <- GetEntropy2(cur.sec.spectro.vals)
-                features[[sv]][cur.sec, 'Ht2'] <- 1 - H2$Ht
-                features[[sv]][cur.sec, 'Hf2'] <- 1 - H2$Hf
-                
-                # mean/median of current second
-                mean.val <- mean(cur.sec.spectro.vals)
-                med.val <- median(cur.sec.spectro.vals)
-                
-                features[[sv]][cur.sec, 'mm1'] <- abs(mean.val - med.val)
-                
-                # this one should not be absolute, because on busy 30 seconds,
-                # median might be greater than mean of silent second
-                features[[sv]][cur.sec, 'mm2'] <- mean.val - median.spectro.vals
-                
-                features[[sv]][cur.sec, 'sd'] <- sd(cur.sec.spectro.vals)
-                
-                # mean distance from the median
-                features[[sv]][cur.sec, 'amd.1'] <- mean(abs(cur.sec.spectro.vals - med.val))
-                features[[sv]][cur.sec, 'amd.2'] <- mean(abs(cur.sec.spectro.vals - median.spectro.vals))
-                
-                #if (seconds$bird.cover.1[cur.sec] == 0.0 && mm1 > 0.004 || seconds$bird.cover.1[cur.sec] == 1 && mm1 < 0.004) {
-                #debug
-                #msg <- paste(seconds[cur.sec, c('day','hour', 'min', 'sec', 'has.bird')], collapse = ':')
-                #print(paste(features[cur.sec, 'mm2'], ' : ', msg))
-                #image(t(cur.sec.spectro.vals))
-                #Dot()
-                #}
-                
-                Dot()
-                
-            }  #end for each sec in file
+            # it is possible that the last second will be slightly short.
+            # it should not be possible that less than half of 1 second is present
+            # because we have already rounded the duration of the spectrogram to get the number of seconds to process
+            end.offset <- min(c(floor((sec)*second.width),ncol(spectro.vals)))
+            
+            
+            
+            cur.sec.spectro.vals <- spectro.vals[,start.offset:end.offset]
+            
+            H1 <- GetEntropy1(cur.sec.spectro.vals)
+            features[[sv]][sec, 'Ht1'] <- 1 - H1$Ht
+            features[[sv]][sec, 'Hf1'] <- 1 - H1$Hf
+            
+            H2 <- GetEntropy2(cur.sec.spectro.vals)
+            features[[sv]][sec, 'Ht2'] <- 1 - H2$Ht
+            features[[sv]][sec, 'Hf2'] <- 1 - H2$Hf
+            
+            # mean/median of current second
+            mean.val <- mean(cur.sec.spectro.vals)
+            med.val <- median(cur.sec.spectro.vals)
+            
+            features[[sv]][sec, 'mm1'] <- abs(mean.val - med.val)
+            
+            # this one should not be absolute, because on busy 30 seconds,
+            # median might be greater than mean of silent second
+            features[[sv]][sec, 'mm2'] <- mean.val - median.spectro.vals
+            
+            features[[sv]][sec, 'sd'] <- sd(cur.sec.spectro.vals)
+            
+            # mean distance from the median
+            features[[sv]][sec, 'amd.1'] <- mean(abs(cur.sec.spectro.vals - med.val))
+            features[[sv]][sec, 'amd.2'] <- mean(abs(cur.sec.spectro.vals - median.spectro.vals))
+            
+            Dot()
+            
+        }  #end for each sec in file
         
-        }  # end for each version of file spectro (noise/nr)
-        
-  
-        
-        Report(5, 'file complete (',num.secs,' secs)')
- 
-        
-    }
+    }  # end for each version of file spectro (noise/nr)
     
-    for (sv in 1:length(features)) {
-        
-        # add combo features 
-        features.s <- scale(features[[sv]])
-        features[[sv]][, 'H1m'] <- apply(cbind(features.s[, 'Ht1'], features.s[, 'Hf1']), 1, max)
-        features[[sv]][, 'H2m'] <- apply(cbind(features.s[, 'Ht2'], features.s[, 'Hf2']), 1, max)
-        
-    }
     
     colnames(features[[2]]) <- paste0(colnames(features[[2]]), '.nr')
+    all.features <- cbind(features[[1]], features[[2]])
+    
+    Report(5, 'file complete (',num.secs,' secs)')
     
     
-    return(cbind(features[[1]], features[[2]]))
-
+    # make sure that we return the correct number of row for features
+    # i.e. each second has a row of features
+    
+    
+    return(all.features)
+    
     
 }
+
 
 NormaliseSpectrumNoise <- function (vals, q = .25) {
     # for each row, subtract the difference between the overall percentile (param) and the percentile (q) for that row
@@ -785,6 +817,8 @@ BuildSecondList <- function (input.directory = "/Users/n8933464/Documents/SERF/m
         seconds <- rbind(seconds, cur.seconds)
     }
     
+    
+    seconds$wav.file <- file.path(wav.path, seconds$wav.file)
     
     
 

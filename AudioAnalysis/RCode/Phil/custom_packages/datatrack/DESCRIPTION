@@ -1,0 +1,8 @@
+Package: datatrack
+Title: Manage Metadata Describing Dependencies Between Data Files
+Version: 0.0.0.9000
+Authors@R: person("Philip", "Eichinski", email = "philip.eichinski@qut.edu.au", role = c("aut", "cre"))
+Description: Datatrack provides functions for reading and writing data. When these functions are used, provenance metadata about the file and its dependencies are saved. These dependencies can then be viewed in a directed graph, which can be useful when reading in the data.
+Depends: R (>= 3.2.4)
+License: MIT
+LazyData: true

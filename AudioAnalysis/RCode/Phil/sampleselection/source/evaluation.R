@@ -172,7 +172,7 @@ EvaluateSamples2d <- function (ranks, add.dawn = 0, heading = '') {
     mins.for.comparison <- ranks$data[,1]
     mins.for.comparison <- ExpandMinId(mins.for.comparison)
 
-    species.in.each.sample <- SpeciesInEachSampleCached(mins.for.comparison$min.id)
+    species.in.each.sample <- GetSpeciesInEachSample(mins.for.comparison$min.id)
     
     # holds a lot of info about the species found
     ranked.progressions <- list(mins.for.comparison$min.id)
@@ -221,14 +221,9 @@ EvaluateSamples2d <- function (ranks, add.dawn = 0, heading = '') {
     
     # save/retrieve the optimal samples by giving the target.min.ids as dependencies
     # which come from the target.min.ids of the ranks
-    dependencies <- list(target.min.ids = ranks$indirect.dependencies$target.min.ids)
-    optimal <- ReadOutput('optimal.samples', dependencies = dependencies, false.if.missing = TRUE)
-    if (!is.list(optimal)) {
-        optimal <- OptimalSamples(species.in.each.min = species.in.each.sample)
-        WriteOutput(optimal, 'optimal.samples', dependencies = dependencies)
-    } else {
-        optimal <- optimal$data
-    }
+    optimal <- GetOptimalSamples(species.in.each.min = species.in.each.sample, 
+                                 use.saved = TRUE, 
+                                 target.min.ids.version = ranks$indirect.dependencies$target.min.ids)
     
     if (IsDawn(mins.for.comparison$min)) {
         # if any of the mins are in dawn, do the random at dawn for comparison agains our results
@@ -260,17 +255,15 @@ EvaluateSamples2d <- function (ranks, add.dawn = 0, heading = '') {
     
 }
 
-SpeciesInEachSampleCached <- function (min.ids = NULL) {
+GetSpeciesInEachSample <- function (min.ids = NULL) {
     # checks if we have a saved species.in.each.sample for the target mins already
     # and if so, uses it, if not looks in the database etc
     # 
     # Args:
     #   min.ids: data.frame; the minutes that we want to look in
-    #   params: list; the params to save the results with
-    #   dependencies: list; the dependencies to save the results with
     
     params = list(study = GetStudyDescription())
-    # todo: remove "use last accessed" after building a check for matching params and dependencies into ReadOutput
+    # TODO: remove "use last accessed" after building a check for matching params and dependencies into ReadOutput
     species.in.each.sample <- ReadOutput('species.in.each.min', params = params, false.if.missing = TRUE, use.last.accessed = FALSE)
     if (!is.list(species.in.each.sample)) {
         speciesmins <- GetTags(target.only = FALSE, study.only = TRUE);  # get tags from whole study
@@ -290,7 +283,6 @@ SpeciesInEachSampleCached <- function (min.ids = NULL) {
         return(species.in.each.sample[list.indexes])    
     }
 
-    
 }
 
 ConsistentRankNames <- function (names) {
@@ -368,7 +360,31 @@ ValidateMins <- function (mins = NA) {
     return(mins)
 }
 
-OptimalSamples <- function (mins = NA, species.in.each.min = NA) {
+GetOptimalSamples <- function (mins = NA, species.in.each.min = NA, use.saved = TRUE, target.min.ids.version = NULL) {
+    # save/retrieve the optimal samples by giving the target.min.ids as dependencies
+    # which come from the target.min.ids of the ranks
+    
+    dependencies <- list(target.min.ids = target.min.ids.version)
+    if (use.saved) {
+        optimal <- ReadOutput('optimal.samples', dependencies = dependencies, false.if.missing = TRUE)
+    } else {
+        optimal <- NULL
+    }
+    if (!is.list(optimal)) {
+        optimal <- OptimalSamples(species.in.each.min = species.in.each.min)
+        if (use.saved) {
+            WriteOutput(optimal, 'optimal.samples', dependencies = dependencies)
+        }
+    } else {
+        optimal <- optimal$data
+    }
+    
+    return(optimal)
+    
+}
+
+
+CalculateOptimalSamples <- function (mins = NA, species.in.each.min = NA) {
     # determines the best possible selection of [numsamples] minute samples
     # to find the most species
     # 
@@ -607,6 +623,25 @@ WriteRichnessResults <- function (min.ids, found.species.progression, output.fn,
 
 
 ClustersInOptimal <- function () {
+    # given a clustering result, gets the optimal progression based on labelled data
+    # and finds what clusters are in each of these optimal minutes
+    clustered.events <- ReadOutput('clustered.events')
+    
+    # should automatically get the relevant target.min.ids based on the ancestor of clustered events
+    mins <- ReadOutput('target.min.ids')
+    
+    optimal <- GetOptimalSamples(mins = mins$data, use.saved = TRUE, target.min.ids.version = mins$version)
+    
+    # sanity check: make sure all the optimal minute ids are in the set of minutes we are checking
+    if (!all(optimal$selected.mins %in% clustered.events$data$min.id)) {
+        stop('optimal minutes contain an id that is not supposed to be there')
+    }
+    
+    # create template with templator:
+    # 1 row per minute (in order of greedy search) 
+    # 1 column per second. 
+    # for each second: generate spectrogram with cluster label
+    
     
     
     

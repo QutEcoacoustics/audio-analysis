@@ -14,12 +14,9 @@ oi.config = {
 
 oi.init = function (id, data, selected_group) {
 
-
     oi.container = d3.select("#"+id);
-
     oi.config.total_width = oi.container.node().getBoundingClientRect().width;
     oi.config.total_height = oi.container.node().getBoundingClientRect().height;
-
     oi.svg = oi.container
         .append("svg")
         .attr("width", oi.config.total_width)
@@ -28,7 +25,6 @@ oi.init = function (id, data, selected_group) {
 
     oi.wrapper = oi.svg.append("g")
         .classed('wrapper',true);
-
 
     // oi.groups is the currently visible groups
     oi.all_groups = data;

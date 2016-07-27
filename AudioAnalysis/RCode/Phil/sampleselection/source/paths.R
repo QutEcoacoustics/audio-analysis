@@ -4,9 +4,9 @@
 # the paths are checked one by one to find the one that exists
 
 paths <- list(
-    audio = c("/Volumes/My Passport/Phil#61/Audio/OriginalAudio/TaggedRecordings",
-             "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings",
-             "D:/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
+    audio = c("/Volumes/passport/phil/SERF/serf_audio",
+             "/Volumes/files/qut_data/SERF/serf_audio",
+             "D:/phil/SERF/serf_audio"),
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
               '/Users/n8933464/Documents/sample_selection_output/cache'),
@@ -117,9 +117,10 @@ FixCacheFn <- function (path) {
 
 
 GetAnalysisOutputPath <- function (site, date, dir) {
+    # for analysis done on the big data computer
+    # structure comes back in a particular way. 
     # audio is in a folder structure like:
     # sitename/UID_YYMMDD-0000.mp3/UID_date-0000_0min.mp3
-    
     
     site.dir <- file.path(dir, site)
     day.folders <- list.dirs(site.dir, full.names = FALSE, recursive = FALSE)

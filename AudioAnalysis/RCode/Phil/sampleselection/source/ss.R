@@ -57,6 +57,7 @@ require('templator')
 
 require('foreach')
 require('doParallel')
+require('stringr')
 
 
 
@@ -93,8 +94,7 @@ source('baw.R')
 
 
 SS.fixedwidth <- function () {
-    
-    
+
     # Step 1: 
     # generate a list of minutes to use in as the target
     # CreateTargetMinutes()
