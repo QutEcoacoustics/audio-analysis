@@ -1,6 +1,6 @@
 Package: dviewer
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Uses the dviewer javascript library with a html widget
 Version: 0.1.0
 Author: Philip Eichinski
 Maintainer: Philip Eichinski <philip.eichinski@qut.edu.au>
