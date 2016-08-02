@@ -1,17 +1,11 @@
 
-# TODO: automatically detect if data frame for object or csv
-# TODO: split datatrack.R over multiple files
 # TODO: use testthat for unit testing
-# TODO: replace reporting with simpler function
-# TODO: consistency between "name" and "dataobject type"
+# TODO: test and document the ability added to read multiple names at once
 
 # TODO: allow file of meta data to be saved along with a dataframe, to be read and returned
 # e.g. explanation of column names
 # file should be arbitrary, maybe json?
 # probably best to save as separate file rather than in the meta file
-
-
-require('rjson')
 
 
 # the way it works is that each dataobject file will have parameters and dependent dataobjects
@@ -20,94 +14,17 @@ require('rjson')
 # they will do this by selecting the parameters of the dataobject and the parameters of the dependencies
 
 
-
-
-#' Saves the last accessed version of a given type
-#'
-#' @details
-#' This is used so that data being read can be returned without promting for user selection.
-#' This allows the last accessed version to be automatically read without prompting for user selection
-.SetLastAccessed <- function (name, meta.row) {
-    pkg.env$access.log[[name]] <- list(meta = meta.row, date.accessed = .DateTime())
-}
-
-#' checks the last accessed log for the dataobject type of 'name' and
-#' returns it if the params, dependencies and version match,
-#' otherwise returns false
-#'
-#' @param names vector of strings
-#' @param params list
-#' @param dependencies list
-#' @param version int
-.GetLastAccessed <- function (names, params = NULL, dependencies = NULL, version = NULL) {
-
-    last.accessed.date <- FALSE
-    last.accessed.meta <- FALSE
-
-    # for each of the list of names, check if the name is in the access log
-    # if it is, check if the supplied params, dependencies and version all match
-    # if not supplied, treat as matched
-    # if they all match, compare to see if the access date is the newest out of all
-    # of the names provided. If so, record it
-
-    for (name in names) {
-        if (!is.null(pkg.env$access.log[[name]])) {
-
-            params.match <- is.null(params) || pkg.env$access.log[[name]]$meta$params == toJSON(params)
-            dependencies.match <- is.null(dependencies) || pkg.env$access.log[[name]]$meta$dependencies != toJSON(dependencies)
-            version.match <- is.null(version) || pkg.env$access.log[[name]]$meta$version != version
-
-            if (params.match && dependencies.match && version.match) {
-                if (last.accessed.date == FALSE || pkg.env$access.log[[name]]$date.accessed > last.accessed.date) {
-                    last.accessed.date <- pkg.env$access.log[[name]]$date.accessed
-                    last.accessed.meta <- pkg.env$access.log[[name]]$meta
-                    last.accessed.meta$name <- name
-                }
-            }
-        }
-    }
-
-    return(last.accessed.meta)
-}
-
-#' given a row of meta data. Looks at the name and version of each dependency
-#' and sets the last accessed for those.
-#'
-#' @param name string
-#' @param version int
-#' @param meta data.frame optional. The entire dataframe of metadata. If ommitted will be read from disk.
-.SetLastAccessed.recursive <- function (name, version, meta = NA) {
-
-    if (!is.data.frame(meta)) {
-        meta <- .ReadMeta()
-    }
-
-    meta.row <- meta[meta$name == name & meta$version == version, ]
-    if (nrow(meta.row) != 1) {
-        return(FALSE)
-    }
-
-    .SetLastAccessed(meta.row$name, meta.row)
-
-    dependencies <- .DependenciesToDf(meta.row$dependencies)
-    if (nrow(dependencies) > 0) {
-        for (i in 1:nrow(dependencies)) {
-            .SetLastAccessed.recursive(dependencies$name[i], dependencies$version[i])
-        }
-    }
-}
-
-
 #' given a name and a version, will return a dataframe listing of all of the dependencies and their versions
 #'
 #' @param name string;
 #' @param version int;
 #' @param meta: data.frame; optional. The entire dataframe of metadata. If ommitted will be read from disk.
 #'
-#' @value list with dependency type as the name of and the version as the value
+#' @return list with dependency name as the name of and the version as the value
 #'
 #' @details
-#' if an dataobject type is a dependency of more than one dependency, then it will only appear once.
+#' a dataobject of a given name will only appear once in the stack, even if it appears in multiple places in the dependency tree
+#' (i.e. if two dataobjects in the stack both have a direct dependency of the same name)
 #' if this occurs, it should have the same version. If there are different versions of the same dependency
 #' in the dependency tree, something is wrong.
 .GetIndirectDependenciesStack <- function (name, version, meta = NA) {
@@ -152,7 +69,7 @@ require('rjson')
     # if it does exist with a different value, it causes an error
 
     if (name %in% names(list) && list[[name]] != value) {
-        stop('multiple versions of same dataobject type in dependency tree')
+        stop('multiple versions of same dataobject name in dependency tree')
     } else {
         list[[name]] <- value
         return(list)
@@ -160,19 +77,10 @@ require('rjson')
 }
 
 
-
-
-
 #' reads the meta file and returns all the names of data files that exist
-#'
-#' @details
-#' dataobject type is the same as name
-.GetDataobjectTypes <- function () {
+.GetDataobjectNames <- function () {
     meta <- .ReadMeta()
-    dataobject.types <- meta$name[meta$file.exists == 1]
-    dataobject.types <- unique(dataobject.types)
-    return(dataobject.types)
-
+    return(unique(meta$name[meta$file.exists == 1]))
 }
 
 #' Determines whether the file was saved as a csv or an R object, then calls the
@@ -199,9 +107,6 @@ require('rjson')
 #' @param name string
 #' @param version int
 .WriteDataobjectFile <- function (x, name, v.num) {
-  # given some data, the name (type of dataobject) and version
-  # figures out whether to save as csv or object
-  # then calls the relevant function
 
     as.csv <- .UseCsv(x)
     path <- .DataobjectPath(name, v.num, csv = as.csv)
@@ -268,12 +173,12 @@ require('rjson')
 
 #' returns the path to the file for the name and version
 #'
-#' @param name string
-#' @param version int
-#' @param ext string; the file extension. If ommitted, will check the correc type for the name of the dataobject
-#' @param unzip.file boolean; if true, and the file has been zipped, will first unzip the file
-#' @value string
-.DataobjectPath <- function (name, version, csv, unzip.file = FALSE) {
+#' @param name character vector
+#' @param version int vector
+#' @param csv int or boolean; whether the dataobject is saved as a csv or an object
+#' @param unzip boolean; if true, and the file has been zipped, will first unzip the file
+#' @return string
+ .DataobjectPath <- function (name, version, csv, unzip = FALSE) {
 
     if (!.AllSame(c(length(name), length(version), length(csv)))) {
         stop('arguments are not of same length')
@@ -285,115 +190,15 @@ require('rjson')
     fn <- paste(as.character(name), sprintf("%03d", as.integer(version)), ext, sep = '.')
     path <- file.path(pkg.env$data.dir, fn)
 
-    # if unzip.file is true, filter only the paths that are missing but which have a zipped file
+    # if unzip is true, filter only the paths that are missing but which have a zipped file
     # then unzip those files, and delete
-    if (unzip.file) {
+    if (unzip) {
         .RestoreFromZip(path)
     }
 
     return(path)
 }
 
-#' Reads the csv of metadata from disk
-#' @details
-#' If the file doesn't exist, creates an empty one with the correct columns
-.ReadMeta <- function () {
-    path <- file.path(pkg.env$meta.dir, 'meta.csv')
-    if (file.exists(path)) {
-        meta <- read.csv(path, stringsAsFactors=FALSE)
-    } else {
-        return(.CreateEmptyMeta())
-    }
-    meta <- .VerifyMeta(meta)
-    return(meta)
-}
-
-#'TODO: every time the meta is written, make a copy of the old meta (1 per day)
-.ArchiveMeta <- function () {
-
-}
-
-#' creates an empty dataframe with the correct columns
-#' @value data.frame
-.CreateEmptyMeta <- function () {
-
-    # create a dummy meta row to get all the right columns
-    # then remove the row to get an empty data frame
-    dummy.meta <- .MakeMetaRow("", 0)
-    return(dummy.meta[c(),])
-}
-
-#' Makes a 1-row data frame for the metdata of a saved dataobject
-#' @param name string
-#' @param v.num int
-#' @param params list,
-#' @param dependencies list
-#' @param date string
-#' @param col.names character vector
-#' @param callstack character vector
-#' @value data.frame
-.MakeMetaRow <- function (name,
-                         v.num,
-                         params = list(),
-                         dependencies = list(),
-                         date = NA,
-                         col.names = NULL,
-                         callstack = NULL,
-                         csv = 0) {
-    if (is.list(params)) {
-        params <- toJSON(params)
-    }
-    if (is.list(dependencies)) {
-        dependencies <- toJSON(dependencies)
-    }
-    if (is.na(date)) {
-        date <- .DateTime()
-    }
-    if (is.character(col.names)) {
-        col.names = toJSON(col.names)
-    } else {
-        col.names = ''
-    }
-    if (is.character(callstack)) {
-        callstack = toJSON(callstack)
-    } else {
-        callstack = ""
-    }
-    row <- data.frame(name = name, version = v.num, params = params, dependencies = dependencies, date = date, file.exists = NA, col.names = col.names, callstack = callstack, csv = csv)
-    return(row)
-}
-
-#' Returns the metadata row for the given name/version pair
-#'
-#' @param name string
-#' @param version int
-#' @returns list
-#'
-#' @details
-#' Reads the metadata, filters to the correct row, converts to list,
-#' then converts json encoded values to lists
-.GetMeta <- function (name, version) {
-    meta <- .ReadMeta()
-    meta <- meta[meta$name == name & meta$version == version,]
-    meta <- as.list(meta)
-    meta$params <- fromJSON(meta$params)
-    meta$dependencies <- fromJSON(meta$dependencies)
-    return(meta)
-}
-
-#' returns the current date time in the correct format to save in the metadata
-#' @value string
-.DateTime <- function () {
-    return(format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
-}
-
-#' saves the metadata csv
-#' @param meta data.frame
-.WriteMeta <- function (meta) {
-    path <- file.path(pkg.env$meta.dir, 'meta.csv')
-    meta <- meta[order(meta$date, decreasing = TRUE), ]
-    write.csv(meta, path, row.names = FALSE)
-}
 
 
 #' gets user input to choose a version of dataobject to read
@@ -405,7 +210,7 @@ require('rjson')
 #'                              If TRUE, will return false if there is no dataobject
 #' @param optional: boolean; if TRUE, adds a user choice to return false
 #'
-#' @value data.frame one row of the metadata data frame
+#' @return data.frame one row of the metadata data frame
 #'
 #' @details
 #' When presenting the choices, it will find the parameters of the dataobject choice as well as each of their dependencies parameters.
@@ -419,15 +224,15 @@ require('rjson')
         if (false.if.missing) {
             return(FALSE)
         }
-        stop(paste("Missing dataobject file:", name))
+        stop(paste("Missing dataobject file:", paste(names, collapse = ",")))
     }
     filter <- rep(TRUE, nrow(name.meta))
     if (is.list(params)) {
-        params <- toJSON(params)
+        params <- rjson::toJSON(params)
         filter[name.meta$params != params] <- FALSE
     }
     if (is.list(dependencies)) {
-        dependencies <- toJSON(dependencies)
+        dependencies <- rjson::toJSON(dependencies)
         filter[name.meta$dependencies != dependencies] <- FALSE
     }
     if (!is.null(version)) {
@@ -449,10 +254,10 @@ require('rjson')
     if (nrow(name.meta) == 1) {
         # we only have one thing to choose from, so choose it for them
         # but show them which one is being chosen
-        Report(4, 'only one file to choose from, returing it:')
+        .Report('only one file to choose from; returing it')
 
         #TODO: move these functions to this package or make a new package
-        ReportAnimated(5, choices[1], duration = 1)
+        .Report(choices[1], level = 1)
         which.version <- 1
     } else {
         D3Inspector(names[1])
@@ -473,7 +278,7 @@ require('rjson')
 #' @param name string
 #' @param v.num int
 #' @param meta data.frame optional if ommited will read from disk.
-#' @value list of parameters (name value pairs)
+#' @return list of parameters (name value pairs)
 .GetParams.recursive <- function (name, v.num, meta = NA) {
     # get metadata for all versions of the dataobject name (eg 'features')
     if (!is.data.frame(meta)) {
@@ -518,63 +323,11 @@ require('rjson')
 
 }
 
-#' updates the "file.exists" column of the meta csv
-#'
-#' @param meta data.frame optional if ommitted will read from disk
-#' @details
-#' i.e. checkes if the file exists
-#' files may get deleted, however this should not necessarily
-#' mean the meta row should be deleted, since it can still be
-#' used to show information about dependencies.
-.VerifyMeta <- function (meta = NULL) {
-
-    if (is.null(meta)) {
-        meta <- .ReadMeta()
-    }
-    files.exist <- apply(meta, 1, function (row) {
-        path <- .DataobjectPath(row['name'], row['version'], row['csv'])
-        return(file.exists(path) || file.exists(paste0(path, '.zip')))
-    })
-    meta$file.exists <- as.integer(files.exist)
-
-    if (!"col.names" %in% colnames(meta)) {
-        meta$col.names = '';
-    }
-    if (!"callstack" %in% colnames(meta)) {
-        meta$callstack = '';
-    }
-
-    .WriteMeta(meta)
-    return(meta)
-}
-
 #' converts a json string of dependencies to a data frame
 #'
 #' @param str the json string of dependencies
-#' @value data.frame with the columns name, version
+#' @return data.frame with the columns name, version
 .DependenciesToDf <- function (str) {
-    require('rjson')
-    d <- fromJSON(str)
+    d <- rjson::fromJSON(str)
     return(data.frame(name = names(d), version = as.integer(d)))
 }
-
-#' given a single row of meta data as a data.frame
-#' converts it to a list and then converts the values that are json to lists
-#' @param meta.df data.frame
-#' @value list
-.ExpandMeta <- function (meta.df) {
-    require('rjson')
-    meta.list <- list()
-    meta.list$version <- meta.df$version
-    meta.list$params <- fromJSON(as.character(meta.df$params))
-    meta.list$dependencies <- fromJSON(as.character(meta.df$dependencies))
-    meta.list$date <- meta.df$date
-    meta.list$name <- meta.df$name
-    return(meta.list)
-}
-
-#' returns true if all numbers in the vector are the same
-.AllSame <- function (x) {
-    return(diff(range(x)) < .Machine$double.eps ^ 0.5)
-}
-

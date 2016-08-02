@@ -42,21 +42,21 @@
 
         versions <- m[m$name == cur,]
         for (v in 1:nrow(versions)) {
-            #Report(5, 'adding: ', group.names[g], versions[v])
+            .Report('adding: ', group.names[g], versions[v], level = 2)
             data[[g]][['versions']][[v]] <- list(v = versions$version[v],
-                                                 params = fromJSON(versions$params[v]),
-                                                 links = fromJSON(versions$dependencies[v]),
+                                                 params = rjson::fromJSON(versions$params[v]),
+                                                 links = rjson::fromJSON(versions$dependencies[v]),
                                                  date = versions$date[v],
                                                  exists = versions$file.exists[v])
 
             # add colnames if they are there
             if (is.character(versions$col.names[v]) && !is.na(versions$col.names[v]) && nzchar(versions$col.names[v])) {
-                data[[g]][['versions']][[v]]$colnames = as.list(fromJSON(versions$col.names[v]))
+                data[[g]][['versions']][[v]]$colnames = as.list(rjson::fromJSON(versions$col.names[v]))
             }
         }
     }
 
-    data <- toJSON(data)
+    data <- rjson::toJSON(data)
     return(data)
 }
 

@@ -10,7 +10,6 @@
 #' Creates a few example data objects with some dependencies between them
 Example1 <- function () {
 
-
     # save a version of two data objects called "one" and "two" respectively
 
     # returns the version number
@@ -31,7 +30,7 @@ Example1 <- function () {
     data4.v1 <- .SaveExampleData("four", data4.v1.dependencies)
 
     # save another version of "two" with different parameters which is the only
-    # dependency of a new data object type called "five"
+    # dependency of a new data object named "five"
     data2.v2 <- .SaveExampleData("two")
     data5.v1.dependencies <- list('two' = data2.v2)
     .SaveExampleData("five", data5.v1.dependencies)
@@ -44,7 +43,7 @@ Example1 <- function () {
 #' @details
 #' This should be done after setting up the initial data objects with Example1
 #' Here, we try to save a data object that has indirect dependencies on different versions of the same
-#' type. In this case, versions 1 and 2 of two
+#' name. This should not be allowed, but currently it is.
 Example2 <- function () {
 
     # "three" version 1 depends on "two" version 1, and "five" version 1 depends on "two" version 2
@@ -70,7 +69,7 @@ Example2 <- function () {
 
 
 #' generates a random data frame
-#' @value data.frame
+#' @return data.frame
 .RandomDataFrame <- function () {
     ncols.range = 4:8
     nrows.range = 15:25
@@ -82,8 +81,8 @@ Example2 <- function () {
 }
 
 #' Generates a list of random parameters
-#' @param num.params
-#' @value list
+#' @param num.params int
+#' @return list
 .RandomParams <- function (num.params = 3) {
 
     params <- as.list(sample.int(100, num.params))
@@ -95,7 +94,7 @@ Example2 <- function () {
 
 #' returns a random list of words
 #' @param how many words to return
-#' @value character vector
+#' @return character vector
 #' @details
 #' If the number of words requested is > than the number in our list,
 #' it will sample with replacement, otherwise not
@@ -119,4 +118,4 @@ Example2 <- function () {
 }
 
 
-CreateEmptyMeta <- .CreateEmptyMeta
+

@@ -6,9 +6,9 @@
 # Most of these functions should call LoadConfig at the start or they won't work
 
 
-#' reads the dataobject for type 'name'
+#' reads the dataobject of a given name
 #'
-#' @param name String; Optional. The dataobject to read, eg "clusters", "features" etc.  If ommited, will first ask the user which type of dataobject they want.
+#' @param name String; Optional. The dataobject to read, eg "clusters", "features" etc.  If ommited, will prompt the user with a choice of available names
 #' @param purpose string; Displayed to the user when prompting
 #' @param include.meta bool; if true, will wrap the data to return in a list that also contains the metadata
 #' @param params list; Optional. If supplied, will only consider returning a dataobject with the matching params
@@ -22,10 +22,10 @@
 #'
 #' @details
 #'    1) if name is not supplied, will ask user,
-#'    2) then if version is supplied, find the that version of the dataobject type. If it doesn't exist, will return false or stop
+#'    2) then if version is supplied, find the that version of the dataobject name. If it doesn't exist, will return false or stop (depending on false.if.missing)
 #'    3) looks for the last accessed version if it matches the version OR  params, dependencies
 #'    4) if no matching last accessed verion is found, it will ask the user to select a version
-#'       This means that for a particular set of params and dependencies, only one version of a particular dataobject type can be used within the same run
+#'       This means that for a particular set of params and dependencies, only one version of a particular dataobject name can be used within the same run
 #'    5) if the file is found, then it will set the 'last accessed' flag
 #'       on the chosen dataobject and it dependencies
 #'
@@ -39,21 +39,19 @@ ReadDataobject <- function (name = NULL,
                         optional = FALSE,
                         use.last.accessed = TRUE,
                         version = NULL) {
-    library('userinput')
 
     .LoadConfig()
-
 
     if (is.null(name)) {
         # if name is ommited from function call, get user input
         # this should only happen when calling directly from the commandline
-        choices = .GetDataobjectTypes()
+        choices = .GetDataobjectNames()
         choice = GetUserChoice(choices, choosing.what = "choose a type of dataobject")
         name = choices[choice]
     }
 
     if (!is.na(purpose)) {
-        Report(1, 'Reading dataobject for:', purpose)
+        .Report('Reading dataobject for:', purpose)
     }
 
     if (use.last.accessed) {
@@ -110,7 +108,7 @@ WriteStructuredDataobject <- function (x, check.before.overwrite = TRUE) {
 #' If the dependency version is given as 0, then datatrack will attempt to look up the last accessed version of that name to use. In other words, use 0 to
 #' specify that datatrack should use the last accessed version as the dependency
 #'
-#' @value the version that it gets saved as
+#' @return the version that it gets saved as
 #'
 #' @details
 #' dataobject will be saved with the filename like: name.version.csv  The version is detected automatically.
@@ -126,7 +124,7 @@ WriteDataobject <- function (x, name, params = list(), dependencies = list(), ch
 
     # read the meta for all dataobjects
     meta <- .ReadMeta()
-    params <- toJSON(params)
+    params <- rjson::toJSON(params)
 
     # if a dependency version is not supplied, then it tries
     # to use the version that was last accessed
@@ -146,7 +144,7 @@ WriteDataobject <- function (x, name, params = list(), dependencies = list(), ch
         stop(paste('dependency versions must be supplied for ', paste(names(dependencies[dependencies < 1]), collapse = ",")))
     }
 
-    dependencies <- toJSON(dependencies)
+    dependencies <- rjson::toJSON(dependencies)
 
     matching.name <- meta$name == name
     matching.p.and.d<- matching.name & meta$params == params & meta$dependencies == dependencies
@@ -200,8 +198,7 @@ WriteDataobject <- function (x, name, params = list(), dependencies = list(), ch
 
 }
 
-
-#' Clear the access log used to save the most recently accessed version of each type
+#' Clear the access log used to save the most recently accessed version of each name
 ClearAccessLog <- function () {
     pkg.env$access.log <- list()
 }
@@ -213,12 +210,11 @@ ClearAccessLog <- function () {
 #' Gets the metadata in the appropriate json format then passes it to the dataGraph function of the dviewer package
 D3Inspector <- function (group = FALSE) {
 
-    require('dviewer')
     .LoadConfig()
     data <- .DataVis()
     #uncommet this to save a the metadata into the dviewer package
     #SaveDemoVisData(data)
-    print(dataGraph(data, group));
+    print(dviewer::dataGraph(data, group));
 }
 
 

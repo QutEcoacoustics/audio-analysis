@@ -4,11 +4,35 @@ pkg.env <- new.env()
 pkg.env$access.log <- list()
 pkg.env$config.file.name <- 'datatrack.config.json'
 
+#' Sets the path to the config json file
+#' @param path string
+#' @details
+#' By Default, datatrack will look for a file called 'datatrack.config.json' in the working directory
+#' This can be overridden by this function. This is not recommended during normal use of datatrack,
+#' since it needs to be called after datatrack is loaded but before it is used, leaving it prone to error.
+#' It is designed for use for unit testing so that datatrack projects can be created and destroyed
+SetConfigFile <- function (path) {
+    pkg.env$config.file.name <- path
+}
+
+
+#' Sets configuration options to the default values if they have not been included in the config file
+.SetDefaults <- function () {
+    defaults <- list()
+    # after this many days of not being accessed, data objects will be zipped to save space
+    defaults$zip.after.days <- 30
+    # The higher the number, the more reporting
+    defaults$report.level <- 2
+
+    pkg.env$config <- .MergeLists(pkg.env$config, defaults)
+}
+
+
 #' saves the relevant global configuration variables to disk in the working directory
 #' @details
 #' This is called if the configuration file was not present and is created interactively
 .SaveConfig = function () {
-    config.json <- toJSON(pkg.env$config)
+    config.json <- rjson::toJSON(pkg.env$config)
     .SaveText(config.json, pkg.env$config.file.name)
 }
 
@@ -24,13 +48,15 @@ pkg.env$config.file.name <- 'datatrack.config.json'
     pkg.env$config <- list()
     if (file.exists(pkg.env$config.file.name)) {
         config.json <- readChar(pkg.env$config.file.name, file.info(pkg.env$config.file.name)$size)
-        pkg.env$config <- fromJSON(config.json)
+        pkg.env$config <- rjson::fromJSON(config.json)
     } else {
         create.config <- userinput::Confirm("No datatrack configuration file found in working directory, would you like to create one?")
         if (create.config) {
             .CreateConfig()
         }
     }
+
+    .SetDefaults()
 
     # secondary config options that can be calculated based on the saved config options
     if ("datatrack.directory" %in% names(pkg.env$config) && is.character(pkg.env$config$datatrack.directory)) {
@@ -53,8 +79,6 @@ pkg.env$config.file.name <- 'datatrack.config.json'
     pkg.env$config$datatrack.directory <- userinput::GetDirectory('Please enter the path to the datatrack directory')
     .SaveConfig()
 }
-
-
 
 #' Saves a text file to a given path
 #'

@@ -1,2 +1,0 @@
-"name","version","params","dependencies","date","file.exists","col.names","callstack","csv"
-"one",0,"{""industry"":34,""movie"":2,""literature"":85}","[]","2016-08-01 17:27:50",NA,"[""art"",""theory"",""media"",""equipment"",""exam"",""physics""]","[""Example1()"","".SaveExampleData(\""one\"")""]",1

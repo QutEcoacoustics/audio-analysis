@@ -9,15 +9,13 @@
 #' @param version int;
 #' @param meta: data.frame; optional. The entire dataframe of metadata. If ommitted will be read from disk.
 #'
-#' @value data.frame with columns name, version
+#' @return data.frame with columns name, version
 #'
 #' @details
 #' given a name and a version, will return a dataframe listing of all of the dependencies and their versions
-#' if a dataobject type is a dependency of more than one dependency, then it will only appear once.
+#' if a dataobject name is a dependency of more than one dependency, then it will only appear once.
 #' if this occurs, it should have the same version. If there are different versions of the same dependency
 #' in the dependency tree, something is wrong.
-#'
-#' @deprecated
 .GetIndirectDependenciesDFStack <- function (name, version, meta = NA) {
 
     if (!is.data.frame(meta)) {
@@ -46,7 +44,7 @@
 #' @param version int;
 #' @param meta data.frame; optional. The dataframe of all dataobjects. If ommited will read from disk
 #'
-#' @value
+#' @return
 #' list in the form
 #' list(dependency.1 = list(version = 12,
 #'                         dependencies = list(dependency.1.1.name = list(version = 3,
@@ -60,7 +58,6 @@
 #'                                                                        dependencies = list()))))
 .GetIndirectDependenciesTree <- function (name, version, meta = NA) {
 
-    require('rjson')
     if (!is.data.frame(meta)) {
         meta <- .ReadMeta()
     }
@@ -68,7 +65,7 @@
     if (nrow(meta.row) != 1) {
         return(FALSE)
     }
-    d <- fromJSON(meta.row$dependencies)
+    d <- rjson::fromJSON(meta.row$dependencies)
     d.names <- names(d)
     if (length(d) > 0) {
         for (i in 1:length(d)) {
@@ -90,7 +87,7 @@
 #'
 #'   {
 #'      "groups":{
-#'          'names':['name1','name2','name3'], // the different types of data
+#'          'names':['name1','name2','name3'], // the different names of dataobjects
 #'          'format':['csv','object','csv']  // the format of the data
 #'          'count':[1,2,10] // how many of each group there is
 #'          },
@@ -131,7 +128,7 @@
     version.links <- as.list(version.links)
 
     versions <- list(group = sapply(1:nrow(m), group.map))
-    versions$params <- unname(sapply(m$params, fromJSON))
+    versions$params <- unname(sapply(m$params, rjson::fromJSON))
     versions$version <- m$version
 
     # TODO: cols
@@ -144,7 +141,7 @@
                      versions = versions,
                      version_links = version.links)
 
-    all.data <- toJSON(all.data)
+    all.data <- rjson::toJSON(all.data)
     return(all.data)
 }
 
@@ -263,7 +260,7 @@
     for (r in 1:nrow(meta)) {
         col.names <- .GetColNames(meta$name[r], meta$version[r])
         if (is.character(col.names)) {
-            meta$col.names[r] <- toJSON(col.names)
+            meta$col.names[r] <- rjson::toJSON(col.names)
         }
     }
     .WriteMeta(meta)
@@ -274,7 +271,7 @@
 #' @param name the name of the dataobject file
 #' @param version int the version of the dataobject file
 #'
-#' @value character vector
+#' @return character vector
 #'
 #' @details
 #'   Checks if the file is a csv

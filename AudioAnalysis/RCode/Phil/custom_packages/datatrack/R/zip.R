@@ -18,7 +18,7 @@
         now <- Sys.time()
         diff <- difftime(now, meta.time, tz = Sys.timezone(), units = 'days')
 
-        if (diff > 30) {
+        if (diff > pkg.env$config$zip.after.days) {
 
             file.path <- .DataobjectPath(meta$name[r], meta$version[r], meta$csv[r])
             file.path.zip <- paste0(file.path, '.zip')
@@ -34,10 +34,10 @@
                 if (success < 2 && file.exists(file.path.zip)) {
                     # error codes: http://www.info-zip.org/FAQ.html#error-codes
                     # remove the non-zipped file
-                    Report(3, r, "of", nrow(meta), " files zipped:", file.path)
+                    .Report(r, "of", nrow(meta), " files zipped:", file.path, level =  2)
                     file.remove(file.path)
                 } else {
-                    Report(1, 'something went wrong, zip file not there')
+                    .Report('something went wrong, zip file not there')
                 }
             }
         }
@@ -61,9 +61,9 @@
     # list of paths that don't have files
     paths.of.missing <- path[!file.exists(path)]
     # path to zip of paths that don't have files
-    zipped.paths.of.missing <- .ZipPath(missing.files)
+    zipped.paths.of.missing <- .ZipPath(paths.of.missing)
     # whether the zip file exists
-    zipped.exists <- file.exists(zipped.paths)
+    zipped.exists <- file.exists(zipped.paths.of.missing)
     # paths to zip of paths that are missing and have an existing zip file
     zip.exists.zipped.paths.of.missing <- zipped.paths.of.missing[zipped.exists]
     # paths to files that are missing and have an existing zip file

@@ -68,8 +68,6 @@ SetReportMode <- function (console = TRUE, file = FALSE, socket = FALSE, filname
 }
 
 
-
-
 WriteMsg <- function (msg) {
     # writes a message to the correct destination
     # which might be the console
