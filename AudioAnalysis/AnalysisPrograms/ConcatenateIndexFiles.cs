@@ -444,14 +444,18 @@ namespace AnalysisPrograms
                 DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
-                Dictionary<string, double[,]> dict = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories, (DateTimeOffset)startDate);
-                LDSpectrogramStitching.DrawSpectralIndexFiles(dict,
-                                                              indexGenerationData,
-                                                              indexPropertiesConfig,
-                                                              resultsDir,
-                                                              siteDescription,
-                                                              null);
-
+                throw new NotSupportedException("AT: MERGE CONFLICT - I DON'T UNDERSTAND THE CODE BELOW AND I DON'T KNOW HOW TO FIX IT");
+                /*Dictionary<string, double[,]> dict = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories, (DateTimeOffset)startDate);
+                LDSpectrogramStitching.DrawSpectralIndexFiles(
+                    dict,
+                    // AT: WARNING MERGE CONFLICT LINE BELOW - BEHAVIOR NOT TESTED
+                    LdSpectrogramConfig.GetDefaultConfig(),
+                    indexGenerationData,
+                    indexPropertiesConfig,
+                    resultsDir,
+                    siteDescription,
+                    null);
+                    */
 
                 //LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
                 return;
