@@ -703,7 +703,7 @@ namespace AnalysisPrograms
             {
                 ae.ScoreNormalised = ae.Score / nomalisationConstant;
                 if (ae.ScoreNormalised > 1.0) ae.ScoreNormalised = 1.0;
-                int frameID = (int)Math.Round(ae.StartOffsetSecond / frameDurationInSeconds);
+                int frameID = (int)Math.Round(ae.EventStartSeconds / frameDurationInSeconds);
                 int hiresFrameID = (int)Math.Floor(frameID * compressionFactor);
                 scores[hiresFrameID] = ae.ScoreNormalised;
             }

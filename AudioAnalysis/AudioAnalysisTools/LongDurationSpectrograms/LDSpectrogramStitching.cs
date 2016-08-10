@@ -168,7 +168,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                   SiteDescription siteDescription,
                                                   FileInfo sunriseDataFile = null,
                                                   List<ErroneousIndexSegments> segmentErrors = null,
-                                                  bool Verbose = false)
+                                                  bool verbose = false)
         {
             // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
@@ -198,7 +198,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             sunriseDataFile,
             segmentErrors,
             ImageChrome.With,
-            Verbose);
+            verbose);
         }
 
 
