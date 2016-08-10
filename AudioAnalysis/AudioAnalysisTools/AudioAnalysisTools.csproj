@@ -237,6 +237,7 @@
     <Compile Include="AcousticEntropy.cs" />
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="ActivityAndCover.cs" />
+    <Compile Include="BirdClefExperiment1.cs" />
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />
@@ -252,6 +253,7 @@
     <Compile Include="DSP\MFCCStuff.cs" />
     <Compile Include="DSP\WavInfo.cs" />
     <Compile Include="DSP\WavWriter.cs" />
+    <Compile Include="FrommoltProject.cs" />
     <Compile Include="Indices\ErroneousIndexSegments.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />
     <Compile Include="Indices\IndexDistributions.cs" />

@@ -27,11 +27,12 @@ namespace AnalysisBase.ResultBases
         public string FileName { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartOffset.
-        /// This basically allows every sort of result to be sorted/time indexed from the start of the file.
+        /// Gets or sets the time StartOffset.
+        /// This basically allows every sort of result to be sorted/time indexed from the start of the file/recording.
         /// It replaced SegmentStartOffset but is NOT THE SAME.
         /// I.e. the time since the start of the original audio recording.
         /// E.g. Given segment 78 of a 120min audio file, with a segment size of 60 seconds, this property would hold 78 minutes.
+        /// And again: StartOffset is the time offset between the start of the recording and the start of the current result.
         /// </summary>
         public TimeSpan StartOffset
         {

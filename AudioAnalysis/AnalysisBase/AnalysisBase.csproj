@@ -48,7 +48,7 @@
     <CodeContractsBaseLineFile />
     <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
-    <CodeContractsReferenceAssembly>Build</CodeContractsReferenceAssembly>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
     <DocumentationFile>bin\Debug\AnalysisBase.XML</DocumentationFile>
     <CodeContractsMissingPublicRequiresAsWarnings>True</CodeContractsMissingPublicRequiresAsWarnings>
@@ -149,6 +149,7 @@
     <Compile Include="AnalysisResult.cs" />
     <Compile Include="AnalysisResult2.cs" />
     <Compile Include="AnalysisSettings.cs" />
+    <Compile Include="AudioRecordingTooShortException.cs" />
     <Compile Include="FileSegment.cs" />
     <Compile Include="IAnalyser.cs" />
     <Compile Include="IAnalyser2.cs" />

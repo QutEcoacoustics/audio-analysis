@@ -1,7 +1,7 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Canetoad.cs" company="QutBioacoustics">
+// <copyright file="LitoriaFallax.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
-//  The ACTION code for this analysis is: "Canetoad"
+//  The ACTION code for this analysis is: "LitoriaFallax"
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
@@ -36,61 +36,39 @@ namespace AnalysisPrograms
 
 
     /// <summary>
-    ///     NOTE: In order to detect canetoad oscillations, which can reach 15 per second, one requires a frame rate of at least
-    ///     30 frames per second and preferably a frame rate = 60 so that this period sits near middle of the array of DCT coefficients.
-    ///     The frame rate is affected by three parameters: 1) SAMPLING RATE; 2) FRAME LENGTH; 3) FRAME OVERLAP. 
-    ///     1) User may wish to resample and so lower the SR. 
-    ///     2) FRAME LENGTH should = 512 or 1024 depending on oscillation rate. Higher oscillation rate requires shorter frame length.
-    ///     3) The best way to adjust frame rate is to adjust frame overlap. I decided to do this by automatically calculating 
-    ///        the frame overlap to suit the maximum oscillation to be detected. This is written in the method OscillationDetector.CalculateRequiredFrameOverlap();
-    ///        
-    ///     Avoid a long DCT length because the DCT is expensive to calculate. 0.5s - 1.0s is adequate for
-    ///     canetoad - depends on the expected osc rate.
+    /// NOTE: This recogniser is for the frog Litoria fallax.
+    /// It was built using two recordings:
+    /// 1. One from the david Steart CD with high SNR and usual cleaned up recording
+    /// 2. One from JCU, Lin and Kiyomi.
+    /// Recording 2. also contains canetoad and Limnodynastes convex-something-or-another.
+    /// So I have combined the three recognisers into one analysis.
+    /// 
     /// </summary>
-    public class Canetoad : AbstractStrongAnalyser
+    public class LitoriaFallax : AbstractStrongAnalyser
     {
         #region Constants
 
-        public const string AnalysisName = "Canetoad";
+        public const string AnalysisName = "LitoriaFallax";
+        public const string AbbreviatedName = "L.fallax";
 
-        public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-        public const int RESAMPLE_RATE = 17640;
-        //public const int RESAMPLE_RATE = 22050;
+        public static readonly int ResampleRate = AppConfigHelper.DefaultTargetSampleRate;
 
         #endregion
 
         #region Public Properties
 
-        public override AnalysisSettings DefaultSettings
-        {
-            get
+        public override AnalysisSettings DefaultSettings => new AnalysisSettings
             {
-                return new AnalysisSettings
-                           {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                               SegmentMinDuration = TimeSpan.FromSeconds(30), 
-                               SegmentMediaType = MediaTypes.MediaTypeWav, 
-                               SegmentOverlapDuration = TimeSpan.Zero,
-                               SegmentTargetSampleRate = RESAMPLE_RATE
-                           };
-            }
-        }
+                SegmentMaxDuration = TimeSpan.FromMinutes(1), 
+                SegmentMinDuration = TimeSpan.FromSeconds(30), 
+                SegmentMediaType = MediaTypes.MediaTypeWav, 
+                SegmentOverlapDuration = TimeSpan.Zero,
+                SegmentTargetSampleRate = ResampleRate
+            };
 
-        public override string DisplayName
-        {
-            get
-            {
-                return "Canetoad";
-            }
-        }
+        public override string DisplayName => "Litoria fallax";
 
-        public override string Identifier
-        {
-            get
-            {
-                return "Towsey." + AnalysisName;
-            }
-        }
+        public override string Identifier => "Towsey." + AnalysisName;
 
         #endregion
 
@@ -103,25 +81,13 @@ namespace AnalysisPrograms
             {
                 arguments = new Arguments();
                 const string RecordingPath =
-                    //@"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
-                    //@"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
-                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
-                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
-                    //@"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
                     @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
 
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_2_16bitPCM.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1_16bitPCM.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Canetoad\RuralCanetoads_9Jan\toads_rural_9jan2010\toads_rural1_16.mp3";
                 const string ConfigPath =
-                    @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
-                const string OutputDir = @"C:\SensorNetworks\Output\Frogs\Canetoad\";
+                            @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaFallax.yml";
+                const string OutputDir = @"C:\SensorNetworks\Output\Frogs\LitoriaFallax\";
 
-                ////string csvPath       = @"C:\SensorNetworks\Output\Test\TEST_Indices.csv";
-                string title = "# FOR DETECTION OF CANETOAD using DCT OSCILLATION DETECTION";
+                string title = "# FOR DETECTION OF LITORIA FALLAX";
                 string date = "# DATE AND TIME: " + DateTime.Now;
                 LoggedConsole.WriteLine(title);
                 LoggedConsole.WriteLine(date);
@@ -210,8 +176,9 @@ namespace AnalysisPrograms
                 FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
                 if (image.Exists)
                 {
-                    var process = new ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
+                    throw new NotSupportedException("YOU CAN'T DO THIS!");
+                    //var process = new ProcessRunner(ImageViewer);
+                    //process.Run(image.FullName, arguments.Output.FullName);
                 }
 
                 LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
@@ -241,7 +208,7 @@ namespace AnalysisPrograms
                 AudioFilePreparer.PrepareFile(
                     arguments.Source, 
                     tempF,
-                    new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, 
+                    new AudioUtilityRequest { TargetSampleRate = ResampleRate }, 
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
@@ -251,7 +218,7 @@ namespace AnalysisPrograms
                     tempF, 
                     new AudioUtilityRequest
                         {
-                            TargetSampleRate = RESAMPLE_RATE, 
+                            TargetSampleRate = ResampleRate, 
                             OffsetStart = start, 
                             OffsetEnd = start.Add(duration)
                         }, 
@@ -260,7 +227,8 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new Canetoad();
+            IAnalyser2 analyser = new LitoriaFallax(); 
+            //IAnalyser2 analyser = new Canetoad();
             analyser.BeforeAnalyze(analysisSettings);
             AnalysisResult2 result = analyser.Analyze(analysisSettings);
             /* ############################################################################################################################################# */
@@ -281,7 +249,7 @@ namespace AnalysisPrograms
 
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            CanetoadResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+            LitoriaFallaxResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
             
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
 
@@ -360,7 +328,7 @@ namespace AnalysisPrograms
         /// <param name="configDict"></param>
         /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        internal static CanetoadResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
+        internal static LitoriaFallaxResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
             return Analysis(recording, configDict, segmentStartOffset);
@@ -378,13 +346,16 @@ namespace AnalysisPrograms
         /// </param>
         /// <param name="value"></param>
         /// <returns>
-        /// The <see cref="CanetoadResults"/>.
+        /// The <see cref="LitoriaFallaxResults"/>.
         /// </returns>
-        internal static CanetoadResults Analysis(
+        internal static LitoriaFallaxResults Analysis(
             AudioRecording recording,
             Dictionary<string, string> configDict,
             TimeSpan segmentStartOffset)
         {
+            // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
+
+
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
 
@@ -412,8 +383,9 @@ namespace AnalysisPrograms
             // min score for an acceptable event
             double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
 
-            // this default framesize seems to work for Canetoad
-            const int FrameSize = 512;
+            // The default was 512 for Canetoad.
+            // Framesize = 128 seems to work for Littoria fallax.
+            const int FrameSize = 128;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
                 FrameSize,
@@ -452,10 +424,9 @@ namespace AnalysisPrograms
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double boundaryBetweenAdvert_ReleaseDuration = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            minDuration = 1.0;
+            //minDuration = 1.0;
             double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
+            List<AcousticEvent> acousticEvents;
             double[,] hits;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
@@ -469,38 +440,44 @@ namespace AnalysisPrograms
                 minDuration,
                 maxDuration,
                 out scores,
-                out events,
+                out acousticEvents,
                 out hits);
 
-            events.ForEach(ae =>
+            acousticEvents.ForEach(ae =>
                     {
                         ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
                         ae.SegmentStartOffset = segmentStartOffset;
                         ae.SegmentDuration = recordingDuration;
-                        ae.Name = "AdvertCall";
-                        if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
-                        { ae.Name = "ReleaseCall";
-                            if (ae.Score < (eventThreshold + 0.3))
-                            {
-                                ae.Name = "Short Oscil";
-                                //events.Remove(ae);
-                            }
-                        }
-
-                        // remove release call if its score is too low.
-                        //if ((ae.Name == "ReleaseCall") && (ae.Score < (eventThreshold + 0.3)))
-                        //{ ae = null; }
-                        //{ events.Remove(ae); } 
-                        
+                        ae.Name = AbbreviatedName;
                     });
 
             var plot = new Plot(AnalysisName, scores, eventThreshold);
-            return new CanetoadResults
-                       {
+
+
+
+            // DEBUG ONLY ################################ TEMPORARY ################################
+            // Draw a standard spectrogram and mark of hites etc.
+            bool createStandardDebugSpectrogram = true;
+            if (createStandardDebugSpectrogram)
+            {
+                string fileName = "LittoriaFallaxDEBUG";
+                throw new NotSupportedException("YOU NEED TO FIX THIS FOR PRODUCTION");
+                string path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages";
+                var imageDir = new DirectoryInfo(path);
+                if (!imageDir.Exists) imageDir.Create();
+                string filePath2 = Path.Combine(imageDir.FullName, fileName + ".png");
+                Image sonoBmp = DrawSonogram(sonogram, hits, plot, acousticEvents, eventThreshold);                
+                sonoBmp.Save(filePath2);
+            }
+            // END DEBUG ################################ TEMPORARY ################################
+
+
+            return new LitoriaFallaxResults
+            {
                            Sonogram = sonogram, 
                            Hits = hits, 
                            Plot = plot, 
-                           Events = events, 
+                           Events = acousticEvents, 
                            RecordingDuration = recordingDuration
                        };
         } // Analysis()
@@ -550,7 +527,7 @@ namespace AnalysisPrograms
         {
         }
 
-        public class CanetoadResults
+        public class LitoriaFallaxResults
         {
             #region Public Properties
 

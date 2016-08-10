@@ -102,7 +102,7 @@ namespace AudioAnalysisTools.Indices
         public static Dictionary<string, SpectralStats> WriteSpectralIndexDistributionStatistics(Dictionary<string, double[,]> spectrogramMatrices, DirectoryInfo outputDirectory, string fileStem)
         {
             // to accumulate the images
-            int width = 100;  // pixels 
+            int width = 300;  // pixels 
             int height = 100; // pixels
             var imageList = new List<Image>();
             Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();

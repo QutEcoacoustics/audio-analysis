@@ -7,9 +7,8 @@
 #     3. the tiles for zooming false-color spectrograms
 #
 #
-AnalysisName: Towsey.HiResIndices
-ParallelProcessing: false
 
+AnalysisName: Towsey.Acoustic
 #SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
 SegmentDuration: 1
 SegmentOverlap: 0
@@ -23,58 +22,52 @@ IndexCalculationDuration: 0.1
 #    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
 #    The  BG noise interval is not extended beyond start or end of recording segment.
 #    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
+#BGNoiseNeighbourhood: 5
 BGNoiseNeighbourhood: 5
-DoNoiseReduction: true
-BgNoiseThreshold: 3.0
-SonogramBackgroundThreshold: 4.0
 
 # FRAME LENGTH. units=samples
 # FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
 FrameLength: 512
-# FrameStep = zero for this analysis because NOT generating standard spectrograms
-FrameStep: 0
 
 # Resample rate must be 2 X the desired Nyquist
 # ResampleRate: 17640
 ResampleRate: 22050
 
 #Default values in code are LowFreqBound=500Hz & MidFreqBound=4000
-LowFreqBound: 1000
-MidFreqBound: 8000
+LowFreqBound: 500
+MidFreqBound: 4000
 
 DisplayWeightedIndices: false
-
-# ######################## HIGH RESOLUTION SPECTROGRAMS
-# IndexCalculationDuration: units=seconds (use 0.1 or 0.2 for hi-resolution)
-# The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 0.1
-HiResColourMap1: BGN-POW-EVN
-# PHN = combination of positive, horizontal and negative slope indices.
-HiResColourMap2: PHN-RVT-SPT
-SaveTwoMapsSpectrograms: true
-SaveRidgeSpectrograms: true
-SaveGrayScaleSpectrograms: true
-# One-minute standard spectrograms. WE DO NOT DO THIS ANY MORE.
-SaveSonogramImages: false
 
 # SAVE INTERMEDIARY FILES
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 
-# ######################## LOW RESOLUTION SPECTROGRAMS
-LowResolution: 60.0
-LowResColourMap1: ACI-ENT-EVN
-LowResColourMap2: BGN-POW-EVN
+# SAVE SONOGRAM DATA FILES FOR SUBSEQUENT ZOOMING SPECTROGRAMS
+# Next two parameters are used only when creating images for zooming spectrograms.
+# Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
+# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
+SaveSonogramData: false
+# Frame step. units=samples
+# NOTE: The value for FrameStep is used only when calculating a standard spectrogram within the ZOOMING spectrogram function.
+#       FrameStep is NOT used when calculating Summary and Spectral indices.
+#       However the FrameStep entry must NOT be deleted from this file. Keep the value for when it is required. 
+#       The value 441 should NOT be changed because it has been calculated specifically for current ZOOMING spectrogram set-up.
+# TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
+FrameStep: 441
+
+# One-minute spectrograms can be saved in any analysis task.
+SaveSonogramImages: false
 
 DisplayCsvImage: false
+DoNoiseReduction: true
+BgNoiseThreshold: 3.0
+SonogramBackgroundThreshold: 4.0
+ParallelProcessing: false
 
-# ######################## LIST OF REQUIRED SPECIES RECOGNISERS
-SpeciesList:
-- Bufo_marinus
-# - Phascolarctos_cinereus   # Koala
-- Litoria_fallax
-- Limnodynastes_convexiusculus
-
+# if true an additional set of images will be produced that are tiles
+# if true, RequireDateInFilename must be set
+TileImageOutput: false
 
 # if true, an unambiguous date time must be provided in the source file's name.
 # if true, an exception will be thrown if no such date is found
@@ -86,8 +79,7 @@ SpeciesList:
 #     prefix_20140101-235959+Z.mp3
 RequireDateInFilename: false
 
-IndexPropertiesConfig: './IndexPropertiesConfigHiRes.yml'
-SpectrogramConfig: './SpectrogramConfigHiRes.yml'
+IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 EventThreshold: 0.2
 ...
 

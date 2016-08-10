@@ -936,15 +936,48 @@ namespace TowseyLibrary
             // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
             // Slope categories are 0 to 3.
             // We calculate the ridge magnitude for each possible ridge direction using masks.
+            // 0 = ridge direction = horizontal or slope = 0;
+            // 1 = ridge is positive slope or pi/4
+            // 2 = ridge is vertical or pi/2
+            // 3 = ridge is negative slope or 3pi/4. 
 
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            if ((rows != cols)||(rows != 5)) // must be square 5X5 matrix 
+            double[] ridgeMagnitudes = Sobel5X5RidgeDetection(m);
+
+
+            if (ridgeMagnitudes == null) // something gone wrong
             {
                 isRidge = false;
                 magnitude = 0.0;
                 direction = 0.0;
                 return;
+            }
+
+            int indexMin, indexMax;
+            double diffMin, diffMax;
+            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+
+            double threshold = 0; // dB
+            isRidge = (ridgeMagnitudes[indexMax] > threshold);
+            magnitude = diffMax/2;
+            //direction = indexMax * Math.PI / (double)4;
+            direction = indexMax;
+        }
+
+        public static double[] Sobel5X5RidgeDetection(double[,] m)
+        {
+            // We have four possible ridges with slopes 0, Pi/4, pi/2, 3Pi/4
+            // Slope categories are 0 to 3.
+            // We calculate the ridge magnitude for each possible ridge direction using masks.
+            // 0 = ridge direction = horizontal or slope = 0;
+            // 1 = ridge is positive slope or pi/4
+            // 2 = ridge is vertical or pi/2
+            // 3 = ridge is negative slope or 3pi/4. 
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            if ((rows != cols) || (rows != 5)) // must be square 5X5 matrix 
+            {
+                return null;
             }
 
             double[,] ridgeDir0Mask = { {-0.1,-0.1,-0.1,-0.1,-0.1},
@@ -977,16 +1010,7 @@ namespace TowseyLibrary
             ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
-
-            int indexMin, indexMax;
-            double diffMin, diffMax;
-            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
-
-            double threshold = 0; // dB
-            isRidge = (ridgeMagnitudes[indexMax] > threshold);
-            magnitude = diffMax/2;
-            //direction = indexMax * Math.PI / (double)4;
-            direction = indexMax;
+            return ridgeMagnitudes;
         }
 
         /// <summary>
@@ -1632,7 +1656,6 @@ namespace TowseyLibrary
         }// end of Shapes2()
 
 
-
         public static double[,] Shapes3(double[,] m)
         {
             double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //detect blobs of high acoustic energy
@@ -2235,6 +2258,46 @@ namespace TowseyLibrary
             Image bmp = DrawReversedMatrix(matrix);
             bmp.Save(pathName);
         }
+
+        public static double[,] ByteMatrix2DoublesMatrix(byte[,] mb)
+        {
+            int rows = mb.GetLength(0); //number of rows
+            int cols = mb.GetLength(1); //number
+
+            double[,] matrix = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    matrix[r, c] = (double)mb[r, c];
+                }
+            }
+                    return matrix;
+        }
+
+
+        public static void DrawMatrix(byte[,] mBytes, string pathName)
+        {
+            double[,] matrix = ByteMatrix2DoublesMatrix(mBytes);
+            Image bmp = DrawNormalisedMatrix(matrix);
+            bmp.Save(pathName);
+        }
+
+        /// <summary>
+        /// Draws matrix and save image
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawMatrix(double[] vector, string pathName)
+        {
+            double[,] matrix = new double[1, vector.Length];
+            for (int i = 0; i < vector.Length; i++)
+            {
+                matrix[0, i] = vector[i];
+            }
+            Image bmp = DrawNormalisedMatrix(matrix);
+            bmp.Save(pathName);
+        }
         /// <summary>
         /// Draws matrix and save image
         /// </summary>
@@ -2245,6 +2308,12 @@ namespace TowseyLibrary
             Image bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
+        public static void DrawMatrix(double[,] matrix, double lowerBound, double upperBound, string pathName)
+        {
+            Image bmp = DrawNormalisedMatrix(matrix, lowerBound, upperBound);
+            bmp.Save(pathName);
+        }
+
         /// <summary>
         /// Draws matrix after first normalising the data
         /// </summary>
@@ -2255,6 +2324,14 @@ namespace TowseyLibrary
             double[,] norm = DataTools.normalise(matrix);
             return DrawMatrixWithoutNormalisation(norm);
         }
+
+
+        public static Image DrawNormalisedMatrix(double[,] matrix, double lowerBound, double upperBound)
+        {
+            double[,] norm = DataTools.NormaliseInZeroOne(matrix, lowerBound, upperBound);
+            return DrawMatrixWithoutNormalisation(norm);
+        }
+
         /// <summary>
         /// Draws matrix after first normalising the data
         /// </summary>
@@ -2470,7 +2547,7 @@ namespace TowseyLibrary
             //Font stringFont = new Font("Tahoma", 9);
             //SizeF stringSize = new SizeF();
 
-            imageWidth = 300;
+            //imageWidth = 300;
             int barWidth = imageWidth / histogram.Length;
             int upperBound = upperPercentileBin * barWidth;
 
@@ -2488,13 +2565,15 @@ namespace TowseyLibrary
             g.DrawLine(pen3, grid1, height - 1, grid1, 0);
             g.DrawLine(pen3, grid2, height - 1, grid2, 0);
             g.DrawLine(pen3, grid3, height - 1, grid3, 0);
-            g.DrawLine(pen1, 0, height-1, imageWidth, height - 1);
+            g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
             // draw mode bin and upper percentile bound
             g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
             g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
 
             g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
+            if (statistics != null)
+            { 
             string[] statKeys = statistics.Keys.ToArray();
             for (int s = 0; s < statKeys.Length; s++)
             {
@@ -2510,7 +2589,8 @@ namespace TowseyLibrary
                 }
 
                 g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid2, Y));
-            }
+            } // for loop
+            } // f(statistics != null)
 
             for (int b = 0; b < histogram.Length; b++)
             {
@@ -2521,6 +2601,51 @@ namespace TowseyLibrary
             return bmp;
         }
 
+        public static Image DrawGraph(string label, double[] histogram, int imageWidth, int height, int scalingFactor)
+        {
+            //double sum = histogram.Sum();
+            Pen pen1 = new Pen(Color.White);
+            //Pen pen2 = new Pen(Color.Red);
+            Pen pen3 = new Pen(Color.Wheat);
+            //Pen pen4 = new Pen(Color.Purple);
+            SolidBrush brush = new SolidBrush(Color.Red);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            //SizeF stringSize = new SizeF();
+
+            //imageWidth = 300;
+            int barWidth = imageWidth / histogram.Length;
+
+            int maxBin = 0;
+            DataTools.getMaxIndex(histogram, out maxBin);
+            double maxValue = histogram[maxBin];
+            //double[] normalArray = DataTools.NormaliseArea()
+
+            int grid1 = imageWidth / 4;
+            int grid2 = imageWidth / 2;
+            int grid3 = (imageWidth * 3) / 4;
+
+            Bitmap bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            g.DrawLine(pen3, grid1, height - 1, grid1, 0);
+            g.DrawLine(pen3, grid2, height - 1, grid2, 0);
+            g.DrawLine(pen3, grid3, height - 1, grid3, 0);
+            g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
+            // draw mode bin and upper percentile bound
+            //g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
+            //g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
+
+            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+
+            for (int b = 0; b < histogram.Length; b++)
+            {
+                int X = b * barWidth;
+                int Y = (int)Math.Ceiling(histogram[b] * height * scalingFactor);
+                g.FillRectangle(brush, X, height - Y - 1, barWidth, Y);
+            }
+            return bmp;
+        }
 
         /// <summary>
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
@@ -2726,44 +2851,50 @@ namespace TowseyLibrary
         {
             return CombineImagesVertically(list.ToArray());
         }
+        public static Image CombineImagesVertically(List<Image> list, int maxWidth)
+        {
+            return CombineImagesVertically(list.ToArray(), maxWidth);
+        }
 
         /// <summary>
         /// Stacks the passed images one on top of the other. 
         /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="array"></param>
+        /// <param name="maximumWidth">The maximum width of the output images</param>
         /// <returns></returns>
-        public static System.Drawing.Image CombineImagesVertically(System.Drawing.Image[] array)
+        public static Image CombineImagesVertically(Image[] array, int? maximumWidth = null)
         {
-            float standardresolution = 96;
-            int width = array[0].Width;
-            float verticalresolution   = ((Bitmap)array[0]).VerticalResolution;
-            //float horizontalresolution = ((Bitmap)array[0]).HorizontalResolution;
-            float verticalScalingFactor = standardresolution / verticalresolution;
+            int width = maximumWidth ?? array[0].Width;   // assume all images have the same width
 
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
             {
-                if (null == array[i]) continue;
-                compositeHeight += (int)Math.Round(array[i].Height * verticalScalingFactor);
-
-                if (width < array[i].Width)
-                    width = array[i].Width;
+                if (null == array[i])
+                {
+                    continue;
+                }
+                compositeHeight += array[i].Height;
             }
 
-            System.Drawing.Bitmap compositeBmp = new System.Drawing.Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
+            Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
             int yOffset = 0;
-            System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            //gr.Clear(Color.Black);
+            gr.Clear(Color.DarkGray);
 
             for (int i = 0; i < array.Length; i++)
             {
-                if (null == array[i]) continue;
+                if (null == array[i])
+                {
+                    continue;
+                }
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top image
-                yOffset += (int)Math.Round(array[i].Height * verticalScalingFactor);
+                yOffset += array[i].Height;
             }
-            return (System.Drawing.Image)compositeBmp;
+            return (Image)compositeBmp;
         }
+
 
         /// <summary>
         /// Stacks the passed images one on top of the other. 
@@ -2790,9 +2921,12 @@ namespace TowseyLibrary
             for (int i = 0; i < array.Length; i++)
             {
                 compositeWidth += array[i].Width;
+                if (height < array[i].Height)
+                    height = array[i].Height; 
             }
 
-            Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
+            //Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
+            var compositeBmp = new Bitmap(compositeWidth, height);
             int xOffset = 0;
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
@@ -2801,9 +2935,36 @@ namespace TowseyLibrary
             {
                 gr.DrawImage(array[i], xOffset, 0); //draw in the top spectrogram
                 xOffset += array[i].Width;
+
+                //string name = String.Format("TESTIMAGE" + i + ".png");
+                //array[i].Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", name));
             }
+
+            // this was done in Berlin beacuse could not get images to save properly.
+
+            //string fileName2 = String.Format("TESTIMAGE3.png");
+            //compositeBmp.Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", fileName2));
+
             return (Image)compositeBmp;
         }
+
+
+
+        //public static void METHOD(string[] titleArray, int imageWidth, int imageHeight)
+        //{
+        //    // now make images
+        //    var images = new List<Image>();
+        //    int scalingFactor = 20;
+        //    foreach (string key in titleArray)
+        //    {
+        //        string label = String.Format("{0} {1} ({2})", speciesLabel, key, speciesNumbers[i]);
+        //        Image image = ImageTools.DrawGraph(label, dictionary[key], imageWidth, imageHeight, scalingFactor);
+        //        images.Add(image);
+        //    }
+        //    Image combinedImage = ImageTools.CombineImagesVertically(images);
+        //}
+
+
 
         public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {

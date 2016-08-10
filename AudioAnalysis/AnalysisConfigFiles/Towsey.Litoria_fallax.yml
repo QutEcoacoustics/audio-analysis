@@ -1,0 +1,30 @@
+---
+AnalysisName: Towsey.Litoria_fallax
+SpeciesName: Litoria_fallax
+# min and max of the freq band to search
+MinHz: 3500          
+MaxHz: 4500
+# duration of DCT in seconds 
+DctDuration: 0.2
+# minimum acceptable value of a DCT coefficient
+DctThreshold: 0.6
+# ignore oscillation rates below the min & above the max threshold
+# OSCILLATIONS PER SECOND
+MinOcilFreq: 40        
+MaxOcilFreq: 60
+# Minimum and maximum duration for the length of a true call.
+MinDuration: 0.1
+MaxDuration: 0.5
+# Event threshold - use this to determine FP / FN trade-off for events.
+EventThreshold: 0.30
+################################################################################
+DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramImages: false
+DisplayCsvImage: false
+ParallelProcessing: false
+
+IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
+...

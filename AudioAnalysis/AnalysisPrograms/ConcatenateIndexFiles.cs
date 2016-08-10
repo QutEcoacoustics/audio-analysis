@@ -115,9 +115,11 @@ namespace AnalysisPrograms
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
 
-            // ########################## MARINE RECORDINGS          
-            // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            //// ########################## MARINE RECORDINGS          
+            //// top level directory
+            ////DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            ////                           };
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
             //                           };
             //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
             //                           };
@@ -136,8 +138,8 @@ namespace AnalysisPrograms
             //                             new DirectoryInfo(@"Y:\Results\2015Aug20-154235 - Yvonne, Indices, ICD=60.0, #50")
             //                           };
 
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\Output\YvonneResults\DataFiles_62_93\2015Nov1"),
-                                       };
+//            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\Output\YvonneResults\DataFiles_62_93\2015Nov1"),
+//                                       };
 
             //below directory was to check a bug - missing 6 hours of recording
             //DirectoryInfo[] dataDirs = {
@@ -148,14 +150,14 @@ namespace AnalysisPrograms
             //string directoryFilter = "20150725-000000+1000.wav";
 
             //The recording siteName is used as filter pattern to select directories. It is also used for naming the output files
-            string directoryFilter = "Woondum3";
+//            string directoryFilter = "Woondum3";
             //string directoryFilter = "GympieNP";   // this is a directory filter to locate only the required files
 
-            string opPath = @"G:\SensorNetworks\Output\YvonneResults\ConcatenatedFiles_62_93";
-
-            dtoStart = new DateTimeOffset(2015, 10, 26, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd   = new DateTimeOffset(2015, 10, 28, 0, 0, 0, TimeSpan.Zero);
-            string opFileStem = directoryFilter;
+//            string opPath = @"G:\SensorNetworks\Output\YvonneResults\ConcatenatedFiles_62_93";
+//
+//            dtoStart = new DateTimeOffset(2015, 10, 26, 0, 0, 0, TimeSpan.Zero);
+//            dtoEnd   = new DateTimeOffset(2015, 10, 28, 0, 0, 0, TimeSpan.Zero);
+//            string opFileStem = directoryFilter;
 
             string BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv";
 
@@ -240,6 +242,21 @@ namespace AnalysisPrograms
 
             // ########################## END of EDDIE GAME'S RECORDINGS
 
+            // ########################## GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS          
+            // top level directory
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            //                           };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1"),
+                                       };
+            string directoryFilter = "Site2";
+            string opPath = @"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings";
+            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
+            string opFileStem = "Site1_20150709";
+
+            // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
+
 
 
             bool drawImages = true;
@@ -268,7 +285,7 @@ namespace AnalysisPrograms
                 ConcatenateEverythingYouCanLayYourHandsOn = false,
                 TimeSpanOffsetHint = TimeSpan.FromHours(10),
                 SunRiseDataFile = new FileInfo(BrisbaneSunriseDatafile),
-                Verbose = true,
+                Verbose = true
             };
             throw new NoDeveloperMethodException();
     }
@@ -331,7 +348,7 @@ namespace AnalysisPrograms
             }
 
             // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES.
-            string pattern = "*__Towsey.Acoustic.Indices.csv";
+            string pattern = "*_Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
             if (verbose)
             {
@@ -406,6 +423,8 @@ namespace AnalysisPrograms
             {
                 // get the IndexGenerationData file from the first directory
                 indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory);
+                if (indexGenerationData.RecordingStartDate == null) indexGenerationData.RecordingStartDate = startDate;
+
                 indexPropertiesConfig = arguments.IndexPropertiesConfig;
             }
 
@@ -420,8 +439,21 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteErrorLine("       This option is only currently used for the TNC data of Eddie Game.");
                 // concatenate the summary index files
                 FileInfo[] files = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
-                LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
-                LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                string dateString = String.Format("{0}{1:D2}{2:D2}", ((DateTimeOffset)startDate).Year, ((DateTimeOffset)startDate).Month, ((DateTimeOffset)startDate).Day);
+                DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
+                if (!resultsDir.Exists) resultsDir.Create();
+
+                Dictionary<string, double[,]> dict = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories, (DateTimeOffset)startDate);
+                LDSpectrogramStitching.DrawSpectralIndexFiles(dict,
+                                                              indexGenerationData,
+                                                              indexPropertiesConfig,
+                                                              resultsDir,
+                                                              siteDescription,
+                                                              null);
+
+
+                //LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
                 return;
             }
 
@@ -518,14 +550,27 @@ namespace AnalysisPrograms
         } // Execute()
 
 
-
+        /// <summary>
+        /// This method is designed only to read in Spectrogram ribbons for Georgia marine recordings. 
+        /// Used to prepare images for Aaron Rice.
+        /// </summary>
+        /// <param name="dataDirs"></param>
+        /// <param name="pattern"></param>
+        /// <param name="outputDirectory"></param>
+        /// <param name="opFileStem"></param>
+        /// <param name="title"></param>
+        /// <param name="tidalInfo"></param>
         public static void ConcatenateRibbonImages(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, 
-                                                   string opFileStem, string title)
+                                                   string opFileStem, string title, SunAndMoon.SunMoonTides[] tidalInfo = null)
         {
             //get the ribon files
             FileInfo[] imageFiles = IndexMatrices.GetFilesInDirectories(dataDirs, pattern);
 
+            DateTimeOffset dto = new DateTimeOffset(2013, 3, 1, 0, 0, 0, TimeSpan.Zero);
+            TimeSpan oneday = new TimeSpan(24, 0, 0);
+
             var image = new Bitmap(imageFiles[0].FullName);
+
             int imageHt = image.Height;
             int imageCount = imageFiles.Length;
             var spacer = new Bitmap(image.Width, 1);
@@ -537,6 +582,15 @@ namespace AnalysisPrograms
             foreach (FileInfo imageFile in imageFiles)
             {
                 image = new Bitmap(imageFile.FullName);
+
+                // draw on the tidal and sun info IFF available.
+                if (tidalInfo != null)
+                {
+                    AddTidalInfo(image, tidalInfo, dto);
+                }
+                dto = dto.Add(oneday);
+                Console.WriteLine(dto.ToString());
+
                 imageList.Add(image);
                 imageList.Add(spacer);
             }
@@ -580,6 +634,34 @@ namespace AnalysisPrograms
             Console.WriteLine(string.Format("Final number of ribbons/days = {0}", imageFiles.Length));
 
         } //ConcatenateRibbonImages
+
+
+        static void AddTidalInfo(Bitmap image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
+        {
+            Pen yellowPen = new Pen(Brushes.Yellow);
+            Pen CyanPen   = new Pen(Brushes.Lime, 2);
+            Pen WhitePen  = new Pen(Brushes.White, 2);
+            Graphics spgCanvas = Graphics.FromImage(image);
+            Pen thisPen = yellowPen;
+
+            foreach (SunAndMoon.SunMoonTides smt in tidalInfo)
+            {
+                if (smt.Date == dto)
+                {
+                    foreach (KeyValuePair<string, DateTimeOffset> kvp in smt.dictionary)
+                    {
+                        string key = kvp.Key;
+                        DateTimeOffset dto2 = kvp.Value;
+                        thisPen = yellowPen;
+                        if (key == SunAndMoon.SunMoonTides.HIGHTIDE) thisPen = CyanPen;
+                        else if (key == SunAndMoon.SunMoonTides.LOWTIDE) thisPen = WhitePen;
+
+                        int minute = (int)Math.Round(dto2.TimeOfDay.TotalMinutes * 2); //IMPORTANT multiply by 2 because scale = 30s/px.
+                        spgCanvas.DrawLine(thisPen, minute, 0, minute, image.Height);
+                    }
+                }
+            }
+        }
 
 
     }

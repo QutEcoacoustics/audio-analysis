@@ -42,7 +42,8 @@ namespace AnalysisPrograms
 
     using TowseyLibrary;
 
-    public class Acoustic : IAnalyser2
+    [Obsolete("This is the old way of doing a multi recognizer!")]
+    public class AcousticHiResIndicesPlusRecognizers : IAnalyser2
     {
         [CustomDetailedDescription]
         public class Arguments : IArgClassValidator
@@ -122,12 +123,12 @@ namespace AnalysisPrograms
 
             public static string AdditionalNotes()
             {
-                return "NOTE: This class has two distinct options";
+                return "NOTE: This class calculates high-resolution acoustic spectral indices AND it runs species call recognisers.";
             }
         }
 
         // OTHER CONSTANTS
-        public const string AnalysisName = "Acoustic";
+        public const string AnalysisName = "HiResIndices";
 
         // TASK IDENTIFIERS
         public const string TaskAnalyse = AnalysisName;
@@ -138,7 +139,7 @@ namespace AnalysisPrograms
 
         public string DisplayName
         {
-            get { return "Acoustic Indices"; }
+            get { return "Acoustic HiRes Indices Plus Recognisers"; }
         }
 
         public string Identifier
@@ -152,7 +153,7 @@ namespace AnalysisPrograms
 
         public static void Dev(Arguments arguments)
         {
-            bool executeDev = arguments == null;
+            bool executeDev = (arguments == null);
             if (executeDev)
             {
                 arguments = new Arguments();
@@ -164,8 +165,7 @@ namespace AnalysisPrograms
                 string recordingPath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
                 string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg";
                 string outputDir = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic";
-                string csvPath =
-                    @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\DM420036_min407_Towsey.Acoustic.Indices.csv";
+                string csvPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\DM420036_min407_Towsey.Acoustic.Indices.csv";
 
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows\Crows111216-001Mono5-7min.mp3";
                 //string configPath = @"C:\SensorNetworks\Output\SunshineCoast\Site1\Towsey.Acoustic\temp.cfg";
@@ -249,6 +249,12 @@ namespace AnalysisPrograms
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
 
+            FileInfo spectrogramConfig = ConfigFile.ResolveConfigFile(
+                (string)configuration.SpectrogramConfig,
+                analysisSettings.ConfigFile.Directory
+            );
+
+
             bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
             bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
 
@@ -294,18 +300,19 @@ namespace AnalysisPrograms
                 Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + bgNoiseNeighborhood.ToString() + ")");
             }
 
-            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig);
+            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig, spectrogramConfig);
         }
 
         [Serializable]
         private class AcousticIndicesParsedConfiguration
         {
-            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile)
+            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile, FileInfo spectrogramConfig)
             {
                 this.TileOutput = tileOutput;
                 this.IndexCalculationDuration = indexCalculationDuration;
                 this.BgNoiseNeighborhood = bgNoiseNeighborhood;
                 this.IndexPropertiesFile = indexPropertiesFile;
+                this.SpectrogramConfigFile = spectrogramConfig;
             }
 
             public bool TileOutput { get; private set; }
@@ -326,32 +333,31 @@ namespace AnalysisPrograms
             public TimeSpan BgNoiseNeighborhood { get; private set; }
 
             public FileInfo IndexPropertiesFile { get; private set; }
+            public FileInfo SpectrogramConfigFile { get; private set; }
+
         }
 
         public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
             var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)analysisSettings.AnalyzerSpecificConfiguration;
 
+            //LoggedConsole.WriteLine("# Spectrogram Config      file: " + acousticIndicesParsedConfiguration.SpectrogramConfigFile);
+            //LoggedConsole.WriteLine("# Index Properties Config file: " + acousticIndicesParsedConfiguration.IndexPropertiesFile);
+
             var audioFile = analysisSettings.AudioFile;
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
-
-            if (recording.WavReader.Channels > 1)
-            {
-                throw new InvalidOperationException(@"A multi-channel recording MUST be mixed down to MONO before calculating acoustic indices! 
- Set <AnalyseLongRecording.Arguments.MixDownToMono = true> in the AnalyseLongRecording.Dev class");
-            }
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             double recordingDuration = recording.Duration().TotalSeconds;
             double subsegmentDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds;
-            
+
             // intentional possible null ref, throw if not null
             double segmentDuration = analysisSettings.SegmentDuration.Value.TotalSeconds;
             double audioCuttingError = subsegmentDuration - segmentDuration;
-            
+
             // using the expected duration, each call to analyze will always produce the same number of results
             // round, we expect perfect numbers, warn if not
             double subsegmentsInSegment = segmentDuration / subsegmentDuration;
@@ -370,8 +376,12 @@ namespace AnalysisPrograms
             }
             Log.Trace(subsegmentCount.ToString() + " sub segments will be calculated");
 
-            analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
-            analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
+            var summaryIndices = new SummaryIndexBase[subsegmentCount];
+            var spectralIndices = new SpectralIndexBase[subsegmentCount];
+
+            // store analysis matrices for return to AnalysisCoordinator - one level up!.
+            analysisResults.SummaryIndices = summaryIndices;
+            analysisResults.SpectralIndices = spectralIndices;
 
             var trackScores = new List<Plot>(subsegmentCount);
             var tracks = new List<SpectralTrack>(subsegmentCount);
@@ -379,7 +389,7 @@ namespace AnalysisPrograms
             // calculate indices for each subsegment
             for (int i = 0; i < subsegmentCount; i++)
             {
-                var subsegmentOffset = (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero)  + TimeSpan.FromSeconds(i * subsegmentDuration);
+                var subsegmentOffset = (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero) + TimeSpan.FromSeconds(i * subsegmentDuration);
 
                 /* ###################################################################### */
 
@@ -393,81 +403,263 @@ namespace AnalysisPrograms
 
                 /* ###################################################################### */
 
-                indexCalculateResult.SummaryIndexValues.FileName = analysisSettings.SourceFile.Name;
-                indexCalculateResult.SpectralIndexValues.FileName = analysisSettings.SourceFile.Name;
-
-                analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
-                analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
+                summaryIndices[i] = indexCalculateResult.SummaryIndexValues;
+                spectralIndices[i] = indexCalculateResult.SpectralIndexValues;
                 trackScores.AddRange(indexCalculateResult.TrackScores);
                 if (indexCalculateResult.Tracks != null)
                 {
                     tracks.AddRange(indexCalculateResult.Tracks);
                 }
+            } // END calculation of indices for each subsegment
+
+
+            // #################################################################
+            // store spectral matrices for later production of spectrogram images.
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
+
+
+            // #################################################################
+            // GET LIST OF INDIVIDUAL SPECIES TO RECOGNISE
+            // Get list of ID names from config file
+            List<string> speciesList = analysisSettings.Configuration["SpeciesList"] ?? null;
+            var scoreTracks = new List<Image>();
+            var events = new List<AcousticEvent>();
+            // Loop through recognisers and accumulate the output
+            foreach (string name in speciesList)
+            {
+                // ########################### TODO SHOULD NOT NEED THE NEXT LINE #######################
+                // SEEM TO HAVE LOST SAMPLES
+                if(recording.WavReader.Samples == null) recording = new AudioRecording(audioFile.FullName);
+
+                CallRecogniser output = CallRecogniser.DoCallRecognition(name, analysisSettings, recording, dictionaryOfSpectra);
+                if ((output != null) && (output.ScoreTrack != null)) scoreTracks.Add(output.ScoreTrack);
+                if ((output != null) && (output.Events != null))     events.AddRange(output.Events);
+            }
+            Image scoreTrackImage = ImageTools.CombineImagesVertically(scoreTracks);
+
+
+            // #################################################################
+            // Store the acoustic events in analysis results to be returned
+            analysisResults.Events = events.ToArray();
+            if (analysisSettings.EventsFile != null)
+            {
+                this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
+                analysisResults.EventsFile = analysisSettings.EventsFile;
             }
 
+            // #################################################################
+            // PRODUCE Hi-RESOLUTION SPECTROGRAM IMAGES 
+            // Instead of saving the standard spectrogram images, in this analysis we save the Hi-Res Indices spectrogram images.
+            FileInfo ipConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
+            double defaultScale = 0.1;
+            double? hiResScale = (double?)analysisSettings.Configuration["IndexCalculationDuration"] ?? defaultScale;
+            TimeSpan hiResTimeScale = TimeSpan.FromSeconds((double)hiResScale);
+
+            // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
+            var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
+            {
+                InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+                OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages"),
+                SpectrogramConfigPath = acousticIndicesParsedConfiguration.SpectrogramConfigFile,
+                IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
+                ColourMap1 = "BGN-POW-EVN",
+                ColourMap2 = "PHN-RVT-SPT", //PHN is new derived index
+                //ColourMap2 = "RHZ-RPS-RNG",
+                                
+                TemporalScale = hiResTimeScale,
+            };
+            // Create output directory if it does not exist
+            if (!LDFCSpectrogramArguments.OutputDirectory.Exists)
+            {
+                LDFCSpectrogramArguments.OutputDirectory.Create();
+            }
+
+            string fileName = null;
+            string fileStem = recording.FileName;
+
+            bool saveRidgeSpectrograms = (bool?)analysisSettings.Configuration["SaveRidgeSpectrograms"] ?? false;
+            if (saveRidgeSpectrograms)
+            {
+                // 1: DRAW the coloured ridge spectrograms 
+                DirectoryInfo inputDirectory = LDFCSpectrogramArguments.InputDataDirectory;
+                Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(inputDirectory, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
+                //var opImages = new List<Image>();
+                //opImages.Add(ridgeSpectrogram);
+                //opImages.Add(scoreTrackImage);
+                // combine and save
+                //Image opImage = ImageTools.CombineImagesVertically(opImages);
+                fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".Ridges.png");
+                //opImage.Save(fileName);
+                ridgeSpectrogram.Save(fileName);
+            } // if (saveRidgeSpectrograms)
+
+            // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
+            Image opImage = null;
+            bool saveGrayScaleSpectrograms = (bool?)analysisSettings.Configuration["SaveGrayScaleSpectrograms"] ?? false;
+            if (saveGrayScaleSpectrograms)
+            {
+                opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(LDFCSpectrogramArguments, fileStem, hiResTimeScale, dictionaryOfSpectra);
+                fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
+                //opImage.Save(fileName);
+            }
+
+            // 3. DRAW False-colour Spectrograms
+            bool saveTwoMapsSpectrograms = (bool?)analysisSettings.Configuration["SaveTwoMapsSpectrograms"] ?? false;
+            if (saveTwoMapsSpectrograms)
+            {                    
+                opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(LDFCSpectrogramArguments, fileStem, dictionaryOfSpectra);
+                var opImages = new List<Image>();
+                opImages.Add(opImage);
+                opImages.Add(scoreTrackImage);
+                opImage = ImageTools.CombineImagesVertically(opImages);
+                fileName = Path.Combine(LDFCSpectrogramArguments.OutputDirectory.FullName, fileStem + ".TwoMaps.png");
+                opImage.Save(fileName);
+            }
+
+            // 4. Following two lines used to be used to save the standard spectrogram images
+            bool saveSonogramImages = (bool?)analysisSettings.Configuration["SaveSonogramImages"] ?? false;
+            if (saveSonogramImages)
+            {
+                //    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                //    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
+                LoggedConsole.WriteErrorLine("WARNING: STANDARD SPECTROGRAMS ARE NOT SAVED IN THIS TASK.");
+            }
+
+
+            // #################################################################
+            // NOW COMPRESS THE HI-RESOLUTION SPECTRAL INDICES TO LOW RES
+            double? lowResolution = (double?)analysisSettings.Configuration["LowResolution"] ?? 60.0;
+            TimeSpan imageScale = TimeSpan.FromSeconds((double)lowResolution);
+            TimeSpan dataScale = hiResTimeScale;
+            var spectralSelection = IndexMatrices.CompressIndexSpectrograms(dictionaryOfSpectra, imageScale, dataScale);
+            // check that have not compressed matrices to zero length
+            double[,] matrix = spectralSelection.First().Value;
+            if ((matrix.GetLength(0) == 0) || (matrix.GetLength(1) == 0))
+            {
+                LoggedConsole.WriteErrorLine("WARNING: SPECTRAL INDEX MATRICES compressed to zero length!!!!!!!!!!!!!!!!!!!!!!!!");
+                //return null;
+            }
+
+            // #################################################################
+            // Place LOW RESOLUTION SPECTRAL INDICES INTO analysisResults before returning. 
+            int windowLength   = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
+            int spectrumLength = windowLength / 2;
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
+            SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+
+            // Init a new spectral indices class and populate it with spectral indices
+            var spectralIndexValues = new SpectralIndexValues(spectrumLength, indexProperties);
+            // I am sure there is a better way to do this but I can't figure it out!
+            spectralIndexValues.BGN = MatrixTools.GetColumn(spectralSelection["BGN"], 0);
+            spectralIndexValues.POW = MatrixTools.GetColumn(spectralSelection["POW"], 0);
+            spectralIndexValues.CVR = MatrixTools.GetColumn(spectralSelection["CVR"], 0);
+            spectralIndexValues.EVN = MatrixTools.GetColumn(spectralSelection["EVN"], 0);
+            spectralIndexValues.ACI = MatrixTools.GetColumn(spectralSelection["ACI"], 0);
+            spectralIndexValues.ENT = MatrixTools.GetColumn(spectralSelection["ENT"], 0);
+            spectralIndexValues.SPT = MatrixTools.GetColumn(spectralSelection["SPT"], 0);
+            spectralIndexValues.RVT = MatrixTools.GetColumn(spectralSelection["RVT"], 0);
+            spectralIndexValues.RHZ = MatrixTools.GetColumn(spectralSelection["RHZ"], 0);
+            spectralIndexValues.RPS = MatrixTools.GetColumn(spectralSelection["RPS"], 0);
+            spectralIndexValues.RNG = MatrixTools.GetColumn(spectralSelection["RNG"], 0);
+            // next two not needed for images
+            //spectralIndexValues.DIF = MatrixTools.GetRow(spectralSelection["DIF"], 0);
+            //spectralIndexValues.SUM = MatrixTools.GetRow(spectralSelection["SUM"], 0);
+            spectralIndexValues.StartOffset = analysisResults.SpectralIndices[0].StartOffset;
+            spectralIndexValues.SegmentDuration = analysisResults.SpectralIndices[0].SegmentDuration;
+            spectralIndexValues.FileName = analysisSettings.SourceFile.Name;
+
+            var siv = new SpectralIndexValues[1];
+            siv[0] = spectralIndexValues;
+            analysisResults.SpectralIndices = siv;
+
+            //TODO TODO TODO
+            // ALSO NEED TO COMPRESS THE analysisResults.SummaryIndices To LOW RESOLUTION
+            var summaryIndexValues = new SummaryIndexValues();
+            //summaryIndexValues.BackgroundNoise = ETC;
+            // ETC
+            //var summaryiv = new SummaryIndexValues[1];
+            //summaryiv[0] = summaryIndexValues;
+            //analysisResults.SummaryIndices = summaryiv;
+
+
+
+            if (analysisSettings.SpectrumIndicesDirectory != null)
+            {
+                analysisResults.SpectraIndicesFiles =
+                    this.WriteSpectralIndicesFilesCustom(
+                        analysisSettings.SpectrumIndicesDirectory,
+                        Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name),
+                        analysisResults.SpectralIndices);
+            }
+
+            // #################################################################
+            // Place LOW RESOLUTION SUMMARY INDICES INTO analysisResults before returning. 
             if (analysisSettings.SummaryIndicesFile != null)
             {
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
                 analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
             }
 
-            if (analysisSettings.SpectrumIndicesDirectory != null)
+            // TODO TODO TODO
+            // THe following converts events detected by a recogniser into summary events.
+            //  This will over-write the summary events that were stored in analysisResults just above. 
+            // CONVERT EVENTS TO SUMMARY INDICES
+            if (analysisSettings.SummaryIndicesFile != null)
             {
-                analysisResults.SpectraIndicesFiles =
-                    this.WriteSpectrumIndicesFilesCustom(
-                        analysisSettings.SpectrumIndicesDirectory,
-                        Path.GetFileNameWithoutExtension(analysisSettings.AudioFile.Name),
-                        analysisResults.SpectralIndices);
-            }
+                var unitTime = TimeSpan.FromMinutes(1.0);
+                analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
-            // write the segment spectrogram (typically of one minute duration) to CSV
-            // this is required if you want to produced zoomed spectrograms at a resolution greater than 0.2 seconds/pixel 
-            bool saveSonogramData = (bool?)analysisSettings.Configuration[AnalysisKeys.SaveSonogramData] ?? false;
-            if (saveSonogramData || analysisSettings.ImageFile != null) 
-            {
-                var sonoConfig = new SonogramConfig(); // default values config
-                sonoConfig.SourceFName = recording.FilePath;
-                sonoConfig.WindowSize = (int?)analysisSettings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-                sonoConfig.WindowStep = (int?)analysisSettings.Configuration[AnalysisKeys.FrameStep] ?? sonoConfig.WindowSize; // default = no overlap
-                sonoConfig.WindowOverlap = (sonoConfig.WindowSize - sonoConfig.WindowStep) / (double)sonoConfig.WindowSize;
-                ////sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
-                ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-                var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-                
-                // remove the DC row of the spectrogram
-                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-
-                if (analysisSettings.ImageFile != null)
-                {
-                    string imagePath = Path.Combine(outputDirectory.FullName, analysisSettings.ImageFile.Name);
-                    
-                    // NOTE: hits (SPT in this case) is intentionally not supported
-                    var image = DrawSonogram(sonogram, null, trackScores, tracks);
-                    image.Save(imagePath, ImageFormat.Png);
-                    analysisResults.ImageFile = new FileInfo(imagePath);
-                }
-
-                if (saveSonogramData)
-                {
-                    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
-                    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
-                }
+                this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
             return analysisResults;
         }
 
+
+        /// <summary>
+        /// Writes a csv file containing results for all species detections
+        /// Previous csv files coded by Anthony had the following headings:
+        /// EventStartSeconds, EventEndSeconds, Duration, MinHz	MaxHz, FreqBinCount, FreqBinWidth, FrameDuration, FrameCount, SegmentStartOffset,
+        /// 	   Score	EventCount	FileName	StartOffset	SegmentDuration	StartOffsetMinute	Bottom	Top	Left	Right	HitElements
+        /// </summary>
+        /// <param name="destination"></param>
+        /// <param name="results"></param>
         public void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            throw new NotImplementedException();
+            var lines = new List<string>();
+            //string line = "Start,Duration,SpeciesName,CallType,MinFreq,MaxFreq,Score,Score2";
+            string line = "EvStartSec,evEndSec,Duration,MinFreq,MaxFreq,SegmentStartOffset,SegmentDuration,Score,Score2,CallName,SpeciesName,FileName";
+
+
+            lines.Add(line);
+            foreach (EventBase baseEvent in results)
+            {
+                AcousticEvent ae = (AcousticEvent)baseEvent;
+                line = String.Format("{0},{1:f2},{2:f3},{3},{4},{5},{6},{7:f3},{8:f2},{9},{10},{11}", 
+                                     ae.StartOffset, ae.TimeEnd, ae.Duration, ae.MinFreq,     ae.MaxFreq, 
+                                     ae.SegmentStartOffset, ae.SegmentDuration,
+                                     ae.Score,       ae.Score2,  ae.Name,     ae.SpeciesName, ae.FileName);
+                lines.Add(line);
+            }
+
+
+            FileTools.WriteTextFile(destination, lines);
         }
+
+/*
+        public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
+        {
+            Csv.WriteToCsv(destination, results);
+        }
+
+*/
 
         public void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
             Csv.WriteToCsv(destination, results);
         }
 
-        public List<FileInfo> WriteSpectrumIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public List<FileInfo> WriteSpectralIndicesFilesCustom(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             var selectors = results.First().GetSelectors();
 
@@ -486,7 +678,7 @@ namespace AnalysisPrograms
 
         public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
-            this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
+            this.WriteSpectralIndicesFilesCustom(destination, fileNameBase, results);
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
@@ -647,14 +839,65 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-        public AnalysisSettings DefaultSettings => new AnalysisSettings
+        public AnalysisSettings DefaultSettings
+        {
+            get
             {
-                SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                SegmentMinDuration = TimeSpan.FromSeconds(1),
-                SegmentMediaType = MediaTypes.MediaTypeWav,
-                SegmentOverlapDuration = TimeSpan.Zero,
-                SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
-            };
+                return new AnalysisSettings
+                {
+                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                    SegmentMinDuration = TimeSpan.FromSeconds(1),
+                    SegmentMediaType = MediaTypes.MediaTypeWav,
+                    SegmentOverlapDuration = TimeSpan.Zero,
+                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+                };
+            }
+        }
+
+        /// <summary>
+        /// Checks the command line arguments
+        /// returns Analysis Settings
+        /// NEED TO REWRITE THIS METHOD AS APPROPRIATE
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static AnalysisSettings GetAndCheckAllArguments(Arguments args)
+        {
+            // INIT ANALYSIS SETTINGS
+            var analysisSettings = new AnalysisSettings
+                                       {
+                                           SourceFile = args.Source,
+                                           ConfigFile = args.Config,
+                                           AnalysisInstanceOutputDirectory = args.Output,
+                                           AudioFile = null,
+                                           EventsFile = null,
+                                           SummaryIndicesFile = null,
+                                           ImageFile = null
+                                       };
+
+            var start = TimeSpan.Zero;
+            var duration = TimeSpan.Zero;
+            var configuration = new ConfigDictionary(args.Config);
+            analysisSettings.ConfigDict = configuration.GetTable();
+
+            if (!string.IsNullOrWhiteSpace(args.TmpWav))
+            {
+                string indicesPath = Path.Combine(args.Output.FullName, args.TmpWav);
+                analysisSettings.SummaryIndicesFile = new FileInfo(indicesPath);
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(args.Indices))
+            {
+                string indicesPath = Path.Combine(args.Output.FullName, args.Indices);
+                analysisSettings.SummaryIndicesFile = new FileInfo(indicesPath);
+            }
+
+            return analysisSettings;
+        }
+
+
+
     }
 
 }

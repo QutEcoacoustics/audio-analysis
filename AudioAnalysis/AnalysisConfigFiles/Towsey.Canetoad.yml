@@ -1,5 +1,6 @@
 ---
 AnalysisName: Towsey.Canetoad
+SpeciesName: Bufo_marinus
 # min and max of the freq band to search
 MinHz: 400          
 MaxHz: 900
@@ -28,5 +29,5 @@ SaveSonogramImages: false
 DisplayCsvImage: false
 ParallelProcessing: false
 
-IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
+IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
 ...

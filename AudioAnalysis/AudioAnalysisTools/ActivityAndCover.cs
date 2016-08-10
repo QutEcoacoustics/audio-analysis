@@ -58,13 +58,14 @@ namespace AudioAnalysisTools
     public static class ActivityAndCover
     {
 
-        public const double DEFAULT_ActivityThreshold_dB = 3.0; // used to select frames that have 3dB > background
-        public static TimeSpan DEFAULT_MinimumEventDuration = TimeSpan.FromMilliseconds(100); // used to remove short events from consideration
+        public const double DefaultActivityThresholdDb = 6.0; // used to select frames that have 3dB > background
+        // used to remove short events from consideration - NOT USED ANY MORE
+        //public static TimeSpan DEFAULT_MinimumEventDuration = TimeSpan.FromMilliseconds(100); 
 
 
         public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration)
         {
-            return CalculateActivity(dBarray, frameStepDuration, DEFAULT_ActivityThreshold_dB);
+            return CalculateActivity(dBarray, frameStepDuration, DefaultActivityThresholdDb);
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace AudioAnalysisTools
         public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration, double dbThreshold)
         {
             // minimum frame length for recognition of a valid event
-            int minFrameCount = (int)Math.Round(ActivityAndCover.DEFAULT_MinimumEventDuration.TotalMilliseconds / frameStepDuration.TotalMilliseconds);
+            //int minFrameCount = (int)Math.Round(ActivityAndCover.DEFAULT_MinimumEventDuration.TotalMilliseconds / frameStepDuration.TotalMilliseconds);
 
             bool[] activeFrames = new bool[dBarray.Length];
             double activeAvDB = 0.0;
@@ -87,7 +88,7 @@ namespace AudioAnalysisTools
             // get frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++)
             {
-                if (dBarray[i] >= ActivityAndCover.DEFAULT_ActivityThreshold_dB)
+                if (dBarray[i] >= ActivityAndCover.DefaultActivityThresholdDb)
                 {
                     activeFrames[i] = true;
                     activeAvDB += dBarray[i];
@@ -125,12 +126,6 @@ namespace AudioAnalysisTools
             }
             eventCount /= 2;  // divide by 2 because counted starts and ends
             return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount);
-
-            //int eventSum   = listOfFilteredEvents.Sum();
-            //calculate the av segment duration in milliseconds
-            //TimeSpan avEventDuration = TimeSpan.FromSeconds((frameStepDuration.TotalSeconds * eventSum) / (double)eventCount);   
-
-            //return new SummaryActivity(activeFrames, activeFrameCount, activeAvDB, events, eventCount, avEventDuration);
         }
 
 

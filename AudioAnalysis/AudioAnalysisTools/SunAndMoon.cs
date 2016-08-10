@@ -10,6 +10,23 @@ namespace AudioAnalysisTools
 {
     public static class SunAndMoon
     {
+        public class SunMoonTides
+        {
+            public const string LOWTIDE  = "LowTide";
+            public const string HIGHTIDE = "HighTide";
+            public const string SUNRISE  = "Sunrise";
+            public const string SUNSET   = "Sunset";
+            public DateTimeOffset Date { get; set; }
+            //public DateTimeOffset LowTide { get; set; }
+            //public DateTimeOffset HighTide { get; set; }
+            //public DateTimeOffset Sunrise { get; set; }
+            //public DateTimeOffset Sunset { get; set; }
+
+            public Dictionary<string, DateTimeOffset> dictionary = new Dictionary<string, DateTimeOffset>(); 
+
+        }
+
+
         public static FileInfo BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv".ToFileInfo();
 
 
@@ -96,14 +113,37 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, FileInfo sunriseDatafile)
         {
-            if (!sunriseDatafile.Exists)
-                return null;
-            int year = ((DateTimeOffset)dateTimeOffset).Year;
-            int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
-            double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
-            string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
-            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, sunriseDatafile, year, dayOfYear, strMoonPhase);
-            return suntrack;
+            // AT: I DON'T UNDERSTAND THIS CODE! I CAN'T FIX IT
+            throw new NotImplementedException();
+//            if (!sunriseDatafile.Exists)
+//                return null;
+//<<<<<<< HEAD
+//            }
+//
+//            if (siteName.StartsWith("Gympie") || siteName.StartsWith("Woondum3") || siteName.StartsWith("SERF"))
+//            {
+//                int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
+//                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
+//                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+//                throw new NotSupportedException("THE FOLLOWING FAILS IN PRODUCTION");
+//                Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
+//                return suntrack;
+//            }
+//
+//            return null;
+//        }
+//
+//        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, SiteDescription siteDescription)
+//        {
+//            return AddSunTrackToImage(width, dateTimeOffset, siteDescription.SiteName, siteDescription.Latitude, siteDescription.Longitude);        
+//=======
+//            int year = ((DateTimeOffset)dateTimeOffset).Year;
+//            int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
+//            double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
+//            string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+//            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, sunriseDatafile, year, dayOfYear, strMoonPhase);
+//            return suntrack;
+//>>>>>>> master
         }
 
         /// <summary>
@@ -242,6 +282,94 @@ namespace AudioAnalysisTools
             return dto;
         }
 
+        /// <summary>
+        /// This method is a quick and dirty hack to rad in some tidal info about Georgia Coast and add into spectrogram images.
+        /// The method is not efficient - just enough to the job done!
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static SunMoonTides[] ReadGeorgiaTidalInformation(FileInfo file)
+        {
+            List<string> lines = FileTools.ReadTextFile(file.FullName);
+            int lineCount = lines.Count;
+            var list = new List<SunMoonTides>();
+            var tides = new SunMoonTides();
+
+            for (int i = 1; i < lineCount; i++) // skip header
+            {
+                if (lines[i].Length < 6) continue;
+
+                string[] fields = lines[i].Split(' ');
+
+                // the Georgia tidal data has the below line format
+                // 2013-03-01 Fri  6:50 AM EST   Sunrise
+                // 2013 - 03 - 01 Fri 10:13 AM EST    7.2 feet High Tide
+                // 2013 - 03 - 01 Fri  4:34 PM EST   -0.6 feet Low Tide
+                // 2013 - 03 - 01 Fri  6:21 PM EST   Sunset
+
+                string[] dateFields = fields[0].Split('-');
+                int year = Int32.Parse(dateFields[0]);
+                int month = Int32.Parse(dateFields[1]);
+                int day = Int32.Parse(dateFields[2]);
+                var dateTime = new DateTimeOffset(year, month, day, 0, 0, 0, TimeSpan.Zero);
+
+                tides = new SunMoonTides();
+                tides.Date = dateTime;
+
+                string time = fields[2];
+                string ampm = fields[3];
+                string est  = fields[4];
+                if (time == "")
+                {
+                    time = fields[3];
+                    ampm = fields[4];
+                    est  = fields[5];
+                }
+                string[] hrminFields = time.Split(':');
+                int hour = Int32.Parse(hrminFields[0]);
+                int minute = Int32.Parse(hrminFields[1]);
+
+                var dto = new DateTimeOffset(year, month, day, hour, minute, 0, TimeSpan.Zero );
+                if ((ampm == "PM") && (hour < 12)) dto = dto.AddHours(12);
+                else 
+                if ((ampm == "AM") && (hour == 12)) dto = dto.AddHours(-12);
+
+                // correct for daylight saving
+                if (est == "EDT") dto = dto.AddHours(-1); 
+
+
+
+                if (fields[fields.Length-1] == SunMoonTides.SUNRISE)
+                {
+                    //var dto = new DateTimeOffset();
+                    tides.dictionary.Add(SunMoonTides.SUNRISE, dto);
+                }
+                else
+                if (fields[fields.Length-1] == SunMoonTides.SUNSET)
+                {
+                    //var dto = new DateTimeOffset();
+                    tides.dictionary.Add(SunMoonTides.SUNRISE, dto);
+                }
+                else
+                if ((fields[fields.Length-2] == "Low") && (fields[fields.Length-1] == "Tide"))
+                {
+
+                    //var dto = new DateTimeOffset();
+                    tides.dictionary.Add(SunMoonTides.LOWTIDE, dto);
+                }
+                else
+                if ((fields[fields.Length - 2] == "High") && (fields[fields.Length - 1] == "Tide"))
+                {
+                    //var dto = new DateTimeOffset();
+                    tides.dictionary.Add(SunMoonTides.HIGHTIDE, dto);
+                }
+
+                list.Add(tides);
+            } // for
+
+
+            return list.ToArray();
+        } // ReadGeorgiaTidalInformation()
 
     }
 }

@@ -12,6 +12,7 @@ namespace AnalysisPrograms.Production
     using Acoustics.Shared;
 
     using PowerArgs;
+    using AnalysisBase;
 
     public static class ExceptionLookup
     {
@@ -88,6 +89,10 @@ namespace AnalysisPrograms.Production
                                   {
                                       typeof(ConfigFileException),
                                       new ExceptionStyle() {ErrorCode = 103, PrintUsage = false}
+                                  },
+                                  {
+                                      typeof(AudioRecordingTooShortException),
+                                      new ExceptionStyle() {ErrorCode = 104, PrintUsage = false }
                                   },
                                   {
                                       typeof(AnalysisOptionDevilException), 
