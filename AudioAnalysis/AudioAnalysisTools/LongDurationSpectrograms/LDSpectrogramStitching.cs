@@ -507,9 +507,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static void ConcatenateFalsecolourSpectrograms()
         {
-            DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun");
+            //DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun");
+            DirectoryInfo dirInfo = new DirectoryInfo(@"G:\Documents\Karlina\Bickerton 20131212_20140104Copy");
             FileInfo[] files = dirInfo.GetFiles();
-            FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun.png");
+            //FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jun.png");
+            FileInfo opPath = new FileInfo(@"G:\Documents\Karlina\BickertonIsSpectrograms_2013Dec-2014Jan.png");
 
             double verticalScaleReduction = 0.4;
             int width = 785;
@@ -530,7 +532,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 imageList.Add(spacer);
             }
 
-            double verticalScale = 0.8;
             var opImage = ImageTools.CombineImagesVertically(imageList);
             opImage.Save(opPath.FullName);
         }
