@@ -184,8 +184,7 @@ namespace AnalysisPrograms
             common.SuperTilingConfig = Yaml.Deserialise<SuperTilingConfig>(arguments.SpectrogramTilingConfig);
             var indexPropertiesPath = IndexProperties.Find(common.SuperTilingConfig, arguments.SpectrogramTilingConfig);
 
-            //#################################
-            // CHECK THIS CHANGE WITH ANTHONY
+            // A: The above line should have worked!
             //indexPropertiesPath = arguments.SpectrogramTilingConfig;
 
             Log.Debug("Using index properties file: " + indexPropertiesPath.FullName);
@@ -193,11 +192,6 @@ namespace AnalysisPrograms
 
             // get the indexDistributions and the indexGenerationData AND the //common.OriginalBasename
             common.CheckForNeededFiles(arguments.SourceDirectory);
-            // Create directory if not exists
-            if (!arguments.Output.Exists)
-            {
-                arguments.Output.Create();
-            }
 
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
             LoggedConsole.WriteLine();

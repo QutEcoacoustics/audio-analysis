@@ -42,7 +42,8 @@ namespace AnalysisPrograms
 
     using TowseyLibrary;
 
-    public class AcousticHiResIndicesPlusRecognisers : IAnalyser2
+    [Obsolete("This is the old way of doing a multi recognizer!")]
+    public class AcousticHiResIndicesPlusRecognizers : IAnalyser2
     {
         [CustomDetailedDescription]
         public class Arguments : IArgClassValidator

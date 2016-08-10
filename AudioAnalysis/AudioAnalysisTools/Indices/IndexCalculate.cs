@@ -407,7 +407,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // iv: CALCULATE SPECTRAL COVER. NOTE: spectrogram is a noise reduced decibel spectrogram
-            double dBThreshold = ActivityAndCover.DEFAULT_ActivityThreshold_dB; // dB THRESHOLD for calculating spectral coverage
+            double dBThreshold = ActivityAndCover.DefaultActivityThresholdDb; // dB THRESHOLD for calculating spectral coverage
             var spActivity = ActivityAndCover.CalculateSpectralEvents(deciBelSpectrogram, dBThreshold, frameStepTimeSpan, LowFreqBound, MidFreqBound, freqBinWidth);
             spectralIndices.CVR = spActivity.coverSpectrum;
             spectralIndices.EVN = spActivity.eventSpectrum;
@@ -470,7 +470,7 @@ namespace AudioAnalysisTools.Indices
 
                 // remove the DC row of the spectrogram
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-                scores.Add(new Plot("Decibels", DataTools.normalise(dBArray), ActivityAndCover.DEFAULT_ActivityThreshold_dB));
+                scores.Add(new Plot("Decibels", DataTools.normalise(dBArray), ActivityAndCover.DefaultActivityThresholdDb));
                 scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
                 // convert spectral peaks to frequency

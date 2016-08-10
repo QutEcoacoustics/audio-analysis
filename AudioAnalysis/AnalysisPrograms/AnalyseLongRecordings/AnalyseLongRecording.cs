@@ -286,21 +286,15 @@ Output  to  directory: {1}
                     throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
                 }
 
-                var basename = Path.GetFileNameWithoutExtension(fileNameBase);
-                string analysisType = analysisSettings.Configuration[AnalysisKeys.AnalysisName];
-
-                // CHECK SIZE OF THE SUMMARY INDEX FILES
-                string fileName = String.Format("{0}__{1}.Indices.csv", basename, analysisType);
-                string path = Path.Combine(instanceOutputDirectory.FullName, fileName);
-                int lineCount = TowseyLibrary.FileTools.CountLinesOfTextFile(path);
                 // this arbitrary amount of data.
-                if (lineCount > 5000)
+                if (mergedIndicesResults.Length > 5000)
                 {
                     Log.Warn("Summary Indices Image not able to be drawn - there are too many indices to render");
                 }
                 else
                 {
-                    string imageTitle = $"{basename},   (c) QUT;  ";
+                    var basename = Path.GetFileNameWithoutExtension(fileNameBase);
+                    string imageTitle = $"SOURCE:{basename},   (c) QUT;  ";
 
                     // Draw Tracks-Image of Summary indices
                     // set time scale resolution for drawing of summary index tracks
@@ -314,30 +308,6 @@ Output  to  directory: {1}
                             fileSegment.OriginalFileStartDate);
                     var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
                     tracksImage.Save(imagePath);
-                }
-
-
-                // CHECK SIZE OF THE SPECTRAL INDEX FILES
-                fileName = String.Format("{0}__{1}.ACI.csv", basename, analysisType);
-                path = Path.Combine(instanceOutputDirectory.FullName, fileName);
-                lineCount = TowseyLibrary.FileTools.CountLinesOfTextFile(path);
-                // this arbitrary amount of data
-                if (lineCount > 5000)
-                {
-                    Log.Warn("Spectral Indices Image not able to be drawn - there are too many indices to render");
-                }
-                else
-                {
-                    // Draw FalseColour Spectrograms - .2Maps.png
-                    string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
-                    Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(instanceOutputDirectory, basename + "__" + analysisType, keys);
-
-                    // set time scale for drawing of spectral images
-                    TimeSpan spectrogramScale = TimeSpan.FromSeconds(60.0);
-                    // Draw two false-colour spectrograms (2maps.png) using two default colour maps
-                    Image combinedImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(basename, spectrogramScale, indicesPropertiesConfig, spectra);
-                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "TwoMaps", ImagefileExt);
-                    combinedImage.Save(imagePath);
                 }
             }
 

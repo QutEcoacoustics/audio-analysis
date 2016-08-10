@@ -125,6 +125,7 @@ namespace AudioAnalysisTools
                 int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
                 double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
                 string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
+                throw new NotSupportedException("THE FOLLOWIN FAILS IN PRODUCTION");
                 Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
                 return suntrack;
             }

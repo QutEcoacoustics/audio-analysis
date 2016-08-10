@@ -342,60 +342,26 @@ namespace AudioAnalysisTools
         }
 
 
-
+        /// <summary>
+        /// Draws an event on the image. Uses the fields already set on the audio event to determine correct placement.
+        /// Fields requireed to be set include: `FramesPerSecond`, `FreqBinWidth`.
+        /// </summary>
+        /// <param name="sonogram"></param>
         public void DrawEvent(Bitmap sonogram)
         {
-            Contract.Requires(this.BorderColour != null);
-            //Contract.Requires(this.HitElements == null || (this.HitElements != null && this.HitColour != null));
             Graphics g = Graphics.FromImage(sonogram);
-
-            var borderPen = new Pen(this.BorderColour);
-            var scorePen = new Pen(this.ScoreColour);
-
-            // calculate top and bottom freq bins
-            int minFreqBin = (int)Math.Round(this.MinFreq / this.FreqBinWidth);
-            int maxFreqBin = (int)Math.Round(this.MaxFreq / this.FreqBinWidth);
-            int height = maxFreqBin - minFreqBin + 1;
-            int y = sonogram.Height - maxFreqBin - 1;
-
-            // calculate start and end time frames
-            int t1 = 0;
-            int tWidth = 0;
-            double duration = this.TimeEnd - this.TimeStart;
-            if ((duration != 0.0) && (this.FramesPerSecond != 0.0))
-            {
-                t1 = (int)Math.Round(this.TimeStart * this.FramesPerSecond); // temporal start of event
-                tWidth = (int)Math.Round(duration * this.FramesPerSecond);
-            }
-            else if (this.Oblong != null)
-            {
-                t1 = this.Oblong.RowTop; // temporal start of event
-                tWidth = this.Oblong.RowBottom - t1 + 1;
-            }
-
-            // 14-Feb-12 - Anthony - changed default brush so border would actually render with color
-            g.DrawRectangle(borderPen, t1, y, tWidth, height);
-
-            //if (this.HitElements != null)
-            //{
-            //    foreach (var hitElement in this.HitElements)
-            //    {
-            //        imageToReturn.SetPixel(hitElement.X, sonogramHeight - hitElement.Y, HitColour.Value);
-            //    }
-            //}
-
-            //draw the score bar to indicate relative score
-            int scoreHt = (int)Math.Round(height * this.ScoreNormalised);
-            int y1 = y + height - 1;
-            int y2 = y1 - scoreHt;
-            g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
-            //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
-            //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
-            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
+            this.DrawEvent(g, sonogram, this.FramesPerSecond, this.FreqBinWidth, sonogram.Height);
         }
 
 
-
+        /// <summary>
+        /// Draws an event on the image. Allows for custom specification of variables.
+        /// </summary>
+        /// <param name="g"></param>
+        /// <param name="imageToReturn"></param>
+        /// <param name="framesPerSecond"></param>
+        /// <param name="freqBinWidth"></param>
+        /// <param name="sonogramHeight"></param>
         public void DrawEvent(Graphics g, Bitmap imageToReturn, double framesPerSecond, double freqBinWidth, int sonogramHeight)
         {
             Contract.Requires(this.BorderColour != null);
@@ -458,13 +424,20 @@ namespace AudioAnalysisTools
         /// <param name="colour"></param>
         public void DrawPoint(Bitmap bmp, Point point, Color colour)
         {
-            if (bmp == null) return;
-            if (point == null) return;
+            if (bmp == null)
+            {
+                return;
+            }
+
             int maxFreqBin = (int)Math.Round(this.MaxFreq / this.FreqBinWidth);
             int row = bmp.Height - maxFreqBin - 1 + point.Y;
             int t1 = (int)Math.Round(this.TimeStart * this.FramesPerSecond); // temporal start of event
             int col = t1 + point.X;
-            if (row >= bmp.Height) row = bmp.Height - 1;
+            if (row >= bmp.Height)
+            {
+                row = bmp.Height - 1;
+            }
+
             bmp.SetPixel(col, row, colour);
         }
 

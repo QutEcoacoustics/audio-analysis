@@ -50,11 +50,11 @@ namespace AudioAnalysisTools
             // this method was written just before leaving for Toulon to work with Herve Glotin.
             // It was change while in Toulon to the following line which does not require a threshold.
             // double ridgeThreshold = 4.0; // 4 dB
-            // GetRidgeSpectra_Version1(dBSpectrogram, ridgeThreshold);
-            GetRidgeSpectra_Version2(dBSpectrogram);
+            // GetRidgeSpectraVersion1(dBSpectrogram, ridgeThreshold);
+            this.GetRidgeSpectraVersion2(dBSpectrogram);
         }
 
-        public void GetRidgeSpectra_Version1(double[,] dbSpectrogramData, double ridgeThreshold)
+        public void GetRidgeSpectraVersion1(double[,] dbSpectrogramData, double ridgeThreshold)
         {
             int rowCount = dbSpectrogramData.GetLength(0);
             int colCount = dbSpectrogramData.GetLength(1);
@@ -70,7 +70,7 @@ namespace AudioAnalysisTools
             // 3 = ridge is vertical or pi/2
             // 4 = ridge is negative slope or 3pi/4. 
             //byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
-            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetection_Version1(matrix, ridgeThreshold);
+            byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionVersion1(matrix, ridgeThreshold);
 
             //image for debugging
             //ImageTools.DrawMatrix(hits, @"C:\SensorNetworks\Output\BIRD50\temp\hitsSpectrogram.png");
@@ -126,7 +126,7 @@ namespace AudioAnalysisTools
         }
 
 
-        public void GetRidgeSpectra_Version2(double[,] dbSpectrogramData)
+        public void GetRidgeSpectraVersion2(double[,] dbSpectrogramData)
         {
             int rowCount = dbSpectrogramData.GetLength(0);
             int colCount = dbSpectrogramData.GetLength(1);

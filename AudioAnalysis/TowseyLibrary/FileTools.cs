@@ -19,6 +19,7 @@ namespace TowseyLibrary
 
         static void Main()
         {
+            throw new NotSupportedException("THIS WILL FAIL IN PRODUCTION");
             Log.WriteLine("TESTING METHODS IN CLASS FileTools\n\n");
 
             bool doit1 = false;
@@ -151,18 +152,17 @@ namespace TowseyLibrary
 
         public static int CountLinesOfTextFile(string fName)
         {
-            int count = 0;
-            using (TextReader reader = new StreamReader(fName))
+            var lineCount = 0;
+            using (var reader = File.OpenText(@"C:\file.txt"))
             {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                while (reader.ReadLine() != null)
                 {
-                    //read one line at a time in string array
-                    count++;
-                }//end while
-            }//end using
-            return count;
-        }// end CountLinesOfTextFile()
+                    lineCount++;
+                }
+            }
+
+            return lineCount;
+        }
 
 
 
