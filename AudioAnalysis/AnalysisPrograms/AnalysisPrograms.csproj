@@ -215,6 +215,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticHiResIndicesPlusRecognizers.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecording.cs" />
     <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Arguments.cs" />
@@ -224,12 +225,17 @@
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
+    <Compile Include="CallRecogniser.cs" />
+    <Compile Include="LitoriaFallax.cs" />
+    <Compile Include="LimnodynastesConvex.cs" />
     <Compile Include="Canetoad.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="DrawEasyImage.cs" />
     <Compile Include="ConcatenateIndexFiles.cs" />
     <Compile Include="DrawZoomingSpectrograms.cs" />
+    <Compile Include="HerveGlotinCollaboration.cs" />
+    <Compile Include="HighResolutionAcousticIndices.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />

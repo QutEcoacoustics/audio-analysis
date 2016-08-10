@@ -647,65 +647,14 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-        public AnalysisSettings DefaultSettings
-        {
-            get
+        public AnalysisSettings DefaultSettings => new AnalysisSettings
             {
-                return new AnalysisSettings
-                {
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentMinDuration = TimeSpan.FromSeconds(20),
-                    SegmentMediaType = MediaTypes.MediaTypeWav,
-                    SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
-                };
-            }
-        }
-
-        /// <summary>
-        /// Checks the command line arguments
-        /// returns Analysis Settings
-        /// NEED TO REWRITE THIS METHOD AS APPROPRIATE
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static AnalysisSettings GetAndCheckAllArguments(Arguments args)
-        {
-            // INIT ANALYSIS SETTINGS
-            var analysisSettings = new AnalysisSettings
-                                       {
-                                           SourceFile = args.Source,
-                                           ConfigFile = args.Config,
-                                           AnalysisInstanceOutputDirectory = args.Output,
-                                           AudioFile = null,
-                                           EventsFile = null,
-                                           SummaryIndicesFile = null,
-                                           ImageFile = null
-                                       };
-
-            var start = TimeSpan.Zero;
-            var duration = TimeSpan.Zero;
-            var configuration = new ConfigDictionary(args.Config);
-            analysisSettings.ConfigDict = configuration.GetTable();
-
-            if (!string.IsNullOrWhiteSpace(args.TmpWav))
-            {
-                string indicesPath = Path.Combine(args.Output.FullName, args.TmpWav);
-                analysisSettings.SummaryIndicesFile = new FileInfo(indicesPath);
-            }
-
-
-            if (!string.IsNullOrWhiteSpace(args.Indices))
-            {
-                string indicesPath = Path.Combine(args.Output.FullName, args.Indices);
-                analysisSettings.SummaryIndicesFile = new FileInfo(indicesPath);
-            }
-
-            return analysisSettings;
-        }
-
-
-
+                SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                SegmentMinDuration = TimeSpan.FromSeconds(1),
+                SegmentMediaType = MediaTypes.MediaTypeWav,
+                SegmentOverlapDuration = TimeSpan.Zero,
+                SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+            };
     }
 
 }

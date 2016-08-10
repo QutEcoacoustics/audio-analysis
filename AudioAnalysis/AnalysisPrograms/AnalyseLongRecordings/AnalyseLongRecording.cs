@@ -119,6 +119,12 @@ Output  to  directory: {1}
                 LoggedConsole.WriteLine("# IndexProperties Cfg: " + indicesPropertiesConfig.FullName);
             }
 
+            DirectoryInfo[] searchPaths = { configFile.Directory };
+            FileInfo ipConfig = ConfigFile.ResolveConfigFile((string)configuration.IndexPropertiesConfig, searchPaths);
+            LoggedConsole.WriteLine("# IndexProperties Cfg: " + ipConfig);
+            FileInfo spectrogramConfig = ConfigFile.ResolveConfigFile((string)configuration.SpectrogramConfig, searchPaths);
+            LoggedConsole.WriteLine("# Spectrogram     Cfg: " + spectrogramConfig);
+
             // min score for an acceptable event
             double scoreThreshold = 0.2;
             if (((double?)configuration[AnalysisKeys.EventThreshold]) != null)
@@ -139,6 +145,7 @@ Output  to  directory: {1}
                     throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
             }
+
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
             var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
@@ -202,7 +209,7 @@ Output  to  directory: {1}
             analyser.BeforeAnalyze(analysisSettings);
 
             // 7. ####################################### DO THE ANALYSIS ###################################
-            LoggedConsole.WriteLine("STARTING ANALYSIS ...");
+            LoggedConsole.WriteLine("START ANALYSIS ...");
             var analyserResults = analysisCoordinator.Run(fileSegment, analyser, analysisSettings);
 
             // ##############################################################################################
@@ -290,7 +297,7 @@ Output  to  directory: {1}
                     throw new InvalidOperationException("Cannot process indices without an index configuration file, the file could not be found!");
                 }
 
-                // this arbitrary amount - a sheer guess... who knows if it will work.
+                // this arbitrary amount of data.
                 if (mergedIndicesResults.Length > 5000)
                 {
                     Log.Warn("Summary Indices Image not able to be drawn - there are too many indices to render");
@@ -300,21 +307,23 @@ Output  to  directory: {1}
                     var basename = Path.GetFileNameWithoutExtension(fileNameBase);
                     string imageTitle = $"SOURCE:{basename},   (c) QUT;  ";
 
+                    // Draw Tracks-Image of Summary indices
+                    // set time scale resolution for drawing of summary index tracks
+                    TimeSpan timeScale = TimeSpan.FromSeconds(0.1);
                     Bitmap tracksImage =
                         IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
                             indicesFile,
                             imageTitle,
-                            analysisSettings.SegmentMaxDuration.Value,
+                            timeScale,
                             fileSegment.OriginalFileStartDate);
-                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "Indices", ImagefileExt);
+                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
                     tracksImage.Save(imagePath);
                 }
             }
 
             // 14. wrap up, write stats
-            LoggedConsole.WriteLine(
-                "INDICES CSV file(s) = " + (indicesFile?.Name ?? "<<No indices result, no file!>>"));
+            LoggedConsole.WriteLine("INDICES CSV file(s) = " + (indicesFile?.Name ?? "<<No indices result, no file!>>"));
             LoggedConsole.WriteLine("\tNumber of rows (i.e. minutes) in CSV file of indices = " +
                                     numberOfRowsOfIndices);
             LoggedConsole.WriteLine(string.Empty);

@@ -833,8 +833,8 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
 
         private static KeyValuePair<string, double[,]>? ReadInSingleCsvFile(DirectoryInfo ipdir, string fileName, string indexKey)
         {
-            Log.Info($"Starting to read CSV file for index {indexKey}");
-            Stopwatch timer = Stopwatch.StartNew();
+            //Log.Info($"Starting to read CSV file for index {indexKey}");
+            //Stopwatch timer = Stopwatch.StartNew();
 
             FileInfo file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + indexKey + ".csv"));
             double[,] matrix;
@@ -853,14 +853,15 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
                 return null;
             }
 
-            timer.Stop();
-            Log.Info($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
+            //timer.Stop();
+            //Log.Info($"Time to read spectral index file <{indexKey}> = {timer.Elapsed.TotalSeconds} seconds");
             return new KeyValuePair<string, double[,]>(indexKey, matrix);
         }
 
         /// <summary>
         /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and required image scale.
-        /// In all cases, the compression is done by taking the average
+        /// In all cases, the compression is done by taking the average.
+        /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than one minute long.
         /// </summary>
         /// <param name="spectra"></param>
         /// <param name="imageScale"></param>
@@ -876,9 +877,19 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
                 double[,] matrix = spectra[key];
                 int rowCount = matrix.GetLength(0);
                 int colCount = matrix.GetLength(1);
+
+                int compressionWindow = scalingFactor;
                 int compressedLength = (colCount / scalingFactor);
+                if (compressedLength < 1)
+                    compressedLength = 1;
                 var newMatrix = new double[rowCount, compressedLength];
                 double[] tempArray = new double[scalingFactor];
+                int maxColCount = colCount - scalingFactor;
+                if (maxColCount < 0)
+                {
+                    maxColCount = matrix.GetLength(1);
+                    compressionWindow = maxColCount;
+                }
 
                 // the ENTROPY matrix requires separate calculation
                 if ((key == "ENT") && (scalingFactor > 1))
@@ -887,10 +898,10 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
                     for (int r = 0; r < rowCount; r++)
                     {
                         int colIndex = 0;
-                        for (int c = 0; c <= colCount - scalingFactor; c += step)
+                        for (int c = 0; c <= maxColCount; c += step)
                         {
                             colIndex = c / scalingFactor;
-                            for (int i = 0; i < scalingFactor; i++)
+                            for (int i = 0; i < compressionWindow; i++)
                             {
                                 // square the amplitude to give energy
                                 tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
@@ -910,10 +921,10 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
                         for (int r = 0; r < rowCount; r++)
                         {
                             int colIndex = 0;
-                            for (int c = 0; c <= colCount - scalingFactor; c += step)
+                            for (int c = 0; c <= maxColCount; c += step)
                             {
                                 colIndex = c / scalingFactor;
-                                for (int i = 0; i < scalingFactor; i++)
+                                for (int i = 0; i < compressionWindow; i++)
                                 {
                                     DIFArray[i] = spectra["DIF"][r, c + i];
                                     SUMArray[i] = spectra["SUM"][r, c + i];
@@ -928,10 +939,11 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
                         for (int r = 0; r < rowCount; r++)
                         {
                             int colIndex = 0;
-                            for (int c = 0; c <= colCount - scalingFactor; c += step)
+                            for (int c = 0; c <= maxColCount; c += step)
                             {
                                 colIndex = c / scalingFactor;
-                                for (int i = 0; i < scalingFactor; i++) tempArray[i] = matrix[r, c + i];
+                                for (int i = 0; i < compressionWindow; i++)
+                                tempArray[i] = matrix[r, c + i];
                                 newMatrix[r, colIndex] = tempArray.Average();
                             }
                         }

@@ -428,6 +428,48 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Noise reduce matrix by subtracting the median value and truncating negative values to zero.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] SubtractMedian(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[] array = DataTools.Matrix2Array(matrix);
+            double median = DataTools.GetMedian(array);
+
+            double[,] outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = matrix[r, c] - median;
+                    if (outM[r, c] < 0.0) outM[r, c] = 0.0;
+                }
+            }
+            return outM;
+        }
+
+        public static double[,] SubtractConstant(double[,] matrix, double constant)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = matrix[r, c] - constant;
+                    if (outM[r, c] < 0.0) outM[r, c] = 0.0;
+                }
+            }
+            return outM;
+        }
+
+        /// <summary>
         /// truncate values below threshold to zero.
         /// </summary>
         /// <param name="matrix"></param>
@@ -531,7 +573,9 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Filters background values by applying a polynomial that lies between y=x and y=x^2.
-        /// That is, y=x represents the unfiltered matrix and y=x^2 represents the maximally filtered matrix.
+        /// There are two extremes:
+        /// When filterCoeff >= 1.0, the matrix remains unchanged, that is, that is, y=x represents the unfiltered matrix.
+        /// When filterCoeff LT  0.1, the matrix is maximally filtered, i.e. y=x^2 represents the filtered matrix.
         /// In a grey scale image, this has the effect of diminshing the low amplitude values, thereby enhancing the highlights.
         /// 
         /// </summary>
@@ -687,7 +731,7 @@ namespace TowseyLibrary
             //if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
             double min;
             double max;
-            MinMax(matrix, out min, out max);
+            DataTools.MinMax(matrix, out min, out max);
             if (max <= min) throw new ArgumentException("max="+max+" must be > min="+min);
             minCut = min;
             maxCut = max;
@@ -734,7 +778,9 @@ namespace TowseyLibrary
         }// end of GetPercentileCutoffs()
 
 
-//=============================================================================
+
+
+        //=============================================================================
 
 
   public static void writeMatrix(double[,] matrix, string format)
@@ -956,7 +1002,15 @@ namespace TowseyLibrary
         return newMatrix;
     }
 
-  public static double[] GetColumn(double[,] m, int colID)
+        public static byte[] GetColumn(byte[,] m, int colID)
+        {
+            int rows = m.GetLength(0);
+            byte[] column = new byte[rows];
+            for (int i = 0; i < rows; i++) column[i] = m[i, colID];
+            return column;
+        }
+
+        public static double[] GetColumn(double[,] m, int colID)
   {
       int rows = m.GetLength(0);
       double[] column = new double[rows];

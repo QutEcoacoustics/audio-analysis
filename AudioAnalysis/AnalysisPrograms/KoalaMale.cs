@@ -238,6 +238,13 @@ namespace AnalysisPrograms
         }
 
 
+        public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
+        {
+            var recording = new AudioRecording(segmentOfSourceFile.FullName);
+            var results = Analysis(recording, configDict, segmentStartOffset);
+            return results;
+        }
+
         /// <summary>
         /// THE KEY ANALYSIS METHOD
         /// </summary>
@@ -252,7 +259,7 @@ namespace AnalysisPrograms
         /// <returns>
         /// The results of the analysis.
         /// </returns>
-        public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
+        public static KoalaMaleResults Analysis(AudioRecording recording, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
@@ -278,10 +285,8 @@ namespace AnalysisPrograms
             // max duration of event in seconds                 
             double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);
 
-            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
-
             // min score for an acceptable event
-            var recording = new AudioRecording(segmentOfSourceFile.FullName);
+            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
 
             // seems to work  -- frameSize = 512 and 1024 does not catch all oscillations; 
             const int FrameSize = 256;
@@ -350,6 +355,7 @@ namespace AnalysisPrograms
                 events.ForEach(
                     ae =>
                         {
+                            ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
                             ae.SegmentStartOffset = segmentStartOffset;
                             ae.SegmentDuration = recordingDuration;
                         });

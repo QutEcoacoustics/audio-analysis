@@ -19,6 +19,7 @@ namespace TowseyLibrary
 
         static void Main()
         {
+            throw new NotSupportedException("THIS WILL FAIL IN PRODUCTION");
             Log.WriteLine("TESTING METHODS IN CLASS FileTools\n\n");
 
             bool doit1 = false;
@@ -147,6 +148,20 @@ namespace TowseyLibrary
             string fext  = Path.GetExtension(ipPath);
             string opPath = dir + @"\" + fn + appendix + fext; 
             return opPath;
+        }
+
+        public static int CountLinesOfTextFile(string fName)
+        {
+            var lineCount = 0;
+            using (var reader = File.OpenText(@"C:\file.txt"))
+            {
+                while (reader.ReadLine() != null)
+                {
+                    lineCount++;
+                }
+            }
+
+            return lineCount;
         }
 
 
@@ -369,6 +384,20 @@ namespace TowseyLibrary
             var lines = new List<string>();
 
             for (int i = 0; i < array.Length; i++) lines.Add(array[i].ToString());
+            WriteTextFile(fName, lines); //write to file
+
+        } //end of WriteArray2File
+
+        public static void WriteArray2File(int[] array, bool addLineNumbers, string fName)
+        {
+            var lines = new List<string>();
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                string line = array[i].ToString();
+                if (addLineNumbers) line = (i+1) + "," + line;
+                lines.Add(line);
+            }
             WriteTextFile(fName, lines); //write to file
 
         } //end of WriteArray2File

@@ -216,7 +216,6 @@ namespace Acoustics.Tools.Audio
             FileInfo soxSourceFile;
             var soxRequest = request;
 
-
             // do specialized convert and/or segment
             if (sourceMediaType == MediaTypes.MediaTypeWavpack)
             {

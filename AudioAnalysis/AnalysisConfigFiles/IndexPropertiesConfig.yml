@@ -680,3 +680,51 @@ SPT:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
+RHZ:
+  Name: spectralRHZ
+  Comment: "Spectrum of average number of horizontal spectral ridges per sec."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.8
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"
+RVT:
+  Name: spectralRVT
+  Comment: "Spectrum of average number of vertical spectral ridges per sec."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.1
+  NormMax: 0.4
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"
+RPS:
+  Name: spectralRPS
+  Comment: "Spectrum of average number of positive slope ridges per sec."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.4
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"
+RNG:
+  Name: spectralRNG
+  Comment: "Spectrum of average number of negative slope ridges per sec."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.4
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: "tracks/s"

@@ -261,20 +261,128 @@ namespace TowseyLibrary
          */
         public static double[] Matrix2Array(double[,] M)
         {
-            int ht  = M.GetLength(0);
-            int width     = M.GetLength(1);
+            int ht = M.GetLength(0);
+            int width = M.GetLength(1);
             double[] v = new double[ht * width];
 
             int id = 0;
             for (int col = 0; col < width; col++)
             {
                 for (int row = 0; row < ht; row++)
-                {   v[id++] = M[row,col];
+                {
+                    v[id++] = M[row, col];
                 }
             }
             return v;
         }
 
+        /*
+         * converts a matrix to a vector by concatenating columns.
+         */
+        public static int[] Matrix2Array(int[,] M)
+        {
+            int ht = M.GetLength(0);
+            int width = M.GetLength(1);
+            int[] v = new int[ht * width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = M[row, col];
+                }
+            }
+            return v;
+        }
+
+        /*
+         * converts a matrix to a vector by concatenating columns.
+         */
+        public static byte[,] Array2Matrix(byte[] array, int width, int height)
+        {
+            byte[,] M = new byte[height, width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < height; row++)
+                {
+                    M[row, col] = array[id++];
+                }
+            }
+            return M;
+        }
+
+
+
+        /*
+         * converts a matrix to a vector by concatenating columns.
+         */
+        public static byte[] Matrix2Array(byte[,] M)
+        {
+            int ht = M.GetLength(0);
+            int width = M.GetLength(1);
+            byte[] v = new byte[ht * width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = M[row, col];
+                }
+            }
+            return v;
+        }
+
+        /*
+         * converts a 3-D matrix to a vector by concatenating columns and columns.
+         */
+        public static double[] Matrix2Array(double[,,] M)
+        {
+            int d1 = M.GetLength(0);
+            int d2 = M.GetLength(1);
+            int d3 = M.GetLength(2);
+            double[] v = new double[d1 * d2 * d3];
+
+            int id = 0;
+            for (int row = 0; row < d1; row++)
+            {
+                for (int col1 = 0; col1 < d2; col1++)
+                {
+                    for (int col2 = 0; col2 < d2; col2++)
+                    {
+                        v[id++] = M[row, col1, col2];
+                    }
+                }
+            }
+            return v;
+        }
+
+        /*
+         * converts a 3-D matrix to a vector by concatenating columns and columns.
+         */
+        public static int[] Matrix2Array(int[,,] M)
+        {
+            int d1 = M.GetLength(0);
+            int d2 = M.GetLength(1);
+            int d3 = M.GetLength(2);
+            int[] v = new int[d1 * d2 * d3];
+
+            int id = 0;
+            for (int row = 0; row < d1; row++)
+            {
+                for (int col1 = 0; col1 < d2; col1++)
+                {
+                    for (int col2 = 0; col2 < d3; col2++)
+                    {
+                        v[id++] = M[row, col1, col2];
+                    }
+                }
+            }
+            return v;
+        }
 
         /*
          * converts a matrix of doubles to binary using passed threshold
@@ -428,6 +536,38 @@ namespace TowseyLibrary
                 vOut[i] = v[i] - value; 
             }
             return vOut;
+        }
+
+        /// <summary>
+        /// subtracts the value from each value of an array 
+        /// If below zero, truncate to zero.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] SubtractValueAndTruncateToZero(double[] v, double value)
+        {
+            double[] vOut = new double[v.Length];
+            for (int i = 0; i < v.Length; i++)
+            {
+                vOut[i] = v[i] - value;
+                if (vOut[i] < 0.0) vOut[i] = 0.0;
+            }
+            return vOut;
+        }
+
+
+
+        /// <summary>
+        /// return median of an array 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double GetMedian(double[] v)
+        {
+            Array.Sort(v);
+            int halfway = v.Length / 2;
+
+            return v[halfway];
         }
 
 
@@ -2716,16 +2856,81 @@ namespace TowseyLibrary
         double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
         return DataTools.Entropy(pmf2) / normFactor;
     }
-	
- 	/**
- 	 * Calculates the relative entropy of the passed 
- 	 * discrete probability distribution.
- 	 * It is assumed that each of the elements in dist[] 
- 	 * represents the probability of a symbol/state and the 
- 	 * probabilities sum to 1.0
- 	 * The relative entropy is with respect to a uniform distribution. 
- 	 */
-  public static double RelativeEntropy(double[] distr)
+
+        public static double MutualInformation(int[,] counts)
+        {
+            //some safety checks but unlikely to happen
+            //int posCount = v.Count(p => p > 0.0);
+            //if (posCount == 0) return Double.NaN; // cannot calculate entropy
+            //if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+
+            int rowCount = counts.GetLength(0);
+            int colCount = counts.GetLength(1);
+
+            int[] rowSums = new int[rowCount];
+            int[] colSums = new int[colCount];
+            int totalSum = 0;
+
+            // accumulate counts 
+            for (int r = 0; r < rowCount; r++) // for all time frames
+            {
+                for (int c = 0; c < colCount; c++) // for all freq bins
+                {
+                    rowSums[r] += counts[r, c];
+                    colSums[c] += counts[r, c];
+                    totalSum += counts[r, c];
+                }
+            }
+
+            //calcualte probabilities
+
+            double[] rowProbs = new double[rowCount]; //pmf = probability mass funciton
+            for (int r = 0; r < rowCount; r++) // for all time frames
+            {
+                rowProbs[r] = rowSums[r] / (double)totalSum;
+            }
+            //double Hrows = DataTools.Entropy_normalised(rowProbs);
+            double[] colProbs = new double[colCount]; //pmf = probability mass funciton
+            for (int c = 0; c < colCount; c++) // for all time frames
+            {
+                colProbs[c] = colSums[c] / (double)totalSum;
+            }
+            //double Hcols = DataTools.Entropy_normalised(colProbs);
+            double[,] matrixProbs = new double[rowCount, colCount];
+            for (int r = 0; r < rowCount; r++) // for all time frames
+            {
+                for (int c = 0; c < colCount; c++) // for all freq bins
+                {
+                    matrixProbs[r, c] = counts[r, c] / (double)totalSum;
+                }
+            }
+
+            double MI = 0.0;
+            for (int r = 0; r < rowCount; r++) // for all time frames
+            {
+                for (int c = 0; c < colCount; c++) // for all freq bins.
+                {
+                    if (rowProbs[r] == 0) continue;
+                    if (colProbs[c] == 0) continue;
+                    if (matrixProbs[r, c] == 0) continue;
+                    MI += (matrixProbs[r, c]  * Math.Log(matrixProbs[r, c] / (rowProbs[r] * colProbs[c]), 2) );
+                }
+            }
+
+            //double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
+            return MI;
+        }
+
+ 
+        /**
+         * Calculates the relative entropy of the passed 
+         * discrete probability distribution.
+         * It is assumed that each of the elements in dist[] 
+         * represents the probability of a symbol/state and the 
+         * probabilities sum to 1.0
+         * The relative entropy is with respect to a uniform distribution. 
+         */
+        public static double RelativeEntropy(double[] distr)
  	{
         //some safety checks but unlikely to happen
         int posCount = distr.Count(p => p > 0.0);

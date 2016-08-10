@@ -346,12 +346,31 @@ namespace AnalysisPrograms
 
         #endregion
 
+
+
+
+
+
         #region Methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="segmentOfSourceFile"></param>
+        /// <param name="configDict"></param>
+        /// <param name="segmentStartOffset"></param>
+        /// <returns></returns>
+        internal static CanetoadResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
+        {
+            var recording = new AudioRecording(segmentOfSourceFile.FullName);
+            return Analysis(recording, configDict, segmentStartOffset);
+        }
+
 
         /// <summary>
         /// THE KEY ANALYSIS METHOD
         /// </summary>
-        /// <param name="segmentOfSourceFile">
+        /// <param name="recording">
         ///     The segment Of Source File.
         /// </param>
         /// <param name="configDict">
@@ -362,14 +381,14 @@ namespace AnalysisPrograms
         /// The <see cref="CanetoadResults"/>.
         /// </returns>
         internal static CanetoadResults Analysis(
-            FileInfo segmentOfSourceFile,
+            AudioRecording recording,
             Dictionary<string, string> configDict,
             TimeSpan segmentStartOffset)
         {
             int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
             int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
 
-            // BETTER TO CALUCLATE THIS. IGNORE USER!
+            // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
 
             // duration of DCT in seconds 
@@ -390,10 +409,8 @@ namespace AnalysisPrograms
             // max duration of event in seconds                 
             double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);
 
-            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
-
             // min score for an acceptable event
-            var recording = new AudioRecording(segmentOfSourceFile.FullName);
+            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
 
             // this default framesize seems to work for Canetoad
             const int FrameSize = 512;
@@ -457,13 +474,17 @@ namespace AnalysisPrograms
 
             events.ForEach(ae =>
                     {
+                        ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
                         ae.SegmentStartOffset = segmentStartOffset;
                         ae.SegmentDuration = recordingDuration;
-                        ae.Name = "AdvertsCall";
+                        ae.Name = "AdvertCall";
                         if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
                         { ae.Name = "ReleaseCall";
                             if (ae.Score < (eventThreshold + 0.3))
-                            { ae.Name = "Short Oscil"; }
+                            {
+                                ae.Name = "Short Oscil";
+                                //events.Remove(ae);
+                            }
                         }
 
                         // remove release call if its score is too low.

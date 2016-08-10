@@ -324,4 +324,5 @@ namespace AudioAnalysisTools
 
         public double HighFreqDecibelBias { get; set; }
     }
+
 }

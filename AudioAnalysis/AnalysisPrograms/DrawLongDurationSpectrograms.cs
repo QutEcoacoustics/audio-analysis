@@ -35,6 +35,11 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
 
     using PowerArgs;
+    using System.Diagnostics;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using TowseyLibrary;
+    using AudioAnalysisTools;
 
 
     /// <summary>
@@ -60,6 +65,13 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".yml")]
             //[ArgPosition(1)]
             public FileInfo SpectrogramConfigPath { get; set; }
+
+            public string ColourMap1 { get; set; }
+            public string ColourMap2 { get; set; }
+
+            public TimeSpan TemporalScale { get; set; }
+
+
         }
 
         /// <summary>
@@ -211,6 +223,365 @@ namespace AnalysisPrograms
                 indexSpectrograms: null,
                 indexDistributions: indexDistributionsData,
                 imageChrome: false.ToImageChrome());
+        } // Execute()
+
+
+        /// <summary>
+        /// The integer returned from this method is the count of time-frames in the spectrogram.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <param name="fileStem"></param>
+        /// <param name="spectra"></param>
+        /// <returns>Count of time-frames</returns>
+        public static int DrawAggregatedSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
+        {
+            // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
+            int frameCount = spectra["ACI"].GetLength(1);
+            double spectrogramScale = 0.1;
+            TimeSpan timeScale = TimeSpan.FromSeconds(spectrogramScale);
+            DirectoryInfo outputDirectory = arguments.OutputDirectory;
+
+            Image combinedImage = DrawGrayScaleSpectrograms(arguments, fileStem, timeScale, spectra);
+            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
+            combinedImage.Save(fileName);
+
+            // Draw False-colour Spectrograms
+            combinedImage = DrawFalseColourSpectrograms(fileStem, timeScale, arguments.IndexPropertiesConfig, spectra);
+            fileName = Path.Combine(outputDirectory.FullName, fileStem + ".TwoMaps.png");
+            combinedImage.Save(fileName);
+
+            return frameCount;
+        } // method DrawAggregatedSpectrograms()
+
+        public static Image DrawGrayScaleSpectrograms(Arguments arguments, string fileStem, TimeSpan dataScale, Dictionary<string, double[,]> spectra = null)
+        {
+            int sampleRate = 22050;
+            int frameWidth = 512;
+            //double backgroundFilter = 0.0; // 0.0 means small values are removed.
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
+            string analysisType = "Towsey.Acoustic";
+            string[] keys = { "ACI", "POW", "BGN", "CVR", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SPT" };
+
+            //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+            //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+            DirectoryInfo inputDirectory = arguments.InputDataDirectory;
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
+
+            if (spectra == null)
+            {
+                var sw = Stopwatch.StartNew();
+                //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
+                spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+                sw.Stop();
+                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+            }
+
+            // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
+            int frameCount = spectra[keys[0]].GetLength(1);
+
+            var minuteOffset = TimeSpan.Zero;
+            var xScale = dataScale;
+            string colorMap1 = null;
+
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
+
+            cs1.FileName = fileStem;
+            cs1.BackgroundFilter = backgroundFilter;
+            cs1.IndexCalculationDuration = dataScale;
+            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
+
+            cs1.spectrogramMatrices = spectra;
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                return null;
+            }
+
+
+            List<Image> list = new List<Image>();
+            //Font stringFont = new Font("Tahoma", 9);
+            Font stringFont = new Font("Arial", 14);
+            int pixelWidth = 0;
+
+
+            foreach (string key in keys)
+            {
+                Image image = cs1.DrawGreyscaleSpectrogramOfIndex(key);
+                pixelWidth = image.Width;
+
+                int width = 70;
+                int height = image.Height;
+                Image label = new Bitmap(width, height);
+                Graphics g1 = Graphics.FromImage(label);
+                g1.Clear(Color.Gray);
+                g1.DrawString(key, stringFont, Brushes.Black, new PointF(4, 30));
+                g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0);//draw upper boundary
+                g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
+
+                Image[] imagearray = { label, image };
+                Image labelledImage = ImageTools.CombineImagesInLine(imagearray);
+                list.Add(labelledImage);
+            } //foreach key
+
+            Image combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
+            return combinedImage;
+        } // method DrawGrayScaleSpectrograms()
+
+
+        public static Image DrawFalseColourSpectrograms(DrawLongDurationSpectrograms.Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
+        {
+            //DirectoryInfo inputDirectory = args.InputDataDirectory;
+            FileInfo indexPropertiesConfig = args.IndexPropertiesConfig;
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+            return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
         }
-    }
+
+        /// <summary>
+        /// Draws two false colour spectrograms using a default set of arguments
+        /// </summary>
+        /// <param name="fileStem"></param>
+        /// <param name="dataScale"></param>
+        /// <param name="indexPropertiesConfig"></param>
+        /// <param name="spectra"></param>
+        /// <returns></returns>
+        public static Image DrawFalseColourSpectrograms(string fileStem, TimeSpan dataScale, FileInfo indexPropertiesConfig, Dictionary<string, double[,]> spectra = null)
+        {
+            // read in index properties and create a new entry for "PHN"
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
+
+            DrawLongDurationSpectrograms.Arguments args = new DrawLongDurationSpectrograms.Arguments();
+            //args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+            //args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
+            args.SpectrogramConfigPath = null;
+            args.IndexPropertiesConfig = indexPropertiesConfig;
+            args.ColourMap1 = "ACI-ENT-EVN";
+            args.ColourMap2 = "BGN-POW-EVN";
+            args.TemporalScale = dataScale;
+
+            return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
+        }
+
+
+
+        public static Image DrawFalseColourSpectrograms(DrawLongDurationSpectrograms.Arguments args, string fileStem,
+                                                        Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
+        {
+            // create new spectral index "PHN" if it does not exist.
+            DrawLongDurationSpectrograms.CreatePhnIndex(indexProperties, spectra);
+
+            // note: the spectra are oriented as per visual orientation, i.e. xAxis = time framesDictionary<string, Int16>.KeyCollection keys = AuthorList.Keys
+            string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');
+            int frameCount = spectra[keys[0]].GetLength(1);
+
+            int sampleRate = 22050;
+            int frameWidth = 512;
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
+            var minuteOffset = TimeSpan.Zero;
+            var dataScale = args.TemporalScale;
+            string colourMode = "NEGATIVE";
+            string colourMap = args.ColourMap1 ?? "BGN-POW-EVN";
+            bool withChrome = true;
+            var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colourMap);
+            cs1.FileName = fileStem;
+            cs1.BackgroundFilter = backgroundFilter;
+            cs1.IndexCalculationDuration = dataScale;
+            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
+            cs1.spectrogramMatrices = spectra;
+
+            Image image1 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
+            TimeSpan fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
+
+            string title = fileStem;
+            Image titleImage = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image1.Width);
+            int trackHeight = 20;
+            Bitmap timeScale = Image_Track.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
+
+            colourMap = args.ColourMap2 ?? "PHN-RVT-SPT";
+            Image image2 = cs1.DrawFalseColourSpectrogram(colourMode, colourMap, withChrome);
+            var list = new List<Image>();
+            list.Add(titleImage);
+            list.Add(image1);
+            list.Add(timeScale);
+            list.Add(image2);
+
+            Image combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
+            return combinedImage;
+        }
+
+        /// <summary>
+        /// The integer returned from this method is the number of seconds duration of the spectrogram.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <param name="fileStem"></param>
+        /// <param name="spectra"></param>
+        /// <returns></returns>
+        public static int DrawRidgeSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
+        {
+            //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+            //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+            DirectoryInfo inputDirectory = arguments.InputDataDirectory;
+            DirectoryInfo outputDirectory = arguments.OutputDirectory;
+            FileInfo      indexPropertiesConfig = arguments.IndexPropertiesConfig;
+            double spectrogramScale = 0.1;
+            TimeSpan dataScale = TimeSpan.FromSeconds(spectrogramScale);
+            // draw the spectrogram images
+            var labelledImage = DrawRidgeSpectrograms(inputDirectory, indexPropertiesConfig, fileStem, spectrogramScale, spectra = null);
+            // combine and save
+            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".Ridges.png");
+            labelledImage.Save(fileName);
+
+            return (int)(Math.Round(labelledImage.Width * spectrogramScale));
+        } // method DrawRidgeSpectrograms()
+
+
+        public static Image DrawRidgeSpectrograms(DirectoryInfo inputDirectory, FileInfo ipConfig, string fileStem, double scale, Dictionary<string, double[,]> spectra = null)
+        {
+            string analysisType = "Towsey.Acoustic";
+            //double backgroundFilter = 0.0; // 0.0 means small values are removed.
+            double backgroundFilter = 0.75;  // 0.75 means small values are accentuated. 
+            TimeSpan dataScale = TimeSpan.FromSeconds(scale);
+
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(ipConfig);
+
+
+            string[] keys = { "SPT", "RVT", "RHZ", "RPS", "RNG" };
+
+            // read the csv files of the indices in keys array
+            if (spectra == null)
+            {
+                var sw = Stopwatch.StartNew();
+                //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
+                spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
+                sw.Stop();
+                LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
+            }
+
+            var minuteOffset = TimeSpan.Zero;
+            var xScale = dataScale;
+            string colorMap1 = null;
+            int sampleRate = 22050;
+            int frameWidth = 512;
+
+            var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap1);
+
+            cs1.FileName = fileStem;
+            cs1.BackgroundFilter = backgroundFilter;
+            cs1.IndexCalculationDuration = dataScale;
+            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
+
+            cs1.spectrogramMatrices = spectra;
+            if (cs1.GetCountOfSpectrogramMatrices() == 0)
+            {
+                LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
+                return null;
+            }
+            else if (cs1.GetCountOfSpectrogramMatrices() < keys.Length)
+            {
+                LoggedConsole.WriteLine("WARNING:  " + fileStem + ":   Missing indices in the dictionary. Some files do not exist?");
+                return null;
+            }
+
+            Font stringFont = new Font("Tahoma", 8);
+            //Font stringFont = new Font("Arial", 6);
+            int pixelWidth = 0;
+
+            // constants for labels 
+            Brush[] brush = { Brushes.Blue, Brushes.Green, Brushes.Red, Brushes.Orange, Brushes.Purple };
+            Color[] color = { Color.Blue, Color.Green, Color.Red, Color.Orange, Color.Purple };
+            int labelYvalue = 3;
+            int labelIndex = 0;
+            Bitmap ridges = null;
+            Graphics g2 = null;
+
+            foreach (string key in keys)
+            {
+                Bitmap greyScaleImage = (Bitmap)cs1.DrawGreyscaleSpectrogramOfIndex(key);
+                pixelWidth = greyScaleImage.Width;
+
+                int height = greyScaleImage.Height;
+                if (ridges == null)
+                {
+                    ridges = new Bitmap(pixelWidth, height);
+                    g2 = Graphics.FromImage(ridges);
+                    g2.Clear(Color.White);
+                }
+                g2.DrawString(key, stringFont, brush[labelIndex], new PointF(0, labelYvalue));
+                labelYvalue += 10;
+                //g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0);//draw upper boundary
+                //g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
+
+                // transfer greyscale image to colour image
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < pixelWidth; x++)
+                    {
+                        Color col = greyScaleImage.GetPixel(x, y);
+                        if (col.G < 150)
+                            ridges.SetPixel(x, y, color[labelIndex]);
+                    }
+                }
+
+                labelIndex += 1;
+            } //foreach key
+
+            return ridges;
+        } // method DrawRidgeSpectrograms()
+
+
+
+        public static void CreatePhnIndex(Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra)
+        {
+            string newKey = "PHN";
+            if (!spectra.ContainsKey(newKey))
+            {
+                // create a composite index from three related indices - take the max
+                // Assume that the values are comparable so that max is meaningful.
+                double[,] phnIndex = CreateNewCompositeIndex(spectra, "RHZ-RPS-RNG");
+                // Name the index PHN because it is composite of Positive, Horiz and Negative ridge values.
+                spectra.Add(newKey, phnIndex);
+            }
+
+
+            if (!indexProperties.ContainsKey(newKey))
+            {
+                IndexProperties phnProperties = new IndexProperties();
+                phnProperties.Key = newKey;
+                phnProperties.Name = newKey;
+                phnProperties.NormMin = 2.0;
+                phnProperties.NormMax = 10.0;
+                phnProperties.CalculateNormMin = false;
+                phnProperties.CalculateNormMax = false;
+                indexProperties.Add(newKey, phnProperties);
+            }
+        }
+
+        public static double[,] CreateNewCompositeIndex(Dictionary<string, double[,]> spectra, string sourceFeatures)
+        {
+            string[] keys = sourceFeatures.Split('-');
+
+
+            int rowCount = spectra[keys[0]].GetLength(0);
+            int colCount = spectra[keys[0]].GetLength(1);
+            double[,] compositeIndex = new double[rowCount, colCount];
+            //double[] array = new double[keys.Length];
+
+            for (int row = 0; row < rowCount; row++)
+            {
+                for (int col = 0; col < colCount; col++)
+                {
+                    double value = 0.0;
+                    for (int i = 0; i < keys.Length; i++)
+                    {
+                        if (value < (spectra[keys[i]])[row, col])
+                             value = (spectra[keys[i]])[row, col];
+                    }
+                    compositeIndex[row, col] = value;                  
+                }
+            }
+            return compositeIndex;
+        }
+        
+
+
+    } // class DrawLongDurationSpectrograms
 }

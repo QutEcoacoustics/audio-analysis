@@ -1,0 +1,31 @@
+---
+AnalysisName: Towsey.Limnodynastes_convexiusculus
+SpeciesName: Limnodynastes_convexiusculus
+# min and max of the freq band to search
+MinHz: 850          
+DominantFrequency: 1850
+# The Limnodynastes call has three major peaks. The dominant peak is at 1850 or as set above.
+# The second and third peak are at equal gaps below. i.e. dominantFreq-gap and dominantFreq-(2*gap);
+# Set the gap here: should be in range 880 to 970
+PeakGap: 470 
+# duration of DCT in seconds 
+#DctDuration: 0.75
+# minimum acceptable value of a DCT coefficient
+#DctThreshold: 0.45
+# ignore oscillation rates below the min & above the max threshold
+# OSCILLATIONS PER SECOND
+#MinOcilFreq: 7        
+#MaxOcilFreq: 20
+# Event threshold - use this to determine FP / FN trade-off for events. Unites = dB
+EventThreshold: 10.0
+################################################################################
+DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramImages: false
+DisplayCsvImage: false
+ParallelProcessing: false
+
+IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
+...

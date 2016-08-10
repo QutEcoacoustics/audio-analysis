@@ -146,7 +146,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         // used to save all spectrograms as dictionary of matrices 
         // IMPORTANT: The matrices are stored as they would appear in the LD spectrogram image. i.e. rotated 90 degrees anti-clockwise.
-        private Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
+        public Dictionary<string, double[,]> spectrogramMatrices = new Dictionary<string, double[,]>();
         // used if reading standard devaition matrices for tTest
         private Dictionary<string, double[,]> spgr_StdDevMatrices;                                      
 
@@ -636,10 +636,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (!withChrome)
             {
-                return bmp;
+                return bmp; 
             }
 
-            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            TimeSpan xAxisPixelDuration = this.IndexCalculationDuration; // TimeSpan.FromSeconds(60);
             int herzInterval = 1000;
             int nyquist = this.SampleRate / 2;
             if (nyquist < 5000) herzInterval = 500;

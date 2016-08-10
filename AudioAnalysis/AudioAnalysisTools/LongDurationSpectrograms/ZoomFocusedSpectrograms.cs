@@ -55,7 +55,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
             var sw = Stopwatch.StartNew();
-            string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "SUM", "SPT" };
+            string[] keys = { "ACI", "POW", "BGN", "CVR", "DIF", "ENT", "EVN", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(inputDirectory, fileStem + "__" + analysisType, keys);
             sw.Stop();
             LoggedConsole.WriteLine("Time to read spectral index files = " + sw.Elapsed.TotalSeconds + " seconds");
@@ -76,12 +76,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 TimeSpan imageScale = TimeSpan.FromSeconds(imageScales[i]);
                 image = DrawIndexSpectrogramAtScale(ldsConfig, indexGeneration, indexProperties, focalTime, dataScale, imageScale, imageWidth, spectra, fileStem);
-                if (image != null) imageList.Add(image);
+                if (image != null)
+                {
+                    imageList.Add(image);
+                    string name = String.Format("{0}_FocalZoom_min{1:f1}_scale{2}.png", fileStem, focalTime.TotalMinutes, imageScales[i]);
+                    image.Save(Path.Combine(outputDirectory.FullName, name));
+                }
+
             }
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from spectral indices. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
 
-
+            /***
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             int[] compressionFactor = { 8, 4, 2, 1 };
             int compressionCount = compressionFactor.Length;
@@ -125,6 +131,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from standard frames. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
+            *****/
 
             // combine the images into a stack  
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
@@ -183,9 +190,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 sourceMinuteOffset = dto.TimeOfDay + sourceMinuteOffset;
             }
 
-
             // calculate data duration from column count of abitrary matrix
-            var matrix = spectra["ACI"]; // assume this key will always be present!!
+            var kvp = spectra.First();
+            var matrix = kvp.Value;
+            //var matrix = spectra["ACI"]; // assume this key will always be present!!
             TimeSpan dataDuration = TimeSpan.FromSeconds(matrix.GetLength(1) * dataScale.TotalSeconds);
 
             TimeSpan recordingStartTime = TimeSpan.Zero; // default = zero minute of day i.e. midnight
@@ -216,6 +224,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 dataScale, imageScale, imageWidth, 
                 spectra,
                 basename);
+
+            if (LDSpectrogram == null)
+            {
+                LoggedConsole.WriteLine("WARNING: NO SPECTROGRAM AT SCALE "+ imageScale);
+                return null;
+            }
+
 
             // now chrome spectrogram
             Graphics g2 = Graphics.FromImage(LDSpectrogram);
@@ -311,9 +326,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     imageScale,
                     dataScale);
             }
+            // check that have not compressed matrices to zero length
+            // Assume that will always have an ACI matrix
+            if((spectralSelection["ACI"].GetLength(0) == 0)||(spectralSelection["ACI"].GetLength(1) == 0))
+                return null;
 
-            // DEFINE the colour maps for the false-colour spectrograms
-            // Obtained values from spectrogramDrawingConfig. NOTE: WE REQUIRE LENGTH = 11 chars.
+
+            // DEFINE the DEFAULT colour maps for the false-colour spectrograms
+            // Then obtain values from spectrogramDrawingConfig. NOTE: WE REQUIRE LENGTH = 11 chars.
             string colorMap1 = "ACI-ENT-EVN";
             if ((config.ColorMap1 != null) && (config.ColorMap1.Length == 11))
             {

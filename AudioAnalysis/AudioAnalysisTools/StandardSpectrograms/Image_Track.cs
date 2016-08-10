@@ -1023,7 +1023,6 @@
             int min = (int)startOffset.TotalMinutes - 1;
             var XaxisScale = gridInterval.TotalMinutes;
             Pen whitePen = new Pen(Color.White);
-            //Pen grayPen = new Pen(Color.Gray);
             Font stringFont = new Font("Arial", 9);
 
             for (int x = 0; x < trackWidth; x++) //for pixels in the line
@@ -1043,7 +1042,7 @@
             g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1);//draw lower boundary
             g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1);//draw right end boundary
 
-            g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth + 4, 3));
+            g.DrawString(title, stringFont, Brushes.White, new PointF(trackWidth - 30, 2));
             return bmp;
         }
 
@@ -1120,7 +1119,7 @@
             double pixelInterval = 0;
             foreach (double gridInterval in gridIntervals)
             {
-                if (pixelInterval > 111) break;
+                if (pixelInterval > 51) break;
                 pixelInterval = gridInterval / (double)pixelDuration;
             }
             TimeSpan ts = TimeSpan.FromMinutes(pixelInterval * pixelDuration);
