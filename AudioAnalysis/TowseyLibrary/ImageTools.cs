@@ -2861,57 +2861,34 @@ namespace TowseyLibrary
         /// Assumes that all images have the same width.
         /// </summary>
         /// <param name="array"></param>
+        /// <param name="maximumWidth">The maximum width of the output images</param>
         /// <returns></returns>
-        public static Image CombineImagesVertically(Image[] array)
+        public static Image CombineImagesVertically(Image[] array, int? maximumWidth = null)
         {
-            int width = array[0].Width;   // assume all images have the same width
+            int width = maximumWidth ?? array[0].Width;   // assume all images have the same width
 
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
             {
-                if (null == array[i]) continue;
+                if (null == array[i])
+                {
+                    continue;
+                }
                 compositeHeight += array[i].Height;
             }
 
             Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
             int yOffset = 0;
             Graphics gr = Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
-
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (null == array[i]) continue;
-                gr.DrawImage(array[i], 0, yOffset); //draw in the top image
-                yOffset += array[i].Height;
-            }
-            return (Image)compositeBmp;
-        }
-
-        /// <summary>
-        /// Stacks the passed images one on top of the other. 
-        /// Assumes that all images have the same width.
-        /// </summary>
-        /// <param name="array"></param>
-        /// <returns></returns>
-        public static Image CombineImagesVertically(Image[] array, int maximumWidth)
-        {
-            //int width = array[0].Width;   // assume all images have the same width
-
-            int compositeHeight = 0;
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (null == array[i]) continue;
-                compositeHeight += array[i].Height;
-            }
-
-            Bitmap compositeBmp = new Bitmap(maximumWidth, compositeHeight, PixelFormat.Format24bppRgb);
-            int yOffset = 0;
-            Graphics gr = Graphics.FromImage(compositeBmp);
+            //gr.Clear(Color.Black);
             gr.Clear(Color.DarkGray);
 
             for (int i = 0; i < array.Length; i++)
             {
-                if (null == array[i]) continue;
+                if (null == array[i])
+                {
+                    continue;
+                }
                 gr.DrawImage(array[i], 0, yOffset); //draw in the top image
                 yOffset += array[i].Height;
             }

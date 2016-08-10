@@ -275,6 +275,8 @@ namespace AnalysisPrograms
             }
             else if (found && ex.GetType() != typeof(Exception))
             {
+                NoConsole.Log.Fatal("Fatal exception:", ex);
+
                 // print usage, if exception is recognized
                 // --
                 // attempt to retrieve action
@@ -306,9 +308,16 @@ namespace AnalysisPrograms
                     ExceptionLookup.ErrorLevels.TryGetValue(ex.InnerException.GetType(), out style);
                     PrintUsage(ex.Message, Usages.Single, action);
                 }
+                else if (ex.InnerException is TargetInvocationException)
+                {
+                    var message = FatalMessage;
+                    message += FormatTargetInvocationException(ex.InnerException);
+                    PrintUsage(message, Usages.Single, action ?? string.Empty);
+                }
                 else
                 {
-                    PrintUsage(FatalMessage + ex.Message, Usages.Single, action ?? string.Empty);
+                    var message = FatalMessage + ex.Message;
+                    PrintUsage(message, Usages.Single, action ?? string.Empty);
                 }
             }
             else
@@ -366,6 +375,31 @@ namespace AnalysisPrograms
                 }
             }
 
+        }
+
+        /// <summary>
+        ///  Return the message of the first inner exception that is not an Invocation exception.
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <param name="depth"></param>
+        private static string FormatTargetInvocationException(Exception ex, int depth = 0)
+        {
+            var depthString = "==".PadLeft(depth * 2, '=');
+
+            var message = string.Empty;
+
+            if (ex is TargetInvocationException)
+            {
+                var tiex = (TargetInvocationException)ex;
+
+                message += FormatTargetInvocationException(tiex.InnerException, depth + 1);
+            }
+            else
+            {
+                message = depthString + "> Inner exception: " + ex.Message + Environment.NewLine;
+            }
+
+            return message;
         }
 
         /// <summary>

@@ -235,19 +235,19 @@
         /// <exception cref="ArgumentException">Mp3Splt cannot perform this type of request.</exception>
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
-            if (request.Channel.HasValue)
+            if (request.Channels.NotNull())
             {
-                throw new ArgumentException("Mp3Splt cannot modify the channel.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Mp3Splt cannot modify the channel.");
             }
 
             if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
             {
-                throw new ArgumentException("Mp3Splt cannot mix down the channels to mono.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Mp3Splt cannot mix down the channels to mono.");
             }
 
             if (request.TargetSampleRate.HasValue)
             {
-                throw new ArgumentException("Mp3Splt cannot modify the sample rate.", "request");
+                throw new ArgumentException("Mp3Splt cannot modify the sample rate.", nameof(request));
             }
         }
 

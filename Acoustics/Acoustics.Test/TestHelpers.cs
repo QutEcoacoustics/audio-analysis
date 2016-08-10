@@ -3,21 +3,29 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
 
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
+    using Acoustics.Tools.Wav;
+
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using MSTestExtensions;
+
+    using TowseyLibrary;
 
     /// <summary>
     /// The test helper.
     /// </summary>
     public static class TestHelper
     {
-        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo>
-            {
+        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo> {
                 {
                     "06Sibylla.asf",
                     new AudioUtilityInfo
@@ -102,10 +110,10 @@
                     "Lewins Rail Kekkek.webm",
                     new AudioUtilityInfo
                         {
-                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.7),
+                            Duration = TimeSpan.FromMinutes(1) + TimeSpan.FromSeconds(0.257),
                             SampleRate = 22050,
                             ChannelCount = 1,
-                            BitsPerSecond = 43032,
+                            BitsPerSecond = 66000,
                             MediaType = MediaTypes.MediaTypeWebMAudio,
                             //BitsPerSample = 32 // only relevant to PCM data
                         }
@@ -142,6 +150,90 @@
                             ChannelCount = 1,
                             BitsPerSecond = 158000,
                             MediaType = MediaTypes.MediaTypeWavpack,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.wav",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 2822400,
+                            MediaType = MediaTypes.MediaTypeWav,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.flac",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 693000,
+                            MediaType = MediaTypes.MediaTypeFlacAudio,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.mp3",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 125000,
+                            MediaType = MediaTypes.MediaTypeMp3,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.ogg",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 693000,
+                            MediaType = MediaTypes.MediaTypeOggAudio,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "4channelsPureTones.wv",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(60.0),
+                            SampleRate = 44100,
+                            ChannelCount = 4,
+                            BitsPerSecond = 1275000,
+                            MediaType = MediaTypes.MediaTypeWavpack,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "different_channels_tone.wav",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(30.0),
+                            SampleRate = 22050,
+                            ChannelCount = 2,
+                            BitsPerSecond = 705000,
+                            MediaType = MediaTypes.MediaTypeWav,
+                            BitsPerSample = 16
+                        }
+                },
+                {
+                    "different_channels_tone.mp3",
+                    new AudioUtilityInfo
+                        {
+                            Duration = TimeSpan.FromSeconds(30.07),
+                            SampleRate = 22050,
+                            ChannelCount = 2,
+                            BitsPerSecond = 64000,
+                            MediaType = MediaTypes.MediaTypeMp3,
                             BitsPerSample = 16
                         }
                 }
@@ -390,17 +482,24 @@
             }
         }
 
-        public static DirectoryInfo GetResourcesBaseDir()
+        public static string GetResourcesBaseDir()
         {
-            return AppConfigHelper.GetDir("BaseTestResourcesDir", true);
+            return AppConfigHelper.GetString("BaseTestResourcesDir");
+        }
+
+        public static FileInfo GetExe(string exePath)
+        {
+            //var resourcesBaseDir = TestHelper.GetResourcesBaseDir();
+
+            //return new FileInfo(Path.Combine(exePath, resourcesBaseDir));
+            return new FileInfo(exePath);
         }
 
         public static FileInfo GetTestAudioFile(string filename)
         {
             return
                 new FileInfo(
-                    Path.Combine(
-                        GetResourcesBaseDir().FullName, AppConfigHelper.GetString("TestAudioDir"), filename));
+                    Path.Combine(AppConfigHelper.GetString("TestAudioDir"), filename));
         }
 
         public static FileInfo GetAnalysisConfigFile(string identifier)
@@ -408,11 +507,11 @@
             return
                new FileInfo(
                    Path.Combine(
-                       GetResourcesBaseDir().FullName, AppConfigHelper.GetString("AnalysisConfigDir"), identifier + ".cfg"));
+                       GetResourcesBaseDir(), AppConfigHelper.GetString("AnalysisConfigDir"), identifier + ".cfg"));
 
         }
 
-        public static void CheckAudioUtilityInfo(AudioUtilityInfo expected, AudioUtilityInfo actual)
+        public static void CheckAudioUtilityInfo(AudioUtilityInfo expected, AudioUtilityInfo actual, int epsilonDurationMilliseconds = 150)
         {
             if (expected.BitsPerSample.HasValue && actual.BitsPerSample.HasValue)
             {
@@ -434,19 +533,19 @@
                 Assert.Fail("BitsPerSecond");
             }
 
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(expected.MediaType));
+            Assert.IsTrue(!String.IsNullOrWhiteSpace(expected.MediaType));
             Assert.IsTrue(expected.ChannelCount.HasValue);
             Assert.IsTrue(expected.Duration.HasValue);
             Assert.IsTrue(expected.SampleRate.HasValue);
 
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(actual.MediaType));
+            Assert.IsTrue(!String.IsNullOrWhiteSpace(actual.MediaType));
             Assert.IsTrue(actual.ChannelCount.HasValue);
             Assert.IsTrue(actual.Duration.HasValue);
             Assert.IsTrue(actual.SampleRate.HasValue);
 
             Assert.AreEqual(expected.MediaType, actual.MediaType);
             Assert.AreEqual(expected.ChannelCount.Value, actual.ChannelCount.Value);
-            Assert.AreEqual(expected.Duration.Value.TotalMilliseconds, actual.Duration.Value.TotalMilliseconds, TimeSpan.FromMilliseconds(150).TotalMilliseconds);
+            Assert.AreEqual(expected.Duration.Value.TotalMilliseconds, actual.Duration.Value.TotalMilliseconds, TimeSpan.FromMilliseconds(epsilonDurationMilliseconds).TotalMilliseconds);
             Assert.AreEqual(expected.SampleRate.Value, actual.SampleRate.Value);
         }
 
@@ -468,9 +567,7 @@
 
         public static IAudioUtility GetAudioUtilitySox()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var soxExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.SoxExe));
+            var soxExe = GetExe(AppConfigHelper.SoxExe);
 
             var sox = new SoxAudioUtility(soxExe);
 
@@ -479,10 +576,8 @@
 
         public static IAudioUtility GetAudioUtilityFfmpeg()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var ffmpegExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfmpegExe));
-            var ffprobeExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.FfprobeExe));
+            var ffmpegExe = GetExe(AppConfigHelper.FfmpegExe);
+            var ffprobeExe = GetExe(AppConfigHelper.FfprobeExe);
            
             var ffmpeg = new FfmpegAudioUtility(ffmpegExe, ffprobeExe);
 
@@ -491,9 +586,7 @@
 
         public static IAudioUtility GetAudioUtilityWavunpack()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var wavunpackExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.WvunpackExe));
+            var wavunpackExe = GetExe(AppConfigHelper.WvunpackExe);
 
             var util = new WavPackAudioUtility(wavunpackExe);
 
@@ -502,9 +595,7 @@
 
         public static IAudioUtility GetAudioUtilityMp3Splt()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var mp3SpltExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.Mp3SpltExe));
+            var mp3SpltExe = GetExe(AppConfigHelper.Mp3SpltExe);
             
             var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
 
@@ -513,13 +604,60 @@
 
         public static IAudioUtility GetAudioUtilityShntool()
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-
-            var shntoolExe = new FileInfo(Path.Combine(baseresourcesdir, AppConfigHelper.ShntoolExe));
+            var shntoolExe = GetExe(AppConfigHelper.ShntoolExe);
 
             var shntool = new ShntoolAudioUtility(shntoolExe);
 
             return shntool;
+        }
+
+        public static void AssertFrequencyInSignal(WavReader wavReader, double[] signal, int[] frequencies, int variance = 1)
+        {
+            var fft = DSP_Frames.ExtractEnvelopeAndFFTs(signal, wavReader.SampleRate, wavReader.Epsilon, 512, 0.0);
+
+            var histogram = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(fft.amplitudeSpectrogram);
+
+            var max = histogram.Max();
+            double threshold = max * 0.8;
+            var highBins = frequencies.Select(f => (int)(f / fft.FreqBinWidth)).ToArray();
+
+            bool isOk = true;
+            for (int bin = 0; bin < histogram.Length; bin++)
+            {
+                var value = histogram[bin];
+                if (value > threshold)
+                {
+                    bool anyMatch = false;
+                    foreach (var highBin in highBins)
+                    {
+                        if ((bin >= highBin - variance) && (bin <= highBin + variance))
+                        {
+                            anyMatch = true;
+                            break;
+                        }
+                    }
+                    isOk = anyMatch;
+                }
+
+                if (!isOk)
+                {
+                    break;
+                }
+            }
+
+            BaseTest.Assert.IsTrue(isOk);
+        }
+
+        public static void WavReaderAssertions(WavReader reader, AudioUtilityInfo info)
+        {
+            BaseTest.Assert.AreEqual(info.ChannelCount.Value, reader.Channels);
+            BaseTest.Assert.AreEqual(info.BitsPerSample.Value, reader.BitsPerSample);
+            BaseTest.Assert.AreEqual(info.SampleRate.Value, reader.SampleRate);
+            BaseTest.Assert.AreEqual(info.Duration.Value.TotalMilliseconds, reader.Time.TotalMilliseconds, 150);
+            BaseTest.Assert.AreEqual(
+                (int)(info.Duration.Value.TotalSeconds * info.SampleRate.Value),
+                reader.BlockCount,
+                100);
         }
     }
 

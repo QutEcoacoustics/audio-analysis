@@ -203,6 +203,11 @@ namespace Acoustics.Shared
         public const string ExtOgg = "ogg";
 
         /// <summary>
+        /// The ext ogg.
+        /// </summary>
+        public const string ExtFlac = "flac";
+
+        /// <summary>
         /// The ext ogg audio.
         /// </summary>
         public const string ExtOggAudio = "oga";
@@ -418,6 +423,16 @@ namespace Acoustics.Shared
                             // : Ogg Vorbis, Speex, Flac and other audio; Defined in RFC 5334
 
         /// <summary>
+        /// The media type for flac audio.
+        /// </summary>
+        public const string MediaTypeFlacAudio = "audio/x-flac";
+
+        /// <summary>
+        /// The media type for flac audio.
+        /// </summary>
+        public const string MediaTypeFlacAudio1 = "audio/flac";
+
+        /// <summary>
         /// The media type ogg video.
         /// </summary>
         public const string MediaTypeOggVideo = "video/ogg";
@@ -547,6 +562,8 @@ namespace Acoustics.Shared
                 new MediaTypeExtGroup { MediaType = MediaTypeMp31, Extension = ExtMp3, Group = MediaTypeGroup.Audio }, 
                 new MediaTypeExtGroup { MediaType = MediaTypeOggAudio, Extension = ExtOgg, Group = MediaTypeGroup.Audio }, 
                 // : Ogg Vorbis, Speex, Flac and other audio; Defined in RFC 5334
+                new MediaTypeExtGroup { MediaType = MediaTypeFlacAudio, Extension = ExtFlac, Group = MediaTypeGroup.Audio },
+                new MediaTypeExtGroup { MediaType = MediaTypeFlacAudio1, Extension = ExtFlac, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup
                     {
                        MediaType = MediaTypeOggAudio, Extension = ExtOggAudio, Group = MediaTypeGroup.Audio 

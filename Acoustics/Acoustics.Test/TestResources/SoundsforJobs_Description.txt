@@ -1,0 +1,8 @@
+BAC2_20071008-075040.wav:                                	contains Lewin's rail Kekkek - use for OD and MFCC_OD.
+HoneymoonBay_StBees_20081027-023000.wav       				Contains both male and female koalas. Use to check for Harmonics (HD in Females) and Oscillations (Male)
+DM420011_00m_00s__02m_00s.wav:                				Canetoad      Use for testing Oscillation detector
+geckos_suburban_104.mp3:                                    Gecko - use for testing Oscillation Detector
+West_Knoll_Bees_20091102-183000.mp3:                		Currawongs and one curlew
+Top_Knoll_St_Bees_Curlew1_20080922-023000.wav        		Contains a curlew
+groundParrot_Perigian.wav                                   Contains several ground parrots - Scott Burnett's ground parrot recording.
+GroundParrot_20090605-173000_Calls.wav                      Our ground parrot recording

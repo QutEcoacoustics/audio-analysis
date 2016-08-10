@@ -44,11 +44,12 @@ namespace AudioAnalysisTools.Indices
         public const int DefaultWindowSize = 256;
 
         // semi-arbitrary bounds between lf, mf and hf bands of the spectrum
-        public static int DefaultLowFreqBound = 500;
+        // The midband, 1000Hz to 8000Hz, covers the bird-band in SERF & Gympie recordings.
+        public static int DefaultLowFreqBound = 1000;
 
-        public static int DefaultMidFreqBound = 4000;
+        public static int DefaultMidFreqBound = 8000;
 
-        public static int DefaultHighFreqBound = 8010;
+        public static int DefaultHighFreqBound = 11000;
 
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -118,7 +119,7 @@ namespace AudioAnalysisTools.Indices
         {
             string recordingFileName = recording.FileName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
-            int signalLength = recording.WavReader.Samples.Length;
+            int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate   = recording.WavReader.SampleRate; 
             TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
@@ -312,13 +313,13 @@ namespace AudioAnalysisTools.Indices
             // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI 
             spectralIndices.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
 
-            // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that contain anthropophony.
+            // calculate bin id of boundary between low & mid frequency bands. This is to avoid low freq bins that likely contain anthropogenic noise.
             int lowerBinBound = (int)Math.Ceiling(LowFreqBound / dspOutput1.FreqBinWidth);
             // calculate bin id of upper boundary of bird-band. This is to avoid high freq artefacts due to mp3 compression.
-            int higherBinBound = (int)Math.Ceiling(HihFreqBound / dspOutput1.FreqBinWidth);
+            int upperBinBound = (int)Math.Ceiling(MidFreqBound / dspOutput1.FreqBinWidth);
             // calculate number of freq bins in the reduced bird-band.
             //int reducedFreqBinCount = amplitudeSpectrogram.GetLength(1) - lowerBinBound;
-            int reducedFreqBinCount = higherBinBound - lowerBinBound;
+            int midBandBinCount = upperBinBound - lowerBinBound + 1;
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
             // original sample rate can be anything 11.0-44.1 kHz.
@@ -338,7 +339,7 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.ACI = aciSpectrum;
 
             // remove low freq band of ACI spectrum and store average ACI value
-            double[] reducedAciSpectrum = DataTools.Subarray(aciSpectrum, lowerBinBound, reducedFreqBinCount);
+            double[] reducedAciSpectrum = DataTools.Subarray(aciSpectrum, lowerBinBound, midBandBinCount);
             result.SummaryIndexValues.AcousticComplexity = reducedAciSpectrum.Average();
 
             // iii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
@@ -361,7 +362,7 @@ namespace AudioAnalysisTools.Indices
 
 
             // v: ENTROPY OF AVERAGE SPECTRUM & VARIANCE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram
-            var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, reducedFreqBinCount);
+            var tuple = AcousticEntropy.CalculateSpectralEntropies(amplitudeSpectrogram, lowerBinBound, midBandBinCount);
             // ENTROPY of spectral averages - Reverse the values i.e. calculate 1-Hs and 1-Hv, and 1-Hcov for energy concentration
             summaryIndices.EntropyOfAverageSpectrum = 1 - tuple.Item1;
             // ENTROPY of spectrum of Variance values
@@ -373,9 +374,8 @@ namespace AudioAnalysisTools.Indices
 
             // vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.
             //     First extract High band SPECTROGRAM which is now noise reduced
-            double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, higherBinBound);
+            double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, upperBinBound);
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
-
 
             // vii: calculate RAIN and CICADA indices.  //################ NO LONGER USED - NO WARNING REQUIRED
             //if (!warned)
@@ -484,28 +484,38 @@ namespace AudioAnalysisTools.Indices
 
 
             // ######################################################################################################################################################
-            // return if activeFrameCount too small or segmentCount == 0  because no point doing clustering
-            if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0))
+            // return if (activeFrameCount too small || segmentCount == 0 || short index calc duration) because no point doing clustering
+            if ((activity.activeFrameCount <= 2) || (activity.eventCount == 0) || (indexCalculationDuration.TotalSeconds < 10))
             {
-                //summaryIndices.ClusterCount = 0;
-                //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
-                //summaryIndices.ThreeGramCount = 0;
                 result.Sg = sonogram;
                 result.Hits = hits;
                 result.TrackScores = scores;
+
+                // IN ADDITION return if indexCalculationDuration < 10 seconds because no point doing clustering on short time segment
+                // NOTE: Activity was calculated with 3dB threshold AFTER backgroundnoise removal.
+                summaryIndices.ClusterCount = 0;
+                //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
+                summaryIndices.ThreeGramCount = 0;
+                //spectralIndices.CLS = new double[freqBinCount];
                 return result;
             }
 
-            /*
             // #######################################################################################################################################################
             // xiv: CLUSTERING - to determine spectral diversity and spectral persistence. Only use midband AMPLITDUE SPECTRUM
+            //                   In June 2016, the mid-band (i.e. the bird-band) was set to lowerBound=1000Hz, upperBound=8000hz.
 
-            // for deriving binary spectrogram
-            const double BinaryThreshold = 0.06;
+            // SET CLUSTERING VERBOSITY.
+            //SpectralClustering.Verbose = true;
 
-            // ACTIVITY THRESHOLD - require activity in at least N bins to include for training
+            // NOTE: The midBandAmplSpectrogram is derived from the amplitudeSpectrogram by removing low freq band AND high freq band.
+            // NOTE: The amplitudeSpectrogram is already noise reduced at this stage.
+            // Set threshold for deriving binary spectrogram - DEFAULT=0.06 prior to June2016
+            const double BinaryThreshold = 0.12;
+
+            // ACTIVITY THRESHOLD - require activity in at least N freq bins to include the spectrum for training
+            //                      DEFAULT was N=2 prior to June 2016. You can increase threshold to reduce cluster count due to noise.
             const double RowSumThreshold = 2.0;
-            var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, nyquistBin - 1);
+            var midBandAmplSpectrogram = MatrixTools.Submatrix(amplitudeSpectrogram, 0, lowerBinBound, amplitudeSpectrogram.GetLength(0) - 1, upperBinBound);
             var parameters = new SpectralClustering.ClusteringParameters(lowerBinBound, midBandAmplSpectrogram.GetLength(1), BinaryThreshold, RowSumThreshold);
 
             SpectralClustering.TrainingDataInfo data = SpectralClustering.GetTrainingDataForClustering(midBandAmplSpectrogram, parameters);
@@ -521,16 +531,16 @@ namespace AudioAnalysisTools.Indices
             if (data.trainingData.Count <= 8)     
             {
                 clusterInfo.clusterHits2 = null;
-                //summaryIndices.ClusterCount = 0;
+                summaryIndices.ClusterCount = 0;
                 //summaryIndices.AvgClusterDuration = TimeSpan.Zero;
-                //summaryIndices.ThreeGramCount = 0;
+                summaryIndices.ThreeGramCount = 0;
             }
             else
             {
                 clusterInfo = SpectralClustering.ClusterAnalysis(data.trainingData, WtThreshold, HitThreshold, data.selectedFrames);
-                //summaryIndices.ClusterCount = clusterInfo.clusterCount;
+                summaryIndices.ClusterCount = clusterInfo.clusterCount;
                 //summaryIndices.AvgClusterDuration = TimeSpan.FromSeconds(clusterInfo.av2 * frameTimeSpan.TotalSeconds); // av cluster duration
-                //summaryIndices.ThreeGramCount = clusterInfo.triGramUniqueCount;
+                summaryIndices.ThreeGramCount = clusterInfo.triGramUniqueCount;
 
                 double[] clusterSpectrum = clusterInfo.clusterSpectrum;
                 spectralIndices.CLS = SpectralClustering.RestoreFullLengthSpectrum(clusterSpectrum, freqBinCount, data.lowBinBound, data.reductionFactor);
@@ -539,9 +549,9 @@ namespace AudioAnalysisTools.Indices
             // xv: STORE CLUSTERING IMAGES
             if (returnSonogramInfo)
             {
-                ////bool[] selectedFrames = tuple_Clustering.Item3;
-                ////scores.Add(DataTools.Bool2Binary(selectedFrames));
-                ////List<double[]> clusterWts = tuple_Clustering.Item4;
+                //bool[] selectedFrames = tuple_Clustering.Item3;
+                //scores.Add(DataTools.Bool2Binary(selectedFrames));
+                //List<double[]> clusterWts = tuple_Clustering.Item4;
                 int[] clusterHits = clusterInfo.clusterHits2;
                 string label = string.Format(clusterInfo.clusterCount + " Clusters");
                 if (clusterHits == null)
@@ -551,7 +561,7 @@ namespace AudioAnalysisTools.Indices
 
                 scores.Add(new Plot(label, DataTools.normalise(clusterHits), 0.0)); // location of cluster hits
             }
-            */
+           
 
 
             result.Sg = sonogram;

@@ -59,12 +59,6 @@ Output  to  directory: {1}
                 arguments = Dev();
             }
 
-            // optionally copy logs / config to make results easier to understand
-            if (arguments.WhenExitCopyConfig || arguments.WhenExitCopyLog)
-            {
-                AppDomain.CurrentDomain.ProcessExit += (sender, args) => { Cleanup(arguments); };
-            }
-
             LoggedConsole.WriteLine("# PROCESS LONG RECORDING");
             LoggedConsole.WriteLine("# DATE AND TIME: " + DateTime.Now);
 
@@ -81,10 +75,27 @@ Output  to  directory: {1}
                 tempFilesDirectory = arguments.Output;
             }
 
+            // try an automatically find the config file
+            if (configFile == null)
+            {
+                throw new FileNotFoundException("No config file argument provided");
+            }
+            else if (!configFile.Exists)
+            {
+                Log.Warn($"Config file {configFile.FullName} not found... attempting to resolve config file");
+                configFile = ConfigFile.ResolveConfigFile(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
+            }
+
             LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
             LoggedConsole.WriteLine("# Temp File Directory: " + tempFilesDirectory);
+
+            // optionally copy logs / config to make results easier to understand
+            if (arguments.WhenExitCopyConfig || arguments.WhenExitCopyLog)
+            {
+                AppDomain.CurrentDomain.ProcessExit += (sender, args) => { Cleanup(arguments, configFile); };
+            }
 
             // 2. get the analysis config
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -137,7 +148,7 @@ Output  to  directory: {1}
 
 
             // 3. initilise AnalysisCoordinator class that will do the analysis
-            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles)
+            var analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(), saveIntermediateWavFiles, saveSonogramsImages, saveIntermediateCsvFiles, arguments.Channels, arguments.MixDownToMono)
             {
                 // create and delete directories
                 DeleteFinished = !saveIntermediateWavFiles,  
@@ -300,7 +311,7 @@ Output  to  directory: {1}
                     // set time scale resolution for drawing of summary index tracks
                     TimeSpan timeScale = TimeSpan.FromSeconds(0.1);
                     Bitmap tracksImage =
-                        DrawSummaryIndices.DrawImageOfSummaryIndices(
+                        IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
                             indicesFile,
                             imageTitle,
@@ -352,16 +363,16 @@ Output  to  directory: {1}
             return analyser;
         }
 
-
         /// <summary>
         /// Generic organization of resources after a run
         /// </summary>
         /// <param name="args"></param>
-        private static void Cleanup(AnalyseLongRecording.Arguments args)
+        /// <param name="configFile"></param>
+        private static void Cleanup(Arguments args, FileInfo configFile)
         {
             if (args.WhenExitCopyConfig)
             {
-                args.Config.CopyTo(Path.Combine(args.Output.FullName, args.Config.Name), true);
+                configFile.CopyTo(Path.Combine(args.Output.FullName, args.Config.Name), true);
             }
 
             if (args.WhenExitCopyLog)

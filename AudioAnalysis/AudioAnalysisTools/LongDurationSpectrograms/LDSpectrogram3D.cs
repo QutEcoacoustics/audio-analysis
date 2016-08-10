@@ -335,7 +335,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image FrameSliceOf3DSpectrogram_DayOfYear(Image bmp1, Image titleBar, int year, int dayOfYear, TimeSpan X_interval, int HerzValue, FileInfo sunriseSetData, int nyquistFreq)
         {
 
-            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, sunriseSetData, dayOfYear);
+            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, sunriseSetData, year, dayOfYear);
 
             Graphics g = Graphics.FromImage(bmp1);
             Pen pen = new Pen(Color.White);
