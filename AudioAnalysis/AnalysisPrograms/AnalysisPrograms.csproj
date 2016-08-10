@@ -236,6 +236,9 @@
     <Compile Include="DrawZoomingSpectrograms.cs" />
     <Compile Include="HerveGlotinCollaboration.cs" />
     <Compile Include="HighResolutionAcousticIndices.cs" />
+    <Compile Include="Recognizers\Base\IEventRecognizer.cs" />
+    <Compile Include="Recognizers\Base\RecognizerBase.cs" />
+    <Compile Include="Recognizers\Base\RecognizerResults.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
