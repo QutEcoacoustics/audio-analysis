@@ -6,7 +6,6 @@ using System.Text;
 
 
 using Acoustics.Shared;
-using PowerArgs;
 
 using TowseyLibrary;
 using AudioAnalysisTools.Indices;
@@ -95,20 +94,17 @@ namespace AudioAnalysisTools
         } //Dev()
 
 
-
+        /// <summary>
+        /// AT: NOTE: arguments classes should not exist outside of the AnalysisPrograms project. I had to remove PowerArgs attributes.
+        /// </summary>
         public class Arguments
         {
-            [ArgDescription("Directory where the input data is located.")]
             public DirectoryInfo InputDataDirectory { get; set; }
 
-            [ArgDescription("Directory where the output is to go.")]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [ArgDescription("User specified file containing a list of indices and their properties.")]
             public FileInfo IndexPropertiesConfig { get; set; }
 
-            [ArgDescription("Config file specifying directory containing indices.csv files and other parameters.")]
-            //[ArgPosition(1)]
             public FileInfo SpectrogramConfigPath { get; set; }
 
             public int SpeciesCount { get; set; }
@@ -203,7 +199,7 @@ namespace AudioAnalysisTools
 
         public static Output GetInstanceRepresentations(Arguments arguments)
         {
-            Console.WriteLine("1. Read in all Instances and do feature extraction");
+            LoggedConsole.WriteLine("1. Read in all Instances and do feature extraction");
 
             //################################### FEATURE WEIGHTS
             //TRY DIFFERENT WEIGHTINGS assuming following "SPT,RHZ,RVT,RPS,RNG";
@@ -223,7 +219,7 @@ namespace AudioAnalysisTools
             double[] reducedArray = MaxPoolingLimited(testArray, startBin, maxOf2Bin, maxOf3Bin, endBin);
             int reducedSpectralLength = reducedArray.Length;
 
-            Console.WriteLine("     Reduced spectral length = " + reducedSpectralLength);
+            LoggedConsole.WriteLine("     Reduced spectral length = " + reducedSpectralLength);
             int instanceCount = arguments.InstanceCount;
             int speciesCount = arguments.SpeciesCount;
 
@@ -248,7 +244,7 @@ namespace AudioAnalysisTools
             if (doDeltaFeatures)
             {
                     totalFeatureCount *= 2;
-                    Console.WriteLine("    Total Delta Feature Count = " + totalFeatureCount);
+                LoggedConsole.WriteLine("    Total Delta Feature Count = " + totalFeatureCount);
             }
 
             // one matrix row per species
@@ -258,7 +254,7 @@ namespace AudioAnalysisTools
             // loop through all all instances 
             for (int j = 0; j < instanceCount; j++)
             {
-                Console.Write(".");
+                LoggedConsole.Write(".");
                 int frameCount = 0;
                 // get the spectral index files
                 int speciesLabel = speciesID[j];
@@ -352,11 +348,11 @@ namespace AudioAnalysisTools
 
             } // end for loop j over all instances
 
-            Console.WriteLine("Done!");
+            LoggedConsole.WriteLine("Done!");
 
 
-            Console.WriteLine("\nSum of species number array = " + instanceNumbersPerSpecies.Sum());
-            Console.WriteLine("Sum of  frame  number array = " + frameNumbersPerInstance.Sum());
+            LoggedConsole.WriteLine("\nSum of species number array = " + instanceNumbersPerSpecies.Sum());
+            LoggedConsole.WriteLine("Sum of  frame  number array = " + frameNumbersPerInstance.Sum());
             bool addLineNumbers = true;
             string countsArrayOutputFilePath = Path.Combine(arguments.OutputDirectory.FullName, "BirdClef50_training_Counts.txt");
             FileTools.WriteArray2File(instanceNumbersPerSpecies, addLineNumbers, countsArrayOutputFilePath);
@@ -381,7 +377,7 @@ namespace AudioAnalysisTools
 
         public static void GetSpeciesRepresentations(Arguments arguments, Output output)
         {
-            Console.WriteLine("\n\n2a. Obtain feature representation of every species.");
+            LoggedConsole.WriteLine("\n\n2a. Obtain feature representation of every species.");
 
             int instanceCount = arguments.InstanceCount;
             int speciesCount = arguments.SpeciesCount;
@@ -398,7 +394,7 @@ namespace AudioAnalysisTools
             for (int i = 0; i < speciesCount; i++)
             {
                 int speciesLabel = i + 1;
-                Console.Write(" " + speciesLabel);
+                LoggedConsole.Write(" " + speciesLabel);
 
                 // loop through all instances multiple times - once for each species
                 for (int j = 0; j < instanceCount; j++)
@@ -417,7 +413,7 @@ namespace AudioAnalysisTools
                 } // end for loop j over all instances
 
             } // loop through all 50 species
-            Console.WriteLine(" Done");
+            LoggedConsole.WriteLine(" Done");
 
             output.SpeciesFeatureMatrix   = speciesFeatureMatrix;
             output.FrameNumbersPerSpecies = frameNumbersPerSpecies;
@@ -427,7 +423,7 @@ namespace AudioAnalysisTools
 
         public static void DrawSpeciesImages(Arguments arguments, Output output)
         {
-            Console.WriteLine("2b. Draw feature representation of every species.");
+            LoggedConsole.WriteLine("2b. Draw feature representation of every species.");
             int scalingFactor = 20;
             int imageHeight = 100;
 
@@ -622,17 +618,17 @@ namespace AudioAnalysisTools
             { 
                     diagonalSum += output.ConfusionMatrix[r, r];
             }
-            Console.WriteLine("Diagonal Sum = " + diagonalSum);
-            Console.WriteLine("% Accuracy = " + (100 * diagonalSum / instanceCount));
+            LoggedConsole.WriteLine("Diagonal Sum = " + diagonalSum);
+            LoggedConsole.WriteLine("% Accuracy = " + (100 * diagonalSum / instanceCount));
 
 
-            Console.WriteLine("% Rank");
+            LoggedConsole.WriteLine("% Rank");
             for (int rank = 0; rank < maxRank; rank++)
             {
                 var colSum = MatrixTools.SumColumn(output.RankOrderMatrix, rank);
                 double acc = 100 * colSum / (double)instanceCount;
                 string str = String.Format("{0}   % Acc = {1:f2}", rank, acc);
-                Console.WriteLine(str);
+                LoggedConsole.WriteLine(str);
             }
 
 
@@ -726,7 +722,7 @@ namespace AudioAnalysisTools
 
             if (((speciesLabelsFile != null)) && (lines.Count != count))
             {
-                Console.WriteLine("lineCount != count    {0}  !=  {1}", lines.Count, count);
+                LoggedConsole.WriteLine("lineCount != count    {0}  !=  {1}", lines.Count, count);
                 return;
             }
 

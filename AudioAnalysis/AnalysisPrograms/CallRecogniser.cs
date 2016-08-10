@@ -52,15 +52,15 @@ namespace AnalysisPrograms
             {
                 var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Limnodynastes_convexiusculus.yml");
                 Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
-                Limnodynastes_convex.LimConResults results = Limnodynastes_convex.Analysis(dictionaryOfHiResSpectralIndices, recording, configuration, analysisSettings);
+                LimnodynastesConvex.LimnodynastesConvexResults results = LimnodynastesConvex.Analysis(dictionaryOfHiResSpectralIndices, recording, configuration, analysisSettings);
                 scores = results.Plot.data;
                 predictedEvents = results.Events; 
             }
-            else if (name == "Litoria_fallax")
+            else if (name == "LitoriaFallax")
             {
-                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Litoria_fallax.yml");
+                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaFallax.yml");
                 Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
-                Litoria_fallax.LitoriaFallaxResults results = Litoria_fallax.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+                LitoriaFallax.LitoriaFallaxResults results = LitoriaFallax.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
                 scores = results.Plot.data;
                 predictedEvents = results.Events; 
             }

@@ -1,7 +1,7 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Limnodynastes_convex.cs" company="QutBioacoustics">
+// <copyright file="LimnodynastesConvex.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
-//  The ACTION code for this analysis is: "Limnodynastes_convex"
+//  The ACTION code for this analysis is: "LimnodynastesConvex"
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
@@ -29,6 +29,8 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
 
+    using Emgu.CV.UI;
+
     using TowseyLibrary;
 
     using ProcessRunner = TowseyLibrary.ProcessRunner;
@@ -44,52 +46,32 @@ namespace AnalysisPrograms
     /// So I have combined the three recognisers into one analysis.
     /// 
     /// </summary>
-    public class Limnodynastes_convex : AbstractStrongAnalyser
+    public class LimnodynastesConvex : AbstractStrongAnalyser
     {
         #region Constants
 
-        public const string AnalysisName = "Limnodynastes_convex";
+        public const string AnalysisName = "LimnodynastesConvex";
 
-        public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-        //public const int RESAMPLE_RATE = 17640;
-        public const int RESAMPLE_RATE = 22050;
+        public static readonly int ResampleRate = AppConfigHelper.DefaultTargetSampleRate;
 
         #endregion
 
         #region Public Properties
 
-        public override AnalysisSettings DefaultSettings
-        {
-            get
+        public override AnalysisSettings DefaultSettings => new AnalysisSettings
             {
-                return new AnalysisSettings
-                           {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                               SegmentMinDuration = TimeSpan.FromSeconds(30), 
-                               SegmentMediaType = MediaTypes.MediaTypeWav, 
-                               SegmentOverlapDuration = TimeSpan.Zero,
-                               SegmentTargetSampleRate = RESAMPLE_RATE
-                           };
-            }
-        }
+                SegmentMaxDuration = TimeSpan.FromMinutes(1), 
+                SegmentMinDuration = TimeSpan.FromSeconds(30), 
+                SegmentMediaType = MediaTypes.MediaTypeWav, 
+                SegmentOverlapDuration = TimeSpan.Zero,
+                SegmentTargetSampleRate = ResampleRate
+            };
 
-        public override string DisplayName
-        {
-            get
-            {
-                return "Limnodynastes convex";
-            }
-        }
+        public override string DisplayName => "Limnodynastes convex";
 
         public static string abbreviatedName = "LimCon";
 
-        public override string Identifier
-        {
-            get
-            {
-                return "Towsey." + AnalysisName;
-            }
-        }
+        public override string Identifier => "Towsey." + AnalysisName;
 
         #endregion
 
@@ -106,7 +88,7 @@ namespace AnalysisPrograms
 
                 const string ConfigPath =
                             @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Limnodynastes_convexiusculus.yml";
-                const string OutputDir = @"C:\SensorNetworks\Output\Frogs\Limnodynastes_convex\";
+                const string OutputDir = @"C:\SensorNetworks\Output\Frogs\LimnodynastesConvex\";
 
                 string title = "# FOR DETECTION OF LIM_CON";
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -197,8 +179,9 @@ namespace AnalysisPrograms
                 FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
                 if (image.Exists)
                 {
-                    var process = new ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
+                    throw new NotSupportedException("YOU CAN'T DO THIS!");
+                    ////var process = new ProcessRunner(ImageViewer);
+                    ////process.Run(image.FullName, arguments.Output.FullName);
                 }
 
                 LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
@@ -228,7 +211,7 @@ namespace AnalysisPrograms
                 AudioFilePreparer.PrepareFile(
                     arguments.Source, 
                     tempF,
-                    new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, 
+                    new AudioUtilityRequest { TargetSampleRate = ResampleRate }, 
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
@@ -238,7 +221,7 @@ namespace AnalysisPrograms
                     tempF, 
                     new AudioUtilityRequest
                         {
-                            TargetSampleRate = RESAMPLE_RATE, 
+                            TargetSampleRate = ResampleRate, 
                             OffsetStart = start, 
                             OffsetEnd = start.Add(duration)
                         }, 
@@ -247,7 +230,7 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new Limnodynastes_convex();
+            IAnalyser2 analyser = new LimnodynastesConvex();
             analyser.BeforeAnalyze(analysisSettings);
             AnalysisResult2 result = analyser.Analyze(analysisSettings);
             /* ############################################################################################################################################# */
@@ -274,7 +257,7 @@ namespace AnalysisPrograms
 
             // execute actual analysis
             Dictionary<string, string> configuration = analysisSettings.Configuration;
-            LimConResults results = Analysis(audioFile, configuration, analysisSettings);
+            LimnodynastesConvexResults results = Analysis(audioFile, configuration, analysisSettings);
             
             var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
 
@@ -353,7 +336,7 @@ namespace AnalysisPrograms
         /// <param name="configDict"></param>
         /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        internal static LimConResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, AnalysisSettings analysisSettings)
+        internal static LimnodynastesConvexResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, AnalysisSettings analysisSettings)
         {
             Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices = null;
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
@@ -372,9 +355,9 @@ namespace AnalysisPrograms
         /// </param>
         /// <param name="value"></param>
         /// <returns>
-        /// The <see cref="LimConResults"/>.
+        /// The <see cref="LimnodynastesConvexResults"/>.
         /// </returns>
-        internal static LimConResults Analysis(
+        internal static LimnodynastesConvexResults Analysis(
             Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices,
             AudioRecording recording,
             Dictionary<string, string> configDict,
@@ -522,7 +505,7 @@ namespace AnalysisPrograms
 
             // remove the DC row of the spectrogram
             sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-            //scores.Add(new Plot("Decibels", DataTools.normalise(dBArray), ActivityAndCover.DEFAULT_ActivityThreshold_dB));
+            //scores.Add(new Plot("Decibels", DataTools.normalise(dBArray), ActivityAndCover.DefaultActivityThresholdDb));
             //scores.Add(new Plot("Active Frames", DataTools.Bool2Binary(activity.activeFrames), 0.0));
 
             // convert spectral peaks to frequency
@@ -771,7 +754,7 @@ namespace AnalysisPrograms
             // END DEBUG ################################ TEMPORARY ################################
 
 
-            return new LimConResults
+            return new LimnodynastesConvexResults
                        {
                            Sonogram = sonogram, 
                            Hits = null, 
@@ -826,7 +809,7 @@ namespace AnalysisPrograms
         {
         }
 
-        public class LimConResults
+        public class LimnodynastesConvexResults
         {
             #region Public Properties
 

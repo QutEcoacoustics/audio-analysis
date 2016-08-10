@@ -1,7 +1,7 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Litoria_fallax.cs" company="QutBioacoustics">
+// <copyright file="LitoriaFallax.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
-//  The ACTION code for this analysis is: "Litoria_fallax"
+//  The ACTION code for this analysis is: "LitoriaFallax"
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
@@ -44,51 +44,31 @@ namespace AnalysisPrograms
     /// So I have combined the three recognisers into one analysis.
     /// 
     /// </summary>
-    public class Litoria_fallax : AbstractStrongAnalyser
+    public class LitoriaFallax : AbstractStrongAnalyser
     {
         #region Constants
 
-        public const string AnalysisName = "Litoria_fallax";
+        public const string AnalysisName = "LitoriaFallax";
         public const string AbbreviatedName = "L.fallax";
 
-        public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-        //public const int RESAMPLE_RATE = 17640;
-        public const int RESAMPLE_RATE = 22050;
+        public static readonly int ResampleRate = AppConfigHelper.DefaultTargetSampleRate;
 
         #endregion
 
         #region Public Properties
 
-        public override AnalysisSettings DefaultSettings
-        {
-            get
+        public override AnalysisSettings DefaultSettings => new AnalysisSettings
             {
-                return new AnalysisSettings
-                           {
-                               SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                               SegmentMinDuration = TimeSpan.FromSeconds(30), 
-                               SegmentMediaType = MediaTypes.MediaTypeWav, 
-                               SegmentOverlapDuration = TimeSpan.Zero,
-                               SegmentTargetSampleRate = RESAMPLE_RATE
-                           };
-            }
-        }
+                SegmentMaxDuration = TimeSpan.FromMinutes(1), 
+                SegmentMinDuration = TimeSpan.FromSeconds(30), 
+                SegmentMediaType = MediaTypes.MediaTypeWav, 
+                SegmentOverlapDuration = TimeSpan.Zero,
+                SegmentTargetSampleRate = ResampleRate
+            };
 
-        public override string DisplayName
-        {
-            get
-            {
-                return "Litoria fallax";
-            }
-        }
+        public override string DisplayName => "Litoria fallax";
 
-        public override string Identifier
-        {
-            get
-            {
-                return "Towsey." + AnalysisName;
-            }
-        }
+        public override string Identifier => "Towsey." + AnalysisName;
 
         #endregion
 
@@ -104,8 +84,8 @@ namespace AnalysisPrograms
                     @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
 
                 const string ConfigPath =
-                            @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Litoria_fallax.yml";
-                const string OutputDir = @"C:\SensorNetworks\Output\Frogs\Litoria_fallax\";
+                            @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaFallax.yml";
+                const string OutputDir = @"C:\SensorNetworks\Output\Frogs\LitoriaFallax\";
 
                 string title = "# FOR DETECTION OF LITORIA FALLAX";
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -196,8 +176,9 @@ namespace AnalysisPrograms
                 FileInfo image = arguments.Output.CombineFile(arguments.Sgram);
                 if (image.Exists)
                 {
-                    var process = new ProcessRunner(ImageViewer);
-                    process.Run(image.FullName, arguments.Output.FullName);
+                    throw new NotSupportedException("YOU CAN'T DO THIS!");
+                    //var process = new ProcessRunner(ImageViewer);
+                    //process.Run(image.FullName, arguments.Output.FullName);
                 }
 
                 LoggedConsole.WriteLine("\n\n# Finished analysis:- " + arguments.Source.FullName);
@@ -227,7 +208,7 @@ namespace AnalysisPrograms
                 AudioFilePreparer.PrepareFile(
                     arguments.Source, 
                     tempF,
-                    new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, 
+                    new AudioUtilityRequest { TargetSampleRate = ResampleRate }, 
                     analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
@@ -237,7 +218,7 @@ namespace AnalysisPrograms
                     tempF, 
                     new AudioUtilityRequest
                         {
-                            TargetSampleRate = RESAMPLE_RATE, 
+                            TargetSampleRate = ResampleRate, 
                             OffsetStart = start, 
                             OffsetEnd = start.Add(duration)
                         }, 
@@ -246,7 +227,7 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new Litoria_fallax(); 
+            IAnalyser2 analyser = new LitoriaFallax(); 
             //IAnalyser2 analyser = new Canetoad();
             analyser.BeforeAnalyze(analysisSettings);
             AnalysisResult2 result = analyser.Analyze(analysisSettings);
@@ -480,6 +461,7 @@ namespace AnalysisPrograms
             if (createStandardDebugSpectrogram)
             {
                 string fileName = "LittoriaFallaxDEBUG";
+                throw new NotSupportedException("YOU NEED TO FIX THIS FOR PRODUCTION");
                 string path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages";
                 var imageDir = new DirectoryInfo(path);
                 if (!imageDir.Exists) imageDir.Create();

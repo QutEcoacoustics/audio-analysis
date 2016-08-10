@@ -40,7 +40,7 @@ namespace AudioAnalysisTools
         //}
 
 
-        public static byte[,] Sobel5X5RidgeDetection_Version1(double[,] matrix, double magnitudeThreshold)
+        public static byte[,] Sobel5X5RidgeDetectionVersion1(double[,] matrix, double magnitudeThreshold)
         {
             //int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
             //double magnitudeThreshold = ridgeConfiguration.RidgeDetectionmMagnitudeThreshold;
