@@ -2,8 +2,10 @@
 {
     using System;
     using System.Globalization;
+    using System.Linq;
 
     using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
 
     /// <summary>
     /// Audio Utility request.
@@ -33,11 +35,12 @@
         /// MARK will have to do it more elegantly!
         /// </summary>
         public int? OriginalSampleRate { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the target channel number (eg. 1,2,3 ... ).
+        /// Gets or sets the target channel numbers (eg. 1,2,3,{1,2},{1,2,3,4} ... ).
+        /// Channels are 1-indexed!
         /// </summary>
-        public int? Channel { get; set; }
+        public int[] Channels { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to mix down to mono.
@@ -127,10 +130,8 @@
             {
                 if (this.OffsetStart.Value > this.OffsetEnd.Value)
                 {
-                    var msg = string.Format(
-                        "Start ({0}) must be equal or less than End ({1}).",
-                        this.OffsetStart.Value.TotalMilliseconds,
-                        this.OffsetEnd.Value.TotalMilliseconds);
+                    var msg =
+                        $"Start ({this.OffsetStart.Value.TotalMilliseconds}) must be equal or less than End ({this.OffsetEnd.Value.TotalMilliseconds}).";
 
                     if (throwExceptions)
                     {
@@ -166,17 +167,17 @@
                 return false;
             }
 
-            if (this.Channel.HasValue && this.Channel < 1)
+            if (this.Channels.NotNull() && (this.Channels.Length == 0 || this.Channels.Any(c => c < 1)))
             {
                 if (throwExceptions)
                 {
-                    throw new ArgumentOutOfRangeException("Channel", "Channel number should be greater than 0.");
+                    throw new ChannelNotAvailableException("Channel number should be greater than 0.");
                 }
 
                 return false;
             }
 
-            if (this.Channel.HasValue && this.MixDownToMono.HasValue && this.MixDownToMono.Value)
+            /*if (this.Channel.HasValue && this.MixDownToMono.HasValue && this.MixDownToMono.Value)
             {
                 // can't mix down to mono and select a channel
                 if (throwExceptions)
@@ -185,7 +186,7 @@
                 }
 
                 return false;
-            }
+            }*/
 
             return true;
         }
@@ -201,7 +202,7 @@
             string duration;
             if (this.OffsetEnd.HasValue)
             {
-                var start = this.OffsetStart.HasValue ? this.OffsetStart.Value : TimeSpan.Zero;
+                var start = this.OffsetStart ?? TimeSpan.Zero;
                 var end = this.OffsetEnd.Value;
 
                 var durationts = (end - start).Duration();
@@ -215,12 +216,17 @@
             var segment = string.Format(
                 "Request starts at {0} ({1}ms) and finishes at {2} ({3}) ({4}).",
                 this.OffsetStart.HasValue ? this.OffsetStart.Value.Humanise() : "beginning",
-                this.OffsetStart.HasValue ? this.OffsetStart.Value.TotalMilliseconds : 0,
+                this.OffsetStart?.TotalMilliseconds ?? 0,
                 this.OffsetEnd.HasValue ? this.OffsetEnd.Value.Humanise() : "end",
                 this.OffsetEnd.HasValue ? this.OffsetEnd.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture) + "ms" : "unknown",
                 duration);
 
-            var channels = this.Channel.HasValue ? " Using channel number " + this.Channel.Value + "." : string.Empty;
+            string channels = string.Empty;
+            if (this.Channels.NotNull())
+            {
+                channels = " Using channel numbers " + string.Join(", ", this.Channels) + ".";
+            }
+
 
             var sampleRate = this.TargetSampleRate.HasValue
                                  ? " Sample rate of " + this.TargetSampleRate.Value + " hertz."
@@ -228,7 +234,7 @@
 
             var mixDown = this.MixDownToMono.HasValue && this.MixDownToMono.Value ? "Mix channels down to mono." : string.Empty;
 
-            var channel = this.Channel.HasValue ? "Extract channel " + this.Channel.Value + "." : string.Empty;
+            var channel = this.Channels.NotNull() ? "Extract channels " + string.Join(", ", this.Channels) + "." : string.Empty;
 
             return segment + channels + sampleRate + mixDown + channel;
         }

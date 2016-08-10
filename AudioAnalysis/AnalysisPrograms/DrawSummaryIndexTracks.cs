@@ -124,7 +124,7 @@ namespace AnalysisPrograms
             // Convert summary indices to image
             string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
             string title = $"SOURCE:{fileName},   (c) QUT;  ";
-            Bitmap tracksImage = DrawSummaryIndices.DrawImageOfSummaryIndexTracks(
+            Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndexTracks(
                 arguments.InputCsv,
                 arguments.IndexPropertiesConfig,
                 title,

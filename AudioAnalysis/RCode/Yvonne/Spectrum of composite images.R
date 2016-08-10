@@ -3,7 +3,7 @@ setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
 # that go from high frequency values to low frequency values
 
 # set cluster number 
-cluster.no = 7
+cluster.no = 1
 n = 1000 # number of minutes used in the spectrum plots
 sample.size = 1400 # Must be smaller or equal to the smallest cluster size
 ############
@@ -499,12 +499,15 @@ redSpectrum2Woondum <- read.csv(paste("BGN_cluster_Woondum",cluster.no,".csv",se
 greenSpectrum2Woondum <- read.csv(paste("POW_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
 
 #GYMPIE and WOONDUM
+at <- seq(0, 256, 23.15)
+labels <- as.character(0:11)
+
 png(paste("Spectra_Gympie_Woondum",cluster.no,".png",sep=""), height=480, width=1200)
-par(mfrow=c(1,2), mar=c(5,2,4,1))
+par(mfrow=c(1,2), mar=c(5, 2, 4, 1))
 plot(colMeans(redSpect1Gympie[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n", ylab = "", yaxt="n", 
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, 
-     col="orange", ylim = c(0.39,0.62)) #ACI
+     col="orange", ylim = c(0.39, 0.62)) #ACI drop back to 0.61
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
 mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect1Gympie$c000000), sep = ""))
 mtext(side = 3, line = 1,  cex = 1.5, paste("cluster =",cluster.no,sep = ""))
@@ -514,24 +517,24 @@ par(new=T)
 plot(colMeans(greenSpect1Gympie[256:3], na.rm = T), type="l",
      xaxt="n", xlab = "",#ylab="TEMP ENT", 
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
-     col="cyan", ylim = c(0,0.37)) #TEMP ENT
+     col= "cyan", ylim = c(0, 0.37)) #TEMP ENT Drop back to 0.36
 par(new=T)
 plot(colMeans(blueSpect1Gympie[256:3], na.rm = T), type="l",
      xaxt="n", xlab = "", 
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "", yaxt="n",
-     col="blue", ylim = c(0, 2.2)) #EVENTS
+     col= "blue", ylim = c(0, 2.2)) #EVENTS
 par(new=T)
 plot(colMeans(redSpect2Gympie[256:3], na.rm = T), type="l",yaxt="n",
      xaxt="n", xlab = "",
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",
-     col="red", ylim = c(-105,-70)) #BACKGROUND
+     col= "red", ylim = c(-105, -70)) #BACKGROUND
 par(new=T)
 plot(colMeans(greenSpect2Gympie[256:3], na.rm = T), type="l",yaxt="n",
      xaxt="n", xlab = "",
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
-     col="green4", ylim = c(0,4)) #POWER
+     col= "green4", ylim = c(0, 4)) #POWER
 legend("topright",legend=c("ACI","Temporal Entropy","Events","Background","Power"),          
-       col=c("orange","cyan","blue","red","green4"),lty = 1, 
+       col=c("orange", "cyan", "blue", "red", "green4"),lty = 1, 
        lwd=2, xjust=1,y.intersp=0.8, cex=1.5,
        inset = .02, bty = "n")
 #png(paste("Spectra_Woondum_",cluster.no,".png",sep=""), height=600, width=600)
@@ -539,7 +542,7 @@ legend("topright",legend=c("ACI","Temporal Entropy","Events","Background","Power
 plot(colMeans(redSpect1Woondum[256:3], na.rm = T), type="l",
      xlab="Frequency (kHz)", xaxt="n", ylab = "", yaxt="n", 
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, 
-     col="orange", ylim = c(0.39,0.62)) #ACI
+     col= "orange", ylim = c(0.39, 0.62)) #ACI drop back to 0.61
 axis(side = 1, at=at, labels=labels, cex.axis = 1.5)
 mtext(side = 3, line = 2, cex = 1.5, paste("minutes = ", length(redSpect1Woondum$c000000), sep = ""))
 mtext(side = 3, line = 1,  cex = 1.5, paste("cluster =",cluster.no,sep = ""))
@@ -549,38 +552,39 @@ par(new=T)
 plot(colMeans(greenSpect1Woondum[256:3], na.rm = T), type="l",
      xaxt="n", xlab = "",#ylab="TEMP ENT", 
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
-     col="cyan", ylim = c(0,0.37)) #TEMP ENT
+     col= "cyan", ylim = c(0, 0.37)) #TEMP ENT Drop back to 0.36
 par(new=T)
 plot(colMeans(blueSpect1Woondum[256:3], na.rm = T), type="l",
      xaxt="n", xlab = "", 
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "", yaxt="n",
-     col="blue", ylim = c(0, 2.2)) #EVENTS
+     col= "blue", ylim = c(0, 2.2)) #EVENTS
 par(new=T)
 plot(colMeans(redSpect2Woondum[256:3], na.rm = T), type="l",yaxt="n",
      xaxt="n", xlab = "",
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",
-     col="red", ylim = c(-105,-70)) #BACKGROUND
+     col= "red", ylim = c(-105,-70)) #BACKGROUND
 par(new=T)
 plot(colMeans(greenSpect2Woondum[256:3], na.rm = T), type="l",yaxt="n",
      xaxt="n", xlab = "",
      lwd=2, cex.axis = 1.5, cex.lab = 1.5, ylab = "",yaxt="n",
-     col="green4", ylim = c(0,4)) #POWER
+     col= "green4", ylim = c(0,4)) #POWER
 legend("topright",legend=c("ACI","Temporal Entropy","Events","Background","Power"),          
-       col=c("orange","cyan","blue","red","green4"),lty = 1, 
+       col=c("orange", "cyan", "blue", "red", "green4"),lty = 1, 
        lwd=2, xjust=1,y.intersp=0.8, cex=1.5,
        inset = .02, bty = "n")
 dev.off()
 
 # Use this for a short-cut way of plotting without rerunning the code above
 # once the csv files have been generated
-redSpect1Gympie <- read.csv(paste("ACI_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
-greenSpect1Gympie <- read.csv(paste("ENT_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
-blueSpect1Gympie <- read.csv(paste("EVN_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
-redSpect2Gympie <- read.csv(paste("BGN_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
-greenSpect2Gympie <- read.csv(paste("POW_cluster_Gympie",cluster.no,".csv",sep=""))[,2:257]
 
-redSpect1Woondum <- read.csv(paste("ACI_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
-greenSpect1Woondum <- read.csv(paste("ENT_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
-blueSpect1Woondum <- read.csv(paste("EVN_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
-redSpect2Woondum <- read.csv(paste("BGN_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
-greenSpect2Woondum <- read.csv(paste("POW_cluster_Woondum",cluster.no,".csv",sep=""))[,2:257]
+redSpect1Gympie <- read.csv(paste("ACI_cluster_Gympie", cluster.no,".csv", sep=""))[,2:257]
+greenSpect1Gympie <- read.csv(paste("ENT_cluster_Gympie", cluster.no,".csv", sep=""))[,2:257]
+blueSpect1Gympie <- read.csv(paste("EVN_cluster_Gympie", cluster.no,".csv", sep=""))[,2:257]
+redSpect2Gympie <- read.csv(paste("BGN_cluster_Gympie", cluster.no,".csv", sep=""))[,2:257]
+greenSpect2Gympie <- read.csv(paste("POW_cluster_Gympie", cluster.no,".csv", sep=""))[,2:257]
+
+redSpect1Woondum <- read.csv(paste("ACI_cluster_Woondum", cluster.no,".csv", sep=""))[,2:257]
+greenSpect1Woondum <- read.csv(paste("ENT_cluster_Woondum", cluster.no,".csv", sep=""))[,2:257]
+blueSpect1Woondum <- read.csv(paste("EVN_cluster_Woondum", cluster.no,".csv", sep=""))[,2:257]
+redSpect2Woondum <- read.csv(paste("BGN_cluster_Woondum", cluster.no,".csv", sep=""))[,2:257]
+greenSpect2Woondum <- read.csv(paste("POW_cluster_Woondum", cluster.no,".csv", sep=""))[,2:257]

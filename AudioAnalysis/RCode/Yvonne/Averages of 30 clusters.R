@@ -2,8 +2,12 @@
 # Code calculates the average of each index at each site for 
 # each cluster
 
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
-path <- "C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\"
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
+all.statistics <- read.csv("All_statistics.csv", header = T)[1:30,2:29]
+d <- dist(all.statistics)
+a <- hclust(d)
+plot(a)
+path <- "C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\"
 norm.dat <- read.csv("ds3.norm_2_98.csv", header = T)
 
 ##############################
@@ -12,8 +16,9 @@ clusters <- read.csv("hybrid_clust_knn_17500_3.csv",header=T)
 #norm.dat <- norm.dat[c(1:(length(norm.dat$X)/2),(length(norm.dat$X)/2+1):(length(norm.dat$X))),]
 
 norm.dat <- cbind(norm.dat[2:length(norm.dat)], clusters$hybrid_k17500k30k3)
-
+# Get Gympie NP data
 norm.dat1 <- norm.dat[1:(length(norm.dat$Snr)/2),]
+# Get Woondum NP data
 norm.dat2 <- norm.dat[(length(norm.dat$Snr)/2)+1:length(norm.dat$Snr),]
 
 for (i in unique(clusters$hybrid_k17500k30k3)) {
@@ -30,6 +35,7 @@ for (i in unique(clusters$hybrid_k17500k30k3)) {
   Name <- paste("All",i,".csv",sep="")
   write.csv(subset(norm.dat, clusters$hybrid_k17500k30k3==i, row.names=F), Name, row.names=F)
 }
+
 
 #source("F:\\Work\\Github\\audio-analysis\\AudioAnalysis\\RCode\\shared\\sort.Filename.R")
 
@@ -93,18 +99,43 @@ site.list <- c("All1.csv","All2.csv","All3.csv","All4.csv","All5.csv","All6.csv"
                "All21.csv","All22.csv","All23.csv","All24.csv","All25.csv","All26.csv","All27.csv","All28.csv","All29.csv","All30.csv")
 
 all.averages <- NULL
+all.minimums <- NULL
+all.maxiumums <- NULL
+all.standarddeviations <- NULL
+all.medians <- NULL
 
 for (i in site.list) {
   Name <- (paste(path,i,sep =""))
+  minimum <- NULL
   averages <- NULL
+  maximum <- NULL
+  standarddev <- NULL
+  medians <- NULL
   for(j in 1:7) {  # 7 is the number of indices
     assign(paste("fileContents"), read.csv(Name))
+    index.minimum <- min(fileContents[,j], na.rm=TRUE)
     index.average <- mean(fileContents[,j], na.rm=TRUE)
+    index.maximum <- max(fileContents[,j], na.rm=TRUE)
+    index.sd <- sd(fileContents[,j], na.rm = TRUE)
+    index.median <- median(fileContents[,j], na.rm = TRUE)
     averages <- cbind(averages, index.average)
+    minimum <- cbind(minimum, index.minimum)
+    maximum <- cbind(maximum, index.maximum)
+    standarddev <- cbind(standarddev, index.sd)
+    medians <- cbind(medians, index.median)
   }
   all.averages <- rbind(all.averages, averages)
+  all.minimums <- rbind(all.minimums, minimum)
+  all.maxiumums <- rbind(all.maxiumums, maximum)
+  all.standarddeviations <- rbind(all.standarddeviations, standarddev)
+  all.medians <- rbind(all.medians, medians)
 }
 
+write.csv(all.averages,"all.averages.csv",row.names=F)
+write.csv(all.minimums,"all.minimums.csv",row.names=F)
+write.csv(all.maxiumums,"all.maximums.csv",row.names=F)
+write.csv(all.standarddeviations, "all.standarddev.csv", row.names = F)
+write.csv(all.medians,"all.medians.csv",row.names=F)
 a <- hclust(dist(all.Gympie.averages),"ward.D2")
 png("hclust GympieNP 17500 k30 3.png",width=1500,height=1000)
 par(mar=c(6,6,2,2))

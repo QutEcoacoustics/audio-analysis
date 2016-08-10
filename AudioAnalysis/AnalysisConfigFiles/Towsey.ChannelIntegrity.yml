@@ -1,0 +1,43 @@
+---
+# Summary: Calculates acoustic indices
+#
+# The csv files this analysis outputs can be used to construct:
+#     1. long-duration false-color spectrograms
+#     2. a focused stack of zooming false-color spectrograms
+#     3. the tiles for zooming false-color spectrograms
+#
+#
+
+AnalysisName: Towsey.ChannelIntegrity
+#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
+SegmentDuration: 1
+SegmentOverlap: 0
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+
+DisplayWeightedIndices: false
+
+# SAVE INTERMEDIARY FILES
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+
+DisplayCsvImage: false
+ParallelProcessing: false
+
+# if true, an unambiguous date time must be provided in the source file's name.
+# if true, an exception will be thrown if no such date is found
+# if false, and a valid date is still found in file name, it will still be parsed
+# supports formats like:
+#     prefix_20140101T235959+1000.mp3
+#     prefix_20140101T235959+Z.mp3
+#     prefix_20140101-235959+1000.mp3
+#     prefix_20140101-235959+Z.mp3
+RequireDateInFilename: false
+
+IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+# No events currently used
+EventThreshold: ~
+...
+

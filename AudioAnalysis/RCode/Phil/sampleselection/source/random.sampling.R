@@ -26,6 +26,7 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA,
                            dawn.first = TRUE, 
                            dawn.from = 315, dawn.to = 495, 
                            block.size = 1, 
+                           temporal.dispersal = 0,
                            use.cached = TRUE) {
     # repeatedly performs a sample selection from random selection of dawn minutes
     # 
@@ -38,26 +39,25 @@ RandomSamples <- function (speciesmins = NA, species.in.each.sample= NA,
     #   dawn.from, dawn.to: int; the start and end minutes of the day for dawn
     #   block.size: int; 1 minute samples will always be chosen in groups of this many. This allows us to compare say, 30 mins randomly chosen from anywhere in the day,
     #                    with a block of 30 consecutive mins chosen at random
+    #   temporal dispersal: 
     # 
     # Value:
     #   list: mean: the mean species count progression (count only)
     #   list: sd: the standard deviation minute by minute
     
     
-   
-    
-    
     if (dawn.first) {
         msg <-  'performing random sampling at dawn (RSAD)'   
     } else {
-        msg <-  'performing random sampling'     
+        msg <-  'performing random sampling (RS)'     
     }
     Report(3, msg)
     
     mins <- ValidateMins(mins)
     
     
-    #species.in.each.min is optional. 
+    #species.in.each.min is optional param
+    # if ommited, go and get it from the DB
     if (class(species.in.each.sample) != 'list') {
         if (class(speciesmins) != 'data.frame') {
             speciesmins <- GetTags()

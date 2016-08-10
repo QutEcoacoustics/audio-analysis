@@ -104,6 +104,19 @@
         }
 
         [TestMethod]
+        public void InfoWav4Master()
+        {
+            var util = TestHelper.GetAudioUtility();
+
+            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
+
+            TestHelper.CheckAudioUtilityInfo(expected, info);
+        }
+
+        [TestMethod]
         public void InfoWebmMaster()
         {
             var util = TestHelper.GetAudioUtility();
@@ -239,6 +252,19 @@
         }
 
         [TestMethod]
+        public void InfoWav4Shntool()
+        {
+            var util = TestHelper.GetAudioUtilityShntool();
+
+            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
+
+            TestHelper.CheckAudioUtilityInfo(expected, info);
+        }
+
+        [TestMethod]
         public void InfoWebmShntool()
         {
             var util = TestHelper.GetAudioUtilityShntool();
@@ -354,6 +380,18 @@
             var info = util.Info(source);
 
             var expected = TestHelper.AudioDetails["geckos.wav"];
+        }
+
+
+        [TestMethod]
+        public void InfoWav4Sox()
+        {
+            var util = TestHelper.GetAudioUtilitySox();
+
+            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
 
             TestHelper.CheckAudioUtilityInfo(expected, info);
         }
@@ -494,6 +532,19 @@
         }
 
         [TestMethod]
+        public void InfoWav4Ffmpeg()
+        {
+            var util = TestHelper.GetAudioUtilityFfmpeg();
+
+            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails["4channelsPureTones.wav"];
+
+            TestHelper.CheckAudioUtilityInfo(expected, info);
+        }
+
+        [TestMethod]
         public void InfoWebmFfmpeg()
         {
             var util = TestHelper.GetAudioUtilityFfmpeg();
@@ -525,9 +576,11 @@
             var util = TestHelper.GetAudioUtilityFfmpeg();
 
             var source = TestHelper.GetAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Invalid formats are: wv (audio/x-wv).");
+
+            var info = util.Info(source);
+
+            var expected = TestHelper.AudioDetails["Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv"];
+
         }
 
         [TestMethod]
@@ -605,6 +658,17 @@
             var util = TestHelper.GetAudioUtilityMp3Splt();
 
             var source = TestHelper.GetAudioFile("geckos.wav");
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => util.Info(source),
+                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+        }
+
+        [TestMethod]
+        public void InfoWav4Mp3Splt()
+        {
+            var util = TestHelper.GetAudioUtilityMp3Splt();
+
+            var source = TestHelper.GetAudioFile("4channelsPureTones.wav");
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
                 "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");

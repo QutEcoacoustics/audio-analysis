@@ -25,12 +25,6 @@
 #
 ##
 
-#require(data.table) 
-#require(dplyr) 
-#require(rattle)
-
-require('foreach')
-require('doParallel')
 
 
 
@@ -43,6 +37,29 @@ dev.flush()
 #options(error = NULL)
 options(error = traceback)
 #options(error = utils::recover)
+
+
+
+
+# re-install local packages
+MyPackages <- function () {
+    library("devtools")
+    library(roxygen2)
+    install("../../templator")
+    require('templator')
+}
+#MyPackages()
+require('templator')
+
+#require(data.table) 
+#require(dplyr) 
+#require(rattle)
+
+require('foreach')
+require('doParallel')
+require('stringr')
+
+
 
 
 source('config.R')  #must be first
@@ -71,12 +88,52 @@ source('fixedwidth.R')
 source('reporting.R')
 source('noise.reduction.R')
 source('tests/test.all.R')
+source('silence.classifier.R')
+source('baw.R')
+
+
+
+SS.fixedwidth <- function () {
+
+    # Step 1: 
+    # generate a list of minutes to use in as the target
+    # CreateTargetMinutes()
+    
+    # Step 2:
+    # generate a list of 1-second segments
+    MakeSegmentList()
+    
+    # Step 3:
+    # extract TDCC features for segments
+    ExtractSDF()
+    
+    # Step 4
+    # discard silent minutes
+    RemoveSilentSegments()
+    
+    # Step 5
+    # Cluster Segments
+    ClusterEvents()
+    
+    
+    # Step 5.1
+    # inspect clusters
+    
+    # Step 6
+    # Ranking based on presence of clusters
+    RankSamples()
+    
+    # Step 7
+    # evaluate ranked samples
+    EvaluateSamples()
+    
+}
 
 
 
 
 
-SS <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
+SS.old <- function (from.step = NA, to.step = NA, use.lines = FALSE) {
     # Main entry point whcih runs the specified steps.
     #
     # Args: 

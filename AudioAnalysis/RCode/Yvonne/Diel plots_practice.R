@@ -86,7 +86,7 @@ plotRGB(rgb, asp=0.4)
 #mtext(side=3, line = -1.5, "Normalised pca coefficients",cex=1.5)
 dev.off()
 
-# setting the working directory to Folder j
+####### setting the working directory to Folder j
 setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\")
 # setting the colours using RcolorBrewer
 library(RColorBrewer)
@@ -110,44 +110,82 @@ cluster.list <- read.csv(file ="hybrid_clust_17500_30.csv", header=T)
 cluster.list1 <- cluster.list[1:(length(cluster.list$hybrid_k17500k30k3)/2),]
 
 output <- matrix(cluster.list1, ncol = 1440, byrow = TRUE)
+#cols <- c(
+#  '1' = "#778899", #"lightslategray"
+#  '2' = "#778899", #"lightslategray"
+#  '3' = "#FFFFB3",  #lightlemon    #Set3_2  display.brewer.pal(2, "Set3")  
+#  '4' = "#252525",  #Greys8  display.brewer.pal(9, "Greys")
+#  '5' = "#87CEFA",  #lightskyblue
+#  '6' = "#000000",  # Black    #Greys9
+#  '7' = "#87CEFA",  #lightskyblue
+#  '8' = "#252525",  #Greys8
+#  '9' = "#006837",  #YlGn8   display.brewer.pal(9, "YlGn")  #2E8B57
+#  '10' = "#D9F0A3",  #YlGn3  display.brewer.pal(3, "YlGn")  #90EE90
+#  '11' = "#F1B6DA",  #PiYG3   display.brewer.pal(9, "PiYG")
+#  '12' = "#F7FCB9",  #YlGn6  display.brewer.pal(9, "YlGn")  #008B00
+#  '13' = "#F1B6DA",  #PiYG   
+#  '14' = "#778899",  #lightslategrey
+#  '15' = "#778899",  #lightslategrey
+#  '16' = "#ADDD8E",  #YlGn4   display.brewer.pal(9, "YlGn")  #A2CD5A  Dark olive green 
+#  '17' = "#CAE1FF",  #lightsteelblue
+#  '18' = "#004529", #YlGn9    display.brewer.pal(9, "YlGn")  #006400
+#  '19' = "#000080", # navy
+#  '20' = "#78C679",  #YlGn5   display.brewer.pal(9, "YlGn")  #3CB371
+#  '21' = "#525252",  #Greys7   grey32 
+#  '22' = "#252525",  #Greys8   display.brewer.pal(9, "Greys")
+#  '23' = "#004529",  #YlGn9    #006400
+#  '24' = "#000000",  #Greys9
+#  '25' = "#7FFF00",
+#  '26' = "#41AB5D",  #YlGn2    #00FF7F  
+#  '27' = "#238443",  #YlGn7    #2E8B57
+#  '28' = "#78C679",   #YlGn5   #00CD00
+#  '29' = "#FFFFE5",  #YlGn1    #ADFF2F
+#  '30' = "#778899"
+#)
+
 cols <- c(
-  '1' = "#778899",
-  '2' = "#778899",
-  '3' = "#FFFFB3",  #Set3_2
-  '4' = "#252525",  #Greys8
-  '5' = "#87CEFA",
-  '6' = "#000000",  #Greys9
-  '7' = "#87CEFA",  
-  '8' = "#252525",  #Greys8
-  '9' = "#006837",  #YlGn8
-  '10' = "#D9F0A3",  #YlGn3
-  '11' = "#F1B6DA",  #PiYG
-  '12' = "#F7FCB9",  #YlGn2
-  '13' = "#F1B6DA",  #PiYG
-  '14' = "#778899",
-  '15' = "#778899",
-  '16' = "#ADDD8E",  #YlGn4
-  '17' = "#CAE1FF",  
-  '18' = "#004529", #YlGn9
-  '19' = "#000080", 
-  '20' = "#78C679",  #YlGn5
-  '21' = "#525252",  #Greys7
-  '22' = "#252525",  #Greys8
-  '23' = "#004529",  #YlGn9
-  '24' = "#000000",  #Greys9
-  '25' = "#7FFF00",
-  '26' = "#41AB5D",  #YlGn6
-  '27' = "#238443",  #YlGn7
-  '28' = "#78C679",   #YlGn5
-  '29' = "#FFFFE5",  #YlGn1
-  '30' = "#778899"
+  '1' = "#778899", #"lightslategray"    1.SLIGHT WIND
+  '2' = "#778899", #"lightslategray"    2.SLIGHT WIND + INSECTS
+  '3' = "#FFFFB3",  #lightlemon    #Set3_2  display.brewer.pal(2, "Set3")  3.INSECTS
+  '4' = "#252525",  #Greys8  display.brewer.pal(9, "Greys")  4.QUIET + SOME INSECTS
+  '5' = "#BFEFFF",  #light blue         5.LIGHT RAIN
+  '6' = "#000000",  # Black    #Greys9  6.VERY QUIET
+  '7' = "#87CEFA",  #lightskyblue       7.LIGHT RAIN
+  '8' = "#252525",  #Greys8             8.QUIET + SOME BIRDS
+  '9' = "#2E8B57",  #seagreen           9.BIRDS + SOME WIND
+  '10' = "#90EE90",  #lightgreen        10.BIRDS (MORNING)
+  '11' = "#F1B6DA",  #PiYG1   display.brewer.pal(9, "PiYG")  11.PLANES
+  '12' = "#008B00",  #green4            12.BIRDS (MORNING)
+  '13' = "#F1B6DA",  #PiYG              13. QUIETER PLANES
+  '14' = "#FFFFB3",  #lightslategrey    14.SLIGHT WIND+SOME BIRDS + INSECTS
+  '15' = "#778899",  #lightslategrey    15.WIND + BIRDS
+  '16' = "#A2CD5A",  #  Dark olive green  16. BIRDS (MORNING)
+  '17' = "#CAE1FF",  #lightsteelblue    17. WIND
+  '18' = "#006400", #darkgreen          18. BIRDS + WIND
+  '19' = "#000080", # navy              19. RAIN
+  '20' = "#3CB371",  #mediumseagreen    20. BIRDS
+  '21' = "#525252",  #Greys7   grey32   21. QUIET + SOME BIRDS
+  '22' = "#252525",  #Greys8            22. QUIET + SOME INSECTS
+  '23' ="#228B22",  #forestgreen        23. BIRDS + WIND
+  '24' = "#000000",  #Greys9            24. VERY QUIET
+  '25' = "#8B3A3A",  #"indianred"       25. VERY NOISY
+  '26' = "#00FF7F",  #springgreen       26. BIRDS (MIDDAY)
+  '27' = "#00CD00",   # green3          27. BIRDS (AFTERNOON)
+  '28' = "#548B54",  #palegreen         28. BIRDS
+  '29' = "#ADFF2F",  #YlGn1  greenyellow29. BIRDS (MORNING)
+  '30' = "#778899"   # lightslate grey  30. WIND + BIRDS
 )
+#################
+# this code converts hexadecimal to the name of a colour
+#colors()[match(rgb(t(col2rgb("#778899")), 
+#        maxColorValue = 255), c(rgb(t(col2rgb(colors())), maxColorValue = 255)))]
+
+####################
 
 output1 <- apply(output, 2, rev)
 # plot Gympie NP plot
-png("GympieNP_diel_Assigned_colours_different_new.png",
-    width = 1000*aspect, height = 100, units="mm",
-    res=80)
+png("GympieNP_diel_Assigned_colours_different_test.png",
+    width = 1600, height = 800, units="px")
 par(mar=c(4,2,3,9), cex=0.8, cex.axis=1.2)
 image(1:ncol(output1), 1:nrow(output1), 
       as.matrix(t(output1)), col=cols,
@@ -158,7 +196,7 @@ at[2:length(at)] <- at[2:length(at)]-1
 axis(1, at = at, labels = c("00:00",
                 "04:00","08:00","12:00","16:00","20:00",
                 "24:00"), cex.axis=1.5)
-axis(4, at = c(111-0,111-10,111-41,111-72,111-102), 
+axis(4, at = c(111-0,111-9,111-40,111-71,111-101), 
      labels=c("22 Jun 2015","1 Jul 2015","1 Aug 2015", "1 Sept 2015", "1 Oct 2015"), 
      cex.axis=1.5, las=2)
 mtext(side=3,line=1,"Gympie National Park", cex = 1.8)
@@ -172,9 +210,8 @@ output <- matrix(cluster.list2, ncol = 1440, byrow = TRUE)
 output2 <- apply(output, 2, rev)
 
 # plot Woondum NP plot
-png("WoondumNP_diel_Assigned_colours_different_new.png",
-    width = 1000*aspect, height = 100, units="mm",
-    res=80)
+png("WoondumNP_diel_Assigned_colours_different_test.png",
+    width = 1600, height = 800, units="px")
 par(mar=c(4,2,3,9), cex=0.8, cex.axis=1.2)
 image(1:ncol(output2), 1:nrow(output2), 
       as.matrix(t(output2)), col=cols,
@@ -185,7 +222,8 @@ at[2:length(at)] <- at[2:length(at)]-1
 axis(1, at = at, labels = c("00:00",
                             "04:00","08:00","12:00","16:00","20:00",
                             "24:00"), cex.axis=1.5)
-axis(4, at = c(111-0,111-10,111-41,111-72,111-102), 
+
+axis(4, at = c(111-0,111-9,111-40,111-71,111-101), 
      labels=c("22 Jun 2015","1 Jul 2015","1 Aug 2015", "1 Sept 2015", "1 Oct 2015"), 
      cex.axis=1.5, las=2)
 mtext(side=3,line=1,"Woondum National Park", cex = 1.8)

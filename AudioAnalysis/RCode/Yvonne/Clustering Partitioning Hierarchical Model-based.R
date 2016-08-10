@@ -28,10 +28,10 @@ setwd("C:\\Work\\CSV files\\DataSet_Exp2a")
 AcousticDS <- read.csv("Final DataSet 30_31July_1Aug_31Aug_1_4Sept.csv", header=T)
 ds6 <- AcousticDS[,c(3,4,7,10,11,15,16)] # without Mid-frequency cover
 
-library(psych)
-ic.out <- iclust(AcousticDS[,4:10])
-ic.out7 <- iclust(AcousticDS[,3:18],nclusters = 7)
-fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
+#library(psych)
+#ic.out <- iclust(AcousticDS[,4:10])
+#ic.out7 <- iclust(AcousticDS[,3:18],nclusters = 7)
+#fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
 
 ############## ONLY FOR 111 days replace NA values
 #setwd("C:\\Work\\CSV files\\FourMonths\\")
@@ -411,11 +411,10 @@ set.hc.fit <- cbind(hc.fit.average.5,hc.fit.average.10, hc.fit.average.15,
                 hc.fit.average.20, hc.fit.average.25, hc.fit.average.30,
                 hc.fit.ward.5,hc.fit.ward.10, hc.fit.ward.15, hc.fit.ward.20, 
                 hc.fit.ward.25, hc.fit.ward.30)
+
 write.csv(set.hc.fit, "hc_fit_set_cutree_k.csv", row.names = F)
 
 #####
-
-
 png("hclust_average_cutree_k_ds3norm_2_98.png", width = 1500, 
     height = 1200, units = "px")
 par(mfrow=c(4,1), mar=c(3,3,1,1), oma=c(3,2,3,1), cex.main=3,
@@ -858,7 +857,7 @@ colnames(clusters) <- column.names
 write.csv(clusters, file = "kmeans_clusters.csv")
 
 kmean_clus <- read.csv("kmeans_clusters.csv", header = T)
-
+######################################################
 file <- paste("kmeans_cutree_2_98.png", sep = "")
 png(
   file,

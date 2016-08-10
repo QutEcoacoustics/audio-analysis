@@ -34,6 +34,7 @@ namespace AudioAnalysisTools
 
     public static class SpectralClustering
     {
+        public static bool Verbose = false;
 
         public struct ClusteringParameters
         {
@@ -161,7 +162,9 @@ namespace AudioAnalysisTools
         /// <param name="binaryThreshold"></param>
         /// <returns></returns>
         public static ClusterInfo ClusterAnalysis(List<double[]> trainingData, double wtThreshold, int hitThreshold, bool[] selectedFrames)
-        {
+        {            
+            BinaryCluster.Verbose = SpectralClustering.Verbose;
+
             int frameCount = selectedFrames.Length;
 
             //DO CLUSTERING - if have suitable data
@@ -179,8 +182,11 @@ namespace AudioAnalysisTools
             List<double[]> prunedClusterWts = tuple_output2.Item2;
             double[] clusterSpectrum = BinaryCluster.GetClusterSpectrum(clusterWts);
 
-            BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
-            LoggedConsole.WriteLine("pruned cluster count = {0}", prunedClusterWts.Count);
+            if (SpectralClustering.Verbose)
+            {
+                BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
+                LoggedConsole.WriteLine(" Pruned cluster count = {0}", prunedClusterWts.Count);
+            }
 
             // ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
             //  first:  reassemble cluster hits into an array matching the original array of active frames.
@@ -348,8 +354,11 @@ namespace AudioAnalysisTools
             int binCount = clusters[maxIndex] + 1;
             double binWidth;
             int[] histo = Histogram.Histo(clusters, binCount, out binWidth, out min, out max);
-            LoggedConsole.WriteLine("Sum = " + histo.Sum());
-            DataTools.writeArray(histo);
+            if (SpectralClustering.Verbose)
+            {
+                LoggedConsole.WriteLine("Sum = " + histo.Sum());
+                DataTools.writeArray(histo);
+            }
             //DataTools.writeBarGraph(histo);
 
             //make image of the wts matrix

@@ -1,8 +1,12 @@
-
+# depending on the environment (e.g. which computer, which disk is plugged in)
+# paths may differ. 
+# for each source of data (e.g. cahce, original audio etc) a list of paths is given, one for each environment
+# the paths are checked one by one to find the one that exists
 
 paths <- list(
-    audio = c("/Volumes/My Passport/Phil#61/Audio/OriginalAudio/TaggedRecordings",
-             "/Volumes/files/qut_data/Phil#61/Audio/OriginalAudio/TaggedRecordings"),
+    audio = c("/Volumes/passport/phil/SERF/serf_audio",
+             "/Volumes/files/qut_data/SERF/serf_audio",
+             "D:/phil/SERF/serf_audio"),
     cache = c('/Volumes/PACKARDBELL/qut_spectrogram_cache',
               '/Volumes/files/qut_data/cache',
               '/Users/n8933464/Documents/sample_selection_output/cache'),
@@ -11,8 +15,22 @@ paths <- list(
     
 
 
-# path to cache
-
+TestPaths <- function () {
+  errors <- character()
+  for (path.group in 1:length(paths)) {
+    exists <- sapply(paths[[path.group]], file.exists)
+    if (!any(exists)) {
+      errors <- cbind(errors, names(paths)[path.group])
+    }
+  }
+  
+  if (length(errors) > 0) {
+    errors <- paste(errors, collapse = ", ")
+    warning(paste("path not defined for ", errors, ". This will cause problems if you need that data"))
+  }
+  
+}
+TestPaths()
 
 
 
@@ -38,6 +56,7 @@ Path <- function (path.name) {
 
 BasePath <- function (full.path, ds = "/") {
     # hack to get around full.names bug
+    # TODO: maybe use platform file sepatartor like this: split <- strsplit(path, .Platform$file.sep)
     path <- unlist(strsplit(full.path, ds, fixed = FALSE, perl = FALSE, useBytes = FALSE))
     basepath <- path[[length(path)]]
     return(basepath)
@@ -98,9 +117,10 @@ FixCacheFn <- function (path) {
 
 
 GetAnalysisOutputPath <- function (site, date, dir) {
+    # for analysis done on the big data computer
+    # structure comes back in a particular way. 
     # audio is in a folder structure like:
     # sitename/UID_YYMMDD-0000.mp3/UID_date-0000_0min.mp3
-    
     
     site.dir <- file.path(dir, site)
     day.folders <- list.dirs(site.dir, full.names = FALSE, recursive = FALSE)

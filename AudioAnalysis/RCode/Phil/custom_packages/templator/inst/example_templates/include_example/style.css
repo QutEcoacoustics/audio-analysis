@@ -1,0 +1,14 @@
+            body, html {
+                margin: 0px;
+                padding: 0px;
+                background: #005544;
+                color: #ffffff;
+                font-family: arial;
+                
+            }
+            img, a {
+                display: inline-block;
+                width: 150px;
+
+            }
+

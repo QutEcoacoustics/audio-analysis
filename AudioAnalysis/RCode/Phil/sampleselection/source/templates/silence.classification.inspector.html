@@ -1,0 +1,52 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title><##title##></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <style>
+            body, html {
+                margin: 0px;
+                padding: 0px;
+            }
+            img, a {
+                display: inline-block;
+                width: 50px;
+
+            }
+            .hasbird1 {
+                border: #009900 2px solid;
+            }
+            .hasbird0 {
+                border: #990000 2px solid;
+            }
+            
+        
+        </style>
+
+
+        
+
+
+    </head>
+    <body>
+
+        
+        <##startforeach{classified.has.bird}##>
+        <div class="cluster hasbird<##classified.has.bird##>" title="Has Bird: <##classified.has.bird##>">
+             <p>Has bird: <##classified.has.bird##></p>
+             <##startforeach{}##>
+                 <a class='sec' href="<##link##>" target="_blank">
+                   <img src="<##img.path##>" title="<##img.title##>" alt="" />
+                   <div class='features'> 
+                   </div>
+                 </a>
+             <##endforeach{}##>
+        </div>
+        <##endforeach{classified.has.bird}##>
+        
+    </body>
+</html>

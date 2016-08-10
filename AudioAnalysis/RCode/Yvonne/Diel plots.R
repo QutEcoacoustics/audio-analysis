@@ -1,7 +1,9 @@
 # 19 December 2015
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\")
 pca.coefficients <- read.csv("pca_coefficients.csv", header=T)
+#pca.coefficients <- read.csv("pca_coefficients_snr_evn_aci_enp-ecv.csv", header=T)
 ds6 <- pca.coefficients[,2:4]
+
 ##### Normalise the dataset ################ 
 normalise <- function (x, xmin, xmax) {
   y <- (x - xmin)/(xmax - xmin)
@@ -21,28 +23,42 @@ for (i in 1:length(ds6)) {
   ds.coef_min_max[,i]  <- normalise(ds.coef_min_max[,i], min, max)
 }
 library(raster)
-png("GympieNP_diel.png",width = 1000, height = 600, units="px")
+png("GympieNP_diel_pca.png",width = 1700, height = 1000, units="px")
 r <- g <- b <- raster(ncol=1440, nrow=111)
 values(r) <- ds.coef_min_max[1:(length(ds.coef_min_max$normIndices.PC1)/2),1]
 values(g) <- ds.coef_min_max[1:(length(ds.coef_min_max$normIndices.PC1)/2),2]
 values(b) <- ds.coef_min_max[1:(length(ds.coef_min_max$normIndices.PC1)/2),3]
 rgb = rgb <-stack(r*255,g*255,b*255)
 # plot RGB
-par(oma=c(2,2,2,2))
+par(oma=c(2,2,2,10))
 plotRGB(rgb)
+at <- seq(-180, 181, by = 60)
+axis(1, line = -6, at = at, labels = c("00:00",
+                            "04:00","08:00","12:00","16:00","20:00",
+                            "24:00"), cex.axis=1.2)
+axis(4, at = c(90,(101*180/111)-90,(70*180/111)-90,(39*180/111)-90,(9*180/111)-90), 
+     labels=c("22 Jun 2015","1 Jul 2015","1 Aug 2015", "1 Sept 2015", "1 Oct 2015"), 
+     cex.axis=1, las=1.5)
 mtext(side=3, "Gympie NP 22 June 2015 - 10 Oct 2015",cex=2)
 mtext(side=3, line = -1.5, "Normalised pca coefficients",cex=1.5)
 dev.off()
 
-png("WoondumNP_diel_norm.png",width = 1000, height = 600, units="px")
+png("WoondumNP_diel_pca.png",width = 1700, height = 1000, units="px")
 r <- g <- b <- raster(ncol=1440, nrow=111)
 values(r) <- ds.coef_min_max[(((length(ds.coef_min_max$normIndices.PC1)/2)+1):length(ds.coef_min_max$normIndices.PC1)),1]
 values(g) <- ds.coef_min_max[(((length(ds.coef_min_max$normIndices.PC1)/2)+1):length(ds.coef_min_max$normIndices.PC1)),2]
 values(b) <- ds.coef_min_max[(((length(ds.coef_min_max$normIndices.PC1)/2)+1):length(ds.coef_min_max$normIndices.PC1)),3]
 rgb = rgb <-stack(r*255,g*255,b*255)
 # plot RGB
-par(oma=c(2,2,2,2))
+par(oma=c(2,2,2,10))
 plotRGB(rgb)
+at <- seq(-180, 181, by = 60)
+axis(1, line = -6, at = at, labels = c("00:00",
+                                       "04:00","08:00","12:00","16:00","20:00",
+                                       "24:00"), cex.axis=1.2)
+axis(4, at = c(90,(101*180/111)-90,(70*180/111)-90,(39*180/111)-90,(9*180/111)-90), 
+     labels=c("22 Jun 2015","1 Jul 2015","1 Aug 2015", "1 Sept 2015", "1 Oct 2015"), 
+     cex.axis=1, las=1.5)
 mtext(side=3, "Woondum NP 22 June 2015 - 10 Oct 2015",cex=2)
 mtext(side=3, line = -1.5, "Normalised pca coefficients",cex=1.5)
 dev.off()
@@ -251,7 +267,7 @@ for (i in 1:length(cluster.list1)) {
   }
 }
 rgb <-stack(r,g,b)
-aspect <- 0.4
+aspect <- 1
 png("GympieNP_diel_Assigned_colours_different_a.png",
     width = 1000*aspect, height = 100, units="mm",
     res=80)

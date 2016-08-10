@@ -1,16 +1,26 @@
+g.plot.path <- '/Users/n8933464/Documents/sample_selection_output/plots'
 
-Summary <- function (days, fn = NULL, method = 1) {
+
+
+PlotProgressionSummary <- function (days, fn = NULL, method = 1) {
     # given a list of evaluation results, including random at dawn and some ranking methods 
     # calculates the average improvement over random at dawn
     # 
     # Args
-    #   days; list: the evaluation results from many days
-    #   fn: string; where to save it
+    #   days; list: the evaluation results from many days.
+    #   fn: string; where to save it. If ommitted, will output to screen.
     #   method: 1 or 2;  percent over RAD should be relative to itself (1) or relative to the % of total (2)
+    #
+    # Details:
+    #   The format for days is a list of days. Each value (day) is a data frame of species progressions (1 per column),
+    #   The columns of each day's data frame must be the same. 
+    #   For each ranking method in each day, the difference from random.at.dawn is calculated. 
+    #   This difference is averages across days for each ranking method. 
+    #   A plot of the average difference is drawn for each ranking method
+    
   
     if (!is.null(fn)) {
-        path <- '/Users/n8933464/Documents/sample_selection_output/plots'
-        fn <- file.path(path, fn)
+        fn <- file.path(g.plot.path, fn)
         png(filename = fn,
             width = 1400, height = 700, units = "px", pointsize = 13,
             bg = "white",  res = NA,
@@ -51,8 +61,6 @@ Summary <- function (days, fn = NULL, method = 1) {
             m[,d] <-  percent.improvement
         }
         
-        
-        
         res.mean <- apply(m, 1, mean)
         if (min(res.mean) < min.val) {
             min.val <- min(res.mean)
@@ -60,7 +68,6 @@ Summary <- function (days, fn = NULL, method = 1) {
         if (max(res.mean) > max.val) {
             max.val <- max(res.mean)
         }
-        
         
         results[[cur.to.score]] <- res.mean
     }
@@ -102,7 +109,7 @@ Summary <- function (days, fn = NULL, method = 1) {
     
 }
 
-GraphProgressions <- function (progressions, 
+PlotProgressions <- function (progressions, 
                                cutoff = 120, 
                                heading = NULL,
                                fn = NULL) {
@@ -124,6 +131,9 @@ GraphProgressions <- function (progressions,
     #   heading: string; title of the graph
     
     #ranked.count.progressions <- NA
+    
+    # !! temp ... For some reason saving to file doesn't include the legend
+    fn <- NULL
     
     if (!is.null(fn)) {
         png(filename = fn,
@@ -208,15 +218,16 @@ GraphProgressions <- function (progressions,
     legend.names <- p.names
     legend.names[!is.comparison.curve] <- sapply(legend.names[!is.comparison.curve], GetRankingLegendName)
     
+    # todo: figure out why this is not working when saving plot
     legend("bottomright",  legend = legend.names, 
            col = legend.cols, 
            pch = pch,
-           lty = line.styles, text.col = "black", lwd = 2, cex=1.4)
+           lty = line.styles, text.col = "black", lwd = 1, cex=1)
     
     if (!is.null(fn)) {
         dev.off()   
     }
-    
+    return(true)
     
 }
 
@@ -233,7 +244,8 @@ GetColorForName <- function (name) {
         'c.3' = c(0.7,0.1,0.9),
         'c.4' = c(0.8,0.2,0.2),
         'c.5' = c(0,0.2,0.8),
-        'c.6' = c(0.25,0.6,0.0)
+        'c.6' = c(0.25,0.6,0.0),
+        'c.7' = c(0.25,0.6,0.2)
     )
     if (name %in% names(colors.1)) {
         return(colors.1[[name]])
@@ -256,7 +268,8 @@ GetLineStyleName <- function (name) {
         'c.3' = 'solid',
         'c.4' = 'solid',
         'c.5' = 'solid',
-        'c.6' = 'solid'
+        'c.6' = 'solid',
+        'c.7' = 'solid'
     )
     if (name %in% names(styles.1)) {
         return(styles.1[[name]])
@@ -266,6 +279,7 @@ GetLineStyleName <- function (name) {
 }
 
 GetPch <- function (name) {
+    # the symbol used on the line, so we don't rely only on colours
     # http://www.statmethods.net/advgraphs/parameters.html
     styles.1 <- list(
         'optimal' = NA,
@@ -279,7 +293,8 @@ GetPch <- function (name) {
         'c.3' = 17,
         'c.4' = 18,
         'c.5' = 19,
-        'c.6' = 20
+        'c.6' = 20,
+        'c.7' = 15
     )
     if (name %in% names(styles.1)) {
         return(styles.1[[name]])
@@ -292,7 +307,7 @@ GetPch <- function (name) {
 MapColor <- function (rank.name) {
     # maps ranking method names to colour names
     # this can change between papers, but keep consistent within a paper
-    map <- list('X4' = 'c.1', 'X8' = 'c.2', 'X5' = 'c.3', 'X6' = 'c.4', 'X9' = 'c.5', 'X10' = 'c.6')
+    map <- list('X4' = 'c.1', 'X8' = 'c.2', 'X5' = 'c.3', 'X6' = 'c.4', 'X9' = 'c.5', 'X10' = 'c.6', 'X11' = 'c.7')
     return(map[[rank.name]]) 
 }
 
@@ -303,9 +318,10 @@ GetRankingLegendName <- function (ranking.code) {
         "X4" = "EC",
         "X8" = "EC.TD",
         "X5" = "Ranked by clusters (δ = 0.1)",
-        "X6" = "CL",
+        "X6" = "Ranked by clusters (δ = 1)",
         "X9" = "Ranked by clusters (δ = 0.1) with Temporal Dispersal",
-        "X10" = "CL.TD"
+        "X10" = "Ranked by clusters (δ = 1) with Temporal Dispersal",
+        "X11" = "Ranked by clusters (δ = 0.6) with Temporal Dispersal"
     )
     
     if (ranking.code %in% names(codes)) {
@@ -339,5 +355,77 @@ PlotLine <- function (line, col.rgb, sd = NA, sd.col = NA, lty = 'solid', pch = 
 
 }
 
+
+
+PlotProgressions3d.1 <- function (progressions, cutoff = 180) {
+    
+    num.clusters <- as.numeric(dimnames(progressions)$num.clusters)
+    sample.num <- 1:ncol(progressions)
+    
+    #x <- rep(sample.num, length(num.clusters))
+    #z <- rep(num.clusters, times = 1, each = length(sample.num))
+    #x <- rep(sample.num, times = 1, each = length(num.clusters))
+    #z <- rep(num.clusters, times = length(sample.num), each = 1)
+    #y <- as.vector(progressions)
+    
+    persp(z = t(progressions), 
+          xlab = 'sample num', ylab = 'num groups', zlab = 'species found',
+          main = 'sample progressions for different number of cluster groups', sub = NULL,
+          theta = -35, phi = 25, r = sqrt(3), d = 1,
+          scale = TRUE, expand = 1,
+          col = "white", border = NULL, ltheta = -135, lphi = 0,
+          shade = NA, box = TRUE, axes = TRUE, nticks = 5,
+          ticktype = "simple")
+    
+}
+
+
+PlotProgressions3d <- function (progressions, cutoff = 120) {
+    
+    require('rgl')
+    
+    if (ncol(progressions) > cutoff) {
+        progressions <- progressions[,1:cutoff]
+    }
+    
+    
+    
+    
+    image(progressions)
+    View(progressions)
+    
+    num.clusters <- as.numeric(dimnames(progressions)$num.clusters)
+    sample.num <- 1:ncol(progressions)
+    
+    # x <- rep(sample.num, length(num.clusters))
+    # z <- rep(num.clusters, times = 1, each = length(sample.num))
+    # x <- rep(sample.num, times = 1, each = length(num.clusters))
+    # z <- rep(num.clusters, times = length(sample.num), each = 1)
+    # y <- as.vector(t(progressions))
+    
+    z <- 1:length(num.clusters) * 4
+    x <- sample.num
+    y <- t(progressions)
+    
+    ylim <- range(y)
+    ylen <- ylim[2] - ylim[1] + 1
+    colorlut <- terrain.colors(ylen,alpha=0) # height color lookup table
+    col <- colorlut[ y-ylim[1]+1 ] # assign colors to heights for each point
+    open3d(mouseMode = c('trackball', 'polar', 'xAxis'))
+    rgl.surface(x, z, y, color=col, alpha=0.9, back="lines")
+    
+    
+    #axes3d()
+    bbox3d(zlen = length(z),
+           zlab = as.character(num.clusters),
+           zunit="pretty", 
+           expand=1.03,
+           draw_front=FALSE)  
+    
+    rgl.surface(x, z, matrix(0, length(x), length(z)), color=c('black'), back="fill")
+    
+    
+    
+}
 
 

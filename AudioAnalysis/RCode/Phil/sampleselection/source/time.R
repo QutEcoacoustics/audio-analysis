@@ -62,7 +62,14 @@ GetDateParts <- function (dates) {
 }
 
 
-
+DateFromShortFormat <- function (date, decade = '20') {
+    # converts a date string from YYMMDD to
+    # YYYY-MM-DD
+    YY <- substr(date,start=1,stop=2)
+    MM <- substr(date,start=3,stop=4)
+    DD <- substr(date,start=5,stop=6)
+    return(paste0(decade, YY, "-", MM, "-", DD))
+}
 
 
 

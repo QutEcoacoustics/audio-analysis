@@ -349,6 +349,7 @@ CachePath <- function (cache.id) {
 }
 
 ReadCache <- function (cache.id) {
+    #' TODO: try catch for read cache to avoid corrupted cache files. if error: report, delete cache file, return false 
     path <- CachePath(cache.id)
     if (file.exists(path)) {  
         load(path)

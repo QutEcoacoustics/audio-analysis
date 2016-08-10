@@ -1,9 +1,37 @@
+# 27 April 2016
+# calculates the correlation between clusters at the 
+# two sites
+
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
+clusters_30 <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
+cl <- clusters_30[ ,1:30]
+#View(cl)
+
+i = 7
+j=1
+a <- matrix(data=0, ncol=31 , nrow =12)
+for (i in 1:30) {
+  for(j in 1:12) {
+    d <- rbind((cl[seq(j, 1332, 12),i]), 
+               (cl[(seq(1332+j, 2664, 12)),i]))
+    d <- t(d)
+    if(sum(d[,1])> 666 & sum(d[,2])> 666) {
+    e <- cor(d)
+    a[j,i+1] <- e[[2]]
+    }
+  }
+}
+a[,1] <- c("0_2","2_4","4_6","6_8","8_10","10_12",
+           "12_2","2_4","4_6","6_8","8_10","10_12")
+colnames(a) <- c("time",as.character(1:30))
+write.csv(a, "correlations1.csv", row.names = FALSE)
+
+
 # 14 November 2015
 # Work out which clusters are correlated in each of the 2 hour "histogram" files that came 
 # from the "Twelve_day_testing.R" file
 
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3f")
-
+#setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3f")
 #PCA type analysis
 library(psych)
 
@@ -23,6 +51,7 @@ ic.out7 <- iclust(clusters_20[,1:10],nclusters = 6)
 fa.diagram(ic.out7$pattern,Phi=ic.out7$Phi,main="Pattern taken from iclust") 
 
 clusters_30 <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
+
 cor_30 <- cor(clusters_30[,1:30])
 View(cor_30)
 write.csv(cor_30, "cor_hybrid_clust_knn_17500_3_k30.csv")
@@ -118,6 +147,3 @@ clusters_100 <- read.csv("hybrid_clust_knn_17500_3_k100_2hour_full111days.csv",h
 cor_100 <- cor(clusters_100[,1:100])
 View(cor_100)
 write.csv(cor_100, "cor_hybrid_clust_knn_17500_3_k100.csv")
-
-
-

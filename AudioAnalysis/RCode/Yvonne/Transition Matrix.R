@@ -1,10 +1,13 @@
 # 24 July 2015
 #
-# Transition Matrix and transition table
-# Creates a non-symmetrical matrix which shows the number of time
-# positive transitions from one cluster to another cluster over
-# a period of time
-
+# This code generates three (3) csv files
+# 1. A list of all transitions in the form of a stem and leaf plot
+# 2. A transition Matrix - a non-symmetrical matrix which shows the 
+#    number of time positive transitions from one cluster to another 
+#    over a period of time
+# 3. A transiton table listing the source, target and value
+# It can be used to study associations between the clusters, which can 
+# also be studied using the Network code I wrote for Mangalam
 #   This file is #10 in the sequence:
 #   1. Save_Summary_Indices_ as_csv_file.R
 #   2. Plot_Towsey_Summary_Indices.R
@@ -28,8 +31,10 @@ site <- "GympieNP Day 3"  # used as a label to save files
 #####################################################
 clusters <- vec$unname.kmeansObj.cluster.[timePeriod]
 
+# Create an empty matrix
 m <- matrix(0, 30, 30)
 
+# Fill the transition matrix
 for (i in 1:length(clusters)) {
   x <- clusters[i]
   y <- clusters[i+1]
@@ -45,15 +50,14 @@ source1 <- NULL
 target <- NULL
 
 for (x in 1:30) {
-   for (y in 1:30) {
-    if (m[x,y] > 0) 
-     {
-     a <- m[x,y]
-     source1 <- c(source1, x)
-     target <- c(target, y)
-     value <- c(value, a) 
-   }
- } 
+  for (y in 1:30) {
+    if (m[x,y] > 0) {
+      a <- m[x,y]
+      source1 <- c(source1, x)
+      target <- c(target, y)
+      value <- c(value, a) 
+    }
+  } 
 }
 
 value1 <- cbind(source1, target, value)
@@ -64,7 +68,8 @@ a <- sort(value1[,2])
 
 for (i in seq_along(a)) {
   #b <- as.character(rep(target[i], value[i]))
-  trans <- paste((source1[i]), ":  ", paste(as.character(rep(target[i], value[i])), 
+  trans <- paste((source1[i]), ":  ", 
+                 paste(as.character(rep(target[i], value[i])), 
                  collapse = " "))
   transitions <- c(transitions, trans)
 }

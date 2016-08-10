@@ -162,24 +162,12 @@ namespace Acoustics.Tools.Audio
         /// <summary>
         /// Gets the valid output media types.
         /// </summary>
-        protected override IEnumerable<string> ValidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> ValidOutputMediaTypes => null;
 
         /// <summary>
         /// Gets the invalid output media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidOutputMediaTypes => null;
 
         /// <summary>
         /// Segment a <paramref name="source"/> audio file.
@@ -228,8 +216,7 @@ namespace Acoustics.Tools.Audio
             FileInfo soxSourceFile;
             var soxRequest = request;
 
-
-            // do specialised convert and/or segment
+            // do specialized convert and/or segment
             if (sourceMediaType == MediaTypes.MediaTypeWavpack)
             {
                 // convert and segment wavpack file to wav
@@ -281,11 +268,19 @@ namespace Acoustics.Tools.Audio
                 // if output is correct, just copy it.
                 // will not overwrite, will throw exception if the output file already exists.
                 // do not overwrite!!!
+
+                // AT: the following code by Towsey is extremely dangerous in parallel code. It Effectively means previous runs can cache files - if files are faulty it corrupts analysis.
+                // AT: This code is allowed in DEBUG for ease of use. It should not be subverted in RELEASE
+#if DEBUG
                 // However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
-                if (!output.Exists)
+                if (soxOutputFile.Exists)
                 {
-                    File.Copy(soxOutputFile.FullName, output.FullName);
+                    Log.Warn($"MasterAudioUtility is trying to create file ({soxOutputFile.Name}) that already exists. BAD!! Program will crash if in RELEASE mode.");
                 }
+                File.Copy(soxOutputFile.FullName, output.FullName, true);
+#else
+                File.Copy(soxOutputFile.FullName, output.FullName);
+#endif
             }
 
             // tidy up

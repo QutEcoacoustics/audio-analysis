@@ -1,0 +1,11 @@
+Package: templator
+Title: What the Package Does (one line, title case)
+Version: 0.0.0.9000
+Authors@R: person("Philip", "Eichinski", email = "philip.eichinski@qut.edu.au", role = c("aut", "cre"))
+Description: Simple template engine for R data frames.
+Depends:
+    R (>= 3.1.3), stringr
+License: None
+LazyData: false
+RoxygenNote: 5.0.1.9000
+Suggests: testthat

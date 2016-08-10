@@ -26,10 +26,15 @@ ClusterEvents <- function (num.groups = 'auto',
     # use config setting if available
     choice <- GetUserChoice(c('HA', 'Kmeans'), choosing.what = "clustering method", default = 1, allow.range = FALSE, config.setting = 'clustering.method')
 
-    vals <- GetEventsAndFeatures()
+    vals <- GetEventsAndFeaturesTDCC() # todo: fix stuff so that it generalises to use any kind of features
     event.features <- vals$event.features
     events <- vals$events
     params <- list()
+    dependencies <- list()
+    # events could be segment events or AED events
+    dependencies[[events$name]] <- events$version
+    dependencies[[event.features$name]] <- event.features$version
+    
     
     # get user input for which features to use in clustering. 
     # replace the 'event.id' column (which is not a feature), with 'all'
@@ -49,10 +54,8 @@ ClusterEvents <- function (num.groups = 'auto',
         
     }
     
-    dependencies <- list()
-    # events could be segment events or AED events
-    dependencies[[events$name]] <- events$version
-    dependencies[[event.features$name]] <- event.features$version
+
+
     
 
 
@@ -79,7 +82,7 @@ ClusterEvents <- function (num.groups = 'auto',
 }
 
 # bug: sometimes returns events and features with different number of rows!
-GetEventsAndFeatures <- function () {
+GetEventsAndFeaturesTDCC <- function () {
     # gets the events and features data frames from saved output
     # TODO: 'events' could be aed events or segment.events. need to modify output functions to allow for this
     # TODO: 'features' might have a number of different names, such as 'features', 'TDCCs'. update output functions to allow this
@@ -87,21 +90,98 @@ GetEventsAndFeatures <- function () {
     
     
     
-    events <- ReadOutput(c('events','segment.events'))
+    events <- ReadOutput('filtered.segment.events')
+    event.features <- ReadOutput('TDCCs')
+    # event.features <- ReadOutput(c('features','TDCCs'), dependencies = events.dependencies)
+    #    rating.features <- ReadOutput('rating.features')  
+    
+    # remove event.id.column from features table
+    # drop.cols <- names(event.features$data) %in% c('event.id')
+    
+    
+    
+    # to be sure, order by event id
+    events$data <- events$data[order(events$data$event.id),]
+    event.features$data <- event.features$data[order(event.features$data$event.id),]
+    
+    
+    if (! identical(events$data$event.id, event.features$data$event.id)) {
+        Report(5, 'chosen features and events have different event ids')
+        
+        # ids might not match if events have been filtered after features were calculated. 
+        # so, we will filter features now
+        
+        event.features$data <- event.features$data[event.features$data$event.id %in% events$data$event.id, ]
+        
+        if (! identical(events$data$event.id, event.features$data$event.id)) {
+            # this means that there are some events with no features
+            stop(5, 'Some events dont have any features for clustering')
+        }
+    }
+    
+    
+    
+    # remove event.id column, since we also have the matching event.id 
+    # in the parallel events df
+    event.features$data <- event.features$data[,-(which(colnames(event.features$data) == 'event.id'))]
+    
+    
+    #    event.features$data <- event.features$data[!drop.cols]
+    #    drop.cols <- names(rating.features$data) %in% c('event.id')
+    #    rating.features$data <- rating.features$data[!drop.cols]
+    #     return (list(events = events, event.features = event.features, rating.features = rating.features))
+    return (list(events = events, event.features = event.features))
+}
+
+# bug: sometimes returns events and features with different number of rows!
+GetEventsAndFeaturesAED <- function () {
+    # gets the events and features data frames from saved output
+    # TODO: 'events' could be aed events or segment.events. need to modify output functions to allow for this
+    # TODO: 'features' might have a number of different names, such as 'features', 'TDCCs'. update output functions to allow this
+    # TODO: let more than one feature set be chosen and appended together for clustering (checking that they have identical event ids and dependencies)
+    
+    
+    
+    events <- ReadOutput(c('events','filtered.segment.events'))
     events.dependencies <- list()
     events.dependencies[[events$name]] <- events$version
-    event.features <- ReadOutput(c('features','TDCCs'), dependencies = events.dependencies)
-    #    rating.features <- ReadOutput('rating.features')  
-    # remove event.id.column from features table
-    #    drop.cols <- names(event.features$data) %in% c('event.id')
     
-    if (! setequal(events$data$event.id, event.features$data$event.id)) {
-        stop('chosen features and events have different event ids')
-    } else {
+    
+    # TODO: check this. I don't see how event.dependencies can be correct for finding the TDCCs since the segment events are indirect 
+    event.features <- ReadOutput(c('features','TDCCs'))
+    # event.features <- ReadOutput(c('features','TDCCs'), dependencies = events.dependencies)
+    #    rating.features <- ReadOutput('rating.features')  
+    
+    # remove event.id.column from features table
+    # drop.cols <- names(event.features$data) %in% c('event.id')
+    
+    
+    
+    # to be sure, order by event id
+    events$data <- events$data[order(events$data$event.id),]
+    event.features$data <- event.features$data[order(event.features$data$event.id),]
+    
+    
+    if (! identical(events$data$event.id, event.features$data$event.id)) {
+        Report(5, 'chosen features and events have different event ids')
+        
+        # ids might not match if events have been filtered after features were calculated. 
+        # so, we will filter features now
+        
+        event.features$data <- event.features$data[event.features$data$event.id %in% events$data$event.id, ]
+        
+        if (! identical(events$data$event.id, event.features$data$event.id)) {
+            # this means that there are some events with no features
+            stop(5, 'Some events dont have any features for clustering')
+        }
+    }
+    
+    
+    
         # remove event.id column, since we also have the matching event.id 
         # in the parallel events df
         event.features$data <- event.features$data[,-(which(colnames(event.features$data) == 'event.id'))]
-    }
+    
     
     #    event.features$data <- event.features$data[!drop.cols]
     #    drop.cols <- names(rating.features$data) %in% c('event.id')
@@ -237,7 +317,7 @@ DoClusterKmeans <- function (df, weights = NULL, num.clusters = NULL) {
     
     kmeans.results <- as.list(rep(NA, length(num.clusters)))
     for (i in 1:length(num.clusters)) {
-        kmeans.results[[i]] <- kmeans(df, num.clusters[i], algorithm = "Hartigan-Wong", iter.max = 30)   
+        kmeans.results[[i]] <- kmeans(features, num.clusters[i], algorithm = "Hartigan-Wong", iter.max = 30)   
     }
     
     # for NA rows, assign cluster NA

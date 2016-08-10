@@ -77,8 +77,6 @@ for (i in seq_along(file.ref)) {
   print(i)
 }
 
-
-
 #write.csv(all.indices, file=paste("dataSet_", paste(dates, collapse="_"),".csv", sep =""))
 write.csv(all.indices, "dataSet_upto20Sept2015.csv")
 
@@ -170,6 +168,8 @@ write.csv(all.indices, "dataSet_21Sept_11Oct2015.csv")
 #############################
 # Concatenating files before and after 21 September 2015
 # Note: Do not apply this code until the columns match
+# ie. until you have manually deleted certain columns from the
+# 2nd file 
 setwd("C:\\Work\\CSV files\\FourMonths\\")
 file1 <- read.csv("dataSet_upto20Sept2015.csv", header = T)
 file2 <- read.csv("dataSet_21Sept_11Oct2015.csv", header = T)

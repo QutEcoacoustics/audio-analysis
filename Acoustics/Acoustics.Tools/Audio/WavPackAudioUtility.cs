@@ -180,7 +180,7 @@
             }
             else
             {
-                args = string.Format(" -m -q -w \"{0}\" \"{1}\" ", source.FullName, output.FullName);
+                args = $" -m -q -w \"{source.FullName}\" \"{output.FullName}\" ";
             }
 
             return args;
@@ -334,19 +334,19 @@
         /// </exception>
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
-            if (request.Channel.HasValue)
+            if (request.Channels.NotNull())
             {
-                throw new ArgumentException("Wvunpack cannot modify the channel.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Wvunpack cannot modify the channel.");
             }
 
             if (request.MixDownToMono.HasValue && request.MixDownToMono.Value)
             {
-                throw new ArgumentException("Wvunpack cannot mix down the channels to mono.", "request");
+                throw new ChannelSelectionOperationNotImplemented("Wvunpack cannot mix down the channels to mono.");
             }
 
             if (request.TargetSampleRate.HasValue)
             {
-                throw new ArgumentException("Wvunpack cannot modify the sample rate.", "request");
+                throw new ArgumentException("Wvunpack cannot modify the sample rate.", nameof(request));
             }
         }
 

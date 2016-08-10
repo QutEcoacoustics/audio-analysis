@@ -1,4 +1,4 @@
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k")
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
 
 ####################################
 # Plotting comparison between 4, 6 and 24 hour fingerprints using hybrid method
@@ -20,7 +20,7 @@ par(mar=c(5,5,3,2),cex=1.3, cex.axis=1.5, cex.lab=1.5)
 plot(x, hclust_4hour, type = "b",pch=17, ylim = c(1.3,2.15),
      ylab = "I3D distance",xlab = "",
      main = "hclust (ward.D2)
-     4, 6 & 24 hour fingerprints - 12 days",
+     '4 hour x 6', '6 hour x 4' & 24 hour signature - 12 days",
      cex=1.3,cex.axis=1.5)
 par(new=TRUE)
 plot(x, hclust_6hour,type = "b",pch=19,ylim = c(1.3,2.15),
@@ -29,7 +29,7 @@ par(new=TRUE)
 plot(x, hclust_24hour,type = "b",pch=15,ylim = c(1.3,2.15),
      yaxt="n",ylab = "",xlab = "k",cex=1.3,cex.axis=1.5)
 legend("bottomright",pch = c(17, 19, 15),
-       c("4 hour","6 hour","24 hour"),bty = "n",cex=1.5)
+       c("4 hour x 6","6 hour x 4","24 hour"),bty = "n",cex=1.5)
 dev.off()
 
 ####################################
@@ -49,7 +49,7 @@ par(mar=c(4.5,4.5,3,1.5),cex=1.3, cex.axis=1.5, cex.lab=1.5)
 plot(x,y,type = "b",xlab = "k",pch=19,
      ylab = "I3D distance",
      main = "kmeans 
-     24 hour fingerprints - 12 days",xlim=c(5,30),
+     24 hour signatures - 12 days",xlim=c(5,30),
      cex=1.3,cex.axis=1.6, cex.main=1.5)
 dev.off()
 ####################################
@@ -169,17 +169,17 @@ dev.off()
 # plot hybrid 111 days x 2 sites
 # Folder j
 setwd("C:\\Work\\CSV files\\FourMonths/Hybrid_3_4_7_10_11_15_16_knn_k3j")
-x <- c(5,10,15,20,25,30,35,40)#,35,40,45)
-hybrid10000 <- c(1.566, 1.907,1.613,1.596,1.877,1.858,1.842,1.835)
-hybrid15000<- c(1.65,2.203,1.435,1.43,1.417,1.406,1.401,1.409)
-hybrid17500 <- c(1.752,2.172,1.466,1.433,1.379,1.375,1.443,1.443)
-#hybrid18000 <- c(1.762, 1.848, 1.861, 1.912, 1.487, 1.546, 1.544, 1.632)
-hybrid20000 <- c(1.846,1.296,1.433,1.741,1.737,1.793,1.51,1.52)
-hybrid22500<- c(1.661,1.212,1.193,1.256,1.627,1.635,1.626, 1.625)
-#hybrid25000 <- c(1.476,1.787,1.788,1.976,1.966,1.964,1.872,1.868)
-hybrid30000<- c(1.963,1.329,1.291,1.506,1.505,1.524,1.612,2.121)
+x <- c(10,15,20,25,30,35,40)#,35,40,45)
+hybrid10000 <- c(1.907,1.613,1.596,1.877,1.858,1.842,1.835)
+hybrid15000<- c(2.203,1.435,1.43,1.417,1.406,1.401,1.409)
+hybrid17500 <- c(2.172,1.466,1.433,1.379,1.375,1.443,1.443)
+#hybrid18000 <- c(1.848, 1.861, 1.912, 1.487, 1.546, 1.544, 1.632)
+hybrid20000 <- c(1.296,1.433,1.741,1.737,1.793,1.51,1.52)
+hybrid22500<- c(1.212,1.193,1.256,1.627,1.635,1.626, 1.625)
+#hybrid25000 <- c(1.787,1.788,1.976,1.966,1.964,1.872,1.868)
+hybrid30000<- c(1.329,1.291,1.506,1.505,1.524,1.612,2.121)
 ylim <- c(1.2,2.25)
-xlim <- c(5,40)
+xlim <- c(10,40)
 png("hybrid_folderj_222_day_2percent.png", height = 600, width = 600)
 par(mar=c(4.5,4.5,3,1.5),cex=1.3, cex.axis=1.5, cex.lab=1.5)
 plot(x,hybrid10000,type = "b",pch=17, ylim = ylim,
@@ -197,15 +197,15 @@ plot(x, hybrid17500,type = "b",pch=15,ylim = ylim,
      yaxt="n",ylab = "",cex=1.3,cex.axis=1.6,
      xlim = xlim,xlab = "")
 par(new=TRUE)
-plot(x, hybrid20000, type = "b", pch=18, ylim = ylim,
-     yaxt="n", ylab = "", cex=1.3, 
-     cex.axis=1.6, xlim = xlim,xlab = "")
+#plot(x, hybrid20000, type = "b", pch=18, ylim = ylim,
+#     yaxt="n", ylab = "", cex=1.3, 
+#     cex.axis=1.6, xlim = xlim,xlab = "")
 #par(new=TRUE)
 #plot(x, hybrid22500, type = "b", pch=1, ylim = ylim,
 #     yaxt="n", ylab = "", cex=1.3, 
 #     cex.axis=1.6, xlim = xlim,xlab = "")
 legend("topright", title="k1 values",pch = c(17, 19, 15, 18), 
-       c("10000", "15000", "17500", "20000"), bty = "n", cex=1.4)
+       c("10000", "15000", "17500"), bty = "n", cex=1.4)
 dev.off()
 # the next test would be to see how faithfully these remain once
 # the seed was changed, for kmeans and for hybrid22500.
@@ -239,17 +239,48 @@ barplot(names.arg=month, height=rainfall, ylab = "rainfall (mm)",
         cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,250),
         col = "gray20")
 dev.off()
-temperature.min <- c(19.6, 19.6, 18.1, 14.7, 10.8,	
-                      8.0,	6.3,  7.1, 10.2, 13.8,	
-                     16.5, 18.5)
-temperature.max <- c(31.2, 30.4, 29.3, 27.3,
-                     24.5, 22.0, 21.9, 23.4,
-                     26.1, 28.3, 30.3, 31.3)
+
+rainfall.gympie <- c(119.4, 160.9, 111.3, 87.1,
+                     79.0, 53.7, 45.3, 42.0, 
+                     38.3, 63.1, 87.1, 159.7) # Gympie 1981-2010
+rainfall.tewantin <- c(132.6,214.0,180.8,165.0,
+                       174.2,125.8,78.8,93.6,
+                       65.8, 100.2,	114.4,154.7) # Tewantin 1981-2010
+month <- c("Jan", "Feb", "Mar",
+           "Apr","May","Jun","Jul","Aug",
+           "Sept", "Oct", "Nov", "Dec")
+png("Gympie rainfall_1981_2010.png", height=600, width = 600)
+par(mar=c(5,5,2,1))
+barplot(names.arg=month, height=rainfall.gympie, ylab = "rainfall (mm)",
+        cex.axis = 2, cex.main=2,cex.lab=2, xlab = "Months", 
+        ylim = c(0,220), col = "gray20")
+mtext("Average monthly rainfall (1981-2010)", side =3, cex = 2.5) 
+mtext("Gympie", side = 3, line=-2.5, cex = 2.5)
+dev.off()
+# Tewantin
+png("Tewantin rainfall_1981_2010.png", height=600, width = 600)
+par(mar=c(5,5,2,1))
+barplot(names.arg=month, height=rainfall.tewantin, ylab = "rainfall (mm)",
+        cex.axis = 2, cex.main=2,cex.lab=2, xlab = "Months", 
+        ylim = c(0,220),col = "gray20")
+mtext("Average monthly rainfall (1981-2010)", side =3, cex = 2.5) 
+mtext("Tewantin", side = 3, line=-2.5, cex = 2.5)
+dev.off()
+
+month <- c("Jan", "Feb", "Mar",
+           "Apr","May","Jun","Jul","Aug",
+           "Sept", "Oct", "Nov", "Dec")
+temperature.min <- c(19.8, 19.8, 18.0, 15.0,
+                     11.6, 8.2, 6.8,	7.2,
+                     10.7, 13.9,16.5,	18.7) # Gympie 1981-2010
+temperature.max <- c(31.4, 30.6, 29.2, 26.9,
+                     24.3, 22.1, 21.9, 23.4,
+                     26.5, 28.4, 29.7, 31.1) # Gympie 1981-2010
 png("Gympie temperature.png", height=600, width = 600)
 par(mar=c(5,5,6,1))
 barplot(names.arg=month, height=temperature.max, ylab = "temperature (C)",
         main = "Average minimum and maximum monthly 
-        temperatures - Gympie", cex.axis = 2,
+        temperatures (1981-2010) - Gympie", cex.axis = 2,
         cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,32))
 par(new=TRUE)
 barplot(names.arg=month, height=temperature.min, ylab = "temperature (C)",
@@ -257,19 +288,17 @@ barplot(names.arg=month, height=temperature.min, ylab = "temperature (C)",
         col="gray20")
 dev.off()
 
-temperature.min.tewantin <- c(21.9, 21.9, 20.7, 18.0,
-                              14.7, 12.6, 11.1, 11.6,
-                              14.4, 16.9, 18.8, 20.7) 
-
-temperature.max.tewantin <- c(28.5, 28.4, 27.4, 25.8,
-                              23.5, 21.5,	21.1,	22.2,
-                              24.2, 25.5,	26.5,	28.0)
-
+temperature.min.tewantin <- c(21.9,	21.9,	20.6,	18.0,
+                              14.8, 12.6,	11.1,	11.6,
+                              14.5,	16.9,	18.7,	20.7) # Gympie 1981-2010
+temperature.max.tewantin <- c(28.5,	28.4,	27.4,	25.8,
+                              23.6,	21.6,	21.1,	22.1,
+                              24.3,	25.5,	26.3,	28.0) #Tewantin 1981-2010
 png("Tewantin temperature.png", height=600, width = 600)
 par(mar=c(5,5,6,1))
 barplot(names.arg=month, height=temperature.max.tewantin, ylab = "temperature (C)",
         main = "Average minimum and maximum monthly 
-        temperatures - Tewantin", cex.axis = 2,
+        temperatures (1981-2010) - Tewantin", cex.axis = 2,
         cex.main=2,cex.lab=2, xlab = "Months", ylim = c(0,32))
 par(new=TRUE)
 barplot(names.arg=month, height=temperature.min.tewantin, ylab = "temperature (C)",

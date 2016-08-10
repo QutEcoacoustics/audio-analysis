@@ -131,7 +131,7 @@
                 return;
             }
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
-            double[] signal = wav.Samples;
+            double[] signal = wav.GetChannel(config.Channel);
 
             //calculate a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
             this.Configuration.epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);

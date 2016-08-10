@@ -25,11 +25,11 @@ setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
 fluxes <- read.csv("Acoustic_flux_time_series_Gympie NP1 _22 to 28 June 2015.csv", header=T)
 
 for (i in seq(121,length(fluxes$flux),60)) {
-  a <- acf(fluxes$flux[i-90:i+90],plot = T, lag.max = 180, type='p')
+  a <- acf(fluxes$flux[i-90:i+90],plot = T, lag.max = 10000, 
+           type='correlation')
 }
 
-
-
+abline(v=c(1440,2880,4320,5760,7200),lw=0.01)
 
 ################################
 #setwd("C:\\Work\\CSV files\\GympieNP1\\2015_06_21\\TimeSeriesPlots\\")

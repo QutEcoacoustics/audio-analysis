@@ -4,10 +4,16 @@ g.hash.dir <- file.path(g.output.parent.dir, 'hash')
 g.output.meta.dir <- file.path(g.output.parent.dir, 'meta')
 
 
-g.cachepath <- c(
-    '/Volumes/files/qut_data/cache'
-    )
+#g.cachepath <- c(
+#    '/Volumes/files/qut_data/cache',
+#    '/Users/n8933464/Documents/sample_selection_output/cache'
+#    )
 
+
+# TODO: allow file of meta data to be saved along with a dataframe, to be read and returned
+# e.g. explanation of column names
+# file should be arbitrary, maybe json?
+# probably best to save as separate file rather than in the meta file
 
 
 require('rjson')
@@ -19,6 +25,84 @@ require('rjson')
 
 
 g.access.log <- list()
+
+ReadOutput <- function (name = NULL, 
+                        purpose = NA, 
+                        include.meta = TRUE, 
+                        params = NULL, 
+                        dependencies = NULL, 
+                        false.if.missing = FALSE, 
+                        optional = FALSE, 
+                        use.last.accessed = TRUE, 
+                        version = NULL) {
+    # reads the output for type 'name' 
+    #
+    # Args:
+    #   name: string; Optional. the output to read, eg "clusters", "features" etc.  If ommited, will first ask the user which type of output they want
+    #   purpose: string; just to display to the user
+    #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
+    #   params: list; Optional. If supplied, will only consider returing output with the matching params
+    #   dependencies: list; optional. If supplied, will only consider returning output with the matching 
+    #   false.if.missing: bool; if true, will return false if the file is missing
+    #   optional: boolean; if true, an option is added to select none and return false
+    #   use.last.accessed: boolean; if true (default) will look for the version that was last written or read in this session
+    #   version: int; If the required version is known, then it can be supplied. This version will be used if it exists
+    #
+    # Value:
+    #   if include.meta, will return a list that has a 'data' key, that contains the data read in
+    #   if include.meta is false, will return the data read in, eg data frame if it's a csv
+    #
+    # Details:
+    #    1) if name is not supplied, will ask user, 
+    #    2) then if version is supplied, find the that version of the output type. If it doesn't exist, will return false or stop
+    #    3) looks for the last accessed version if it matches the version OR  params, dependencies
+    #    4) if no matching last accessed verion is found, it will ask the user to select a version
+    #       This means that for a particular set of params and dependencies, only one version of a particular output type can be used within the same run
+    #    5) if the file is found, then it will set the 'last accessed' flag 
+    #       on the chosen output and it dependencies
+    #    6) Output data-type is different depending on the name of the output, for example, binary object for clustering
+    #       and and CSV for features. This is defined in the GetType function
+    
+    if (is.null(name)) {
+        # if name is ommited from function call, get user input
+        # this should only happen when calling directly from the commandline
+        choices = GetOutputTypes()
+        choice = GetUserChoice(choices, choosing.what = "choose a type of output")
+        name = choices[choice]
+    }
+    
+    if (!is.na(purpose)) {
+        Report(1, 'Reading output for:', purpose)     
+    }
+    
+    if (use.last.accessed) {
+        meta.row <- GetLastAccessed(name, params, dependencies, version) 
+    } else {
+        meta.row <- FALSE
+    }
+    
+    if (!is.data.frame(meta.row) || optional) {
+        meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional = optional, version = version)
+        if (!is.data.frame(meta.row)) {
+            return(FALSE)
+        }
+    }
+    
+    SetLastAccessed.recursive(meta.row$name, meta.row$version)
+    val <- ReadOutputFile(meta.row$name, meta.row$version)
+    if (include.meta) {
+        meta <- ExpandMeta(meta.row)
+        meta$indirect.dependencies <- GetIndirectDependenciesStack(meta.row$name, meta.row$version)
+        meta$data <- val
+        return(meta)
+    } else {
+        return(val)
+    }
+}
+
+
+
+
 
 ClearAccessLog <- function () {
     g.access.log <<- list()  
@@ -52,7 +136,7 @@ GetLastAccessed <- function (names, params = NULL, dependencies = NULL, version 
             
             params.match <- is.null(params) || g.access.log[[name]]$meta$params == toJSON(params)
             dependencies.match <- is.null(dependencies) || g.access.log[[name]]$meta$dependencies != toJSON(dependencies)
-            version.match <- is.null(dependencies) || g.access.log[[name]]$meta$version != version
+            version.match <- is.null(version) || g.access.log[[name]]$meta$version != version
             
             if (params.match && dependencies.match && version.match) {
                 if (last.accessed.date == FALSE || g.access.log[[name]]$date.accessed > last.accessed.date) {
@@ -283,7 +367,7 @@ GetType <- function (name) {
     # species.in.each.min and optimal.samples are lists
     
     
-    if (name %in% c('clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples')) {
+    if (name %in% c('clustering', 'clustering.HA','clustering.kmeans', 'ranked.samples', 'species.in.each.min', 'optimal.samples','silence.model')) {
         return('object')
     } else {
         return('csv')
@@ -305,84 +389,6 @@ GetOutputTypes <- function () {
 
 
 
-ReadOutput <- function (name = NULL, 
-                        purpose = NA, 
-                        include.meta = TRUE, 
-                        params = NULL, 
-                        dependencies = NULL, 
-                        false.if.missing = FALSE, 
-                        optional = FALSE, 
-                        use.last.accessed = TRUE, 
-                        version = NULL) {
-    # reads the output for type 'name' 
-    #
-    # Args:
-    #   name: string; Optional. the output to read, eg "clusters", "features" etc.  If ommited, will first ask the user which type of output they want
-    #   purpose: string; just to display to the user
-    #   include.meta: bool; if true, will wrap the data to return in a list that also contains the metadata
-    #   params: list; Optional. If supplied, will only consider returing output with the matching params
-    #   dependencies: list; optional. If supplied, will only consider returning output with the matching 
-    #   false.if.missing: bool; if true, will return false if the file is missing
-    #   optional: boolean; if true, an option is added to select none and return false
-    #   use.last.accessed: boolean; if true (default) will look for the version that was last written or read in this session
-    #   version: int; If the required version is known, then it can be supplied. This version will be used if it exists
-    #
-    # Value:
-    #   if include.meta, will return a list that has a 'data' key, that contains the data read in
-    #   if include.meta is false, will return the data read in, eg data frame if it's a csv
-    #
-    # Details:
-    #    1) if name is not supplied, will ask user, 
-    #    2) then if version is supplied, find the that version of the output type. If it doesn't exist, will return false or stop
-    #    3) looks for the last accessed version if it matches the version OR  params, dependencies
-    #    4) if no matching last accessed verion is found, it will ask the user to select a version
-    #       This means that for a particular set of params and dependencies, only one version of a particular output type can be used within the same run
-    #    5) if the file is found, then it will set the 'last accessed' flag 
-    #       on the chosen output and it dependencies
-    #    6) Output data-type is different depending on the name of the output, for example, binary object for clustering
-    #       and and CSV for features. This is defined in the GetType function
-    
-    if (is.null(name)) {
-        # if name is ommited from function call, get user input
-        # this should only happen when calling directly from the commandline
-        choices = GetOutputTypes()
-        choice = GetUserChoice(choices, choosing.what = "choose a type of output")
-        name = choices[choice]
-    }
-    
-    if (!is.na(purpose)) {
-        Report(1, 'Reading output for:', purpose)     
-    }
-
-    if (use.last.accessed) {
-        meta.row <- GetLastAccessed(name, params, dependencies, version) 
-    } else {
-        meta.row <- FALSE
-    }
-    
-    if (!is.data.frame(meta.row) || optional) {
-        meta.row <- ChooseOutputVersion(name, params = params, dependencies = dependencies, false.if.missing = false.if.missing, optional = optional, version = version)
-        if (!is.data.frame(meta.row)) {
-            return(FALSE)
-        }
-    }
-    
-    SetLastAccessed.recursive(meta.row$name, meta.row$version)
-    type <- GetType(meta.row$name)
-    if (type == 'object') {   
-        val <- (ReadObject(meta.row$name, meta.row$version))
-    } else {
-        val <- (ReadCsv(meta.row$name, meta.row$version))
-    }
-    if (include.meta) {
-        meta <- ExpandMeta(meta.row)
-        meta$indirect.dependencies <- GetIndirectDependenciesStack(meta.row$name, meta.row$version)
-        meta$data <- val
-        return(meta)
-    } else {
-        return(val)
-    }
-}
 
 WriteStructuredOutput <- function (x, check.before.overwrite = TRUE) {
     # writes output where the meta values for the output are included in the list
@@ -455,6 +461,10 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
     # search for a previous version with the same params and same dependencies
     # if found, confirm overwrite and update meta with new date
     # if not found, create a new meta row
+    
+    callstack <- as.character(sys.calls())
+    # remove this function from call stack
+    length(callstack) <- length(callstack) - 1
 
     if (any(matching.p.and.d)) {
         # todo: check if this file is the dependency of other files. If so, maybe not safe to overwrite?
@@ -469,6 +479,7 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
             return(FALSE)
         } else {
             meta$date[matching.p.and.d] <- DateTime()
+            meta$callstack[matching.p.and.d] <- callstack
             new.v.num <- meta$version[matching.p.and.d]
             meta.row <- meta[matching.p.and.d, ]
         }
@@ -479,7 +490,15 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
             new.v.num <- 1
         }
         
-        meta.row <- MakeMetaRow(name, new.v.num, params, dependencies) 
+        if (is.data.frame(x)) {
+            col.names = colnames(x)
+        } else {
+            col.names = NULL
+        }
+        
+
+        
+        meta.row <- MakeMetaRow(name, new.v.num, params, dependencies, col.names = col.names, callstack = callstack) 
         meta <- rbind(meta, meta.row)
         
     }
@@ -496,47 +515,89 @@ WriteOutput <- function (x, name, params = list(), dependencies = list(), check.
 }
 
 
+ReadOutputFile <- function (name, version) {
+  # given a name and version, figures out if it was as csv or R object
+  # then calls the relevant function
+  type <- GetType(name)
+  path <- OutputPath(name, version, unzip = TRUE)
+  if (type == 'object') {   
+    val <- ReadObject(path)
+  } else {
+    val <- ReadCsv(path)
+  }
+  return(val)
+}
 WriteOutputFile <- function (x, name, v.num) {
+  # given some data, the name (type of output) and version
+  # figures out whether to save as csv or object
+  # then calls the relevant function
     type <- GetType(name)
+    path <- OutputPath(name, v.num)
     if (type == 'object') {    
-        return(WriteObject(x, name, v.num))
+        WriteObject(x, path)
     } else {
-        return(WriteCsv(x, name, v.num))
+        WriteCsv(x, path)
+    }
+    if (file.exists(path) && file.exists(ZipPath(path))) {
+      # confirm that the save has worked (path exists) then
+      # delete any zipped version
+      file.remove(ZipPath(path))
     }
     
 }
 
-ReadObject <- function (name, version) {
-    path <- OutputPath(name, version, 'object')
-    if (file.exists(path)) {  
-        load(path)
-        return(x) # this is the name of the variable used when saving
-    } 
-    return(FALSE) 
+
+ReadObject <- function (path) {
+  if (file.exists(path)) {  
+    load(path)
+    return(x) # this is the name of the variable used when saving
+  } 
+  return(FALSE) 
 }
-WriteObject <- function (x, name, version) {
-    path <- OutputPath(name, version, 'object')
-    f <- save(x, file = path) 
+WriteObject <- function (x, path) {
+  f <- save(x, file = path)
 }
+
+
 # read/write wrappers for csv with correct options set
-ReadCsv <- function (name, v.num) {
-    path <- OutputPath(name, v.num, 'csv')
+ReadCsv <- function (path) {
     return(read.csv(path, header = TRUE, stringsAsFactors=FALSE))
 }
-WriteCsv <- function (x, name, v.num) {
-    path <- OutputPath(name, v.num, 'csv')
-    write.csv(x, path, row.names = FALSE)
+WriteCsv <- function (x, path) {
+  write.csv(x, path, row.names = FALSE)
 }
 
 
-OutputPath <- function (name, version, ext = NA) {
+OutputPath <- function (name, version, ext = NA, unzip.file = FALSE) {
+  # returns the path to the file for the name and version
+  # 
+  # Args:
+  #   name: string
+  #   version: int
+  #   ext: string; the file extension. If ommitted, will check the correc type for the name of the output
+  #   unzip.file: boolean; if true, and the file has been zipped, will first unzip the file
+
     if (!is.character(ext)) {
         ext <- GetType(name)    
     }
     fn <- paste(as.character(name), sprintf("%03d", as.integer(version)), ext, sep = '.')
-    return(file.path(g.output.master.dir, fn))
+    
+    path <- file.path(g.output.master.dir, fn)
+    if (!file.exists(path) && unzip.file) {
+      zipped.path <- ZipPath(path)
+      if (file.exists(zipped.path)) {
+          success <- unzip(zipped.path, junkpaths = TRUE, exdir = g.output.master.dir)
+          if (success < 2 & file.exists(path)) {
+              file.remove(zipped.path)
+          } 
+      }
+    }
+    
+    return(path)
 }
-
+ZipPath <- function (path) {
+  return(paste0(path, '.zip'))
+}
 
 ReadMeta <- function () {
 
@@ -550,11 +611,32 @@ ReadMeta <- function () {
     return(meta)
 }
 
+
+#TODO: every time the meta is written, make a copy of the old meta (1 per day)
+ArchiveMeta <- function () {
+    
+}
+
 EmptyMeta <- function () {
     return(data.frame(name = character(), version = integer(), params = character(), dependencies = character(), date = character()))
 }
 
-MakeMetaRow <- function (name, v.num, params = list(), dependencies = list(), date = NA) {
+#' Makes a 1-row data frame for the metdata of a saved output
+#' @param name string 
+#' @param v.num int 
+#' @param params list, 
+#' @param dependencies list 
+#' @param date string 
+#' @param col.names character vector
+#' @param callstack character vector
+
+MakeMetaRow <- function (name, 
+                         v.num, 
+                         params = list(), 
+                         dependencies = list(), 
+                         date = NA, 
+                         col.names = NULL, 
+                         callstack = NULL) {
     if (is.list(params)) {
         params <- toJSON(params)
     }
@@ -564,7 +646,15 @@ MakeMetaRow <- function (name, v.num, params = list(), dependencies = list(), da
     if (is.na(date)) {
         date <- DateTime()
     }
-    row <- data.frame(name = name, version = v.num, params = params, dependencies = dependencies, date = date, file.exists = NA)
+    if (is.character(col.names)) {
+        col.names = toJSON(col.names)
+    } else {
+        col.names = ''
+    }
+    if (is.character(callstack)) {
+        callstack = toJSON(callstack)
+    }
+    row <- data.frame(name = name, version = v.num, params = params, dependencies = dependencies, date = date, file.exists = NA, col.names = col.names, callstack = callstack)
     return(row)
 }
 
@@ -645,9 +735,10 @@ ChooseOutputVersion <- function (names, params, dependencies, false.if.missing =
         # we only have one thing to choose from, so choose it for them
         # but show them which one is being chosen
         Report(4, 'only one file to choose from, returing it:')
-        ReportAnimated(5, choices[1], duration = 3)
+        ReportAnimated(5, choices[1], duration = 1)
         which.version <- 1
     } else {
+        D3Inspector(names[1])
         which.version <- GetUserChoice(choices, optional = optional)   
     }
     
@@ -713,9 +804,17 @@ VerifyMeta <- function (meta = NULL) {
     }
     files.exist <- apply(meta, 1, function (row) {
         path <- OutputPath(row['name'], row['version'])
-        return(file.exists(path))
+        return(file.exists(path) || file.exists(paste0(path, '.zip')))
     })
     meta$file.exists <- as.integer(files.exist)
+    
+    if (!"col.names" %in% colnames(meta)) {
+        meta$col.names = '';
+    }
+    if (!"callstack" %in% colnames(meta)) {
+        meta$callstack = '';
+    }
+    
     WriteMeta(meta)
     return(meta)
 }
@@ -822,19 +921,16 @@ CachePath <- function (cache.id) {
 ReadCache <- function (cache.id) {
     path <- CachePath(cache.id)
     if (file.exists(path)) {
-        load(path)
-#         result <- tryCatch({
-#             load(path)
-#         }, warning = function (w) {
-#             print('warning: corrupt cache file')
-#             print(w)
-#         }, error = function (e) {
-#             print('error: corrupt cache file')
-#             print(e)
-#         } , finally =  {
-#            
-#         })
-        if (exists('x')) {
+         x <- tryCatch({
+             load(path)
+             return(x)
+         }, error = function (e) {
+             msg <- paste('Load from cache failed. possible corrupt cache file', e)
+             print(msg)
+             warning(msg)
+             return(NULL)
+         })
+        if (exists('x') && !is.null(x)) {
             Report(6, 'successfully read file from cache')
             return(x)  # this is the name of the variable used when saving   
         }
@@ -849,5 +945,346 @@ WriteCache <- function (x, cache.id) {
 }
 
 
+ZipOldFiles <- function () {
+  #
   
+  meta <- ReadMeta()
+  
+  for (r in 1:nrow(meta)) {
+    
+    meta.time <- as.POSIXlt(meta$date[r], tz = Sys.timezone())
+    now <- Sys.time()
+    diff <- difftime(now, meta.time, tz = Sys.timezone(), units = 'days')
+    
+    if (diff > 30) {
+      
+      file.path <- OutputPath(meta$name[r], meta$version[r])
+      file.path.zip <- paste0(file.path, '.zip')
+      
+      if (file.exists(file.path) && !file.exists(file.path.zip)) {
+        
+        # zip the file
+        # flags here http://linux.die.net/man/1/zip
+        # recursive, compression level 9 (max/slowest), exclude file info, junk paths
+        success <- zip(file.path.zip, file.path, flags = '-r9Xj')
+        print(success)
+        
+        if (success < 2 && file.exists(file.path.zip)) {
+          # error codes: http://www.info-zip.org/FAQ.html#error-codes
+          # remove the non-zipped file
+          Report(3, r, "of", nrow(meta), " files zipped:", file.path)
+          file.remove(file.path)
+        } else {
+          Report(1, 'something went wrong, zip file not there')
+        }
+      }
+    }
+  }
+}
+
+
+
+# this function goes through and adds the col names of existing meta values, 
+# in case they were created before the addition of the col.names column of the meta csv
+AddColsToMeta <- function () {
+    meta <- ReadMeta()
+    for (r in 1:nrow(meta)) {
+        col.names <- GetColNames(meta$name[r], meta$version[r])
+        if (is.character(col.names)) {
+            meta$col.names[r] <- toJSON(col.names)
+        }
+    }
+    WriteMeta(meta)
+}
+
+
+D3Inspector <- function (group = FALSE) {
+    require('dviewer')
+    data <- DataVis()
+    #SaveDemoVisData(data)
+    print(dataGraph(data, group));
+    a = 1;
+}
+
+SaveDemoVisData <- function (test_data) {
+    path.to.package.source = '../../custom_packages/dviewer/data'
+    save(test_data, file = file.path(path.to.package.source, 'test_data.rda'))
+}
+
+
+D3Inspector1 <- function () {
+    require('templator')
+    data <- DataVis()
+    output.path <- file.path(g.output.parent.dir, 'inspection', 'inspect.data.html')
+    HtmlInspector(template.path = 'templates/output.inspector', output.path =  output.path, singles = list(data = data))
+}
+
+
+DataVis <- function () {
+    # Converts data to json for use with D3 and SVG
+    #
+    # Details:
+    #   Final format will be something like this:
+    #
+    #   {'name':{'id':1,
+    #            'format':'csv',
+    #            'versions':[{"v":1,'params':{},'links':{'name':1},'cols':['a','b']}],
+    #           }
+    #   } 
+    #   
+    
+    m <- ReadMeta()
+    group.names <- unique(m$name)
+    
+    # for some stupid reason this returns a named character vector with no way to remove names
+    # which then gets encoded in json wrong if you select with single square brackets
+    group.format <- sapply(m$name, GetType)
+    data <- list()
+    
+    for (g in 1:length(group.names)) {
+        cur <-group.names[g]
+        data[[g]] <- list(name = cur,
+                          format = group.format[[g]],
+                          versions = list())
+        
+        versions <- m[m$name == cur,]
+        for (v in 1:nrow(versions)) {
+        #Report(5, 'adding: ', group.names[g], versions[v])
+            data[[g]][['versions']][[v]] <- list(v = versions$version[v],
+                                                 params = fromJSON(versions$params[v]),
+                                                 links = fromJSON(versions$dependencies[v]),
+                                                 date = versions$date[v], 
+                                                 exists = versions$file.exists[v])
+            
+            # add colnames if they are there
+            if (is.character(versions$col.names[v]) && !is.na(versions$col.names[v]) && nzchar(versions$col.names[v])) {
+                data[[g]][['versions']][[v]]$colnames = as.list(fromJSON(versions$col.names[v]))
+            }
+            
+
+            # if (versions$file.exists[v]) {
+            #     df <- ReadOutputFile(versions$name[v], versions$version[v])
+            #     
+            #     if (is.data.frame(df)) {
+            #         data[[g]][['versions']][[v]]$cols <- colnames(df)
+            #     }
+            # }
+
+        }
+    }
+
+    data <- toJSON(data)
+    
+    return(data)
+
+}
+
+
+GetColNames <- function (name, version) {
+    # Gets the column names for the specified output file
+    # 
+    # Args:
+    #   name: the name of the output file
+    #   version: int, the version of the output file
+    #
+    # Value: character vector
+    #
+    # Details:
+    #   Checks if the file is a csv
+    #   Checks if the file exists
+    #   reads only the first line
+    #   will cause the zip archiver to unzip the file. 
+    # 
+    if (GetType(name) == 'csv') {
+        path <- OutputPath(name, version, unzip = TRUE)
+        if (file.exists(path)) {
+            header.line <- readLines(path, n=1)
+            col.names <- read.table(textConnection(header.line), sep = ",", stringsAsFactors = FALSE)
+            return(as.character(col.names))
+        }
+    }
+    return(NULL)
+}    
+    
+DataVisFlat <- function () {
+    # Converts data to json for use with D3 and SVG
+    #
+    # Details:
+    #   Final format will be something like this:
+    #      
+    #   {
+    #      "groups":{
+    #          'names':['name1','name2','name3'], // the different types of data
+    #          'format':['csv','object','csv']  // the format of the data
+    #          'count':[1,2,10] // how many of each group there is
+    #          },
+    #      "group_links":{
+    #          "from":[from1, from2,from3], // this is redundant, and will be based on the version links
+    #          "to":[to1,to2,to3]   
+    #          },
+    #      "versions":{
+    #          'group':[0,1,1], // index of the group
+    #          'params':[{'name':val},{'name':val},{'name':val}],
+    #          'version':[1,1,1,],
+    #          'cols':[['a','b','c'],['a','b','c'],['a','b','c']] // the column names of the csv (if applicable)
+    #      },
+    #      "version_links":{
+    #          "from":[], // the index within the versions list
+    #          "to":[]
+    #      }
+    #   }
+    #
+    
+    m <- ReadMeta()
+    group.names <- unique(m$name)
+    group.format <- sapply(m$name, GetType)
+    group.count <- tabulate(as.factor(m$name)) #todo: check that this is in the same order as unique
+    
+    version.links <- GetLinks(m, TRUE)
+
+    
+    # map to index of groups list, not meta rows
+    group.map <- function (m.row) {
+        return(which(group.names == m$name[m.row]))
+    }
+    group.links <- data.frame(from = sapply(version.links$from, group.map),
+                        to = sapply(version.links$to, group.map))
+    group.links <- unique(group.links)
+    
+    group.links <- as.list(group.links)
+    version.links <- as.list(version.links)
+    
+    versions <- list(group = sapply(1:nrow(m), group.map))
+    versions$params <- unname(sapply(m$params, fromJSON))
+    versions$version <- m$version
+    
+    # TODO: cols
+    
+    groups <- list(names = group.names,
+                   format = group.format,
+                   count = group.count)
+    
+    all.data <- list(groups = groups, 
+                     group_links = group.links,
+                     versions = versions,
+                     version_links = version.links)
+    
+    all.data <- toJSON(all.data)
+    
+    return(all.data)
+    
+
+
+    
+    
+}
+MakeDataGraph <- function (include.versions = FALSE) {
+    # converts the meta table to json directed graph
+    #
+    # Args: 
+    #     as.json: boolean; whether it should be returned as a list(false) or json(true)
+    
+    m <- ReadMeta()
+    if (!include.versions) {
+        m <- m[m$version == 1,]
+    }
+    if (include.versions) {
+        label <- title <- paste(m$name, m$version, sep = ":")
+    } else {
+        label <- title <- m$name
+    }
+    nodes <- data.frame(id = 1:nrow(m), 
+                        label = label,
+                        title = title,
+                        shape = "square",
+                        color = "green",
+                        size = 15)
+    if (include.versions) {
+        nodes$group <- m$name
+    }
+    edges <- GetLinks(m, include.versions = include.versions)
+    edges$arrows <- "middle"
+    visNetwork(nodes, edges, width = "100%")
+}
+GetLinks <- function (m, include.versions, as.list = FALSE, index.from = 1) {
+    # produces a list of dependency links by row number of meta
+    # for output to directed-graph visualization
+    #
+    # Args: 
+    #   as.list: boolean; Whether the format should be as a list (e.g. for conversion to json)
+    #                     or a dataframe (e.g. for use with htmlwidgets in R)
+    #   index.from: int;  the source/destination pointer to the rows of the meta should start counting rows from 0 or 1?
+    #
+    # Details:
+    #   https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-visNetwork.html
+    #   http://www.htmlwidgets.org/showcase_visNetwork.html
+    #   http://visjs.org/docs/network/
+    
+    
+    # max length for links will be half square of number of nodes
+    # changing length of list is slow, so initialise to max then trim at the end
+    max.links <- (nrow(m) * nrow(m)) / 2
+    
+    link.list <-  list()
+    length(link.list) <- max.links
+    link.df <- data.frame(from = numeric(max.links), to = numeric(max.links))
+
+
+    
+    # store current index of dependencies separately for efficiency
+    cur.d <- 0 
+    
+    for (r in 1:nrow(m)) {
+        dependencies <- DependenciesToDf(m[r,'dependencies'])
+        for (local.d in seq_len(nrow(dependencies))) {
+            # add link
+            
+            cur.d <- cur.d + 1
+            
+            # source row is the index (starting from 0) of the node of the dependency
+            # which is the same as the meta row of the dependency - 1
+            if (include.versions) {
+                link.source <- which(m$name == dependencies$name[local.d] & m$version == dependencies$version[local.d])
+            } else {
+                link.source <- which(m$name == dependencies$name[local.d])
+            }
+
+            link.source <- link.source + index.from - 1
+            if (length(link.source) > 0) {
+                if (length(link.source) > 1) {
+                    msg <- paste('corrupted meta: ', 
+                                 dependencies$name[local.d], 
+                                 'version', dependencies$version[local.d], 
+                                 'exists', length(link.source), 'times, on rows', paste(link.source,sep=","))
+                    stop(msg)
+                }
+            } else {
+                stop('missing dependency')
+            }
+            
+            
+            link.target <- r + index.from - 1
+            link.list[[cur.d]] <- list(source = link.source, target = link.target)
+            link.df[cur.d,] <- c(link.source, link.target)
+        }
+    }
+    
+    # trim the list 
+    length(link.list) <- cur.d
+    # trim the df
+    link.df <- link.df[1:cur.d,]
+ 
+    
+    if (as.list) {
+        return(link.list)
+    } else {
+        return(link.df)
+    }
+    
+    
+    
+}
+
+
+
     

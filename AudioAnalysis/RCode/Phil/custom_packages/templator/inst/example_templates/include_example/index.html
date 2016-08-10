@@ -1,0 +1,36 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title><##title##></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <style>
+          <##:style.css##>
+        </style>
+
+
+
+
+
+    </head>
+    <body>
+
+
+        <##startforeach{country}##>
+        <div class="country <##country##>" title="Country: <##country##>">
+             <p>Country: <##country##></p>
+             <##startforeach{}##>
+                 <a class='city' href="<##img##>" target="_blank">
+                   <img src="<##img##>" title="<##name##>" alt="" />
+                   <p>name: <##name##></p>
+                   <p>population: <##population##></p>
+                 </a>
+             <##endforeach{}##>
+        </div>
+        <##endforeach{country}##>
+
+    </body>
+</html>

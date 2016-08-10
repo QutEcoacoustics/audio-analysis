@@ -19,7 +19,7 @@ DoNoiseReduction <- function (m) {
     #np <- GetNoiseProfile.histdy(m)
     m <- Blur(m)
     m <- MedianSubtraction(m)
-    return(m2)
+    return(m)
     
 }
 

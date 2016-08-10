@@ -12,10 +12,11 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     # Details:
     #   assumes files of 10 minute length
     
+    # todo: verfify audio exists for full expected duration for each file, and insert NAs for missing audio. 
+    
     if (is.null(min.list)) {
         min.list <- ReadOutput('target.min.ids')
     }
-    
     
     # get the wave path for every minute
     # because we know that audio files are 10 minutes long, we can shortcut by 
@@ -23,26 +24,56 @@ MakeSegmentList <- function (min.list = NULL, num.per.min = 60) {
     # every 10th minute of the day
     audio.file.duration <- 10
     min.list.per.duration <- min.list$data[min.list$data$min %% audio.file.duration == 0, ]
-    wave.path.per.duration <- rep(NA, nrow(min.list.per.duration))
-    for (i in 1:length(wave.path.per.duration)) {
-        wave.path.per.duration[i] <- GetAudioFile(min.list.per.duration$site[i], min.list.per.duration$date[i], min.list.per.duration$min[i])
-    }
+    wave.path.per.duration <- GetAudioFileBatch(min.list.per.duration)
+
     min.list$data$wave.path <- wave.path.per.duration[rep(1:length(wave.path.per.duration),each=audio.file.duration)]
     
     segment.list <- min.list$data[rep(1:nrow(min.list$data),each=num.per.min), ]
     segment.list$seg.num <- rep(1:num.per.min, nrow(min.list$data))
     segment.list$start.sec <- (segment.list$seg.num - 1) * (60/num.per.min)
-    
+    segment.list$file.sec <- rep(1:(audio.file.duration * num.per.min), length(wave.path.per.duration)) - 1
     segment.list <- AddEventIdColumn(segment.list)
     
     dependencies <- list('target.min.ids' = min.list$version)
     params <- list('num.per.min' = 60)
+    
+    # check duration of final audio file, since it is probably not exactly the right length
+    final.path <- wave.path.per.duration[length(wave.path.per.duration)]
+    duration.of.final <- floor(GetAudioMeta(final.path, 'duration'))
+    # remove any segments that don't have audio
+    include <- rep(TRUE, nrow(segment.list))
+    include[segment.list$wave.path == final.path][(duration.of.final+1):sum(segment.list$wave.path == final.path)] <- FALSE
+    segment.list <- segment.list[include,]
+    
+    # drop the wave.path col, because it's dependant on the location of the audio
+    # which might change
+    segment.list <- segment.list[,-(match('wave.path',colnames(segment.list)))]
+    
     segment.list.version <- WriteOutput(x = segment.list, name = 'segment.events',params = params, dependencies = dependencies)
     
 }
 
+RemoveWavePathFromSegmentEvents <- function () {
+    # old segment lists were saved with the wave path in a column. 
+    # this caused problems and is not used anymore
+    # this function needs to be called for each already saved segment.events output
+    # to remove that column
+    se <- ReadOutput('segment.events', use.last.accessed = FALSE)
+    
+    wave.path.col <- match('wave.path', colnames(se$data), nomatch = 0)
+    
+    if (wave.path.col > 0) {
+        se$data <- se$data[,-wave.path.col]
+        WriteStructuredOutput(se)
+    } else {
+        Report(4, 'wave.path col was not found')
+    }
 
-ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coefficients = 16, parallel = TRUE) {
+
+}
+
+
+ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coefficients = 16, parallel = 3) {
     # extracts "spectral dynamic features" of each segemnt in segment list
     # spectral dynamic features are fft coefficients of the spectrogram values in the time domain of each 
     # frequency bin
@@ -58,27 +89,34 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     segment.events <- ReadOutput('segment.events')
     segment.list <- segment.events$data
     
-    segment.length = 60 / segment.list$params$num.per.min
+    #!! temp debug
+    # segment.list <- segment.list[1:4000,]
     
-    files <- unique(segment.list$wave.path)
+    
+    segment.length = 60 / segment.events$params$num.per.min
+    
+    segment.list$wave.path <- GetAudioFileBatch(segment.list)
+    
+    # 1 file per min
+    files <- unique(segment.list[,c('site', 'date', 'min')])
 
     # ensure that each file appears as a single continuous run in the segment list
     # this will make sure we can match segments to results
-    each <- nrow(segment.list) / length(files)
-    if (!isTRUE(all.equal(segment.list$wave.path, rep(files, each = each)))) {
-        stop('problem with the segment list')
-    }
+
+
     
     # todo: calculate this from wave length and segment length
-    num.segments.per.file <- 600
+    num.segments.per.file <- 60
     #todo: set 'outfile' param to get messages
     
     SetReportMode() # reset to console only
-    if (parallel) {
+    if (parallel > 1) {
         SetReportMode(socket = TRUE)
-        cl <- makeCluster(3)
+        cl <- makeCluster(parallel)
         registerDoParallel(cl)
-        res <- foreach(file = files, .combine='rbind', .export=ls(envir=globalenv())) %dopar% ExtractSDFForFile(file, 
+        res <- foreach(f = 1:nrow(files), 
+                       .combine='rbind', 
+                       .export=ls(envir=globalenv())) %dopar% ExtractSDFForMin(files[f,], 
                                                                                  segments = segment.list,
                                                                                  num.fbands = num.fbands, 
                                                                                  max.f = max.f, 
@@ -87,12 +125,18 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
        
     } else {
         SetReportMode(socket = FALSE)
-        res <- foreach(file = files, .combine='rbind') %do% ExtractSDFForFile(file, 
-                                                                                 segments = segment.list,
-                                                                                 num.fbands = num.fbands, 
-                                                                                 max.f = max.f, 
-                                                                                 min.f = min.f, 
-                                                                                 num.coefficients = num.coefficients)
+        res <- data.frame()
+        for (f in 1:nrow(files)) {
+            row.res <- ExtractSDFForMin(files[f,], 
+                                         segments = segment.list,
+                                         num.fbands = num.fbands, 
+                                         max.f = max.f, 
+                                         min.f = min.f, 
+                                         num.coefficients = num.coefficients) 
+            
+
+            res <- rbind(res, row.res)
+        }
     }
     SetReportMode() # reset to console only
 
@@ -108,7 +152,7 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
 
     
     # double check that foreach has put things back in the correct order after doparallel
-    (sum(segment.list$event.id == res$event.id) == length(segment.list$event.id))
+    (sum(segment.list$event.id == res[,1]) == length(segment.list$event.id))
     
     
     
@@ -131,8 +175,9 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
     WriteOutput(x = res, name = 'TDCCs', params = params, dependencies = dependencies)
     
     # re-save segments without those with missing audio
-    segment.events$data <- segment.list
-    WriteStructuredOutput(segment.events)
+    # (no longer necessary, this is done earlier when creating segment listn)
+    #segment.events$data <- segment.list
+    #WriteStructuredOutput(segment.events)
     
     
 
@@ -140,7 +185,7 @@ ExtractSDF <- function (num.fbands = 16, max.f = 8000, min.f = 200, num.coeffici
 }
 
 
-ExtractSDFForFile <- function (path, 
+ExtractSDFForMin <- function (min.vals, 
                                segments,
                                num.fbands = 16, 
                                max.f = 8000, 
@@ -154,33 +199,47 @@ ExtractSDFForFile <- function (path,
     # Args:
     #   path: string; the path to the audio file
     #   segments: data.frame; contains column: wave.path, min.id, 
+    Report(1, 'start ExtractSDFForMin')  
+    Report(1, paste(min.vals))
     
     require('digest')
     
-    cache.id <- digest(paste(path, num.fbands, max.f, min.f, num.coefficients))
+    site <- as.character(min.vals['site'])
+    date <- as.character(min.vals['date'])
+    min <- as.numeric(min.vals['min'])
+    
+    cache.id <- paste0(paste(site, date, min, num.fbands, max.f, min.f, num.coefficients, sep = "_"),'.tdcc')
     if (use.cached) {
         retrieved.from.cache <- ReadCache(cache.id)
         if (retrieved.from.cache != FALSE) {
+            Report(4, 'using cached', cache.id)
             return(retrieved.from.cache)
         }
     }
-
+    #Report(1, 'not found in cache')
     
-    cur.segments <- segments[segments$wave.path == path, ] 
-    all.files <- unique(segments$wave.path)
-    this.file <- match(path, all.files)
-    Report(5, "extracting TDCCs for events", cur.segments$event.id[1],"-", cur.segments$event.id[nrow(cur.segments)], 'in file ', this.file, 'of', length(all.files))
+    cur.segments <- segments[segments$site == site & segments$date == date & segments$min == min,]
+    
+    #Report(1, 'getting audio file')
+    
+    this.file <- GetAudioFile(site,  date,  min)
+    Report(1, "extracting TDCCs for events", cur.segments$event.id[1],"-", cur.segments$event.id[nrow(cur.segments)], 'in file ', this.file)
     
     # create the spectrogram
-    cur.spectro <- Sp.CreateFromFile(path, frame.width = 256)
+    cur.spectro <- Sp.CreateFromFile(this.file, frame.width = 256)
+    
+    #Report(5, 'doing noise reduction')
     
     # Noise Reduction !!!!
     spectro.vals <- DoNoiseReduction(cur.spectro$vals)
+    
+    #Report(6, 'reducing dimensions')
+    
     spectro.vals <- ReduceSpectrogram2(cur.spectro$vals, num.bands = num.fbands, min.f, max.f)
     
     
     
-    #        cur.spectro$vals <- RemoveNoise(cur.spectro$vals)
+    # cur.spectro$vals <- RemoveNoise(cur.spectro$vals)
     segment.duration <- 1 # seconds
     
     # width of segment should be rounded down to the nearest power of 2 (for fft)
@@ -203,7 +262,8 @@ ExtractSDFForFile <- function (path,
     
     
     # add the start.sec.in.file
-    start.sec.in.file <- (cur.segments$min %% 10) * 60 + cur.segments$start.sec
+    file.duration.minutes <- round(cur.spectro$duration / 60)
+    start.sec.in.file <- (cur.segments$min %% file.duration.minutes) * 60 + cur.segments$start.sec
     
     # add the start.col.in.file
     start.col.in.file <- round(start.sec.in.file * cur.spectro$frames.per.sec + 1)

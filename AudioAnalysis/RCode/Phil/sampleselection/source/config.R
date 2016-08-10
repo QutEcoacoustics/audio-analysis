@@ -60,10 +60,6 @@ g.minute.ranges <- c(0, 1439)
 # which sites to include in sample selection
 g.sites <- c('NE','NW','SE','SW')
 
-
-
-
-
 g.target <- list(
     'NE' = list(
         '2010-10-13' = c(0, 1439),
@@ -114,3 +110,10 @@ g.tags.db.user <- 'root'
 g.tags.db.password <- 'root'
 g.tags.db.dbname <- 'speciestags'
 g.tags.db.unix.socket <- '/Applications/MAMP/tmp/mysql/mysql.sock'
+
+
+
+
+
+
+

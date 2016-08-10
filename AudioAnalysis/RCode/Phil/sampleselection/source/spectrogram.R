@@ -60,7 +60,7 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
     if (!is.na(label)) {
         spec$label <- paste(spec$label, label, sep = " : ") 
     }
-    if (!is.na(img.path)) {
+    if (is.character(img.path)) {
         Sp.Draw(spec, img.path)      
     }
         
@@ -69,12 +69,32 @@ Sp.CreateTargeted <- function (site, start.date, start.sec,
 }
 
 Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512, 
-                               smooth = TRUE, db = TRUE, filename = FALSE, use.cache = TRUE) {
+                               smooth = TRUE, db = TRUE, filename = FALSE, use.cache = TRUE, offset = NULL, duration = NULL, msg = '') {
+    # creates a spectrogram of the supplied audio file path
+    # optionally only a section of it if offset and duration are supplied
+    #
+    # Args:
+    #     path: string; the path to the audio file
+    #     draw: boolean; whether to draw an image of the spectrogram (true) or just return the matrix of values
+    #     frame.width: int; number of samples for each fft in the stft
+    #     smooth: boolean; whether to perform smoothing
+    #     db: whether to use db scale for values (i.e. log of amp values returned by stft)
+    #     use.cache: whether to check for a cached copy first
+    #     filename: string; if draw==TRUE, the image will be saved here
+    #     offset: float; start offset from the start of the file in seconds. If ommitted or NULL, will start from the start of the file
+    #     duration: float; number of seconds of the audio to use. If ommitted, or if supplied but is past the end of the file, will use the end of the file.
+    #
+    # Details: 
+    #     a 'cache.id' is created based on the parameters of the spectrogram. If usecached is true, the cache will be checked using this cache.id. If it needs to be generated
+    #     (no cached version or use.cache==false), the generated spectrogram will be cached using the cache id. 
+    #      
 
     defaults = list(
         frame.width = 256,
         smooth = TRUE,
-        db = TRUE
+        db = TRUE,
+        offset = NULL,
+        duration = NULL
         )
     
     id <- ''
@@ -89,10 +109,18 @@ Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512,
         val <- ifelse(db, 1, 0)
         id <- paste0(id, "smooth=",val)
     }
+    if (!is.null(offset)) {
+        id <- paste0(id, "offset=",offset)
+    }
+    if (!is.null(duration)) {
+        id <- paste0(id, "duration=",duration)
+    }
     
-    split <- strsplit(path, .Platform$file.sep)
+
     basepath <- BasePath(path)
     cache.id <- paste0(basepath,id, '.spectro')
+    
+    Report(5, msg, ':', cache.id)
     
     if (use.cache) {
         spectro <- ReadCache(cache.id)  
@@ -101,7 +129,7 @@ Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512,
     }
 
     if (class(spectro) != 'spectrogram') {
-        spectro <- Sp.Create(path, draw = draw, frame.width, smooth = smooth, db = db, filename = filename)
+        spectro <- Sp.Create(path, draw = draw, frame.width, smooth = smooth, db = db, filename = filename, offset = offset, duration = duration)
         WriteCache(spectro, cache.id) 
     } else {
         Report(5, 'using spectrgram retrieved from cache')
@@ -113,7 +141,7 @@ Sp.CreateFromFile <- function (path, draw = FALSE, frame.width = 512,
 
 
 Sp.Create <- function(wav, frame.width = 512, draw = FALSE, 
-                      smooth = TRUE, db = TRUE, filename = FALSE) {
+                      smooth = TRUE, db = TRUE, filename = FALSE, offset = NULL, duration = NULL) {
     # performs a stft on a mono wave file (no overlap)
     #  
     # Args:
@@ -125,6 +153,8 @@ Sp.Create <- function(wav, frame.width = 512, draw = FALSE,
     #     Without this, low values will be imperceptible
     #   filename: string or FALSE; the path where to save the image file, 
     #     or FALSE to not save the spectrogram
+    #   offset: float; start offset from the start of the file in seconds. If ommitted or NULL, will start from the start of the file
+    #   duration: float; number of seconds of the audio to use. If ommitted, or if supplied but is past the end of the file, will use the end of the file.
     #
     # Returns:
     #   spectrogram; (custom object) each column is a time-frame, 
@@ -142,8 +172,27 @@ Sp.Create <- function(wav, frame.width = 512, draw = FALSE,
         wav <- readWave(wav)
     }
     samp.rate <- wav@samp.rate
+    
+    # trim to the offset/duration parameters
+    if (is.numeric(offset)) {
+        start.sample <- round(offset*samp.rate)
+    } else {
+        start.sample <- 1
+    }
+    if (is.numeric(duration)) {
+        end.sample <- start.sample+round(duration*samp.rate)
+        if (end.sample > length(wav@left)) {
+            end.sample <- length(wav@left)
+        }
+    } else {
+        end.sample <- length(wav@left)
+    }
+    
     bit <- wav@bit  # resolution of wave eg 16bit
     left <- wav@left  # sample values
+    
+    left <- left[start.sample:end.sample]
+    
     len <- length(left)  # total number of samples
     #trim samples so that TFRAME fits exactly
     sig <- left[c(1:(len - len %% TFRAME))]
@@ -184,8 +233,8 @@ Sp.Create <- function(wav, frame.width = 512, draw = FALSE,
     
     #Timer(ptm, 'generating spectrogram',  len / samp.rate, 'second of audio')
     
-    if (draw) {
-        Sp.draw(spectro, filename)
+    if (draw || is.character(filename)) {
+        Sp.Draw(spectro, filename)
     }
     return(spectro)
 }
@@ -229,34 +278,13 @@ Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
     #
     #  Returns:
     #    NULL
-    require('grid')
 
     amp <- spectro$vals
-    
-    width <- ncol(amp)
-    height <- nrow(amp)
     if (!is.na(img.path)) {
-        png(img.path, width = width*scale, height = height*scale)
-    } else {
-        
+        png(img.path, width = ncol(spectro$vals)*scale, height = nrow(spectro$vals)*scale)
     }
-    rast <- Sp.AmpToRaster(amp)
-
-    # create a viewport positioned with cms, so that resizing the device doesn't resize the viewport
-    # calculate the cm value of the pixel amount needed (rows, cols)
-    grid.newpage()
-    devsize.cm <- dev.size(units = "cm")
-    devsize.px <- dev.size(units = "px")
-    px.per.cm <- (devsize.px[1] / devsize.cm[1]) / scale
-    vp.width.cm <- ncol(spectro$val) / px.per.cm
-    vp.height.cm <- nrow(spectro$val) / px.per.cm
-    vp <- viewport(x = 0, y = 0, just = c('left', 'bottom'), width = vp.width.cm, height = vp.height.cm, default.units = 'cm')
-    pushViewport(vp)
-    
-    grid.raster(image = rast, vp = vp)
-
+    Sp.DrawVals(amp, scale)
     Sp.Label(spectro)
-    
     if (!is.null(spectro$rects) && nrow(spectro$rects) > 0) {
       for (i in 1:nrow(spectro$rects)) {
         # add rectangles
@@ -264,15 +292,28 @@ Sp.Draw <- function (spectro, img.path = NA, scale = 2) {
         Sp.Rect(spectro, rect)
       }
     }
-    
     Sp.DrawLines(spectro)
-
-    
     if (!is.na(img.path)) {
         dev.off()
     }
-    
-    
+}
+
+Sp.DrawVals <- function (amp, scale = 2) {
+    require('grid')
+    width <- ncol(amp)
+    height <- nrow(amp)
+    rast <- Sp.AmpToRaster(amp)
+    # create a viewport positioned with cms, so that resizing the device doesn't resize the viewport
+    # calculate the cm value of the pixel amount needed (rows, cols)
+    grid.newpage()
+    devsize.cm <- dev.size(units = "cm")
+    devsize.px <- dev.size(units = "px")
+    px.per.cm <- (devsize.px[1] / devsize.cm[1]) / scale
+    vp.width.cm <- width / px.per.cm
+    vp.height.cm <- height / px.per.cm
+    vp <- viewport(x = 0, y = 0, just = c('left', 'bottom'), width = vp.width.cm, height = vp.height.cm, default.units = 'cm')
+    pushViewport(vp)
+    grid.raster(image = rast, vp = vp)
 }
 
 

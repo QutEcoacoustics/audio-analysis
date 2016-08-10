@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>###title###</title>
+        <title><##title##></title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         
@@ -11,9 +11,8 @@
             body, html {
                 margin: 0px;
                 padding: 0px;
-                width: 300px;
             }
-            img {
+            img, a {
                 display: inline-block;
                 width: 100px;
                 height: 150px;
@@ -29,7 +28,16 @@
     </head>
     <body>
 
-        ###content###
+        
+        <##startforeach{group}##>
+        <div class="cluster" title="cluster:', <##group##>, '">
+             <##startforeach{}##>
+                <a class='sec' href="<##link##>" target="_blank">
+                 <img src="<##spectro.img.path##>" title="<##img.title##>" alt="" />
+                </a>
+             <##endforeach{}##>
+        </div>
+        <##endforeach{group}##>
         
     </body>
 </html>

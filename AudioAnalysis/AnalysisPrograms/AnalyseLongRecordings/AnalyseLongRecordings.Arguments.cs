@@ -39,6 +39,13 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             [ArgRange(0, double.MaxValue)]
             public double? EndOffset { get; set; }
 
+            [ArgDescription("An array of channels to select. Default is all channels.")]
+            public int[] Channels { get; set; } = null;
+
+            [ArgDescription("Mix all selected input channels down into one mono channel. Default is to mixdown.")]
+            [DefaultValue(true)]
+            public bool MixDownToMono { get; set; } = true;
+
             public void Validate()
             {
                 if (this.StartOffset.HasValue ^ this.EndOffset.HasValue)

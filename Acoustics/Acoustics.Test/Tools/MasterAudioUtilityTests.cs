@@ -64,6 +64,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
         [TestMethod]
         public void ConvertsMp3ToWavCorrectly()
         {
+            var sourceInfo = TestHelper.AudioDetails["Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"];
             var expected = new AudioUtilityInfo
             {
                 ChannelCount = 1,
@@ -75,7 +76,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
             Modify(
                 "Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3",
-                expected,
+                sourceInfo,
                 new AudioUtilityRequest { },
                 MediaTypes.MediaTypeWav,
                 expected);
@@ -161,7 +162,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 "Lewins Rail Kekkek.webm",
                 MediaTypes.MediaTypeWebMAudio,
                 MediaTypes.MediaTypeWebMAudio,
-                TimeSpan.FromSeconds(60.71),
+                TimeSpan.FromSeconds(60.244535),
                 TimeSpan.FromMilliseconds(30));
         }
 
@@ -356,12 +357,12 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
 
         private static FileInfo GetAudioUtilityExe(string name)
         {
-            var baseresourcesdir = TestHelper.GetResourcesBaseDir().FullName;
-            var exe = new FileInfo(Path.Combine(baseresourcesdir, name));
+            var baseResourceDir = TestHelper.GetResourcesBaseDir();
+            var exe = new FileInfo(Path.Combine(baseResourceDir, name));
             return exe;
         }
 
-        private static IAudioUtility GetAudioUtility()
+        public static IAudioUtility GetAudioUtility()
         {
             var ffmpeg = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
             var mp3Splt = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
@@ -546,7 +547,13 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
             }
         }
 
-        private static void Modify(string filename, AudioUtilityInfo sourceExpected, AudioUtilityRequest request, string outputMimeType, AudioUtilityInfo outputExpected)
+        public static void Modify(
+            string filename,
+            AudioUtilityInfo sourceExpected,
+            AudioUtilityRequest request,
+            string outputMimeType,
+            AudioUtilityInfo outputExpected,
+            Action<AudioUtilityInfo, AudioUtilityInfo> additionalTests = null)
         {
             var source = TestHelper.GetTestAudioFile(filename);
 
@@ -567,6 +574,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 var outputInfo = util.Info(output);
                 var outputInfoText = GetDurationInfo(outputInfo);
 
+                additionalTests?.Invoke(sourceExpected, sourceInfo);
 
                 TestHelper.DeleteTempDir(dir);
             }

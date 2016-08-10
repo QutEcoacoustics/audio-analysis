@@ -1,6 +1,16 @@
-﻿namespace Acoustics.Tools.Wav
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="WavReader.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Wave Reader.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace Acoustics.Tools.Wav
 {
     using System;
+    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
 
@@ -9,6 +19,8 @@
     /// </summary>
     public class WavReader : IDisposable
     {
+        private double[] samples;
+
         /// <summary>
         /// Wav file extension.
         /// </summary>
@@ -16,9 +28,12 @@
 
         public WavReader(string path)
         {
-            ParseData(File.ReadAllBytes(path));
-            long ticks = (long)(this.Samples.Length / (double)this.SampleRate * 10000000);
-            this.Time = new TimeSpan(ticks);
+            this.ParseData(File.ReadAllBytes(path));
+            this.Time = TimeSpan.FromSeconds((double)this.samples.Length / this.Channels / this.SampleRate);
+        }
+
+        public WavReader(FileInfo file) : this(file.FullName)
+        {
         }
 
         /// <summary>
@@ -30,7 +45,7 @@
         public WavReader(byte[] wavData)
         {
             ParseData(wavData);
-            long ticks = (long)(this.Samples.Length / (double)this.SampleRate * 10000000);
+            long ticks = (long)(this.samples.Length / (double)this.SampleRate * 10000000);
             this.Time = new TimeSpan(ticks);
         }
 
@@ -54,16 +69,9 @@
             this.Channels = channels;
             this.BitsPerSample = bitsPerSample;
             this.SampleRate = sampleRate;
-            this.Samples = rawData;
-            long ticks = (long)(rawData.Length / (double)sampleRate * 10000000);
+            this.samples = rawData;
+            long ticks = (long)(rawData.Length / (double)channels / (double)sampleRate * 10000000);
             this.Time = new TimeSpan(ticks);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WavReader"/> class.
-        /// </summary>
-        protected WavReader()
-        {
         }
 
         #region Properties
@@ -79,20 +87,43 @@
         public int SampleRate { get; protected set; }
 
         /// <summary>
-        /// Gets or sets BitsPerSample.
+        /// Gets or sets BitsPerSample as if were a single channel.
         /// </summary>
         public int BitsPerSample { get; protected set; }
 
         /// <summary>
-        /// Gets or sets BytesPerSample.
+        /// Gets or sets BlockAlign - the number of bytes in each sample for all channels.
         /// </summary>
-        public int BytesPerSample { get; protected set; }
+        public int BlockAlign { get; protected set; }
+
+        public uint BytesPerSecond { get; private set; }
+
+        /// <summary>
+        /// Gets BlockCount - the number of blocks of data (each channel has one sample).
+        /// Defined in http://www-mmsp.ece.mcgill.ca/documents/audioformats/wave/wave.html
+        /// </summary>
+        public int BlockCount => this.samples.Length / this.Channels;
 
         /// <summary>
         /// Gets Samples.
         /// Have removed protection from setter to allow replacing samples with filtered signal.
         /// </summary>
-        public double[] Samples { get; set; }
+        public double[] Samples
+        {
+            get
+            {
+                if (this.Channels > 1)
+                {
+                    throw new InvalidOperationException("Can't use samples property when there's more than one channel");
+                }
+
+                return this.samples;
+            }
+            set
+            {
+                this.samples = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets Time.
@@ -102,9 +133,32 @@
         /// <summary>
         /// Gets Epsilon.
         /// </summary>
-        public double Epsilon
+        public double Epsilon => Math.Pow(0.5, this.BitsPerSample - 1);
+
+        /// <summary>
+        /// Gets or sets values from samples.
+        /// </summary>
+        /// <param name="sample">The sample to operate on</param>
+        /// <param name="channel">The channel to operate on</param>
+        /// <returns></returns>
+        public double this[int sample, int channel]
         {
-            get { return Math.Pow(0.5, BitsPerSample - 1); }
+            get
+            {
+                Contract.Requires<IndexOutOfRangeException>(channel >= 0);
+                Contract.Requires<IndexOutOfRangeException>(channel < this.Channels);
+
+                int j = sample * this.Channels + channel;
+                return this.samples[j];
+            }
+            set
+            {
+                Contract.Requires<IndexOutOfRangeException>(channel >= 0);
+                Contract.Requires<IndexOutOfRangeException>(channel < this.Channels);
+
+                int j = sample * this.Channels + channel;
+                this.samples[j] = value;
+            }
         }
 
         #endregion
@@ -149,20 +203,22 @@
         /// <param name="interval">
         /// Keeps every <paramref name="interval"/> sample.
         /// </param>
-        [Obsolete("Does not remove high frequency artefacts")]
+        [Obsolete("Does not remove high frequency artifacts")]
         public void SubSample(int interval)
         {
+            Contract.Requires<InvalidOperationException>(this.Channels == 1);
+
             if (interval <= 1)
                 return; //do not change anything!
 
-            int L = Samples.Length;
+            int L = this.samples.Length;
             int newL = L / interval; // the new length
             double[] newSamples = new double[newL];
-            L = newL * interval; //want L to be exact mulitple of interval
+            L = newL * interval; //want L to be exact multiple of interval
             for (int i = 0; i < newL; i++)
-                newSamples[i] = Samples[i * interval];
-            Samples = null;
-            Samples = newSamples;
+                newSamples[i] = this.samples[i * interval];
+            this.samples = null;
+            this.samples = newSamples;
             SampleRate /= interval;
         }
 
@@ -174,8 +230,22 @@
         /// </returns>
         public virtual double CalculateMaximumAmplitude()
         {
-            // Max expects at least 1 item in array.
-            return this.Samples.Length > 0 ? this.Samples.Max() : 0;
+            if (this.samples.Length <= 0)
+            {
+                return 0;
+            }
+
+            double max = double.MinValue;
+            for (int index = 0; index < this.samples.Length; index++)
+            {
+                var sample = this.samples[index];
+                if (sample > max)
+                {
+                    max = sample;
+                }
+            }
+            
+            return max;
         }
 
         /// <summary>
@@ -183,7 +253,7 @@
         /// </summary>
         public void Dispose()
         {
-            this.Samples = null;
+            this.samples = null;
         }
 
         /// <summary>
@@ -273,11 +343,15 @@
                             // 49 (0x0031) 	    GSM 6.10
                             // 64 (0x0040) 	    ITU G.721 ADPCM
                             // 80 (0x0050) 	    MPEG
-                            // 65,536 (0xFFFF) 	Experimental
+                            // 65,534 (0xFFFE)  WAVE_FORMAT_EXTENSIBLE
+                            // 65,535 (0xFFFF) 	Experimental
 
                             // Always 0x01 - PCM
                             if (data[offset] != 0x01 || data[offset + 1] != 0x00)
-                                throw new InvalidOperationException("Cannot parse WAV header. Error: Only takes 0x0001, was: 0x" + Convert.ToInt32(data[offset + 1]).ToString("00") + Convert.ToInt32(data[offset]).ToString("00"));
+                            {
+                                var format = BitConverter.ToUInt16(data, offset);
+                                throw new InvalidOperationException("Cannot parse WAV header. Error: Only takes 0x0001, was: 0x" + format.ToString("X"));
+                            }
                             offset += 2;
 
                             // Channel Numbers 
@@ -289,14 +363,14 @@
                             offset += 4;
 
                             // Bytes Per Second
-                            BitConverter.ToUInt32(data, offset);
+                            this.BytesPerSecond = BitConverter.ToUInt32(data, offset);
                             offset += 4;
 
-                            // Bytes Per Sample / Block Align
-                            this.BytesPerSample = BitConverter.ToUInt16(data, offset);
+                            // Bytes Per Sample, AKA: Block Align
+                            this.BlockAlign = BitConverter.ToUInt16(data, offset);
                             offset += 2;
 
-                            // Bits Per Sample
+                            // Bits Per Sample - as if was a single channel
                             this.BitsPerSample = BitConverter.ToUInt16(data, offset);
                             offset += 2;
 
@@ -311,32 +385,45 @@
                         {
                             int dataLength = cksize;
                             if (dataLength == 0 || dataLength > data.Length - offset)
+                            {
                                 dataLength = data.Length - offset;
+                            }
 
-                            if (this.BytesPerSample == 0)
+                            if (this.BlockAlign == 0)
+                            {
                                 throw new NotSupportedException("Bytes per sample not set.");
+                            }
 
-                            int sampleLength = dataLength / this.BytesPerSample;
-                            Samples = new double[sampleLength];
-                            Time = TimeSpan.FromSeconds(((double)Samples.Length) / SampleRate);
+                            // 1 block = numberOfChannels * sample
+                            int bytesPerSample = this.BitsPerSample / 8;
+                            int numberOfSamples = dataLength / bytesPerSample;
+                            this.samples = new double[numberOfSamples];
 
+                            // http://soundfile.sapp.org/doc/WaveFormat/
                             switch (this.BitsPerSample)
                             {
                                 case 8:
-                                    for (int i = 0; i < sampleLength; i++, offset += this.BytesPerSample)
-                                        Samples[i] = data[offset] / 128.0;
+                                    for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
+                                    {
+                                        this.samples[i] = data[offset] == 0xFF ? 1.0 : (data[offset] - 127) / 127.0;
+                                    }
                                     break;
                                 case 16:
-                                    for (int i = 0; i < sampleLength; i++, offset += this.BytesPerSample)
-                                        Samples[i] = BitConverter.ToInt16(data, offset) / (double)(short.MaxValue + 1); //32768.0
+                                    for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
+                                    {
+                                        short sample = BitConverter.ToInt16(data, offset);
+                                        this.samples[i] = sample == short.MinValue ? -1.0 : sample / (double)short.MaxValue; //32767.0
+                                    }
                                     break;
                                 default:
                                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
                             }
 
                             // if samples is odd, padding of 1 byte
-                            if (sampleLength % 2 != 0)
+                            if (numberOfSamples % 2 != 0)
+                            {
                                 offset++;
+                            }
                         }
                         #endregion
                         break;
@@ -346,6 +433,27 @@
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the zero-indexed channel data from channel <c>c</c>.
+        /// </summary>
+        /// <param name="c">The zero-indexed channel to get.</param>
+        /// <returns></returns>
+        public double[] GetChannel(int c)
+        {
+            Contract.Requires<IndexOutOfRangeException>(c >= 0);
+            Contract.Requires<IndexOutOfRangeException>(c < this.Channels);
+
+            double[] channelSignal = new double[this.BlockCount];
+            int j, cc = this.Channels;
+            for (int i = 0; i < channelSignal.Length; i++)
+            {
+                j = i * cc + c;
+                channelSignal[i] = this.samples[j];
+            }
+
+            return channelSignal;
         }
     }
 }

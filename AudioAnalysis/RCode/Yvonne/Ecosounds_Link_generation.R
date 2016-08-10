@@ -3,7 +3,7 @@
 # 24 December 2015
 #
 # Set cluster number
-n <- 20
+n <- 24
 
 setwd("C:\\Users\\n0572527\\ownCloud\\Shared\\Ecoacoustics\\Yvonne\\")
 mapping1 <- read.csv("audio_recordings_from_site_1192_GympieNP.csv", header = T)[,c(1,5,6,21)]
@@ -154,7 +154,7 @@ for (i in 1:length(list_Gympie)) {
 }
 
 hyperlinks <- NULL
-for (i in 1:length(list_Gympie)) {
+for (i in 1:length(links)) {
   hyl <- paste("= hyperlink(M",(i+1),")",sep="")
   hyperlinks <- c(hyperlinks, hyl)
 }
@@ -307,215 +307,243 @@ write.csv(dataset, row.names=F, file=paste("cluster", n, "_dataset_Woondum.csv",
 ######################################################################
 
 # generating monthly datasets for certain clusters
-#Cluster 9 selection only from September 4-6 am.
-#Cluster 22 selection only from September 12-2 am.
-#Cluster 4 selection only from September 4-6 pm.
+#Cluster 16 selection only from September 4-8 am. 5-6
+#Cluster 29 selection only from September 4-8 am. 
+#Cluster 26 selection only from September 10-2 am.
+#Cluster 27 selection only from September 10-2 pm.
 
-# cluster 9 Gympie 530 to 630am
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\Ecosounds")
-cluster9 <- read.csv("cluster9_dataset_Gympie.csv",header = T)
-cluster9 <- cluster9[cluster9[,12]>0,,drop=FALSE] 
-cluster9$cluster <- rep(9, length(cluster9$site))
+# cluster 16 Gympie 4am to 8am
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\Ecosounds")
+cluster16 <- read.csv("cluster16_dataset_Gympie.csv",header = T)
+cluster16 <- cluster16[cluster16[,12] > 0,,drop=FALSE] 
+cluster16$cluster <- rep(16, length(cluster16$site))
 
-clusters_5am <- cluster9[cluster9[,7]==5 & cluster9[,8]>=30,, drop=FALSE]
-clusters_6am <- cluster9[cluster9[,7]==6 & cluster9[,8]<=29,, drop=FALSE]
-clusters_530am_630am <- rbind(clusters_5am,clusters_6am)
+clusters_5_7am <- cluster16[cluster16[,7]==5|
+                                cluster16[,7]==6
+                                ,, drop=FALSE]
 
-Sept_530am_630am_C9_Gym <- subset(clusters_530am_630am, substr(clusters_530am_630am$date_times,1,6)=="201509")
+Sept_5_7am_C16_Gym <- subset(clusters_5_7am, substr(clusters_5_7am$date_times,1,6)=="201509")
 
-Sept_530am_630am_C9_Gym <- subset(Sept_530am_630am_C9_Gym, 
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="01"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="02"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="03"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="04"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="05"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="06"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="07"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="08"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="09"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="10"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="11"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="12"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="13"|
-                                  substr(Sept_530am_630am_C9_Gym[,6],7,8)=="14")
-length_9_Sept_Gym <- length(Sept_530am_630am_C9_Gym$file.ids)
-length_9_Sept_Gym
+#Sept_4am_8am_C16_Gym <- subset(Sept_4am_8am_C16_Gym, 
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="01"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="02"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="03"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="04"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="05"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="06"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="07"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="08"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="09"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="10"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="11"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="12"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="13"|
+#                                  substr(Sept_4am_8am_C16_Gym[,6],7,8)=="14")
+length_16_Sept_Gym <- length(Sept_5_7am_C16_Gym$file.ids)
+length_16_Sept_Gym
+# 4am Sept clus 16 #18
+# 5am Sept clus 16 #313
+# 6am Sept clus 16 #532
+# 7am Sept clus 16 #491
+# 8am Sept clus 16 #432
 
-# cluster 9 Woondum 530 to 630am
-cluster9 <- read.csv("cluster9_dataset_Woondum.csv",header = T)
-cluster9 <- cluster9[cluster9[,12]>0,,drop=FALSE] 
-cluster9$cluster <- rep(9, length(cluster9$site))
+#rm(clusters_5_7am, Sept_5_7am_C16_Gym, length_16_Sept_Gym)
 
-clusters_5am <- cluster9[cluster9[,7]==5 & cluster9[,8]>=30,, drop=FALSE]
-clusters_6am <- cluster9[cluster9[,7]==6 & cluster9[,8]<=29,, drop=FALSE]
-clusters_530am_630am <- rbind(clusters_5am,clusters_6am)
+# 1023
 
-Sept_530am_630am_C9_Woon <- subset(clusters_530am_630am, substr(clusters_530am_630am$date_times,1,6)=="201509")
+# cluster 16 Woondum 4am to 8am
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\Ecosounds")
+cluster16 <- read.csv("cluster16_dataset_Woondum.csv",header = T)
+cluster16 <- cluster16[cluster16[,12] > 0,,drop=FALSE] 
+cluster16$cluster <- rep(16, length(cluster16$site))
 
-Sept_530am_630am_C9_Woon <- subset(Sept_530am_630am_C9_Woon, 
-                                  substr(Sept_530am_630am_C9_Woon[,6],7,8)=="01"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="02"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="03"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="04"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="05"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="06"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="07"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="08"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="09"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="10"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="11"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="12"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="13"|
-                                    substr(Sept_530am_630am_C9_Woon[,6],7,8)=="14")
-length_9_Sept_Woon <- length(Sept_530am_630am_C9_Woon$file.ids)
-length_9_Sept_Woon
-#  276
+clusters_5_7am <- cluster16[cluster16[,7]==5|
+                            cluster16[,7]==6
+                            ,, drop=FALSE]
 
-# cluster 22 Gympie 12 noon to 2pm
-cluster22 <- read.csv("cluster22_dataset_Gympie.csv",header = T)
-cluster22 <- cluster22[cluster22[,12]>0,,drop=FALSE] 
-cluster22$cluster <- rep(22, length(cluster22$site))
+Sept_5_7am_C16_Woon <- subset(clusters_5_7am, substr(clusters_5_7am$date_times,1,6)=="201509")
 
-clusters_1230 <- cluster22[cluster22[,7]==12 & cluster22[,8]>=30,, drop=FALSE]
-clusters_130 <- cluster22[cluster22[,7]==13 & cluster22[,8]<=29,, drop=FALSE]
-clusters_1230_130 <- rbind(clusters_1230,clusters_130)
+#Sept_4am_8am_C16_Woon <- subset(Sept_4am_8am_C16_Woon, 
+#                               substr(Sept_4am_8am_C16_Woon[,6],7,8)=="01"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="02"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="03"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="04"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="05"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="06"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="07"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="08"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="09"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="10"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="11"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="12"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="13"|
+#                                 substr(Sept_4am_8am_C16_Woon[,6],7,8)=="14")
+length_16_Sept_Woon <- length(Sept_5_7am_C16_Woon$file.ids)
+length_16_Sept_Woon
+# 4am Sept clus 16 #39
+# 5am Sept clus 16 #435  ***
+# 6am Sept clus 16 #384  ***
+# 7am Sept clus 16 #323
+# 8am Sept clus 16 #338
 
-Sept_1230_130_C22_Gym <- subset(clusters_1230_130, substr(clusters_1230_130$date_times,1,6)=="201509")
-Sept_1230_130_C22_Gym <- subset(Sept_1230_130_C22_Gym, 
-                                  substr(Sept_1230_130_C22_Gym[,6],7,8)=="01"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="02"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="03"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="04"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="05"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="06"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="07"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="08"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="09"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="10"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="11"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="12"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="13"|
-                                    substr(Sept_1230_130_C22_Gym[,6],7,8)=="14")
+# cluster 29 Gympie 12 to 2pm
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\Ecosounds")
+cluster29 <- read.csv("cluster29_dataset_Gympie.csv",header = T)
+cluster29 <- cluster29[cluster29[,12] > 0,,drop=FALSE] 
+cluster29$cluster <- rep(29, length(cluster29$site))
 
-length_22_Sept_Gym <- length(Sept_1230_130_C22_Gym$file.ids)
-length_22_Sept_Gym
-#  173
+clusters_5_7am <- cluster29[cluster29[,7]==5|
+                                cluster29[,7]==6
+                                ,, drop=FALSE]
+Sept_5_7am_C29_Gym <- subset(clusters_5_7am, substr(clusters_5_7am$date_times,1,6)=="201509")
 
-# cluster 22 Woondum 12noon to 2pm
-cluster22 <- read.csv("cluster22_dataset_Woondum.csv",header = T)
-cluster22 <- cluster22[cluster22[,12]>0,,drop=FALSE] 
-cluster22$cluster <- rep(22, length(cluster22$site))
+#Sept_4am_8am_C29_Gym <- subset(Sept_4am_8am_C29_Gym, 
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="01"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="02"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="03"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="04"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="05"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="06"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="07"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="08"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="09"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="10"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="11"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="12"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="13"|
+#                                  substr(Sept_4am_8am_C29_Gym[,6],7,8)=="14")
+length_29_Sept_Gym <- length(Sept_5_7am_C29_Gym$file.ids)
+length_29_Sept_Gym
 
-clusters_1230 <- cluster22[cluster22[,7]==12 & cluster22[,8]>=30,, drop=FALSE]
-clusters_130pm <- cluster22[cluster22[,7]==13 & cluster22[,8]<=29,, drop=FALSE]
-clusters_1230_130 <- rbind(clusters_1230,clusters_130pm)
+# 4am Sept clus 29 #0
+# 5am Sept clus 29 #560
+# 6am Sept clus 29 #205
+# 7am Sept clus 29 #80
+# 8am Sept clus 29 #155
 
-Sept_1230_130_C22_Woon <- subset(clusters_1230_130, substr(clusters_1230_130$date_times,1,6)=="201509")
-Sept_1230_130_C22_Woon <- subset(Sept_1230_130_C22_Woon, 
-                                substr(Sept_1230_130_C22_Woon[,6],7,8)=="01"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="02"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="03"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="04"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="05"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="06"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="07"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="08"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="09"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="10"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="11"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="12"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="13"|
-                                  substr(Sept_1230_130_C22_Woon[,6],7,8)=="14")
+# 845
 
-length_22_Sept_Woon <- length(Sept_1230_130_C22_Woon$file.ids)
-length_22_Sept_Woon
-#  125
+# cluster 29 Woondum 4am to 8am
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\Ecosounds")
+cluster29 <- read.csv("cluster29_dataset_Woondum.csv",header = T)
+cluster29 <- cluster29[cluster29[,12] > 0,,drop=FALSE] 
+cluster29$cluster <- rep(29, length(cluster29$site))
 
-# cluster 4 Gympie 4pm to 6pm
-cluster4 <- read.csv("cluster4_dataset_Gympie.csv",header = T)
-cluster4 <- cluster4[cluster4[,12]>0,,drop=FALSE] 
-cluster4$cluster <- rep(4, length(cluster4$site))
+clusters_5_7am <- cluster29[cluster29[,7]==5|
+                                cluster29[,7]==6
+                                ,, drop=FALSE]
 
-clusters_1630 <- cluster4[cluster4[,7]==16 & cluster4[,8]>=30,, drop=FALSE]
-clusters_1730 <- cluster4[cluster4[,7]==17 & cluster4[,8]<=29,, drop=FALSE]
-clusters_1630_1730 <- rbind(clusters_1630,clusters_1730)
-Sept_1630_1730_C4_Gym <- subset(clusters_1630_1730, substr(clusters_1630_1730$date_times,1,6)=="201509")
-Sept_1630_1730_C4_Gym <- subset(Sept_1630_1730_C4_Gym, 
-                                 substr(Sept_1630_1730_C4_Gym[,6],7,8)=="01"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="02"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="03"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="04"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="05"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="06"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="07"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="08"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="09"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="10"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="11"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="12"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="13"|
-                                   substr(Sept_1630_1730_C4_Gym[,6],7,8)=="14")
+Sept_5_7am_C29_Woon <- subset(clusters_5_7am, substr(clusters_5_7am$date_times,1,6)=="201509")
 
-length_4_Sept_Gym <- length(Sept_1630_1730_C4_Gym$file.ids)
-length_4_Sept_Gym
-#  45
+#Sept_4am_8am_C29_Woon <- subset(Sept_4am_8am_C29_Woon, 
+#                               substr(Sept_4am_8am_C29_Woon[,6],7,8)=="01"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="02"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="03"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="04"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="05"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="06"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="07"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="08"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="09"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="10"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="11"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="12"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="13"|
+#                                 substr(Sept_4am_8am_C29_Woon[,6],7,8)=="14")
+length_29_Sept_Woon <- length(Sept_5_7am_C29_Woon$file.ids)
+length_29_Sept_Woon
+# 4am Sept clus 29 #1
+# 5am Sept clus 29 #285
+# 6am Sept clus 29 #106
+# 7am Sept clus 29 #105
+# 8am Sept clus 29 #94
 
-# cluster 4 Woondum 4pm to 6pm
-cluster4 <- read.csv("cluster4_dataset_Woondum.csv",header = T)
-cluster4 <- cluster4[cluster4[,12]>0,,drop=FALSE] 
-cluster4$cluster <- rep(4, length(cluster4$site))
+#497
 
-clusters_1630 <- cluster4[cluster4[,7]==16 & cluster4[,8]>=30,, drop=FALSE]
-clusters_1730 <- cluster4[cluster4[,7]==17 & cluster4[,8]<=29,, drop=FALSE]
-clusters_1630_1730 <- rbind(clusters_1630,clusters_1730)
-Sept_1630_1730_C4_Woon <- subset(clusters_1630_1730, substr(clusters_1630_1730$date_times,1,6)=="201509")
-Sept_1630_1730_C4_Woon <- subset(Sept_1630_1730_C4_Woon, 
-                                substr(Sept_1630_1730_C4_Woon[,6],7,8)=="01"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="02"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="03"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="04"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="05"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="06"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="07"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="08"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="09"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="10"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="11"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="12"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="13"|
-                                  substr(Sept_1630_1730_C4_Woon[,6],7,8)=="14")
+# cluster 26 midday
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\Ecosounds")
+cluster26 <- read.csv("cluster26_dataset_Gympie.csv",header = T)
+cluster26 <- cluster26[cluster26[,12] > 0,,drop=FALSE] 
+cluster26$cluster <- rep(26, length(cluster26$site))
 
-length_4_Sept_Woon <- length(Sept_1630_1730_C4_Woon$file.ids)
-length_4_Sept_Woon
-#  79
+clusters_11am_1pm <- cluster26[cluster26[,7]==11|
+                                cluster26[,7]==12
+                               ,, drop=FALSE]
 
-# Select 20 random sample (minutes) from each of these clusters 4, 9 and 22 and each site
+Sept_11am_1pm_C26_Gym <- subset(clusters_11am_1pm, substr(clusters_11am_1pm$date_times,1,6)=="201509")
+
+#Sept_10am_2pm_C26_Gym <- subset(Sept_10am_2pm_C26_Gym, 
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="01"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="02"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="03"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="04"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="05"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="06"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="07"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="08"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="09"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="10"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="11"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="12"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="13"|
+#                                  substr(Sept_10am_2pm_C26_Gym[,6],7,8)=="14")
+length_26_Sept_Gym <- length(Sept_11am_1pm_C26_Gym$file.ids)
+length_26_Sept_Gym
+# 914
+
+# cluster 26 Woondum 10am to 2pm
+setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\Ecosounds")
+cluster26 <- read.csv("cluster26_dataset_Woondum.csv",header = T)
+cluster26 <- cluster26[cluster26[,12] > 0,,drop=FALSE] 
+cluster26$cluster <- rep(26, length(cluster26$site))
+
+clusters_11am_1pm <- cluster26[cluster26[,7]==11|
+                               cluster26[,7]==12
+                               ,, drop=FALSE]
+
+Sept_11am_1pm_C26_Woon <- subset(clusters_11am_1pm, substr(clusters_11am_1pm$date_times,1,6)=="201509")
+
+#Sept_10am_2pm_C26_Woon <- subset(Sept_10am_2pm_C26_Woon, 
+#                               substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="01"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="02"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="03"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="04"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="05"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="06"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="07"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="08"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="09"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="10"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="11"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="12"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="13"|
+#                                 substr(Sept_10am_2pm_C26_Woon[,6],7,8)=="14")
+length_26_Sept_Woon <- length(Sept_11am_1pm_C26_Woon$file.ids)
+length_26_Sept_Woon
+# 602
+
+# Select 20 random sample (minutes) from each of these clusters 16,29 and 26 
+# at each site
 # Generate samples
-sample9Gym <- Sept_530am_630am_C9_Gym[sample(nrow(Sept_530am_630am_C9_Gym),20),]
-sample9Woon <- Sept_530am_630am_C9_Woon[sample(nrow(Sept_530am_630am_C9_Woon),20),]
-sample22Gym <- Sept_1230_130_C22_Gym[sample(nrow(Sept_1230_130_C22_Gym),20),]
-sample22Woon <- Sept_1230_130_C22_Woon[sample(nrow(Sept_1230_130_C22_Woon),20),]
-sample4Gym <- Sept_1630_1730_C4_Gym[sample(nrow(Sept_1630_1730_C4_Gym),20),]
-sample4Woon <- Sept_1630_1730_C4_Woon[sample(nrow(Sept_1630_1730_C4_Woon),20),]
-#sample26Gym <- Sept_12_1pm_C26_Gym[sample(nrow(Sept_12_1pm_C26_Gym),20),]
-#sample26Woon <- Sept_12_1pm_C26_Woon[sample(nrow(Sept_12_1pm_C26_Woon),20),]
-#sample23Gym <- Sept_12_1pm_C23_Gym[sample(nrow(Sept_12_1pm_C23_Gym),20),]
-#sample23Woon <- Sept_12_1pm_C23_Woon[sample(nrow(Sept_12_1pm_C23_Woon),20),]
+sample16Gym <- Sept_5_7am_C16_Gym[sample(nrow(Sept_5_7am_C16_Gym),20),]
+sample16Woon <- Sept_5_7am_C16_Woon[sample(nrow(Sept_5_7am_C16_Woon),20),]
+sample29Gym <- Sept_5_7am_C29_Gym[sample(nrow(Sept_5_7am_C29_Gym),20),]
+sample29Woon <- Sept_5_7am_C29_Woon[sample(nrow(Sept_5_7am_C29_Woon),20),]
+sample26Gym <- Sept_11am_1pm_C26_Gym[sample(nrow(Sept_11am_1pm_C26_Gym),20),]
+sample26Woon <- Sept_11am_1pm_C26_Woon[sample(nrow(Sept_11am_1pm_C26_Woon),20),]
 
-names(sample9Gym)[names(sample9Gym) == 'list_Gympie'] <- 'minute'
-names(sample9Woon)[names(sample9Woon) == 'list_Woondum'] <- 'minute'
-names(sample22Gym)[names(sample22Gym) == 'list_Gympie'] <- 'minute'
-names(sample22Woon)[names(sample22Woon) == 'list_Woondum'] <- 'minute'
-names(sample4Gym)[names(sample4Gym) == 'list_Gympie'] <- 'minute'
-names(sample4Woon)[names(sample4Woon) == 'list_Woondum'] <- 'minute'
-#names(sample26Gym)[names(sample26Gym) == 'list_Gympie'] <- 'minute'
-#names(sample26Woon)[names(sample26Woon) == 'list_Woondum'] <- 'minute'
-#names(sample23Gym)[names(sample23Gym) == 'list_Gympie'] <- 'minute'
-#names(sample23Woon)[names(sample23Woon) == 'list_Woondum'] <- 'minute'
+names(sample16Gym)[names(sample16Gym) == 'list_Gympie'] <- 'minute'
+names(sample16Woon)[names(sample16Woon) == 'list_Woondum'] <- 'minute'
+names(sample29Gym)[names(sample29Gym) == 'list_Gympie'] <- 'minute'
+names(sample29Woon)[names(sample29Woon) == 'list_Woondum'] <- 'minute'
+names(sample26Gym)[names(sample26Gym) == 'list_Gympie'] <- 'minute'
+names(sample26Woon)[names(sample26Woon) == 'list_Woondum'] <- 'minute'
+names(sample27Gym)[names(sample27Gym) == 'list_Gympie'] <- 'minute'
+names(sample27Woon)[names(sample27Woon) == 'list_Woondum'] <- 'minute'
 
-concat.samples <- rbind(sample9Gym, sample9Woon, 
-                        sample22Gym, sample22Woon,
-                        sample4Gym, sample4Woon)
+concat.samples <- rbind(sample16Gym, sample16Woon, 
+                        sample29Gym, sample29Woon,
+                        sample26Gym, sample26Woon)
 # Generate links
 links <- NULL
 for (i in 1:length(concat.samples$minute)) {
@@ -527,53 +555,8 @@ for (i in 1:length(concat.samples$minute)) {
 
 concat.samples$links <- links
 
-write.csv(concat.samples, "new2_links.csv",row.names = F)
+write.csv(concat.samples, "links_20_for.JessC.csv",row.names = F)
 
-fileConn<-file("new2_links.txt")
+fileConn<-file("links_20_for.Jess.C.txt")
 writeLines(paste(links), fileConn)
 close(fileConn)
-
-# cluster 26 Gympie 4 to 6am
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3k\\Ecosounds")
-cluster26 <- read.csv("cluster26_dataset_Gympie.csv",header = T)
-cluster26 <- cluster26[cluster26[,12]>0,,drop=FALSE] 
-cluster26$cluster <- rep(26, length(cluster26$site))
-
-clusters_4am <- cluster26[cluster26[,7]==4,, drop=FALSE]
-clusters_5am <- cluster26[cluster26[,7]==5,, drop=FALSE]
-clusters_4am_5am <- rbind(clusters_4am,clusters_5am)
-
-Sept_4am_5am_C26_Gym <- subset(clusters_4am_5am, substr(clusters_4am_5am$date_times,1,6)=="201509")
-length_26_Sept_Gym <- length(Sept_4am_5am_C26_Gym$file.ids)
-length_26_Sept_Gym
-#  644
-
-# cluster 26 Woondum 4 to 6am
-cluster26 <- read.csv("cluster26_dataset_Woondum.csv",header = T)
-cluster26 <- cluster26[cluster26[,12]>0,,drop=FALSE] 
-cluster26$cluster <- rep(26, length(cluster26$site))
-
-clusters_4am <- cluster26[cluster26[,7]==4,, drop=FALSE]
-clusters_5am <- cluster26[cluster26[,7]==5,, drop=FALSE]
-clusters_4am_5am <- rbind(clusters_4am,clusters_5am)
-
-Sept_4am_5am_C26_Woon <- subset(clusters_4am_5am, substr(clusters_4am_5am$date_times,1,6)=="201509")
-length_26_Sept_Woon <- length(Sept_4am_5am_C26_Woon$file.ids)
-length_26_Sept_Woon
-#  462
-
-
-# cluster 23 Woondum 4 to 6am
-cluster23 <- read.csv("cluster23_dataset_Woondum.csv",header = T)
-cluster23 <- cluster23[cluster23[,12]>0,,drop=FALSE] 
-cluster23$cluster <- rep(23, length(cluster23$site))
-
-clusters_4am <- cluster23[cluster23[,7]==4,, drop=FALSE]
-clusters_5am <- cluster23[cluster23[,7]==5,, drop=FALSE]
-clusters_4am_5am <- rbind(clusters_4am,clusters_5am)
-
-Sept_4am_5am_C23_Woon <- subset(clusters_4am_5am, substr(clusters_4am_5am$date_times,1,6)=="201509")
-length_23_Sept_Woon <- length(Sept_4am_5am_C23_Woon$file.ids)
-length_23_Sept_Woon
-#  462
-
