@@ -12,6 +12,9 @@
 *.cmd     text
 *.msbuild text
 *.md      text
+*.r       text
+*.R       text
+*.m       text
 # Images should be treated as binary
 # (binary is a macro for -text -diff)
 *.png     binary
