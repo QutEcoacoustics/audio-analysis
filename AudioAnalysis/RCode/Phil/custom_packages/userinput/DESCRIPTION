@@ -1,9 +1,11 @@
 Package: userinput
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Validating Command Line User Input
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Philip Eichinski <philip.eichinski@qut.edu.au>
+Maintainer: Philip Eichinski <philip.eichinski@qut.edu.au>
+Description: Provides functions for common user input situations, like confirm,
+    select from a list of values etc.
+License: GPL-2
 LazyData: TRUE
+RoxygenNote: 5.0.1
