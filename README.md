@@ -19,6 +19,23 @@ BE INCLUDED IN EACH RELEVANT FILE.
 
 WE RESERVE THE RIGHT TO CHANGE THE CONDITIONS OF THIS LICENSE AT ANY TIME, IN ANY WAY, AND APPLY THOSE CHANGES RETROACTIVELY.
 
+## Best Practices
+
+- Set the git `autocrlf` config setting. See https://help.github.com/articles/dealing-with-line-endings/#global-settings-for-line-endings for instructions.
+- Avoid adding binary content to this repository - especially _RData_ files.
+- NEVER commit if the code does not build
+- Try to work on branches if your code negatively affects production code
+
+## Daily routine
+
+- ALWAYS _Sync_ (or `git pull`) before you start work
+- Do your work
+- Add your files (Check the checkboxes or `git add`)
+  - ALWAYS check the files you add - often files you don't want to add are added automatically
+- Commit the files in units of work (press the commit button or `git commit`). Always provide a descriptive message.
+- ALWAYS _Sync_ (or `git push`) after you start work
+
+
 ## Structure
 
 The `Acoustics` and `AudioAnalysis` folders contain the code and resources for
