@@ -1,5 +1,4 @@
-audio-analysis
-==============
+# audio-analysis
 
 The audio analysis source base for the QUT Bioacoustics Research Group
 
@@ -21,10 +20,11 @@ WE RESERVE THE RIGHT TO CHANGE THE CONDITIONS OF THIS LICENSE AT ANY TIME, IN AN
 
 ## Best Practices
 
-- Set the git `autocrlf` config setting. See https://help.github.com/articles/dealing-with-line-endings/#global-settings-for-line-endings for instructions.
+- Set the git `autocrlf` config setting. See <https://help.github.com/articles/dealing-with-line-endings/#global-settings-for-line-endings> for instructions.
 - Avoid adding binary content to this repository - especially _RData_ files.
 - NEVER commit if the code does not build
 - Try to work on branches if your code negatively affects production code
+- Write code in American English. Documentation may be written in Australian English.
 
 ## Daily routine
 
@@ -61,6 +61,7 @@ Not all BLOBs are stored in git-lfs. So far only the audio files in
   - Install these plugins (_ReSharper_ menu > _Extension Manager_)
     - ReSpeller Free
     - StyleCop by JetBrains
+- [msysgit](https://git-for-windows.github.io/)
 - [Code Contracts](https://visualstudiogallery.msdn.microsoft.com/1ec7db13-3363-46c9-851f-1ce455f66970)
 
 ### R
