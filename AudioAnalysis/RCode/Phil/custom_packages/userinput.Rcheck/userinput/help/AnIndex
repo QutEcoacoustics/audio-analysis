@@ -1,0 +1,7 @@
+Confirm	Confirm
+GetDirectory	GetDirectory
+GetMultiUserchoice	GetMultiUserchoice
+GetPresets	GetPresets
+GetUserChoice	GetUserChoice
+Preset	Preset
+ReadInt	ReadInt

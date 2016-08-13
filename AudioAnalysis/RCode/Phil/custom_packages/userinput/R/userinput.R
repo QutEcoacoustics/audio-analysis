@@ -1,3 +1,7 @@
+pkg.env <- new.env()
+pkg.env$preset.input = character()
+
+
 
 #' Prompts the user for confirmation in the console
 #'
@@ -5,9 +9,10 @@
 #' @param default mixed optional. If supplied and y or yes or similar, will default to true.
 #'                                If supplied and not similar to yes will default to no.
 #'                                If not supplied, will not have a default and the user must choose an option
-#' @returns boolean
+#' @return boolean
 #' @details
 #' Presents the user with a yes/no question and returns true or false depending on their answer
+#' @export
 Confirm <- function (msg, default = NULL) {
     options <- c('Yes', 'No')
     if (!is.null(default)) {
@@ -31,21 +36,13 @@ Confirm <- function (msg, default = NULL) {
 #' Prompts the user to choose one of the given set of choices
 #'
 #' @param choices vector of strings
-#' @param choosing.what: string; used for presenting the instructions to the user
-#' @param default: int; if the user just hits enter, this will be chosen
-#' @param allow.rangs: Boolean; if TRUE, the user can enter something like 2-4 which will return c(2,3,4)
-#' @param config.setting: string or NULL. If set, will look for a value set in config, instead of asking for user input
-#' @param optional: boolean; if TRUE, user can select 0 to return false (i.e. no choice)
-#' @value int the index of the choice selected by the user
-GetUserChoice <- function (choices, choosing.what = "one of the following", default = 1, allow.range = FALSE, config.setting = NULL, optional = FALSE) {
-
-    # to avoid tedious repeated selection of the same choice,
-    # config settings can be set to do the choice automatically
-    choice <- GetConfigSettingForInput(choices, config.setting)
-    if (choice != FALSE) {
-        return(choice)
-    }
-
+#' @param choosing.what string; used for presenting the instructions to the user
+#' @param default int if the user just hits enter, this will be chosen
+#' @param allow.range boolean if TRUE, the user can enter something like 2-4 which will return c(2,3,4)
+#' @param optional boolean if TRUE, user can select 0 to return false (i.e. no choice)
+#' @return int the index of the choice selected by the user
+#' @export
+GetUserChoice <- function (choices, choosing.what = "one of the following", default = 1, allow.range = FALSE, optional = FALSE) {
 
     #todo recursive validation like http://www.rexamples.com/4/Reading%20user%20input
     cat(paste0("choose ", choosing.what, ":\n"))
@@ -73,14 +70,9 @@ GetUserChoice <- function (choices, choosing.what = "one of the following", defa
 #' @param choosing.what string; instrucitons for user
 #' @param default int or string "all"; which options should be selected if the just hits clicks 'enter'
 #' @param all boolean; should there be an extra option at the end to choose all the options in the list?
-#' @param config.setting string or NULL; If set, will look for a value set in config, instead of asking for user input
-#' @value int vector of the choice numbers
-GetMultiUserchoice <- function (options, choosing.what = 'one of the following', default = 1, all = FALSE, config.setting = NULL) {
-
-    choice <- GetConfigSettingForInput(options, config.setting)
-    if (is.numeric(choice)) {
-        return(choice)
-    }
+#' @return int vector of the choice numbers
+#' @export
+GetMultiUserchoice <- function (options, choosing.what = 'one of the following', default = 1, all = FALSE) {
 
     if (length(options) == 1 && (default == 1 || default == 'all')) {
         # if there was only 1 option and the default is 1 or 'all',
@@ -131,32 +123,6 @@ GetMultiUserchoice <- function (options, choosing.what = 'one of the following',
 
 
 
-#' Checks to see if choices have been pre-selected as a config setting
-#'
-#' @param choices: string vector; the list of possible choices
-#' @param config.setting.name; string; the name of the config setting for user input which holds which of the choices to select.
-#' @details
-#' Sometimes, the user is required to choose from a list of choices,
-#' however, the choice can also be set in the config, saving the hassle of entering the same
-#' choice over and over. This function looks for the config setting for the choice and
-#' returns its number. If the config.setting.name is NULL or the value of the config setting
-#' is NULL or is not in the list of choices, will return FALSE
-#' TODO: fix this to work in the package
-GetConfigSettingForInput <- function (choices, config.setting.name = NULL) {
-
-    if (!is.null(config.setting.name) && !is.null(g.user.input[[config.setting.name]])) {
-        val <- g.user.input[[config.setting.name]]
-        val.index <- match(val, choices)
-        if (!is.na(val.index[1])) {
-            return(val.index)
-        } else {
-            Report('user choice set in config is not in the list of choices. Getting user choice. ')
-        }
-    }
-    return(FALSE);
-}
-
-
 #' Prompts the user to enter an integer
 #'
 #' @param msg string; the message to display. eg, choose a number between 1 and 10, or choose from the following options
@@ -175,11 +141,12 @@ GetConfigSettingForInput <- function (choices, config.setting.name = NULL) {
                              num.attempts = 0,
                              parse.range = FALSE,
                              equivalents = list(),
-                             quit = "Q") {
+                             quit =
+                                 "Q") {
 
 
     max.attempts <- 8
-    choice <- readline(paste(msg, " : "))
+    choice <- .ReadLine(paste(msg, " : "))
 
     if (choice == quit) {
         stop('quitting')
@@ -225,7 +192,7 @@ GetConfigSettingForInput <- function (choices, config.setting.name = NULL) {
 #' TODO: refactor this to be more general. e.g. a list of validation rules as functions
 .GetValidatedFloat <- function (msg = 'Enter a number', max = NA, min = 0, default = NA, num.attempts = 0, quit = "Q") {
     max.attempts <- 8
-    val <- readline(paste(msg, " : "))
+    val <- .ReadLine(paste(msg, " : "))
     if (val == quit) {
         stop('quitting')
     }
@@ -248,10 +215,11 @@ GetConfigSettingForInput <- function (choices, config.setting.name = NULL) {
 
 
 #' Reads an int input from the user and re-prompts if they didn't enter an int
-#' @param msg
-#' @param max int
+#' @param msg character
 #' @param min int
+#' @param max int
 #' @param default int optional
+#' @export
 ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NULL) {
     extra <- c();
     if (!is.na(min)) {
@@ -275,6 +243,7 @@ ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NULL
 
 #' prompts the user for a directory
 #'
+#' @param msg the prompt to show to the user
 #' @param create.if.missing boolean whether to create the directory if it is missing or prompt
 #' @details
 #' after the user enters in a directory, it will check if the directory exists.
@@ -282,12 +251,13 @@ ReadInt <- function (msg = "Enter an integer", min = 1, max = NA, default = NULL
 #' will create it without asking. It will only create the directory itself, not parent directories.
 #' e.g. if the user enters /a/b/c and /a/b doesn't exist, it will not create it. But if /a/b exists and
 #'  /a/b/c doesn't exist, it will prompt to create c
+#'  @export
 GetDirectory = function (msg = 'please enter a path to the directory', create.if.missing = FALSE) {
 
     msg <- paste(msg, 'Enter . (dot) for the working directory. Enter blank string to cancel')
 
     while (is.character(msg)) {
-        dir.path <- readline(paste(msg, " : "))
+        dir.path <- .ReadLine(paste(msg, " : "))
         if (dir.path == "") {
             return(FALSE)
         } else if (!file.exists(dirname(dir.path))) {
@@ -312,3 +282,48 @@ GetDirectory = function (msg = 'please enter a path to the directory', create.if
 
 
 }
+
+#' Wrapper for .ReadLine which first check if any preset input exists
+#' and will return it if it does exist or .ReadLine if it doesn't
+#' @param prompt character
+#' @return character
+#' @details
+#' By allowing the presetting of user input, unit tests and examples can be run without
+#' pausing to wait for user input.
+.ReadLine <- function (prompt) {
+
+    if (length(pkg.env$preset.input) > 0) {
+        auto.input <- pkg.env$preset.input[1]
+        cat(paste(prompt, auto.input, '(preset)'))
+        pkg.env$preset.input <- pkg.env$preset.input[-1]
+        return(auto.input)
+    } else {
+        return(readline(prompt))
+    }
+
+}
+
+#' sets the preset input global variable, which if not empty will be used instead
+#' of .ReadLine.
+#'
+#' Allows tests to preset the userinput without interrupting the test with .ReadLine.
+#' @param user.input.strings character
+#' @details
+#' This should probably not be used except for its designed purpose of unit
+#' tests on scripts that use userinput. It could cause unexpected behaviour if
+#' by mistake something is left in the preset.input variable. Use on.exit(Preset())
+#' @export
+Preset <- function (user.input.strings = character()) {
+    pkg.env$preset.input <- user.input.strings
+}
+
+#' Returns the preset input
+#'
+#' @return character
+#' @export
+GetPresets <- function () {
+    return(pkg.env$preset.input)
+}
+
+
+

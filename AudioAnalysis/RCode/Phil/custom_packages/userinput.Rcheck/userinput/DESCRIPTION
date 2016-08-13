@@ -1,0 +1,12 @@
+Package: userinput
+Type: Package
+Title: Validating Command Line User Input
+Version: 0.1.0
+Author: Philip Eichinski <philip.eichinski@qut.edu.au>
+Maintainer: Philip Eichinski <philip.eichinski@qut.edu.au>
+Description: Provides functions for common user input situations, like confirm,
+    select from a list of values etc.
+License: GPL-2
+LazyData: TRUE
+RoxygenNote: 5.0.1
+Built: R 3.2.4; ; 2016-08-04 01:33:37 UTC; unix

@@ -1,0 +1,213 @@
+\nonstopmode{}
+\documentclass[a4paper]{book}
+\usepackage[times,inconsolata,hyper]{Rd}
+\usepackage{makeidx}
+\usepackage[utf8,latin1]{inputenc}
+% \usepackage{graphicx} % @USE GRAPHICX@
+\makeindex{}
+\begin{document}
+\chapter*{}
+\begin{center}
+{\textbf{\huge Package `userinput'}}
+\par\bigskip{\large \today}
+\end{center}
+\begin{description}
+\raggedright{}
+\item[Type]\AsIs{Package}
+\item[Title]\AsIs{Validating Command Line User Input}
+\item[Version]\AsIs{0.1.0}
+\item[Author]\AsIs{Philip Eichinski }\email{philip.eichinski@qut.edu.au}\AsIs{}
+\item[Maintainer]\AsIs{Philip Eichinski }\email{philip.eichinski@qut.edu.au}\AsIs{}
+\item[Description]\AsIs{Provides functions for common user input situations, like confirm,
+select from a list of values etc.}
+\item[License]\AsIs{GPL-2}
+\item[LazyData]\AsIs{TRUE}
+\item[RoxygenNote]\AsIs{5.0.1}
+\end{description}
+\Rdcontents{\R{} topics documented:}
+\inputencoding{utf8}
+\HeaderA{Confirm}{Prompts the user for confirmation in the console}{Confirm}
+%
+\begin{Description}\relax
+Prompts the user for confirmation in the console
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+Confirm(msg, default = NULL)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{msg}] string the thing that you are want a yes/no answer to
+
+\item[\code{default}] mixed optional. If supplied and y or yes or similar, will default to true.
+If supplied and not similar to yes will default to no.
+If not supplied, will not have a default and the user must choose an option
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+Presents the user with a yes/no question and returns true or false depending on their answer
+\end{Details}
+%
+\begin{Value}
+boolean
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{GetDirectory}{prompts the user for a directory}{GetDirectory}
+%
+\begin{Description}\relax
+prompts the user for a directory
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+GetDirectory(msg = "please enter a path to the directory",
+  create.if.missing = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{msg}] the prompt to show to the user
+
+\item[\code{create.if.missing}] boolean whether to create the directory if it is missing or prompt
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+after the user enters in a directory, it will check if the directory exists.
+If it doesn't, it will prompt the user if they want to create it, or if create.if.missing is TRUE
+will create it without asking. It will only create the directory itself, not parent directories.
+e.g. if the user enters /a/b/c and /a/b doesn't exist, it will not create it. But if /a/b exists and
+/a/b/c doesn't exist, it will prompt to create c
+@export
+\end{Details}
+\inputencoding{utf8}
+\HeaderA{GetMultiUserchoice}{allows the user to select 1 or more of the choices,}{GetMultiUserchoice}
+%
+\begin{Description}\relax
+allows the user to select 1 or more of the choices,
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+GetMultiUserchoice(options, choosing.what = "one of the following",
+  default = 1, all = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{options}] string vector; list of choices
+
+\item[\code{choosing.what}] string; instrucitons for user
+
+\item[\code{default}] int or string "all"; which options should be selected if the just hits clicks 'enter'
+
+\item[\code{all}] boolean; should there be an extra option at the end to choose all the options in the list?
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+int vector of the choice numbers
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{GetPresets}{Returns the preset input}{GetPresets}
+%
+\begin{Description}\relax
+Returns the preset input
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+GetPresets()
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+character
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{GetUserChoice}{Prompts the user to choose one of the given set of choices}{GetUserChoice}
+%
+\begin{Description}\relax
+Prompts the user to choose one of the given set of choices
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+GetUserChoice(choices, choosing.what = "one of the following", default = 1,
+  allow.range = FALSE, optional = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{choices}] vector of strings
+
+\item[\code{choosing.what}] string; used for presenting the instructions to the user
+
+\item[\code{default}] int if the user just hits enter, this will be chosen
+
+\item[\code{allow.range}] boolean if TRUE, the user can enter something like 2-4 which will return c(2,3,4)
+
+\item[\code{optional}] boolean if TRUE, user can select 0 to return false (i.e. no choice)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+int the index of the choice selected by the user
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{Preset}{sets the preset input global variable, which if not empty will be used instead of .ReadLine.}{Preset}
+%
+\begin{Description}\relax
+Allows tests to preset the userinput without interrupting the test with .ReadLine.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+Preset(user.input.strings = character())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{user.input.strings}] character
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+This should probably not be used except for its designed purpose of unit
+tests on scripts that use userinput. It could cause unexpected behaviour if
+by mistake something is left in the preset.input variable. Use on.exit(Preset())
+\end{Details}
+\inputencoding{utf8}
+\HeaderA{ReadInt}{Reads an int input from the user and re-prompts if they didn't enter an int}{ReadInt}
+%
+\begin{Description}\relax
+Reads an int input from the user and re-prompts if they didn't enter an int
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+ReadInt(msg = "Enter an integer", min = 1, max = NA, default = NULL)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{msg}] character
+
+\item[\code{min}] int
+
+\item[\code{max}] int
+
+\item[\code{default}] int optional
+\end{ldescription}
+\end{Arguments}
+\printindex{}
+\end{document}

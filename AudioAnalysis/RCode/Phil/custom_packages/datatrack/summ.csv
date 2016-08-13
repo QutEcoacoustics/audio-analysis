@@ -1,0 +1,7 @@
+"","    name","   version","   params","dependencies","    date"," file.exists"," col.names"," callstack","     csv"
+"","Length:9          ","Min.   :1.000  ","Length:9          ","Length:9          ","Length:9          ","Min.   :1  ","Length:9          ","Length:9          ","Min.   :0.0000  "
+"","Class :character  ","1st Qu.:1.000  ","Class :character  ","Class :character  ","Class :character  ","1st Qu.:1  ","Class :character  ","Class :character  ","1st Qu.:1.0000  "
+"","Mode  :character  ","Median :1.000  ","Mode  :character  ","Mode  :character  ","Mode  :character  ","Median :1  ","Mode  :character  ","Mode  :character  ","Median :1.0000  "
+"",NA,"Mean   :1.333  ",NA,NA,NA,"Mean   :1  ",NA,NA,"Mean   :0.8889  "
+"",NA,"3rd Qu.:2.000  ",NA,NA,NA,"3rd Qu.:1  ",NA,NA,"3rd Qu.:1.0000  "
+"",NA,"Max.   :2.000  ",NA,NA,NA,"Max.   :1  ",NA,NA,"Max.   :1.0000  "
