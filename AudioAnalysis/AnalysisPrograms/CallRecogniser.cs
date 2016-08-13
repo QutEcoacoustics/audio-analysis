@@ -12,6 +12,14 @@ using TowseyLibrary;
 
 namespace AnalysisPrograms
 {
+    using System.Reflection;
+
+    using Acoustics.Tools.Wav;
+
+    using AnalysisBase.ResultBases;
+
+    using AnalysisPrograms.Recognizers.Base;
+
     /// <summary>
     /// This class is called from AcousticHiResIndicesPlusRecognisers.cls which is derived from IAnalyse2. 
     /// It is called as follows:
@@ -29,6 +37,7 @@ namespace AnalysisPrograms
 
         public static CallRecogniser DoCallRecognition(string name, AnalysisSettings analysisSettings, AudioRecording recording, Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices)
         {
+            /*
             //var kvp = spectra.First();
             //var matrix = kvp.Value;
 
@@ -79,8 +88,30 @@ namespace AnalysisPrograms
 
             recogniser.ScoreTrack = GenerateScoreTrackImage(name, scores, imageWidth);
             recogniser.Events = predictedEvents;
-            return recogniser;
+            return recogniser;*/
+
+            // load up the standard config file for this species
+            var configurationFile = ConfigFile.ResolveConfigFile(name);
+            var configuration = (dynamic)Yaml.Deserialise(configurationFile);
+
+            // find an appropriate event recognizer
+            IEventRecognizer recognizer =  EventRecognizers.FindAndCheckRecognizers(name);
+
+            // execute it
+            RecognizerResults result = recognizer.Recognize(
+                recording,
+                configuration,
+                analysisSettings.SegmentStartOffset.Value,
+                (Func<WavReader, IEnumerable<SpectralIndexBase>>)(this.GetSpectralIndexes));
+
+
+            return result;
         }
+
+
+
+
+
 
 
         public static Image GenerateScoreTrackImage(string name, double[] scores, int imageWidth)

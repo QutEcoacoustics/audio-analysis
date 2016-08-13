@@ -484,9 +484,9 @@ namespace AnalysisPrograms
             return spectralIndexFiles;
         }
 
-        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
-            this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
+            return this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)

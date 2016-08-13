@@ -581,7 +581,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException();
         }
 
-        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             throw new NotImplementedException();
         }

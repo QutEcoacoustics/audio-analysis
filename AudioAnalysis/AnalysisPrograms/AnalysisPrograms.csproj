@@ -239,6 +239,7 @@
     <Compile Include="Recognizers\Base\IEventRecognizer.cs" />
     <Compile Include="Recognizers\Base\RecognizerBase.cs" />
     <Compile Include="Recognizers\Base\RecognizerResults.cs" />
+    <Compile Include="Recognizers\ExempliGratia.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />
