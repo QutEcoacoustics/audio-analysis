@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace AnalysisPrograms.Recognizers.Base
 {
-    using System.Collections;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
@@ -17,6 +15,8 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
+    using AnalysisPrograms.Production;
+
     using AudioAnalysisTools;
     using AudioAnalysisTools.WavTools;
 
@@ -24,9 +24,23 @@ namespace AnalysisPrograms.Recognizers.Base
 
     public abstract class RecognizerBase : AbstractStrongAnalyser, IEventRecognizer
     {
+
         public abstract string Author { get; }
 
-        public override string Identifier => this.Author + "." + this.DisplayName;
+        public abstract string Species { get; }
+
+        public override string Identifier => this.Author + "." + this.Species;
+
+        public override string DisplayName => this.Species;
+
+        public override AnalysisSettings DefaultSettings => new AnalysisSettings
+        {
+            SegmentMaxDuration = TimeSpan.FromMinutes(1),
+            SegmentMinDuration = TimeSpan.FromSeconds(1),
+            SegmentMediaType = MediaTypes.MediaTypeWav,
+            SegmentOverlapDuration = TimeSpan.Zero,
+            SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+        };
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
         {
@@ -39,7 +53,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 recording,
                 analysisSettings.Configuration,
                 analysisSettings.SegmentStartOffset.Value,
-                (Func<WavReader, IEnumerable<SpectralIndexBase>>)(this.GetSpectralIndexes));
+                null);//(Func<WavReader, IEnumerable<SpectralIndexBase>>)(this.GetSpectralIndexes));
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
 
@@ -85,11 +99,6 @@ namespace AnalysisPrograms.Recognizers.Base
             return analysisResults;
         }
 
-        private IEnumerable<SpectralIndexBase> GetSpectralIndexes(WavReader WavReader)
-        {
-            throw new NotImplementedException();
-        }
-
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
             Csv.WriteToCsv(destination, results);
@@ -108,7 +117,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             foreach (var kvp in selectors)
             {
-                // write spectrogram to disk as CSV file
+                // write spectrum to disk as CSV file
                 var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
@@ -117,7 +126,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return spectralIndexFiles;
         }
 
-        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Func<WavReader, IEnumerable<SpectralIndexBase>> getSpectralIndexes);
+        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IEnumerable<SpectralIndexBase>> getSpectralIndexes);
 
         protected virtual Image DrawSonogram(
             BaseSonogram sonogram,

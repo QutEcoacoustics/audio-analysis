@@ -241,7 +241,7 @@ namespace AnalysisPrograms
             return;
         }
 
-        public void BeforeAnalyze(AnalysisSettings analysisSettings)
+        public void BeforeAnalyze(AnalysisSettings analysisSettings)    
         {
             var configuration = analysisSettings.Configuration;
 

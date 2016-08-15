@@ -1,3 +1,12 @@
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="IEventRecognizer.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the IEventRecognizer type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
@@ -15,7 +24,7 @@ namespace AnalysisPrograms.Recognizers.Base
     public interface IEventRecognizer : IAnalyser2
     {
 
-        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Func<WavReader, IEnumerable<SpectralIndexBase>> getSpectralIndexes);
+        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IEnumerable<SpectralIndexBase>> getSpectralIndexes);
     }
 
 
@@ -38,11 +47,11 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 // to find the assembly, get the type of a class in that assembly
                 // eg. typeof(MainEntry).Assembly
-                var analyserType = typeof(IEventRecognizer);
+                var analyzerType = typeof(IEventRecognizer);
 
                 var recognizers =
                     assembly.GetTypes()
-                        .Where(analyserType.IsAssignableFrom)
+                        .Where(analyzerType.IsAssignableFrom)
                         .Select(t => Activator.CreateInstance(t) as IEventRecognizer);
 
                 eventRecognizersCached = recognizers;
