@@ -5,6 +5,8 @@ using System.Text;
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System.Reflection;
+
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -14,11 +16,16 @@ namespace AnalysisPrograms.Recognizers
 
     using AudioAnalysisTools.WavTools;
 
+    using log4net;
+
     class ExempliGratia : RecognizerBase
     {
         public override string Author => "Truskinger";
 
-        public override string DisplayName => "ExempliGratia";
+        public override string Species => "ExempliGratia";
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 
         /// <summary>
         /// Summarize your results. This method is invoked exactly once.
@@ -46,7 +53,7 @@ namespace AnalysisPrograms.Recognizers
             AudioRecording audioRecording,
             dynamic configuration,
             TimeSpan segmentStartOffset,
-            Func<WavReader, IEnumerable<SpectralIndexBase>> getSpectralIndexes)
+            Lazy<IEnumerable<SpectralIndexBase>> getSpectralIndexes)
         {
             
             var wavReader = new WavReader(audioRecording);

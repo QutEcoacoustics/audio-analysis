@@ -28,6 +28,7 @@ namespace AnalysisPrograms
     using AnalysisBase.ResultBases;
 
     using AnalysisPrograms.Production;
+    using AnalysisPrograms.Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
@@ -431,7 +432,7 @@ namespace AnalysisPrograms
                 // SEEM TO HAVE LOST SAMPLES
                 if(recording.WavReader.Samples == null) recording = new AudioRecording(audioFile.FullName);
 
-                CallRecogniser output = CallRecogniser.DoCallRecognition(name, analysisSettings, recording, dictionaryOfSpectra);
+                CallRecognizer output = CallRecognizer.DoCallRecognition(name, analysisSettings, recording, dictionaryOfSpectra);
                 if ((output != null) && (output.ScoreTrack != null)) scoreTracks.Add(output.ScoreTrack);
                 if ((output != null) && (output.Events != null))     events.AddRange(output.Events);
             }
@@ -446,7 +447,7 @@ namespace AnalysisPrograms
                 this.WriteEventsFile(analysisSettings.EventsFile, analysisResults.Events);
                 analysisResults.EventsFile = analysisSettings.EventsFile;
             }
-
+#####################################
             // #################################################################
             // PRODUCE Hi-RESOLUTION SPECTROGRAM IMAGES 
             // Instead of saving the standard spectrogram images, in this analysis we save the Hi-Res Indices spectrogram images.
@@ -582,7 +583,7 @@ namespace AnalysisPrograms
             //analysisResults.SummaryIndices = summaryiv;
 
 
-
+#####################################
             if (analysisSettings.SpectrumIndicesDirectory != null)
             {
                 analysisResults.SpectraIndicesFiles =

@@ -225,7 +225,6 @@
     <Compile Include="Audio2Sonogram.cs" />
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
-    <Compile Include="CallRecogniser.cs" />
     <Compile Include="LitoriaFallax.cs" />
     <Compile Include="LimnodynastesConvex.cs" />
     <Compile Include="Canetoad.cs" />
@@ -237,7 +236,9 @@
     <Compile Include="HerveGlotinCollaboration.cs" />
     <Compile Include="HighResolutionAcousticIndices.cs" />
     <Compile Include="Recognizers\Base\IEventRecognizer.cs" />
+    <Compile Include="Recognizers\Base\MultiRecognizer.cs" />
     <Compile Include="Recognizers\Base\RecognizerBase.cs" />
+    <Compile Include="Recognizers\Base\RecognizerEntry.cs" />
     <Compile Include="Recognizers\Base\RecognizerResults.cs" />
     <Compile Include="Recognizers\ExempliGratia.cs" />
     <Compile Include="SURFAnalysis.cs" />

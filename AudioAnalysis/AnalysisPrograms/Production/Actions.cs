@@ -7,6 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+// ReSharper disable StyleCop.SA1201
 namespace AnalysisPrograms.Production
 {
     using System;
