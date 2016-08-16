@@ -256,12 +256,16 @@ namespace AnalysisPrograms
         [Serializable]
         internal class AcousticIndicesParsedConfiguration
         {
-            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile)
+            public dynamic Configuration { get; }
+
+            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile, FileInfo configFile, dynamic configuration)
             {
+                this.Configuration = configuration;
                 this.TileOutput = tileOutput;
                 this.IndexCalculationDuration = indexCalculationDuration;
                 this.BgNoiseNeighborhood = bgNoiseNeighborhood;
                 this.IndexPropertiesFile = indexPropertiesFile;
+                this.ConfigFile = configFile;
             }
 
             public static AcousticIndicesParsedConfiguration FromConfigFile(dynamic configuration, FileInfo configFile, TimeSpan defaultDuration)
@@ -315,7 +319,7 @@ namespace AnalysisPrograms
                     Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + bgNoiseNeighborhood.ToString() + ")");
                 }
 
-                return new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig);
+                return new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig, configFile, configuration);
             }
 
             public bool TileOutput { get; private set; }
@@ -336,6 +340,8 @@ namespace AnalysisPrograms
             public TimeSpan BgNoiseNeighborhood { get; private set; }
 
             public FileInfo IndexPropertiesFile { get; private set; }
+
+            public FileInfo ConfigFile { get; set; }
         }
 
         public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
