@@ -104,6 +104,7 @@ namespace AnalysisPrograms.Recognizers.Base
             // we don't want segments, thus segment duration == total length of original file
             analysisSettings.SegmentDuration = info.Duration;
             analysisSettings.SegmentMaxDuration = info.Duration;
+            analysisSettings.SegmentStartOffset = TimeSpan.Zero;
 
             if (info.SampleRate.Value != analysisSettings.SegmentTargetSampleRate)
             {
@@ -114,6 +115,9 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 throw new ArgumentException("This entry point only supports wav file types!");
             }
+
+            // Execute a pre analyzer hook
+            recognizer.BeforeAnalyze(analysisSettings);
 
             // execute actual analysis - output data will be written
             Log.Info("Running recognizer: " + analysisIdentifier);

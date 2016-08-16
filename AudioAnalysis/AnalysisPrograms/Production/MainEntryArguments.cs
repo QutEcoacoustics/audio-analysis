@@ -180,7 +180,6 @@ namespace AnalysisPrograms.Production
             analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
             analysisSettings.AnalysisBaseOutputDirectory = this.Output;
             analysisSettings.AnalysisBaseTempDirectory = this.Output;
-            analysisSettings.AudioFile = this.Output.CombineFile(this.Source.Name);
 
             if (outputIntermediate)
             {
@@ -188,7 +187,7 @@ namespace AnalysisPrograms.Production
                 analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Events", ".csv").ToFileInfo();
                 analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Indices", ".csv").ToFileInfo();
                 analysisSettings.SpectrumIndicesDirectory = this.Output;
-                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, string.Empty, ".png").ToFileInfo();
+                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Image", ".png").ToFileInfo();
             }
 
             analysisSettings.Configuration = Yaml.Deserialise(this.Config);

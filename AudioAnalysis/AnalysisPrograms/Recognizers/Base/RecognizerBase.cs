@@ -341,6 +341,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var configuration = analysisSettings.Configuration;
 
 
+
             // extract settings for generating indices
             var acousticConfiguration = Acoustic.AcousticIndicesParsedConfiguration.FromConfigFile(
                 analysisSettings.Configuration,

@@ -53,6 +53,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 var recognizers =
                     assembly.GetTypes()
                         .Where(analyzerType.IsAssignableFrom)
+                        .Where(t => t.IsClass && !t.IsAbstract)
                         .Select(t => Activator.CreateInstance(t) as IEventRecognizer);
 
                 eventRecognizersCached = recognizers;

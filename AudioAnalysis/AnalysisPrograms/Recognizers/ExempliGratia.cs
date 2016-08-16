@@ -22,6 +22,8 @@ namespace AnalysisPrograms.Recognizers
 
     using log4net;
 
+    using TowseyLibrary;
+
     class ExempliGratia : RecognizerBase
     {
         public override string Author => "Truskinger";
@@ -71,9 +73,23 @@ namespace AnalysisPrograms.Recognizers
             // get high resolution indices
             var indices = getSpectralIndexes.Value;
 
+            // 'find' an event
+            var anEvent = new AcousticEvent(
+                new Oblong(50, 50, 100, 100),
+                sonogram.NyquistFrequency,
+                sonogram.Configuration.FreqBinCount,
+                sonogram.FrameDuration,
+                sonogram.FrameStep,
+                sonogram.FrameCount);
 
-
-            throw new NotImplementedException();
+            return new RecognizerResults()
+            {
+                Events = new List<AcousticEvent> {anEvent},
+                Hits = null,
+                ScoreTrack = null,
+                Plot = null,
+                Sonogram = sonogram
+            };
         }
     }
 }
