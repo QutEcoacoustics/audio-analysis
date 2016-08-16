@@ -7,6 +7,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Threading;
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
@@ -80,7 +81,7 @@ namespace AnalysisPrograms.Recognizers.Base
             // IF they aren't used, empty values are returned.
             if (lazyIndices.IsValueCreated)
             {
-                this.SummarizeHighResolutionIndices(analysisResults, lazyIndices.Value, acousticIndicesParsedConfiguration, analysisSettings.Configuration);
+                this.SummarizeHighResolutionIndices(analysisResults, lazyIndices.Value, acousticIndicesParsedConfiguration);
             }
 
             // write intermediate output if necessary
@@ -121,8 +122,7 @@ namespace AnalysisPrograms.Recognizers.Base
                         recording.FileName,
                         results.ScoreTrack,
                         lazyIndices.Value,
-                        acousticIndicesParsedConfiguration,
-                        analysisSettings.Configuration);
+                        acousticIndicesParsedConfiguration);
                 }
             }
 
@@ -134,9 +134,9 @@ namespace AnalysisPrograms.Recognizers.Base
             string fileStem,
             Image scoreTrack,
             IndexCalculateResult[] indexResults, 
-            Acoustic.AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration, 
-            dynamic highResolutionConfiguration)
+            Acoustic.AcousticIndicesParsedConfiguration acousticIndicesParsedConfiguration)
         {
+            dynamic highResolutionConfiguration = acousticIndicesParsedConfiguration.Configuration;
             var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.ColumnMajorFlipped);
 
             FileInfo ipConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile;
@@ -219,9 +219,10 @@ namespace AnalysisPrograms.Recognizers.Base
         private void SummarizeHighResolutionIndices(
             AnalysisResult2 analysisResults, 
             IndexCalculateResult[] indexResults, 
-            Acoustic.AcousticIndicesParsedConfiguration highResolutionParsedConfiguration, 
-            dynamic highResolutionConfig)
+            Acoustic.AcousticIndicesParsedConfiguration highResolutionParsedConfiguration)
         {
+            dynamic highResolutionConfig = highResolutionParsedConfiguration.Configuration;
+
             // NOW COMPRESS THE HI-RESOLUTION SPECTRAL INDICES TO LOW RES
             double lowResolution = (double?)highResolutionConfig["LowResolution"] ?? 60.0;
             TimeSpan imageScale = TimeSpan.FromSeconds(lowResolution);
@@ -244,14 +245,16 @@ namespace AnalysisPrograms.Recognizers.Base
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
 
             // Init a new spectral indices class and populate it with spectral indices
-            var spectrums = new SpectralIndexValues(spectrumLength, indexProperties);
-            spectrums.ImportFromDictionary(dictionaryOfSpectra);
-            spectrums.StartOffset = analysisResults.SpectralIndices[0].StartOffset;
-            spectrums.SegmentDuration = analysisResults.SpectralIndices[0].SegmentDuration;
-            spectrums.FileName = analysisResults.SettingsUsed.SourceFile.Name;
+            var spectrums = SpectralIndexValues.ImportFromDictionary(dictionaryOfSpectra);
+            for (int i = 0; i < spectrums.Length; i++)
+            {
+                spectrums[i].StartOffset = analysisResults.SegmentStartOffset + TimeSpan.FromSeconds(i * lowResolution);
+                spectrums[i].SegmentDuration = imageScale;
+                spectrums[i].FileName = analysisResults.SettingsUsed.SourceFile.Name;
+            }
 
             // assign to the analysis result
-            analysisResults.SpectralIndices = new SpectralIndexBase[]{spectrums};
+            analysisResults.SpectralIndices = spectrums;
 
             //TODO TODO TODO
             // ALSO NEED TO COMPRESS THE analysisResults.SummaryIndices To LOW RESOLUTION
@@ -340,12 +343,17 @@ namespace AnalysisPrograms.Recognizers.Base
         {
             var configuration = analysisSettings.Configuration;
 
+            FileInfo indicesConfigFile = ConfigFile.ResolveConfigFile(
+                (string)configuration.HighResolutionIndicesConfig,
+                analysisSettings.ConfigFile.Directory
+            );
 
-
+            var indicesConfiguration = Yaml.Deserialise(indicesConfigFile);
+            
             // extract settings for generating indices
             var acousticConfiguration = Acoustic.AcousticIndicesParsedConfiguration.FromConfigFile(
-                analysisSettings.Configuration,
-                analysisSettings.ConfigFile,
+                indicesConfiguration,
+                indicesConfigFile,
                 analysisSettings.SegmentMaxDuration.Value);
 
             analysisSettings.AnalyzerSpecificConfiguration = acousticConfiguration;
@@ -378,7 +386,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
                     return subsegmentResults;
                 };
-            return new Lazy<IndexCalculateResult[]>(callback);
+            return new Lazy<IndexCalculateResult[]>(callback, LazyThreadSafetyMode.ExecutionAndPublication);
         } 
     }
 }

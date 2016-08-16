@@ -147,6 +147,32 @@ namespace System
 
             return result;
         }
+        public static Dictionary<string, Action<TBase, TType>> GetSetters<TBase, TType>()
+        {
+            Type thisType = typeof(TBase);
+
+            var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var result = new Dictionary<string, Action<TBase, TType>>(props.Length);
+
+            foreach (var propertyInfo in props)
+            {
+
+                if (propertyInfo.PropertyType != typeof(TType))
+                {
+                    continue;
+                }
+
+                var methodInfo = propertyInfo.GetSetMethod();
+
+                var setDelegate = (Action<TBase, TType>)Delegate.CreateDelegate(typeof(Action<TBase, double[]>), methodInfo);
+
+                var name = propertyInfo.Name;
+
+                result.Add(name, setDelegate);
+            }
+
+            return result;
+        }
 
         internal static bool HasAttr<T>(this MemberInfo info)
         {

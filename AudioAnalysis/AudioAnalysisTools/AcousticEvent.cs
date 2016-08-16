@@ -45,7 +45,7 @@ namespace AudioAnalysisTools
                     "ScoreNormalised", "Score_MaxPossible",
                     "Score_MaxInEvent", "Score_TimeOfMaxInEvent",
                     "Score2Name", "Score2", "Periodicity", "DominantFreq",
-                    "Tag", "Intensity", "Quality", "HitColour",
+                    "Tag", "Intensity", "Quality", "HitColour", "Points",
                     "Duration"
                 };
 
