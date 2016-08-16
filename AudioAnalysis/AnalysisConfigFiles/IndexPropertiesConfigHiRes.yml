@@ -492,6 +492,19 @@ BGN:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "dB"
+# Not needed for high resolution indices  
+CLS:
+  Name: spectralCLS
+  Comment: "Spectral cluster count."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 20.0
+  CalculateNormMin: false
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: ""
 CVR:
   Name: spectralCVR
   Comment: "Freq bin COVER: Spectrum of the fraction of active elements in each freq bin where amplitude > threshold = 3 dB."

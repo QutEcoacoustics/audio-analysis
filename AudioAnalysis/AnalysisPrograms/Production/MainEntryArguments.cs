@@ -156,6 +156,44 @@ namespace AnalysisPrograms.Production
         [ArgRequired]
         [ArgPosition(3)]
         public virtual DirectoryInfo Output { get; set; }
+
+        /// <summary>
+        /// Helper method used for Execute and Dev entry points. Mocks the values normally set by analysis coordinator.
+        /// </summary>
+        /// <param name="defaults">
+        /// The default AnalysisSettings used - usually from the IAnalyzer2 interface.
+        /// </param>
+        /// <param name="outputIntermediate">
+        /// The output Intermediate switch - true to use the default writing behavior.
+        /// </param>
+        /// <returns>
+        /// An AnalysisSettings object.
+        /// </returns>
+        public virtual AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
+        {
+            var analysisSettings = defaults ?? new AnalysisSettings();
+
+            // ANT: renabled this line because it just makes sense! this is needed by IAnalyser cmd entry points
+            analysisSettings.SourceFile = this.Source;
+            analysisSettings.AudioFile = this.Source;
+            analysisSettings.ConfigFile = this.Config;
+            analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
+            analysisSettings.AnalysisBaseOutputDirectory = this.Output;
+            analysisSettings.AnalysisBaseTempDirectory = this.Output;
+
+            if (outputIntermediate)
+            {
+                string fileNameBase = Path.GetFileNameWithoutExtension(this.Source.Name);
+                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Events", ".csv").ToFileInfo();
+                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Indices", ".csv").ToFileInfo();
+                analysisSettings.SpectrumIndicesDirectory = this.Output;
+                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Image", ".png").ToFileInfo();
+            }
+
+            analysisSettings.Configuration = Yaml.Deserialise(this.Config);
+
+            return analysisSettings;
+        }
     }
 
 
@@ -178,20 +216,9 @@ namespace AnalysisPrograms.Production
         public double? Duration { get; set; }
 
 
-        public AnalysisSettings ToAnalysisSettings()
+        public override AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
         {
-            var analysisSettings = new AnalysisSettings();
-
-            // ANT: renabled this line because it just makes sense! this is needed by IAnalyser cmd entry points // this not required at this point
-            analysisSettings.SourceFile = this.Source; 
-            analysisSettings.ConfigFile = this.Config;
-            analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
-            analysisSettings.AudioFile = this.Output.CombineFile(this.Source.Name);
-            analysisSettings.EventsFile = null;
-            analysisSettings.SummaryIndicesFile = null;
-            analysisSettings.ImageFile = null;
-
-            analysisSettings.Configuration = Yaml.Deserialise(this.Config);
+            var analysisSettings = base.ToAnalysisSettings(defaults, false);
 
             if (this.TmpWav.IsNotEmpty())
             {

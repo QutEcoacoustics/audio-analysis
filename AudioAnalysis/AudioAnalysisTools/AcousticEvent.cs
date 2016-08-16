@@ -45,7 +45,7 @@ namespace AudioAnalysisTools
                     "ScoreNormalised", "Score_MaxPossible",
                     "Score_MaxInEvent", "Score_TimeOfMaxInEvent",
                     "Score2Name", "Score2", "Periodicity", "DominantFreq",
-                    "Tag", "Intensity", "Quality", "HitColour",
+                    "Tag", "Intensity", "Quality", "HitColour", "Points",
                     "Duration"
                 };
 
@@ -227,9 +227,9 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// This constructor currently works ONLY for linear Herzt scale events.
+        /// This constructor currently works ONLY for linear Hertz scale events.
         /// </summary>
-        /// <param name="o">An oblong initialised with bin and frame numbers marking location of the event</param>
+        /// <param name="o">An oblong initialized with bin and frame numbers marking location of the event</param>
         /// <param name="NyquistFrequency">to set the freq scale</param>
         /// <param name="binCount">to set the freq scale</param>
         /// <param name="frameDuration">tseconds duration of a frame - to set the time scale</param>

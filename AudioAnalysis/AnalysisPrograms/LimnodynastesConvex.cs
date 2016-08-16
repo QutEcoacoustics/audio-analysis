@@ -29,7 +29,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
 
-    using Emgu.CV.UI;
+    //using Emgu.CV.UI;
 
     using TowseyLibrary;
 
@@ -310,7 +310,7 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
-        public override void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             throw new NotImplementedException();
         }

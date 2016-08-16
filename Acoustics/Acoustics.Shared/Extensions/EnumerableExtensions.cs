@@ -135,6 +135,68 @@ namespace System
             return result;
         }
 
+        public static TBase[] FromTwoDimensionalArray<TBase, T>(
+            this Dictionary<string, T[,]> items,
+            Dictionary<string, Action<TBase, T[]>> setters,
+            TwoDimensionalArray dimensionality = TwoDimensionalArray.RowMajor) where TBase : new()
+        {
+            // This code is covered by unit tests Acoustics.Test - change the unit tests before you change the class!
+            Contract.Requires(items != null);
+            Contract.Requires(setters != null);
+
+            // assume all matrices contain the same number of elements
+            int major = dimensionality == TwoDimensionalArray.RowMajor ? 0 : 1;
+            int minor = major == 1 ? 0 : 1;
+            var itemCount = items.First().Value.GetLength(major);
+
+            int keyCount = setters.Keys.Count;
+            var results = new TBase[itemCount];
+
+            // initialize all values
+            for (int index = 0; index < results.Length; index++)
+            {
+                results[index] = new TBase();
+            }
+
+            Parallel.ForEach(
+                setters,
+                (kvp, state, index) =>
+                    {
+                        var key = kvp.Key;
+                        var setter = kvp.Value;
+
+                        var matrix = items[key];
+                        for (int i = 0; i < itemCount; i++)
+                        {
+                            var lineLength = matrix.GetLength(minor);
+                            T[] line = new T[lineLength];
+
+                            for (int j = 0; j < lineLength; j++)
+                            {
+                                switch (dimensionality)
+                                {
+                                    case TwoDimensionalArray.RowMajor:
+                                        line[j] = matrix[i, j];
+                                        break;
+                                    case TwoDimensionalArray.ColumnMajor:
+                                        line[j] = matrix[j, i];
+                                        break;
+                                    case TwoDimensionalArray.ColumnMajorFlipped:
+                                        line[j] = matrix[lineLength - 1 - j, i];
+                                        break;
+                                    default:
+                                        throw new NotImplementedException("Dimensionality not supported");
+                                }
+                            }
+
+                            // set the line (row or column) to the instance
+                            setter(results[i], line);
+                        }
+                    });
+
+            return results;
+        }
+
         public static IEnumerable<T[]> Windowed<T>(this IEnumerable<T> list, int windowSize)
         {
             Contract.Requires(windowSize >= 0);

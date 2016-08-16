@@ -2,7 +2,10 @@
   <GlobalSettings>
     <CollectionProperty Name="RecognizedWords">
       <Value>Csv</Value>
+      <Value>Dev</Value>
+      <Value>subsegment</Value>
       <Value>Towsey</Value>
+      <Value>Truskinger</Value>
       <Value>Yaml</Value>
     </CollectionProperty>
   </GlobalSettings>

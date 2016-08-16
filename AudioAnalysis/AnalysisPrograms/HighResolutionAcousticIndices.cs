@@ -1,17 +1,30 @@
-﻿using Acoustics.Shared;
-using AudioAnalysisTools.Indices;
-using AudioAnalysisTools.LongDurationSpectrograms;
-using PowerArgs;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TowseyLibrary;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="HighResolutionAcousticIndices.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   Defines the HighResolutionAcousticIndices type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using Acoustics.Shared;
+
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+
+    using PowerArgs;
+
+    using TowseyLibrary;
+
     public static class HighResolutionAcousticIndices
     {
 
