@@ -28,6 +28,7 @@ namespace AnalysisPrograms
     using AnalysisBase.ResultBases;
 
     using AnalysisPrograms.Production;
+    using AnalysisPrograms.Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
@@ -393,13 +394,13 @@ namespace AnalysisPrograms
 
                 /* ###################################################################### */
 
-                var indexCalculateResult = IndexCalculate.Analysis(
+                // OBSOLETE: INTENTIONALLY BROKEN
+                IndexCalculateResult indexCalculateResult = null; /*IndexCalculate.Analysis(
                     recording,
-                    analysisSettings,
                     subsegmentOffset,
                     acousticIndicesParsedConfiguration.IndexCalculationDuration,
                     acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
-                    acousticIndicesParsedConfiguration.IndexPropertiesFile);
+                    acousticIndicesParsedConfiguration.IndexPropertiesFile, TODO, TODO, analysisSettings.Configuration, TODO);*/
 
                 /* ###################################################################### */
 
@@ -431,7 +432,8 @@ namespace AnalysisPrograms
                 // SEEM TO HAVE LOST SAMPLES
                 if(recording.WavReader.Samples == null) recording = new AudioRecording(audioFile.FullName);
 
-                CallRecogniser output = CallRecogniser.DoCallRecognition(name, analysisSettings, recording, dictionaryOfSpectra);
+                // OBSOLETE: INTENTIONALLY BROKEN
+                RecognizerResults output = null;// MultiRecognizer.DoCallRecognition(name, analysisSettings, recording, dictionaryOfSpectra);
                 if ((output != null) && (output.ScoreTrack != null)) scoreTracks.Add(output.ScoreTrack);
                 if ((output != null) && (output.Events != null))     events.AddRange(output.Events);
             }
@@ -582,7 +584,6 @@ namespace AnalysisPrograms
             //analysisResults.SummaryIndices = summaryiv;
 
 
-
             if (analysisSettings.SpectrumIndicesDirectory != null)
             {
                 analysisResults.SpectraIndicesFiles =
@@ -676,9 +677,9 @@ namespace AnalysisPrograms
             return spectralIndexFiles;
         }
 
-        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
-            this.WriteSpectralIndicesFilesCustom(destination, fileNameBase, results);
+            return this.WriteSpectralIndicesFilesCustom(destination, fileNameBase, results);
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)

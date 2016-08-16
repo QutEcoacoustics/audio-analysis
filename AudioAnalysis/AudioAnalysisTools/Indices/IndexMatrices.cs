@@ -872,6 +872,13 @@ public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
             int scalingFactor = (int)Math.Round(imageScale.TotalMilliseconds / dataScale.TotalMilliseconds);
             var compressedSpectra = new Dictionary<string, double[,]>();
             int step = scalingFactor - 1;
+
+            // if there's no need to compress, simply return
+            if (step == 0)
+            {
+                return spectra;
+            }
+
             foreach (string key in spectra.Keys)
             {
                 double[,] matrix = spectra[key];

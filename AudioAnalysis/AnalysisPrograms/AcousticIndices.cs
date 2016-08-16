@@ -241,71 +241,85 @@ namespace AnalysisPrograms
             return;
         }
 
-        public void BeforeAnalyze(AnalysisSettings analysisSettings)
+        public void BeforeAnalyze(AnalysisSettings analysisSettings)    
         {
             var configuration = analysisSettings.Configuration;
 
-            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, analysisSettings.ConfigFile);
-            var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
-            SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+            var acousticConfiguration = AcousticIndicesParsedConfiguration.FromConfigFile(
+                analysisSettings.Configuration,
+                analysisSettings.ConfigFile,
+                analysisSettings.SegmentMaxDuration.Value);
 
-            bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
-            bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
-
-            // if tiling output we need to be able to parse the date from the file name
-            Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
-            if (tileOutput)
-            {
-                if (!filenameDate)
-                {
-                    throw new ConfigFileException("If TileImageOutput is set then RequireDateInFilename must be set as well");
-                }
-            }
-
-
-            // set IndexCalculationDuration i.e. duration of a subsegment
-            TimeSpan indexCalculationDuration;
-            try
-            {
-                double indexCalculationDurationSeconds = (double)configuration[AnalysisKeys.IndexCalculationDuration];
-                indexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDurationSeconds);
-            }
-            catch (Exception ex)
-            {
-                indexCalculationDuration = analysisSettings.SegmentMaxDuration.Value;
-                Log.Warn("Cannot read IndexCalculationDuration from config file (Exceptions squashed. Used default value = " + indexCalculationDuration.ToString() + ")");
-            }
-
-            if (tileOutput && indexCalculationDuration != TimeSpan.FromSeconds(60))
-            {
-                throw new ConfigFileException("Invalid configuration detected: tile image output is enabled but ICD != 60.0 so the images won'tbe created");
-            }
-
-            // set background noise neighborhood
-            TimeSpan bgNoiseNeighborhood;
-            try
-            {
-                int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
-                bgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
-            }
-            catch (Exception ex)
-            {
-                bgNoiseNeighborhood = analysisSettings.SegmentMaxDuration.Value;
-                Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + bgNoiseNeighborhood.ToString() + ")");
-            }
-
-            analysisSettings.AnalyzerSpecificConfiguration = new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig);
+            analysisSettings.AnalyzerSpecificConfiguration = acousticConfiguration;
         }
 
         [Serializable]
-        private class AcousticIndicesParsedConfiguration
+        internal class AcousticIndicesParsedConfiguration
         {
-            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile)
+            public dynamic Configuration { get; }
+
+            public AcousticIndicesParsedConfiguration(bool tileOutput, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, FileInfo indexPropertiesFile, FileInfo configFile, dynamic configuration)
             {
+                this.Configuration = configuration;
                 this.TileOutput = tileOutput;
                 this.IndexCalculationDuration = indexCalculationDuration;
                 this.BgNoiseNeighborhood = bgNoiseNeighborhood;
                 this.IndexPropertiesFile = indexPropertiesFile;
+                this.ConfigFile = configFile;
+            }
+
+            public static AcousticIndicesParsedConfiguration FromConfigFile(dynamic configuration, FileInfo configFile, TimeSpan defaultDuration)
+            {
+                FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, configFile);
+                var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+                SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
+
+                bool filenameDate = (bool?)configuration[AnalysisKeys.RequireDateInFilename] ?? false;
+                bool tileOutput = (bool?)configuration[AnalysisKeys.TileImageOutput] ?? false;
+
+                // if tiling output we need to be able to parse the date from the file name
+                Log.Info("Image tiling is " + (tileOutput ? string.Empty : "NOT ") + "enabled");
+                if (tileOutput)
+                {
+                    if (!filenameDate)
+                    {
+                        throw new ConfigFileException("If TileImageOutput is set then RequireDateInFilename must be set as well");
+                    }
+                }
+
+
+                // set IndexCalculationDuration i.e. duration of a subsegment
+                TimeSpan indexCalculationDuration;
+                try
+                {
+                    double indexCalculationDurationSeconds = (double)configuration[AnalysisKeys.IndexCalculationDuration];
+                    indexCalculationDuration = TimeSpan.FromSeconds(indexCalculationDurationSeconds);
+                }
+                catch (Exception ex)
+                {
+                    indexCalculationDuration = defaultDuration;
+                    Log.Warn("Cannot read IndexCalculationDuration from config file (Exceptions squashed. Used default value = " + indexCalculationDuration.ToString() + ")");
+                }
+
+                if (tileOutput && indexCalculationDuration != TimeSpan.FromSeconds(60))
+                {
+                    throw new ConfigFileException("Invalid configuration detected: tile image output is enabled but ICD != 60.0 so the images won'tbe created");
+                }
+
+                // set background noise neighborhood
+                TimeSpan bgNoiseNeighborhood;
+                try
+                {
+                    int bgnNh = configuration[AnalysisKeys.BGNoiseNeighbourhood];
+                    bgNoiseNeighborhood = TimeSpan.FromSeconds(bgnNh);
+                }
+                catch (Exception ex)
+                {
+                    bgNoiseNeighborhood = defaultDuration;
+                    Log.Warn("Cannot read BGNNeighborhood from config file (Exceptions squashed. Used default value = " + bgNoiseNeighborhood.ToString() + ")");
+                }
+
+                return new AcousticIndicesParsedConfiguration(tileOutput, indexCalculationDuration, bgNoiseNeighborhood, indicesPropertiesConfig, configFile, configuration);
             }
 
             public bool TileOutput { get; private set; }
@@ -326,6 +340,8 @@ namespace AnalysisPrograms
             public TimeSpan BgNoiseNeighborhood { get; private set; }
 
             public FileInfo IndexPropertiesFile { get; private set; }
+
+            public FileInfo ConfigFile { get; set; }
         }
 
         public AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
@@ -336,67 +352,32 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = analysisSettings.AnalysisInstanceOutputDirectory;
 
-            if (recording.WavReader.Channels > 1)
-            {
-                throw new InvalidOperationException(@"A multi-channel recording MUST be mixed down to MONO before calculating acoustic indices! 
- Set <AnalyseLongRecording.Arguments.MixDownToMono = true> in the AnalyseLongRecording.Dev class");
-            }
-
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
             analysisResults.AnalysisIdentifier = this.Identifier;
-
-            double recordingDuration = recording.Duration().TotalSeconds;
-            double subsegmentDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds;
-            
-            // intentional possible null ref, throw if not null
-            double segmentDuration = analysisSettings.SegmentDuration.Value.TotalSeconds;
-            double audioCuttingError = subsegmentDuration - segmentDuration;
-            
-            // using the expected duration, each call to analyze will always produce the same number of results
-            // round, we expect perfect numbers, warn if not
-            double subsegmentsInSegment = segmentDuration / subsegmentDuration;
-            int subsegmentCount = (int)Math.Round(segmentDuration / subsegmentDuration);
-            const double WarningThreshold = 0.01; // 10%
-            double fraction = subsegmentsInSegment - subsegmentCount;
-            if (Math.Abs(fraction) > WarningThreshold)
-            {
-                Log.Warn(
-                    string.Format(
-                        "The IndexCalculationDuration ({0}) does not fit well into the provided segment ({1}). This means a partial result has been {3}, {2} results will be calculated",
-                        subsegmentDuration,
-                        segmentDuration,
-                        subsegmentCount,
-                        fraction >= 0.5 ? "added" : "removed"));
-            }
-            Log.Trace(subsegmentCount.ToString() + " sub segments will be calculated");
-
-            analysisResults.SummaryIndices  = new SummaryIndexBase[subsegmentCount];
-            analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentCount];
-
-            var trackScores = new List<Plot>(subsegmentCount);
-            var tracks = new List<SpectralTrack>(subsegmentCount);
-
+       
             // calculate indices for each subsegment
-            for (int i = 0; i < subsegmentCount; i++)
+            IndexCalculateResult[] subsegmentResults = CalculateIndicesInSubsegments(
+                recording,
+                analysisSettings.SegmentStartOffset.Value,
+                analysisSettings.SegmentDuration.Value,
+                acousticIndicesParsedConfiguration.IndexCalculationDuration,
+                acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
+                acousticIndicesParsedConfiguration.IndexPropertiesFile,
+                analysisSettings.SampleRateOfOriginalAudioFile.Value,
+                analysisSettings.Configuration);
+
+            var trackScores = new List<Plot>(subsegmentResults.Length);
+            var tracks = new List<SpectralTrack>(subsegmentResults.Length);
+
+            analysisResults.SummaryIndices = new SummaryIndexBase[subsegmentResults.Length];
+            analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentResults.Length];
+            for (int i = 0; i < subsegmentResults.Length; i++)
             {
-                var subsegmentOffset = (analysisSettings.SegmentStartOffset ?? TimeSpan.Zero)  + TimeSpan.FromSeconds(i * subsegmentDuration);
-
-                /* ###################################################################### */
-
-                var indexCalculateResult = IndexCalculate.Analysis(
-                    recording,
-                    analysisSettings,
-                    subsegmentOffset,
-                    acousticIndicesParsedConfiguration.IndexCalculationDuration,
-                    acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
-                    acousticIndicesParsedConfiguration.IndexPropertiesFile);
-
-                /* ###################################################################### */
-
+                var indexCalculateResult = subsegmentResults[i];
                 indexCalculateResult.SummaryIndexValues.FileName = analysisSettings.SourceFile.Name;
                 indexCalculateResult.SpectralIndexValues.FileName = analysisSettings.SourceFile.Name;
 
-                analysisResults.SummaryIndices[i]  = indexCalculateResult.SummaryIndexValues;
+                analysisResults.SummaryIndices[i] = indexCalculateResult.SummaryIndexValues;
                 analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
                 trackScores.AddRange(indexCalculateResult.TrackScores);
                 if (indexCalculateResult.Tracks != null)
@@ -484,9 +465,9 @@ namespace AnalysisPrograms
             return spectralIndexFiles;
         }
 
-        public void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
+        public List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
-            this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
+            return this.WriteSpectrumIndicesFilesCustom(destination, fileNameBase, results);
         }
 
         public SummaryIndexBase[] ConvertEventsToSummaryIndices(IEnumerable<EventBase> events, TimeSpan unitTime, TimeSpan duration, double scoreThreshold, bool absolute = false)
@@ -645,6 +626,70 @@ namespace AnalysisPrograms
             }
 
             return image.GetImage();
+        }
+
+        public static IndexCalculateResult[] CalculateIndicesInSubsegments(
+            AudioRecording recording,
+            TimeSpan segmentStartOffset,
+            TimeSpan segmentDuration,
+            TimeSpan indexCalculationDuration,
+            TimeSpan bgNoiseNeighborhood,
+            FileInfo indexPropertiesFile,
+            int sampleRateOfOriginalAudioFile,
+            dynamic configuration)
+        {
+            if (recording.WavReader.Channels > 1)
+            {
+                throw new InvalidOperationException(
+                    @"A multi-channel recording MUST be mixed down to MONO before calculating acoustic indices!");
+            }
+
+            double recordingDuration = recording.Duration().TotalSeconds;
+            double subsegmentDuration = indexCalculationDuration.TotalSeconds;
+
+            // intentional possible null ref, throw if not null
+            double segmentDurationSeconds = segmentDuration.TotalSeconds;
+            double audioCuttingError = subsegmentDuration - segmentDurationSeconds;
+
+            // using the expected duration, each call to analyze will always produce the same number of results
+            // round, we expect perfect numbers, warn if not
+            double subsegmentsInSegment = segmentDurationSeconds / subsegmentDuration;
+            int subsegmentCount = (int)Math.Round(segmentDurationSeconds / subsegmentDuration);
+            const double WarningThreshold = 0.01; // 10%
+            double fraction = subsegmentsInSegment - subsegmentCount;
+            if (Math.Abs(fraction) > WarningThreshold)
+            {
+                Log.Warn(
+                    string.Format(
+                        "The IndexCalculationDuration ({0}) does not fit well into the provided segment ({1}). This means a partial result has been {3}, {2} results will be calculated",
+                        subsegmentDuration,
+                        segmentDurationSeconds,
+                        subsegmentCount,
+                        fraction >= 0.5 ? "added" : "removed"));
+            }
+            Log.Trace(subsegmentCount + " sub segments will be calculated");
+
+
+            var indexCalculateResults = new IndexCalculateResult[subsegmentCount];
+
+            // calculate indices for each subsegment
+            for (int i = 0; i < subsegmentCount; i++)
+            {
+                var subsegmentOffset = segmentStartOffset + TimeSpan.FromSeconds(i * subsegmentDuration);
+                var indexCalculateResult = IndexCalculate.Analysis(
+                    recording,
+                    subsegmentOffset,
+                    indexCalculationDuration,
+                    bgNoiseNeighborhood,
+                    indexPropertiesFile,
+                    sampleRateOfOriginalAudioFile,
+                    segmentStartOffset,
+                    configuration);
+
+                indexCalculateResults[i] = indexCalculateResult;
+            }
+
+            return indexCalculateResults;
         }
 
         public AnalysisSettings DefaultSettings => new AnalysisSettings

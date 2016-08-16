@@ -7,6 +7,9 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+
+    using Acoustics.Shared;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -142,7 +145,7 @@ namespace AudioAnalysisTools.Indices
         {
             this.SegmentDuration = wavDuration;
 
-            // initialise with default values stored values in the dictionary of index properties.
+            // initialize with default values stored values in the dictionary of index properties.
             foreach (var kvp in indexProperties)
             {
                 // do not process spectral indices properties
@@ -165,6 +168,7 @@ namespace AudioAnalysisTools.Indices
     public class SpectralIndexValues : SpectralIndexBase
     {
         private static readonly Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectorsInternal;
+        private static readonly Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSettersInternal;
 
         static SpectralIndexValues()
         {
@@ -179,6 +183,19 @@ namespace AudioAnalysisTools.Indices
                 CachedSelectorsInternal.Add(
                     keyValuePair.Key, 
                     spectrumBase => selector((SpectralIndexValues)spectrumBase));
+            }
+
+            var setters = ReflectionExtensions.GetSetters<SpectralIndexValues, double[]>();
+
+            CachedSettersInternal = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
+            foreach (var keyValuePair in setters)
+            {
+                var key = keyValuePair.Key;
+                var setter = keyValuePair.Value;
+
+                CachedSettersInternal.Add(
+                    keyValuePair.Key,
+                    (spectrumBase, value) => setter((SpectralIndexValues)spectrumBase, value));
             }
         }
 
@@ -203,6 +220,19 @@ namespace AudioAnalysisTools.Indices
                 // This prevents multiple warnings through loop.
                 this.SetPropertyValue(kvp.Key, initArray);
             }
+        }
+
+        /// <summary>
+        /// Imports a dictionary of spectra.
+        /// Assumes `CheckExistenceOfSpectralIndexValues` has already been called.
+        /// Assumes frequency component is in fist index (i.e. frequency is rows) and time in second index (time is columns).
+        /// </summary>
+        /// <param name="dictionaryOfSpectra">
+        /// The dictionary to convert to spectral index base
+        /// </param>
+        public static SpectralIndexValues[] ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
+        {
+            return dictionaryOfSpectra.FromTwoDimensionalArray<SpectralIndexValues, double>(CachedSetters, TwoDimensionalArray.ColumnMajor);
         }
 
         /// <summary>
@@ -237,6 +267,13 @@ namespace AudioAnalysisTools.Indices
             get
             {
                 return CachedSelectorsInternal;
+            }
+        }
+        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters
+        {
+            get
+            {
+                return CachedSettersInternal;
             }
         }
 

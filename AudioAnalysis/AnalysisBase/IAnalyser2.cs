@@ -77,7 +77,7 @@ namespace AnalysisBase
         /// <param name="destination">The file to write to.</param>
         /// <param name="fileNameBase"></param>
         /// <param name="results">The results to write.</param>
-        void WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
+        List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
 
         /// <summary>
         /// Allows Events to be rendered as Summary Indices
