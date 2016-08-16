@@ -1,0 +1,34 @@
+---
+AnalysisName: Truskinger.ExempliGratia
+SpeciesName: Exempli gratia
+
+# Custom settings
+
+settingA: 3.0
+
+
+# Standard settings
+DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+
+EventThreshold: 0.2
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+
+# Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramImages: false
+DisplayCsvImage: false
+ParallelProcessing: false
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResPlusRecognisers"
+...

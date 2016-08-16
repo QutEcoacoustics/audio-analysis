@@ -164,8 +164,8 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Run event recognizers for a single file. Only works for short files (less than 2 minutes).")]
-        public RecognizerEntry.Arguments EventRecognizeArgs { get; set; }
-        public static Action<RecognizerEntry.Arguments> EventRecognize()
+        public RecognizerEntry.Arguments EventRecognizerArgs { get; set; }
+        public static Action<RecognizerEntry.Arguments> EventRecognizer()
         {
             return RecognizerEntry.Execute;
         }

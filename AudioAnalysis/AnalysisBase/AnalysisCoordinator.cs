@@ -655,6 +655,7 @@ namespace AnalysisBase
 
             var analysers = assembly.GetTypes()
                 .Where(analyserType.IsAssignableFrom)
+                .Where(t => t.IsClass && !t.IsAbstract)
                 .Select(t => Activator.CreateInstance(t) as IAnalyser2);
 
             return analysers;

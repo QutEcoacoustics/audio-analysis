@@ -7,16 +7,7 @@
 #     3. the tiles for zooming false-color spectrograms
 #
 #
-AnalysisName: Towsey.HiResIndices
-ParallelProcessing: false
 
-#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
-SegmentDuration: 1
-SegmentOverlap: 0
-
-# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 or 0.2 for hi-resolution, zooming spectrogram tiles)
-# The Timespan (in seconds) over which summary and spectral indices are calculated
-IndexCalculationDuration: 0.1
 
 # BGNoiseNeighbourhood: units=seconds (default IndexCalculationDuration = 60 seconds)
 # BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
@@ -34,9 +25,7 @@ FrameLength: 512
 # FrameStep = zero for this analysis because NOT generating standard spectrograms
 FrameStep: 0
 
-# Resample rate must be 2 X the desired Nyquist
-# ResampleRate: 17640
-ResampleRate: 22050
+
 
 #Default values in code are LowFreqBound=500Hz & MidFreqBound=4000
 LowFreqBound: 1000
@@ -57,37 +46,15 @@ SaveGrayScaleSpectrograms: true
 # One-minute standard spectrograms. WE DO NOT DO THIS ANY MORE.
 SaveSonogramImages: false
 
-# SAVE INTERMEDIARY FILES
-SaveIntermediateWavFiles: false
-SaveIntermediateCsvFiles: false
+
 
 # ######################## LOW RESOLUTION SPECTROGRAMS
 LowResolution: 60.0
 LowResColourMap1: ACI-ENT-EVN
 LowResColourMap2: BGN-POW-EVN
 
-DisplayCsvImage: false
-
-# ######################## LIST OF REQUIRED SPECIES RECOGNISERS
-SpeciesList:
-- Bufo_marinus
-# - Phascolarctos_cinereus   # Koala
-- Litoria_fallax
-- Limnodynastes_convexiusculus
-
-
-# if true, an unambiguous date time must be provided in the source file's name.
-# if true, an exception will be thrown if no such date is found
-# if false, and a valid date is still found in file name, it will still be parsed
-# supports formats like:
-#     prefix_20140101T235959+1000.mp3
-#     prefix_20140101T235959+Z.mp3
-#     prefix_20140101-235959+1000.mp3
-#     prefix_20140101-235959+Z.mp3
-RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfigHiRes.yml'
 SpectrogramConfig: './SpectrogramConfigHiRes.yml'
-EventThreshold: 0.2
 ...
 

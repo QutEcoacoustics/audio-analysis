@@ -282,7 +282,7 @@ namespace AnalysisBase
             return string.Format(
                 "Settings for {0} with instance id {1} and config file {2}.",
                 this.AudioFile.Name,
-                this.InstanceId.ToString(),
+                this.InstanceId,
                 this.ConfigFile.Name);
         }
     }
