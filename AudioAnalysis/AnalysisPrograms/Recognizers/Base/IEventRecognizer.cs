@@ -19,12 +19,13 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
+    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
 
     public interface IEventRecognizer : IAnalyser2
     {
 
-        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IEnumerable<SpectralIndexBase>> getSpectralIndexes);
+        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth);
     }
 
 

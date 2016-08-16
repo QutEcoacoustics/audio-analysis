@@ -14,6 +14,10 @@ namespace AnalysisPrograms.Recognizers
 
     using AnalysisPrograms.Recognizers.Base;
 
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
 
     using log4net;
@@ -39,6 +43,7 @@ namespace AnalysisPrograms.Recognizers
             AnalysisResult2[] results)
         {
             // No operation - do nothing. Feel free to add your own logic.
+            base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
         }
 
         /// <summary>
@@ -48,16 +53,24 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="configuration"></param>
         /// <param name="segmentStartOffset"></param>
         /// <param name="getSpectralIndexes"></param>
+        /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(
-            AudioRecording audioRecording,
-            dynamic configuration,
-            TimeSpan segmentStartOffset,
-            Lazy<IEnumerable<SpectralIndexBase>> getSpectralIndexes)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth)
         {
-            
-            var wavReader = new WavReader(audioRecording);
-            var indices = getSpectralIndexes(wavReader);
+            // get samples
+            var samples = audioRecording.WavReader.Samples;
+
+            // make a spectrogram
+            var config = new SonogramConfig
+            {
+                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionParameter = (double?)configuration[AnalysisKeys.NoiseBgThreshold] ?? 0.0
+            };
+            var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
+
+            // get high resolution indices
+            var indices = getSpectralIndexes.Value;
+
 
 
             throw new NotImplementedException();

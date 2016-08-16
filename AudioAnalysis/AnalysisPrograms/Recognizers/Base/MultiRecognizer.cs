@@ -20,6 +20,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase.ResultBases;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
 
     using log4net;
@@ -36,11 +37,7 @@ namespace AnalysisPrograms.Recognizers.Base
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
-        public override RecognizerResults Recognize(
-            AudioRecording audioRecording, 
-            dynamic configuration, 
-            TimeSpan segmentStartOffset, 
-            Lazy<IEnumerable<SpectralIndexBase>> getSpectralIndexes)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth)
         {
             // this is a multi recognizer - it does no actual analysis itself
 
@@ -60,7 +57,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     audioRecording = new AudioRecording(audioRecording.FilePath);
                 }
 
-                var output = DoCallRecognition(name, configuration, audioRecording, dictionaryOfSpectra);
+                var output = DoCallRecognition(name, configuration, audioRecording, getSpectralIndexes, imageWidth);
 
                 if (output == null)
                 {
@@ -97,60 +94,8 @@ namespace AnalysisPrograms.Recognizers.Base
         }
 
 
-        public static RecognizerResults DoCallRecognition(string name, AnalysisSettings analysisSettings, AudioRecording recording, Dictionary<string, double[,]> dictionaryOfHiResSpectralIndices)
+        public static RecognizerResults DoCallRecognition(string name, AnalysisSettings analysisSettings, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, int imageWidth)
         {
-            /*
-            //var kvp = spectra.First();
-            //var matrix = kvp.Value;
-
-            var recogniser = new CallRecognizer();
-            var key = dictionaryOfHiResSpectralIndices.Keys.First();
-            int imageWidth = dictionaryOfHiResSpectralIndices[key].GetLength(1);
-            double[] scores = null;
-            List<AcousticEvent> predictedEvents = null;
-
-            if (name == "Bufo_marinus")
-            {
-                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml");
-                //analysisSettings.Configuration = Yaml.Deserialise(configFile);
-                //Dictionary<string, string> configuration = analysisSettings.Configuration;
-                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
-                Canetoad.CanetoadResults results = Canetoad.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
-                scores = results.Plot.data;
-                predictedEvents = results.Events;
-            }
-            else if (name == "Limnodynastes_convexiusculus")
-            {
-                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Limnodynastes_convexiusculus.yml");
-                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
-                LimnodynastesConvex.LimnodynastesConvexResults results = LimnodynastesConvex.Analysis(dictionaryOfHiResSpectralIndices, recording, configuration, analysisSettings);
-                scores = results.Plot.data;
-                predictedEvents = results.Events; 
-            }
-            else if (name == "LitoriaFallax")
-            {
-                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaFallax.yml");
-                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
-                LitoriaFallax.LitoriaFallaxResults results = LitoriaFallax.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
-                scores = results.Plot.data;
-                predictedEvents = results.Events; 
-            }
-            else if (name == "Phascolarctos_cinereus") // KOALA
-            {
-                var configFile = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.KoalaMale.yml");
-                Dictionary<string, string> configuration = (dynamic)Yaml.Deserialise(configFile);
-                KoalaMale.KoalaMaleResults results = KoalaMale.Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
-                scores = results.Plot.data;
-                predictedEvents = results.Events;
-            }
-            else
-            {
-                return null;
-            }
-
-            recogniser.ScoreTrack = GenerateScoreTrackImage(name, scores, imageWidth);
-            recogniser.Events = predictedEvents;
-            return recogniser;*/
 
             // load up the standard config file for this species
             var configurationFile = ConfigFile.ResolveConfigFile(name);
@@ -164,7 +109,8 @@ namespace AnalysisPrograms.Recognizers.Base
                 recording,
                 configuration,
                 analysisSettings.SegmentStartOffset.Value,
-                (Func<WavReader, IEnumerable<SpectralIndexBase>>)(this.GetSpectralIndexes));
+                indices, 
+                imageWidth);
 
             result.ScoreTrack = GenerateScoreTrackImage(name, result.Plot.data, imageWidth);
             return result;
