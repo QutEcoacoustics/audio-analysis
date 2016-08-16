@@ -197,8 +197,8 @@ Output  to  directory: {1}
             // set target sample rate
             try
             {
-                int rawSampleRate = configuration[AnalysisKeys.ResampleRate];
-                analysisSettings.SegmentTargetSampleRate = rawSampleRate;
+                int resampleRate = configuration[AnalysisKeys.ResampleRate];
+                analysisSettings.SegmentTargetSampleRate = resampleRate;
             }
             catch (Exception ex)
             {
@@ -257,8 +257,8 @@ Output  to  directory: {1}
             var duration = fileSegment.OriginalFileDuration;
 
             ResultsTools.ConvertEventsToIndices(analyser, mergedEventResults, ref mergedIndicesResults, duration, scoreThreshold);
-            int eventsCount = mergedEventResults == null ? 0 : mergedEventResults.Length;
-            int numberOfRowsOfIndices = mergedIndicesResults == null ? 0 : mergedIndicesResults.Length;
+            int eventsCount = mergedEventResults?.Length ?? 0;
+            int numberOfRowsOfIndices = mergedIndicesResults?.Length ?? 0;
 
 
             // 10. Allow analysers to post-process
@@ -342,7 +342,7 @@ Output  to  directory: {1}
             LoggedConsole.WriteLine(FinishedMessage, sourceAudio.Name, instanceOutputDirectory.FullName);
         }
 
-        private static IAnalyser2 FindAndCheckAnalyser(string analysisIdentifier)
+        public static IAnalyser2 FindAndCheckAnalyser(string analysisIdentifier)
         {
             var analysers = AnalysisCoordinator.GetAnalysers(typeof(MainEntry).Assembly).ToList();
             IAnalyser2 analyser = analysers.FirstOrDefault(a => a.Identifier == analysisIdentifier);

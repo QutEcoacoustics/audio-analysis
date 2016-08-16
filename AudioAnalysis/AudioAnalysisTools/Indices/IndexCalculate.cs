@@ -19,8 +19,6 @@ namespace AudioAnalysisTools.Indices
     using System.Reflection;
     using System.Text;
 
-    using AnalysisBase;
-
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -58,6 +56,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// a set of parameters derived from ini file.
         /// </summary>
+        [Obsolete]
         public class Parameters
         {
             public int FrameLength { get; set;}
@@ -97,25 +96,41 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Extracts summary and spectral acoustic indices from the entire segment of the passed recording or a subsegment of it.
         /// </summary>
-        /// <param name="recording">an audio recording</param>
-        /// <param name="analysisSettings"></param>
+        /// <param name="recording">
+        /// an audio recording
+        /// </param>
         /// <param name="subsegmentOffsetTimeSpan">
-        ///     The start time of the required subsegment relative to start of SOURCE audio recording. 
+        /// The start time of the required subsegment relative to start of SOURCE audio recording. 
         ///     i.e. SegmentStartOffset + time duration from Segment start to subsegment start.
         /// </param>
-        /// <param name="indexCalculationDuration"></param>
-        /// <param name="bgNoiseNeighborhood"></param>
-        /// <param name="indicesPropertiesConfig"></param>
-        /// <param name="offset"></param>
-        /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
-        /// <param name="int LowFreqBound">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
-        ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
-        /// <param name="frameSize">samples per frame</param>
-        /// <returns></returns>
+        /// <param name="indexCalculationDuration">
+        /// </param>
+        /// <param name="bgNoiseNeighborhood">
+        /// </param>
+        /// <param name="indicesPropertiesConfig">
+        /// </param>
+        /// <param name="sampleRateOfOriginalAudioFile">
+        /// </param>
+        /// <param name="segmentStartOffset">
+        /// </param>
+        /// <param name="configuration">
+        /// </param>
+        /// <param name="returnSonogramInfo">
+        /// </param>
+        /// <returns>
+        /// An IndexCalculateResult
+        /// </returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
-        public static IndexCalculateResult Analysis(AudioRecording recording, AnalysisSettings analysisSettings, 
-            TimeSpan subsegmentOffsetTimeSpan, TimeSpan indexCalculationDuration, TimeSpan bgNoiseNeighborhood, 
-            FileInfo indicesPropertiesConfig)
+        public static IndexCalculateResult Analysis(
+            AudioRecording recording, 
+            TimeSpan subsegmentOffsetTimeSpan, 
+            TimeSpan indexCalculationDuration, 
+            TimeSpan bgNoiseNeighborhood, 
+            FileInfo indicesPropertiesConfig, 
+            int sampleRateOfOriginalAudioFile, 
+            TimeSpan segmentStartOffset, 
+            dynamic configuration, 
+            bool returnSonogramInfo = true)
         {
             string recordingFileName = recording.FileName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
@@ -123,7 +138,7 @@ namespace AudioAnalysisTools.Indices
             int sampleRate   = recording.WavReader.SampleRate; 
             TimeSpan recordingSegmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
 
-            var config = analysisSettings.Configuration;
+            var config = configuration;
             var indexProperties = IndexProperties.GetIndexProperties(indicesPropertiesConfig);
 
             // get frame parameters for the analysis
@@ -149,7 +164,7 @@ namespace AudioAnalysisTools.Indices
             double subsegmentSecondsDuration = subsegmentTimeSpan.TotalSeconds;
             TimeSpan ts = subsegmentOffsetTimeSpan;
             double subsegmentOffset = ts.TotalSeconds;
-            ts = (TimeSpan)analysisSettings.SegmentStartOffset;
+            ts = segmentStartOffset;
             double segmentOffset = ts.TotalSeconds;
             double localOffsetInSeconds = subsegmentOffset - segmentOffset;
             ts = bgNoiseNeighborhood;
@@ -323,7 +338,8 @@ namespace AudioAnalysisTools.Indices
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than 17640/2.
             // original sample rate can be anything 11.0-44.1 kHz.
-            int originalNyquistFreq = (int)analysisSettings.SampleRateOfOriginalAudioFile / 2;
+            int originalNyquistFreq = sampleRateOfOriginalAudioFile / 2;
+
 
             // i.e. upsampling has been done
             if (dspOutput1.NyquistFreq > originalNyquistFreq)
@@ -448,7 +464,6 @@ namespace AudioAnalysisTools.Indices
             double[,] hits = sptInfo.Peaks;
             var scores = new List<Plot>();
 
-            bool returnSonogramInfo = analysisSettings.ImageFile != null;
             returnSonogramInfo = false; // TEMPORARY ################################
             if (returnSonogramInfo)
             {

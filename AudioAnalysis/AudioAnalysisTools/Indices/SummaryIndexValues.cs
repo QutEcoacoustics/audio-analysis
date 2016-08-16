@@ -206,6 +206,23 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
+        /// Imports a dictionary of spectra.
+        /// Assumes `CheckExistenceOfSpectralIndexValues` has already been called
+        /// </summary>
+        /// <param name="dictionaryOfSpectra">
+        /// The dictionary to convert to spectral index base
+        /// </param>
+        public void ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
+        {
+            // warning: default values won't be set!
+            foreach (var spectrum in dictionaryOfSpectra)
+            {
+                // WARNING: Potential throw site
+                this.SetPropertyValue(spectrum.Key, spectrum.Value);
+            }
+        }
+
+        /// <summary>
         /// Used to check that the keys in the indexProperties dictionary correspond to Properties in the SpectralIndexValues class.
         /// Call this method before entering a loop because do not want the error message at every iteration through loop.
         /// </summary>

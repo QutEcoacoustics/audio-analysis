@@ -354,6 +354,7 @@ namespace AnalysisBase
         ///     The settings.
         /// </param>
         /// <param name="parallelised"></param>
+        /// Set to true if segments processing should be parallelized. 
         /// <returns>
         /// The results from the analysis.
         /// </returns>
@@ -363,11 +364,8 @@ namespace AnalysisBase
             Contract.Requires(fileSegment != null, "File Segments must not be null.");
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
-
-            var start = fileSegment.SegmentStartOffset.HasValue ? fileSegment.SegmentStartOffset.Value : TimeSpan.Zero;
-            var end = fileSegment.SegmentEndOffset.HasValue
-                ? fileSegment.SegmentEndOffset.Value
-                : fileSegment.OriginalFileDuration;
+            var start = fileSegment.SegmentStartOffset ?? TimeSpan.Zero;
+            var end = fileSegment.SegmentEndOffset ?? fileSegment.OriginalFileDuration;
            
            // set directories
             this.PrepareDirectories(analyser, localCopyOfSettings);

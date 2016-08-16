@@ -17,6 +17,7 @@ namespace AnalysisPrograms.Production
     using System.Text;
 
     using AnalysisPrograms.AnalyseLongRecordings;
+    using AnalysisPrograms.Recognizers.Base;
 
     using AudioAnalysisTools;
 
@@ -92,7 +93,6 @@ namespace AnalysisPrograms.Production
         //    // Signed off: Michael Towsey 29th April 2014
         //    return DrawSummaryIndices.Main;
         //}
-        
 
         #endregion
 
@@ -161,6 +161,13 @@ namespace AnalysisPrograms.Production
         public static Action<DifferenceSpectrogram.Arguments> DifferenceSpectrogram()
         {
             return AnalysisPrograms.DifferenceSpectrogram.Execute;
+        }
+
+        [ArgDescription("Run event recognizers for a single file. Only works for short files (less than 2 minutes).")]
+        public RecognizerEntry.Arguments EventRecognizeArgs { get; set; }
+        public static Action<RecognizerEntry.Arguments> EventRecognize()
+        {
+            return RecognizerEntry.Execute;
         }
 
         [ArgDescription("Calls Canetoad.Dev(): Detects canetoad calls as acoustic events in a short (one minute) recording segment.")]

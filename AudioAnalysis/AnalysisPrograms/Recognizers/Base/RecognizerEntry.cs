@@ -18,6 +18,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Tools.Audio;
 
     using AnalysisBase;
 
@@ -79,31 +80,59 @@ namespace AnalysisPrograms.Recognizers.Base
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
 
+            // get some basic info about the source file
+            Log.Info("Querying source audio file");
+            IAudioUtility audioUtility = new MasterAudioUtility();
+            var info = audioUtility.Info(arguments.Source); // Get duration of the source file
+
+            Log.Info("Reading configuration file");
             dynamic configuration = Yaml.Deserialise(configFile);
             string analysisIdentifier = configuration[AnalysisKeys.AnalysisName];
 
             Log.Info("Attempting to run recognizer: " + analysisIdentifier);
 
-            // find an appropriate event recognizer
-            IEventRecognizer recognizer = EventRecognizers.FindAndCheckRecognizers(analysisIdentifier);
+            // find an appropriate event IAnalyzer
+            IAnalyser2 recognizer = AnalyseLongRecordings.AnalyseLongRecording.FindAndCheckAnalyser(analysisIdentifier);
 
-            // execute the recognizer
-            var recording = new AudioRecording(sourceAudio.FullName);
+            // get default settings
+            AnalysisSettings analysisSettings = recognizer.DefaultSettings;
 
-            // execute actual analysis
-            RecognizerResults results = recognizer.Recognize(
-                recording,
-                configuration,
-                TimeSpan.Zero, 
-                null);//(Func<WavReader, IEnumerable<SpectralIndexBase>>)(this.GetSpectralIndexes));
+            // convert arguments to analysis settings
+            analysisSettings = arguments.ToAnalysisSettings(analysisSettings, outputIntermediate: true);
+            analysisSettings.Configuration = configuration;
+            analysisSettings.SampleRateOfOriginalAudioFile = info.SampleRate;
+            // we don't want segments, thus segment duration == total length of original file
+            analysisSettings.SegmentDuration = info.Duration;
+            analysisSettings.SegmentMaxDuration = info.Duration;
 
-            
+            if (info.SampleRate.Value != analysisSettings.SegmentTargetSampleRate)
+            {
+                Log.Warn("Input audio sample rate does not match target sample rate");
+            }
+
+            if (MediaTypes.CanonicaliseMediaType(info.MediaType) != MediaTypes.MediaTypeWav)
+            {
+                throw new ArgumentException("This entry point only supports wav file types!");
+            }
+
+            // execute actual analysis - output data will be written
+            Log.Info("Running recognizer: " + analysisIdentifier);
+            AnalysisResult2 results = recognizer.Analyze(analysisSettings);
+
+            // run summarize code - output data can be written
+            Log.Info("Running recognizer summary: " + analysisIdentifier);
+            var fileSegment = new FileSegment(analysisSettings.AudioFile, false, true);
+            recognizer.SummariseResults(
+                analysisSettings,
+                fileSegment,
+                results.Events,
+                results.SummaryIndices,
+                results.SpectralIndices,
+                new[] { results });
+
             Log.Info("Recognizer run, saving results");
 
-            // TODO: Michael, output results as you wish.
-
-            string fileNameBase = Path.GetFileNameWithoutExtension(sourceAudio.Name);
-            var eventsFile = ResultsTools.SaveEvents(recognizer, fileNameBase, outputDirectory, results.Events);
+            // TODO: Michael, output anything else as you wish.
 
 
             Log.Info("Recognizer complete");
