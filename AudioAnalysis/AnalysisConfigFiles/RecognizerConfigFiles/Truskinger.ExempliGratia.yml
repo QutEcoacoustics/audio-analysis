@@ -32,5 +32,5 @@ ParallelProcessing: false
 
 # Other config files to reference
 IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
-HighResolutionIndicesConfig: "./Towsey.AcousticHiResForRecognisers.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
 ...

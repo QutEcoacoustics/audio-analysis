@@ -245,7 +245,7 @@ namespace AnalysisPrograms.Recognizers.Base
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
 
             // Init a new spectral indices class and populate it with spectral indices
-            var spectrums = SpectralIndexValues.ImportFromDictionary(dictionaryOfSpectra);
+            var spectrums = SpectralIndexValues.ImportFromDictionary(spectralSelection);
             for (int i = 0; i < spectrums.Length; i++)
             {
                 spectrums[i].StartOffset = analysisResults.SegmentStartOffset + TimeSpan.FromSeconds(i * lowResolution);
@@ -278,6 +278,11 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
+            if (!results.Any())
+            {
+                return null;
+            }
+
             var selectors = results.First().GetSelectors();
 
             var spectralIndexFiles = new List<FileInfo>(selectors.Count);

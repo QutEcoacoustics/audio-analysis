@@ -76,7 +76,7 @@ namespace AnalysisPrograms.Recognizers
             // get high resolution indices
 
             // when the value is accessed, the indices are calculated
-            //var indices = getSpectralIndexes.Value;
+            var indices = getSpectralIndexes.Value;
 
             // check if the indices have been calculated - you shouldn't actually need this
             if (getSpectralIndexes.IsValueCreated)
