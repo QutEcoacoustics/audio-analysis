@@ -71,9 +71,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string outputPath = @"C:\SensorNetworks\Output\Test\Test";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_7min_artificial.wav";
-//            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
-//            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
-//            string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
+            //            string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TEST_Farmstay_ECLIPSE3_20121114-060001+1000.wav";
+            //            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //            string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
 
             //CHANNEL INTEGRITY 
             //string recordingPath = @"Y:\Yvonne\Cooloola\2015Oct04\GympieNP\20151001-064550+1000.wav";
@@ -134,7 +134,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
 
             // OTHER FROGS
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitOlong.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSp\53 Litoria fallax.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\.mp3";
@@ -143,7 +144,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000_0min.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_TockAndRachet_GympieDam_JasonsDad.wav";
 
-            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test";
+            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices";
 
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\SamfordTest";
@@ -182,8 +183,12 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Italy.Acoustic.Parallel.yml";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-            // Use this config when doing high resolution indices PLUS species recognisers
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.AcousticHiResPlusRecognisers.yml";
+            // Use this config when doing multiple species recognisers
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
+
+            // Use these config files when looking for individual species.
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaFallax.yml";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Stark.LitoriaOlong.yml";
 
             // Use these configs for Call recognition Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
