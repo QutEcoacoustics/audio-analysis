@@ -1,17 +1,9 @@
 ---
 # Summary: Runs a list of event recognizers that implement the IEventRecognizer interface.
 #
-
 AnalysisName: Ecosounds.MultiRecognizer
-ParallelProcessing: false
-
-#SegmentDuration: units=minutes;     SegmentOverlap: units=seconds;
-SegmentDuration: 1
-SegmentOverlap: 0
-
-# Resample rate must be 2 X the desired Nyquist
-# ResampleRate: 17640
-ResampleRate: 22050
+#SpeciesName:
+#AbbreviatedSpeciesName:
 
 # ######################## LIST OF REQUIRED SPECIES RECOGNISERS
 SpeciesList:
@@ -21,21 +13,28 @@ SpeciesList:
   - Limnodynastes_convexiusculus
   - ExempliGratia
 
-# SAVE INTERMEDIARY FILES
+# Standard settings
+DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+
+EventThreshold: 0.2
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
+SaveSonogramImages: false
 DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
 
-# if true, an unambiguous date time must be provided in the source file's name.
-# if true, an exception will be thrown if no such date is found
-# if false, and a valid date is still found in file name, it will still be parsed
-# supports formats like:
-#     prefix_20140101T235959+1000.mp3
-#     prefix_20140101T235959+Z.mp3
-#     prefix_20140101-235959+1000.mp3
-#     prefix_20140101-235959+Z.mp3
-RequireDateInFilename: false
-
-IndexPropertiesConfig: './IndexPropertiesConfigHiRes.yml'
-SpectrogramConfig: './SpectrogramConfigHiRes.yml'
-EventThreshold: 0.2
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
