@@ -205,7 +205,7 @@ namespace AnalysisPrograms
 
             if (!String.IsNullOrWhiteSpace(message))
             {
-                LoggedConsole.WriteLine(message);
+                LoggedConsole.WriteErrorLine(message);
             }
 
             if (usageStyle == Usages.All)
@@ -478,6 +478,25 @@ namespace AnalysisPrograms
             repository.RaiseConfigurationChanged(EventArgs.Empty);
             
             Log.Debug("Log level changed to: " + arguments.LogLevel);
+
+            // log test
+//            Log.Debug("Log test DEBUG");
+//            Log.Info("Log test INFO");
+//            Log.Success("Log test SUCCESS");
+//            Log.Warn("Log test WARN");
+//            Log.Error("Log test ERROR");
+//            Log.Fatal("Log test FATAL");
+//            Log.Trace("Log test TRACE");
+//            Log.Verbose("Log test VERBOSE");
+//            LoggedConsole.Log.Info("Clean log INFO");
+//            LoggedConsole.Log.Success("Clean log SUCCESS");
+//            LoggedConsole.Log.Warn("Clean log WARN");
+//            LoggedConsole.Log.Error("Clean log ERROR");
+//            LoggedConsole.WriteLine("Clean wrapper INFO");
+//            LoggedConsole.WriteSuccessLine("Clean wrapper SUCCESS");
+//            LoggedConsole.WriteWarnLine("Clean wrapper WARN");
+//            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
+//            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
         }
     }
 }
