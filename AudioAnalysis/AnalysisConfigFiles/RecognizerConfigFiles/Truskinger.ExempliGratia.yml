@@ -1,11 +1,14 @@
 ---
+# Should be in PascalCasing, Author.SpeciesName format.
 AnalysisName: Truskinger.ExempliGratia
+# Should be in proper casing. The full real name of the species
 SpeciesName: Exempli gratia
+# Abbreviation of species name, format how you like
 AbbreviatedSpeciesName: E.gratia
 
 # Custom settings
 
-settingA: 3.0
+someExampleSettingA: 3.0
 
 
 # Standard settings

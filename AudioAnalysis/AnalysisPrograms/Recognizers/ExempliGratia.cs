@@ -62,8 +62,26 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth)
         {
+
+
+            // Get a value from the config file - with a backup default
+            int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
+
+            // Get a value from the config file - with no default, throw an exception if value is not present
+            int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
+
+            // Get a value from the config file - without a string accessor, as a double
+            double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
+
+            // common properties
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
+
+
             // get samples
             var samples = audioRecording.WavReader.Samples;
+
 
             // make a spectrogram
             var config = new SonogramConfig

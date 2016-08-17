@@ -35,7 +35,7 @@ SegmentDuration: 1
 SegmentOverlap: 0
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+SaveSonogramImages: true
 DisplayCsvImage: false
 ParallelProcessing: false
 ## End section for AnalyzeLongRecording

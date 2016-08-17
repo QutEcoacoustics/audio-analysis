@@ -6,6 +6,24 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms
 {
+
+    /*
+     * 
+     * 
+     * 
+     * 
+     *    _____   ____    _   _  ____ _______   _    _  _____ ______             ____  ____   _____  ____  _     ______ _______ ______ 
+     *   |  __ \ / __ \  | \ | |/ __ \__   __| | |  | |/ ____|  ____|           / __ \|  _ \ / ____|/ __ \| |   |  ____|__   __|  ____|
+     *   | |  | | |  | | |  \| | |  | | | |    | |  | | (___ | |__     ______  | |  | | |_) | (___ | |  | | |   | |__     | |  | |__   
+     *   | |  | | |  | | | . ` | |  | | | |    | |  | |\___ \|  __|   |______| | |  | |  _ < \___ \| |  | | |   |  __|    | |  |  __|  
+     *   | |__| | |__| | | |\  | |__| | | |    | |__| |____) | |____           | |__| | |_) |____) | |__| | |___| |____   | |  | |____ 
+     *   |_____/ \____/  |_| \_|\____/  |_|     \____/|_____/|______|           \____/|____/|_____/ \____/|_____|______|  |_|  |______|
+     *   
+     *   
+     *   
+     *                                                                                                                                        
+     */
+
     using System;
     using System.Collections.Generic;
     using System.Data;
@@ -34,7 +52,6 @@ namespace AnalysisPrograms
     using ProcessRunner = TowseyLibrary.ProcessRunner;
 
 
-
     /// <summary>
     /// NOTE: This recogniser is for the frog Litoria fallax.
     /// It was built using two recordings:
@@ -44,11 +61,12 @@ namespace AnalysisPrograms
     /// So I have combined the three recognisers into one analysis.
     /// 
     /// </summary>
+    [Obsolete]
     public class LitoriaFallax : AbstractStrongAnalyser
     {
         #region Constants
 
-        public const string AnalysisName = "LitoriaFallax";
+        public const string AnalysisName = "LitoriaFallax-OLDNONOTUSE";
         public const string AbbreviatedName = "L.fallax";
 
         public static readonly int ResampleRate = AppConfigHelper.DefaultTargetSampleRate;
@@ -382,6 +400,7 @@ namespace AnalysisPrograms
 
             // min score for an acceptable event
             double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
+
 
             // The default was 512 for Canetoad.
             // Framesize = 128 seems to work for Littoria fallax.
