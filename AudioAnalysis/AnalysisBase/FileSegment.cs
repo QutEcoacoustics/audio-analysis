@@ -149,7 +149,7 @@ namespace AnalysisBase
                 this.OriginalFileSampleRate.HasValue ? ", " + this.OriginalFileSampleRate.Value + "hz" : string.Empty);
         }
 
-        public DateTime? FileModifedDateTime()
+        public DateTime? FileModifiedDateTime()
         {
             if (this.OriginalFile != null && this.OriginalFile.Exists)
             {
@@ -188,7 +188,7 @@ namespace AnalysisBase
              *  extra call to audio libs is unecessary
              */
             /*
-            var dateTime = this.FileModifedDateTime();
+            var dateTime = this.FileModifiedDateTime();
             if (this.OriginalFileDuration > TimeSpan.Zero && dateTime.HasValue &&
                 dateTime.Value > DateTime.MinValue && dateTime.Value < DateTime.MaxValue)
             {

@@ -150,7 +150,7 @@ namespace AudioAnalysisTools
                     Channels = new[] { 1, 2 },
                     MixDownToMono = false
                 };
-            var audioFile = AudioFilePreparer.PrepareFile(args.OpDir, ipFile, args.OutputMediaType, request, args.OpDir);
+            var audioFile = AudioFilePreparer.PrepareFile(args.OpDir, ipFile, args.OutputMediaType, request, args.OpDir).TargetInfo.SourceFile;
 
             var wavReader = new WavReader(audioFile);
 

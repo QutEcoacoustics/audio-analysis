@@ -48,10 +48,12 @@ namespace AnalysisRunner
             var request      = new AudioUtilityRequest { OffsetStart = startOffset, OffsetEnd = endOffset, TargetSampleRate = targetSampleRateHz };
             var preparedFile = AudioFilePreparer.PrepareFile(outputDirectory, source, outputMediaType, request, TempFileHelper.TempDir());
 
-            var audioUtility = new MasterAudioUtility();
-            var preparedFileInfo = audioUtility.Info(preparedFile);
 
-            return new FileSegment(preparedFile) { OriginalFileDuration = preparedFileInfo.Duration.Value, OriginalFileSampleRate = request.OriginalSampleRate };
+            return new FileSegment(preparedFile.TargetInfo.SourceFile)
+            {
+                OriginalFileDuration = preparedFile.SourceInfo.Duration.Value,
+                OriginalFileSampleRate = preparedFile.SourceInfo.SampleRate.Value
+            };
         }
 
         /// <summary>
@@ -288,13 +290,10 @@ namespace AnalysisRunner
                 request,
                 temporaryFilesDirectory);
 
-            var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
-            var preparedFileInfo = audioUtility.Info(preparedFile);
-
-            return new FileSegment(preparedFile)
+            return new FileSegment(preparedFile.TargetInfo.SourceFile)
                 {
-                    OriginalFileDuration = preparedFileInfo.Duration.Value,
-                    OriginalFileSampleRate = request.OriginalSampleRate
+                    OriginalFileDuration = preparedFile.SourceInfo.Duration.Value,
+                    OriginalFileSampleRate = preparedFile.SourceInfo.SampleRate.Value
                 };
         }
     }

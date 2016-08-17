@@ -273,9 +273,9 @@ namespace Acoustics.Tools.Audio
                 // AT: This code is allowed in DEBUG for ease of use. It should not be subverted in RELEASE
 #if DEBUG
                 // However, output file may already exist if saved by user on previous run - therefore only copy if does not already exist.
-                if (soxOutputFile.Exists)
+                if (output.Exists)
                 {
-                    Log.Warn($"MasterAudioUtility is trying to create file ({soxOutputFile.Name}) that already exists. BAD!! Program will crash if in RELEASE mode.");
+                    this.Log.Warn($"MasterAudioUtility is trying to create file ({output.FullName}) that already exists. BAD!! Program will crash if in RELEASE mode.");
                 }
                 File.Copy(soxOutputFile.FullName, output.FullName, true);
 #else
