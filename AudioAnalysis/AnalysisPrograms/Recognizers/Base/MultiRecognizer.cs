@@ -32,7 +32,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override string Author => "Ecosounds";
 
-        public override string Species => "MultiRecognizer";
+        public override string SpeciesName => "MultiRecognizer";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

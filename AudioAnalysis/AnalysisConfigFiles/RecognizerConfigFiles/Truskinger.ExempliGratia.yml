@@ -1,6 +1,7 @@
 ---
 AnalysisName: Truskinger.ExempliGratia
 SpeciesName: Exempli gratia
+AbbreviatedSpeciesName: E.gratia
 
 # Custom settings
 
@@ -17,7 +18,7 @@ EventThreshold: 0.2
 # ResampleRate: 17640
 ResampleRate: 22050
 
-# Specifically for AnalyzeLongRecording
+## Specifically for AnalyzeLongRecording
 # SegmentDuration: units=minutes;    
 SegmentDuration: 1
 # SegmentOverlap: units=seconds;
@@ -27,8 +28,9 @@ SaveIntermediateCsvFiles: false
 SaveSonogramImages: false
 DisplayCsvImage: false
 ParallelProcessing: false
+## End section for AnalyzeLongRecording
 
 # Other config files to reference
 IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
-HighResolutionIndicesConfig: "./Towsey.AcousticHiResPlusRecognisers.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResForRecognisers.yml"
 ...

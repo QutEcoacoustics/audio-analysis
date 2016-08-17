@@ -24,17 +24,20 @@ namespace AnalysisPrograms.Recognizers
 
     using TowseyLibrary;
 
+    /// <summary>
+    /// This is a template recognizer
+    /// </summary>
     class ExempliGratia : RecognizerBase
     {
         public override string Author => "Truskinger";
 
-        public override string Species => "ExempliGratia";
+        public override string SpeciesName => "ExempliGratia";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
         /// <summary>
-        /// Summarize your results. This method is invoked exactly once.
+        /// Summarize your results. This method is invoked exactly once per original file.
         /// </summary>
         public override void SummariseResults(
             AnalysisSettings settings,
@@ -71,9 +74,21 @@ namespace AnalysisPrograms.Recognizers
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
             // get high resolution indices
-            var indices = getSpectralIndexes.Value;
 
-            // 'find' an event
+            // when the value is accessed, the indices are calculated
+            //var indices = getSpectralIndexes.Value;
+
+            // check if the indices have been calculated - you shouldn't actually need this
+            if (getSpectralIndexes.IsValueCreated)
+            {
+                // then indices have been calculated before
+            }
+
+            var foundEvents = new List<AcousticEvent>();
+
+            // some kind of loop where you scan through the audio
+
+            // 'find' an event - if you find an event, store the data in the AcousticEvent class
             var anEvent = new AcousticEvent(
                 new Oblong(50, 50, 100, 100),
                 sonogram.NyquistFrequency,
@@ -82,9 +97,13 @@ namespace AnalysisPrograms.Recognizers
                 sonogram.FrameStep,
                 sonogram.FrameCount);
 
+            foundEvents.Add(anEvent);
+
+            // end loop
+
             return new RecognizerResults()
             {
-                Events = new List<AcousticEvent> {anEvent},
+                Events = foundEvents,
                 Hits = null,
                 ScoreTrack = null,
                 Plot = null,
