@@ -22,6 +22,9 @@ namespace AnalysisPrograms.Recognizers.Base
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
 
+    /// <summary>
+    /// This interface specializes IAnalyser2 to be a species recognizer.
+    /// </summary>
     public interface IEventRecognizer : IAnalyser2
     {
 

@@ -1,6 +1,8 @@
 ---
-AnalysisName: Towsey.Litoria_fallax
-SpeciesName: Litoria_fallax
+AnalysisName: Towsey.LitoriaFallax
+SpeciesName: Litoria fallax
+AbbreviatedSpeciesName: L.fallax
+
 # min and max of the freq band to search
 MinHz: 3500          
 MaxHz: 4500
@@ -17,14 +19,28 @@ MinDuration: 0.1
 MaxDuration: 0.5
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.30
-################################################################################
-DoNoiseReduction: false
+
+# Standard settings
+#DoNoiseReduction: false
 #BgNoiseThreshold: 3.0
+
+# Resample rate must be 2 X the desired Nyquist
+# ResampleRate: 17640
+ResampleRate: 22050
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 SaveSonogramImages: false
 DisplayCsvImage: false
 ParallelProcessing: false
+## End section for AnalyzeLongRecording
 
-IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResForRecognisers.yml"
 ...

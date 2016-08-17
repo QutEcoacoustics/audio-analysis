@@ -134,7 +134,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 results.SpectralIndices,
                 new[] { results });
 
-            Log.Info("Recognizer run, saving results");
+            Log.Info("Recognizer run, saving extra results");
 
             // TODO: Michael, output anything else as you wish.
 

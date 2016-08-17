@@ -29,11 +29,11 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public abstract string Author { get; }
 
-        public abstract string Species { get; }
+        public abstract string SpeciesName { get; }
 
-        public override string Identifier => this.Author + "." + this.Species;
+        public override string Identifier => this.Author + "." + this.SpeciesName;
 
-        public override string DisplayName => this.Species;
+        public override string DisplayName => this.SpeciesName;
 
         public override AnalysisSettings DefaultSettings => new AnalysisSettings
         {
@@ -367,7 +367,10 @@ namespace AnalysisPrograms.Recognizers.Base
             SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
-            // no operation
+            // no operation 
+            // TODO: michael edit as you like
+
+            // called once after all analysis segments have been completed
         }
 
         private Lazy<IndexCalculateResult[]> GetLazyIndices(AudioRecording recording, AnalysisSettings analysisSettings, Acoustic.AcousticIndicesParsedConfiguration acousticConfiguration)
