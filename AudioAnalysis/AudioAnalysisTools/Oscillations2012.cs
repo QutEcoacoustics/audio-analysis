@@ -323,13 +323,16 @@ namespace AudioAnalysisTools
         }//end method ConvertODScores2Events()
 
 
-        public static double CalculateRequiredFrameOverlap(int sr, int framewidth, /*double dctDuration, */ double maxOscilation)
+        public static double CalculateRequiredFrameOverlap(int sr, int frameWidth, /*double dctDuration, */ double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
             //double frameOffset = sr / (double)optimumFrameRate;
             int frameOffset = (int)(sr / (double)optimumFrameRate);  //do this AND NOT LINE ABOVE OR ELSE GET CUMULATIVE ERRORS IN time scale
 
-            double overlap = (framewidth - frameOffset) / (double)framewidth;
+            // this line added 17 Aug 2016 to deal with high Oscillation rate frog ribits.
+            if (frameOffset > frameWidth) frameOffset = frameWidth;
+
+            double overlap = (frameWidth - frameOffset) / (double)frameWidth;
             return overlap;
         }
 

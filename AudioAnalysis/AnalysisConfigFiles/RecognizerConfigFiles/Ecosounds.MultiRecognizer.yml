@@ -7,10 +7,10 @@ AnalysisName: Ecosounds.MultiRecognizer
 
 # ######################## LIST OF REQUIRED SPECIES RECOGNISERS
 SpeciesList:
-  - Bufo_marinus
+  #- Bufo_marinus
   # - Phascolarctos_cinereus   # Koala
   - Litoria_fallax
-  - Limnodynastes_convexiusculus
+  #- Limnodynastes_convexiusculus
   - ExempliGratia
 
 # Standard settings

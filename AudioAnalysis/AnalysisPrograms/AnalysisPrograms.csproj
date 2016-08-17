@@ -241,6 +241,7 @@
     <Compile Include="Recognizers\Base\RecognizerEntry.cs" />
     <Compile Include="Recognizers\Base\RecognizerResults.cs" />
     <Compile Include="Recognizers\ExempliGratia.cs" />
+    <Compile Include="Recognizers\LitoriaOlong.cs" />
     <Compile Include="Recognizers\LitoriaFallax.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
