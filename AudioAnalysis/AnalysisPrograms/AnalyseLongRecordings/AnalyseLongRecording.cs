@@ -122,8 +122,6 @@ Output  to  directory: {1}
             DirectoryInfo[] searchPaths = { configFile.Directory };
             FileInfo ipConfig = ConfigFile.ResolveConfigFile((string)configuration.IndexPropertiesConfig, searchPaths);
             LoggedConsole.WriteLine("# IndexProperties Cfg: " + ipConfig);
-            FileInfo spectrogramConfig = ConfigFile.ResolveConfigFile((string)configuration.SpectrogramConfig, searchPaths);
-            LoggedConsole.WriteLine("# Spectrogram     Cfg: " + spectrogramConfig);
 
             // min score for an acceptable event
             double scoreThreshold = 0.2;

@@ -53,6 +53,7 @@ namespace AudioAnalysisTools
         public const string SegmentDuration = "SegmentDuration";
         public const string SegmentOverlap = "SegmentOverlap";
         public const string SpeciesName = "SpeciesName";
+        public const string AbbreviatedSpeciesName = "AbbreviatedSpeciesName";
         public const string SubsegmentOffset = "SubsegmentOffset";
         public const string SmoothingWindow = "SmoothingWindow";
         public const string Threshold = "Threshold";

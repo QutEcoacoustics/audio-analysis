@@ -67,34 +67,40 @@ namespace AnalysisPrograms.Recognizers
 
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
 
-            /*
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-            int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 500; ;
-            int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
+            int minHz = (int)configuration[AnalysisKeys.MinHz];
+            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
 
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
 
             // duration of DCT in seconds 
-            double dctDuration = double.Parse(configDict[AnalysisKeys.DctDuration]);
+            double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = double.Parse(configDict[AnalysisKeys.DctThreshold]);  
+            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];  
 
             // ignore oscillations below this threshold freq
-            int minOscilFreq = int.Parse(configDict[AnalysisKeys.MinOscilFreq]);
+            int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
 
             // ignore oscillations above this threshold freq
-            int maxOscilFreq = int.Parse(configDict[AnalysisKeys.MaxOscilFreq]);
+            int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
 
             // min duration of event in seconds 
-            double minDuration = double.Parse(configDict[AnalysisKeys.MinDuration]);
+            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
 
             // max duration of event in seconds                 
-            double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);
+            double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
             // min score for an acceptable event
-            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
+            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+
+            if (recording.WavReader.SampleRate != 22050)
+            {
+                throw new InvalidOperationException("Requires a 22050Hz file");
+            }
 
             // The default was 512 for Canetoad.
             // Framesize = 128 seems to work for Littoria fallax.
@@ -125,7 +131,7 @@ namespace AnalysisPrograms.Recognizers
              * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
              * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
              */
-             /*
+             
             // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
             // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
@@ -158,7 +164,7 @@ namespace AnalysisPrograms.Recognizers
 
             acousticEvents.ForEach(ae =>
             {
-                ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
+                ae.SpeciesName = speciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
                 ae.Name = (string)configuration["AbbreviatedName"] ?? this.SpeciesName;
@@ -184,7 +190,7 @@ namespace AnalysisPrograms.Recognizers
                 sonoBmp.Save(filePath2);
             }
             // END DEBUG ################################ TEMPORARY ################################*/
-            /*
+            
 
             return new RecognizerResults()
             {
@@ -193,17 +199,6 @@ namespace AnalysisPrograms.Recognizers
                 Plot = plot,
                 Events = acousticEvents
             };
-
-
-            return new RecognizerResults()
-            {
-                Events = foundEvents,
-                Hits = null,
-                ScoreTrack = null,
-                Plot = null,
-                Sonogram = sonogram
-            };*/
-            return null;
         }
     }
 }
