@@ -31,11 +31,11 @@
         /// The prepared file.
         /// </returns>
         /// 
-        public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo fiSource, string outputMediaType, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
+        /*public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
         {
             var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
-            var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
-            var outputFileName = Path.GetFileNameWithoutExtension(fiSource.Name);
+            var sourceMimeType = MediaTypes.GetMediaType(source.Extension);
+            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
 
             outputFileName = string.Format(
                 "{0}_{1:f0}min.{3}",
@@ -49,24 +49,46 @@
                 Directory.CreateDirectory(outputDirectory.FullName);
             }
 
-            var fiOutput = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
-            var outputMimeType = MediaTypes.GetMediaType(fiOutput.Extension);
+            var outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
+            var outputMimeType = MediaTypes.GetMediaType(outputFile.Extension);
 
             audioUtility.Modify(
-                fiSource,
+                source,
                 sourceMimeType,
-                fiOutput,
+                outputFile,
                 outputMimeType,
                 request);
 
-            var result = new AudioUtilityModifiedInfo();
-            result.SourceInfo = audioUtility.Info(fiSource);
-            result.TargetInfo = audioUtility.Info(fiOutput);
+            // TODO: this is hyper inefficient, especially when .Info is the first thing called inside Modify
+            //var result = new AudioUtilityModifiedInfo();
+            //result.SourceInfo = audioUtility.Info(source);
+            //result.TargetInfo = audioUtility.Info(outputFile);
 
             // Next line is a HACK!!!!!! ############### MARK WILL HAVE TO DO MORE ELEGANTLY ONE DAY
-            request.OriginalSampleRate = result.SourceInfo.SampleRate;
+            //request.OriginalSampleRate = result.SourceInfo.SampleRate;
 
-            return fiOutput;
+            return outputFile;
+        }*/
+
+        public static AudioUtilityModifiedInfo PrepareFile(
+            DirectoryInfo outputDirectory,
+            FileInfo source,
+            string outputMediaType,
+            AudioUtilityRequest request,
+            DirectoryInfo temporaryFilesDirectory)
+        {
+            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
+
+            outputFileName = string.Format(
+                "{0}_{1:f0}min.{3}",
+                outputFileName,
+                request.OffsetStart?.TotalMinutes ?? 0,
+                request.OffsetEnd?.TotalMilliseconds,
+                MediaTypes.GetExtension(outputMediaType));
+
+            var outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
+
+            return PrepareFile(source, outputFile, request, temporaryFilesDirectory);
         }
 
         /// <summary>
@@ -81,12 +103,12 @@
         /// <param name="request">
         ///   The request.
         /// </param>
-        public static AudioUtilityModifiedInfo PrepareFile(FileInfo fiSource, FileInfo fiOutput, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
+        public static AudioUtilityModifiedInfo PrepareFile(FileInfo sourceFile, FileInfo outputFile, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
         {
             var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
-            var sourceMimeType = MediaTypes.GetMediaType(fiSource.Extension);
-            var outputMimeType = MediaTypes.GetMediaType(fiOutput.Extension);
-            string outputDirectory = Path.GetDirectoryName(fiOutput.FullName);
+            var sourceMimeType = MediaTypes.GetMediaType(sourceFile.Extension);
+            var outputMimeType = MediaTypes.GetMediaType(outputFile.Extension);
+            string outputDirectory = Path.GetDirectoryName(outputFile.FullName);
 
             if (!Directory.Exists(outputDirectory))
             {
@@ -94,15 +116,17 @@
             }
 
             audioUtility.Modify(
-                fiSource,
+                sourceFile,
                 sourceMimeType,
-                fiOutput,
+                outputFile,
                 outputMimeType,
                 request);
 
-            var result = new AudioUtilityModifiedInfo { SourceInfo = audioUtility.Info(fiSource) };
-            result.TargetInfo = audioUtility.Info(fiOutput);
-
+            var result = new AudioUtilityModifiedInfo
+                {
+                    TargetInfo = audioUtility.Info(outputFile),
+                    SourceInfo = audioUtility.Info(sourceFile)
+                };
             return result;
         }
 
