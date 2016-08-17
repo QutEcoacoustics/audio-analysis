@@ -167,7 +167,7 @@ namespace AnalysisPrograms.Recognizers
                 ae.SpeciesName = speciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
-                ae.Name = (string)configuration["AbbreviatedName"] ?? this.SpeciesName;
+                ae.Name = abbreviatedSpeciesName;
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);

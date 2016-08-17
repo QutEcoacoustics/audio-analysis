@@ -41,7 +41,7 @@ namespace AnalysisPrograms.Recognizers.Base
             SegmentMinDuration = TimeSpan.FromSeconds(1),
             SegmentMediaType = MediaTypes.MediaTypeWav,
             SegmentOverlapDuration = TimeSpan.Zero,
-            SegmentTargetSampleRate = AnalysisTemplate.ResampleRate
+            SegmentTargetSampleRate = AppConfigHelper.DefaultTargetSampleRate
         };
 
         public override AnalysisResult2 Analyze(AnalysisSettings analysisSettings)
