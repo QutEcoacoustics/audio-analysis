@@ -104,6 +104,13 @@ namespace AnalysisPrograms.Recognizers.Base
             // find an appropriate event recognizer
             IEventRecognizer recognizer = EventRecognizers.FindAndCheckRecognizers(name);
 
+            // TODO: adapt sample rate to required rate
+            int? resampleRate = (int?)configuration[AnalysisKeys.ResampleRate];
+            if (resampleRate.HasValue && recording.WavReader.SampleRate != resampleRate.Value)
+            {
+                Log.Warn("Sample rate of provided file does does match");
+            }
+
             // execute it
             RecognizerResults result = recognizer.Recognize(
                 recording,

@@ -167,29 +167,10 @@ namespace AnalysisPrograms.Recognizers
                 ae.SpeciesName = speciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
-                ae.Name = (string)configuration["AbbreviatedName"] ?? this.SpeciesName;
+                ae.Name = abbreviatedSpeciesName;
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
-
-
-            /*
-            AT: this is done by recognizer base - you shouldn't need to do it here
-            // DEBUG ONLY ################################ TEMPORARY ################################
-            // Draw a standard spectrogram and mark of hites etc.
-            bool createStandardDebugSpectrogram = true;
-            if (createStandardDebugSpectrogram)
-            {
-                string fileName = "LittoriaFallaxDEBUG";
-                throw new NotSupportedException("YOU NEED TO FIX THIS FOR PRODUCTION");
-                string path = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016July\Test\Towsey.HiResIndices\SpectrogramImages";
-                var imageDir = new DirectoryInfo(path);
-                if (!imageDir.Exists) imageDir.Create();
-                string filePath2 = Path.Combine(imageDir.FullName, fileName + ".png");
-                Image sonoBmp = DrawSonogram(sonogram, hits, plot, acousticEvents, eventThreshold);
-                sonoBmp.Save(filePath2);
-            }
-            // END DEBUG ################################ TEMPORARY ################################*/
             
 
             return new RecognizerResults()

@@ -18,11 +18,14 @@ namespace AnalysisPrograms.Recognizers.Base
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Tools;
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;
 
     using AnalysisPrograms.Production;
+
+    using AnalysisRunner;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.WavTools;
@@ -80,10 +83,6 @@ namespace AnalysisPrograms.Recognizers.Base
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
 
-            // get some basic info about the source file
-            Log.Info("Querying source audio file");
-            IAudioUtility audioUtility = new MasterAudioUtility();
-            var info = audioUtility.Info(arguments.Source); // Get duration of the source file
 
             Log.Info("Reading configuration file");
             dynamic configuration = Yaml.Deserialise(configFile);
@@ -100,21 +99,33 @@ namespace AnalysisPrograms.Recognizers.Base
             // convert arguments to analysis settings
             analysisSettings = arguments.ToAnalysisSettings(analysisSettings, outputIntermediate: true);
             analysisSettings.Configuration = configuration;
-            analysisSettings.SampleRateOfOriginalAudioFile = info.SampleRate;
+
+
+            // get transform input audio file - if needed
+            Log.Info("Querying source audio file");
+            var audioUtilityRequest = new AudioUtilityRequest()
+            {
+                TargetSampleRate = analysisSettings.SegmentTargetSampleRate
+            };
+            var preparedFile = AudioFilePreparer.PrepareFile(
+                arguments.Output,
+                arguments.Source,
+                MediaTypes.MediaTypeWav,
+                audioUtilityRequest,
+                arguments.Output);
+
+            analysisSettings.AudioFile = preparedFile.TargetInfo.SourceFile;
+            analysisSettings.SampleRateOfOriginalAudioFile = preparedFile.SourceInfo.SampleRate;
             // we don't want segments, thus segment duration == total length of original file
-            analysisSettings.SegmentDuration = info.Duration;
-            analysisSettings.SegmentMaxDuration = info.Duration;
+            analysisSettings.SegmentDuration = preparedFile.TargetInfo.Duration;
+            analysisSettings.SegmentMaxDuration = preparedFile.TargetInfo.Duration;
             analysisSettings.SegmentStartOffset = TimeSpan.Zero;
 
-            if (info.SampleRate.Value != analysisSettings.SegmentTargetSampleRate)
+            if (preparedFile.TargetInfo.SampleRate.Value != analysisSettings.SegmentTargetSampleRate)
             {
                 Log.Warn("Input audio sample rate does not match target sample rate");
             }
 
-            if (MediaTypes.CanonicaliseMediaType(info.MediaType) != MediaTypes.MediaTypeWav)
-            {
-                throw new ArgumentException("This entry point only supports wav file types!");
-            }
 
             // Execute a pre analyzer hook
             recognizer.BeforeAnalyze(analysisSettings);
@@ -138,8 +149,14 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // TODO: Michael, output anything else as you wish.
 
+            Log.Debug("Clean up temporary files");
+            if (analysisSettings.SourceFile.FullName != analysisSettings.AudioFile.FullName)
+            {
+                analysisSettings.AudioFile.Delete();
+            }
 
-            Log.Info("Recognizer complete");
+
+            Log.Success("Recognizer complete");
         }
     }
 }

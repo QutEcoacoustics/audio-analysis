@@ -68,7 +68,7 @@ namespace AnalysisPrograms.Recognizers
             int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
 
             // Get a value from the config file - with no default, throw an exception if value is not present
-            int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
+            //int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
 
             // Get a value from the config file - without a string accessor, as a double
             double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
