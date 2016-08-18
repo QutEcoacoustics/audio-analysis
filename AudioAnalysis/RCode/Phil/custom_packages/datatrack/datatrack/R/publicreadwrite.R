@@ -91,6 +91,8 @@ ReadDataobject <- function (name = NULL,
 #' @details
 #' Simply takes the parameters from the list and uses them for WriteDataobject
 #' @export
+#' TODO: before writing, check meta for invalid dependencies (i.e. directly or indirectly depends on different versions of the same name)
+#' TODO: check that all dependencies actually exist. Currently, datatrack just works fine and then the viewer will crash. 
 WriteStructuredDataobject <- function (x, check.before.overwrite = TRUE) {
 
     .LoadConfig()

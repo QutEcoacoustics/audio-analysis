@@ -1,3 +1,8 @@
+/**
+ * TODO: dont crash when a dependency doesnt exist. Just remove dependency and give a warning in the console.
+ *
+ */
+
 
 oi = {};
 
@@ -5,8 +10,8 @@ oi.config = {
     group_height: 60, // max height of a row
     group_spacing: 20, // s
     row_spacing: 0.2, // %
-    group_title_height: 0.3,
-    max_v_width: 30,
+    group_title_height: 0.5,
+    max_v_width: 60, // max version cell width
     popup_height: 200,
     popup_width: 200,
     grey: 0.2
@@ -405,7 +410,7 @@ oi.optimisePositions = function () {
         still_moving = oi.moveTowardsOptimal();
     }
 
-    for (var r = 1; r < oi.num_rows; r++ ) {
+    for (var r = 1; r <= oi.num_rows; r++ ) {
         oi.fixOverlapping(r);
     }
 
@@ -1336,6 +1341,9 @@ util.scaleTextToFit = function (text_node, width, height) {
     var widthTransform = width / bb.width;
     var heightTransform = height / bb.height;
     var value = widthTransform < heightTransform ? widthTransform : heightTransform;
+
+    if (value > 1) return;
+
     var right = (bb.width - bb.width * value) / 2;
     var down = (bb.height - bb.height * value) / 2
     text_node.setAttribute("transform", "scale("+value+") translate("+ right +","+down+")");

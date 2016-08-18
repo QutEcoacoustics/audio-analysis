@@ -5,6 +5,75 @@
 # for this example, we will generate 6 data objects with a few versions each
 
 
+#' @export
+ExampleB <- function () {
+    
+    set.seed(2)
+    .InitialiseExamples(new = TRUE)
+    
+    data1.v1 <- WriteDataobject(.RandomDataFrame(), name = 'audio', params = list('days' = 1:4), annotations = 'Audio data from John Smith')
+    
+    data2.v1 <- WriteDataobject(.RandomDataFrame(), name = 'weather', params = list('days' = 1:4))
+    
+    data3.v1 <- WriteDataobject(.RandomDataFrame(), name = 'radar.wthr', params = list('days' = 1:4, 'threshold' = 0.5))
+    data3.v2 <- WriteDataobject(.RandomDataFrame(), name = 'radar.wthr', params = list('days' = 1:4, 'threshold' = 0.8))
+    
+    
+    # csv called 'events' with different parameters depending on the day
+    d4.dependencies <- list(audio = data1.v1)
+    data4.v1 <- WriteDataobject(.RandomDataFrame(), name = 'events', params = list('day' = 1), dependencies = d4.dependencies)
+    data4.v2 <- WriteDataobject(.RandomDataFrame(), name = 'events', params = list('day' = 2), dependencies = d4.dependencies)
+    data4.v3 <- WriteDataobject(.RandomDataFrame(), name = 'events', params = list('day' = 3), dependencies = d4.dependencies)
+    data4.v4 <- WriteDataobject(.RandomDataFrame(), name = 'events', params = list('day' = 4), dependencies = d4.dependencies)
+    
+    # csv called 'event.features.1' for each day of events, except day 4
+    # done twice each with a different parameters
+    features.1.params.1 <- list('features' = c(1,2,5), 'sigma' = 0.4, 'entropy.threshold' = 4)
+    data5.v1 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.1', params = features.1.params.1, dependencies = list('events' = data4.v1))  
+    data5.v2 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.1', params = features.1.params.1, dependencies = list('events' = data4.v2))  
+    data5.v3 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.1', params = features.1.params.1, dependencies = list('events' = data4.v3))  
+    
+    features.1.params.2 <- list('features' = c(1,2,5), 'sigma' = 0.6, 'entropy.threshold' = 7)
+    data5.v6 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.1', params = features.1.params.2, dependencies = list('events' = data4.v1))  
+    data5.v7 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.1', params = features.1.params.2, dependencies = list('events' = data4.v2))  
+    data5.v8 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.1', params = features.1.params.2, dependencies = list('events' = data4.v3))  
+    
+    # csv called 'event.features.2' for each day of events, except day 4
+    # done twice each with a different parameters
+    features.2.params.1 <- list('features' = c(3,4,6), 'overlap' = 0.4, 'envelope.level' = 445)
+    data7.v1 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.2', params = features.2.params.1, dependencies = list('events' = data4.v1))  
+    data7.v2 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.2', params = features.2.params.1, dependencies = list('events' = data4.v2))  
+    data7.v3 <- WriteDataobject(.RandomDataFrame('f'), name = 'event.features.2', params = features.2.params.1, dependencies = list('events' = data4.v3))  
+    
+    # csv called "clustering" which depends on event features 1 or event features 2
+    data6.v1 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 50), dependencies = list('event.features.1' = data5.v1))  
+    data6.v2 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 50), dependencies = list('event.features.1' = data5.v2))  
+    data6.v3 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 60), dependencies = list('event.features.1' = data5.v1))  
+    data6.v4 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 60), dependencies = list('event.features.1' = data5.v2)) 
+
+    data6.v5 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 50), dependencies = list('event.features.2' = data7.v1))  
+    data6.v6 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 50), dependencies = list('event.features.2' = data7.v2))  
+    data6.v7 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 60), dependencies = list('event.features.2' = data7.v1))  
+    data6.v8 <- WriteDataobject(.RandomBinaryData('kmeans'), name = 'clustering.1', params = list('k' = 60), dependencies = list('event.features.2' = data7.v2)) 
+       
+    # ranking, which uses clustering plus the weather and radar data
+    data8.v1 <- WriteDataobject(.RandomDataFrame(), name = 'ranking', params = list('weights' = list('weather' = 0.2, 'radar' = 0.2), 'clusters' = 0.6), dependencies = list('clustering.1' = data6.v3, 'weather' = data1.v1, 'radar.wthr' = data2.v1))  
+    data8.v2 <- WriteDataobject(.RandomDataFrame(), name = 'ranking', params = list('weights' = list('weather' = 0.2, 'radar' = 0.2), 'clusters' = 0.6), dependencies = list('clustering.1' = data6.v4, 'weather' = data1.v1, 'radar.wthr' = data2.v1))  
+    data8.v3 <- WriteDataobject(.RandomDataFrame(), name = 'ranking', params = list('weights' = list('weather' = 0.2, 'radar' = 0.2), 'clusters' = 0.6), dependencies = list('clustering.1' = data6.v5, 'weather' = data1.v1, 'radar.wthr' = data2.v1))  
+    data8.v4 <- WriteDataobject(.RandomDataFrame(), name = 'ranking', params = list('weights' = list('weather' = 0.2, 'radar' = 0.2), 'clusters' = 0.6), dependencies = list('clustering.1' = data6.v6, 'weather' = data1.v1, 'radar.wthr' = data2.v1))  
+    
+    
+    
+    
+    
+    
+}
+
+
+
+
+
+
 #' Runs all examples
 #' This should produce consistent set of dataobjects and metadata
 #' @export
@@ -14,7 +83,7 @@ RunAllExamples <- function () {
     set.seed(2)
     .InitialiseExamples(new = TRUE)
     Example1()
-    Example2()
+    #Example2()
     Example3()
     Example4()
     Example5()
@@ -179,14 +248,27 @@ Example7 <- function () {
 
 #' generates a random data frame
 #' @return data.frame
-.RandomDataFrame <- function () {
+.RandomDataFrame <- function (col.heading = NULL) {
     ncols.range = 4:8
     nrows.range = 15:25
     ncols <- sample(ncols.range, 1)
     nrows <- sample(nrows.range,1)
     df <- as.data.frame(matrix(sample.int(ncols*nrows), ncol = ncols))
-    colnames(df) <- .Wordlist(ncols)
+    if (is.null(col.heading)) {
+        colnames(df) <- .Wordlist(ncols)
+    } else {
+        colnames(df) <- paste0(col.heading, 1:ncol(df)) 
+    }
+
     return(df)
+}
+
+#' Generates random data not data.frame
+#' @return mixed
+.RandomBinaryData <- function (class.name) {
+    data <- as.list(.RandomDataFrame())
+    class(data) <- class.name
+    return(data)
 }
 
 #' Generates a list of random parameters

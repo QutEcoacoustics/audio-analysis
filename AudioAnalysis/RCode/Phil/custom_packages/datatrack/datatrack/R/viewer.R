@@ -14,7 +14,7 @@ Inspector <- function (group = FALSE) {
     .LoadConfig()
     data <- .DataVis()
     #uncommet this to save a the metadata into the dviewer package
-    #SaveDemoVisData(data)
+    .SaveDemoVisData(data)
     print(dviewer::dataGraph(data, group));
 }
 
@@ -24,7 +24,8 @@ Inspector <- function (group = FALSE) {
 #'
 #' @details
 #' For dviewer to be tested during development, it needs some test data. In order to get realistic test data
-#' in the appropriate json format, use this function to save data generated from datatrack
+#' in the appropriate json format, use this function to save data generated from datatrack.
+#' This function is not intended to be used other than for development of the dviewer package
 .SaveDemoVisData <- function (test_data, path.to.package.source = file.path('..','..','custom_packages','dviewer','data')) {
     save(test_data, file = file.path(path.to.package.source, 'test_data.rda'))
 }

@@ -7,3 +7,4 @@ Maintainer: Philip Eichinski <philip.eichinski@qut.edu.au>
 Description: Uses the dviewer javascript library with a html widget
 License: None
 LazyData: TRUE
+RoxygenNote: 5.0.1

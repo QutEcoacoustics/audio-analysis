@@ -39,12 +39,15 @@ renderSigma <- function(expr, env = parent.frame(), quoted = FALSE) {
 #' test the dviewer using the test data
 #' @export
 testDviewer <- function () {
-
     dataGraph(test_data)
-
 }
 
 #' set up demo with data
+#'
+#' Copy loaded R test_data to the demo_data.js file.
+#' @details
+#' Use this function to replace the demo_data.js inside the library, so that it can be used for debugging the javascript.
+#'
 #' @export
 demoData <- function () {
 
