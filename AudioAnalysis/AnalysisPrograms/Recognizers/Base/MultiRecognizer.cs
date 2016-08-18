@@ -44,12 +44,13 @@ namespace AnalysisPrograms.Recognizers.Base
         {
             // this is a multi recognizer - it does no actual analysis itself
 
-            // make a standard spectrogram to render all tracks on
+            // make a standard spectrogram in which to render acoustic events and to append score tracks
+            // currently using Hamming window. Worth tryin Hanning Window
             var config = new SonogramConfig
             {
-                NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionParameter = 2.0,
-                WindowSize = 1024
+                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionParameter = 0.1,
+                WindowSize = 1024                
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
@@ -160,6 +161,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static Image GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
         {
+            Log.Info("MultiRecogniser.GenerateScoreTrackImage(): " + name);
             if (scores == null)
             {
                 return null;

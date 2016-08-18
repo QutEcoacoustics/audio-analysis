@@ -125,6 +125,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             config.SetPair(AnalysisKeys.NoiseReductionType, NoiseReductionType.NONE.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunctions.HAMMING.ToString());
+            //config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunctions.HANNING.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_FilterbankCount, "64");
