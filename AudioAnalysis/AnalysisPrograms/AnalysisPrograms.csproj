@@ -330,10 +330,6 @@
       <Project>{15741ead-ecd6-42f8-ab13-ea4ae636936e}</Project>
       <Name>QutBioacosutics.Xie</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SammonProjection\SammonProjection.csproj">
-      <Project>{adcab854-897b-4604-94ba-aafcb4fb81a6}</Project>
-      <Name>SammonProjection</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj">
       <Project>{7c6831fd-f60c-4f7b-8e6a-35e850174411}</Project>
       <Name>TowseyLibrary</Name>

@@ -12,6 +12,7 @@ namespace AnalysisPrograms.Production
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Text;
@@ -23,12 +24,14 @@ namespace AnalysisPrograms.Production
 
     using Dong.Felt;
 
-    //using FELT.Runner;
-
     using PowerArgs;
 
-    using SammonProjection;
-
+    /// <summary>
+    /// Defines the various actions (sub programs) that we can run.
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "Reviewed. Suppression is OK here.")]
+    [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1516:ElementsMustBeSeparatedByBlankLine", Justification = "Reviewed. Suppression is OK here.")]
+    [SuppressMessage("ReSharper", "StyleCop.SA1516", Justification = "Reviewed. OK here")]
     [ArgAllowNullActions]
     public partial class MainEntryArguments
     {
@@ -127,16 +130,15 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Calls ConcatenateIndexFiles.Execute():  Concatenates multiple consecutive index.csv files.")]
-        public ConcatenateIndexFiles.Arguments concatenateIndexFilesArgs { get; set; }
-        public static Action<ConcatenateIndexFiles.Arguments> concatenateIndexFiles()
+        public ConcatenateIndexFiles.Arguments ConcatenateIndexFilesArgs { get; set; }
+        public static Action<ConcatenateIndexFiles.Arguments> ConcatenateIndexFiles()
         {
             return AnalysisPrograms.ConcatenateIndexFiles.Execute;
         }
 
-        
         [ArgDescription("Calls DrawEasyImage.Execute():  Concatenates multiple consecutive index.csv files.")]
-        public DrawEasyImage.Arguments drawEasyImageArgs { get; set; }
-        public static Action<DrawEasyImage.Arguments> drawEasyImage()
+        public DrawEasyImage.Arguments DrawEasyImageArgs { get; set; }
+        public static Action<DrawEasyImage.Arguments> DrawEasyImage()
         {
             return AnalysisPrograms.DrawEasyImage.Execute;
         }
@@ -155,7 +157,6 @@ namespace AnalysisPrograms.Production
             return DrawZoomingSpectrograms.Execute;
         }
         
-
         [ArgDescription("Calls DifferenceSpectrogram.Execute():  Produces ")]
         public DifferenceSpectrogram.Arguments DifferenceSpectrogramArgs { get; set; }
         public static Action<DifferenceSpectrogram.Arguments> DifferenceSpectrogram()
@@ -183,7 +184,7 @@ namespace AnalysisPrograms.Production
         public Crow.Arguments CrowArgs { get; set; }
         public static Action<Crow.Arguments> Crow()
         {
-            // IAnalyser - recognises the short crow "caw" - NOT the longer sigh.
+            // IAnalyser - recognizes the short crow "caw" - NOT the longer sigh.
             // Execute() signed off: Michael Towsey 27th July 2012
             return AnalysisPrograms.Crow.Dev;
         }
@@ -228,10 +229,10 @@ namespace AnalysisPrograms.Production
             return FeltTemplates_Use.Execute;
         }
 
-        public Object TruskingerFeltArgs { get; set; }
-        public static Action<Object> TruskingerFelt()
+        public object TruskingerFeltArgs { get; set; }
+        public static Action<object> TruskingerFelt()
         {
-            // anthony's attempt at FELT
+            // Anthony's attempt at FELT
             // this runs his suggestion tool, and the actual FELT analysis
             // DOES NOT CURRENTLY WORK
             return FELT.Runner.Main.ProgramEntry;
@@ -387,14 +388,6 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.SPR.Execute;
         }
 
-        [ArgDescription("Calls SammonProgram.Dev():  Produced by Anthony. Not yet used in anger - but should do.")]
-        public SammonProgram.Arguments SammonProjectionArgs { get; set; }
-        public static Action<SammonProgram.Arguments> SammonProjection()
-        {
-            // an investigation into sammon projections
-            return SammonProgram.Dev;
-        }
-
         [ArgDescription("Calls FeltAnalysis.Dev(): Xueyan's work area.")]
         public FeltAnalysis.Arguments DongArgs { get; set; }
         public static Action<FeltAnalysis.Arguments> Dong()
@@ -461,15 +454,12 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.OscillationsGeneric.Main;
         }
 
-
-
         public Audio2InputForConvCNN.Arguments CreateConvCnnSonogramsArgs { get; set; }
 
         public static Action<Audio2InputForConvCNN.Arguments> CreateConvCnnSonograms()
         {
             return Audio2InputForConvCNN.Execute;
         }
-
 
         #endregion
     }
