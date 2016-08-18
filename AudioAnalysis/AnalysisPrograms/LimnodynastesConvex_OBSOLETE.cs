@@ -363,8 +363,6 @@ namespace AnalysisPrograms
             Dictionary<string, string> configDict,
             AnalysisSettings analysisSettings)
         {
-            // WARNING: TODO TODO TODO = this end of this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
-
             // for Limnodynastes convex, in the D.Stewart CD, there are peaks close to:
             //1. 1950 Hz
             //2. 1460 hz
