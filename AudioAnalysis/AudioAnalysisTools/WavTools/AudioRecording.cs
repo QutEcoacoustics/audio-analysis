@@ -100,6 +100,8 @@
         [Obsolete]
         public void ConvertSampleRate22kHz()
         {
+            LoggedConsole.WriteError("ConvertSampleRate22kHz is deprecated - DO NOT USE");
+
             int sr = wavReader.SampleRate;
             if(sr == 22050) return; //signal already has required sr
 

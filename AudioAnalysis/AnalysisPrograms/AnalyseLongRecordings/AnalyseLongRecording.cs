@@ -165,7 +165,7 @@ Output  to  directory: {1}
             }
             else
             {
-                Log.Warn("Neither start nor end segment offsets provided. Therefore ignored");
+                Log.Debug("Neither start nor end segment offsets provided. Therefore both were ignored.");
             }
 
             // 5. initialise the analyser

@@ -35,15 +35,13 @@ namespace TowseyLibrary
         public static void WriteLine(string format, params object[] args)
         {
             Log4Net.InfoFormat(format, args);
-            ////LoggedConsole.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
         }
 
         public static void WriteIfVerbose(string format, params object[] args)
         {
             if (Verbosity > 0)
             {
-                Log4Net.InfoFormat(format, args);
-                ////LoggedConsole.WriteLine(MesgFormat, DateTime.Now, string.Format(format, args));
+                Log4Net.DebugFormat(format, args);
             }
         }
     }
