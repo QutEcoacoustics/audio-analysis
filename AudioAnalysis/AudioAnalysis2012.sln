@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A050BD53-DEE0-40F3-BEAB-1F7474533C40}"
 	ProjectSection(SolutionItems) = preProject
@@ -43,8 +43,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcosoundsFeltAdapter", "FELT\EcosoundsFeltAdapter\EcosoundsFeltAdapter.csproj", "{9999ADED-5392-409C-9D5C-58C6EC3A1DA5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dong.Felt", "Dong.Felt\Dong.Felt.csproj", "{B9B1E1AB-BDF5-4100-8839-27901CA12AFD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SammonProjection", "SammonProjection\SammonProjection.csproj", "{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{90D785B5-36C3-46C9-8EC5-DE2FA4A4BC2E}"
 	ProjectSection(SolutionItems) = preProject
@@ -744,42 +742,6 @@ Global
 		{B9B1E1AB-BDF5-4100-8839-27901CA12AFD}.SilverlightOnly|Mixed Platforms.Build.0 = Debug|Any CPU
 		{B9B1E1AB-BDF5-4100-8839-27901CA12AFD}.SilverlightOnly|x64.ActiveCfg = Debug|Any CPU
 		{B9B1E1AB-BDF5-4100-8839-27901CA12AFD}.SilverlightOnly|x86.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.AudioAnalysis|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.AudioAnalysis|Any CPU.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.AudioAnalysis|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.AudioAnalysis|Mixed Platforms.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.AudioAnalysis|x64.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.AudioAnalysis|x86.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Core|Any CPU.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Core|Any CPU.Build.0 = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Core|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Core|Mixed Platforms.Build.0 = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Core|x64.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Core|x86.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debugx64|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debugx64|Any CPU.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debugx64|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debugx64|Mixed Platforms.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debugx64|x64.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Debugx64|x86.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Release|x64.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.Release|x86.ActiveCfg = Release|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.SilverlightOnly|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.SilverlightOnly|Any CPU.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.SilverlightOnly|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.SilverlightOnly|Mixed Platforms.Build.0 = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.SilverlightOnly|x64.ActiveCfg = Debug|Any CPU
-		{ADCAB854-897B-4604-94BA-AAFCB4FB81A6}.SilverlightOnly|x86.ActiveCfg = Debug|Any CPU
 		{15741EAD-ECD6-42F8-AB13-EA4AE636936E}.AudioAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{15741EAD-ECD6-42F8-AB13-EA4AE636936E}.AudioAnalysis|Any CPU.Build.0 = Release|Any CPU
 		{15741EAD-ECD6-42F8-AB13-EA4AE636936E}.AudioAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
