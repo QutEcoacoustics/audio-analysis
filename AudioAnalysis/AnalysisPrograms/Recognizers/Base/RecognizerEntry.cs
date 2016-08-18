@@ -97,7 +97,7 @@ namespace AnalysisPrograms.Recognizers.Base
             AnalysisSettings analysisSettings = recognizer.DefaultSettings;
 
             // convert arguments to analysis settings
-            analysisSettings = arguments.ToAnalysisSettings(analysisSettings, outputIntermediate: true);
+            analysisSettings = arguments.ToAnalysisSettings(analysisSettings, outputIntermediate: true, resultSubDirectory: recognizer.Identifier);
             analysisSettings.Configuration = configuration;
 
 
