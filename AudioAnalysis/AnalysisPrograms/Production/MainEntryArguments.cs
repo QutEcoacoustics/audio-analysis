@@ -179,7 +179,7 @@ namespace AnalysisPrograms.Production
         /// <returns>
         /// An AnalysisSettings object.
         /// </returns>
-        public virtual AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
+        public virtual AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false, string resultSubDirectory = null)
         {
             var analysisSettings = defaults ?? new AnalysisSettings();
 
@@ -187,17 +187,22 @@ namespace AnalysisPrograms.Production
             analysisSettings.SourceFile = this.Source;
             analysisSettings.AudioFile = this.Source;
             analysisSettings.ConfigFile = this.Config;
-            analysisSettings.AnalysisInstanceOutputDirectory = this.Output;
+
+            var resultDirectory = resultSubDirectory.IsNullOrEmpty() ? this.Output : this.Output.Combine(resultSubDirectory);
+
+            resultDirectory.Create();
+
+            analysisSettings.AnalysisInstanceOutputDirectory = resultDirectory;
             analysisSettings.AnalysisBaseOutputDirectory = this.Output;
             analysisSettings.AnalysisBaseTempDirectory = this.Output;
 
             if (outputIntermediate)
             {
                 string fileNameBase = Path.GetFileNameWithoutExtension(this.Source.Name);
-                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Events", ".csv").ToFileInfo();
-                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Indices", ".csv").ToFileInfo();
-                analysisSettings.SpectrumIndicesDirectory = this.Output;
-                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(this.Output, fileNameBase, "Image", ".png").ToFileInfo();
+                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Events", ".csv").ToFileInfo();
+                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Indices", ".csv").ToFileInfo();
+                analysisSettings.SpectrumIndicesDirectory = resultDirectory;
+                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Image", ".png").ToFileInfo();
             }
 
             analysisSettings.Configuration = Yaml.Deserialise(this.Config);
@@ -226,7 +231,7 @@ namespace AnalysisPrograms.Production
         public double? Duration { get; set; }
 
 
-        public override AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
+        public AnalysisSettings ToAnalysisSettings(AnalysisSettings defaults = null, bool outputIntermediate = false)
         {
             var analysisSettings = base.ToAnalysisSettings(defaults, false);
 
