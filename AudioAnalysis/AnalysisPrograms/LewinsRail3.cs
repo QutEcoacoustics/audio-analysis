@@ -352,7 +352,6 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
 
             //ALTERNATIVE IS TO USE THE AMPLITUDE SPECTRUM
             //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);

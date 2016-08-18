@@ -55,20 +55,22 @@ namespace AnalysisPrograms.Recognizers.Base
             // get a lazily calculated indices function - if you never get the lazy value, the indices will never be calculated
             var lazyIndices = this.GetLazyIndices(recording, analysisSettings, acousticIndicesParsedConfiguration);
 
+            // determine imageWidth for output images
+            int imageWidth = (int)Math.Floor(recording.Duration().TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds);
+
             // execute actual analysis
             dynamic configuration = analysisSettings.Configuration;
             RecognizerResults results = this.Recognize(
                 recording,
                 analysisSettings.Configuration,
                 analysisSettings.SegmentStartOffset.Value,
-                lazyIndices, 
-                (int)(recording.Duration().TotalSeconds / acousticIndicesParsedConfiguration.IndexCalculationDuration.TotalSeconds));
+                lazyIndices,
+                imageWidth);
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
-            Plot scores = results.Plot;
             var predictedEvents = results.Events;
 
             analysisResults.Events = predictedEvents.ToArray();
@@ -109,7 +111,9 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
                 const double EventThreshold = 0.1;
-                Image image = this.DrawSonogram(sonogram, hits, scores, predictedEvents, EventThreshold);
+                var plots = results.Plots ?? new List<Plot>();
+
+                Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
 
@@ -298,12 +302,12 @@ namespace AnalysisPrograms.Recognizers.Base
             return spectralIndexFiles;
         }
 
-        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth);
+        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth);
 
         protected virtual Image DrawSonogram(
             BaseSonogram sonogram,
             double[,] hits,
-            Plot scores,
+            List<Plot> scores,
             List<AcousticEvent> predictedEvents,
             double eventThreshold)
         {
@@ -317,9 +321,13 @@ namespace AnalysisPrograms.Recognizers.Base
             ////Image_MultiTrack image = new Image_MultiTrack(img);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+
             if (scores != null)
             {
-                image.AddTrack(Image_Track.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
+                foreach (var plot in scores)
+                {
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                }
             }
 
             if (hits != null)
@@ -336,7 +344,9 @@ namespace AnalysisPrograms.Recognizers.Base
                     sonogram.FramesPerSecond);
             }
 
-            return image.GetImage();
+            var result =  image.GetImage();
+
+            return result;
         }
 
 

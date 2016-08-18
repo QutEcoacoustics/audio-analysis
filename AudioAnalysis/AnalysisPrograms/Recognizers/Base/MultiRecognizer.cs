@@ -11,6 +11,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Linq;
     using System.Reflection;
 
     using Acoustics.Shared;
@@ -20,7 +21,9 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase.ResultBases;
 
     using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
 
     using log4net;
@@ -37,27 +40,37 @@ namespace AnalysisPrograms.Recognizers.Base
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
         {
             // this is a multi recognizer - it does no actual analysis itself
+
+            // make a standard spectrogram to render all tracks on
+            var config = new SonogramConfig
+            {
+                NoiseReductionType = NoiseReductionType.NONE,
+                NoiseReductionParameter = 2.0,
+                WindowSize = 1024
+            };
+            var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
             // Get list of ID names from config file
             List <string> speciesList = configuration["SpeciesList"] ?? null;
             var scoreTracks = new List<Image>();
+            var plots = new List<Plot>();
             var events = new List<AcousticEvent>();
 
             // Loop through recognizers and accumulate the output
             foreach (string name in speciesList)
             {
-                // TODO: SHOULD NOT NEED THE NEXT LINE
+                // AT: Fixed this... the following should not be needed. If it happens, let me know.
                 // SEEM TO HAVE LOST SAMPLES
                 if (audioRecording.WavReader.Samples == null)
                 {
-                    Log.Warn("audioRecording's samples are null - an inefficient disk operation is now needed");
+                    Log.Error("audioRecording's samples are null - an inefficient disk operation is now needed");
                     audioRecording = new AudioRecording(audioRecording.FilePath);
                 }
 
-                var output = DoCallRecognition(name, configuration, audioRecording, getSpectralIndexes, imageWidth);
+                var output = DoCallRecognition(name, segmentStartOffset, audioRecording, getSpectralIndexes, imageWidth.Value);
 
                 if (output == null)
                 {
@@ -75,11 +88,26 @@ namespace AnalysisPrograms.Recognizers.Base
                     {
                         events.AddRange(output.Events);
                     }
+
+                    // rescale scale of plots
+                    output.Plots.ForEach(p => p.ScaleDataArray(sonogram.FrameCount));
+
+                    plots.AddRange(output.Plots);
+                    
                 }
             }
+
             Image scoreTrackImage = ImageTools.CombineImagesVertically(scoreTracks);
 
-            return new RecognizerResults() { Events = events, ScoreTrack = scoreTrackImage };
+
+
+            return new RecognizerResults()
+                {
+                    Events = events,
+                    ScoreTrack = scoreTrackImage,
+                    Sonogram = sonogram,
+                    Plots = plots,
+                };
         }
 
         public override void SummariseResults(
@@ -94,11 +122,11 @@ namespace AnalysisPrograms.Recognizers.Base
         }
 
 
-        public static RecognizerResults DoCallRecognition(string name, AnalysisSettings analysisSettings, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, int imageWidth)
+        public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, int imageWidth)
         {
-
+            Log.Debug("Looking for recognizer and config files for " + name);
             // load up the standard config file for this species
-            var configurationFile = ConfigFile.ResolveConfigFile(name);
+            var configurationFile = ConfigFile.ResolveConfigFile(name + ".yml");
             var configuration = (dynamic)Yaml.Deserialise(configurationFile);
 
             // find an appropriate event recognizer
@@ -111,20 +139,31 @@ namespace AnalysisPrograms.Recognizers.Base
                 Log.Warn("Sample rate of provided file does does match");
             }
 
+            Log.Info("MultiRecognizer: Executing single recognizer " + name);
             // execute it
             RecognizerResults result = recognizer.Recognize(
                 recording,
                 configuration,
-                analysisSettings.SegmentStartOffset.Value,
+                segmentStartOffset,
                 indices, 
                 imageWidth);
+            Log.Debug("MultiRecognizer: Completed single recognizer" + name);
 
-            result.ScoreTrack = GenerateScoreTrackImage(name, result.Plot.data, imageWidth);
+            var scoreTracks = result.Plots.Select(p => GenerateScoreTrackImage(name, p?.data, imageWidth)).ToList();
+            if (scoreTracks.Count != 0)
+            {
+                result.ScoreTrack = ImageTools.CombineImagesVertically(scoreTracks);
+            }
+
             return result;
         }
 
         public static Image GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
         {
+            if (scores == null)
+            {
+                return null;
+            }
 
             // reduce score array down to imageWidth;
             double[] scoreValues = new double[imageWidth];

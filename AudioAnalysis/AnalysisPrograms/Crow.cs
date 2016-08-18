@@ -352,7 +352,6 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
             double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
             int callSpan = (int)Math.Round(callDuration * framesPerSecond);

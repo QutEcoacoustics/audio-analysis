@@ -146,7 +146,7 @@ namespace AnalysisPrograms
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
             //int bitRate = 16;
             //WavWriter.WriteWavFile(filteredRecording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");        
-            filteredRecording.Dispose(); // DISPOSE FILTERED SIGNAL
+
 
             // ix: DRAW SONOGRAM AND SCORES
             string imagePath = arguments.Source.Name + ".png";
@@ -188,7 +188,7 @@ namespace AnalysisPrograms
             Log.WriteLine("#   Filter: " + filterName);
             var filteredRecording = AudioRecording.Filter_IIR(recording, filterName); //return new filtered audio recording.
             int signalLength = filteredRecording.WavReader.Samples.Length;
-            //recording.Dispose(); // DISPOSE ORIGINAL
+
 
             //ii: FRAMING
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signalLength, windowSize, windowOverlap);

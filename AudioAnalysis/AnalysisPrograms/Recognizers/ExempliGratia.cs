@@ -60,7 +60,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="getSpectralIndexes"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
         {
 
 
@@ -114,6 +114,7 @@ namespace AnalysisPrograms.Recognizers
                 sonogram.FrameDuration,
                 sonogram.FrameStep,
                 sonogram.FrameCount);
+            anEvent.Name = "FAKE!";
 
             foundEvents.Add(anEvent);
 
@@ -124,7 +125,7 @@ namespace AnalysisPrograms.Recognizers
                 Events = foundEvents,
                 Hits = null,
                 ScoreTrack = null,
-                Plot = null,
+                //Plots = null,
                 Sonogram = sonogram
             };
         }

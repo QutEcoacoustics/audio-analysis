@@ -113,7 +113,7 @@ namespace AnalysisPrograms
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
-            recording.Dispose(); //DO NOT DISPOSE BECAUSE REQUIRE AGAIN
+
 
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
