@@ -227,7 +227,7 @@
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="LitoriaFallax.cs" />
     <Compile Include="LimnodynastesConvex.cs" />
-    <Compile Include="Canetoad.cs" />
+    <Compile Include="CanetoadOld.cs" />
     <Compile Include="Audio2InputForConvCNN.cs" />
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="DrawEasyImage.cs" />
@@ -243,6 +243,7 @@
     <Compile Include="Recognizers\ExempliGratia.cs" />
     <Compile Include="Recognizers\LitoriaOlong.cs" />
     <Compile Include="Recognizers\LitoriaFallax.cs" />
+    <Compile Include="Recognizers\RhinellaMarina.cs" />
     <Compile Include="SURFAnalysis.cs" />
     <Compile Include="OscillationsGeneric.cs" />
     <Compile Include="DifferenceSpectrogram.cs" />

@@ -172,12 +172,12 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Calls Canetoad.Dev(): Detects canetoad calls as acoustic events in a short (one minute) recording segment.")]
-        public Canetoad.Arguments CanetoadArgs { get; set; }
-        public static Action<Canetoad.Arguments> Canetoad()
+        public CanetoadOld.Arguments CanetoadArgs { get; set; }
+        public static Action<CanetoadOld.Arguments> Canetoad()
         {
             // IAnalyser - detects canetoad calls as acoustic events
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.Canetoad.Dev;
+            return AnalysisPrograms.CanetoadOld.Dev;
         }
 
         [ArgDescription("Calls Crow.Dev(): Detects Crow calls - the short 'caw' NOT the longer sigh.")]

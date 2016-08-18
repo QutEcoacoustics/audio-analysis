@@ -79,7 +79,7 @@ namespace Ecosounds.Test.AnalysisPrograms
         [TestMethod]
         public void Canetoad()
         {
-//            var canetoad = new Canetoad();
+//            var canetoad = new CanetoadOld();
 //            var settings = canetoad.DefaultSettings;
 //
 //            var inputFile = TestHelper.GetTestAudioFile("cane toad.wav");
