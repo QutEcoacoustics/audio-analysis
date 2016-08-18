@@ -49,7 +49,28 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static Arguments Dev()
         {
-            throw new NotImplementedException();
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test";
+            string configPath = @"Ecosounds.MultiRecognizer.yml";
+            var arguments = new Arguments
+            {
+                Source = recordingPath.ToFileInfo(),
+                Config = configPath.ToFileInfo(),
+                Output = outputPath.ToDirectoryInfo()
+            };
+
+
+            // #########  NOTE: All other parameters are set in the .yml file assigned to configPath variable above.
+            if (!arguments.Source.Exists)
+            {
+                Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
+            }
+            if (!arguments.Config.Exists)
+            {
+                Log.Warn(" >>>>>>>>>>>> WARNING! The Configuration file cannot be found! This will cause an exception.");
+            }
+
+            return arguments;
         }
 
         /// <summary>
@@ -76,7 +97,7 @@ namespace AnalysisPrograms.Recognizers.Base
             else if (!configFile.Exists)
             {
                 Log.Warn($"Config file {configFile.FullName} not found... attempting to resolve config file");
-                configFile = ConfigFile.ResolveConfigFile(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
+                arguments.Config = configFile = ConfigFile.ResolveConfigFile(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
 
             LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
@@ -99,7 +120,6 @@ namespace AnalysisPrograms.Recognizers.Base
             // convert arguments to analysis settings
             analysisSettings = arguments.ToAnalysisSettings(analysisSettings, outputIntermediate: true, resultSubDirectory: recognizer.Identifier);
             analysisSettings.Configuration = configuration;
-
 
             // get transform input audio file - if needed
             Log.Info("Querying source audio file");

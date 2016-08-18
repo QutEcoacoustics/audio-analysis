@@ -2,8 +2,10 @@
 # This config is for frog calls having a HONK architecture.
 # i.e. a brief single honk having a dominant frequency and one or more harmonics - evenly spaced."
 #
-AnalysisName: Towsey.Limnodynastes_convexiusculus
+AnalysisName: Towsey.LimnodynastesConvex
 SpeciesName: Limnodynastes convexiusculus
+AbbreviatedSpeciesName: L.convex
+
 # min and max of the freq band to search
 MinHz: 850          
 DominantFrequency: 1850

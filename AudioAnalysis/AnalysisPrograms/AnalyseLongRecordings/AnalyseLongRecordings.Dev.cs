@@ -134,8 +134,8 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
 
             // OTHER FROGS
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitOlong.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitOlong.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Limnodynastes_convexiusculus\10 Limnodynastes convexiusculus.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSp\53 Litoria fallax.mp3";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\.mp3";
@@ -144,13 +144,9 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             //string recordingPath = @"C:\SensorNetworks\Output\Frogs\FrogPondSamford\FrogPond_Samford_SE_555_20101023-000000_0min.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_TockAndRachet_GympieDam_JasonsDad.wav";
 
-            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test";
+            string outputPath    = @"C:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test";
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\CanetoadAcousticIndices";
-
             //string outputPath    = @"C:\SensorNetworks\Output\Frogs\SamfordTest";
-
-            //Output = @"C:\SensorNetworks\Output\Frogs\Canetoad".ToDirectoryInfo()
-
 
             // ECLIPSE FARMSTAY
             //string recordingPath = @"Y:\Eclipise 2012\Eclipse\Site 4 - Farmstay\ECLIPSE3_20121115_040001.wav";
@@ -173,22 +169,19 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             // EASTERN BRISTLE BIRD
             //string recordingPath = @"F:\SensorNetworks\WavFiles\EasternBristlebird\CURRUMBIN_20150529-142503+1000.wav";
             //string outputPath    = @"C:\SensorNetworks\Output\BristleBird";
-
-
-
-
+            
 
             // CONFIG FILES ######################################################################################################
             // Use these configs for Summary and Spectral Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Italy.Acoustic.Parallel.yml";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-            // Use this config when doing multiple species recognisers
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
+            // MULTI-RECOGNISER:    Use this config when doing multiple species recognisers
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 
             // Use these config files when looking for individual species.
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaFallax.yml";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Stark.LitoriaOlong.yml";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Stark.LitoriaOlong.yml";
 
             // Use these configs for Call recognition Indices
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
@@ -210,7 +203,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                                     MixDownToMono = true
             };
 
-            // #########  NOTE: All other parameters are set in the <Towsey.AcousticHiResPlusRecognisers.yml> file
+            // #########  NOTE: All other parameters are set in the <Ecosounds.MultiRecognizer.yml> file
             if (!arguments.Source.Exists)
             {
                 Log.Warn(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
@@ -221,8 +214,6 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             }
 
             return arguments;
-
-            throw new NotImplementedException();
         }
     }
 }
