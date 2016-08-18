@@ -14,6 +14,7 @@ namespace AnalysisPrograms
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
 
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
@@ -23,11 +24,15 @@ namespace AnalysisPrograms
     using AnalysisBase.ResultBases;
 
     using AnalysisPrograms.Production;
+    using AnalysisPrograms.Recognizers;
+    using AnalysisPrograms.Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+
+    using log4net;
 
     using TowseyLibrary;
 
@@ -47,7 +52,11 @@ namespace AnalysisPrograms
     ///     Avoid a long DCT length because the DCT is expensive to calculate. 0.5s - 1.0s is adequate for
     ///     canetoad - depends on the expected osc rate.
     /// </summary>
-    public class Canetoad : AbstractStrongAnalyser
+    /// <remarks>
+    ///  OLD! THIS ENTRYPOINT IS MAINTAINED FOR BACKWARDS COMPATIBILITY.
+    /// See the new RhinellaMarina class.
+    /// </remarks>
+    public class CanetoadOld : AbstractStrongAnalyser
     {
         #region Constants
 
@@ -56,6 +65,8 @@ namespace AnalysisPrograms
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         #endregion
 
@@ -68,7 +79,7 @@ namespace AnalysisPrograms
                 return new AnalysisSettings
                            {
                                SegmentMaxDuration = TimeSpan.FromMinutes(1), 
-                               SegmentMinDuration = TimeSpan.FromSeconds(30), 
+                               SegmentMinDuration = TimeSpan.FromSeconds(15), 
                                SegmentMediaType = MediaTypes.MediaTypeWav, 
                                SegmentOverlapDuration = TimeSpan.Zero,
                                SegmentTargetSampleRate = RESAMPLE_RATE
@@ -105,11 +116,11 @@ namespace AnalysisPrograms
                 const string RecordingPath =
                     //@"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
                     //@"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav";
-                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_608min.wav";
-                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_619min.wav";
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_375min.wav"; // 42, 316,375,422,704
-                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.Canetoad\020313_297min.wav";
+                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.CanetoadOld\020313_608min.wav";
+                    //@"C:\SensorNetworks\WavFiles\Canetoad\020313.MP3\Towsey.CanetoadOld\020313_619min.wav";
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.CanetoadOld\020313_619min.wav";
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.CanetoadOld\020313_375min.wav"; // 42, 316,375,422,704
+                    //@"Y:\Results\2014Nov11-083640 - Towsey.Canetoad JCU Campus Test 020313\JCU\Campus\020313.MP3\Towsey.CanetoadOld\020313_297min.wav";
                     //@"F:\SensorNetworks\WavFiles\CaneToad\CaneToad Release Call 270213-8.wav";
                     @"F:\SensorNetworks\WavFiles\CaneToad\UndetectedCalls-2014\KiyomiUndetected210214-1.mp3";
 
@@ -128,7 +139,7 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("# Output folder:  " + OutputDir);
                 LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(RecordingPath));
 
-                Log.Verbosity = 1;
+                TowseyLibrary.Log.Verbosity = 1;
                 const int StartMinute = 0;
                 const int DurationSeconds = 0; // set zero to get entire recording
                 TimeSpan start = TimeSpan.FromMinutes(StartMinute); // hours, minutes, seconds
@@ -180,7 +191,7 @@ namespace AnalysisPrograms
                 FileInfo csvEvents = arguments.Output.CombineFile(arguments.Events);
                 if (!csvEvents.Exists)
                 {
-                    Log.WriteLine(
+                    TowseyLibrary.Log.WriteLine(
                         "\n\n\n############\n WARNING! Events CSV file not returned from analysis of minute {0} of file <{0}>.", 
                         arguments.Start.Value, 
                         arguments.Source.FullName);
@@ -195,7 +206,7 @@ namespace AnalysisPrograms
                 FileInfo csvIndicies = arguments.Output.CombineFile(arguments.Indices);
                 if (!csvIndicies.Exists)
                 {
-                    Log.WriteLine(
+                    TowseyLibrary.Log.WriteLine(
                         "\n\n\n############\n WARNING! Indices CSV file not returned from analysis of minute {0} of file <{0}>.", 
                         arguments.Start.Value, 
                         arguments.Source.FullName);
@@ -234,33 +245,36 @@ namespace AnalysisPrograms
             TimeSpan duration = TimeSpan.FromSeconds(arguments.Duration ?? 0);
 
             // EXTRACT THE REQUIRED RECORDING SEGMENT
+            // TODO: add a .wavV extension
             FileInfo tempF = analysisSettings.AudioFile;
+            var audioUtilityRequest = new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE };
             if (duration == TimeSpan.Zero)
             {
                 // Process entire file
-                AudioFilePreparer.PrepareFile(
-                    arguments.Source, 
-                    tempF,
-                    new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE }, 
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                audioUtilityRequest = new AudioUtilityRequest { TargetSampleRate = RESAMPLE_RATE };
             }
             else
             {
-                AudioFilePreparer.PrepareFile(
-                    arguments.Source, 
-                    tempF, 
-                    new AudioUtilityRequest
-                        {
-                            TargetSampleRate = RESAMPLE_RATE, 
-                            OffsetStart = start, 
-                            OffsetEnd = start.Add(duration)
-                        }, 
-                    analysisSettings.AnalysisBaseTempDirectoryChecked);
+                audioUtilityRequest = new AudioUtilityRequest
+                    {
+                        TargetSampleRate = RESAMPLE_RATE,
+                        OffsetStart = start,
+                        OffsetEnd = start.Add(duration)
+                    };
             }
+
+            var preparedFile = AudioFilePreparer.PrepareFile(
+                arguments.Output,
+                arguments.Source,
+                MediaTypes.MediaTypeWav,
+                audioUtilityRequest,
+                analysisSettings.AnalysisBaseTempDirectoryChecked);
+
+            analysisSettings.AudioFile = preparedFile.TargetInfo.SourceFile;
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new Canetoad();
+            IAnalyser2 analyser = new CanetoadOld();
             analyser.BeforeAnalyze(analysisSettings);
             AnalysisResult2 result = analyser.Analyze(analysisSettings);
             /* ############################################################################################################################################# */
@@ -268,6 +282,11 @@ namespace AnalysisPrograms
             if (result.Events.Length > 0)
             {
                 LoggedConsole.WriteLine("{0} events found", result.Events.Length);
+                if (Log.IsDebugEnabled)
+                {
+                    var firstEvent = (AcousticEvent)result.Events.First();
+                    Log.Debug($"Event 0 profile: start={firstEvent.TimeStart}, duration={firstEvent.TimeStart - firstEvent.TimeEnd}");
+                }
             }
             else
             {
@@ -280,14 +299,17 @@ namespace AnalysisPrograms
             FileInfo audioFile = analysisSettings.AudioFile;
 
             // execute actual analysis
-            Dictionary<string, string> configuration = analysisSettings.Configuration;
-            CanetoadResults results = Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+            dynamic configuration = analysisSettings.Configuration;
+            var recording = new AudioRecording(audioFile.FullName);
+            Log.Debug("Canetoad sample rate:" + recording.SampleRate);
+
+            RecognizerResults results = Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
             
-            var analysisResults = new AnalysisResult2(analysisSettings, results.RecordingDuration);
+            var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
-            Plot scores = results.Plot;
+            Plot scores = results.Plots.First();
             List<AcousticEvent> predictedEvents = results.Events;
 
             analysisResults.Events = predictedEvents.ToArray();
@@ -303,6 +325,7 @@ namespace AnalysisPrograms
                 var unitTime = TimeSpan.FromMinutes(1.0);
                 analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
 
+                analysisResults.SummaryIndicesFile = analysisSettings.SummaryIndicesFile;
                 this.WriteSummaryIndicesFile(analysisSettings.SummaryIndicesFile, analysisResults.SummaryIndices);
             }
 
@@ -360,10 +383,11 @@ namespace AnalysisPrograms
         /// <param name="configDict"></param>
         /// <param name="segmentStartOffset"></param>
         /// <returns></returns>
-        internal static CanetoadResults Analysis(FileInfo segmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
+        internal static RecognizerResults Analysis(FileInfo segmentOfSourceFile, dynamic configuration, TimeSpan segmentStartOffset)
         {
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
-            return Analysis(recording, configDict, segmentStartOffset);
+            Log.Debug("Canetoad sample rate:" + recording.SampleRate);
+            return Analysis(recording, configuration, segmentStartOffset);
         }
 
 
@@ -380,130 +404,15 @@ namespace AnalysisPrograms
         /// <returns>
         /// The <see cref="CanetoadResults"/>.
         /// </returns>
-        internal static CanetoadResults Analysis(
+        internal static RecognizerResults Analysis(
             AudioRecording recording,
-            Dictionary<string, string> configDict,
+            dynamic configuration,
             TimeSpan segmentStartOffset)
         {
-            int minHz = int.Parse(configDict[AnalysisKeys.MinHz]);
-            int maxHz = int.Parse(configDict[AnalysisKeys.MaxHz]);
+           RhinellaMarina rm = new RhinellaMarina();
 
-            // BETTER TO CALCULATE THIS. IGNORE USER!
-            // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
-
-            // duration of DCT in seconds 
-            double dctDuration = double.Parse(configDict[AnalysisKeys.DctDuration]);
-
-            // minimum acceptable value of a DCT coefficient
-            double dctThreshold = double.Parse(configDict[AnalysisKeys.DctThreshold]);
-
-            // ignore oscillations below this threshold freq
-            int minOscilFreq = int.Parse(configDict[AnalysisKeys.MinOscilFreq]);
-
-            // ignore oscillations above this threshold freq
-            int maxOscilFreq = int.Parse(configDict[AnalysisKeys.MaxOscilFreq]);
-
-            // min duration of event in seconds 
-            double minDuration = double.Parse(configDict[AnalysisKeys.MinDuration]);
-
-            // max duration of event in seconds                 
-            double maxDuration = double.Parse(configDict[AnalysisKeys.MaxDuration]);
-
-            // min score for an acceptable event
-            double eventThreshold = double.Parse(configDict[AnalysisKeys.EventThreshold]);
-
-            // this default framesize seems to work for Canetoad
-            const int FrameSize = 512;
-            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate,
-                FrameSize,
-                maxOscilFreq);
-            //windowOverlap = 0.75; // previous default
-
-            // i: MAKE SONOGRAM
-            var sonoConfig = new SonogramConfig
-                                 {
-                                     SourceFName = recording.FileName,
-                                     WindowSize = FrameSize,
-                                     WindowOverlap = windowOverlap,
-                                     NoiseReductionType = NoiseReductionType.NONE
-                                 };
-
-            // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration();
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-
-            /* #############################################################################################################################################
-             * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-             * 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-             * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-             * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-             */
-
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
-
-            // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
-
-            // ######################################################################
-            // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double boundaryBetweenAdvert_ReleaseDuration = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            minDuration = 1.0;
-            double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
-            double[,] hits;
-            Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram,
-                minHz,
-                maxHz,
-                dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
-                dctThreshold,
-                eventThreshold,
-                minDuration,
-                maxDuration,
-                out scores,
-                out events,
-                out hits);
-
-            events.ForEach(ae =>
-                    {
-                        ae.SpeciesName = configDict[AnalysisKeys.SpeciesName];
-                        ae.SegmentStartOffset = segmentStartOffset;
-                        ae.SegmentDuration = recordingDuration;
-                        ae.Name = "AdvertCall";
-                        if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
-                        { ae.Name = "ReleaseCall";
-                            if (ae.Score < (eventThreshold + 0.3))
-                            {
-                                ae.Name = "Short Oscil";
-                                //events.Remove(ae);
-                            }
-                        }
-
-                        // remove release call if its score is too low.
-                        //if ((ae.Name == "ReleaseCall") && (ae.Score < (eventThreshold + 0.3)))
-                        //{ ae = null; }
-                        //{ events.Remove(ae); } 
-                        
-                    });
-
-            var plot = new Plot(AnalysisName, scores, eventThreshold);
-            return new CanetoadResults
-                       {
-                           Sonogram = sonogram, 
-                           Hits = hits, 
-                           Plot = plot, 
-                           Events = events, 
-                           RecordingDuration = recordingDuration
-                       };
-        } // Analysis()
+            return rm.Recognize(recording, configuration, segmentStartOffset, null, null);
+        }
 
         private static Image DrawSonogram(
             BaseSonogram sonogram, 
