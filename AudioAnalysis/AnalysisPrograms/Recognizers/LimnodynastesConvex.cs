@@ -103,6 +103,9 @@ namespace AnalysisPrograms.Recognizers
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
 
+            //LimnodynastesConvexResults results = Analysis(audioRecording, configuration, analysisSettings);
+
+
             var foundEvents = new List<AcousticEvent>();
 
             // some kind of loop where you scan through the audio
