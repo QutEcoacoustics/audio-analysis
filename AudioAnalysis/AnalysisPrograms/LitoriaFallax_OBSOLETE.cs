@@ -62,7 +62,7 @@ namespace AnalysisPrograms
     /// 
     /// </summary>
     [Obsolete]
-    public class LitoriaFallax : AbstractStrongAnalyser
+    public class LitoriaFallax_OBSOLETE : AbstractStrongAnalyser
     {
         #region Constants
 
@@ -245,7 +245,7 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new LitoriaFallax(); 
+            IAnalyser2 analyser = new LitoriaFallax_OBSOLETE(); 
             //IAnalyser2 analyser = new Canetoad();
             analyser.BeforeAnalyze(analysisSettings);
             AnalysisResult2 result = analyser.Analyze(analysisSettings);

@@ -46,7 +46,7 @@ namespace AnalysisPrograms
     /// So I have combined the three recognisers into one analysis.
     /// 
     /// </summary>
-    public class LimnodynastesConvex : AbstractStrongAnalyser
+    public class LimnodynastesConvex_OBSOLETE : AbstractStrongAnalyser
     {
         #region Constants
 
@@ -230,7 +230,7 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             /* ############################################################################################################################################# */
-            IAnalyser2 analyser = new LimnodynastesConvex();
+            IAnalyser2 analyser = new LimnodynastesConvex_OBSOLETE();
             analyser.BeforeAnalyze(analysisSettings);
             AnalysisResult2 result = analyser.Analyze(analysisSettings);
             /* ############################################################################################################################################# */

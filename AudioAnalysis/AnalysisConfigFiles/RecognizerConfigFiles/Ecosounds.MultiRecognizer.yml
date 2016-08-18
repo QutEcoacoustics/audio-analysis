@@ -6,13 +6,13 @@ AnalysisName: Ecosounds.MultiRecognizer
 #AbbreviatedSpeciesName:
 
 # LIST OF REQUIRED SPECIES RECOGNISERS
-# The items in this list need to match the value in `AnalysisName` from the other config files.
-# Note also, that the config files are resolved my appending '.yml' to the end of the items.
+# The items in this list need to match the value for `AnalysisName` in each of the individual species config files.
+# Note also, that the config file paths are resolved my appending '.yml' to the end of each item in the species list.
 SpeciesList:
   - Towsey.LitoriaFallax
   - Stark.LitoriaOlong
   - Towsey.RhinellaMarina
-  - Truskinger.ExempliGratia
+#  - Truskinger.ExempliGratia
 
 # Standard settings
 EventThreshold: 0.2
@@ -28,7 +28,7 @@ SegmentDuration: 1
 SegmentOverlap: 0
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
-SaveSonogramImages: false
+SaveSonogramImages: true
 DisplayCsvImage: false
 ParallelProcessing: false
 ## End section for AnalyzeLongRecording
