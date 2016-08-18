@@ -84,6 +84,7 @@ namespace AnalysisPrograms.Production
         }
 
         [DefaultValue(LogVerbosity.Info)]
+        [ArgDescription("Set the logging. Valid values: None = 0,Error = 1,Warn = 2,Info = 3,Debug = 4,Trace = 5,Verbose = 6,All = 7")]
         public LogVerbosity LogLevel
         {
             get
@@ -95,7 +96,12 @@ namespace AnalysisPrograms.Production
 
                 if (this.VVerbose)
                 {
-                    return  LogVerbosity.All;
+                    return LogVerbosity.Trace;
+                }
+
+                if (this.VVVerbose)
+                {
+                    return LogVerbosity.All;
                 }
                 
                 return this.logLevel;
@@ -103,8 +109,8 @@ namespace AnalysisPrograms.Production
             set
             {
                 this.Verbose = value == LogVerbosity.Debug;
-
-                this.VVerbose = value == LogVerbosity.All;
+                this.VVerbose = value == LogVerbosity.Trace;
+                this.VVVerbose = value == LogVerbosity.All;
                 
                 this.logLevel = value;
             }
@@ -113,6 +119,8 @@ namespace AnalysisPrograms.Production
         public bool Verbose { get; set; }
 
         public bool VVerbose { get; set; }
+
+        public bool VVVerbose { get; set; }
     }
 
     public enum LogVerbosity
@@ -122,7 +130,9 @@ namespace AnalysisPrograms.Production
         Warn = 2,
         Info = 3,
         Debug = 4,
-        All = 5
+        Trace = 5,
+        Verbose = 6,
+        All = 7
     }
 
     public class HelpArguments
