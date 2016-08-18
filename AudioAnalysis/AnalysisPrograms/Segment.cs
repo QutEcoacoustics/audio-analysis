@@ -171,7 +171,6 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            recording.Dispose();
 
             //iii: DETECT SEGMENTS
             Log.WriteLine("# Start event detection");

@@ -353,7 +353,6 @@ namespace AnalysisPrograms
             double framesPerSecond = 1 / frameOffset;
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            recording.Dispose();
 
             //iii: GET TRACKS
             int nhLimit = 3; //limit of neighbourhood around maximum

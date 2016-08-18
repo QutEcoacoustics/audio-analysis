@@ -5,18 +5,16 @@ AnalysisName: Ecosounds.MultiRecognizer
 #SpeciesName:
 #AbbreviatedSpeciesName:
 
-# ######################## LIST OF REQUIRED SPECIES RECOGNISERS
+# LIST OF REQUIRED SPECIES RECOGNISERS
+# The items in this list need to match the value in `AnalysisName` from the other config files.
+# Note also, that the config files are resolved my appending '.yml' to the end of the items.
 SpeciesList:
-  #- Bufo_marinus
-  # - Phascolarctos_cinereus   # Koala
-  - Litoria_fallax
-  #- Limnodynastes_convexiusculus
-  - ExempliGratia
+  - Towsey.LitoriaFallax
+  - Stark.LitoriaOlong
+  - Towsey.RhinellaMarina
+  - Truskinger.ExempliGratia
 
 # Standard settings
-DoNoiseReduction: false
-#BgNoiseThreshold: 3.0
-
 EventThreshold: 0.2
 
 # Resample rate must be 2 X the desired Nyquist

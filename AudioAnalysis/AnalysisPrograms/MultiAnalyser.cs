@@ -49,7 +49,7 @@ namespace AnalysisPrograms
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
-        public static string[] AnalysisTitles = { Human1.AnalysisName, Crow.AnalysisName, PlanesTrainsAndAutomobiles.AnalysisName, Canetoad.AnalysisName, KoalaMale.AnalysisName };
+        public static string[] AnalysisTitles = { Human1.AnalysisName, Crow.AnalysisName, PlanesTrainsAndAutomobiles.AnalysisName, CanetoadOld.AnalysisName, KoalaMale.AnalysisName };
 
 
         public string DisplayName
@@ -360,25 +360,26 @@ namespace AnalysisPrograms
                 string newKey = key.Substring(9);
                 newDict.Add(newKey, configDict[key]);
             }
-            newDict.Add(AnalysisKeys.AnalysisName, Canetoad.AnalysisName);
+            newDict.Add(AnalysisKeys.AnalysisName, CanetoadOld.AnalysisName);
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var canetoadResults = Canetoad.Analysis(audioFile, newDict, analysisSettings.SegmentStartOffset.Value);
+            var canetoadResults = CanetoadOld.Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value);
             if (canetoadResults != null)
             {
                 if (sonogram == null) sonogram = canetoadResults.Sonogram;
                 //hits = MatrixTools.AddMatrices(hits, results4.Item2);
-                scores.Add(canetoadResults.Plot);
+                scores.Add(canetoadResults.Plots.First());
                 if (canetoadResults.Events != null)
                 {
                     foreach (AcousticEvent ae in canetoadResults.Events)
                     {
-                        ae.Name = Canetoad.AnalysisName;
+                        ae.Name = CanetoadOld.AnalysisName;
                         events.Add(ae);
                     }
                 }
-                recordingTimeSpan = canetoadResults.RecordingDuration;
+                // HACK: left broken on purpose
+                //recordingTimeSpan = canetoadResults.RecordingDuration;
             }
 
             /* ######################################################################
@@ -587,7 +588,7 @@ namespace AnalysisPrograms
                 {
                     if (eventScore != 0.0) koala_EventsPerUnitTime[timeUnit]++;
                 }
-                else if (eventName == Canetoad.AnalysisName)
+                else if (eventName == CanetoadOld.AnalysisName)
                 {
                     if (eventScore != 0.0) canetdEventsPerUnitTime[timeUnit]++;
                 }

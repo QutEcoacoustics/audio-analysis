@@ -202,7 +202,7 @@ namespace AnalysisPrograms
             
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            recording.Dispose();
+
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, frameOverlap);

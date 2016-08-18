@@ -299,7 +299,6 @@ namespace AnalysisPrograms
 
             //#############################################################################################################################################
             var results = DetectHarmonics(recording, intensityThreshold, minHz, minFormantgap, maxFormantgap, minDuration, frameLength, windowOverlap); //uses XCORR and FFT
-            recording.Dispose();
             //#############################################################################################################################################
 
             var sonogram = results.Item1;

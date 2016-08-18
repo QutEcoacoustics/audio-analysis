@@ -62,7 +62,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="getSpectralIndexes"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
         {
 
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
@@ -137,7 +137,6 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            recording.Dispose();
 
             // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
@@ -196,7 +195,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 Sonogram = sonogram,
                 Hits = hits,
-                Plot = plot,
+                Plots = plot.AsList(),
                 Events = acousticEvents
             };
         }

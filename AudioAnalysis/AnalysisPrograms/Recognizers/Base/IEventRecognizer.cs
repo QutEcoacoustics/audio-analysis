@@ -28,7 +28,7 @@ namespace AnalysisPrograms.Recognizers.Base
     public interface IEventRecognizer : IAnalyser2
     {
 
-        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int imageWidth);
+        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth);
     }
 
 
