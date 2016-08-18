@@ -1,5 +1,6 @@
 ﻿namespace Acoustics.Tools.Audio
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
 
@@ -91,8 +92,8 @@
 
             if (this.Log.IsDebugEnabled)
             {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+                this.Log.Trace("Source " + this.BuildFileDebuggingOutput(source));
+                this.Log.Trace("Output " + this.BuildFileDebuggingOutput(output));
             }
 
             this.CheckFile(output);
@@ -117,7 +118,7 @@
 
             if (this.Log.IsDebugEnabled)
             {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                this.Log.Trace("Source " + this.BuildFileDebuggingOutput(source));
             }
 
             var result = this.GetInfo(source, process);

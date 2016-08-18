@@ -150,7 +150,7 @@ namespace System
         /// </remarks>
         public static void Verbose(this ILog log, object message)
         {
-            log.Logger.Log(null, log4net.Core.Level.Finest, message, null);
+            log.Logger.Log(null, log4net.Core.Level.Verbose, message, null);
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace System
         /// </remarks>
         public static void Verbose(this ILog log, string format, params object[] args)
         {
-            log.Logger.Log(null, log4net.Core.Level.Finest, string.Format(format, args), null);
+            log.Logger.Log(null, log4net.Core.Level.Verbose, string.Format(format, args), null);
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace System
         /// </remarks>    
         public static void Verbose(this ILog log, object message, Exception exception)
         {
-            log.Logger.Log(null, log4net.Core.Level.Finest, message, exception);
+            log.Logger.Log(null, log4net.Core.Level.Verbose, message, exception);
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace System
         /// </remarks>
         public static void Trace(this ILog log, object message)
         {
-            log.Logger.Log(null, log4net.Core.Level.Finer, message, null);
+            log.Logger.Log(null, log4net.Core.Level.Trace, message, null);
         }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace System
         /// </remarks>
         public static void Trace(this ILog log, string format, params object[] args)
         {
-            log.Logger.Log(null, log4net.Core.Level.Finer, string.Format(format, args), null);
+            log.Logger.Log(null, log4net.Core.Level.Trace, string.Format(format, args), null);
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace System
         /// <seealso cref="M:Trace(object)"/><seealso cref="P:log4net.ILog.IsTraceEnabled"/>   
         public static void Trace(this ILog log, object message, Exception exception)
         {
-            log.Logger.Log(null, log4net.Core.Level.Finer, message, exception);
+            log.Logger.Log(null, log4net.Core.Level.Trace, message, exception);
         }
     }
 }
