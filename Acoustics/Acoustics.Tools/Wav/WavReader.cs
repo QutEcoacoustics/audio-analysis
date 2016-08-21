@@ -415,6 +415,13 @@ namespace Acoustics.Tools.Wav
                                         this.samples[i] = sample == short.MinValue ? -1.0 : sample / (double)short.MaxValue; //32767.0
                                     }
                                     break;
+                                case 24:
+                                    for (int i = 0; i < numberOfSamples; i++, offset += bytesPerSample)
+                                    {
+                                        int sample = BitConverter.ToInt16(data, offset);
+                                        this.samples[i] = sample == short.MinValue ? -1.0 : sample / (double)short.MaxValue; //32767.0
+                                    }
+                                    break;
                                 default:
                                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
                             }

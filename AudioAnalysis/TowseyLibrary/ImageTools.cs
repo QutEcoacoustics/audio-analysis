@@ -2601,6 +2601,66 @@ namespace TowseyLibrary
             return bmp;
         }
 
+        /// <summary>
+        /// Asumes signal is between -1 and +1.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="signal"></param>
+        /// <param name="imageWidth"></param>
+        /// <param name="height"></param>
+        /// <param name="scalingFactor"></param>
+        /// <returns></returns>
+        public static Image DrawWaveform(string label, double[] signal, int imageWidth, int height, int scalingFactor)
+        {
+            //double sum = histogram.Sum();
+            Pen pen1 = new Pen(Color.White);
+            Pen pen2 = new Pen(Color.Lime);
+            Pen pen3 = new Pen(Color.Wheat);
+            //Pen pen4 = new Pen(Color.Purple);
+            //SolidBrush brush = new SolidBrush(Color.Lime);
+            Font stringFont = new Font("Arial", 9);
+            //Font stringFont = new Font("Tahoma", 9);
+            //SizeF stringSize = new SizeF();
+
+            int barWidth = imageWidth / signal.Length;
+
+            int maxBin = 0;
+            DataTools.getMaxIndex(signal, out maxBin);
+            double maxValue = signal[maxBin];
+            //double[] normalArray = DataTools.NormaliseArea()
+
+            int Yzero = height / 2;
+            int grid1 = imageWidth / 4;
+            int grid2 = imageWidth / 2;
+            int grid3 = (imageWidth * 3) / 4;
+
+            Bitmap bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            g.DrawLine(pen3, 0, Yzero, imageWidth, Yzero);
+            //g.DrawLine(pen3, grid1, height - 1, grid1, 0);
+            g.DrawLine(pen3, grid2, height - 1, grid2, 0);
+            //g.DrawLine(pen3, grid3, height - 1, grid3, 0);
+            g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
+            // draw mode bin and upper percentile bound
+            //g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
+            //g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
+
+            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+
+            int previousY = Yzero;
+            for (int b = 0; b < signal.Length; b++)
+            {
+                int X = b * barWidth;
+                int Y = Yzero - (int)Math.Ceiling(signal[b] * height * scalingFactor);
+                //g.FillRectangle(brush, X, Yzero - Y - 1, barWidth, Y);
+                g.DrawLine(pen2, X, previousY, X+1, Y);
+                previousY = Y;
+            }
+            return bmp;
+        }
+
+
         public static Image DrawGraph(string label, double[] histogram, int imageWidth, int height, int scalingFactor)
         {
             //double sum = histogram.Sum();
