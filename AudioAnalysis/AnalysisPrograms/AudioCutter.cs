@@ -211,7 +211,7 @@
         {
             var preparedFile = sourcePreparer.PrepareFile(
                     arguments.OutputDir,
-                    fileSegment.OriginalFile,
+                    fileSegment.TargetFile,
                     settings.SegmentMediaType,
                     fileSegment.SegmentStartOffset.Value,
                     fileSegment.SegmentEndOffset.Value,
@@ -219,7 +219,7 @@
                     settings.AnalysisInstanceTempDirectory, 
                     null, 
                     mixDownToMono);
-            LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.OriginalFile.Name);
+            LoggedConsole.WriteLine("Created segment {0} of {1}: {2}", itemNumber, itemCount, preparedFile.TargetFile.Name);
         }
     }
 }

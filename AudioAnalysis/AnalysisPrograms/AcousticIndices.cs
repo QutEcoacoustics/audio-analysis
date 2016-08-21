@@ -479,7 +479,7 @@ namespace AnalysisPrograms
         {
             var acousticIndicesParsedConfiguration = (AcousticIndicesParsedConfiguration)settings.AnalyzerSpecificConfiguration;
 
-            var sourceAudio = inputFileSegment.OriginalFile;
+            var sourceAudio = inputFileSegment.TargetFile;
             var resultsDirectory = settings.AnalysisInstanceOutputDirectory;
             bool tileOutput = acousticIndicesParsedConfiguration.TileOutput;
 
@@ -501,9 +501,9 @@ namespace AnalysisPrograms
              */
             var indexConfigData = new IndexGenerationData()
                                       {
-                                          RecordingType  = inputFileSegment.OriginalFile.Extension,
-                                          RecordingStartDate = inputFileSegment.OriginalFileStartDate,
-                                          SampleRateOriginal = (int)inputFileSegment.OriginalFileSampleRate,
+                                          RecordingType  = inputFileSegment.TargetFile.Extension,
+                                          RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                                          SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                                           SampleRateResampled = sampleRate,
                                           FrameLength = frameWidth,
                                           FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
@@ -550,7 +550,7 @@ namespace AnalysisPrograms
                         analysisType: this.Identifier,
                         indexSpectrograms: dictionaryOfSpectra,
                         indexDistributions: indexDistributions,
-                        imageChrome: tileOutput.ToImageChrome());
+                        imageChrome: (!tileOutput).ToImageChrome());
 
                 if (tileOutput)
                 {
@@ -560,7 +560,7 @@ namespace AnalysisPrograms
 
                     foreach (var image in images)
                     {
-                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.OriginalFileStartDate.Value, image.Item1);
+                        TileOutput(resultsDirectory, Path.GetFileNameWithoutExtension(sourceAudio.Name), image.Item2 + ".Tile", inputFileSegment.TargetFileStartDate.Value, image.Item1);
                     }                    
                 }
             }
