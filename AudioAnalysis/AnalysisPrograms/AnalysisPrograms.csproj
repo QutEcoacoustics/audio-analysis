@@ -240,6 +240,7 @@
     <Compile Include="Recognizers\Base\RecognizerBase.cs" />
     <Compile Include="Recognizers\Base\RecognizerEntry.cs" />
     <Compile Include="Recognizers\Base\RecognizerResults.cs" />
+    <Compile Include="Recognizers\BlueCatfish.cs" />
     <Compile Include="Recognizers\LimnodynastesConvex.cs" />
     <Compile Include="Recognizers\ExempliGratia.cs" />
     <Compile Include="Recognizers\LitoriaOlong.cs" />
