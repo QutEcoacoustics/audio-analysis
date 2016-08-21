@@ -136,12 +136,15 @@ Output  to  directory: {1}
                 Log.Warn("Minimum event threshold has been set to the default: " + scoreThreshold);
             }
 
+            FileSegment.FileDateBeavior defaultBeavior = FileSegment.FileDateBeavior.Try;
             if (filenameDate)
             {
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
                 {
                     throw new InvalidFileDateException("When RequireDateInFilename option is set, the filename of the source audio file must contain a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
+
+                defaultBeavior = FileSegment.FileDateBeavior.Required;
             }
 
 
@@ -156,7 +159,7 @@ Output  to  directory: {1}
 
             // 4. get the segment of audio to be analysed
             // if tiling output, specify that FileSegment needs to be able to read the date
-            var fileSegment = new FileSegment(sourceAudio, filenameDate, true); 
+            var fileSegment = new FileSegment(sourceAudio, null, null, defaultBeavior); 
             var bothOffsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
             if (bothOffsetsProvided)
             {
@@ -250,9 +253,9 @@ Output  to  directory: {1}
             var sourceInfo = audioUtility.Info(sourceAudio);
 
             // updated by reference all the way down in LocalSourcePreparer
-            Debug.Assert(fileSegment.OriginalFileDuration == sourceInfo.Duration);
+            Debug.Assert(fileSegment.TargetFileDuration == sourceInfo.Duration);
 #endif
-            var duration = fileSegment.OriginalFileDuration;
+            var duration = fileSegment.TargetFileDuration.Value;
 
             ResultsTools.ConvertEventsToIndices(analyser, mergedEventResults, ref mergedIndicesResults, duration, scoreThreshold);
             int eventsCount = mergedEventResults?.Length ?? 0;
@@ -267,7 +270,7 @@ Output  to  directory: {1}
             // this allows the summariser to write results to the same output directory as each analysis segment
             analysisSettings.AnalysisInstanceOutputDirectory = instanceOutputDirectory;
             Debug.Assert(analysisSettings.AnalysisInstanceOutputDirectory == instanceOutputDirectory, "The instance result directory should be the same as the base analysis directory");
-            Debug.Assert(analysisSettings.SourceFile == fileSegment.OriginalFile);
+            Debug.Assert(analysisSettings.SourceFile == fileSegment.TargetFile);
 
             // 11. IMPORTANT - this is where IAnalyser2's post processer gets called.
             // Produces all spectrograms and images of SPECTRAL INDICES.
@@ -314,7 +317,7 @@ Output  to  directory: {1}
                             indicesFile,
                             imageTitle,
                             timeScale,
-                            fileSegment.OriginalFileStartDate);
+                            fileSegment.TargetFileStartDate);
                     var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
                     tracksImage.Save(imagePath);
                 }

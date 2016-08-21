@@ -279,11 +279,7 @@ namespace AnalysisBase
 
         public override string ToString()
         {
-            return string.Format(
-                "Settings for {0} with instance id {1} and config file {2}.",
-                this.AudioFile.Name,
-                this.InstanceId,
-                this.ConfigFile.Name);
+            return $"Settings for {this.AudioFile.Name} with instance id {this.InstanceId} and config file {this.ConfigFile.Name}.";
         }
     }
 }

@@ -156,7 +156,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // run summarize code - output data can be written
             Log.Info("Running recognizer summary: " + analysisIdentifier);
-            var fileSegment = new FileSegment(analysisSettings.AudioFile, false, true);
+            var fileSegment = new FileSegment(analysisSettings.AudioFile, preparedFile.SourceInfo.SampleRate.Value, preparedFile.SourceInfo.Duration.Value);
             recognizer.SummariseResults(
                 analysisSettings,
                 fileSegment,

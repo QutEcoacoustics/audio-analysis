@@ -186,15 +186,15 @@ namespace AnalysisBase
             var analysisSegments = this.SourcePreparer.CalculateSegments(fileSegments, settings).ToList();
 
             // do not allow the program to continue
-            // if there are no possible segments to process because the orginal file
+            // if there are no possible segments to process because the original file
             // is too short.
-            var tooShort = fileSegments.FirstOrDefault(fileSegment => fileSegment.OriginalFileDuration < settings.SegmentMinDuration);
+            var tooShort = fileSegments.FirstOrDefault(fileSegment => fileSegment.TargetFileDuration < settings.SegmentMinDuration);
             if (tooShort != null)
             {
                 Log.Fatal("Provided audio recording is too short too analyze!");
                 throw new AudioRecordingTooShortException(
                     "{0} is too short to analyze with current analysisSettings.SegmentMinDuration ({1})"
-                    .Format2(tooShort.OriginalFile.FullName, settings.SegmentMinDuration));
+                    .Format2(tooShort.TargetFile.FullName, settings.SegmentMinDuration));
             }
 
             // check last segment and remove if too short
@@ -207,7 +207,7 @@ namespace AnalysisBase
 
             AnalysisResult2[] results;
 
-            // clone analysis settings for parallelism conerns:
+            // clone analysis settings for parallelism concerns:
             //  - as each iteration modifies settings. This causes hard to track down bugs
             // clones are made for sequential runs to to ensure consistency
             var settingsForThisItem = (AnalysisSettings)settings.Clone();
@@ -365,7 +365,7 @@ namespace AnalysisBase
             Contract.Requires(fileSegment.Validate(), "File Segment must be valid.");
 
             var start = fileSegment.SegmentStartOffset ?? TimeSpan.Zero;
-            var end = fileSegment.SegmentEndOffset ?? fileSegment.OriginalFileDuration;
+            var end = fileSegment.SegmentEndOffset ?? fileSegment.TargetFileDuration.Value;
            
            // set directories
             this.PrepareDirectories(analyser, localCopyOfSettings);
@@ -376,7 +376,7 @@ namespace AnalysisBase
             // save created audio file to settings.AnalysisInstanceTempDirectory if given, otherwise settings.AnalysisInstanceOutputDirectory
             var preparedFile = this.SourcePreparer.PrepareFile(
                 this.GetInstanceDirTempElseOutput(localCopyOfSettings),
-                fileSegment.OriginalFile,
+                fileSegment.TargetFile,
                 localCopyOfSettings.SegmentMediaType,
                 start,
                 end,
@@ -385,18 +385,18 @@ namespace AnalysisBase
                 this.channelSelection, 
                 this.mixDownToMono);
 
-            var preparedFilePath = preparedFile.OriginalFile;
-            var preparedFileDuration = preparedFile.OriginalFileDuration;
+            var preparedFilePath = preparedFile.TargetFile;
+            var preparedFileDuration = preparedFile.TargetFileDuration.Value;
 
             // Store sample rate of original audio file in the Settings object.
             // May need original SR during the analysis, esp if have upsampled from the original SR.
-            localCopyOfSettings.SampleRateOfOriginalAudioFile = preparedFile.OriginalFileSampleRate;
+            localCopyOfSettings.SampleRateOfOriginalAudioFile = fileSegment.TargetFileSampleRate;
 
             localCopyOfSettings.AudioFile = preparedFilePath;
             localCopyOfSettings.SegmentStartOffset = start;
             localCopyOfSettings.SegmentDuration = end - start;
 
-            string fileName = Path.GetFileNameWithoutExtension(preparedFile.OriginalFile.Name);
+            string fileName = Path.GetFileNameWithoutExtension(preparedFile.TargetFile.Name);
 
             // if user requests, save the sonogram files 
             if (this.saveImageFiles)
