@@ -33,7 +33,7 @@ namespace AnalysisPrograms
 
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
-            // HACK: Remove the following two line when argument refactoring is done
+            // HACK: Disable the following two line when argument refactoring is done
             //var options = DebugOptions.Yes;
             //AttachDebugger(ref options);
 

@@ -203,7 +203,7 @@ namespace AnalysisPrograms
         {
             //Contract.Requires(usageStyle != Usages.Single || actionName != null);
 
-            if (!String.IsNullOrWhiteSpace(message))
+            if (!string.IsNullOrWhiteSpace(message))
             {
                 LoggedConsole.WriteErrorLine(message);
             }
@@ -211,7 +211,6 @@ namespace AnalysisPrograms
             if (usageStyle == Usages.All)
             {
                 // print entire usage
-
                 LoggedConsole.WriteLine(ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions).ToString());
             }
             else if (usageStyle == Usages.Single)
@@ -236,7 +235,7 @@ namespace AnalysisPrograms
 
                 foreach (var tuple in actions)
                 {
-                    sb.AppendLine("\t" + tuple.Item2 + (string.IsNullOrWhiteSpace(tuple.Item3) ? "" : " - " + tuple.Item3));
+                    sb.AppendLine("\t" + tuple.Item2 + (string.IsNullOrWhiteSpace(tuple.Item3) ? string.Empty : " - " + tuple.Item3));
                 }
 
                 LoggedConsole.WriteLine(sb.ToString());
