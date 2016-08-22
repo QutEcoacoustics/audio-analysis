@@ -1356,7 +1356,18 @@ namespace TowseyLibrary
           LoggedConsole.WriteLine(i + "  " + array[i]);
   }
 
-  public static void WriteArrayInLine(double[] array, string format)
+    public static string WriteArrayAsCsvLine(double[] array, string format)
+    {
+        var sb = new StringBuilder(array[0].ToString(format));
+        int count = array.Length;//dimension
+        for (int i = 1; i < count; i++)
+        {
+            sb.Append("," + array[i].ToString(format));
+        }
+        return sb.ToString();
+    }
+
+        public static void WriteArrayInLine(double[] array, string format)
   {
       int count = array.Length;//dimension
       for (int i = 0; i < count; i++)
