@@ -106,6 +106,23 @@ namespace TowseyLibrary
 
             return zs;
         }
+        public static double[] Convert2ZScores(double[] scores)
+        {
+            int length = scores.Length;
+            double[] zs = new double[length];
+
+            double av;
+            double sd;
+            NormalDist.AverageAndSD(scores, out av, out sd);
+
+            for (int i = 0; i < length; i++)
+            {
+                zs[i] = (double)(scores[i] - av) / sd;
+            }
+
+            return zs;
+        }
+
 
 
 
