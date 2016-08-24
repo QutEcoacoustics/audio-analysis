@@ -2610,7 +2610,7 @@ namespace TowseyLibrary
         /// <param name="height"></param>
         /// <param name="scalingFactor"></param>
         /// <returns></returns>
-        public static Image DrawWaveform(string label, double[] signal, int imageWidth, int height, int scalingFactor)
+        public static Image DrawWaveform(string label, double[] signal, int imageWidth, int height, double scalingFactor)
         {
             //double sum = histogram.Sum();
             Pen pen1 = new Pen(Color.White);
@@ -2634,19 +2634,18 @@ namespace TowseyLibrary
             int grid2 = imageWidth / 2;
             int grid3 = (imageWidth * 3) / 4;
 
-            Bitmap bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
-            Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.Black);
-            g.DrawLine(pen3, 0, Yzero, imageWidth, Yzero);
-            //g.DrawLine(pen3, grid1, height - 1, grid1, 0);
-            g.DrawLine(pen3, grid2, height - 1, grid2, 0);
-            //g.DrawLine(pen3, grid3, height - 1, grid3, 0);
-            g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
-            // draw mode bin and upper percentile bound
-            //g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
-            //g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
+            Bitmap bmp1 = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
+            Graphics g1 = Graphics.FromImage(bmp1);
+            g1.Clear(Color.Black);
+            g1.DrawLine(pen3, 0, Yzero, imageWidth, Yzero);
+            //g1.DrawLine(pen3, grid1, height - 1, grid1, 0);
+            g1.DrawLine(pen3, grid2, height - 1, grid2, 0);
+            //g1.DrawLine(pen3, grid3, height - 1, grid3, 0);
+            g1.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
 
-            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+            // draw mode bin and upper percentile bound
+            //g1.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
+            //g1.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
 
             int previousY = Yzero;
             for (int b = 0; b < signal.Length; b++)
@@ -2654,9 +2653,18 @@ namespace TowseyLibrary
                 int X = b * barWidth;
                 int Y = Yzero - (int)Math.Ceiling(signal[b] * height * scalingFactor);
                 //g.FillRectangle(brush, X, Yzero - Y - 1, barWidth, Y);
-                g.DrawLine(pen2, X, previousY, X+1, Y);
+                g1.DrawLine(pen2, X, previousY, X+1, Y);
                 previousY = Y;
             }
+
+
+            Bitmap bmp2 = new Bitmap(imageWidth, 20, PixelFormat.Format24bppRgb);
+            Graphics g2 = Graphics.FromImage(bmp2);
+            g2.DrawLine(pen1, 0, bmp2.Height - 1, imageWidth, bmp2.Height - 1);
+            g2.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+
+            Image[] images = { bmp2, bmp1 };
+            Image bmp = ImageTools.CombineImagesVertically(images);
             return bmp;
         }
 
@@ -2681,31 +2689,111 @@ namespace TowseyLibrary
             double maxValue = histogram[maxBin];
             //double[] normalArray = DataTools.NormaliseArea()
 
-            int grid1 = imageWidth / 4;
-            int grid2 = imageWidth / 2;
-            int grid3 = (imageWidth * 3) / 4;
+            Bitmap bmp1 = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
+            Graphics g1 = Graphics.FromImage(bmp1);
+            g1.Clear(Color.Black);
 
-            Bitmap bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
-            Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.Black);
-            g.DrawLine(pen3, grid1, height - 1, grid1, 0);
-            g.DrawLine(pen3, grid2, height - 1, grid2, 0);
-            g.DrawLine(pen3, grid3, height - 1, grid3, 0);
-            g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
+            for (int i = 1; i < 10; i++)
+            {
+                int grid = imageWidth * i / 10;
+                g1.DrawLine(pen3, grid, height - 1, grid, 0);
+            }
+            g1.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
             // draw mode bin and upper percentile bound
             //g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
             //g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
-
-            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
 
             for (int b = 0; b < histogram.Length; b++)
             {
                 int X = b * barWidth;
                 int Y = (int)Math.Ceiling(histogram[b] * height * scalingFactor);
-                g.FillRectangle(brush, X, height - Y - 1, barWidth, Y);
+                g1.FillRectangle(brush, X, height - Y - 1, barWidth, Y);
             }
+
+            Bitmap bmp2 = new Bitmap(imageWidth, 20, PixelFormat.Format24bppRgb);
+            Graphics g2 = Graphics.FromImage(bmp2);
+            g2.DrawLine(pen1, 0, bmp2.Height - 1, imageWidth, bmp2.Height - 1);
+            g2.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+
+            Image[] images = { bmp2, bmp1 };
+            Image bmp = ImageTools.CombineImagesVertically(images);
             return bmp;
         }
+
+
+
+        public static Image DrawWaveAndFft(double[] signal, int sr, TimeSpan startTime, double[] fftSpectrum, int maxHz, double[] scores)
+        {
+
+            int imageHeight = 300;
+
+            double max = -2.0;
+            for (int i = 0; i < signal.Length; i++)
+            {
+                double absValue = Math.Abs(signal[i]);
+                if (absValue > max)
+                {
+                    max = absValue;
+                }
+            }
+            double scalingFactor = 0.5 / max;
+
+
+            // now process neighbourhood of each max
+            int nyquist = sr/2;
+            int windowWidth = signal.Length;
+            int binCount = windowWidth / 2;
+            double hzPerBin = nyquist / (double)binCount;
+
+            if (fftSpectrum == null)
+            {
+                FFT.WindowFunc wf = FFT.Hamming;
+                var fft = new FFT(windowWidth, wf);
+                fftSpectrum = fft.Invoke(signal);
+            }
+            int requiredBinCount = (int)(maxHz / hzPerBin); 
+            var subBandSpectrum = DataTools.Subarray(fftSpectrum, 1, requiredBinCount); // ignore DC in bin zero.
+            
+            var endTime = startTime + TimeSpan.FromSeconds(windowWidth / (double)sr);
+             
+            string title1 = String.Format("Bandpass filtered: tStart={0},  tEnd={1}", startTime.ToString(), endTime.ToString());
+            Image image4a = ImageTools.DrawWaveform(title1, signal, signal.Length, imageHeight, scalingFactor);
+
+            string title2 = String.Format("FFT 1->{0}Hz.,    hz/bin={1:f1},    score={2:f3}={3:f3}+{4:f3}", maxHz, hzPerBin, scores[0], scores[1], scores[2]);
+            Image image4b = ImageTools.DrawGraph(title2, subBandSpectrum, signal.Length, imageHeight, 1);
+
+            var imageList = new List<Image>();
+            imageList.Add(image4a);
+            imageList.Add(image4b);
+
+
+            Pen pen1 = new Pen(Color.Wheat);
+            SolidBrush brush = new SolidBrush(Color.Red);
+            Font stringFont = new Font("Arial", 9);
+            Bitmap bmp2 = new Bitmap(signal.Length, 25, PixelFormat.Format24bppRgb);
+            Graphics g2 = Graphics.FromImage(bmp2);
+            g2.DrawLine(pen1, 0, 0, signal.Length, 0);
+            g2.DrawLine(pen1, 0, bmp2.Height - 1, signal.Length, bmp2.Height - 1);
+            int barWidth = signal.Length / subBandSpectrum.Length;
+            for (int i=1; i< subBandSpectrum.Length-1; i++)
+            {
+                if ((subBandSpectrum[i] > subBandSpectrum[i-1]) && (subBandSpectrum[i] > subBandSpectrum[i + 1]))
+                {
+                    string label = String.Format("{0},", i + 1);
+                    g2.DrawString(label, stringFont, Brushes.Wheat, new PointF((i * barWidth) - 3, 3));
+                }
+            }
+
+            imageList.Add(bmp2);
+            var image = ImageTools.CombineImagesVertically(imageList);
+
+            return image;
+        }
+
+
+
+
+
 
         /// <summary>
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
