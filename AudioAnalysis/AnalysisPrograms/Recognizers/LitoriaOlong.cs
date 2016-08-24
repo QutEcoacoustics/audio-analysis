@@ -93,6 +93,11 @@ namespace AnalysisPrograms.Recognizers
 
             // max duration of event in seconds                 
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+            
+            // The default was 512 for Canetoad.
+            // Framesize = 128 seems to work for Littoria fallax.
+            // frame size
+            int frameSize = (int)configuration[AnalysisKeys.KeyFrameSize];
 
             // min score for an acceptable event
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
@@ -102,12 +107,9 @@ namespace AnalysisPrograms.Recognizers
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
 
-            // The default was 512 for Canetoad.
-            // Framesize = 128 seems to work for Littoria fallax.
-            const int FrameSize = 128;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
-                FrameSize,
+                frameSize,
                 maxOscilFreq);
             //windowOverlap = 0.75; // previous default
 
@@ -115,7 +117,7 @@ namespace AnalysisPrograms.Recognizers
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.FileName,
-                WindowSize = FrameSize,
+                WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
                 NoiseReductionType = NoiseReductionType.NONE
             };
