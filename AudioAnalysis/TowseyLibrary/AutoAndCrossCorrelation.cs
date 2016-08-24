@@ -184,7 +184,8 @@ out double[] r)
             {
                 covar += ((seriesX[i] - meanX) * (seriesY[i] - meanY));
             }
-            covar = covar / (sdX * sdX) / (seriesX.Length - 1);
+            covar /= (sdX * sdY);
+            covar /= (seriesX.Length - 1);
             return covar;
         }
         //=============================================================================

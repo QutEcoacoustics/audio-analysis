@@ -61,6 +61,32 @@ namespace AudioAnalysisTools.DSP
             return newSig;
         }
 
+        /// <summary>
+        /// This is ultracrude device but ................
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="threshold"></param>
+        /// <returns></returns>
+        public static double[] RemoveSpikes(double[] signal, double threshold)
+        {
+            int L = signal.Length;
+            double[] newSig = new double[L];
+            for (int i = 0; i < L; i++)
+            {
+                if (Math.Abs(signal[i]) > threshold)
+                {
+                    newSig[i] = 0.0;
+                }
+                else
+                {
+                    newSig[i] = signal[i];
+                }
+            }
+            return newSig;
+        }
+
+
+
 
         /// <summary>
         /// converts passed arguments into step decay and step radians ie radians per sample or OMEGA

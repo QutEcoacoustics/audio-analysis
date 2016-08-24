@@ -64,7 +64,10 @@ namespace AnalysisPrograms.Recognizers
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
         {
 
-            bool doFiltering = false;
+            double scoreThreshold = 0.48;
+            bool doFiltering = true;
+            int windowWidth = 2048;
+
             //string path = @"C:\SensorNetworks\WavFiles\Freshwater\savedfortest.wav";
             //audioRecording.Save(path); // this does not work
             int sr = audioRecording.SampleRate;
@@ -88,51 +91,47 @@ namespace AnalysisPrograms.Recognizers
 
             // get samples
             var samples = audioRecording.WavReader.Samples;
-
-            // scale parameters
-            int waveScalingFactor = 10000;
-            int imageHeight = 400;
-
-            double scoreThreshold = 0.75;
             double[] bandPassFilteredSignal = null;
-
-            double[] truePositivesA;
-            double[] truePositivesB;
 
             if (doFiltering)
             {
-                waveScalingFactor = 10000;
-
-                // high pass filter
-                double[] hiPassFilteredSignal = DSP_Filters.PreEmphasis(samples, 1.0);
+                // try removing spikes using a crude method
+                samples = DSP_Filters.RemoveSpikes(samples, 0.2);
 
                 //low pass filter
                 string filterName = "Chebyshev_Lowpass_1000, scale*5";
                 DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
                 int order = filter.order;
-                System.LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
+                //System.LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
                 double[] signalLowPassFiltered;
-                filter.ApplyIIRFilter(hiPassFilteredSignal, out signalLowPassFiltered);
+                filter.ApplyIIRFilter(samples, out signalLowPassFiltered);
 
                 // high pass filter
                 bandPassFilteredSignal = DSP_Filters.PreEmphasis(signalLowPassFiltered, 1.0);
-
-                // these are used for scoring 
-                double[] truePositives1 = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0006, 0.0014, 0.0015, 0.0010, 0.0002, 0.0001, 0.0001, 0.0000, 0.0000, 0.0000, 0.0000, 0.0003, 0.0005, 0.0006, 0.0005, 0.0003, 0.0002, 0.0001, 0.0002, 0.0007, 0.0016, 0.0026, 0.0035, 0.0037, 0.0040, 0.0046, 0.0040, 0.0031, 0.0022, 0.0048, 0.0133, 0.0149, 0.0396, 0.1013, 0.1647, 0.2013, 0.2236, 0.2295, 0.1836, 0.1083, 0.0807, 0.0776, 0.0964, 0.1116, 0.0987, 0.1065, 0.1575, 0.3312, 0.4829, 0.5679, 0.5523, 0.4412, 0.2895, 0.2022, 0.2622, 0.2670, 0.2355, 0.1969, 0.2220, 0.6600, 0.9023, 1.0000, 0.8099, 0.8451, 0.8210, 0.5511, 0.1756, 0.0319, 0.0769, 0.0738, 0.2235, 0.3901, 0.4565, 0.4851, 0.3703, 0.3643, 0.2497, 0.2705, 0.3456, 0.3096, 0.1809, 0.0710, 0.0828, 0.0857, 0.0953, 0.1308, 0.1387, 0.0590 };
-                double[] truePositives2 = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0001, 0.0001, 0.0001, 0.0000, 0.0000, 0.0001, 0.0001, 0.0003, 0.0004, 0.0004, 0.0002, 0.0001, 0.0001, 0.0003, 0.0003, 0.0006, 0.0007, 0.0020, 0.0127, 0.0256, 0.0426, 0.0512, 0.0560, 0.0414, 0.0237, 0.0133, 0.0107, 0.0091, 0.0077, 0.0085, 0.0165, 0.0144, 0.0308, 0.0416, 0.0454, 0.0341, 0.0191, 0.0128, 0.0058, 0.0026, 0.0081, 0.0139, 0.0313, 0.0404, 0.0493, 0.0610, 0.1951, 0.4083, 0.5616, 0.5711, 0.5096, 0.4020, 0.2917, 0.1579, 0.1421, 0.1461, 0.1406, 0.2098, 0.1676, 0.2758, 0.2875, 0.6513, 0.9374, 1.0000, 0.7576, 0.4130, 0.2622, 0.1495, 0.0973, 0.0623, 0.0425, 0.0205, 0.0034, 0.0065, 0.0054, 0.0089, 0.0138, 0.0208, 0.0204, 0.0168, 0.0136, 0.0149, 0.0155, 0.0106, 0.0086, 0.0099, 0.0187 };
-                truePositivesA = truePositives1;
-                truePositivesB = truePositives2;
             }
-            else // do not filter because already filtered
+            else // do not filter because already filtered - using Chris's filtered recording
             {
                 bandPassFilteredSignal = samples;
-                waveScalingFactor = 5;
+            }
 
-                // these are used for scoring 
-                double[] truePositives1 = { 0.0014, 0.0012, 0.0009, 0.0003, 0.0001, 0.0005, 0.0008, 0.0029, 0.0057, 0.0070, 0.0069, 0.0063, 0.0053, 0.0032, 0.0013, 0.0011, 0.0011, 0.0007, 0.0000, 0.0006, 0.0010, 0.0013, 0.0008, 0.0009, 0.0022, 0.0046, 0.0069, 0.0082, 0.0070, 0.0065, 0.0082, 0.0078, 0.0052, 0.0021, 0.0132, 0.0357, 0.0420, 0.0996, 0.2724, 0.4557, 0.5739, 0.6366, 0.6155, 0.4598, 0.2334, 0.1468, 0.1410, 0.1759, 0.2157, 0.1988, 0.2131, 0.3072, 0.6161, 0.8864, 1.0000, 0.9290, 0.6983, 0.4208, 0.2690, 0.3190, 0.3109, 0.2605, 0.1896, 0.2118, 0.5961, 0.8298, 0.9290, 0.7363, 0.6605, 0.5840, 0.3576, 0.1019, 0.0162, 0.0400, 0.0405, 0.1106, 0.1803, 0.2083, 0.2058, 0.1475, 0.1387, 0.0870, 0.0804, 0.0975, 0.0848, 0.0490, 0.0193, 0.0217, 0.0210, 0.0214, 0.0253, 0.0254, 0.0072 };
-                double[] truePositives2 = { 0.0090, 0.0106, 0.0138, 0.0134, 0.0088, 0.0026, 0.0002, 0.0002, 0.0003, 0.0000, 0.0001, 0.0006, 0.0013, 0.0019, 0.0020, 0.0015, 0.0008, 0.0004, 0.0002, 0.0015, 0.0022, 0.0073, 0.0195, 0.0628, 0.2203, 0.4031, 0.5635, 0.5445, 0.4828, 0.2869, 0.1498, 0.0588, 0.0500, 0.0542, 0.0641, 0.1188, 0.1833, 0.1841, 0.2684, 0.3062, 0.2831, 0.1643, 0.0606, 0.0336, 0.0136, 0.0056, 0.0187, 0.0301, 0.0700, 0.1103, 0.1559, 0.2449, 0.5303, 0.8544, 1.0000, 0.8361, 0.6702, 0.4839, 0.3463, 0.1525, 0.1049, 0.1201, 0.1242, 0.2056, 0.1653, 0.2685, 0.2947, 0.5729, 0.7024, 0.6916, 0.4765, 0.2488, 0.1283, 0.0543, 0.0326, 0.0236, 0.0187, 0.0108, 0.0021, 0.0028, 0.0019, 0.0024, 0.0041, 0.0063, 0.0066, 0.0055, 0.0036, 0.0025, 0.0018, 0.0014, 0.0013, 0.0008, 0.0010 };
-                truePositivesA = truePositives1;
-                truePositivesB = truePositives2;
+            bool doAnalysisOfKnownExamples = false;
+            if (doAnalysisOfKnownExamples)
+            {
+                // go to fixed location to check
+                //1:02.07, 1:07.67, 1:12.27, 1:12.42, 1:12.59, 1:12.8, 1.34.3, 1:35.3, 1:40.16, 1:50.0, 2:05.9, 2:06.62, 2:17.57, 2:21.0
+                //2:26.33, 2:43.07, 2:43.15, 3:16.55, 3:35.09, 4:22.44, 4:29.9, 4:42.6, 4:51.48, 5:01.8, 5:21.15, 5:22.72, 5:32.37, 5.36.1,
+                //5:42.82, 6:03.5, 6:19.93, 6:21.55, 6:42.0, 6:42.15, 6:46.44, 7:12.17, 7:42.65, 7:45.86, 7:46.18, 7:52.38, 7:59.11, 8:10.63,
+                //8:14.4, 8:14.63, 8_15_240, 8_46_590, 8_56_590, 9_25_77, 9_28_94, 9_30_5, 9_43_9, 10_03_19, 10_24_26, 10_24_36, 10_38_8,
+                //10_41_08, 10_50_9, 11_05_13, 11_08_63, 11_44_66, 11_50_36, 11_51_2, 12_04_93, 12_10_05, 12_20_78, 12_27_0, 12_38_5,
+                //13_02_25, 13_08_18, 13_12_8, 13_25_24, 13_36_0, 13_50_4, 13_51_2, 13_57_87, 14_15_00, 15_09_74, 15_12_14, 15_25_79
+
+                double[] times = { 2.2, 3.68, 10.83, 24.95, 26.56, 27.18, 29.61, 31.36 };
+                for (int t = 0; t < times.Length; t++)
+                {
+                    Image bmp = BlueCatfish.AnalyseLocation(bandPassFilteredSignal, sr, times[t], windowWidth);
+                    string pathX = String.Format(@"C:\SensorNetworks\Output\Freshwater\testSubsamples\testSubsample_{0}secs.png", times[t]);
+                    bmp.Save(pathX);
+                }
             }
 
             int signalLength = bandPassFilteredSignal.Length;
@@ -174,18 +173,16 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // now process neighbourhood of each max
-            int windowWidth = 2048;
             int binCount = windowWidth / 2;
             FFT.WindowFunc wf = FFT.Hamming;
             var fft = new FFT(windowWidth, wf);
-            int maxHz = nyquist / 11;
+            int maxHz = 1000;
             double hzPerBin = nyquist / (double)binCount;
+            int requiredBinCount = (int)Math.Round(maxHz / hzPerBin);
 
             // init list of events
             List<AcousticEvent> events = new List<AcousticEvent>();
             double[] scores = new double[signalLength]; // init of score array
-            truePositivesA = NormalDist.Convert2ZScores(truePositivesA);
-            truePositivesB = NormalDist.Convert2ZScores(truePositivesB);
 
             int id = 0;
             foreach (int location in indexList)
@@ -200,70 +197,23 @@ namespace AnalysisPrograms.Recognizers
                 double[] subsampleWav = DataTools.Subarray(bandPassFilteredSignal, start, windowWidth);
 
                 var spectrum = fft.Invoke(subsampleWav);
-                int requiredBinCount = spectrum.Length / 11; // this assumes that nyquiust = 11,025
-                var subBandSpectrum = DataTools.Subarray(spectrum, 1, requiredBinCount); // ignore DC in bin zero.
                 // convert to power
-                subBandSpectrum = DataTools.SquareValues(subBandSpectrum);
-                subBandSpectrum = DataTools.filterMovingAverageOdd(subBandSpectrum, 3);
-                subBandSpectrum = DataTools.normalise(subBandSpectrum);
+                spectrum = DataTools.SquareValues(spectrum);
+                spectrum = DataTools.filterMovingAverageOdd(spectrum, 3);
+                spectrum = DataTools.normalise(spectrum);
+                var subBandSpectrum = DataTools.Subarray(spectrum, 1, requiredBinCount); // ignore DC in bin zero.
 
 
                 // now do some tests on spectrum to determine if it is a candidate grunt
                 bool eventFound = false;
 
-                //TEST ONE
-                /*
-                double totalAreaUnderSpectrum = subBandSpectrum.Sum();
-                double areaUnderLowest24bins = 0.0;
-                for (int i = 0; i < 24; i++)
-                {
-                    areaUnderLowest24bins += subBandSpectrum[i];
-                }
-                double areaUnderHighBins = totalAreaUnderSpectrum - areaUnderLowest24bins;
-                double areaUnderBins4to7 = 0.0;
-                for (int i = 4; i < 7; i++)
-                {
-                    areaUnderBins4to7 += subBandSpectrum[i];
-                }
-                double ratio1 = areaUnderBins4to7 / areaUnderLowest24bins;
+                double[] scoreArray = CalculateScores(subBandSpectrum, windowWidth);
+                double score = scoreArray[0];
 
-                double areaUnderBins38to72 = 0.0;
-                for (int i = 38; i < 44; i++)
+                if (score > scoreThreshold)
                 {
-                    areaUnderBins38to72 += subBandSpectrum[i];
-                }
-                for (int i = 52; i < 57; i++)
-                {
-                    areaUnderBins38to72 += subBandSpectrum[i];
-                }
-                for (int i = 64; i < 72; i++)
-                {
-                    areaUnderBins38to72 += subBandSpectrum[i];
-                }
-                double ratio2 = areaUnderBins38to72 / areaUnderHighBins;
-                double score = (ratio1 * 0.2) + (ratio2 * 0.8);
-                double[] truePositives = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0006, 0.0014, 0.0015, 0.0010, 0.0002, 0.0001, 0.0001, 0.0000, 0.0000, 0.0000, 0.0000, 0.0003, 0.0005, 0.0006, 0.0005, 0.0003, 0.0002, 0.0001, 0.0002, 0.0007, 0.0016, 0.0026, 0.0035, 0.0037, 0.0040, 0.0046, 0.0040, 0.0031, 0.0022, 0.0048, 0.0133, 0.0149, 0.0396, 0.1013, 0.1647, 0.2013, 0.2236, 0.2295, 0.1836, 0.1083, 0.0807, 0.0776, 0.0964, 0.1116, 0.0987, 0.1065, 0.1575, 0.3312, 0.4829, 0.5679, 0.5523, 0.4412, 0.2895, 0.2022, 0.2622, 0.2670, 0.2355, 0.1969, 0.2220, 0.6600, 0.9023, 1.0000, 0.8099, 0.8451, 0.8210, 0.5511, 0.1756, 0.0319, 0.0769, 0.0738, 0.2235, 0.3901, 0.4565, 0.4851, 0.3703, 0.3643, 0.2497, 0.2705, 0.3456, 0.3096, 0.1809, 0.0710, 0.0828, 0.0857, 0.0953, 0.1308, 0.1387, 0.0590 };
-
-                if (score > 0.4)
                     eventFound = true;
-                if ((areaUnderHighBins/3) < areaUnderLowest24bins)
-                //if (ratio1 > ratio2)
-                {
-                    eventFound = false;
                 }
-                */
-
-                // TEST TWO
-                var zscores   = NormalDist.Convert2ZScores(subBandSpectrum);
-                double score1 = AutoAndCrossCorrelation.CorrelationCoefficient(zscores, truePositivesA);
-                double score2 = AutoAndCrossCorrelation.CorrelationCoefficient(zscores, truePositivesB);
-
-
-                // PROCESS SCORES
-                //if (score1 > scoreThreshold) eventFound = true;
-                if ((score1 > scoreThreshold) || (score2 > scoreThreshold)) eventFound = true;
-                double score = score1;
-                if (score2 > score) score = score2;
 
                 if (eventFound)
                 {
@@ -272,34 +222,20 @@ namespace AnalysisPrograms.Recognizers
                         scores[location] = score;
                     }
 
-
-                    var timespanStart = TimeSpan.FromSeconds((location - binCount) / (double)sr);
-                    var timespanMid   = TimeSpan.FromSeconds(location / (double)sr);
-                    var timespanEnd   = TimeSpan.FromSeconds((location + binCount) / (double)sr);
-
-                    string title1 = String.Format("Bandpass filtered: tStart={0},  tMiddle={1},  tEnd={2}",
-                                                     timespanStart.ToString(), timespanMid.ToString(), timespanEnd.ToString());
-                    Image image4a = ImageTools.DrawWaveform(title1, subsampleWav, subsampleWav.Length, imageHeight, waveScalingFactor);
-
-                    string title2 = String.Format("FFT 1->{0}Hz.,    hz/bin={1:f1},    score={2:f3}", maxHz, hzPerBin, score);
-                    Image image4b = ImageTools.DrawGraph(title2, subBandSpectrum, subsampleWav.Length, imageHeight, 1);
-
-                    var imageList = new List<Image>();
-                    imageList.Add(image4a);
-                    imageList.Add(image4b);
-                    var image4 = ImageTools.CombineImagesVertically(imageList);
-                    string path4 = String.Format(@"C:\SensorNetworks\Output\Freshwater\subsamples\subsample_{0}_{1}.png", id, location);
+                    var startTime = TimeSpan.FromSeconds((location - binCount) / (double)sr);
+                    string startLabel = startTime.Minutes + "." + startTime.Seconds+ "." + startTime.Milliseconds;
+                    Image image4 = ImageTools.DrawWaveAndFft(subsampleWav, sr, startTime, spectrum, maxHz*2, scoreArray);
+                    string path4 = String.Format(@"C:\SensorNetworks\Output\Freshwater\subsamples\subsample_{0}_{1}.png", location, startLabel);
                     image4.Save(path4);
 
                     // have an event, store the data in the AcousticEvent class
-                    double startTime = timespanMid.TotalSeconds;
                     double duration = 0.2; 
                     int minFreq = 50; 
                     int maxFreq = 1000;
-                    var anEvent = new AcousticEvent(startTime, duration, minFreq, maxFreq);
+                    var anEvent = new AcousticEvent(startTime.TotalSeconds, duration, minFreq, maxFreq);
                     anEvent.Name = "grunt";
+                    //anEvent.Name = DataTools.WriteArrayAsCsvLine(subBandSpectrum, "f4");
                     anEvent.Score = score;
-                    anEvent.Name = DataTools.WriteArrayAsCsvLine(subBandSpectrum, "f4");
                     events.Add(anEvent);
 
                 }
@@ -335,5 +271,181 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram
             };
         }
+
+
+        public static Image AnalyseLocation(double[] signal, int sr, double startTimeInSeconds, int windowWidth)
+        {
+            int binCount = windowWidth / 2;
+
+            int location = (int)Math.Round(startTimeInSeconds * sr);
+            int nyquist = sr / 2;
+            FFT.WindowFunc wf = FFT.Hamming;
+            var fft = new FFT(windowWidth, wf);
+            int maxHz = 1000;
+            double hzPerBin = nyquist / (double)binCount;
+            int requiredBinCount = (int)Math.Round(maxHz / hzPerBin);
+
+            double[] subsampleWav = DataTools.Subarray(signal, location, windowWidth);
+
+            var spectrum = fft.Invoke(subsampleWav);
+            // convert to power
+            spectrum = DataTools.SquareValues(spectrum);
+            spectrum = DataTools.filterMovingAverageOdd(spectrum, 3);
+            spectrum = DataTools.normalise(spectrum);
+            var subBandSpectrum = DataTools.Subarray(spectrum, 1, requiredBinCount); // ignore DC in bin zero.
+
+
+            var startTime = TimeSpan.FromSeconds(startTimeInSeconds);
+            double[] scoreArray = CalculateScores(subBandSpectrum, windowWidth);
+            Image image4 = ImageTools.DrawWaveAndFft(subsampleWav, sr, startTime, spectrum, maxHz * 2, scoreArray);
+            return image4;
+        }
+
+        public static double[] CalculateScores(double[] subBandSpectrum, int windowWidth)
+        {
+            double[] scores = { 0, 0, 0 };
+
+            //TEST ONE
+            /*
+            double totalAreaUnderSpectrum = subBandSpectrum.Sum();
+            double areaUnderLowest24bins = 0.0;
+            for (int i = 0; i < 24; i++)
+            {
+                areaUnderLowest24bins += subBandSpectrum[i];
+            }
+            double areaUnderHighBins = totalAreaUnderSpectrum - areaUnderLowest24bins;
+            double areaUnderBins4to7 = 0.0;
+            for (int i = 4; i < 7; i++)
+            {
+                areaUnderBins4to7 += subBandSpectrum[i];
+            }
+            double ratio1 = areaUnderBins4to7 / areaUnderLowest24bins;
+
+            double areaUnderBins38to72 = 0.0;
+            for (int i = 38; i < 44; i++)
+            {
+                areaUnderBins38to72 += subBandSpectrum[i];
+            }
+            for (int i = 52; i < 57; i++)
+            {
+                areaUnderBins38to72 += subBandSpectrum[i];
+            }
+            for (int i = 64; i < 72; i++)
+            {
+                areaUnderBins38to72 += subBandSpectrum[i];
+            }
+            double ratio2 = areaUnderBins38to72 / areaUnderHighBins;
+            double score = (ratio1 * 0.2) + (ratio2 * 0.8);
+            double[] truePositives = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0006, 0.0014, 0.0015, 0.0010, 0.0002, 0.0001, 0.0001, 0.0000, 0.0000, 0.0000, 0.0000, 0.0003, 0.0005, 0.0006, 0.0005, 0.0003, 0.0002, 0.0001, 0.0002, 0.0007, 0.0016, 0.0026, 0.0035, 0.0037, 0.0040, 0.0046, 0.0040, 0.0031, 0.0022, 0.0048, 0.0133, 0.0149, 0.0396, 0.1013, 0.1647, 0.2013, 0.2236, 0.2295, 0.1836, 0.1083, 0.0807, 0.0776, 0.0964, 0.1116, 0.0987, 0.1065, 0.1575, 0.3312, 0.4829, 0.5679, 0.5523, 0.4412, 0.2895, 0.2022, 0.2622, 0.2670, 0.2355, 0.1969, 0.2220, 0.6600, 0.9023, 1.0000, 0.8099, 0.8451, 0.8210, 0.5511, 0.1756, 0.0319, 0.0769, 0.0738, 0.2235, 0.3901, 0.4565, 0.4851, 0.3703, 0.3643, 0.2497, 0.2705, 0.3456, 0.3096, 0.1809, 0.0710, 0.0828, 0.0857, 0.0953, 0.1308, 0.1387, 0.0590 };
+
+            if (score > 0.4)
+                eventFound = true;
+            if ((areaUnderHighBins/3) < areaUnderLowest24bins)
+            //if (ratio1 > ratio2)
+            {
+                eventFound = false;
+            }
+            */
+
+            // TEST TWO (A)
+            // these are used for scoring 
+            //double[] truePositives1 = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0006, 0.0014, 0.0015, 0.0010, 0.0002, 0.0001, 0.0001, 0.0000, 0.0000, 0.0000, 0.0000, 0.0003, 0.0005, 0.0006, 0.0005, 0.0003, 0.0002, 0.0001, 0.0002, 0.0007, 0.0016, 0.0026, 0.0035, 0.0037, 0.0040, 0.0046, 0.0040, 0.0031, 0.0022, 0.0048, 0.0133, 0.0149, 0.0396, 0.1013, 0.1647, 0.2013, 0.2236, 0.2295, 0.1836, 0.1083, 0.0807, 0.0776, 0.0964, 0.1116, 0.0987, 0.1065, 0.1575, 0.3312, 0.4829, 0.5679, 0.5523, 0.4412, 0.2895, 0.2022, 0.2622, 0.2670, 0.2355, 0.1969, 0.2220, 0.6600, 0.9023, 1.0000, 0.8099, 0.8451, 0.8210, 0.5511, 0.1756, 0.0319, 0.0769, 0.0738, 0.2235, 0.3901, 0.4565, 0.4851, 0.3703, 0.3643, 0.2497, 0.2705, 0.3456, 0.3096, 0.1809, 0.0710, 0.0828, 0.0857, 0.0953, 0.1308, 0.1387, 0.0590 };
+            //double[] truePositives2 = { 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0001, 0.0001, 0.0001, 0.0000, 0.0000, 0.0001, 0.0001, 0.0003, 0.0004, 0.0004, 0.0002, 0.0001, 0.0001, 0.0003, 0.0003, 0.0006, 0.0007, 0.0020, 0.0127, 0.0256, 0.0426, 0.0512, 0.0560, 0.0414, 0.0237, 0.0133, 0.0107, 0.0091, 0.0077, 0.0085, 0.0165, 0.0144, 0.0308, 0.0416, 0.0454, 0.0341, 0.0191, 0.0128, 0.0058, 0.0026, 0.0081, 0.0139, 0.0313, 0.0404, 0.0493, 0.0610, 0.1951, 0.4083, 0.5616, 0.5711, 0.5096, 0.4020, 0.2917, 0.1579, 0.1421, 0.1461, 0.1406, 0.2098, 0.1676, 0.2758, 0.2875, 0.6513, 0.9374, 1.0000, 0.7576, 0.4130, 0.2622, 0.1495, 0.0973, 0.0623, 0.0425, 0.0205, 0.0034, 0.0065, 0.0054, 0.0089, 0.0138, 0.0208, 0.0204, 0.0168, 0.0136, 0.0149, 0.0155, 0.0106, 0.0086, 0.0099, 0.0187 };
+            //double[] truePositivesA = NormalDist.Convert2ZScores(truePositivesA);
+            //double[] truePositivesB = NormalDist.Convert2ZScores(truePositivesB);
+
+
+
+            // TEST TWO (B)
+            // Use these spectra when using my filtering (i.e. not Chris's prefiltered)
+            // these spectra are used for scoring when the window size is 2048
+            double[] truePositives1 = { 0.0014, 0.0012, 0.0009, 0.0003, 0.0001, 0.0005, 0.0008, 0.0029, 0.0057, 0.0070, 0.0069, 0.0063, 0.0053, 0.0032, 0.0013, 0.0011, 0.0011, 0.0007, 0.0000, 0.0006, 0.0010, 0.0013, 0.0008, 0.0009, 0.0022, 0.0046, 0.0069, 0.0082, 0.0070, 0.0065, 0.0082, 0.0078, 0.0052, 0.0021, 0.0132, 0.0357, 0.0420, 0.0996, 0.2724, 0.4557, 0.5739, 0.6366, 0.6155, 0.4598, 0.2334, 0.1468, 0.1410, 0.1759, 0.2157, 0.1988, 0.2131, 0.3072, 0.6161, 0.8864, 1.0000, 0.9290, 0.6983, 0.4208, 0.2690, 0.3190, 0.3109, 0.2605, 0.1896, 0.2118, 0.5961, 0.8298, 0.9290, 0.7363, 0.6605, 0.5840, 0.3576, 0.1019, 0.0162, 0.0400, 0.0405, 0.1106, 0.1803, 0.2083, 0.2058, 0.1475, 0.1387, 0.0870, 0.0804, 0.0975, 0.0848, 0.0490, 0.0193, 0.0217, 0.0210, 0.0214, 0.0253, 0.0254, 0.0072 };
+            double[] truePositives2 = { 0.0090, 0.0106, 0.0138, 0.0134, 0.0088, 0.0026, 0.0002, 0.0002, 0.0003, 0.0000, 0.0001, 0.0006, 0.0013, 0.0019, 0.0020, 0.0015, 0.0008, 0.0004, 0.0002, 0.0015, 0.0022, 0.0073, 0.0195, 0.0628, 0.2203, 0.4031, 0.5635, 0.5445, 0.4828, 0.2869, 0.1498, 0.0588, 0.0500, 0.0542, 0.0641, 0.1188, 0.1833, 0.1841, 0.2684, 0.3062, 0.2831, 0.1643, 0.0606, 0.0336, 0.0136, 0.0056, 0.0187, 0.0301, 0.0700, 0.1103, 0.1559, 0.2449, 0.5303, 0.8544, 1.0000, 0.8361, 0.6702, 0.4839, 0.3463, 0.1525, 0.1049, 0.1201, 0.1242, 0.2056, 0.1653, 0.2685, 0.2947, 0.5729, 0.7024, 0.6916, 0.4765, 0.2488, 0.1283, 0.0543, 0.0326, 0.0236, 0.0187, 0.0108, 0.0021, 0.0028, 0.0019, 0.0024, 0.0041, 0.0063, 0.0066, 0.0055, 0.0036, 0.0025, 0.0018, 0.0014, 0.0013, 0.0008, 0.0010 };
+            // these spectra are used for scoring when the window size is 1024
+            //double[] truePositives1 = { 0.0007, 0.0004, 0.0000, 0.0025, 0.0059, 0.0069, 0.0044, 0.0012, 0.0001, 0.0006, 0.0013, 0.0032, 0.0063, 0.0067, 0.0070, 0.0033, 0.0086, 0.0128, 0.1546, 0.4550, 0.6197, 0.4904, 0.2075, 0.0714, 0.1171, 0.4654, 0.8634, 1.0000, 0.7099, 0.2960, 0.1335, 0.3526, 0.6966, 0.9215, 0.6628, 0.3047, 0.0543, 0.0602, 0.0931, 0.1364, 0.1314, 0.1047, 0.0605, 0.0204, 0.0128, 0.0114 };
+            //double[] truePositives2 = { 0.0126, 0.0087, 0.0043, 0.0002, 0.0000, 0.0010, 0.0018, 0.0016, 0.0005, 0.0002, 0.0050, 0.1262, 0.4054, 0.5111, 0.3937, 0.1196, 0.0156, 0.0136, 0.0840, 0.1598, 0.1691, 0.0967, 0.0171, 0.0152, 0.0234, 0.3648, 0.8243, 1.0000, 0.6727, 0.2155, 0.0336, 0.0240, 0.2661, 0.6240, 0.7523, 0.5098, 0.1493, 0.0149, 0.0046, 0.0020, 0.0037, 0.0061, 0.0061, 0.0036, 0.0010, 0.0008 };
+
+            var zscores = NormalDist.Convert2ZScores(subBandSpectrum);
+            double correlationScore = 0.0;
+            double score1 = AutoAndCrossCorrelation.CorrelationCoefficient(zscores, truePositives1);
+            double score2 = AutoAndCrossCorrelation.CorrelationCoefficient(zscores, truePositives2);
+            correlationScore = score1;
+            if (score2 > correlationScore) correlationScore = score2;
+
+            // TEST THREE: sharpness and height of peaks
+            // score the four heighest peaks
+            double peaksScore = 0;
+            double[] spectrumCopy = new double[subBandSpectrum.Length];
+            for (int i = 0; i < subBandSpectrum.Length; i++)
+            {
+                spectrumCopy[i] = subBandSpectrum[i];
+            }
+
+            // set spectrum bounds
+            int lowerBound = subBandSpectrum.Length / 4;
+            int upperBound = subBandSpectrum.Length * 7 / 8;
+            for (int p = 0; p < 4; p++)
+            {
+                int peakLocation = DataTools.GetMaxIndex(spectrumCopy);
+                if (peakLocation < lowerBound) continue; // peak location cannot be too low
+                if (peakLocation > upperBound) continue; // peak location cannot be too high
+
+                double peakHeight = spectrumCopy[peakLocation];
+                int nh = 3;
+                if (windowWidth == 2048) nh = 6;
+                double peakSides = (subBandSpectrum[peakLocation - nh] + subBandSpectrum[peakLocation + nh]) / (double)2;
+                peaksScore += (peakHeight - peakSides);
+                //now zero peak and peak neighbourhood
+                if (windowWidth == 2048) nh = 9;
+                for (int n = 0; n < nh; n++)
+                {
+                    spectrumCopy[peakLocation + n] = 0;
+                    spectrumCopy[peakLocation - n] = 0;
+                }
+            } // for 4 peaks
+            // take average of four peaks
+            peaksScore /= 4;
+
+            // TEST FOUR: peak position ratios
+            // 
+            int[] peakLocationCentres = { 3, 10, 37, 44, 54, 67 };
+            int nh2 = 6;
+            int[] actualPeakLocations = new int[6];
+            double[] relativePeakHeights = new double[6];
+            for (int p = 0; p < 6; p++)
+            {
+                double max = -double.MaxValue;
+                int maxId = peakLocationCentres[p];
+                for (int id = peakLocationCentres[p] - 4; id < peakLocationCentres[p] + 4; id++)
+                {
+                    if (id < 0) id = 0;
+                    if (subBandSpectrum[id] > max)
+                    {
+                        max = subBandSpectrum[id];
+                        maxId = id;
+                    }
+                }
+                actualPeakLocations[p] = maxId;
+                int lowerPosition = maxId - nh2;
+                if (lowerPosition < 0) lowerPosition = 0;
+                relativePeakHeights[p] = subBandSpectrum[maxId] - subBandSpectrum[lowerPosition] - subBandSpectrum[maxId+nh2];
+            }
+            double[] targetHeights = { 0.1, 0.1, 0.5, 0.5, 1.0, 0.6 };
+            var zscores1 = NormalDist.Convert2ZScores(relativePeakHeights);
+            var zscores2 = NormalDist.Convert2ZScores(targetHeights);
+            double relativePeakScore = AutoAndCrossCorrelation.CorrelationCoefficient(zscores1, zscores2);
+
+            //###########################################################################################
+            // PROCESS SCORES
+            //if (score1 > scoreThreshold) eventFound = true;
+            //if ((score1 > scoreThreshold) || (score2 > scoreThreshold)) eventFound = true;
+            //double score = (correlationScore * 0.3) + (peaksScore * 0.7);
+            double score = (relativePeakScore * 0.4) + (peaksScore * 0.6);
+            scores[0] = score;
+            scores[1] = relativePeakScore;
+            scores[2] = peaksScore;
+            return scores;
+        }
+
     }
 }

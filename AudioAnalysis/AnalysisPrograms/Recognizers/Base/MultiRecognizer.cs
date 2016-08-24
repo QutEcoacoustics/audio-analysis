@@ -172,7 +172,7 @@ namespace AnalysisPrograms.Recognizers.Base
             int index = 0;
             for (int i = 0; i < imageWidth; i++)
             {
-                index = (int)Math.Round((scores.Length * i / (double)imageWidth));
+                index = (int)Math.Round((scores.Length / (double)imageWidth) * (double)i);
                 scoreValues[i] = scores[index];
             }
 
