@@ -4,8 +4,8 @@ SpeciesName: Litoria Olongburensis
 AbbreviatedSpeciesName: L.olong
 
 # min and max of the freq band to search
-MinHz: 5000          
-MaxHz: 6200
+MinHz: 3800          
+MaxHz: 6500
 # duration of DCT in seconds 
 DctDuration: 0.2
 # minimum acceptable value of a DCT coefficient
@@ -13,12 +13,14 @@ DctThreshold: 0.6
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
 MinOcilFreq: 20        
-MaxOcilFreq: 28
+MaxOcilFreq: 32
 # Minimum and maximum duration for the length of a true call.
-MinDuration: 0.2
-MaxDuration: 0.5
+MinDuration: 0.25
+MaxDuration: 0.7
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.30
+
+FrameSize: 128
 
 # Standard settings
 #DoNoiseReduction: false
