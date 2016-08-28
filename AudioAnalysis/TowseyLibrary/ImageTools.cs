@@ -2601,6 +2601,41 @@ namespace TowseyLibrary
             return bmp;
         }
 
+
+
+
+        /// <summary>
+        /// This method places startTime in the centre of the waveform image and then cuts out buffer eitherside.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="signal"></param>
+        /// <param name="sr"></param>
+        /// <param name="startTimeInSeconds"></param>
+        /// <param name="sampleLength"></param>
+        /// <returns></returns>
+        public static Image DrawWaveform(string label, double[] signal, int sr, double centreTimeInSeconds, int sampleBuffer)
+        {
+            int location = (int)Math.Round(centreTimeInSeconds * sr); //assume location points to start of required image
+            double[] subsample = DataTools.Subarray(signal, location - sampleBuffer, 2 * sampleBuffer);
+            int height = 300;
+
+            double max = -2.0;
+            for (int i = 0; i < subsample.Length; i++)
+            {
+                double absValue = Math.Abs(subsample[i]);
+                if (absValue > max)
+                {
+                    max = absValue;
+                }
+            }
+            double scalingFactor = 0.5 / max;
+
+            Image image = ImageTools.DrawWaveform(label, subsample, subsample.Length, height, scalingFactor);
+            return image;
+        }
+
+
+
         /// <summary>
         /// Asumes signal is between -1 and +1.
         /// </summary>
@@ -2638,9 +2673,9 @@ namespace TowseyLibrary
             Graphics g1 = Graphics.FromImage(bmp1);
             g1.Clear(Color.Black);
             g1.DrawLine(pen3, 0, Yzero, imageWidth, Yzero);
-            //g1.DrawLine(pen3, grid1, height - 1, grid1, 0);
+            g1.DrawLine(pen3, grid1, height - 1, grid1, 0);
             g1.DrawLine(pen3, grid2, height - 1, grid2, 0);
-            //g1.DrawLine(pen3, grid3, height - 1, grid3, 0);
+            g1.DrawLine(pen3, grid3, height - 1, grid3, 0);
             g1.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
 
             // draw mode bin and upper percentile bound
