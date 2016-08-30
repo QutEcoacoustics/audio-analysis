@@ -408,7 +408,7 @@ namespace AudioAnalysisTools
             //g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
             //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
             g.DrawLine(scorePen, t1, y1, t1, y2);
-            g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
+            g.DrawString(this.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 1));
         }
 
 

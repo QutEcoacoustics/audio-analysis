@@ -101,7 +101,7 @@ namespace TowseyLibrary
                     isHit = false;
                     int endID = i-1;
 
-                    int duration = endID - startID;
+                    int duration = endID - startID + 1;
                     if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
 
                     for (int j = startID; j <= endID; j++) // pass over all frames

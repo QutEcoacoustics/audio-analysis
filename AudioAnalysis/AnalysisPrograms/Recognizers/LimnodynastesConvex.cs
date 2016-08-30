@@ -149,7 +149,7 @@ namespace AnalysisPrograms.Recognizers
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
             double thresholdDb = 3.0; // after noise removal
             int minFrameDuration = 3;
-            int maxFrameDuration = 6;
+            int maxFrameDuration = 5;
             double minDuration = (minFrameDuration-1) * frameStepInSeconds;
             double maxDuration = maxFrameDuration * frameStepInSeconds;
 
@@ -175,9 +175,9 @@ namespace AnalysisPrograms.Recognizers
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
             double[] scores = new double[rowCount]; // predefinition of score array
             double[,] hits = new double[rowCount, colCount];
+
             // loop through all spectra/rows of the spectrogram - NB: spg is rotated to vertical.
             // mark the hits in hitMatrix
-
             for (int s = 0; s < rowCount; s++)
             {
                 double[] spectrum = MatrixTools.GetRow(spg, s); 
@@ -234,7 +234,7 @@ namespace AnalysisPrograms.Recognizers
                 int avDominantBin = (int)Math.Round(binSum / (double)binCount);
                 int avDominantFreq = (int)(Math.Round(binSum / (double)binCount) * herzPerBin);
                 double avScore = scoreSum / (double)eventWidth;
-                if (avScore < 3.0)
+                if (avScore < (thresholdDb - 1.0))
                 {
                     continue;
                 }
