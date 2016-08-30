@@ -50,7 +50,7 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 NoiseReductionType = NoiseReductionType.STANDARD,
                 NoiseReductionParameter = 0.1,
-                WindowSize = 1024                
+                WindowSize = 512                
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
@@ -108,6 +108,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     ScoreTrack = scoreTrackImage,
                     Sonogram = sonogram,
                     Plots = plots,
+                    Hits = null
                 };
         }
 
