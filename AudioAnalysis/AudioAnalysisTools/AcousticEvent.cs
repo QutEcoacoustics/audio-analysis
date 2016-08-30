@@ -73,7 +73,7 @@ namespace AudioAnalysisTools
 
         public static readonly Color DefaultBorderColor = Color.FromArgb(255, Color.Crimson);
 
-        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.DarkGray);
+        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.Lime);
 
         /// <summary>
         /// Units = seconds
@@ -405,9 +405,9 @@ namespace AudioAnalysisTools
             int scoreHt = (int)Math.Round(height * this.ScoreNormalised);
             int y1 = y + height;
             int y2 = y1 - scoreHt;
-            g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
-            g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
-            //g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
+            //g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
+            //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
+            g.DrawLine(scorePen, t1, y1, t1, y2);
             g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
         }
 
@@ -1071,7 +1071,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// A general method to convert an array of score values to a list of AcousticEvents.
         /// The method uses the passed scoreThreshold in order to calculate a normalised score.
-        /// Max possible score := threshold * 5
+        /// Max possible score := threshold * 5.
         /// normalised score := score / maxPossibleScore.
         /// Some analysis techniques (e.g. OD) have their own methods for extracting events from score arrays.
         /// </summary>

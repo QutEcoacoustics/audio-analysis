@@ -24,6 +24,7 @@ namespace AnalysisPrograms.Recognizers
 
     using TowseyLibrary;
     using System.Drawing;
+    using System.IO;
 
     /// <summary>
     /// This is a template recognizer
@@ -106,23 +107,26 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionType = NoiseReductionType.STANDARD,
                 NoiseReductionParameter = 0.1
             };
+            config.WindowOverlap = 0.0;
+
             // now construct the standard decibel spectrogram WITHOUT noise removal, and look for LimConvex
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
-            var spg = sonogram.Data;
+            // remove the DC column
+            var spg = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0)-1, sonogram.Data.GetLength(1)-1);
+            sonogram.Data = spg;
             int sampleRate = audioRecording.SampleRate;
             int rowCount = spg.GetLength(0);
             int colCount = spg.GetLength(1);
 
             double epsilon = Math.Pow(0.5, audioRecording.BitsPerSample - 1);
-            int frameSize = rowCount * 2;
+            int frameSize = colCount * 2;
             int frameStep = frameSize; // this default = zero overlap
             double frameDurationInSeconds = frameSize / (double)sampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
             double framesPerSec = 1 / frameStepInSeconds;
-            double timeSpanOfFrameInSeconds = frameSize / (double)sampleRate;
 
-            double herzPerBin = sampleRate / 2 / (double)rowCount;
+            double herzPerBin = sampleRate / 2 / (double)colCount;
             // min score for an acceptable event
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
@@ -143,6 +147,11 @@ namespace AnalysisPrograms.Recognizers
 
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            double thresholdDb = 3.0; // after noise removal
+            int minFrameDuration = 3;
+            int maxFrameDuration = 6;
+            double minDuration = (minFrameDuration-1) * frameStepInSeconds;
+            double maxDuration = maxFrameDuration * frameStepInSeconds;
 
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int dominantFrequency = (int)configuration["DominantFrequency"];
@@ -161,80 +170,208 @@ namespace AnalysisPrograms.Recognizers
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
 
-            //  freqBin + rowID = binCount - 1;
-            // therefore: rowID = binCount - freqBin - 1;
-            int minRowID = rowCount - dominantBinMax - 1;
-            int maxRowID = rowCount - dominantBinMin - 1;
-            int bottomRow = rowCount - bottomBin - 1;
+            int bandwidth = dominantBinMax - dominantBinMin + 1;
 
-            var peakList = new List<Point>();
-            double[] scores = new double[colCount]; // predefinition of score array
+            int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
+            double[] scores = new double[rowCount]; // predefinition of score array
+            double[,] hits = new double[rowCount, colCount];
+            // loop through all spectra/rows of the spectrogram - NB: spg is rotated to vertical.
+            // mark the hits in hitMatrix
 
-            // loop through all spectra/columns of the spectrogram.
-            for (int c = 1; c < colCount - 1; c++)
+            for (int s = 0; s < rowCount; s++)
             {
+                double[] spectrum = MatrixTools.GetRow(spg, s); 
                 double maxAmplitude = -Double.MaxValue;
-                int idOfRowWithMaxAmplitude = 0;
-
-                for (int r = minRowID; r <= bottomRow; r++)
+                int maxId = 0;
+                for (int id = bottomBin; id < dominantBinMax; id++)
                 {
-                    if (spg[r, c] > maxAmplitude)
+                    if (spectrum[id] > maxAmplitude)
                     {
-                        maxAmplitude = spg[r, c];
-                        idOfRowWithMaxAmplitude = r;
+                        maxAmplitude = spectrum[id];
+                        maxId = id;
                     }
                 }
 
-                if (idOfRowWithMaxAmplitude < minRowID) continue;
-                if (idOfRowWithMaxAmplitude > maxRowID) continue;
-
-                // want a spectral peak.
-                if (spg[idOfRowWithMaxAmplitude, c] < spg[idOfRowWithMaxAmplitude, c - 1]) continue;
-                if (spg[idOfRowWithMaxAmplitude, c] < spg[idOfRowWithMaxAmplitude, c + 1]) continue;
+                if (maxId < dominantBinMin) continue;
                 // peak should exceed thresold amplitude
-                if (spg[idOfRowWithMaxAmplitude, c] < 3.0) continue;
+                if (spectrum[maxId] < thresholdDb) continue;
 
-                scores[c] = 1.0;
-                // convert row ID to freq bin ID
-                int freqBinID = rowCount - idOfRowWithMaxAmplitude - 1;
-                peakList.Add(new Point(c, freqBinID));
+                scores[s] = maxAmplitude;
+                dominantBins[s] = maxId;
+
                 // we now have a list of potential hits for LimCon. This needs to be filtered.
 
                 // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             } // loop through all spectra
 
-            var foundEvents = new List<AcousticEvent>();
+            //scores = Plot.PruneScoreArray(scores, scoreThreshold, minFrameDuration, );
+            double[] prunedScores; 
+            var startEnds = new List<Point>(); 
+            Plot.FindStartsAndEndsOfScoreEvents(scores, scoreThreshold, minFrameDuration, maxFrameDuration,
+                                                          out prunedScores, out startEnds);
 
-            foreach (Point point in peakList)
+            var potentialEvents = new List<AcousticEvent>();
+
+
+            // loop through the score array and find beginning and end of events
+            foreach (Point point in startEnds)
             {
-                double secondsFromStartOfSegment = (point.X * 0.1) + 0.05; // convert point.Y to center of time-block.
-                int framesFromStartOfSegment = (int)Math.Round(secondsFromStartOfSegment / timeSpanOfFrameInSeconds);
-                double startTimeWrtSegment = point.X * frameStepInSeconds;
-                double duration = 2 * frameStepInSeconds;
+                // get average of the dominant bin
+                int binSum = 0;
+                int binCount = 0;
+                double scoreSum = 0.0;
+                int eventWidth = point.Y - point.X + 1;
+                for (int s = point.X; s <= point.Y; s++)
+                {
+                    if (dominantBins[s] >= dominantBinMin)
+                    {
+                        binSum += dominantBins[s];
+                        binCount++;
+                    }
+                    scoreSum += prunedScores[s];
+                }
+                // find average dominant bin for the event
+                int avDominantBin = (int)Math.Round(binSum / (double)binCount);
+                int avDominantFreq = (int)(Math.Round(binSum / (double)binCount) * herzPerBin);
+                double avScore = scoreSum / (double)eventWidth;
+                if (avScore < 3.0)
+                {
+                    continue;
+                }
 
-                // Got to here so start initialising an acoustic event
-                var ae = new AcousticEvent(startTimeWrtSegment, duration, minHz, dominantFrequency);
-                ae.SetTimeAndFreqScales(framesPerSec, herzPerBin);
-                ae.Points = new List<Point>();
-                ae.Points.Add(point);
-                ae.Name = abbreviatedSpeciesName;
+                int topBinForEvent = avDominantBin + 2;
+                int bottomBinForEvent = topBinForEvent - F1AndF3Gap - 2;
+                int topFreqForEvent = (int)Math.Round(topBinForEvent * herzPerBin);
+                int bottomFreqForEvent = (int)Math.Round(bottomBinForEvent * herzPerBin);
 
-                foundEvents.Add(ae);
-            }
+                double startTime = point.X * frameStepInSeconds;
+                double durationTime = eventWidth * frameStepInSeconds;
+                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent);
+                newEvent.DominantFreq = avDominantFreq;
+                newEvent.Score = avScore;
+                newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
+                newEvent.Name = "Lc"; // abbreviatedSpeciesName;
+
+                potentialEvents.Add(newEvent);
+
+                // put this into hits matrix
+                for (int s = point.X; s <= point.Y; s++)
+                {
+                    hits[s, avDominantBin] = 10;
+                }
+            } //foreach (Point point in startEnds)
+
+
+            // Find candidate events the old way
+            //List<AcousticEvent> potentialEvents = AcousticEvent.ConvertScoreArray2Events(prunedScores, minHz, dominantFrequency + hzBuffer, 
+            //                                                    framesPerSec, herzPerBin, thresholdDb, minDuration, maxDuration);
+
+
+
+
+            prunedScores = DataTools.normalise(prunedScores);
+
+            //foreach (Point point in peakList)
+            //{
+            //    double startTimeWrtSegment = (point.X - 2) * frameStepInSeconds;
+            //    double duration = 4 * frameStepInSeconds;
+            //    double maxFreq = (point.Y * herzPerBin) + 50;
+
+            //    // Got to here so start initialising an acoustic event
+            //    var ae = new AcousticEvent(startTimeWrtSegment, duration, minHz, maxFreq);
+            //    ae.SetTimeAndFreqScales(framesPerSec, herzPerBin);
+            //    ae.Points = new List<Point>();
+            //    ae.Points.Add(point);
+
+            //    //foundEvents.Add(ae);
+            //}
             // end loop 
 
-            var plot = new Plot(this.DisplayName, scores, eventThreshold);
+            var plots = new List<Plot>();
+            var plot = new Plot(this.DisplayName, prunedScores, eventThreshold);
+            plots.Add(plot);
+
+
+            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
+            bool displayDebugImage = true;
+            if(displayDebugImage)
+            {
+                Image debugImage = DisplayDebugImage(sonogram, potentialEvents, plots, hits);
+                string debugDir = @"C:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test\";
+                var fileName = Path.GetFileNameWithoutExtension(audioRecording.FileName);
+                string debugPath = Path.Combine(debugDir, fileName + ".DebugSpectrogram_LimnoConvex.png");
+                debugImage.Save(debugPath);
+            }
+
 
             return new RecognizerResults()
             {
-                Events = foundEvents,
-                Hits = null,
-                Plots = plot.AsList(),
+                Events = potentialEvents,
+                Hits = hits,
+                Plots = plots,
                 Sonogram = sonogram                
             };
 
 
         }
+
+
+        public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        {
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            if (scores != null)
+            {
+                foreach (Plot plot in scores)
+                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+            }
+            if (hits != null) image.OverlayRainbowTransparency(hits);
+
+            if (events.Count > 0)
+            {
+                foreach (AcousticEvent ev in events) // set colour for the events
+                {
+                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
+                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
+                }
+                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+            }
+
+            // the below code was used in the first LinoConvex attempt
+            //foreach (AcousticEvent ae in predictedEvents)
+            //{
+            //    ae.DrawEvent(image);
+            //    //g.DrawRectangle(pen, ob.ColumnLeft, ob.RowTop, ob.ColWidth-1, ob.RowWidth);
+            //    //ae.DrawPoint(image, ae.HitElements.[0], Color.OrangeRed);
+            //    //ae.DrawPoint(image, ae.HitElements[1], Color.Yellow);
+            //    //ae.DrawPoint(image, ae.HitElements[2], Color.Green);
+            //    ae.DrawPoint(image, ae.Points[0], Color.OrangeRed);
+            //    ae.DrawPoint(image, ae.Points[1], Color.Yellow);
+            //    ae.DrawPoint(image, ae.Points[2], Color.LimeGreen);
+            //}
+
+            // draw the original hits on the standard sonogram
+            //foreach (int[] array in newList)
+            //{
+            //    image.SetPixel(array[0], height - array[1], Color.Cyan);
+            //}
+
+            // mark off every tenth frequency bin on the standard sonogram
+            //for (int r = 0; r < 20; r++)
+            //{
+            //    image.SetPixel(0, height - (r * 10) - 1, Color.Blue);
+            //    image.SetPixel(1, height - (r * 10) - 1, Color.Blue);
+            //}
+            // mark off upper bound and lower frequency bound
+            //image.SetPixel(0, height - dominantBinMin, Color.Lime);
+            //image.SetPixel(0, height - dominantBinMax, Color.Lime);
+            //image.Save(filePath2);
+
+            return image.GetImage();
+        }
+
 
 
     }

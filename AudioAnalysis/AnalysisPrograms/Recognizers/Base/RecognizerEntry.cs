@@ -49,16 +49,16 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static Arguments Dev()
         {
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
-            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test";
-            //string configPath = @"Ecosounds.MultiRecognizer.yml";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LimnodynastesSpecies\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test";
+            string configPath = @"Ecosounds.MultiRecognizer.yml";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_ChrisAfterFiltering.wav"; 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel_First60s.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel.wav"; 
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel.wav"; 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_ChrisFilteredLeftChFirst60s.wav";
-            string outputPath = @"C:\SensorNetworks\Output\FreshWater";
-            string configPath = @"EcosoundsFW.MultiRecognizer.yml";
+            //string outputPath = @"C:\SensorNetworks\Output\FreshWater";
+            //string configPath = @"EcosoundsFW.MultiRecognizer.yml";
 
 
             var arguments = new Arguments
