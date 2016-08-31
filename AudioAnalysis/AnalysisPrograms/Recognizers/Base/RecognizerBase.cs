@@ -65,6 +65,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 analysisSettings.Configuration,
                 analysisSettings.SegmentStartOffset.Value,
                 lazyIndices,
+                analysisSettings.AnalysisInstanceOutputDirectory,
                 imageWidth);
 
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
@@ -302,7 +303,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return spectralIndexFiles;
         }
 
-        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth);
+        public abstract RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
 
         protected virtual Image DrawSonogram(
             BaseSonogram sonogram,

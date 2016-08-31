@@ -60,9 +60,10 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="configuration"></param>
         /// <param name="segmentStartOffset"></param>
         /// <param name="getSpectralIndexes"></param>
+        /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             // The next line actually calculates the high resolution indices!

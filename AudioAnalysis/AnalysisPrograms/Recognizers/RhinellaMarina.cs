@@ -11,6 +11,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Text;
@@ -64,10 +65,11 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="configuration"></param>
         /// <param name="segmentStartOffset"></param>
         /// <param name="getSpectralIndexes"></param>
+        /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <param name="audioRecording"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             // common properties
