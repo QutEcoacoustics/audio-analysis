@@ -1,7 +1,8 @@
 ---
-AnalysisName: Towsey.LitoriaFallax
-SpeciesName: Litoria fallax
-AbbreviatedSpeciesName: L.fallax
+# Blue Catfish
+AnalysisName: Towsey.IctalurusFurcatus
+SpeciesName: Ictalurus furcatus
+AbbreviatedSpeciesName: I.furcatus
 
 # min and max of the freq band to search
 MinHz: 3500          

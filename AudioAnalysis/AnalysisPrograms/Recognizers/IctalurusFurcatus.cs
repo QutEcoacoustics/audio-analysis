@@ -24,15 +24,16 @@ namespace AnalysisPrograms.Recognizers
 
     using TowseyLibrary;
     using System.Drawing;
+    using System.IO;
 
     /// <summary>
-    /// This is a template recognizer
+    /// This is a Blue Catfish recognizer (Ictalurus furcatus)
     /// </summary>
-    class BlueCatfish : RecognizerBase
+    class IctalurusFurcatus : RecognizerBase
     {
         public override string Author => "Towsey";
 
-        public override string SpeciesName => "BlueCatfish";
+        public override string SpeciesName => "IctalurusFurcatus";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -59,9 +60,10 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="configuration"></param>
         /// <param name="segmentStartOffset"></param>
         /// <param name="getSpectralIndexes"></param>
+        /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             double scoreThreshold = 0.48;
@@ -133,20 +135,20 @@ namespace AnalysisPrograms.Recognizers
                                    710.36, 711.2, 724.93, 730.05, 740.78, 747.05, 758.5, 782.25, 788.18, 792.8,
                                    805.24, 816.03, 830.4, 831.2, 837.87, 855.02, 909.74, 912.14, 925.81  };
 
-
+                var subSamplesDirectory = outputDirectory.CreateSubdirectory("testSubsamples");
                 for (int t = 0; t < times.Length; t++)
                 {
-                    Image bmp1 = BlueCatfish.AnalyseLocation(bandPassFilteredSignal, sr, times[t], windowWidth);
-                    string path1 = String.Format(@"C:\SensorNetworks\Output\Freshwater\testSubsamples\testSubsample_{0}secs.png", times[t]);
-                    bmp1.Save(path1);
+                    Image bmp1 = IctalurusFurcatus.AnalyseLocation(bandPassFilteredSignal, sr, times[t], windowWidth);
+                    var path1 = subSamplesDirectory.CombineFile($"testSubsample_{times[t]}secs.png");
+                    bmp1.Save(path1.FullName);
 
                     int signalBuffer = windowWidth * 2;
-                    string title2 = String.Format("tStart={0}", times[t]);
+                    string title2 = $"tStart={times[t]}";
                     Image bmp2 = ImageTools.DrawWaveform(title2, bandPassFilteredSignal, sr, times[t], signalBuffer);
-                    string path2 = String.Format(@"C:\SensorNetworks\Output\Freshwater\testSubsamples\testSubsample_{0}secs.wav.png", times[t]);
-                    bmp2.Save(path2);
+                    var path2 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.png");
+                    bmp2.Save(path2.FullName);
                 }
-            } // doAnalysisOfKnownExamples
+            } 
 
             int signalLength = bandPassFilteredSignal.Length;
             // count number of 1000 sample segments
@@ -239,8 +241,9 @@ namespace AnalysisPrograms.Recognizers
                     var startTime = TimeSpan.FromSeconds((location - binCount) / (double)sr);
                     string startLabel = startTime.Minutes + "." + startTime.Seconds+ "." + startTime.Milliseconds;
                     Image image4 = ImageTools.DrawWaveAndFft(subsampleWav, sr, startTime, spectrum, maxHz*2, scoreArray);
-                    string path4 = String.Format(@"C:\SensorNetworks\Output\Freshwater\subsamples\subsample_{0}_{1}.png", location, startLabel);
-                    image4.Save(path4);
+
+                    var path4 = outputDirectory.CreateSubdirectory("subsamples").CombineFile($@"subsample_{location}_{startLabel}.png");
+                    image4.Save(path4.FullName);
 
                     // have an event, store the data in the AcousticEvent class
                     double duration = 0.2; 
@@ -254,7 +257,7 @@ namespace AnalysisPrograms.Recognizers
 
                 }
                 id++;
-            } //foreach
+            }
 
 
             // make a spectrogram
