@@ -303,7 +303,7 @@ namespace AnalysisPrograms
             var recording = new AudioRecording(audioFile.FullName);
             Log.Debug("Canetoad sample rate:" + recording.SampleRate);
 
-            RecognizerResults results = Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero);
+            RecognizerResults results = Analysis(recording, configuration, analysisSettings.SegmentStartOffset ?? TimeSpan.Zero, analysisSettings.AnalysisInstanceOutputDirectory);
             
             var analysisResults = new AnalysisResult2(analysisSettings, recording.Duration());
 
@@ -380,16 +380,17 @@ namespace AnalysisPrograms
         /// 
         /// </summary>
         /// <param name="segmentOfSourceFile"></param>
-        /// <param name="configDict"></param>
+        /// <param name="configuration"></param>
         /// <param name="segmentStartOffset"></param>
+        /// <param name="outputDirectory"></param>
+        /// <param name="configDict"></param>
         /// <returns></returns>
-        internal static RecognizerResults Analysis(FileInfo segmentOfSourceFile, dynamic configuration, TimeSpan segmentStartOffset)
+        internal static RecognizerResults Analysis(FileInfo segmentOfSourceFile, dynamic configuration, TimeSpan segmentStartOffset, DirectoryInfo outputDirectory)
         {
             var recording = new AudioRecording(segmentOfSourceFile.FullName);
             Log.Debug("Canetoad sample rate:" + recording.SampleRate);
-            return Analysis(recording, configuration, segmentStartOffset);
+            return Analysis(recording, configuration, segmentStartOffset, outputDirectory);
         }
-
 
         /// <summary>
         /// THE KEY ANALYSIS METHOD
@@ -397,6 +398,9 @@ namespace AnalysisPrograms
         /// <param name="recording">
         ///     The segment Of Source File.
         /// </param>
+        /// <param name="configuration"></param>
+        /// <param name="segmentStartOffset"></param>
+        /// <param name="outputDirectory"></param>
         /// <param name="configDict">
         ///     The config Dict.
         /// </param>
@@ -404,14 +408,11 @@ namespace AnalysisPrograms
         /// <returns>
         /// The <see cref="CanetoadResults"/>.
         /// </returns>
-        internal static RecognizerResults Analysis(
-            AudioRecording recording,
-            dynamic configuration,
-            TimeSpan segmentStartOffset)
+        internal static RecognizerResults Analysis(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, DirectoryInfo outputDirectory)
         {
            RhinellaMarina rm = new RhinellaMarina();
 
-            return rm.Recognize(recording, configuration, segmentStartOffset, null, null);
+            return rm.Recognize(recording, configuration, segmentStartOffset, null, outputDirectory, null);
         }
 
         private static Image DrawSonogram(

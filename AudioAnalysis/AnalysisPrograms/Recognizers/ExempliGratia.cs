@@ -5,6 +5,7 @@ using System.Text;
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System.IO;
     using System.Reflection;
 
     using Acoustics.Tools.Wav;
@@ -58,9 +59,10 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="configuration"></param>
         /// <param name="segmentStartOffset"></param>
         /// <param name="getSpectralIndexes"></param>
+        /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
 

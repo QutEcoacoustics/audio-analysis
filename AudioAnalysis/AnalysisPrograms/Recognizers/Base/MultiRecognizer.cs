@@ -11,6 +11,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
 
@@ -40,7 +41,7 @@ namespace AnalysisPrograms.Recognizers.Base
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
-        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth)
+        public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // this is a multi recognizer - it does no actual analysis itself
 
@@ -71,7 +72,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     audioRecording = new AudioRecording(audioRecording.FilePath);
                 }
 
-                var output = DoCallRecognition(name, segmentStartOffset, audioRecording, getSpectralIndexes, imageWidth.Value);
+                var output = DoCallRecognition(name, segmentStartOffset, audioRecording, getSpectralIndexes, outputDirectory, imageWidth.Value);
 
                 if (output == null)
                 {
@@ -124,7 +125,7 @@ namespace AnalysisPrograms.Recognizers.Base
         }
 
 
-        public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, int imageWidth)
+        public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, DirectoryInfo outputDirectory, int imageWidth)
         {
             Log.Debug("Looking for recognizer and config files for " + name);
             // load up the standard config file for this species
@@ -148,6 +149,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 configuration,
                 segmentStartOffset,
                 indices, 
+                outputDirectory, 
                 imageWidth);
             Log.Debug("MultiRecognizer: Completed single recognizer" + name);
 
@@ -162,7 +164,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static Image GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
         {
-            Log.Info("MultiRecogniser.GenerateScoreTrackImage(): " + name);
+            Log.Info("MultiRecognizer.GenerateScoreTrackImage(): " + name);
             if (scores == null)
             {
                 return null;

@@ -364,7 +364,7 @@ namespace AnalysisPrograms
             if (frameLength != null)
                 newDict.Add(AnalysisKeys.FrameLength, frameLength);
 
-            var canetoadResults = CanetoadOld.Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value);
+            var canetoadResults = CanetoadOld.Analysis(audioFile, configuration, analysisSettings.SegmentStartOffset.Value, analysisSettings.AnalysisInstanceOutputDirectory);
             if (canetoadResults != null)
             {
                 if (sonogram == null) sonogram = canetoadResults.Sonogram;

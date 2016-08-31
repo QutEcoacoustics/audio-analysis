@@ -11,6 +11,7 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
 
@@ -28,7 +29,7 @@ namespace AnalysisPrograms.Recognizers.Base
     public interface IEventRecognizer : IAnalyser2
     {
 
-        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, int? imageWidth);
+        RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
     }
 
 
