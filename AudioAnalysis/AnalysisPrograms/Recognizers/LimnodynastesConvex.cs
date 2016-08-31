@@ -97,7 +97,7 @@ namespace AnalysisPrograms.Recognizers
             RecognizerResults results = Gruntwork(audioRecording, configuration);
 
             return results;
-        } // Recognize()
+        }
 
 
         internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration)
@@ -260,7 +260,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     hits[s, avDominantBin] = 10;
                 }
-            } //foreach (Point point in startEnds)
+            }
 
 
             // Find candidate events the old way
@@ -294,7 +294,7 @@ namespace AnalysisPrograms.Recognizers
 
 
             //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
-            bool displayDebugImage = true;
+            bool displayDebugImage = MainEntry.InDEBUG;
             if(displayDebugImage)
             {
                 Image debugImage = DisplayDebugImage(sonogram, potentialEvents, plots, hits);
