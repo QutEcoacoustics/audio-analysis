@@ -1,20 +1,15 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="RhinellaMarina.cs" company="QutBioacoustics">
-//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
-// </copyright>
-// <summary>
-//   AKA: The bloody canetoad
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace AnalysisPrograms.Recognizers
 {
-    using System;
-    using System.Collections.Generic;
+    using System.Drawing;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
-    using System.Text;
+
+    using Acoustics.Tools.Wav;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -32,20 +27,19 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// AKA: The bloody canetoad
     /// This is a frog rcogniser based on the "ribit" or "washboard" template
     /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
     /// 
     /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
-    /// e.g. Litoria rothii and Litoria olongburesnsis.
     /// To call this recogniser, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recogniser can be called via the MultiRecognizer.
+    /// 
     /// </summary>
-    class RhinellaMarina : RecognizerBase
+    class LitoriaNasuta : RecognizerBase
     {
         public override string Author => "Towsey";
 
-        public override string SpeciesName => "RhinellaMarina";
+        public override string SpeciesName => "LitoriaNasuta";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -74,26 +68,23 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="getSpectralIndexes"></param>
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
-        /// <param name="audioRecording"></param>
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
-            // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
 
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int maxHz = (int)configuration[AnalysisKeys.MaxHz];
 
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
+
             // duration of DCT in seconds 
             double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];  
 
             // ignore oscillations below this threshold freq
             int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
@@ -110,8 +101,14 @@ namespace AnalysisPrograms.Recognizers
             // min score for an acceptable event
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
-            // this default framesize seems to work for Canetoad
-            const int FrameSize = 512;
+            if (recording.WavReader.SampleRate != 22050)
+            {
+                throw new InvalidOperationException("Requires a 22050Hz file");
+            }
+
+            // The default was 512 for Canetoad.
+            // Set longer Framesize for calls having longer pulse periodicity.
+            const int FrameSize = 2048;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
                 FrameSize,
@@ -124,24 +121,15 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.FileName,
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
-                // if do not use noise reduction can get a more sensitive recogniser.
-                NoiseReductionType = NoiseReductionType.NONE
+                //NoiseReductionType = NoiseReductionType.NONE,
+                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionParameter = 0.1
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-
-            /* #############################################################################################################################################
-             * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-             * 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-             * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-             * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-             */
-
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
@@ -150,10 +138,11 @@ namespace AnalysisPrograms.Recognizers
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double boundaryBetweenAdvert_ReleaseDuration = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            minDuration = 1.0;
+            // This window is used to smooth the score array before extracting events.
+            // A short window (e.g. 3) preserves sharper score edges to define events but also keeps noise.
+            int scoreSmoothingWindow = 13;
             double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
+            List<AcousticEvent> acousticEvents;
             double[,] hits;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
@@ -166,42 +155,60 @@ namespace AnalysisPrograms.Recognizers
                 eventThreshold,
                 minDuration,
                 maxDuration,
+                scoreSmoothingWindow,
                 out scores,
-                out events,
+                out acousticEvents,
                 out hits);
 
-            events.ForEach(ae =>
+            acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
-                ae.Name = abbreviatedSpeciesName + ".AdvertCall";
-                if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
-                {
-                    ae.Name = abbreviatedSpeciesName + ".ReleaseCall";
-                    if (ae.Score < (eventThreshold + 0.3))
-                    {
-                        ae.Name = abbreviatedSpeciesName + ".Short Oscil";
-                        //events.Remove(ae);
-                    }
-                }
-
-                // remove release call if its score is too low.
-                //if ((ae.Name == "ReleaseCall") && (ae.Score < (eventThreshold + 0.3)))
-                //{ ae = null; }
-                //{ events.Remove(ae); } 
-
+                ae.Name = abbreviatedSpeciesName;
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
+            var plots = new List<Plot>();
+            plots.Add(plot);
+
+
+            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
+            bool displayDebugImage = MainEntry.InDEBUG;
+            if (displayDebugImage)
+            {
+                Image debugImage1 = LitoriaRothii.DisplayDebugImage(sonogram, acousticEvents, plots, hits);
+                string debugDir = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test\";
+                var fileName = Path.GetFileNameWithoutExtension(recording.FileName);
+                string debugPath1 = Path.Combine(debugDir, fileName + ".DebugSpectrogram1_"+SpeciesName+".png");
+                debugImage1.Save(debugPath1);
+
+
+                // save new image with longer frame
+                var sonoConfig2 = new SonogramConfig
+                {
+                    SourceFName = recording.FileName,
+                    WindowSize = 1024,
+                    WindowOverlap = 0,
+                    //NoiseReductionType = NoiseReductionType.NONE,
+                    NoiseReductionType = NoiseReductionType.STANDARD,
+                    NoiseReductionParameter = 0.1
+                };
+                BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);
+
+                string debugPath2 = Path.Combine(debugDir, fileName + ".DebugSpectrogram2_" + SpeciesName + ".png");
+                Image debugImage2 = LitoriaRothii.DisplayDebugImage(sonogram2, acousticEvents, plots, null);
+                debugImage2.Save(debugPath2);
+
+            }
+
+
             return new RecognizerResults()
             {
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = events
+                Events = acousticEvents
             };
-
         }
     }
 }

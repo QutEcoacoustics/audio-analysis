@@ -295,6 +295,7 @@
             {
                 int start = (int)Math.Round(w     * subSample);
                 int end   = (int)Math.Round((w+1) * subSample);
+                if (end >= doubleData.Length) continue;
                 double max = -Double.MaxValue;
                 int location = 0;
                 for (int x = start; x < end; x++) //find max value in subsample

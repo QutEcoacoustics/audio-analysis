@@ -98,10 +98,10 @@ namespace AnalysisPrograms.Recognizers
             if (doFiltering)
             {
                 // try removing spikes using a crude method
-                samples = DSP_Filters.RemoveSpikes(samples, 0.2);
+                //samples = DSP_Filters.RemoveSpikes(samples, 0.2);
 
                 //low pass filter
-                string filterName = "Chebyshev_Lowpass_1000, scale*5";
+                string filterName = "Chebyshev_Lowpass_5000, scale*5";
                 DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
                 int order = filter.order;
                 //System.LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
@@ -109,7 +109,13 @@ namespace AnalysisPrograms.Recognizers
                 filter.ApplyIIRFilter(samples, out signalLowPassFiltered);
 
                 // high pass filter
-                bandPassFilteredSignal = DSP_Filters.PreEmphasis(signalLowPassFiltered, 1.0);
+                int windowLength = 60;
+                DSP_IIRFilter.ApplyMovingAvHighPassFilter(signalLowPassFiltered, windowLength, out bandPassFilteredSignal);
+                //bandPassFilteredSignal = signalLowPassFiltered;
+
+                //DSP_IIRFilter filter2 = new DSP_IIRFilter("Chebyshev_Highpass_400");
+                //int order2 = filter2.order;
+                //filter2.ApplyIIRFilter(signalLowPassFiltered, out bandPassFilteredSignal); 
             }
             else // do not filter because already filtered - using Chris's filtered recording
             {
@@ -127,26 +133,42 @@ namespace AnalysisPrograms.Recognizers
                 //10_41_08, 10_50_9, 11_05_13, 11_08_63, 11_44_66, 11_50_36, 11_51_2, 12_04_93, 12_10_05, 12_20_78, 12_27_0, 12_38_5,
                 //13_02_25, 13_08_18, 13_12_8, 13_25_24, 13_36_0, 13_50_4, 13_51_2, 13_57_87, 14_15_00, 15_09_74, 15_12_14, 15_25_79
 
-                double[] times = { 2.2, 3.68, 10.83, 24.95, 26.57, 27.2, 29.62, 31.39, 62.1, 67.67, 72.27, 72.42, 72.59, 72.8, 94.3, 95.3,
-                                   100.16, 110.0, 125.9, 126.62, 137.57, 141.0, 146.33, 163.07, 163.17, 196.55, 215.09, 262.44, 269.9, 282.6,
-                                   291.48, 301.85, 321.18, 322.72, 332.37, 336.1, 342.82, 363.5, 379.93, 381.55, 402.0, 402.15, 406.44, 432.17,
-                                   462.65, 465.86, 466.18, 472.38, 479.14, 490.63, 494.4, 494.63, 495.240, 526.590, 536.590, 565.82, 568.94,
-                                   570.5, 583.9, 603.19, 624.26, 624.36, 638.8, 641.08, 650.9, 65.13, 68.63, 704.66,
-                                   710.36, 711.2, 724.93, 730.05, 740.78, 747.05, 758.5, 782.25, 788.18, 792.8,
-                                   805.24, 816.03, 830.4, 831.2, 837.87, 855.02, 909.74, 912.14, 925.81  };
+                //double[] times = { 2.2, 26.589, 29.62 };
+                double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62 };
+                //double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62, 31.39, 62.1, 67.67, 72.27, 72.42, 72.59, 72.8, 94.3, 95.3,
+                //                   100.16, 110.0, 125.9, 126.62, 137.57, 141.0, 146.33, 163.07, 163.17, 196.55, 215.09, 262.44, 269.9, 282.6,
+                //                   291.48, 301.85, 321.18, 322.72, 332.37, 336.1, 342.82, 363.5, 379.93, 381.55, 402.0, 402.15, 406.44, 432.17,
+                //                   462.65, 465.86, 466.18, 472.38, 479.14, 490.63, 494.4, 494.63, 495.240, 526.590, 536.590, 565.82, 568.94,
+                //                   570.5, 583.9, 603.19, 624.26, 624.36, 638.8, 641.08, 650.9, 65.13, 68.63, 704.66,
+                //                   710.36, 711.2, 724.93, 730.05, 740.78, 747.05, 758.5, 782.25, 788.18, 792.8,
+                //                   805.24, 816.03, 830.4, 831.2, 837.87, 855.02, 909.74, 912.14, 925.81  };
 
-                var subSamplesDirectory = outputDirectory.CreateSubdirectory("testSubsamples");
+                var subSamplesDirectory = outputDirectory.CreateSubdirectory("testSubsamples_5000LPFilter");
                 for (int t = 0; t < times.Length; t++)
                 {
-                    Image bmp1 = IctalurusFurcatus.AnalyseLocation(bandPassFilteredSignal, sr, times[t], windowWidth);
-                    var path1 = subSamplesDirectory.CombineFile($"testSubsample_{times[t]}secs.png");
-                    bmp1.Save(path1.FullName);
+                    //Image bmp1 = IctalurusFurcatus.AnalyseLocation(bandPassFilteredSignal, sr, times[t], windowWidth);
 
                     int signalBuffer = windowWidth * 2;
+                    int location = (int)Math.Round(times[t] * sr); //assume location points to start of grunt
+                    double[] subsample = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 2 * signalBuffer);
+                    double[] scores1 = IctalurusFurcatus.AnalyseWaveformAtLocation(subsample);
+                    string title1 = $"scores={times[t]}";
+                    Image bmp1 = ImageTools.DrawGraph(title1, scores1, subsample.Length, 300, 1);
+                    //bmp1.Save(path1.FullName);
+
                     string title2 = $"tStart={times[t]}";
-                    Image bmp2 = ImageTools.DrawWaveform(title2, bandPassFilteredSignal, sr, times[t], signalBuffer);
-                    var path2 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.png");
-                    bmp2.Save(path2.FullName);
+                    Image bmp2 = ImageTools.DrawWaveform(title2, subsample);
+                    var path1 = subSamplesDirectory.CombineFile($"scoresForTestSubsample_{times[t]}secs.png");
+                    //var path2 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.png");
+                    Image[] imageList = { bmp2, bmp1 };
+                    Image bmp3 = ImageTools.CombineImagesVertically(imageList);
+                    bmp3.Save(path1.FullName);
+
+                    //write wave form to txt file for later work in XLS
+                    //var path3 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.csv");
+                    //signalBuffer = 800;
+                    //double[] subsample2 = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 3 * signalBuffer);
+                    //FileTools.WriteArray2File(subsample2, path3.FullName);
                 }
             } 
 
@@ -290,11 +312,19 @@ namespace AnalysisPrograms.Recognizers
         }
 
 
+
+
         public static Image AnalyseLocation(double[] signal, int sr, double startTimeInSeconds, int windowWidth)
         {
             int binCount = windowWidth / 2;
 
             int location = (int)Math.Round(startTimeInSeconds * sr); //assume location points to start of grunt
+
+            if (location >= signal.Length)
+            {
+                LoggedConsole.WriteErrorLine("WARNING: Location is beyond end of signal.");
+                return null;
+            }
             int nyquist = sr / 2;
             FFT.WindowFunc wf = FFT.Hamming;
             var fft = new FFT(windowWidth, wf);
@@ -316,6 +346,42 @@ namespace AnalysisPrograms.Recognizers
             Image image4 = ImageTools.DrawWaveAndFft(subsampleWav, sr, startTime, spectrum, maxHz * 2, scoreArray);
             return image4;
         }
+
+
+        public static double[] AnalyseWaveformAtLocation(double[] signal)
+        {
+            double[] waveTemplate = {-0.000600653,-0.000451427,-0.000193289,-1.91083E-05,0.000133366,0.000256465,0.000387591,0.000533758,0.000645976,0.000670944,
+                 0.000622045, 0.000569337, 0.000553455, 0.000535552,0.000448935,0.000286928,0.000120322,2.26704E-05,-1.67728E-05,-9.42369E-05,
+                -0.000289969,-0.000565902,-0.00079103, -0.000883849,-0.000898074,-0.000932191,-0.000985956,-0.00097387,-0.00093,-0.00088,
+                -0.00088,    -0.00087,   -0.000883903, -0.000831651,-0.000759236,-0.000668421,-0.00052348,-0.000361632,-0.00028245,-0.000292255,
+                -0.00025,    -8.71854E-05, 0.00011,     0.00014,     0.00010031,  0.00013,    0.00016,     0.000240405, 0.000332283,0.000357989,
+                 0.000312231, 0.000222307, 0.000138079, 9.49253E-05, 6.74344E-05, -7.81347E-07, -0.000103014, -0.00014973
+            };
+            int templateLength = waveTemplate.Length;
+
+            double[] normalTemplate = DataTools.normalise2UnitLength(waveTemplate);
+
+            double[] scores = new double[signal.Length];
+
+            for (int i = 2; i < signal.Length- templateLength; i++)
+            {
+                // look for a local minimum
+                if ((signal[i] > signal[i-1])|| (signal[i] > signal[i - 2]) || (signal[i] > signal[i + 1]) || (signal[i] > signal[i + 2]))
+                    continue;
+                double[] subsampleWav = DataTools.Subarray(signal, i, templateLength);
+                //double[] normalwav = DataTools.SubtractMean(subsampleWav);
+                double[] normalwav = DataTools.normalise2UnitLength(subsampleWav);
+
+                // calculate cosine angle as similarity score
+                scores[i] = DataTools.DotProduct(normalTemplate, normalwav);
+                if (scores[i] < 0.55)
+                    scores[i] = 0.0;
+            }
+            scores = DataTools.normalise(scores);
+            //scores = DataTools.filterMovingAverageOdd(scores, 3);
+            return scores;
+        }
+
 
         public static double[] CalculateScores(double[] subBandSpectrum, int windowWidth)
         {

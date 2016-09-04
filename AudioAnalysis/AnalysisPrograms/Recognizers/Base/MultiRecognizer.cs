@@ -4,6 +4,8 @@
 // </copyright>
 // <summary>
 //   Defines the MultiRecognizer type.
+//
+// The action type, i.e. the first argument on the command line to call this analysis, should be "EventRecognizer".
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 namespace AnalysisPrograms.Recognizers.Base
@@ -46,7 +48,7 @@ namespace AnalysisPrograms.Recognizers.Base
             // this is a multi recognizer - it does no actual analysis itself
 
             // make a standard spectrogram in which to render acoustic events and to append score tracks
-            // currently using Hamming window. Worth tryin Hanning Window
+            // currently using Hamming window. Worth trying Hanning Window
             var config = new SonogramConfig
             {
                 NoiseReductionType = NoiseReductionType.STANDARD,
@@ -66,11 +68,11 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 // AT: Fixed this... the following should not be needed. If it happens, let me know.
                 // SEEM TO HAVE LOST SAMPLES
-                if (audioRecording.WavReader.Samples == null)
-                {
-                    Log.Error("audioRecording's samples are null - an inefficient disk operation is now needed");
-                    audioRecording = new AudioRecording(audioRecording.FilePath);
-                }
+                //if (audioRecording.WavReader.Samples == null)
+                //{
+                //    Log.Error("audioRecording's samples are null - an inefficient disk operation is now needed");
+                //    audioRecording = new AudioRecording(audioRecording.FilePath);
+                //}
 
                 var output = DoCallRecognition(name, segmentStartOffset, audioRecording, getSpectralIndexes, outputDirectory, imageWidth.Value);
 

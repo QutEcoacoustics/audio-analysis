@@ -27,7 +27,13 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
 
     /// <summary>
-    /// This is a template recognizer
+    /// This is a frog rcogniser based on the "honk" or "quack" template
+    /// It detects honk type calls by extracting three features: dominant frequency, honk duration and match to honk spectrum profile.
+    /// 
+    /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs 
+    /// To call this recogniser, the first command line argument must be "EventRecognizer".
+    /// Alternatively, this recogniser can be called via the MultiRecognizer.
+    /// 
     /// </summary>
     class LimnodynastesConvex : RecognizerBase
     {
@@ -234,6 +240,12 @@ namespace AnalysisPrograms.Recognizers
                 // find average dominant bin for the event
                 int avDominantBin = (int)Math.Round(binSum / (double)binCount);
                 int avDominantFreq = (int)(Math.Round(binSum / (double)binCount) * herzPerBin);
+
+                // get score for the event.
+                // ############ IMPORTANT:  The following section of code to calculate the score can/should be made more complex.
+                // i.e. construct a template for the honk and calculate similarity to the template.
+                // This is to be done later. Template will have three dominant frequenices.
+                // The below score calculation just takes the dB value for the dominant freq over the honk.
                 double avScore = scoreSum / (double)eventWidth;
                 if (avScore < (thresholdDb - 1.0))
                 {
@@ -262,36 +274,11 @@ namespace AnalysisPrograms.Recognizers
                 }
             }
 
-
-            // Find candidate events the old way
-            //List<AcousticEvent> potentialEvents = AcousticEvent.ConvertScoreArray2Events(prunedScores, minHz, dominantFrequency + hzBuffer, 
-            //                                                    framesPerSec, herzPerBin, thresholdDb, minDuration, maxDuration);
-
-
-
-
             prunedScores = DataTools.normalise(prunedScores);
-
-            //foreach (Point point in peakList)
-            //{
-            //    double startTimeWrtSegment = (point.X - 2) * frameStepInSeconds;
-            //    double duration = 4 * frameStepInSeconds;
-            //    double maxFreq = (point.Y * herzPerBin) + 50;
-
-            //    // Got to here so start initialising an acoustic event
-            //    var ae = new AcousticEvent(startTimeWrtSegment, duration, minHz, maxFreq);
-            //    ae.SetTimeAndFreqScales(framesPerSec, herzPerBin);
-            //    ae.Points = new List<Point>();
-            //    ae.Points.Add(point);
-
-            //    //foundEvents.Add(ae);
-            //}
-            // end loop 
 
             var plots = new List<Plot>();
             var plot = new Plot(this.DisplayName, prunedScores, eventThreshold);
             plots.Add(plot);
-
 
             //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
             bool displayDebugImage = MainEntry.InDEBUG;
@@ -304,7 +291,6 @@ namespace AnalysisPrograms.Recognizers
                 debugImage.Save(debugPath);
             }
 
-
             return new RecognizerResults()
             {
                 Events = potentialEvents,
@@ -312,8 +298,6 @@ namespace AnalysisPrograms.Recognizers
                 Plots = plots,
                 Sonogram = sonogram                
             };
-
-
         }
 
 

@@ -49,7 +49,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <UseVSHostingProcess>true</UseVSHostingProcess>
-    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
+    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
@@ -85,6 +85,15 @@
     <CodeContractsAnalysisWarningLevel>3</CodeContractsAnalysisWarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <CodeContractsAssertsToContractsCheckBox>True</CodeContractsAssertsToContractsCheckBox>
+    <CodeContractsRedundantTests>True</CodeContractsRedundantTests>
+    <CodeContractsMissingPublicEnsuresAsWarnings>False</CodeContractsMissingPublicEnsuresAsWarnings>
+    <CodeContractsInferEnsuresAutoProperties>True</CodeContractsInferEnsuresAutoProperties>
+    <CodeContractsSuggestAssumptionsForCallees>False</CodeContractsSuggestAssumptionsForCallees>
+    <CodeContractsNecessaryEnsures>True</CodeContractsNecessaryEnsures>
+    <CodeContractsSuggestReadonly>True</CodeContractsSuggestReadonly>
+    <CodeContractsSkipAnalysisIfCannotConnectToCache>False</CodeContractsSkipAnalysisIfCannotConnectToCache>
+    <CodeContractsBeingOptimisticOnExternal>True</CodeContractsBeingOptimisticOnExternal>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -243,6 +252,13 @@
     <Compile Include="Recognizers\IctalurusFurcatus.cs" />
     <Compile Include="Recognizers\LimnodynastesConvex.cs" />
     <Compile Include="Recognizers\ExempliGratia.cs" />
+    <Compile Include="Recognizers\CycloranaNovaehollandiae.cs" />
+    <Compile Include="Recognizers\LitoriaPallida.cs" />
+    <Compile Include="Recognizers\LitoriaRubella.cs" />
+    <Compile Include="Recognizers\UperoleiaMimula.cs" />
+    <Compile Include="Recognizers\LitoriaBicolor.cs" />
+    <Compile Include="Recognizers\LitoriaNasuta.cs" />
+    <Compile Include="Recognizers\LitoriaRothii.cs" />
     <Compile Include="Recognizers\LitoriaOlong.cs" />
     <Compile Include="Recognizers\LitoriaFallax.cs" />
     <Compile Include="Recognizers\RhinellaMarina.cs" />
