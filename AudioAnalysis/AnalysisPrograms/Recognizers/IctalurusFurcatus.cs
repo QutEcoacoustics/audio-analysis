@@ -98,7 +98,10 @@ namespace AnalysisPrograms.Recognizers
             if (doFiltering)
             {
                 // try removing spikes using a crude method
-                //samples = DSP_Filters.RemoveSpikes(samples, 0.2);
+                samples = DSP_Filters.RemoveSpikes(samples, 0.1);
+                // then amplify signal
+                for (int i = 0; i < samples.Length; i++)
+                { samples[i] *= 10; }
 
                 //low pass filter
                 string filterName = "Chebyshev_Lowpass_5000, scale*5";
@@ -109,7 +112,7 @@ namespace AnalysisPrograms.Recognizers
                 filter.ApplyIIRFilter(samples, out signalLowPassFiltered);
 
                 // high pass filter
-                int windowLength = 60;
+                int windowLength = 71;
                 DSP_IIRFilter.ApplyMovingAvHighPassFilter(signalLowPassFiltered, windowLength, out bandPassFilteredSignal);
                 //bandPassFilteredSignal = signalLowPassFiltered;
 
@@ -369,12 +372,16 @@ namespace AnalysisPrograms.Recognizers
                 if ((signal[i] > signal[i-1])|| (signal[i] > signal[i - 2]) || (signal[i] > signal[i + 1]) || (signal[i] > signal[i + 2]))
                     continue;
                 double[] subsampleWav = DataTools.Subarray(signal, i, templateLength);
+                double min, max; 
+                DataTools.MinMax(subsampleWav, out min, out max);
+                if ((max - min) < 0.005) continue;
+
                 //double[] normalwav = DataTools.SubtractMean(subsampleWav);
                 double[] normalwav = DataTools.normalise2UnitLength(subsampleWav);
 
                 // calculate cosine angle as similarity score
                 scores[i] = DataTools.DotProduct(normalTemplate, normalwav);
-                if (scores[i] < 0.55)
+                if (scores[i] < 0.5)
                     scores[i] = 0.0;
             }
             scores = DataTools.normalise(scores);
