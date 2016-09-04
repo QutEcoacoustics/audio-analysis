@@ -2613,16 +2613,14 @@ namespace TowseyLibrary
         /// <param name="startTimeInSeconds"></param>
         /// <param name="sampleLength"></param>
         /// <returns></returns>
-        public static Image DrawWaveform(string label, double[] signal, int sr, double centreTimeInSeconds, int sampleBuffer)
+        public static Image DrawWaveform(string label, double[] signal)
         {
-            int location = (int)Math.Round(centreTimeInSeconds * sr); //assume location points to start of required image
-            double[] subsample = DataTools.Subarray(signal, location - sampleBuffer, 2 * sampleBuffer);
             int height = 300;
 
             double max = -2.0;
-            for (int i = 0; i < subsample.Length; i++)
+            for (int i = 0; i < signal.Length; i++)
             {
-                double absValue = Math.Abs(subsample[i]);
+                double absValue = Math.Abs(signal[i]);
                 if (absValue > max)
                 {
                     max = absValue;
@@ -2630,7 +2628,7 @@ namespace TowseyLibrary
             }
             double scalingFactor = 0.5 / max;
 
-            Image image = ImageTools.DrawWaveform(label, subsample, subsample.Length, height, scalingFactor);
+            Image image = ImageTools.DrawWaveform(label, signal, signal.Length, height, scalingFactor);
             return image;
         }
 

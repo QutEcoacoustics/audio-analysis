@@ -1,24 +1,27 @@
 ---
-AnalysisName: Towsey.LitoriaFallax
-SpeciesName: Litoria fallax
-AbbreviatedSpeciesName: L.fallax
+AnalysisName: Towsey.LitoriaBicolor
+SpeciesName: Litoria bicolor
+AbbreviatedSpeciesName: L.bicolor
 
 # min and max of the freq band to search
-MinHz: 3000          
-MaxHz: 5000
+MinHz: 2000          
+MaxHz: 6000
 # duration of DCT in seconds 
-DctDuration: 0.15
-# minimum acceptable value of a DCT coefficient
-DctThreshold: 0.6
+# default for Stewart CD DctDuration: 0.4
+DctDuration: 0.1
+# minimum acceptable value of a DCT coefficient  # default = 0.6
+DctThreshold: 0.5  
 # ignore oscillation rates below the min & above the max threshold
-# OSCILLATIONS PER SECOND
-MinOcilFreq: 50        
-MaxOcilFreq: 140
-# Minimum and maximum duration for the length of a true call.
+# OSCILLATIONS PER SECOND Default=8-15
+MinOcilFreq: 35        
+MaxOcilFreq: 250
+# Minimum and maximum duration in seconds for the length of a true call.
 MinDuration: 0.1
-MaxDuration: 0.8
+MaxDuration: 0.7
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.30
+EventThreshold: 0.5
+
+FrameSize: 512
 
 # Standard settings
 #DoNoiseReduction: false

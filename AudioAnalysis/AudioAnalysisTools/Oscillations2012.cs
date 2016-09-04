@@ -21,19 +21,12 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2012
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sonogram">sonogram derived from the recording</param>
-        /// <param name="minHz">min bound freq band to search</param>
-        /// <param name="maxHz">max bound freq band to search</param>
-        /// <param name="dctDuration">duration of DCT in seconds</param>
-        /// <param name="minOscilFreq">ignore oscillation frequencies below this threshold</param>
-        /// <param name="dctThreshold">ignore DCT coefficient values less than this minimum </param>
-        /// <param name="opPath">set=null if do not want to save an image, which takes time</param>
+
+
         public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
                                    double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
-                                   double minDuration, double maxDuration, out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+                                   double minDuration, double maxDuration, int smoothingWindow,
+                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
             // smooth the frames to make oscillations more regular.
             sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
@@ -55,11 +48,27 @@ namespace AudioAnalysisTools
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
             scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
-            scores = DataTools.filterMovingAverage(scores, 11);
+            // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
+            scores = DataTools.filterMovingAverage(scores, smoothingWindow);
             double[] oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertOscillationScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
-                                                     minDuration, sonogram.Configuration.SourceFName);
-        }//end method
+                                                     minDuration, maxDuration, sonogram.Configuration.SourceFName);
+        }
+
+
+        public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
+                           double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
+                           double minDuration, double maxDuration,
+                           out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+        {
+            int scoreSmoothingWindow = 11; // sets a default that is good for Cane toad but not necessarily for other recognisers
+
+            Execute(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, scoreThreshold,
+                                               minDuration, maxDuration, scoreSmoothingWindow,
+                                               out scores, out events, out hits);        
+        }
+
+
 
 
         /// <summary>
@@ -263,12 +272,13 @@ namespace AudioAnalysisTools
         /// <param name="durationThreshold">duration of event must exceed this duration to count as an event</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <returns></returns>
-        public static List<AcousticEvent> ConvertOscillationScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
-                                                               double maxThreshold, double durationThreshold, string fileName)
+        public static List<AcousticEvent> ConvertOscillationScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, 
+                                                                         double freqBinWidth, double maxScoreThreshold, 
+                                                                         double minDurationThreshold, double maxDurationThreshold, string fileName)
         {
             //double minThreshold = 0.1;
             //double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
-            double scoreThreshold = maxThreshold;   //set this to the maximum threshold to start with
+            double scoreThreshold = maxScoreThreshold;   //set this to the maximum threshold to start with
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
@@ -294,7 +304,8 @@ namespace AudioAnalysisTools
                         double endTime = i * frameOffset;
                         //double duration = endTime - startTime;
                         double duration = (i - startFrame + 1)  * frameOffset;
-                        if (duration < durationThreshold) continue; //skip events with duration shorter than threshold
+                        if (duration < minDurationThreshold) continue; //skip events with duration shorter than threshold
+                        if (duration > maxDurationThreshold) continue; //skip events with duration longer than threshold
                         //LoggedConsole.WriteLine("startFrame={0}   startTime={1:f2}s    endFrame={2}   endTime={3:f2}s ", startFrame, startTime, i, endTime);
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
@@ -323,6 +334,14 @@ namespace AudioAnalysisTools
         }//end method ConvertODScores2Events()
 
 
+        /// <summary>
+        /// Calculates the optimal frame overlap for the given sample rate, frame width and max oscilation or pulse rate.
+        /// Pulse rate is determined using a DCT and efficient use of the DCT requires that the dominant pulse sit somewhere 3.4 along the array of coefficients.
+        /// </summary>
+        /// <param name="sr"></param>
+        /// <param name="frameWidth"></param>
+        /// <param name="maxOscilation"></param>
+        /// <returns></returns>
         public static double CalculateRequiredFrameOverlap(int sr, int frameWidth, /*double dctDuration, */ double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients

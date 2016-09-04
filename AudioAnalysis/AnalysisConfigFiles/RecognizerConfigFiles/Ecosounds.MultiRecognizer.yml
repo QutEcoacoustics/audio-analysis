@@ -9,10 +9,14 @@ AnalysisName: Ecosounds.MultiRecognizer
 # The items in this list need to match the value for `AnalysisName` in each of the individual species config files.
 # Note also, that the config file paths are resolved my appending '.yml' to the end of each item in the species list.
 SpeciesList:
-  - Towsey.LitoriaFallax
-  - Stark.LitoriaOlong
-  - Towsey.RhinellaMarina
   - Towsey.LimnodynastesConvex
+  - Towsey.LitoriaBicolor
+  - Towsey.LitoriaFallax
+  - Towsey.LitoriaNasuta
+  - Towsey.LitoriaRothii
+  - Towsey.LitoriaRubella
+#  - Stark.LitoriaOlong
+  - Towsey.RhinellaMarina
 #  - Truskinger.ExempliGratia
 
 # Standard settings

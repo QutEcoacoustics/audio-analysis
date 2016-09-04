@@ -342,7 +342,22 @@ namespace AudioAnalysisTools.DSP
 
             LoggedConsole.WriteLine("FINISHED!!");
             Console.ReadLine();
-        }//end Main()
+        }//end Main
+
+
+
+        /// <summary>
+        /// This method implements a crude form of high pass filtering 
+        /// </summary>
+        /// <param name="inputSignal"></param>
+        /// <param name="windowLength"></param>
+        /// <param name="outputSignal"></param>
+        public static void ApplyMovingAvHighPassFilter(double[] inputSignal, int windowLength, out double[] outputSignal)
+        {
+            double[] smoothed = DataTools.filterMovingAverageOdd(inputSignal, windowLength);
+            outputSignal = DataTools.SubtractVectors(inputSignal, smoothed);
+        }
+
 
     }//end class DSP
 }
