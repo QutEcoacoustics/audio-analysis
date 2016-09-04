@@ -4,6 +4,8 @@ AnalysisName: Towsey.IctalurusFurcatus
 SpeciesName: Ictalurus furcatus
 AbbreviatedSpeciesName: I.furcatus
 
+# cat fish produces "stridulatory sounds" by rubbing the base of the pectoral spine against the pectoral girdle...
+
 # min and max of the freq band to search
 MinHz: 3500          
 MaxHz: 4500
