@@ -21,6 +21,8 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// method to convert string codes to a specific IIR filter.
         /// FOR EACH NEW FILTER ADD LINE HERE AND WRITE NEW METHOD TO CREATE FILTER
+        /// 
+        /// IMPORTANT: These filters assume a SAMPLE RATE = 22050!!!!!!!!!!!!!
         /// </summary>
         /// <param name="filterName"></param>
         /// <returns></returns>
