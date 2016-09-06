@@ -65,8 +65,9 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
-            double scoreThreshold = 0.48;
+            double minAmplitudeThreshold = 0.1;
+            int percentile = 5;
+            double scoreThreshold = 0.3;
             bool doFiltering = true;
             int windowWidth = 1024;
 
@@ -97,33 +98,48 @@ namespace AnalysisPrograms.Recognizers
 
             if (doFiltering)
             {
-                // try removing spikes using a crude method
-                samples = DSP_Filters.RemoveSpikes(samples, 0.1);
-                // then amplify signal
-                for (int i = 0; i < samples.Length; i++)
-                { samples[i] *= 10; }
+                // high pass filter
+                int windowLength = 71;
+                double[] highPassFilteredSignal;
+                DSP_IIRFilter.ApplyMovingAvHighPassFilter(samples, windowLength, out highPassFilteredSignal);
+
+                //DSP_IIRFilter filter2 = new DSP_IIRFilter("Chebyshev_Highpass_400");
+                //int order2 = filter2.order;
+                //filter2.ApplyIIRFilter(samples, out highPassFilteredSignal); 
+
+                // Amplify 40dB and clip to +/-1.0;
+                double factor = 100; // equiv to 20dB
+                highPassFilteredSignal = DSP_Filters.AmplifyAndClip(highPassFilteredSignal, factor);
 
                 //low pass filter
                 string filterName = "Chebyshev_Lowpass_5000, scale*5";
                 DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
                 int order = filter.order;
                 //System.LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
-                double[] signalLowPassFiltered;
-                filter.ApplyIIRFilter(samples, out signalLowPassFiltered);
+                filter.ApplyIIRFilter(highPassFilteredSignal, out bandPassFilteredSignal);
 
-                // high pass filter
-                int windowLength = 71;
-                DSP_IIRFilter.ApplyMovingAvHighPassFilter(signalLowPassFiltered, windowLength, out bandPassFilteredSignal);
-                //bandPassFilteredSignal = signalLowPassFiltered;
-
-                //DSP_IIRFilter filter2 = new DSP_IIRFilter("Chebyshev_Highpass_400");
-                //int order2 = filter2.order;
-                //filter2.ApplyIIRFilter(signalLowPassFiltered, out bandPassFilteredSignal); 
             }
             else // do not filter because already filtered - using Chris's filtered recording
             {
                 bandPassFilteredSignal = samples;
             }
+
+            // calculate an amplitude threshold that is above Nth percentile of amplitudes in the subsample
+            int[] histogramOfAmplitudes;
+            double minAmplitude;
+            double maxAmplitude;
+            double binWidth;
+            int window = 66;
+            Histogram.GetHistogramOfWaveAmplitudes(bandPassFilteredSignal, window, out histogramOfAmplitudes, out minAmplitude, out maxAmplitude, out binWidth);
+            int percentileBin = Histogram.GetPercentileBin(histogramOfAmplitudes, percentile);
+
+            double amplitudeThreshold = (percentileBin + 1) * binWidth;
+            if (amplitudeThreshold < minAmplitudeThreshold)
+            {
+                amplitudeThreshold = minAmplitudeThreshold;
+            }
+
+
 
             bool doAnalysisOfKnownExamples = true;
             if (doAnalysisOfKnownExamples)
@@ -137,14 +153,14 @@ namespace AnalysisPrograms.Recognizers
                 //13_02_25, 13_08_18, 13_12_8, 13_25_24, 13_36_0, 13_50_4, 13_51_2, 13_57_87, 14_15_00, 15_09_74, 15_12_14, 15_25_79
 
                 //double[] times = { 2.2, 26.589, 29.62 };
-                double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62 };
-                //double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62, 31.39, 62.1, 67.67, 72.27, 72.42, 72.59, 72.8, 94.3, 95.3,
-                //                   100.16, 110.0, 125.9, 126.62, 137.57, 141.0, 146.33, 163.07, 163.17, 196.55, 215.09, 262.44, 269.9, 282.6,
-                //                   291.48, 301.85, 321.18, 322.72, 332.37, 336.1, 342.82, 363.5, 379.93, 381.55, 402.0, 402.15, 406.44, 432.17,
-                //                   462.65, 465.86, 466.18, 472.38, 479.14, 490.63, 494.4, 494.63, 495.240, 526.590, 536.590, 565.82, 568.94,
-                //                   570.5, 583.9, 603.19, 624.26, 624.36, 638.8, 641.08, 650.9, 65.13, 68.63, 704.66,
-                //                   710.36, 711.2, 724.93, 730.05, 740.78, 747.05, 758.5, 782.25, 788.18, 792.8,
-                //                   805.24, 816.03, 830.4, 831.2, 837.87, 855.02, 909.74, 912.14, 925.81  };
+                //double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62 };
+                double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62, 31.39, 62.1, 67.67, 72.27, 72.42, 72.59, 72.8, 94.3, 95.3,
+                                   100.16, 110.0, 125.9, 126.62, 137.57, 141.0, 146.33, 163.07, 163.17, 196.55, 215.09, 262.44, 269.9, 282.6,
+                                   291.48, 301.85, 321.18, 322.72, 332.37, 336.1, 342.82, 363.5, 379.93, 381.55, 402.0, 402.15, 406.44, 432.17,
+                                   462.65, 465.86, 466.18, 472.38, 479.14, 490.63, 494.4, 494.63, 495.240, 526.590, 536.590, 565.82, 568.94,
+                                   570.5, 583.9, 603.19, 624.26, 624.36, 638.8, 641.08, 650.9, 65.13, 68.63, 704.66,
+                                   710.36, 711.2, 724.93, 730.05, 740.78, 747.05, 758.5, 782.25, 788.18, 792.8,
+                                   805.24, 816.03, 830.4, 831.2, 837.87, 855.02, 909.74, 912.14, 925.81  };
 
                 var subSamplesDirectory = outputDirectory.CreateSubdirectory("testSubsamples_5000LPFilter");
                 for (int t = 0; t < times.Length; t++)
@@ -154,13 +170,27 @@ namespace AnalysisPrograms.Recognizers
                     int signalBuffer = windowWidth * 2;
                     int location = (int)Math.Round(times[t] * sr); //assume location points to start of grunt
                     double[] subsample = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 2 * signalBuffer);
-                    double[] scores1 = IctalurusFurcatus.AnalyseWaveformAtLocation(subsample);
+
+                    // calculate an amplitude threshold that is above 95th percentile of amplitudes in the subsample
+                    //int[] histogramOfAmplitudes;
+                    //double minAmplitude;
+                    //double maxAmplitude;  
+                    //double binWidth;
+                    //int window = 70;
+                    //int percentile = 90;
+                    //Histogram.GetHistogramOfWaveAmplitudes(subsample, window, out histogramOfAmplitudes, out minAmplitude, out maxAmplitude, out binWidth);
+                    //int percentileBin = Histogram.GetPercentileBin(histogramOfAmplitudes, percentile);
+
+                    //double amplitudeThreshold = (percentileBin + 1) * binWidth;
+                    //if (amplitudeThreshold < minAmplitudeThreshold) amplitudeThreshold = minAmplitudeThreshold;
+
+                    double[] scores1 = IctalurusFurcatus.AnalyseWaveformAtLocation(subsample, amplitudeThreshold, scoreThreshold);
                     string title1 = $"scores={times[t]}";
                     Image bmp1 = ImageTools.DrawGraph(title1, scores1, subsample.Length, 300, 1);
                     //bmp1.Save(path1.FullName);
 
                     string title2 = $"tStart={times[t]}";
-                    Image bmp2 = ImageTools.DrawWaveform(title2, subsample);
+                    Image bmp2 = ImageTools.DrawWaveform(title2, subsample, 1);
                     var path1 = subSamplesDirectory.CombineFile($"scoresForTestSubsample_{times[t]}secs.png");
                     //var path2 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.png");
                     Image[] imageList = { bmp2, bmp1 };
@@ -351,7 +381,7 @@ namespace AnalysisPrograms.Recognizers
         }
 
 
-        public static double[] AnalyseWaveformAtLocation(double[] signal)
+        public static double[] AnalyseWaveformAtLocation(double[] signal, double amplitudeThreshold, double scoreThreshold)
         {
             double[] waveTemplate = {-0.000600653,-0.000451427,-0.000193289,-1.91083E-05,0.000133366,0.000256465,0.000387591,0.000533758,0.000645976,0.000670944,
                  0.000622045, 0.000569337, 0.000553455, 0.000535552,0.000448935,0.000286928,0.000120322,2.26704E-05,-1.67728E-05,-9.42369E-05,
@@ -369,22 +399,28 @@ namespace AnalysisPrograms.Recognizers
             for (int i = 2; i < signal.Length- templateLength; i++)
             {
                 // look for a local minimum
-                if ((signal[i] > signal[i-1])|| (signal[i] > signal[i - 2]) || (signal[i] > signal[i + 1]) || (signal[i] > signal[i + 2]))
+                if ((signal[i] > signal[i - 1]) || (signal[i] > signal[i - 2]) || (signal[i] > signal[i + 1]) || (signal[i] > signal[i + 2]))
+                {
                     continue;
+                }
                 double[] subsampleWav = DataTools.Subarray(signal, i, templateLength);
                 double min, max; 
                 DataTools.MinMax(subsampleWav, out min, out max);
-                if ((max - min) < 0.005) continue;
+                if ((max - min) < amplitudeThreshold) continue;
 
-                //double[] normalwav = DataTools.SubtractMean(subsampleWav);
                 double[] normalwav = DataTools.normalise2UnitLength(subsampleWav);
 
                 // calculate cosine angle as similarity score
-                scores[i] = DataTools.DotProduct(normalTemplate, normalwav);
-                if (scores[i] < 0.5)
-                    scores[i] = 0.0;
+                double score = DataTools.DotProduct(normalTemplate, normalwav);
+                if (score > scoreThreshold)
+                {
+                    for (int j = 0; j < templateLength; j++)
+                    {
+                        if((score > scores[i + j])) scores[i + j] = score;
+                    }
+                }
             }
-            scores = DataTools.normalise(scores);
+            //scores = DataTools.normalise(scores);
             //scores = DataTools.filterMovingAverageOdd(scores, 3);
             return scores;
         }
