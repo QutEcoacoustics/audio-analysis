@@ -106,8 +106,8 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // Fresh water cat fish
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_ChrisAfterFiltering.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel_First60s.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel_First60s.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_ChrisFilteredLeftChFirst60s.wav";
             string outputPath = @"C:\SensorNetworks\Output\FreshWater";
             string configPath = @"Towsey.IctalurusFurcatus.yml";

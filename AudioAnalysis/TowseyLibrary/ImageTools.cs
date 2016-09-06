@@ -2602,16 +2602,11 @@ namespace TowseyLibrary
         }
 
 
-
-
         /// <summary>
-        /// This method places startTime in the centre of the waveform image and then cuts out buffer eitherside.
+        /// This method places startTime in the centre of the waveform image and then cuts out buffer on either side.
         /// </summary>
         /// <param name="label"></param>
         /// <param name="signal"></param>
-        /// <param name="sr"></param>
-        /// <param name="startTimeInSeconds"></param>
-        /// <param name="sampleLength"></param>
         /// <returns></returns>
         public static Image DrawWaveform(string label, double[] signal)
         {
@@ -2628,6 +2623,20 @@ namespace TowseyLibrary
             }
             double scalingFactor = 0.5 / max;
 
+            Image image = ImageTools.DrawWaveform(label, signal, signal.Length, height, scalingFactor);
+            return image;
+        }
+
+        /// <summary>
+        /// This method places startTime in the centre of the waveform image and then cuts out buffer on either side.
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="signal"></param>
+        /// <param name="scalingFactor"></param>
+        /// <returns></returns>
+        public static Image DrawWaveform(string label, double[] signal, double scalingFactor)
+        {
+            int height = 300;
             Image image = ImageTools.DrawWaveform(label, signal, signal.Length, height, scalingFactor);
             return image;
         }

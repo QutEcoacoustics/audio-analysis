@@ -272,6 +272,40 @@ namespace TowseyLibrary
             return histo;
         }
 
+
+
+        static public void GetHistogramOfWaveAmplitudes(double[] waveform, int window, out int[] histogramOfAmplitudes, out double minAmplitude, out double maxAmplitude, out double binWidth)
+        {
+            int binCount = 100;
+            int windowCount = waveform.Length / window;
+            double[] amplitudeArray = new double[windowCount]; 
+
+            for (int i = 0; i < windowCount; i++)
+            {
+                double[] subsample = DataTools.Subarray(waveform, i * window, window);
+                double min;
+                double max;
+                DataTools.MinMax(subsample, out min, out max);
+                amplitudeArray[i] = max - min;
+            }
+            histogramOfAmplitudes = Histo(amplitudeArray, binCount, out binWidth, out minAmplitude, out maxAmplitude);
+        }
+
+
+        static public int GetPercentileBin(int[] histogram, int percentile)
+        {
+            if (percentile > 99) throw new Exception("percentile must be < 100");
+            int sum = histogram.Sum();
+            int percentileSum = 0;
+            for (int i = 0; i < histogram.Length; i++)
+            {
+                percentileSum += histogram[i];
+                if ((percentileSum / (double)sum) > 0.95) return i;
+            }
+            return histogram.Length - 1;
+        }
+
+
         static public int[] Histo_addition(double[,] data, int[] histo, double min, double max, double binWidth)
         {
             int rows = data.GetLength(0);

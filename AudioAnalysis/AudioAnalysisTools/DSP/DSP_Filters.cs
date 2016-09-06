@@ -85,7 +85,27 @@ namespace AudioAnalysisTools.DSP
             return newSig;
         }
 
+        /// <summary>
+        /// This is ultracrude device but ................
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="threshold"></param>
+        /// <returns></returns>
+        public static double[] AmplifyAndClip(double[] signal, double amplifificationFactor)
+        {
+            int L = signal.Length;
+            double[] newSig = new double[L];
+            for (int i = 0; i < L; i++)
+            {
+                newSig[i] = signal[i] * amplifificationFactor;
 
+                if (Math.Abs(newSig[i]) > 1.0)
+                {
+                    newSig[i] = Math.Sign(signal[i]) * 1.0;
+                }
+            }
+            return newSig;
+        }
 
 
         /// <summary>
