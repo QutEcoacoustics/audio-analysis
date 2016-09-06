@@ -1,8 +1,13 @@
 ---
 AnalysisName: Towsey.RheobatrachusSilus
-# General Parameters
-DisplayColumns: Rheobatrachus
+SpeciesName: Rheobatrachus silus
+AbbreviatedSpeciesName: R.silus
 
+# min and max of the freq band to search
+MinHz:           
+MaxHz: 
+
+# BELOW PARAMETERS FROM ORIGINAl RECOGNISER
 #SegmentDuration: minutes,   SegmentOverlap=seconds        
 SegmentDuration: 1
 SegmentOverlap: 0

@@ -1,28 +1,28 @@
 ---
-AnalysisName: Towsey.UperoleiaMimula
-SpeciesName: Uperoleia mimula
-AbbreviatedSpeciesName: U.mimula
+AnalysisName: Towsey.LitoriaCaerulea
+SpeciesName: Litoria caerulea
+AbbreviatedSpeciesName: L.caerulea
 
 # min and max of the freq band to search
-DominantFreq: 2500
-MinHz: 2000          
-MaxHz: 3000
+DominantFreq: 1100
+MinHz: 500          
+MaxHz: 1500
 # duration of DCT in seconds 
 # default for Stewart CD DctDuration: 0.4
 DctDuration: 0.1
 # minimum acceptable value of a DCT coefficient  # default = 0.6
-DctThreshold: 0.6  
+DctThreshold: 0.5  
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND Default=8-15
-MinOcilFreq: 50        
-MaxOcilFreq: 50
+MinOcilFreq: 35        
+MaxOcilFreq: 250
 # Minimum and maximum duration in seconds for the length of a true call.
-MinDuration: 0.070
-MaxDuration: 0.090
+MinDuration: 0.400
+MaxDuration: 0.700
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.5
 
-FrameSize: 128
+FrameSize: 512
 
 # Standard settings
 #DoNoiseReduction: false
