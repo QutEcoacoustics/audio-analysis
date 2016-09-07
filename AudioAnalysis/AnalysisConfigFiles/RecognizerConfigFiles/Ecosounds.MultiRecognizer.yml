@@ -9,14 +9,28 @@ AnalysisName: Ecosounds.MultiRecognizer
 # The items in this list need to match the value for `AnalysisName` in each of the individual species config files.
 # Note also, that the config file paths are resolved my appending '.yml' to the end of each item in the species list.
 SpeciesList:
+#  - Towsey.AustrochaperinaAdelphe  # on Groote but no recording
+#  - Towsey.CriniaBilingua          # on Groote but no recording
+  - Towsey.CriniaRemota
+#  - Towsey.CycloranaNovaehollandiae # not on Groote
   - Towsey.LimnodynastesConvex
   - Towsey.LitoriaBicolor
-  - Towsey.LitoriaFallax
+  - Towsey.LitoriaCaerulea
+#  - Towsey.LitoriaFallax            # not on Groote
+#  - Towsey.LitoriaInermis           # not on Groote but in NT
+  - Towsey.LitoriaMicrobelos
   - Towsey.LitoriaNasuta
+  - Towsey.LitoriaPallida
   - Towsey.LitoriaRothii
   - Towsey.LitoriaRubella
-#  - Stark.LitoriaOlong
+  - Towsey.LitoriaWatjulum
+#  - Towsey.PlatyplectrumOrnatum      # On Groote but no recording
   - Towsey.RhinellaMarina
+  - Towsey.UperoleiaInundata          # On Groote but no recording
+  - Towsey.UperoleiaLithomoda
+#  - Towsey.UperoleiaMimula           # not on Groote 
+#  - Towsey.UperoleiaOrientalis       # not on Groote but in NT
+#  - Stark.LitoriaOlong
 #  - Truskinger.ExempliGratia
 
 # Standard settings
