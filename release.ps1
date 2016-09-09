@@ -62,6 +62,6 @@ git tag -a -m "Version $tag_name" $tag_name
 echo "pushing tags"
 git push --follow-tags
 echo "creating github release"
-hub release create "$(if($pre_release){"-p"})" -a .\Release.$version.tar.gz -a .\Debug.$version.tar.gz -m "Version $tag_name`nRLEASE and DEBUG builds" $tag_name
+hub release create "$(if($pre_release){"-p"})" -a .\Release.$version.tar.gz -a .\Debug.$version.tar.gz -m "Version $tag_name`nRELEASE and DEBUG builds" $tag_name
 
 Write-Host "Release created!"
