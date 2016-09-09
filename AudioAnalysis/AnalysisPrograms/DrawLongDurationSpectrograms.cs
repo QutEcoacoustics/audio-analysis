@@ -26,6 +26,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.IO;
+    using System.Linq;
 
     using Acoustics.Shared;
 
@@ -130,8 +131,8 @@ namespace AnalysisPrograms
 
             // false-colour spectrograms
             //string ipFileName = "TEST_Farmstay_ECLIPSE3_20121114-060001+1000"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            string ipdir = @"C:\SensorNetworks\Output\Test\Test2\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\Test\Test2";
+            string ipdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated\frogmary-concatenated\20160117";
+            string opdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated";
 
             // false-colour spectrograms
             //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
@@ -236,7 +237,8 @@ namespace AnalysisPrograms
         public static int DrawAggregatedSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
-            int frameCount = spectra["ACI"].GetLength(1);
+            var keys = spectra.Keys.ToArray();
+            int frameCount = spectra[keys[0]].GetLength(1);
             double spectrogramScale = 0.1;
             TimeSpan timeScale = TimeSpan.FromSeconds(spectrogramScale);
             DirectoryInfo outputDirectory = arguments.OutputDirectory;
