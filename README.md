@@ -77,13 +77,6 @@ Not all BLOBs are stored in git-lfs. So far only the audio files in
 
  1. Pull latest changes to your local computer
  2. Make sure the repo is clean (no uncommitted changes)
- 3. Open the solution in Visual Studio
- 4. **Important**: Change the build type to `Release`
- 5. Clean the solution
- 5. Build the solution
- 6. Change the build type to `Debug`
- 5. Clean the solution
- 7. Build the solution
  8. Open a prompt, `cd` to the git repo folder
- 9. Run `release.ps1`
+ 9. Run `. .\release.ps1`
  10. Profit :sparkles: :moneybag: :dollar: :heavy_dollar_sign: :sparkles:
