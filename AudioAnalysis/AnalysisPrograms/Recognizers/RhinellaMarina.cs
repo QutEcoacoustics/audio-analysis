@@ -33,13 +33,13 @@ namespace AnalysisPrograms.Recognizers
 
     /// <summary>
     /// AKA: The bloody canetoad
-    /// This is a frog rcogniser based on the "ribit" or "washboard" template
+    /// This is a frog recognizer based on the "ribit" or "washboard" template
     /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
     /// 
     /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
     /// e.g. Litoria rothii and Litoria olongburesnsis.
-    /// To call this recogniser, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recogniser can be called via the MultiRecognizer.
+    /// To call this recognizer, the first command line argument must be "EventRecognizer".
+    /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
     class RhinellaMarina : RecognizerBase
     {

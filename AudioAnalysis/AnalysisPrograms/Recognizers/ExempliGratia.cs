@@ -1,12 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ExempliGratia.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   This is a template recognizer
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Text;
 
     using Acoustics.Tools.Wav;
 
