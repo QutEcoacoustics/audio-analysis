@@ -1,14 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="CycloranaNovaehollandiae.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   This is a frog recognizer based on the "ribit" or "washboard" template
+//   It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
+//   This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
+//   To call this recognizer, the first command line argument must be "EventRecognizer".
+//   Alternatively, this recognizer can be called via the MultiRecognizer.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
+    using System.Text;
 
+    using Acoustics.Shared;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -27,12 +41,12 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a frog rcogniser based on the "ribit" or "washboard" template
+    /// This is a frog recognizer based on the "ribit" or "washboard" template
     /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
     /// 
     /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
-    /// To call this recogniser, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recogniser can be called via the MultiRecognizer.
+    /// To call this recognizer, the first command line argument must be "EventRecognizer".
+    /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
     /// </summary>
     class CycloranaNovaehollandiae : RecognizerBase
@@ -69,7 +83,13 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
         /// <returns></returns>
-        public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        public override RecognizerResults Recognize(
+            AudioRecording recording,
+            dynamic configuration,
+            TimeSpan segmentStartOffset,
+            Lazy<IndexCalculateResult[]> getSpectralIndexes,
+            DirectoryInfo outputDirectory,
+            int? imageWidth)
         {
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
@@ -84,7 +104,7 @@ namespace AnalysisPrograms.Recognizers
             double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];  
+            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
             // ignore oscillations below this threshold freq
             int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
@@ -97,7 +117,7 @@ namespace AnalysisPrograms.Recognizers
 
             // max duration of event in seconds                 
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
-            
+
             // The default was 512 for Canetoad.
             // Framesize = 128 seems to work for Littoria fallax.
             // frame size
@@ -119,14 +139,14 @@ namespace AnalysisPrograms.Recognizers
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
-            {
-                SourceFName = recording.FileName,
-                WindowSize = frameSize,
-                WindowOverlap = windowOverlap,
-                //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = NoiseReductionType.STANDARD,
-                NoiseReductionParameter = 0.1,
-            };
+                {
+                    SourceFName = recording.FileName,
+                    WindowSize = frameSize,
+                    WindowOverlap = windowOverlap,
+                    //NoiseReductionType = NoiseReductionType.NONE,
+                    NoiseReductionType = NoiseReductionType.STANDARD,
+                    NoiseReductionParameter = 0.1,
+                };
 
             TimeSpan recordingDuration = recording.Duration();
             int sr = recording.SampleRate;
@@ -162,29 +182,20 @@ namespace AnalysisPrograms.Recognizers
                 out acousticEvents,
                 out hits);
 
-            acousticEvents.ForEach(ae =>
-            {
-                ae.SpeciesName = speciesName;
-                ae.SegmentStartOffset = segmentStartOffset;
-                ae.SegmentDuration = recordingDuration;
-                ae.Name = abbreviatedSpeciesName;
-            });
+            acousticEvents.ForEach(
+                ae =>
+                    {
+                        ae.SpeciesName = speciesName;
+                        ae.SegmentStartOffset = segmentStartOffset;
+                        ae.SegmentDuration = recordingDuration;
+                        ae.Name = abbreviatedSpeciesName;
+                    });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
-            var plots = new List<Plot>();
-            plots.Add(plot);
+            var plots = new List<Plot> { plot };
 
 
-            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
-            bool displayDebugImage = MainEntry.InDEBUG;
-            if (displayDebugImage)
-            {
-                Image debugImage = DisplayDebugImage(sonogram, acousticEvents, plots, hits);
-                string debugDir = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test\";
-                var fileName = Path.GetFileNameWithoutExtension(recording.FileName);
-                string debugPath = Path.Combine(debugDir, fileName + ".DebugSpectrogram_CycloNovae.png");
-                debugImage.Save(debugPath);
-            }
+            WriteDebugImage(recording.FileName, outputDirectory, sonogram, acousticEvents, plots, hits);
 
             return new RecognizerResults()
             {
@@ -198,31 +209,45 @@ namespace AnalysisPrograms.Recognizers
 
 
 
-        public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        public void WriteDebugImage(string recordingFileName, DirectoryInfo outputDirectory, BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            if (scores != null)
+            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+            bool displayDebugImage = MainEntry.InDEBUG;
+            if (displayDebugImage)
             {
-                foreach (Plot plot in scores)
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-            }
-            if (hits != null) image.OverlayRainbowTransparency(hits);
 
-            if (events.Count > 0)
-            {
-                foreach (AcousticEvent ev in events) // set colour for the events
+                bool doHighlightSubband = false;
+                bool add1kHzLines = true;
+                Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                if (scores != null)
                 {
-                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
+                    foreach (Plot plot in scores)
+                        image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+                            //assumes data normalised in 0,1
                 }
-                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
+                if (hits != null) image.OverlayRainbowTransparency(hits);
+
+                if (events.Count > 0)
+                {
+                    foreach (AcousticEvent ev in events) // set colour for the events
+                    {
+                        ev.BorderColour = AcousticEvent.DefaultBorderColor;
+                        ev.ScoreColour = AcousticEvent.DefaultScoreColor;
+                    }
+                    image.AddEvents(
+                        events,
+                        sonogram.NyquistFrequency,
+                        sonogram.Configuration.FreqBinCount,
+                        sonogram.FramesPerSecond);
+                }
+
+                var debugImage = image.GetImage();
+ 
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recordingFileName), this.Identifier, "png", "DebugSpectrogram"));
+                debugImage.Save(debugPath.FullName);
             }
-            return image.GetImage();
         }
-
-
     }
 }
