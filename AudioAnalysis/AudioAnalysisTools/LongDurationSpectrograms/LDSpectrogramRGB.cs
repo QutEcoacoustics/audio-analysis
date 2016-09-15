@@ -1179,6 +1179,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     if (Double.IsNaN(d2)) d2 = 0.5;
                     if (Double.IsNaN(d3)) d3 = 0.5;
 
+                    // enhance blue colour - it is difficult to see on a black background
+                    // This is a hack - there should be a principled way to do this.
+                    if((d1 < 0.1) && (d2 < 0.1) && (d3 > 0.2))
+                    {
+                        d2 += (0.7 * d3);
+                        d3 += 0.2;
+                        d2 = Math.Min(1.0, d2);
+                        d3 = Math.Min(1.0, d3);
+                    }
 
                     if (doReverseColour)
                     {
@@ -1186,7 +1195,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         d2 = 1 - d2;
                         d3 = 1 - d3;
                     }
-
 
                     v1 = Convert.ToInt32(Math.Max(0, d1 * MaxRGBValue));
                     v2 = Convert.ToInt32(Math.Max(0, d2 * MaxRGBValue));
@@ -1534,7 +1542,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string startTime = string.Format("{0:d2}{1:d2}h", cs1.StartOffset.Hours, cs1.StartOffset.Minutes);
 
             // then pass that image into chromer
-            string title = string.Format("<{0}> SPECTROGRAM  of \"{1}\".     Starts at {2}", colorMap, cs1.FileName, startTime);
+            string title = string.Format("<{0}> SPECTROGRAM  of \"{1}\".   Starts at {2}; Nyquist={3}", 
+                                                                                      colorMap, cs1.FileName, startTime, nyquist);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
             image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1, nyquist, HertzInterval);
             var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");

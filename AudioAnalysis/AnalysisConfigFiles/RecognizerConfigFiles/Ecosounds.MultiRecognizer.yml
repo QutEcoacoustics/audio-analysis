@@ -32,8 +32,11 @@ SpeciesList:
 #  - Towsey.UperoleiaOrientalis       # not on Groote but in NT
 #  - Stark.LitoriaOlong
 #  - Truskinger.ExempliGratia
+#  - Towsey.BlueCatfish
 
 # Standard settings
+# TODO: try to remove the need for this - currently there
+# is a functional dependency in analyze long recordrings
 EventThreshold: 0.2
 
 # Resample rate must be 2 X the desired Nyquist
