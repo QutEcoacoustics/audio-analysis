@@ -16,6 +16,7 @@ namespace AnalysisPrograms.Recognizers
     using System.Reflection;
     using System.Text;
 
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -32,6 +33,8 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
 
     using TowseyLibrary;
+
+    using YamlDotNet.Dynamic;
 
     /// <summary>
     /// This is a template recognizer
@@ -81,16 +84,104 @@ namespace AnalysisPrograms.Recognizers
             //int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
 
             // Get a value from the config file - without a string accessor, as a double
-            double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
+            double someExampleSettingA = (double?)configuration.SomeExampleSettingA ?? 0.0;
 
             // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
+            /*
+             * Examples of using profiles
+             */
+
+            // Examples of the APIs available. You don't need all of these commands! Pick and choose.
+            bool hasProfiles = ConfigFile.HasProfiles(configuration);
+            dynamic profile = ConfigFile.GetProfile(configuration, "Groote");
+            dynamic profile2;
+            ConfigFile.TryGetProfile(configuration, "FemaleRelease", out profile2);
+            string[] profileNames = ConfigFile.GetProfileNames(configuration);
+            Dictionary<string, dynamic> allProfiles = ConfigFile.GetAllProfiles(configuration);
+            foreach (var kvp in allProfiles)
+            {
+                dynamic currentProfile = kvp.Value;
+                Log.Info(kvp.Key + ": " + ((int)currentProfile.MinHz).ToString());
+            }
+
+            // Profile example: running the same algorithm on every profile with different settings (regional variation)
+            /*
+            List<AcousticEvent> allAcousticEvents = new List<AcousticEvent>();
+            Dictionary<string, dynamic> allProfiles = ConfigFile.GetAllProfiles(configuration);
+            foreach (var kvp in allProfiles)
+            {
+                string profileName = kvp.Key;
+                Log.Info($"Analyzing profile: {profileName}");
+                dynamic currentProfile = kvp.Value;
+                
+                // extract parameters
+                int minHz = (int)configuration[AnalysisKeys.MinHz];
+
+                // ...
+
+                // run the algorithm
+                List<AcousticEvent> acousticEvents;
+                Oscillations2012.Execute( All the correct parameters, minHz);
+
+                // augment the returned events
+                acousticEvents.ForEach(ae =>
+                {
+                    ae.SpeciesName = speciesName;
+                    ae.Profile = profileName;
+                    ae.SegmentDuration = recordingDuration;
+                    ae.Name = abbreviatedSpeciesName;
+                });
+
+                // add events found in this profile to the total list
+                allAcousticEvents.AddRange(acousticEvents);
+            }
+            */
+
+            // Profile example: running a different algorithm on different profiles
+            /*
+            bool hasProfiles = ConfigFile.HasProfiles(configuration);
+            if (hasProfiles)
+            {
+                // add resulting events from each algorithm into the combined event list
+                allAcousticEvents.AddRange(RunFemaleProfile(...all the arguments));
+                allAcousticEvents.AddRange(RunMaleProfile(...all the arguments));
+            }
+
+            // example method
+            private static List<AcousticEvent> RunFemaleProfile(configuration, rest of arguments)
+            {
+                const string femaleProfile = "Female";
+                dynamic currentProfile = ConfigFile.GetProfile(configuration, femaleProfile);
+                Log.Info($"Analyzing profile: {femaleProfile}");
+
+                // extract parameters
+                int minHz = (int)configuration[AnalysisKeys.MinHz];
+
+                // ...
+
+                // run the algorithm
+                List<AcousticEvent> acousticEvents;
+                Oscillations2012.Execute(All the correct parameters, minHz);
+
+                // augment the returned events
+                acousticEvents.ForEach(ae =>
+                {
+                    ae.SpeciesName = speciesName;
+                    ae.Profile = femaleProfile;
+                    ae.SegmentDuration = recordingDuration;
+                    ae.Name = abbreviatedSpeciesName;
+                });
+
+                return acousticEvents;
+            }
+            */
 
 
-            // get samples
-            var samples = audioRecording.WavReader.Samples;
+        // get samples
+        var samples = audioRecording.WavReader.Samples;
 
 
             // make a spectrogram
@@ -127,8 +218,6 @@ namespace AnalysisPrograms.Recognizers
             anEvent.Name = "FAKE!";
 
             foundEvents.Add(anEvent);
-
-            // end loop
 
             return new RecognizerResults()
             {
