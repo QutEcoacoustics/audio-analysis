@@ -21,6 +21,7 @@ namespace AnalysisPrograms
     using System.Runtime.Serialization;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
 
