@@ -18,6 +18,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;

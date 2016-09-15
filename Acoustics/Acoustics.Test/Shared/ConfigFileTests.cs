@@ -13,6 +13,7 @@ namespace Acoustics.Test.Shared
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

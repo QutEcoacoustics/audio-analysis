@@ -16,6 +16,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.TileImage;

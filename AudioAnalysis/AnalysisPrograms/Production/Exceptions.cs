@@ -10,6 +10,7 @@ namespace AnalysisPrograms.Production
     using System.IO;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
 
     using PowerArgs;
     using AnalysisBase;

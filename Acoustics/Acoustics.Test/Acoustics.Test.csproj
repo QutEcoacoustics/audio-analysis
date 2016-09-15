@@ -99,6 +99,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
@@ -118,9 +119,13 @@
     <Reference Include="xunit">
       <HintPath>..\..\AudioAnalysis\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
-    <Reference Include="YamlDotNet, Version=2.0.1.32093, Culture=neutral, PublicKeyToken=2b53052c5884d7a1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.dll</HintPath>
+    <Reference Include="YamlDotNet, Version=3.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\YamlDotNet.3.9.0\lib\net35\YamlDotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="YamlDotNet.Dynamic, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\AudioAnalysis\packages\YamlDotNet.Dynamic.3.2.3\lib\net40\YamlDotNet.Dynamic.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -167,7 +172,7 @@
       <Name>TowseyLibrary</Name>
     </ProjectReference>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj">
-      <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
+      <Project>{ef04f5a8-d4bd-4cd1-bfc2-f6ad2d9c7927}</Project>
       <Name>Acoustics.Shared</Name>
     </ProjectReference>
     <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj">

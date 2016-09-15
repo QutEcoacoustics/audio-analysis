@@ -18,6 +18,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Threading;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
 
