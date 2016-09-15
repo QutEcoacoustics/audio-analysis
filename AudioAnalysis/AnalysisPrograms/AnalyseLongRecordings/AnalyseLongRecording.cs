@@ -20,6 +20,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using System.Reflection;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Audio;
 
     using AnalysisBase;

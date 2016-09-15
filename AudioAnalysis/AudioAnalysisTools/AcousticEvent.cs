@@ -264,6 +264,11 @@ namespace AudioAnalysisTools
         /// <summary>in seconds</summary>
         public double Duration { get; set; }
 
+        /// <summary>
+        /// Which profile (combination of settings in a config file) produced this event
+        /// </summary>
+        public string Profile { get; set; }
+
         public void DoMelScale(bool doMelscale, int freqBinCount)
         {
             this.IsMelscale = doMelscale;
