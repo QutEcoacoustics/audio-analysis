@@ -1,12 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LimnodynastesConvex.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Text;
 
+    using Acoustics.Shared;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -23,16 +33,14 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
 
     using TowseyLibrary;
-    using System.Drawing;
-    using System.IO;
 
     /// <summary>
-    /// This is a frog rcogniser based on the "honk" or "quack" template
+    /// This is a frog recognizer based on the "honk" or "quack" template
     /// It detects honk type calls by extracting three features: dominant frequency, honk duration and match to honk spectrum profile.
     /// 
     /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs 
-    /// To call this recogniser, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recogniser can be called via the MultiRecognizer.
+    /// To call this recognizer, the first command line argument must be "EventRecognizer".
+    /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
     /// </summary>
     class LimnodynastesConvex : RecognizerBase
@@ -100,13 +108,13 @@ namespace AnalysisPrograms.Recognizers
 
 
 
-            RecognizerResults results = Gruntwork(audioRecording, configuration);
+            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
 
             return results;
         }
 
 
-        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration)
+        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
         {
             // make a spectrogram
             var config = new SonogramConfig
@@ -276,19 +284,17 @@ namespace AnalysisPrograms.Recognizers
 
             prunedScores = DataTools.normalise(prunedScores);
 
-            var plots = new List<Plot>();
+            
             var plot = new Plot(this.DisplayName, prunedScores, eventThreshold);
-            plots.Add(plot);
+            var plots = new List<Plot> { plot };
 
-            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
+            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
             bool displayDebugImage = MainEntry.InDEBUG;
             if(displayDebugImage)
             {
                 Image debugImage = DisplayDebugImage(sonogram, potentialEvents, plots, hits);
-                string debugDir = @"C:\SensorNetworks\Output\Frogs\TestOfHiResIndices-2016August\Test\";
-                var fileName = Path.GetFileNameWithoutExtension(audioRecording.FileName);
-                string debugPath = Path.Combine(debugDir, fileName + ".DebugSpectrogram_LimnoConvex.png");
-                debugImage.Save(debugPath);
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
+                debugImage.Save(debugPath.FullName);
             }
 
             return new RecognizerResults()

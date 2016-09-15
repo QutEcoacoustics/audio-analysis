@@ -1,14 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LitoriaRothii.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   This is a frog recognizer based on the "ribit" or "washboard" template
+//   It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
+//   This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
+//   To call this recognizer, the first command line argument must be "EventRecognizer".
+//   Alternatively, this recognizer can be called via the MultiRecognizer.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Text;
 
+    using Acoustics.Shared;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -27,12 +40,12 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a frog rcogniser based on the "ribit" or "washboard" template
+    /// This is a frog recognizer based on the "ribit" or "washboard" template
     /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
     /// 
     /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
-    /// To call this recogniser, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recogniser can be called via the MultiRecognizer.
+    /// To call this recognizer, the first command line argument must be "EventRecognizer".
+    /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
     /// </summary>
     class LitoriaRothii : RecognizerBase
@@ -171,26 +184,23 @@ namespace AnalysisPrograms.Recognizers
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
-            var plots = new List<Plot>();
-            plots.Add(plot);
+            var plots = new List<Plot> { plot };
 
 
-            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
+            // DEBUG IMAGE this recognizer only. MUST set false for deployment. 
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
                 Image debugImage = DisplayDebugImage(sonogram, acousticEvents, plots, hits);
-                string debugDir = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test\";
-                var fileName = Path.GetFileNameWithoutExtension(recording.FileName);
-                string debugPath = Path.Combine(debugDir, fileName + ".DebugSpectrogram_LitoriaRothii.png");
-                debugImage.Save(debugPath);
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), this.Identifier, "png", "DebugSpectrogram"));
+                debugImage.Save(debugPath.FullName);
             }
 
             return new RecognizerResults()
             {
                 Sonogram = sonogram,
                 Hits = hits,
-                Plots = plot.AsList(),
+                Plots = plots,
                 Events = acousticEvents
             };
 

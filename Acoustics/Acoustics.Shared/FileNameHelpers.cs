@@ -51,7 +51,7 @@ namespace Acoustics.Shared
 
             if (string.IsNullOrWhiteSpace(analysisTag))
             {
-                throw new ArgumentException("analysisTag must have a value", "analysisTag");
+                throw new ArgumentException("analysisTag must have a value", nameof(analysisTag));
             }
 
             if (basename.Contains(BasenameSeparator))
@@ -142,13 +142,13 @@ namespace Acoustics.Shared
         /// <returns></returns>
         public static bool TryParseOldStyleCsvFileName(string filename, out string analysisTag)
         {
-            analysisTag = String.Empty;
+            analysisTag = string.Empty;
             if (string.IsNullOrWhiteSpace(filename))
             {
                 return false;
             }
 
-            var matches = Regex.Match(filename, @"^(.*)_(.*)\.(.+)$)");
+            var matches = Regex.Match(filename, @"^(.*)_(.*)\.(.+)$");
             if (matches.Success)
             {
                 analysisTag = matches.Groups[2].Value;

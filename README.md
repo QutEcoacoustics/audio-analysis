@@ -72,3 +72,11 @@ Not all BLOBs are stored in git-lfs. So far only the audio files in
 ### Matalab
 
 - Matlab
+
+# Making a release
+
+ 1. Pull latest changes to your local computer
+ 2. Make sure the repo is clean (no uncommitted changes)
+ 8. Open a prompt, `cd` to the git repo folder
+ 9. Run `. .\release.ps1`
+ 10. Profit :sparkles: :moneybag: :dollar: :heavy_dollar_sign: :sparkles:

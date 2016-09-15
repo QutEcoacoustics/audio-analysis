@@ -1,14 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LitoriaFallax.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Text;
 
+    using Acoustics.Shared;
     using Acoustics.Tools.Wav;
 
     using AnalysisBase;
@@ -27,12 +35,12 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a frog rcogniser based on the "ribit" or "washboard" template
+    /// This is a frog recognizer based on the "ribit" or "washboard" template
     /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
     /// 
     /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
-    /// To call this recogniser, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recogniser can be called via the MultiRecognizer.
+    /// To call this recognizer, the first command line argument must be "EventRecognizer".
+    /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
     /// </summary>
     class LitoriaFallax : RecognizerBase
@@ -168,47 +176,64 @@ namespace AnalysisPrograms.Recognizers
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
-            var plots = new List<Plot>();
-            plots.Add(plot);
+            var plots = new List<Plot> { plot };
 
 
-            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
-            bool displayDebugImage = MainEntry.InDEBUG;
-            if (displayDebugImage)
-            {
-                Image debugImage1 = LitoriaRothii.DisplayDebugImage(sonogram, acousticEvents, plots, hits);
-                string debugDir = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test\";
-                var fileName = Path.GetFileNameWithoutExtension(recording.FileName);
-                string debugPath1 = Path.Combine(debugDir, fileName + ".DebugSpectrogram1_LitoriaFallax.png");
-                debugImage1.Save(debugPath1);
-
-
-                // save new image with longer frame
-                var sonoConfig2 = new SonogramConfig
-                {
-                    SourceFName = recording.FileName,
-                    WindowSize = 1024,
-                    WindowOverlap = 0,
-                    NoiseReductionType = NoiseReductionType.NONE,
-                    //NoiseReductionType = NoiseReductionType.STANDARD,
-                    //NoiseReductionParameter = 0.1
-                };
-                BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);
-
-                string debugPath2 = Path.Combine(debugDir, fileName + ".DebugSpectrogram2_LitoriaFallax.png");
-                Image debugImage2 = LitoriaRothii.DisplayDebugImage(sonogram2, acousticEvents, plots, null);
-                debugImage2.Save(debugPath2);
-
-            }
-
+            this.WriteDebugImage(recording, outputDirectory, sonogram, acousticEvents, plots, hits);
 
             return new RecognizerResults()
             {
                 Sonogram = sonogram,
                 Hits = hits,
-                Plots = plot.AsList(),
+                Plots = plots,
                 Events = acousticEvents
             };
+        }
+
+        private void WriteDebugImage(
+            AudioRecording recording,
+            DirectoryInfo outputDirectory,
+            BaseSonogram sonogram,
+            List<AcousticEvent> acousticEvents,
+            List<Plot> plots,
+            double[,] hits)
+        {
+            //DEBUG IMAGE this recogniser only. MUST set false for deployment. 
+            bool displayDebugImage = MainEntry.InDEBUG;
+            if (displayDebugImage)
+            {
+                Image debugImage1 = LitoriaRothii.DisplayDebugImage(sonogram, acousticEvents, plots, hits);
+                var debugPath1 =
+                    outputDirectory.Combine(
+                        FilenameHelpers.AnalysisResultName(
+                            Path.GetFileNameWithoutExtension(recording.FileName),
+                            this.Identifier,
+                            "png",
+                            "DebugSpectrogram1"));
+                debugImage1.Save(debugPath1.FullName);
+
+                // save new image with longer frame
+                var sonoConfig2 = new SonogramConfig
+                    {
+                        SourceFName = recording.FileName,
+                        WindowSize = 1024,
+                        WindowOverlap = 0,
+                        NoiseReductionType = NoiseReductionType.NONE,
+                        //NoiseReductionType = NoiseReductionType.STANDARD,
+                        //NoiseReductionParameter = 0.1
+                    };
+                BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);
+
+                var debugPath2 =
+                    outputDirectory.Combine(
+                        FilenameHelpers.AnalysisResultName(
+                            Path.GetFileNameWithoutExtension(recording.FileName),
+                            this.Identifier,
+                            "png",
+                            "DebugSpectrogram2"));
+                Image debugImage2 = LitoriaRothii.DisplayDebugImage(sonogram2, acousticEvents, plots, null);
+                debugImage2.Save(debugPath2.FullName);
+            }
         }
     }
 }

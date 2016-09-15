@@ -1,11 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="IctalurusFurcatus.cs" company="QutBioacoustics">
+//   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
+// </copyright>
+// <summary>
+//   This is a Blue Catfish recognizer (Ictalurus furcatus)
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Text;
 
     using Acoustics.Tools.Wav;
 
@@ -23,8 +33,6 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
 
     using TowseyLibrary;
-    using System.Drawing;
-    using System.IO;
 
     /// <summary>
     /// This is a Blue Catfish recognizer (Ictalurus furcatus)
