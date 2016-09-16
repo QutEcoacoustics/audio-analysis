@@ -98,7 +98,7 @@ namespace AnalysisPrograms.Recognizers
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
             dynamic profile = ConfigFile.GetProfile(configuration, "Groote");
             dynamic profile2;
-            ConfigFile.TryGetProfile(configuration, "FemaleRelease", out profile2);
+            bool success = ConfigFile.TryGetProfile(configuration, "FemaleRelease", out profile2);
             string[] profileNames = ConfigFile.GetProfileNames(configuration);
             Dictionary<string, dynamic> allProfiles = ConfigFile.GetAllProfiles(configuration);
             foreach (var kvp in allProfiles)

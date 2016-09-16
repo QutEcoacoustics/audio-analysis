@@ -134,8 +134,8 @@ namespace AnalysisPrograms
 
             //string ipdir = @"C:\SensorNetworks\Output\Test\Test2\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\Test\Test2";
-            string ipdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated\frogmary-concatenated\20160117";
-            string opdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated";
+            //string ipdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated\frogmary-concatenated\20160117";
+            //string opdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated";
 
             // false-colour spectrograms
             //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"

@@ -215,3 +215,8 @@ FakesAssemblies/
 
 .Rproj.user
 *.RData
+
+# Created by https://www.gitignore.io/api/vagrant
+
+### Vagrant ###
+.vagrant/
