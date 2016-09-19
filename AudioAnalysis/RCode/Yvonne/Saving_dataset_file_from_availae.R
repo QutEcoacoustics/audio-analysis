@@ -2,14 +2,14 @@
 # R version: 3.2.1
 # Creates a dataset from the concatenated files on availae for specific 
 # dates and saves to csv.  
-# 
+# See below for the concatenation of the results
 ######## You may wish to change these ###################### 
-setwd("C:\\Work\\CSV files\\FourMonths\\")
+# setwd("C:\\Work\\CSV files\\FourMonths\\")
 #(for mapping file)
 
 folder <- "Y:\\Results\\YvonneResults\\Cooloola_ConcatenatedResults\\GympieNP"
 
-# Set sourceDir to where the wave files 
+# Set sourceDir to where the wave files    
 site <- "Gympie NP1 "
 latitude <- "Latitude 26deg 3min 49.6sec"
 longitude <- "Longitude 152deg 42min 42.3sec"
@@ -202,3 +202,99 @@ concat <- rbind(file1Gympie, file2Gympie, file1Woondum, file2Woondum)
 concat <- cbind(concat, site, dates, minute.of.day)
 
 write.csv(concat, "dataset_22June2015_11 Oct2015.csv", row.names = F)
+
+#######################################################
+setwd("C:\\Work\\Following_confirmation\\Dataset\\")
+folder <- "C:\\Temp\\Yvonne3\\concatOutput\\GympieNP"
+myFiles <- list.files(path=folder, recursive=T, full.names=TRUE, 
+                      pattern="*SummaryIndices.csv$")
+
+# generate a series of date and times with one minute intervals
+start <- as.POSIXct("2015-06-22")
+interval <- 1
+
+end <- start + as.difftime(length(myFiles), units="days")
+
+date_time <- seq(from=start, by=interval*60, to=end)
+
+gympie_data <- NULL
+for(i in 1:(length(myFiles)-1) {
+  concat_data <- read.csv(myFiles[i])[c(3:14,16,18,20:24)]
+  gympie_data <- rbind(gympie_data, concat_data)
+}
+View(gympie_data)
+date_time <- date_time[1:length(gympie_data[,1])]
+site <- rep("GympieNP", length(gympie_data[,1]))
+gympie_data <- cbind(gympie_data, site, date_time)
+
+folder <- "C:\\Temp\\Yvonne3\\concatOutput\\Woondum3"
+myFiles_Woon <- list.files(path=folder, recursive=T, full.names=TRUE, 
+                      pattern="*SummaryIndices.csv$")
+
+# generate a series of date and times with one minute intervals
+start <- as.POSIXct("2015-06-22")
+interval <- 1
+
+end <- start + as.difftime(length(myFiles_Woon), units="days")
+
+date_time <- seq(from=start, by=interval*60, to=end)
+
+woondum_data <- NULL
+for(i in 1:(length(myFiles_Woon)-1)) {
+  concat_woon_data <- read.csv(myFiles_Woon[i])[c(3:14,16,18,20:24)]
+  woondum_data <- rbind(woondum_data, concat_woon_data)
+}
+
+#date_time <- date_time[1:length(woondum_data[,1])]
+date_time <- date_time[1:length(woondum_data[,1])]
+site <- rep("WoondumNP", length(woondum_data[,1]))
+woondum_data <- cbind(woondum_data, site, date_time)
+View(woondum_data)
+
+write.csv(gympie_data, "gympie_full_dataset.csv",row.names = F)
+write.csv(woondum_data, "woondum_full_dataset.csv",row.names = F)
+
+# choose 24 fine days from the gympie np site
+gympie_days <- c("2015-07-15", "2015-07-16",
+                 "2015-08-17", "2015-08-18",
+                 "2015-09-22", "2015-09-23",
+                 "2015-10-05", "2015-10-06",
+                 "2015-11-12", "2015-11-13",
+                 "2015-12-14", "2015-12-15",
+                 "2016-01-11", "2016-01-12",
+                 "2016-02-25", "2016-02-26",
+                 "2016-03-25", "2016-03-26",
+                 "2016-04-21", "2016-04-22",
+                 "2016-05-18", "2016-05-19",
+                 "2016-06-08", "2016-06-10")
+reference <- NULL
+for (i in 1:length(gympie_days)) {
+  a <- grep(gympie_days[i], gympie_data$date_time)
+  reference <- c(reference, a)
+}
+
+gympie_days_dataset <- gympie_data[reference,]
+write.csv(gympie_days_dataset, "gympie_days_dataset.csv",row.names = F)
+
+# choose 24 fine days from the woondum np site
+woondum_days <- c("2015-07-30", "2015-07-31",
+                 "2015-08-01", "2015-08-04",
+                 "2015-09-01", "2015-09-09",
+                 "2015-09-22", "2015-10-04",
+                 "2015-11-18", "2015-11-19",
+                 "2015-12-09", "2015-12-10",
+                 "2016-01-11", "2016-01-12",
+                 "2016-02-25", "2016-02-26",
+                 "2016-03-10", "2016-03-15",
+                 "2016-04-06", "2016-04-09",
+                 "2016-05-17", "2016-05-18",
+                 "2016-06-08", "2016-06-10")
+reference_woon <- NULL
+for (i in 1:length(woondum_days)) {
+  a <- grep(woondum_days[i], woondum_data$date_time)
+  reference_woon <- c(reference_woon, a)
+}
+
+woondum_days_dataset <- woondum_data[reference_woon,]
+
+write.csv(woondum_days_dataset, "woondum_days_dataset.csv",row.names = F)

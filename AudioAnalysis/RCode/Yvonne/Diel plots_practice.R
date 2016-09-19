@@ -110,6 +110,7 @@ cluster.list <- read.csv(file ="hybrid_clust_17500_30.csv", header=T)
 cluster.list1 <- cluster.list[1:(length(cluster.list$hybrid_k17500k30k3)/2),]
 
 output <- matrix(cluster.list1, ncol = 1440, byrow = TRUE)
+
 #cols <- c(
 #  '1' = "#778899", #"lightslategray"
 #  '2' = "#778899", #"lightslategray"
@@ -181,7 +182,6 @@ cols <- c(
 #        maxColorValue = 255), c(rgb(t(col2rgb(colors())), maxColorValue = 255)))]
 
 ####################
-
 output1 <- apply(output, 2, rev)
 # plot Gympie NP plot
 png("GympieNP_diel_Assigned_colours_different_test.png",
