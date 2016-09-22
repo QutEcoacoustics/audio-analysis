@@ -8,7 +8,7 @@ using MathNet.Numerics.Transformations;
 namespace TowseyLibrary
 {
 
-    public enum WindowFunctions { NONE, HAMMING };
+    public enum WindowFunctions { NONE, HAMMING, HANNING };
 
 
 
@@ -16,7 +16,8 @@ namespace TowseyLibrary
     {
         RealFourierTransformation rft; //only used if calling the .NET numerical math library
 
-        public const string Key_HammingWindow = "Hamming";
+        public const string Key_HammingWindow = "HAMMING";
+        public const string Key_HanningWindow = "HANNING";
 
         public delegate double WindowFunc(int n, int N);
 
@@ -249,11 +250,22 @@ namespace TowseyLibrary
         #region Window functions
         // from http://en.wikipedia.org/wiki/Window_function
 
+
+        /// <summary>
+        /// The Hamming window reduces the immediate adjacent sidelobes (conmpared to the Hanning) but at the expense of increased 
+        /// distal side-lobes. See <https://en.wikipedia.org/wiki/Window_function>
+        /// </summary>
         public static readonly WindowFunc Hamming = delegate(int n, int N)
         {
             double x = 2.0 * Math.PI * n / (N - 1);
             //return 0.53836 - 0.46164 * Math.Cos(x);
-            return 0.54 - 0.46 * Math.Cos(x); //MATLAB code uses these value and says it is better!
+            return 0.54 - (0.46 * Math.Cos(x)); //MATLAB code uses these value and says it is better!
+        };
+
+        public static readonly WindowFunc Hanning = delegate (int n, int N)
+        {
+            double x = 2.0 * Math.PI * n / (N - 1);
+            return 0.50 - (0.50 * Math.Cos(x));
         };
 
         public static WindowFunc Gauss(double sigma)
@@ -302,6 +314,8 @@ namespace TowseyLibrary
         {
             //FFT.WindowFunc windowFnc;
             if (name.StartsWith(Key_HammingWindow)) return FFT.Hamming;
+            else
+            if (name.StartsWith(Key_HanningWindow)) return FFT.Hanning;
             else return null;
         }
     }//end class FFT

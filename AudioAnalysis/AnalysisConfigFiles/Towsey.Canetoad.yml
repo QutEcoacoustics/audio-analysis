@@ -1,6 +1,8 @@
 ---
 AnalysisName: Towsey.Canetoad
-SpeciesName: Bufo_marinus
+# The Canetoad's Latin name has changed from Bufo marinus to Rhinella marina.
+SpeciesName: Rhinella_marina
+AbbreviatedSpeciesName: R.marina
 # min and max of the freq band to search
 MinHz: 400          
 MaxHz: 900

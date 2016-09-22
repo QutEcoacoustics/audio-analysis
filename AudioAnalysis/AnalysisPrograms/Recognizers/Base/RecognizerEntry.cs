@@ -54,15 +54,17 @@ namespace AnalysisPrograms.Recognizers.Base
         public static Arguments Dev()
         {
             // The MULTI-RECOGNISER
+            // Canetoad, Litoria fallax and Limnodynastes convex.
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Multi";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 
-            // Canetoad, Litoria fallax and Liitoria nasuta.
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\43 Litoria nasuta.mp3";
+            // Canetoad
+            //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\CaneToad_Gympie.wav";          // Positive call
+            //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\TruckMotor_20150603_004248.wav"; // Negative call
+            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
 
-            // Canetoad, Litoria fallax and Limnodynastes convex.
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
-            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Multi";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 
             // Cyclorana novaehollandiae
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\28 Cyclorana novaehollandiae.mp3";
@@ -88,6 +90,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\43 Litoria nasuta.mp3";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaNasuta.yml";
+
+            // Litoria olongburensis
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\TEST_16000Hz_LitoriaOlongburensis.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
 
             // Litoria rothii.
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\49 Litoria rothii.mp3";
