@@ -124,6 +124,8 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.FileName,
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
+                // the default window is HAMMING
+                // WindowFunctions.HANNING.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 NoiseReductionType = NoiseReductionType.NONE
             };

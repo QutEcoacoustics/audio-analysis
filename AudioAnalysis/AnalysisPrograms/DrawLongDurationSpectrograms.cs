@@ -97,8 +97,11 @@ namespace AnalysisPrograms
             // INPUT and OUTPUT DIRECTORIES
             //2010 Oct 13th
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
-            string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
-            string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
+            //string ipdir = @"C:\SensorNetworks\Output\SERF\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\Test\RibbonTest";
+
+            string ipdir = @"G:\SensorNetworks\OutputDataSets\2014May06-100720 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";            
+            string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Test_2016Sept";
 
             //string ipFileName = "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000";
             //string ipdir = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3\Towsey.Acoustic";

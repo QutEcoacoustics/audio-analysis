@@ -204,10 +204,10 @@ namespace AnalysisPrograms.Production
             if (outputIntermediate)
             {
                 string fileNameBase = Path.GetFileNameWithoutExtension(this.Source.Name);
-                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Events", ".csv").ToFileInfo();
-                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Indices", ".csv").ToFileInfo();
+                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Events", "csv").ToFileInfo();
+                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
                 analysisSettings.SpectrumIndicesDirectory = resultDirectory;
-                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Image", ".png").ToFileInfo();
+                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
             }
 
             analysisSettings.Configuration = Yaml.Deserialise(this.Config);
