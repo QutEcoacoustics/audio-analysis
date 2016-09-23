@@ -298,7 +298,7 @@ namespace AudioAnalysisTools
                     startFrame = i;
                 }
                 else  //check for the end of an event
-                    if ((isHit == true) && (scores[i] < scoreThreshold))//this is end of an event, so initialise it
+                    if ((isHit == true) && ((scores[i] < scoreThreshold)||(i == count-1)))//this is end of an event, so initialise it
                     {
                         isHit = false;
                         double endTime = i * frameOffset;
@@ -308,7 +308,7 @@ namespace AudioAnalysisTools
                         if (duration > maxDurationThreshold) continue; //skip events with duration longer than threshold
                         //LoggedConsole.WriteLine("startFrame={0}   startTime={1:f2}s    endFrame={2}   endTime={3:f2}s ", startFrame, startTime, i, endTime);
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
-                        ev.Name = "OscillationEvent"; //default name
+                        ev.Name = "Oscillation"; //default name
                         //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.FileName = fileName;
                         //obtain average score.

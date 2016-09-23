@@ -60,10 +60,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 
             // Canetoad
-            //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\CaneToad_Gympie.wav";          // Positive call
+            string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\CaneToad_Gympie.wav";          // Positive call
             //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\TruckMotor_20150603_004248.wav"; // Negative call
-            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
+            //string outputPath = @"C:\temp";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
 
 
             // Cyclorana novaehollandiae
@@ -92,9 +93,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaNasuta.yml";
 
             // Litoria olongburensis
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\TEST_16000Hz_LitoriaOlongburensis.wav";
-            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\TEST_16000Hz_LitoriaOlongburensis.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
 
             // Litoria rothii.
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\49 Litoria rothii.mp3";
@@ -233,8 +234,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 results.SpectralIndices,
                 new[] { results });
 
-            Log.Info("Recognizer run, saving extra results");
-
+            //Log.Info("Recognizer run, saving extra results");
             // TODO: Michael, output anything else as you wish.
 
             Log.Debug("Clean up temporary files");
@@ -243,7 +243,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 analysisSettings.AudioFile.Delete();
             }
 
-            Log.Success("Recognizer complete");
+            Log.Success(recognizer.Identifier + " recognizer has completed");
         }
     }
 }

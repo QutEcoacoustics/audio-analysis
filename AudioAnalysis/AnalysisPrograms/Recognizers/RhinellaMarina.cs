@@ -125,7 +125,8 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING
-                // WindowFunctions.HANNING.ToString(),
+                //WindowFunction = WindowFunctions.HANNING.ToString(),
+                //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 NoiseReductionType = NoiseReductionType.NONE
             };
@@ -152,8 +153,8 @@ namespace AnalysisPrograms.Recognizers
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double boundaryBetweenAdvert_ReleaseDuration = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            minDuration = 1.0;
+            double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
+            double minDurationOfReleaseCall = 1.0;
             double[] scores; // predefinition of score array
             List<AcousticEvent> events;
             double[,] hits;
@@ -166,34 +167,41 @@ namespace AnalysisPrograms.Recognizers
                 maxOscilFreq,
                 dctThreshold,
                 eventThreshold,
-                minDuration,
+                minDurationOfReleaseCall,
                 maxDuration,
                 out scores,
                 out events,
                 out hits);
 
-            events.ForEach(ae =>
+            var prunedEvents = new List<AcousticEvent>();
+
+            for (int i = 0; i < events.Count; i++)
             {
+                AcousticEvent ae = events[i];
+                if (ae.Duration < minDurationOfReleaseCall)
+                {
+                    continue;
+                }
+
+                // add additional info
                 ae.SpeciesName = speciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
-                ae.Name = abbreviatedSpeciesName + ".AdvertCall";
-                if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
+
+                if (ae.Duration >= minDurationOfAdvertCall)
                 {
-                    ae.Name = abbreviatedSpeciesName + ".ReleaseCall";
-                    if (ae.Score < (eventThreshold + 0.3))
-                    {
-                        ae.Name = abbreviatedSpeciesName + ".Short Oscil";
-                        //events.Remove(ae);
-                    }
+                    ae.Name = abbreviatedSpeciesName + ".AdvertCall";
+                    prunedEvents.Add(ae);
+                    continue;
                 }
 
-                // remove release call if its score is too low.
-                //if ((ae.Name == "ReleaseCall") && (ae.Score < (eventThreshold + 0.3)))
-                //{ ae = null; }
-                //{ events.Remove(ae); } 
-
-            });
+                // release calls are shorter and we require higher score to reduce chance of false-positive.
+                if (ae.Score > (eventThreshold + 0.4))
+                {
+                    ae.Name = abbreviatedSpeciesName + ".ReleaseCall";
+                    prunedEvents.Add(ae);
+                }
+            };
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             return new RecognizerResults()
@@ -201,7 +209,8 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = events
+                Events = prunedEvents
+                //Events = events
             };
 
         }
