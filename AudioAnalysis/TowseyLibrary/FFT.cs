@@ -16,6 +16,7 @@ namespace TowseyLibrary
     {
         RealFourierTransformation rft; //only used if calling the .NET numerical math library
 
+        public const string Key_NoWindow = "NONE";
         public const string Key_HammingWindow = "HAMMING";
         public const string Key_HanningWindow = "HANNING";
 
@@ -316,7 +317,10 @@ namespace TowseyLibrary
             if (name.StartsWith(Key_HammingWindow)) return FFT.Hamming;
             else
             if (name.StartsWith(Key_HanningWindow)) return FFT.Hanning;
-            else return null;
+            else
+            if (name.StartsWith(Key_NoWindow)) return null;
+            else
+                return null;
         }
     }//end class FFT
 }
