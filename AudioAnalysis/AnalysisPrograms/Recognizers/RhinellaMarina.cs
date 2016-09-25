@@ -118,6 +118,12 @@ namespace AnalysisPrograms.Recognizers
                 maxOscilFreq);
             //windowOverlap = 0.75; // previous default
 
+
+            // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
+
+
+
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
@@ -149,7 +155,9 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
-            // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
+            // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
+            //double[] array = DataTools.Matrix2Array(sonogram.Data);
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+".csv"), array);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
@@ -172,6 +180,11 @@ namespace AnalysisPrograms.Recognizers
                 out scores,
                 out events,
                 out hits);
+
+
+            // DEBUG: Following line used to search for where indeterminism creeps into the event detection
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_ScoreArray.csv"), scores);
+
 
             var prunedEvents = new List<AcousticEvent>();
 
