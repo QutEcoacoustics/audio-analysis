@@ -218,7 +218,8 @@ namespace AnalysisPrograms.Recognizers
             };
 
             // do a recognizer test.
-            RecognizerTest(scores, prunedEvents, new FileInfo(recording.FilePath));
+            RecognizerTest(scores, new FileInfo(recording.FilePath));
+            RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             return new RecognizerResults()
@@ -235,22 +236,20 @@ namespace AnalysisPrograms.Recognizers
 
 
         /// <summary>
-        /// 
+        /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
+        /// If the benchmark file does not exist then the passed score array is written to become the benchmark.
         /// </summary>
         /// <param name="scoreArray"></param>
-        /// <param name="events"></param>
         /// <param name="wavFile"></param>
-        public static void RecognizerTest(double[] scoreArray, IEnumerable<EventBase> events, FileInfo wavFile)
+        public static void RecognizerTest(double[] scoreArray, FileInfo wavFile)
         {
-            Log.Info("# TESTING: Starting benchmark tests for the Canetoad recognizer:");
+            Log.Info("# TESTING: Starting benchmark test for the Canetoad recognizer:");
             string subDir = "/TestData";
             var dir = wavFile.DirectoryName;
             var fileName = wavFile.Name;
             fileName = fileName.Substring(0, fileName.Length - 4);
             var scoreFilePath  = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
-            var testEventsFilePath = Path.Combine(dir + subDir, fileName + ".TestEvents.txt");
             var scoreFile  = new FileInfo(scoreFilePath);
-            var eventsFile = new FileInfo(testEventsFilePath);
             if (! scoreFile.Exists)
             {
                 Log.Warn("   Score Test file does not exist.    Writing output as future score-test file");
@@ -278,9 +277,28 @@ namespace AnalysisPrograms.Recognizers
                     Log.Warn("   FAILED THE SCORE ARRAY TEST");
                 }
             }
+            Log.Info("Completed benchmark test for the Canetoad recognizer.");
+        }
 
 
 
+        /// <summary>
+        /// This test checks an array of acoustic events (array of EventBase) against a standard or benchmark previously stored.
+        /// If the benchmark file does not exist then the array of EventBase is written to a text file.
+        /// If a benchmark does exist the current array is first written to file and then both
+        /// current (test) file and the benchmark file are read as text files and compared.
+        /// </summary>
+        /// <param name="events"></param>
+        /// <param name="wavFile"></param>
+        public static void RecognizerTest(IEnumerable<EventBase> events, FileInfo wavFile)
+        {
+            Log.Info("# TESTING: Starting benchmark test for the Canetoad recognizer:");
+            string subDir = "/TestData";
+            var dir = wavFile.DirectoryName;
+            var fileName = wavFile.Name;
+            fileName = fileName.Substring(0, fileName.Length - 4);
+            var testEventsFilePath = Path.Combine(dir + subDir, fileName + ".TestEvents.txt");
+            var eventsFile = new FileInfo(testEventsFilePath);
 
             if (!eventsFile.Exists)
             {
@@ -321,9 +339,10 @@ namespace AnalysisPrograms.Recognizers
                     Log.Warn("   FAILED THE EVENTS ARRAY TEST");
                 }
             }
-
-            Log.Info("Completed benchmark tests for the Canetoad recognizer.");
+            Log.Info("Completed benchmark test for the Canetoad recognizer.");
         }
+
+
 
     }
 }
