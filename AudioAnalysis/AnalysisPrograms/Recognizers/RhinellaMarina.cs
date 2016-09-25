@@ -30,6 +30,7 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
 
     using TowseyLibrary;
+    using Acoustics.Shared.Csv;
 
     /// <summary>
     /// AKA: The bloody canetoad
@@ -216,6 +217,9 @@ namespace AnalysisPrograms.Recognizers
                 }
             };
 
+            // do a recognizer test.
+            RecognizerTest(scores, prunedEvents, new FileInfo(recording.FilePath));
+
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             return new RecognizerResults()
             {
@@ -227,5 +231,99 @@ namespace AnalysisPrograms.Recognizers
             };
 
         }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scoreArray"></param>
+        /// <param name="events"></param>
+        /// <param name="wavFile"></param>
+        public static void RecognizerTest(double[] scoreArray, IEnumerable<EventBase> events, FileInfo wavFile)
+        {
+            Log.Info("# TESTING: Starting benchmark tests for the Canetoad recognizer:");
+            string subDir = "/TestData";
+            var dir = wavFile.DirectoryName;
+            var fileName = wavFile.Name;
+            fileName = fileName.Substring(0, fileName.Length - 4);
+            var scoreFilePath  = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
+            var testEventsFilePath = Path.Combine(dir + subDir, fileName + ".TestEvents.txt");
+            var scoreFile  = new FileInfo(scoreFilePath);
+            var eventsFile = new FileInfo(testEventsFilePath);
+            if (! scoreFile.Exists)
+            {
+                Log.Warn("   Score Test file does not exist.    Writing output as future score-test file");
+                FileTools.WriteArray2File(scoreArray, scoreFilePath);
+            }
+            else // else if the scores file exists then do a compare.
+            {
+                bool allOK = true;
+                var scoreLines = FileTools.ReadTextFile(scoreFilePath);
+                for (int i = 0; i < scoreLines.Count; i++)
+                {
+                    string str = scoreArray[i].ToString();
+                    if (!scoreLines[i].Equals(str))
+                    {
+                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
+                        allOK = false;
+                    }
+                }
+                if (allOK)
+                {
+                    Log.Info("   SUCCESS! Passed the SCORE ARRAY TEST.");
+                }
+                else
+                {
+                    Log.Warn("   FAILED THE SCORE ARRAY TEST");
+                }
+            }
+
+
+
+
+            if (!eventsFile.Exists)
+            {
+                Log.Warn("   Events Test file does not exist.");
+                if (events.Count() == 0)
+                {
+                    Log.Warn("   There are no events, so an events test file will not be written.");
+                }
+                else
+                {
+                    Log.Warn("   Writing events array as future test file");
+                    Csv.WriteToCsv<EventBase>(eventsFile, events);
+                }
+            }
+            else // else if the events file exists then do a compare.
+            {
+
+                bool AOK = true;
+                var newEventsFilePath = Path.Combine(dir + subDir, fileName + ".NewEvents.txt");
+                var newEventsFile = new FileInfo(newEventsFilePath);
+                Csv.WriteToCsv(newEventsFile, events);
+                var testEventLines = FileTools.ReadTextFile(testEventsFilePath);
+                var newEventLines = FileTools.ReadTextFile(newEventsFilePath);
+                for (int i = 0; i < testEventLines.Count; i++)
+                {
+                    if (!testEventLines[i].Equals(newEventLines[i]))
+                    {
+                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, testEventLines[i], newEventLines[i]));
+                        AOK = false;
+                    }
+                }
+                if (AOK)
+                {
+                    Log.Info("   SUCCESS! Passed the EVENTS ARRAY TEST.");
+                }
+                else
+                {
+                    Log.Warn("   FAILED THE EVENTS ARRAY TEST");
+                }
+            }
+
+            Log.Info("Completed benchmark tests for the Canetoad recognizer.");
+        }
+
     }
 }
