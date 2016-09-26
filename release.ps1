@@ -1,5 +1,5 @@
 # Create release .tar.gz files for AnalysisPrograms.exe
-
+#
 # depends on 7-zip (7za.exe) being on path (`choco install 7zip`)
 # depends on hub being on path (`choco install hub`)
 # depends on MSBuild.exe being on path
@@ -8,30 +8,11 @@ param([bool]$pre_release = $true)
 
 cd $PSScriptRoot
 
-function Start-BuildCommand($target, $configuration) {
-    # Use $target="" for a actually building, otherwise append an additional target
-    if ($target.Length -gt 0) {
-        $target = ":" + $target
-    }
+echo "Running build"
 
-    iex "MSBuild.exe `".\AudioAnalysis\AudioAnalysis2012.sln`" /verbosity:quiet /clp:`"NoSummary;NoItemAndPropertyList;ErrorsOnly`" /p:warn=option /p:WarningLevel=0 /p:RunCodeAnalysis=false /t:AnalysisPrograms$target /p:Configuration=$configuration"
+. .\build.ps1
 
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "MSBuild.exe `".\AudioAnalysis\AudioAnalysis2012.sln`" /p:RunCodeAnalysis=false /t:AnalysisPrograms$target /p:Configuration=$configuration"
-        throw "Build failed for $target and $configuration, exit code: $LASTEXITCODE"
-    }
-}
-
-echo "Cleaning projects"
-(Start-BuildCommand "Clean" "Release")
-(Start-BuildCommand "Clean" "Debug")
-
-echo "Building Release"
-(Start-BuildCommand "" "Release")
-echo "Building Debug"
-(Start-BuildCommand "" "Debug")
-
-echo ("Build Complete")
+Pause
 
 cd "AudioAnalysis/AnalysisPrograms/bin"
 
@@ -44,7 +25,7 @@ $version =  (.\Release\AnalysisPrograms.exe | Select-String '\d{2}\.\d{2}\.\d{4}
 
 echo "Packging files for version $version"
 
-Pause
+
 
 # FYI pipelining is slow because each line is allocated a System.String object.
 # We're just going to write temporary files instead.
