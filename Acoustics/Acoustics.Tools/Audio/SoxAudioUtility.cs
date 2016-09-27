@@ -164,10 +164,13 @@
 
             // resample
             string rate = string.Empty;
+            string repeatable = string.Empty;
             if (request.TargetSampleRate.HasValue)
             {
                 var targetSampleRateHz = request.TargetSampleRate.Value.ToString(CultureInfo.InvariantCulture);
                 rate = $"rate {resampleQuality} -s -a {targetSampleRateHz}";
+                // the -R forces sox to run in repeatable mode. It makes SoX use the same seed for the random number generator
+                repeatable = " -R ";
             }
 
             var remix = FormatChannelSelection(request);
@@ -227,7 +230,7 @@
                 forceOutput = "-t wavpcm ";
             }
 
-            return $" -q -V4 \"{source.FullName}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
+            return $"{repeatable} -q -V4 \"{source.FullName}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
         }
 
         private static string FormatChannelSelection(AudioUtilityRequest request)
