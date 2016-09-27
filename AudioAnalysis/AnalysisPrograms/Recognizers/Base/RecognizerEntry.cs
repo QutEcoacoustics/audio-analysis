@@ -64,10 +64,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\Lwotjulumensis_trill_bickerton_20131212_214430.wav";    // Positive call
             //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\TruckMotor_20150603_004248.wav"; // Negative call
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\FalsePositives\FalsePosFromPaul_2015-06-02-031015_downsampled.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\FalsePositives\FalsePosFromPaul_2015-06-03-004248_downsampled.wav";
-            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
-            //string outputPath = @"C:\temp";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\FalsePositives\FalsePosFromPaul_2015-06-03-004248_downsampled.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
 
 
             // Cyclorana novaehollandiae
@@ -76,9 +75,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.CycloranaNovaeholl.yml";
 
             // Limnodynastes convex.
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
-            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Multi";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\LimnoConvex";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LimnodynastesConvex.yml";
 
             // Litoria bicolor
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\29 Litoria bicolor.mp3";
