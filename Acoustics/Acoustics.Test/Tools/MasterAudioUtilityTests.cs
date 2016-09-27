@@ -177,7 +177,7 @@ namespace EcoSounds.Mvc.Tests.AcousticsTools
                 Assert.IsFalse(cr.ToString().Contains("New text"));
 
                 /* call some method that writes "New text" to stdout */
-                LoggedConsole.Write("New text");
+                Console.Write("New text");
                 Assert.IsTrue(cr.ToString().Contains("New text"));
             }
         }
