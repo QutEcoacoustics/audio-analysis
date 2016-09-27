@@ -119,12 +119,13 @@ namespace AnalysisPrograms.Recognizers
             // make a spectrogram
             var config = new SonogramConfig
             {
+                WindowSize = 512,
                 NoiseReductionType = NoiseReductionType.STANDARD,
                 NoiseReductionParameter = 0.1
             };
             config.WindowOverlap = 0.0;
 
-            // now construct the standard decibel spectrogram WITHOUT noise removal, and look for LimConvex
+            // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
             // remove the DC column
@@ -140,43 +141,46 @@ namespace AnalysisPrograms.Recognizers
             double frameDurationInSeconds = frameSize / (double)sampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
             double framesPerSec = 1 / frameStepInSeconds;
-
             double herzPerBin = sampleRate / 2 / (double)colCount;
-            // min score for an acceptable event
+
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
+            // ## TWO thresholds
+            // minimum dB to register a dominant freq peak. After noise removal
+            double peakThresholdDb = 3.0;
+            // minimum score for an acceptable event - that is when processing the score array.
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
-            // # The Limnodynastes call has three major peaks. The dominant peak is at 1850 or as set above.
+            // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
+            int minFrameDuration = 3;
+            int maxFrameDuration = 5;
+            double minDuration = (minFrameDuration - 1) * frameStepInSeconds;
+            double maxDuration = maxFrameDuration * frameStepInSeconds;
+
+            // # The Limnodynastes call has a duration of 3-5 frames given the above settings.
+            // # The call has three major peaks. The dominant peak is at approx 1850, a value which is set in the convig.
             // # The second and third peak are at equal gaps below. DominantFreq-gap and DominantFreq-(2*gap);
             // # Set the gap in the Config file. Should typically be in range 880 to 970
             // for Limnodynastes convex, in the D.Stewart CD, there are peaks close to:
             //1. 1950 Hz
             //2. 1460 hz
             //3.  970 hz    These are 490 Hz apart.
-            // for Limnodynastes convex, in the JCU recording, there are peaks close to:
+            // for Limnodynastes convex, in the Kiyomi's JCU recording, there are peaks close to:
             //1. 1780 Hz
             //2. 1330 hz
             //3.  880 hz    These are 450 Hz apart.
 
-            // So strategy is to look for three peaks separated by same amount and in the vicinity of the above,
+            // So the strategy is to look for three peaks separated by same amount and in the vicinity of the above,
             //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
-
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-            double thresholdDb = 3.0; // after noise removal
-            int minFrameDuration = 3;
-            int maxFrameDuration = 5;
-            double minDuration = (minFrameDuration-1) * frameStepInSeconds;
-            double maxDuration = maxFrameDuration * frameStepInSeconds;
 
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int dominantFrequency = (int)configuration["DominantFrequency"];
             int peakGapInHerz = (int)configuration["PeakGap"];
-            double scoreThreshold = (double)configuration["EventThreshold"];
 
-            int F1AndF2Gap = (int)Math.Round(peakGapInHerz / herzPerBin);
-            //int F1AndF2Gap = 10; // 10 = number of freq bins
-            int F1AndF3Gap = 2 * F1AndF2Gap;
-            //int F1AndF3Gap = 20; 
+            int F1AndF2BinGap = (int)Math.Round(peakGapInHerz / herzPerBin);
+            //int F1AndF2BinGap = 10; // 10 = number of freq bins
+            int F1AndF3BinGap = 2 * F1AndF2BinGap;
 
             int hzBuffer = 250;
             int bottomBin = 5;
@@ -209,25 +213,23 @@ namespace AnalysisPrograms.Recognizers
 
                 if (maxId < dominantBinMin) continue;
                 // peak should exceed thresold amplitude
-                if (spectrum[maxId] < thresholdDb) continue;
+                if (spectrum[maxId] < peakThresholdDb) continue;
 
                 scores[s] = maxAmplitude;
                 dominantBins[s] = maxId;
 
-                // we now have a list of potential hits for LimCon. This needs to be filtered.
-
                 // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             } // loop through all spectra
+
+            // we now have a list of potential hits for LimCon. This needs to be filtered.
 
             //scores = Plot.PruneScoreArray(scores, scoreThreshold, minFrameDuration, );
             double[] prunedScores; 
             var startEnds = new List<Point>(); 
-            Plot.FindStartsAndEndsOfScoreEvents(scores, scoreThreshold, minFrameDuration, maxFrameDuration,
+            Plot.FindStartsAndEndsOfScoreEvents(scores, eventThreshold, minFrameDuration, maxFrameDuration,
                                                           out prunedScores, out startEnds);
 
             var potentialEvents = new List<AcousticEvent>();
-
-
             // loop through the score array and find beginning and end of events
             foreach (Point point in startEnds)
             {
@@ -255,13 +257,13 @@ namespace AnalysisPrograms.Recognizers
                 // This is to be done later. Template will have three dominant frequenices.
                 // The below score calculation just takes the dB value for the dominant freq over the honk.
                 double avScore = scoreSum / (double)eventWidth;
-                if (avScore < (thresholdDb - 1.0))
+                if (avScore < (peakThresholdDb - 1.0))
                 {
                     continue;
                 }
 
                 int topBinForEvent = avDominantBin + 2;
-                int bottomBinForEvent = topBinForEvent - F1AndF3Gap - 2;
+                int bottomBinForEvent = topBinForEvent - F1AndF3BinGap - 2;
                 int topFreqForEvent = (int)Math.Round(topBinForEvent * herzPerBin);
                 int bottomFreqForEvent = (int)Math.Round(bottomBinForEvent * herzPerBin);
 
@@ -271,7 +273,7 @@ namespace AnalysisPrograms.Recognizers
                 newEvent.DominantFreq = avDominantFreq;
                 newEvent.Score = avScore;
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
-                newEvent.Name = "Lc"; // abbreviatedSpeciesName;
+                newEvent.Name = ""; // remove name because it hides spectral content of the event.
 
                 potentialEvents.Add(newEvent);
 
@@ -295,6 +297,11 @@ namespace AnalysisPrograms.Recognizers
                 Image debugImage = DisplayDebugImage(sonogram, potentialEvents, plots, hits);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
+            }
+
+            foreach(AcousticEvent ae in potentialEvents)
+            {
+                ae.Name = "L.c"; // abbreviatedSpeciesName;
             }
 
             return new RecognizerResults()

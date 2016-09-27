@@ -25,4 +25,5 @@ DisplayCsvImage: false
 ParallelProcessing: false
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
 ...
