@@ -4,7 +4,8 @@
 
 # Description:  This code plots various plots including:
 # 1.  ID3 separation
-# 2.  Composite clustering 
+# 2.  Composite spectrogram images 
+# 3.  2 hour plots
 
 # remove all objects in the global environment
 rm(list = ls())
@@ -18,7 +19,7 @@ col <- rep("black",8)
 pch = c(15,20,17,18,16,21,22,23)
 labels <- as.character(seq(12500, 30000, 2500))
 x <- seq(5, 100, 5)
-ylimit <- c(1.1, 2.6)
+ylimit <- c(1.1, 2.3)
 xlimit <- c(40,100)
 
 png("ID3_separation_plot.png", height = 600, width = 600)
@@ -53,19 +54,19 @@ plot(x,ID3_values[101:120,3], type = "o",
      col=col[5], pch=pch[5], ylim=ylimit,
      yaxt="n",xaxt="n", xlab = "", 
      ylab = "", xlim = xlimit)
-par(new=T)
-plot(x,ID3_values[121:140,3], type = "o", 
-     col=col[6], pch=pch[6], ylim=ylimit,
-     yaxt="n",xaxt="n", xlab = "", 
-     ylab = "", xlim = xlimit)
+#par(new=T)
+#plot(x,ID3_values[121:140,3], type = "o", 
+#     col=col[6], pch=pch[6], ylim=ylimit,
+#     yaxt="n",xaxt="n", xlab = "", 
+#     ylab = "", xlim = xlimit)
 #par(new=T)
 #plot(x,ID3_values[141:160,3], type = "o", 
 #     col=col[7], pch=pch[7], ylim=ylimit,
 #     yaxt="n",xaxt="n", xlab = "", 
 #     ylab = "", xlim = xlimit)
-legend("topright", pch = pch[2:6], lty = c(1),
-       title="k1 values", col = col[3:7], bty = "n", 
-       cex=1, labels[3:7], y.intersp = 0.85) 
+legend("topright", pch = pch[2:5], lty = c(1),
+       title="k1 values", col = col[3:6], bty = "n", 
+       cex=1, labels[3:6], y.intersp = 0.85) 
 dev.off()
 rm(ID3_values)
 
