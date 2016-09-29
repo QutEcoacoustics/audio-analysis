@@ -116,12 +116,13 @@ namespace AnalysisPrograms.Recognizers
 
         internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
         {
+            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
             // make a spectrogram
             var config = new SonogramConfig
             {
                 WindowSize = 512,
                 NoiseReductionType = NoiseReductionType.STANDARD,
-                NoiseReductionParameter = 0.1
+                NoiseReductionParameter = noiseReductionParameter
             };
             config.WindowOverlap = 0.0;
 
@@ -129,7 +130,7 @@ namespace AnalysisPrograms.Recognizers
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
             // remove the DC column
-            var spg = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0)-1, sonogram.Data.GetLength(1)-1);
+            var spg = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
             sonogram.Data = spg;
             int sampleRate = audioRecording.SampleRate;
             int rowCount = spg.GetLength(0);
@@ -146,17 +147,22 @@ namespace AnalysisPrograms.Recognizers
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-            // ## TWO thresholds
+            // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
+            // The threshold dB amplitude in the dominant freq bin required to yield an event 
+            double eventThresholdDb = 10.0;
             // minimum score for an acceptable event - that is when processing the score array.
-            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+            double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
-            int minFrameDuration = 3;
-            int maxFrameDuration = 5;
-            double minDuration = (minFrameDuration - 1) * frameStepInSeconds;
-            double maxDuration = maxFrameDuration * frameStepInSeconds;
+            int minFrameWidth = 3;
+            int maxFrameWidth = 5;
+            double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
+            double maxDuration = maxFrameWidth * frameStepInSeconds;
+
+            // minimum number of bins covering frequency bandwidth of L.convex call
+            int callBinWidth = 25;
 
             // # The Limnodynastes call has a duration of 3-5 frames given the above settings.
             // # The call has three major peaks. The dominant peak is at approx 1850, a value which is set in the convig.
@@ -173,22 +179,22 @@ namespace AnalysisPrograms.Recognizers
 
             // So the strategy is to look for three peaks separated by same amount and in the vicinity of the above,
             //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
+            // To this end we produce two templates each of length 25, but having 2nd and 3rd peaks at different intervals.
+            var templates = GetLconvexTemplates(callBinWidth);
 
-            int minHz = (int)configuration[AnalysisKeys.MinHz];
             int dominantFrequency = (int)configuration["DominantFrequency"];
-            int peakGapInHerz = (int)configuration["PeakGap"];
-
-            int F1AndF2BinGap = (int)Math.Round(peakGapInHerz / herzPerBin);
-            //int F1AndF2BinGap = 10; // 10 = number of freq bins
-            int F1AndF3BinGap = 2 * F1AndF2BinGap;
+            // NOTE: could give user control over other call features 
+            //  Such as frequency gap between peaks. But not in this first iteration of the recognizer.
+            //int peakGapInHerz = (int)configuration["PeakGap"];
+            //int minHz = (int)configuration[AnalysisKeys.MinHz];
+            //int F1AndF2BinGap = (int)Math.Round(peakGapInHerz / herzPerBin);
+            //int F1AndF3BinGap = 2 * F1AndF2BinGap;
 
             int hzBuffer = 250;
-            int bottomBin = 5;
             int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
             int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
-
             int bandwidth = dominantBinMax - dominantBinMin + 1;
 
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
@@ -199,15 +205,16 @@ namespace AnalysisPrograms.Recognizers
             // mark the hits in hitMatrix
             for (int s = 0; s < rowCount; s++)
             {
-                double[] spectrum = MatrixTools.GetRow(spg, s); 
+                double[] spectrum = MatrixTools.GetRow(spg, s);
                 double maxAmplitude = -Double.MaxValue;
                 int maxId = 0;
-                for (int id = bottomBin; id < dominantBinMax; id++)
+                // loop through bandwidth of L.onvex call and look for dominant frequency
+                for (int binID = 5; binID < dominantBinMax; binID++)
                 {
-                    if (spectrum[id] > maxAmplitude)
+                    if (spectrum[binID] > maxAmplitude)
                     {
-                        maxAmplitude = spectrum[id];
-                        maxId = id;
+                        maxAmplitude = spectrum[binID];
+                        maxId = binID;
                     }
                 }
 
@@ -217,26 +224,23 @@ namespace AnalysisPrograms.Recognizers
 
                 scores[s] = maxAmplitude;
                 dominantBins[s] = maxId;
-
                 // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             } // loop through all spectra
 
-            // we now have a list of potential hits for LimCon. This needs to be filtered.
 
-            //scores = Plot.PruneScoreArray(scores, scoreThreshold, minFrameDuration, );
-            double[] prunedScores; 
-            var startEnds = new List<Point>(); 
-            Plot.FindStartsAndEndsOfScoreEvents(scores, eventThreshold, minFrameDuration, maxFrameDuration,
-                                                          out prunedScores, out startEnds);
 
+            // We now have a list of potential hits for LimCon. This needs to be filtered.
+            double[] prunedScores;
+            var startEnds = new List<Point>();
+            Plot.FindStartsAndEndsOfScoreEvents(scores, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+
+            // loop through the score array and find beginning and end of potential events
             var potentialEvents = new List<AcousticEvent>();
-            // loop through the score array and find beginning and end of events
             foreach (Point point in startEnds)
             {
                 // get average of the dominant bin
                 int binSum = 0;
                 int binCount = 0;
-                double scoreSum = 0.0;
                 int eventWidth = point.Y - point.X + 1;
                 for (int s = point.X; s <= point.Y; s++)
                 {
@@ -245,25 +249,29 @@ namespace AnalysisPrograms.Recognizers
                         binSum += dominantBins[s];
                         binCount++;
                     }
-                    scoreSum += prunedScores[s];
                 }
                 // find average dominant bin for the event
                 int avDominantBin = (int)Math.Round(binSum / (double)binCount);
                 int avDominantFreq = (int)(Math.Round(binSum / (double)binCount) * herzPerBin);
 
-                // get score for the event.
-                // ############ IMPORTANT:  The following section of code to calculate the score can/should be made more complex.
-                // i.e. construct a template for the honk and calculate similarity to the template.
-                // This is to be done later. Template will have three dominant frequenices.
-                // The below score calculation just takes the dB value for the dominant freq over the honk.
-                double avScore = scoreSum / (double)eventWidth;
-                if (avScore < (peakThresholdDb - 1.0))
+                // Get score for the event.
+                // Use a simple template for the honk and calculate cosine similarity to the template.
+                // Template has three dominant frequenices.
+                var eventMatrix = MatrixTools.Submatrix(spg, point.X, (avDominantBin - callBinWidth + 2), point.Y, avDominantBin + 1);
+                double eventScore = GetEventScore(eventMatrix, templates);
+
+                // put hits into hits matrix
+                // put cosine score into the score array
+                for (int s = point.X; s <= point.Y; s++)
                 {
-                    continue;
+                    hits[s, avDominantBin] = 10;
+                    prunedScores[s] = eventScore;
                 }
 
+                if (eventScore < similarityThreshold) continue;
+
                 int topBinForEvent = avDominantBin + 2;
-                int bottomBinForEvent = topBinForEvent - F1AndF3BinGap - 2;
+                int bottomBinForEvent = topBinForEvent - callBinWidth;
                 int topFreqForEvent = (int)Math.Round(topBinForEvent * herzPerBin);
                 int bottomFreqForEvent = (int)Math.Round(bottomBinForEvent * herzPerBin);
 
@@ -271,35 +279,34 @@ namespace AnalysisPrograms.Recognizers
                 double durationTime = eventWidth * frameStepInSeconds;
                 var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent);
                 newEvent.DominantFreq = avDominantFreq;
-                newEvent.Score = avScore;
+                newEvent.Score = eventScore;
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
                 newEvent.Name = ""; // remove name because it hides spectral content of the event.
 
                 potentialEvents.Add(newEvent);
 
-                // put this into hits matrix
-                for (int s = point.X; s <= point.Y; s++)
-                {
-                    hits[s, avDominantBin] = 10;
-                }
             }
 
-            prunedScores = DataTools.normalise(prunedScores);
-
-            
-            var plot = new Plot(this.DisplayName, prunedScores, eventThreshold);
-            var plots = new List<Plot> { plot };
+            // display the original score array
+            scores = DataTools.normalise(scores);
+            var debugPlot = new Plot(this.DisplayName, scores, similarityThreshold);
+            var debugPlots = new List<Plot> { debugPlot };
 
             //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
             bool displayDebugImage = MainEntry.InDEBUG;
-            if(displayDebugImage)
+            if (displayDebugImage)
             {
-                Image debugImage = DisplayDebugImage(sonogram, potentialEvents, plots, hits);
+                Image debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
 
-            foreach(AcousticEvent ae in potentialEvents)
+            // display the cosine similarity scores
+            var plot = new Plot(this.DisplayName, prunedScores, similarityThreshold);
+            var plots = new List<Plot> { plot };
+
+            // add names into the returned events
+            foreach (AcousticEvent ae in potentialEvents)
             {
                 ae.Name = "L.c"; // abbreviatedSpeciesName;
             }
@@ -309,9 +316,63 @@ namespace AnalysisPrograms.Recognizers
                 Events = potentialEvents,
                 Hits = hits,
                 Plots = plots,
-                Sonogram = sonogram                
+                Sonogram = sonogram
             };
         }
+
+
+
+        /// <summary>
+        /// Constructs a simple template for the L.convex call.
+        /// Assume that the passed value of callBinWidth > 22.
+        /// </summary>
+        /// <param name="callBinWidth">Typical value = 25</param>
+        /// <returns></returns>
+        public static List<double[]> GetLconvexTemplates(int callBinWidth)
+        {
+            var templates = new List<double[]>();
+            // template 1
+            double[] t1 = new double[callBinWidth];
+            t1[0] = 0.5;
+            t1[1] = 1.0;
+            t1[2] = 1.0;
+            t1[10] = 1.0;
+            t1[11] = 1.0;
+            t1[12] = 1.0;
+            t1[20] = 0.5;
+            t1[21] = 0.5;
+            templates.Add(t1);
+
+            // template 2
+            double[] t2 = new double[callBinWidth];
+            t2[0] = 0.5;
+            t2[1] = 1.0;
+            t2[2] = 1.0;
+            t2[11] = 1.0;
+            t2[12] = 1.0;
+            t2[13] = 1.0;
+            t2[21] = 0.5;
+            t2[22] = 0.5;
+            templates.Add(t2);
+            return templates;
+        }
+
+
+        public static double GetEventScore(double[,] eventMatrix, List<double[]> templates)
+        {
+            double[] eventAsVector = MatrixTools.SumColumns(eventMatrix);
+            // need to reverse vector because template starts at the high freq end which is the fixed reference bin.
+            eventAsVector = DataTools.reverseArray(eventAsVector);
+            double maxScore = -Double.MaxValue;
+            foreach (double[] template in templates)
+            {
+                double eventScore = DataTools.CosineSimilarity(template, eventAsVector);
+                if (maxScore < eventScore)
+                    maxScore = eventScore;
+            }
+            return maxScore;
+        }
+
 
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
