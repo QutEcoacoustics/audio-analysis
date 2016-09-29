@@ -260,15 +260,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles(FileInfo[] files, DirectoryInfo opDir, FileInfo indicesCsvfile, TimeSpan indexCalcTimeSpan)
         {
-            var tuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcTimeSpan);
+            var summaryIndices = IndexMatrices.ConcatenateSummaryIndexFilesWithTimeCheck(files, indexCalcTimeSpan);
 
             // write out the list of file names to JSON ifle
-            var fileNames = tuple.Item2;
+            var fileNames = summaryIndices.Select(x => x.FileName).ToArray();
             FileInfo path = new FileInfo(indicesCsvfile + "_FileNames.json");
             Json.Serialise(path, fileNames);
 
-            Dictionary<string, double[]> dictionaryOfCsvColumns = tuple.Item1;
-            if (dictionaryOfCsvColumns.Count == 0)
+            var dictionaryOfsummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
+
+            if (dictionaryOfsummaryIndices.Count == 0)
             {
                 LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
                 LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
@@ -278,12 +279,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
-            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfCsvColumns, indicesCsvfile);
+            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfsummaryIndices, indicesCsvfile);
 
             // insert some transformed data columns etc
-            dictionaryOfCsvColumns = IndexMatrices.AddDerivedIndices(dictionaryOfCsvColumns);
+            dictionaryOfsummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfsummaryIndices);
 
-            return dictionaryOfCsvColumns;
+            return dictionaryOfsummaryIndices;
         }
 
 
@@ -343,7 +344,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                  double? longitude = null)
         {
             LDSpectrogramStitching.ConcatenateSpectralIndexFiles(dataDirs[0], indexPropertiesConfigFileInfo, opDir, opFileStem);
-            LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDirs[0], indexPropertiesConfigFileInfo, opDir, opFileStem);
+            //LDSpectrogramStitching.ConcatenateSummaryIndexFiles(dataDirs[0], indexPropertiesConfigFileInfo, opDir, opFileStem);
         }
 
 
@@ -428,65 +429,65 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// MOST RECENT METHOD TO CONCATENATE SUMMARY INDEX.CSV FILES - August 2015.
-        /// WRITTEN FOR EDDIE GAME's DATA
+        /// WRITTEN FOR THE NATURE CONSERVANCY DATA
         /// This method merges ALL files of acoustic indices (in any and all subdirectories of the passed topLevelDirectory) 
         /// It is assumed you are concatneating a sequence of consecutive shorter recordings.
         /// NOTE WARNING with method call to IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files);
         /// </summary>
-        public static void ConcatenateSummaryIndexFiles(DirectoryInfo topLevelDirectory,
-                                                          FileInfo indexPropertiesConfig,
-                                                          DirectoryInfo opDir,
-                                                          string opFileStem)
+        public static void ConcatenateAllSummaryIndexFiles(FileInfo[] summaryIndexFiles,
+                                                        FileInfo indexPropertiesConfig,
+                                                        IndexGenerationData indexGenerationData,
+                                                        DirectoryInfo opDir,
+                                                        string opFileStem)
         {
             string csvFileExt = "csv";
             string imgFileExt = "png";
 
-            string pattern = "*__Towsey.Acoustic.Indices.csv";
             string indexType = "SummaryIndices";
 
             // assume that the last 8 digits of the passed filename contain a date. 
-            string date = opFileStem.Substring(opFileStem.Length - 8);
-            string fileStemPattern = date + pattern;
-            FileInfo[] files = IndexMatrices.GetFilesInDirectory(topLevelDirectory.FullName, fileStemPattern);
+            //string date = opFileStem.Substring(opFileStem.Length - 8);
+            var indexResolution = indexGenerationData.IndexCalculationDuration;
 
-            // the following method call assumes 24 hour long data i.e. trims length to 1440 minutes.
-            TimeSpan indexCalcDuration = TimeSpan.FromSeconds(60); // an assumption for Eddie games recordings
-            var tuple = IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(files, indexCalcDuration);
-            Dictionary<string, double[]> dictionaryOfCsvColumns = tuple.Item1;
-            var arrayOfFileNames = tuple.Item2; // which source files the index values were derived from.
+            var summaryIndices = IndexMatrices.ConcatenateSummaryIndexFilesWithTimeCheck(summaryIndexFiles, indexResolution);
 
-            string[] headers = dictionaryOfCsvColumns.Keys.ToArray();
-            if (dictionaryOfCsvColumns.Count == 0)
+            // check length of data and make adjustments if required.
+            int totalRowMinutes = (int)Math.Round(summaryIndices.Count() * indexResolution.TotalMinutes);
+
+            // which source files the index values were derived from.
+            var arrayOfFileNames = summaryIndices.Select(x => x.FileName).ToArray();
+
+            //now put summary indices into aidctionary.
+            var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
+
+            string[] headers = dictionaryOfSummaryIndices.Keys.ToArray();
+            if (dictionaryOfSummaryIndices.Count == 0)
             {
                 LoggedConsole.WriteErrorLine("WARNING from method LDSpectrogramStitching.ConcatenateSummaryIndexFiles() !!!");
                 LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
             }
 
-
             // now add in derived indices i.e. NCDI etc
-            dictionaryOfCsvColumns = IndexMatrices.AddDerivedIndices(dictionaryOfCsvColumns);
+            dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
 
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
-            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfCsvColumns, opDir, opFileStem);
+            var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfSummaryIndices, opDir, opFileStem);
 
             var indicesFile = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);
             //CsvTools.WriteMatrix2CSV(summaryIndices, headers, indicesCsvfile);
-            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfCsvColumns, indicesCsvfile);
+            CsvTools.WriteDictionaryOfDoubles2CSV(dictionaryOfSummaryIndices, indicesCsvfile);
 
-            // get the IndexGenerationData file from the first directory
-            IndexGenerationData indexGenerationData = IndexGenerationData.GetIndexGenerationDataAndAddStartTime(files[0].Directory, files[0].Name);
             TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
             string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
-            string imageTitle =
-                $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
+            string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
             Bitmap tracksImage =
                 IndexDisplay.DrawImageOfSummaryIndices(
                     IndexProperties.GetIndexProperties(indexPropertiesConfig),
-                    dictionaryOfCsvColumns,
+                    dictionaryOfSummaryIndices,
                     imageTitle,
                     indexGenerationData.IndexCalculationDuration,
                     indexGenerationData.RecordingStartDate);
