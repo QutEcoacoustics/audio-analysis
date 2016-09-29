@@ -71,7 +71,7 @@ namespace AnalysisPrograms.Production
             return AnalyseLongRecording.Execute;
         }
 
-        [ArgDescription("Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.")]
+        [ArgDescription("Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a standard spectrogram from an audio file - EITHER custom OR via SOX.")]
         public Audio2Sonogram.Arguments Audio2SonogramArgs { get; set; }
         public static Action<Audio2Sonogram.Arguments> Audio2Sonogram()
         {
@@ -80,7 +80,7 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.Audio2Sonogram.Main;
         }
 
-        [ArgDescription("Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.")]
+        [ArgDescription("Calls DrawSummaryIndexTracks.Main(): Input a csv file of summary indices. Outputs a tracks image.")]
         public DrawSummaryIndexTracks.Arguments IndicesCsv2ImageArgs { get; set; }
         public static Action<DrawSummaryIndexTracks.Arguments> IndicesCsv2Image()
         {
@@ -100,6 +100,22 @@ namespace AnalysisPrograms.Production
         #endregion
 
         #region Analyses of single, short (one minute) segments of audio
+
+        [ArgDescription("Calls MultiAnalyser.Execute():  Entry point for running multiple species recognizers at same time. Only use on short recordings (< 2mins)")]
+        public MultiAnalyser.Arguments MultiAnalyserArgs { get; set; }
+        public static Action<MultiAnalyser.Arguments> MultiAnalyser()
+        {
+            // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
+            // Execute() signed off: Michael Towsey 27th July 2012
+            return AnalysisPrograms.MultiAnalyser.Dev;
+        }
+
+        [ArgDescription("The entry point for all species or event recognizers. Only to be used on short recordings (< 2 mins).")]
+        public RecognizerEntry.Arguments EventRecognizerArgs { get; set; }
+        public static Action<RecognizerEntry.Arguments> EventRecognizer()
+        {
+            return RecognizerEntry.Execute;
+        }
 
         public AudioCutter.Arguments AudioCutterArgs { get; set; }
         public static Action<AudioCutter.Arguments> AudioCutter()
@@ -143,90 +159,25 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.DrawEasyImage.Execute;
         }
 
-        [ArgDescription("Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.")]
+        [ArgDescription("Calls DrawLongDurationSpectrograms.Execute():  Produces long-duration false-colour spectrograms from matrices of spectral indices.")]
         public DrawLongDurationSpectrograms.Arguments ColourSpectrogramArgs { get; set; }
         public static Action<DrawLongDurationSpectrograms.Arguments> ColourSpectrogram()
         {
             return DrawLongDurationSpectrograms.Execute;
         }
 
-        [ArgDescription("Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.")]
+        [ArgDescription("Calls DrawZoomingSpectrograms.Execute():  Produces long-duration false-colour spectrograms on different time scales.")]
         public DrawZoomingSpectrograms.Arguments ZoomingSpectrogramsArgs { get; set; }
         public static Action<DrawZoomingSpectrograms.Arguments> ZoomingSpectrograms()
         {
             return DrawZoomingSpectrograms.Execute;
         }
         
-        [ArgDescription("Calls DifferenceSpectrogram.Execute():  Produces ")]
+        [ArgDescription("Calls DifferenceSpectrogram.Execute():  Produces a false-colour spectrogram that show only the differences between two spectrograms.")]
         public DifferenceSpectrogram.Arguments DifferenceSpectrogramArgs { get; set; }
         public static Action<DifferenceSpectrogram.Arguments> DifferenceSpectrogram()
         {
             return AnalysisPrograms.DifferenceSpectrogram.Execute;
-        }
-
-        [ArgDescription("Run event recognizers for a single file. Only works for short files (less than 2 minutes).")]
-        public RecognizerEntry.Arguments EventRecognizerArgs { get; set; }
-        public static Action<RecognizerEntry.Arguments> EventRecognizer()
-        {
-            return RecognizerEntry.Execute;
-        }
-
-        [ArgDescription("Calls Canetoad.Dev(): Detects canetoad calls as acoustic events in a short (one minute) recording segment.")]
-        public CanetoadOld.Arguments CanetoadArgs { get; set; }
-        public static Action<CanetoadOld.Arguments> Canetoad()
-        {
-            // IAnalyser - detects canetoad calls as acoustic events
-            // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.CanetoadOld.Dev;
-        }
-
-        [ArgDescription("Calls Crow.Dev(): Detects Crow calls - the short 'caw' NOT the longer sigh.")]
-        public Crow.Arguments CrowArgs { get; set; }
-        public static Action<Crow.Arguments> Crow()
-        {
-            // IAnalyser - recognizes the short crow "caw" - NOT the longer sigh.
-            // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.Crow.Dev;
-        }
-
-        [ArgDescription("Calls GroundParrotRecogniser.Dev():  event pattern recognition - used for ground-parrots (BRAD version).")]
-        public GroundParrotRecogniser.Arguments EprArgs { get; set; }
-        public static Action<GroundParrotRecogniser.Arguments> Epr()
-        {
-            // event pattern recognition - used for ground-parrots (BRAD)
-            return GroundParrotRecogniser.Dev;
-        }
-
-        [ArgDescription("Calls EPR.Execute():  Event Pattern Recognition - used for ground-parrots (TOWSEY version).")]
-        public EPR.Arguments Epr2Args { get; set; }
-        public static Action<EPR.Arguments> Epr2()
-        {
-            // event pattern recognition - used for ground-parrots (TOWSEY)
-            return EPR.Execute;
-        }
-
-        [ArgDescription("Calls FeltTemplate_Create.Execute():  FIND EVENTS LIKE THIS: started by TOWSEY but unfinished.")]
-        public FeltTemplate_Create.Arguments FeltCreateTemplateArgs { get; set; }
-        public static Action<FeltTemplate_Create.Arguments> FeltCreateTemplate()
-        {
-            // extract an acoustic event and make a template for FELT
-            return FeltTemplate_Create.Execute;
-        }
-
-        [ArgDescription("Calls FeltTemplate_Edit.Execute():  FIND EVENTS LIKE THIS: started by TOWSEY but unfinished.")]
-        public FeltTemplate_Edit.Arguments FeltEditTemplateArgs { get; set; }
-        public static Action<FeltTemplate_Edit.Arguments> FeltEditTemplate()
-        {
-            // edits the FELT template created above
-            return FeltTemplate_Edit.Execute;
-        }
-
-        [ArgDescription("Calls FeltTemplates_Use.Execute():  FIND EVENTS LIKE THIS: started by TOWSEY but unfinished.")]
-        public FeltTemplates_Use.Arguments FeltArgs { get; set; }
-        public static Action<FeltTemplates_Use.Arguments> Felt()
-        {
-            // find other acoustic events like this
-            return FeltTemplates_Use.Execute;
         }
 
         public object TruskingerFeltArgs { get; set; }
@@ -238,35 +189,6 @@ namespace AnalysisPrograms.Production
             return FELT.Runner.Main.ProgramEntry;
         }
 
-        public FrogRibit.Arguments FrogRibitArgs { get; set; }
-        public static Action<FrogRibit.Arguments> FrogRibit()
-        {
-            // frog calls
-            return AnalysisPrograms.FrogRibit.Dev;
-        }
-
-        public Frogs.Arguments FrogArgs { get; set; }
-        public static Action<Frogs.Arguments> Frog()
-        {
-            // IAnalyser - detects Gastric Brooding Frog
-            return Frogs.Dev;
-        }
-
-        public RheobatrachusSilus.Arguments RheobatrachusArgs { get; set; }
-        public static Action<RheobatrachusSilus.Arguments> Rheobatrachus()
-        {
-            // IAnalyser - detects Gastric Brooding Frog
-            return RheobatrachusSilus.Dev;
-        }
-
-        [ArgDescription("Calls GratingDetection.Execute():  Alternative to oscillation detection. NOT REALLY USEFUL any more!")]
-        public GratingDetection.Arguments GratingsArgs { get; set; }
-        public static Action<GratingDetection.Arguments> Gratings()
-        {
-            // grid recognition
-            return GratingDetection.Execute;
-        }
-
         [ArgDescription("Calls Human1.Dev():  Recognises human speech but does not do word recognition.")]
         public Human1.Arguments HumanArgs { get; set; }
         public static Action<Human1.Arguments> Human()
@@ -276,6 +198,7 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.Human1.Dev;
         }
 
+        [ArgDescription("Calls LSKiwi3.Dev():  Only of use for Little Brown Kiwi recordings from New Zealand.")]
         public LSKiwi3.Arguments KiwiArgs { get; set; }
         public static Action<LSKiwi3.Arguments> Kiwi()
         {
@@ -284,6 +207,7 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.LSKiwi3.Dev;
         }
 
+        [ArgDescription("Calls LSKiwiROC.Main():  DEPRACATED. Only used in 2012 to analyse output from LSKiwi3.Dev().")]
         public LSKiwiROC.Arguments KiwiRocArgs { get; set; }
         public static Action<LSKiwiROC.Arguments> KiwiRoc()
         {
@@ -293,36 +217,13 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.LSKiwiROC.Main;
         }
 
+        [ArgDescription("Calls KoalaMale.Dev():  Dates back to 2012. Still current.")]
         public KoalaMale.Arguments KoalaMaleArgs { get; set; }
         public static Action<KoalaMale.Arguments> KoalaMale()
         {
             // IAnalyser - detects the oscillating portion of a male koala bellow
             // Execute() signed off: Michael Towsey 27th July 2012
             return AnalysisPrograms.KoalaMale.Dev;
-        }
-
-        public LewinsRail3.Arguments LewinsRailArgs { get; set; }
-        public static Action<LewinsRail3.Arguments> LewinsRail()
-        {
-            // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
-            // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.LewinsRail3.Dev;
-        }
-
-        public PlanesTrainsAndAutomobiles.Arguments MachinesArgs { get; set; }
-        public static Action<PlanesTrainsAndAutomobiles.Arguments> Machines()
-        {
-            // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train sounds
-            // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.PlanesTrainsAndAutomobiles.Dev;
-        }
-
-        public MultiAnalyser.Arguments MultiAnalyserArgs { get; set; }
-        public static Action<MultiAnalyser.Arguments> MultiAnalyser()
-        {
-            // IAnalyser - currently recognizes five different calls: human, crow, canetoad, machine and koala.
-            // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.MultiAnalyser.Dev;
         }
 
         [ArgDescription("Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.")]
@@ -342,6 +243,13 @@ namespace AnalysisPrograms.Production
             return OscillationRecogniser.Execute;
         }
 
+        [ArgDescription("Calls OscillationsGeneric.Main(): Searches for oscillations")]
+        public OscillationsGeneric.Arguments oscillationsGenericArgs { get; set; }
+        public static Action<OscillationsGeneric.Arguments> oscillationsGeneric()
+        {
+            return AnalysisPrograms.OscillationsGeneric.Main;
+        }
+
         public Runner.Arguments ProductionArgs { get; set; }
         public static Action<Runner.Arguments> Production()
         {
@@ -349,11 +257,30 @@ namespace AnalysisPrograms.Production
             return Runner.Run;
         }
 
+        [ArgDescription("Calls Rain.Dev():  Used to recognise one minute segments of rain. Revise code if intend to use.")]
         public Rain.Arguments RainArgs { get; set; }
         public static Action<Rain.Arguments> Rain()
         {
             // IAnalyser - detects rain
             return AnalysisPrograms.Rain.Dev;
+        }
+
+        [ArgDescription("Calls LewinsRail3.Dev():  Dates back to 2012. Revise code if intend to use.")]
+        public LewinsRail3.Arguments LewinsRailArgs { get; set; }
+        public static Action<LewinsRail3.Arguments> LewinsRail()
+        {
+            // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
+            // Execute() signed off: Michael Towsey 27th July 2012
+            return AnalysisPrograms.LewinsRail3.Dev;
+        }
+
+        [ArgDescription("Calls PlanesTrainsAndAutomobiles.Execute():  Dates back to 2013. Revise code if intend to use.")]
+        public PlanesTrainsAndAutomobiles.Arguments MachinesArgs { get; set; }
+        public static Action<PlanesTrainsAndAutomobiles.Arguments> Machines()
+        {
+            // IAnalyser - recognises Planes, Trains And Automobiles - works OK for planes not yet tested on train sounds
+            // Execute() signed off: Michael Towsey 27th July 2012
+            return AnalysisPrograms.PlanesTrainsAndAutomobiles.Dev;
         }
 
         public Segment.Arguments SegmentArgs { get; set; }
@@ -392,7 +319,6 @@ namespace AnalysisPrograms.Production
         public FeltAnalysis.Arguments DongArgs { get; set; }
         public static Action<FeltAnalysis.Arguments> Dong()
         {
-            // Xueyan's FELT
             return FeltAnalysis.Dev;
         }
 
@@ -407,7 +333,6 @@ namespace AnalysisPrograms.Production
         public Sandpit.Arguments SandpitArgs { get; set; }
         public static Action<Sandpit.Arguments> Sandpit()
         {
-            // Michael's play area
             return AnalysisPrograms.Sandpit.Dev;
         }
 
@@ -419,13 +344,11 @@ namespace AnalysisPrograms.Production
             return AnalysisTemplate.Dev;
         }
 
-        [ArgDescription("Test only. This option should be deprecated!")]
-        public AnalysesAvailable.Arguments AnalysesAvailableArgs { get; set; }
-        public static Action<AnalysesAvailable.Arguments> AnalysesAvailable()
+        [ArgDescription("Calls Create4Sonograms.Main(). Creates a set of four spectrograms derived using different algorithms.")]
+        public Create4Sonograms.Arguments Create4SonogramsArgs { get; set; }
+        public static Action<Create4Sonograms.Arguments> Create4Sonograms()
         {
-            // 1. Returns list of available analyses
-            // Signed off: Michael Towsey 1st August 2012
-            return AnalysisPrograms.AnalysesAvailable.Main;
+            return AnalysisPrograms.Create4Sonograms.Main;
         }
 
         [ArgDescription("Test only. ")]
@@ -435,30 +358,116 @@ namespace AnalysisPrograms.Production
             return AnalysisPrograms.DummyAnalyser.Execute;
         }
 
+        [ArgDescription("DEPRACATED: Test only!")]
+        public AnalysesAvailable.Arguments AnalysesAvailableArgs { get; set; }
+        public static Action<AnalysesAvailable.Arguments> AnalysesAvailable()
+        {
+            // 1. Returns list of available analyses
+            // Signed off: Michael Towsey 1st August 2012
+            return AnalysisPrograms.AnalysesAvailable.Main;
+        }
+
         public FileRenamer.Arguments FileRenamerArgs { get; set; }
         public static Action<FileRenamer.Arguments> FileRenamer()
         {
             return AnalysisPrograms.FileRenamer.Execute;
         }
 
-        public Create4Sonograms.Arguments Create4SonogramsArgs { get; set; }
-        public static Action<Create4Sonograms.Arguments> Create4Sonograms()
+        [ArgDescription("Calls Crow.Dev(): Detects Crow calls - the short 'caw' NOT the longer sigh.")]
+        public Crow.Arguments CrowArgs { get; set; }
+        public static Action<Crow.Arguments> Crow()
         {
-            return AnalysisPrograms.Create4Sonograms.Main;
+            // IAnalyser - recognizes the short crow "caw" - NOT the longer sigh.
+            // Execute() signed off: Michael Towsey 27th July 2012
+            return AnalysisPrograms.Crow.Dev;
         }
 
-        [ArgDescription("Calls AnalysisPrograms.OscillationsGeneric.Main(): Searches for oscillations")]
-        public OscillationsGeneric.Arguments oscillationsGenericArgs { get; set; }
-        public static Action<OscillationsGeneric.Arguments> oscillationsGeneric()
+        [ArgDescription("Calls GroundParrotRecogniser.Dev():  event pattern recognition - used for ground-parrots (BRAD version).")]
+        public GroundParrotRecogniser.Arguments EprArgs { get; set; }
+        public static Action<GroundParrotRecogniser.Arguments> Epr()
         {
-            return AnalysisPrograms.OscillationsGeneric.Main;
+            // event pattern recognition - used for ground-parrots (BRAD)
+            return GroundParrotRecogniser.Dev;
         }
 
+        [ArgDescription("Calls EPR.Execute():  Event Pattern Recognition - used for ground-parrots (TOWSEY version). Revise code if intend to use.")]
+        public EPR.Arguments Epr2Args { get; set; }
+        public static Action<EPR.Arguments> Epr2()
+        {
+            // event pattern recognition - used for ground-parrots (TOWSEY)
+            return EPR.Execute;
+        }
+
+        [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
+        public CanetoadOld.Arguments CanetoadArgs { get; set; }
+        public static Action<CanetoadOld.Arguments> Canetoad()
+        {
+            // IAnalyser - detects canetoad calls as acoustic events
+            // Execute() signed off: Michael Towsey 27th July 2012
+            return AnalysisPrograms.CanetoadOld.Dev;
+        }
+
+        [ArgDescription("No further practical use. Used in 2014 to prepare short recordings of bird calls for analysis by Convolution Neural Networks.")]
         public Audio2InputForConvCNN.Arguments CreateConvCnnSonogramsArgs { get; set; }
-
         public static Action<Audio2InputForConvCNN.Arguments> CreateConvCnnSonograms()
         {
             return Audio2InputForConvCNN.Execute;
+        }
+
+        [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
+        public FrogRibit.Arguments FrogRibitArgs { get; set; }
+        public static Action<FrogRibit.Arguments> FrogRibit()
+        {
+            // frog calls
+            return AnalysisPrograms.FrogRibit.Dev;
+        }
+
+        [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
+        public Frogs.Arguments FrogArgs { get; set; }
+        public static Action<Frogs.Arguments> Frog()
+        {
+            // IAnalyser - detects Gastric Brooding Frog
+            return Frogs.Dev;
+        }
+
+        [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
+        public RheobatrachusSilus.Arguments RheobatrachusArgs { get; set; }
+        public static Action<RheobatrachusSilus.Arguments> Rheobatrachus()
+        {
+            // IAnalyser - detects Gastric Brooding Frog
+            return RheobatrachusSilus.Dev;
+        }
+
+        [ArgDescription("DEPRACATED. Calls GratingDetection.Execute():  An attempt to find alternative to oscillation detection. NOT USEFUL any more!")]
+        public GratingDetection.Arguments GratingsArgs { get; set; }
+        public static Action<GratingDetection.Arguments> Gratings()
+        {
+            // grid recognition
+            return GratingDetection.Execute;
+        }
+
+        [ArgDescription("DEPRACATED:  Calls FeltTemplate_Create.Execute():  FIND EVENTS LIKE THIS: started by TOWSEY but unfinished.")]
+        public FeltTemplate_Create.Arguments FeltCreateTemplateArgs { get; set; }
+        public static Action<FeltTemplate_Create.Arguments> FeltCreateTemplate()
+        {
+            // extract an acoustic event and make a template for FELT
+            return FeltTemplate_Create.Execute;
+        }
+
+        [ArgDescription("DEPRACATED:  Calls FeltTemplate_Edit.Execute():  FIND EVENTS LIKE THIS: started by TOWSEY but unfinished.")]
+        public FeltTemplate_Edit.Arguments FeltEditTemplateArgs { get; set; }
+        public static Action<FeltTemplate_Edit.Arguments> FeltEditTemplate()
+        {
+            // edits the FELT template created above
+            return FeltTemplate_Edit.Execute;
+        }
+
+        [ArgDescription("DEPRACATED:  Calls FeltTemplates_Use.Execute():  FIND EVENTS LIKE THIS: started by TOWSEY but unfinished.")]
+        public FeltTemplates_Use.Arguments FeltArgs { get; set; }
+        public static Action<FeltTemplates_Use.Arguments> Felt()
+        {
+            // find other acoustic events like this
+            return FeltTemplates_Use.Execute;
         }
 
         #endregion

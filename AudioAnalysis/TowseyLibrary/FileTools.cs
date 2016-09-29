@@ -330,6 +330,39 @@ namespace TowseyLibrary
             WriteTextFile(fPath, oldList);
         }// end Append2TextFile()
 
+
+        /// <summary>
+        /// THis method adds another column to an existing .csv file containing columns of data.
+        /// It assumes that the number of elements in the list are same as rows in the existing file
+        /// </summary>
+        /// <param name="fPath"></param>
+        /// <param name="list"></param>
+        public static void AddArrayAdjacentToExistingArrays(string fPath, double[] array)
+        {
+            var oldList = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
+            var newList = new List<string>();
+            int count = oldList.Count;
+
+            if (count == 0) 
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    newList.Add(String.Format("{0}", array[i]));
+                }
+                WriteTextFile(fPath, newList);
+                return;
+            }
+
+            string separator = ",";
+            for (int i = 0; i < count; i++)
+            {
+                string line = oldList[i] + separator + array[i];
+                newList.Add(line);
+            }
+
+            WriteTextFile(fPath, newList);
+        }// end AddArrayAdjacentToExistingArrays()
+
         /// <summary>
         /// reads a file of doubles assuming one value per line with no punctuation
         /// </summary>

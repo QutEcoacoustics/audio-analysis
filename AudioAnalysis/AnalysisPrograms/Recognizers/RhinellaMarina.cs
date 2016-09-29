@@ -30,6 +30,7 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
 
     using TowseyLibrary;
+    using Acoustics.Shared.Csv;
 
     /// <summary>
     /// AKA: The bloody canetoad
@@ -118,12 +119,21 @@ namespace AnalysisPrograms.Recognizers
                 maxOscilFreq);
             //windowOverlap = 0.75; // previous default
 
+
+            // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
+
+
+
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.FileName,
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
+                // the default window is HAMMING
+                //WindowFunction = WindowFunctions.HANNING.ToString(),
+                //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
                 NoiseReductionType = NoiseReductionType.NONE
             };
@@ -146,12 +156,14 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
-            // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
+            // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
+            //double[] array = DataTools.Matrix2Array(sonogram.Data);
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+".csv"), array);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double boundaryBetweenAdvert_ReleaseDuration = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            minDuration = 1.0;
+            double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
+            double minDurationOfReleaseCall = 1.0;
             double[] scores; // predefinition of score array
             List<AcousticEvent> events;
             double[,] hits;
@@ -164,34 +176,50 @@ namespace AnalysisPrograms.Recognizers
                 maxOscilFreq,
                 dctThreshold,
                 eventThreshold,
-                minDuration,
+                minDurationOfReleaseCall,
                 maxDuration,
                 out scores,
                 out events,
                 out hits);
 
-            events.ForEach(ae =>
+
+            // DEBUG: Following line used to search for where indeterminism creeps into the event detection
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_ScoreArray.csv"), scores);
+
+
+            var prunedEvents = new List<AcousticEvent>();
+
+            for (int i = 0; i < events.Count; i++)
             {
+                AcousticEvent ae = events[i];
+                if (ae.Duration < minDurationOfReleaseCall)
+                {
+                    continue;
+                }
+
+                // add additional info
                 ae.SpeciesName = speciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
-                ae.Name = abbreviatedSpeciesName + ".AdvertCall";
-                if (ae.Duration < boundaryBetweenAdvert_ReleaseDuration)
+
+                if (ae.Duration >= minDurationOfAdvertCall)
                 {
-                    ae.Name = abbreviatedSpeciesName + ".ReleaseCall";
-                    if (ae.Score < (eventThreshold + 0.3))
-                    {
-                        ae.Name = abbreviatedSpeciesName + ".Short Oscil";
-                        //events.Remove(ae);
-                    }
+                    ae.Name = abbreviatedSpeciesName + ".AdvertCall";
+                    prunedEvents.Add(ae);
+                    continue;
                 }
 
-                // remove release call if its score is too low.
-                //if ((ae.Name == "ReleaseCall") && (ae.Score < (eventThreshold + 0.3)))
-                //{ ae = null; }
-                //{ events.Remove(ae); } 
+                // release calls are shorter and we require higher score to reduce chance of false-positive.
+                if (ae.Score > (eventThreshold + 0.4))
+                {
+                    ae.Name = abbreviatedSpeciesName + ".ReleaseCall";
+                    prunedEvents.Add(ae);
+                }
+            };
 
-            });
+            // do a recognizer test.
+            RecognizerTest(scores, new FileInfo(recording.FilePath));
+            RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             return new RecognizerResults()
@@ -199,9 +227,122 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = events
+                Events = prunedEvents
+                //Events = events
             };
 
         }
+
+
+
+        /// <summary>
+        /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
+        /// If the benchmark file does not exist then the passed score array is written to become the benchmark.
+        /// </summary>
+        /// <param name="scoreArray"></param>
+        /// <param name="wavFile"></param>
+        public static void RecognizerTest(double[] scoreArray, FileInfo wavFile)
+        {
+            Log.Info("# TESTING: Starting benchmark test for the Canetoad recognizer:");
+            string subDir = "/TestData";
+            var dir = wavFile.DirectoryName;
+            var fileName = wavFile.Name;
+            fileName = fileName.Substring(0, fileName.Length - 4);
+            var scoreFilePath  = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
+            var scoreFile  = new FileInfo(scoreFilePath);
+            if (! scoreFile.Exists)
+            {
+                Log.Warn("   Score Test file does not exist.    Writing output as future score-test file");
+                FileTools.WriteArray2File(scoreArray, scoreFilePath);
+            }
+            else // else if the scores file exists then do a compare.
+            {
+                bool allOK = true;
+                var scoreLines = FileTools.ReadTextFile(scoreFilePath);
+                for (int i = 0; i < scoreLines.Count; i++)
+                {
+                    string str = scoreArray[i].ToString();
+                    if (!scoreLines[i].Equals(str))
+                    {
+                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
+                        allOK = false;
+                    }
+                }
+                if (allOK)
+                {
+                    Log.Info("   SUCCESS! Passed the SCORE ARRAY TEST.");
+                }
+                else
+                {
+                    Log.Warn("   FAILED THE SCORE ARRAY TEST");
+                }
+            }
+            Log.Info("Completed benchmark test for the Canetoad recognizer.");
+        }
+
+
+
+        /// <summary>
+        /// This test checks an array of acoustic events (array of EventBase) against a standard or benchmark previously stored.
+        /// If the benchmark file does not exist then the array of EventBase is written to a text file.
+        /// If a benchmark does exist the current array is first written to file and then both
+        /// current (test) file and the benchmark file are read as text files and compared.
+        /// </summary>
+        /// <param name="events"></param>
+        /// <param name="wavFile"></param>
+        public static void RecognizerTest(IEnumerable<EventBase> events, FileInfo wavFile)
+        {
+            Log.Info("# TESTING: Starting benchmark test for the Canetoad recognizer:");
+            string subDir = "/TestData";
+            var dir = wavFile.DirectoryName;
+            var fileName = wavFile.Name;
+            fileName = fileName.Substring(0, fileName.Length - 4);
+            var testEventsFilePath = Path.Combine(dir + subDir, fileName + ".TestEvents.txt");
+            var eventsFile = new FileInfo(testEventsFilePath);
+
+            if (!eventsFile.Exists)
+            {
+                Log.Warn("   Events Test file does not exist.");
+                if (events.Count() == 0)
+                {
+                    Log.Warn("   There are no events, so an events test file will not be written.");
+                }
+                else
+                {
+                    Log.Warn("   Writing events array as future test file");
+                    Csv.WriteToCsv<EventBase>(eventsFile, events);
+                }
+            }
+            else // else if the events file exists then do a compare.
+            {
+
+                bool AOK = true;
+                var newEventsFilePath = Path.Combine(dir + subDir, fileName + ".NewEvents.txt");
+                var newEventsFile = new FileInfo(newEventsFilePath);
+                Csv.WriteToCsv(newEventsFile, events);
+                var testEventLines = FileTools.ReadTextFile(testEventsFilePath);
+                var newEventLines = FileTools.ReadTextFile(newEventsFilePath);
+                for (int i = 0; i < testEventLines.Count; i++)
+                {
+                    if (!testEventLines[i].Equals(newEventLines[i]))
+                    {
+                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, testEventLines[i], newEventLines[i]));
+                        AOK = false;
+                    }
+                }
+                if (AOK)
+                {
+                    Log.Info("   SUCCESS! Passed the EVENTS ARRAY TEST.");
+                }
+                else
+                {
+                    Log.Warn("   FAILED THE EVENTS ARRAY TEST");
+                }
+            }
+            Log.Info("Completed benchmark test for the Canetoad recognizer.");
+        }
+
+
+
     }
 }
