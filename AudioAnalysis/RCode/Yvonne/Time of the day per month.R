@@ -4,9 +4,7 @@
 # summary of the frequency of clusters per 2 hour time period
 # per month
 ####################################
-setwd("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j")
-
-dataset <- read.csv("hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
+dataset <- read.csv("C:\\Work\\CSV files\\FourMonths\\Hybrid_3_4_7_10_11_15_16_knn_k3j\\hybrid_clust_knn_17500_3_k30_2hour_full111days.csv",header=T)
 
 dates <- unique(dataset$as.character.dates2.)
 dataset$as.character.dates2. <- as.Date(dataset$as.character.dates2., format = "%d/%m/%Y")

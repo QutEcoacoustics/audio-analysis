@@ -149,6 +149,7 @@
     <Compile Include="Tools\AudioUtilityWavTests.cs" />
     <Compile Include="Tools\MasterAudioUtilityTests.cs" />
     <Compile Include="EnumerableExtensionsTests.cs" />
+    <Compile Include="Tools\SoxUtilityResampleTests.cs" />
     <Compile Include="Tools\WavReaderTests.cs" />
   </ItemGroup>
   <ItemGroup>

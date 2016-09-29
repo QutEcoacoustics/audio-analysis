@@ -6,18 +6,29 @@ AnalysisName: Towsey.LimnodynastesConvex
 SpeciesName: Limnodynastes convexiusculus
 AbbreviatedSpeciesName: L.convex
 
-# min and max of the freq band to search
-MinHz: 850          
-DominantFrequency: 1850
+# User does not have control over the window size. This must be fixed by recognizer.
+
+################################################################################
+# Noise reduction must be performed but can regulate severity by adjusting BgNoiseThreshold. 
+#   A value=0.1 seems to work well on test recording.
+#DoNoiseReduction: true
+BgNoiseThreshold: 0.1
+
 # The Limnodynastes convex call has three major peaks. The dominant peak is at 1850 or as set above.
 # The second and third peak are at equal gaps below. i.e. dominantFreq-gap and dominantFreq-(2*gap);
 # Set the gap here: should be in range 880 to 970
-PeakGap: 470 
-# Event threshold - use this to determine FP / FN trade-off for events. Unites = dB
-EventThreshold: 10.0
+DominantFrequency: 1850
+
+# Possible future additional parameters to control required call characteristics.
+# PeakGap: 470 
+# MinHz: 850 
+
+# Decibel threshold for the dominant peak: Use this to require a minimum decibel SNR value for a valid call.
+PeakThreshold: 10.0
+# Event threshold - use this to determine FP / FN trade-off for events. CosineSimilarity to template in 0,1.
+EventThreshold: 0.2
+
 ################################################################################
-DoNoiseReduction: false
-#BgNoiseThreshold: 3.0
 SaveIntermediateWavFiles: false
 SaveIntermediateCsvFiles: false
 SaveSonogramImages: false
@@ -25,4 +36,5 @@ DisplayCsvImage: false
 ParallelProcessing: false
 
 IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
 ...

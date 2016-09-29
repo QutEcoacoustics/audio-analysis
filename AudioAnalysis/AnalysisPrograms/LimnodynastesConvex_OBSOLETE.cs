@@ -50,7 +50,7 @@ namespace AnalysisPrograms
     {
         #region Constants
 
-        public const string AnalysisName = "LimnodynastesConvex";
+        public const string AnalysisName = "LimnodynastesConvex_OBSOLETE";
 
         public static readonly int ResampleRate = AppConfigHelper.DefaultTargetSampleRate;
 
