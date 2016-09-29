@@ -1,28 +1,25 @@
 ---
-AnalysisName: Stark.LitoriaOlong
-SpeciesName: Litoria Olongburensis
-AbbreviatedSpeciesName: L.olong
+AnalysisName: Towsey.LitoriaFallax
+SpeciesName: Litoria fallax_high
+AbbreviatedSpeciesName: L.fallax_high
 
 # min and max of the freq band to search
-MinHz: 2000          
-MaxHz: 3500
+MinHz: 3800          
+MaxHz: 5100
 # duration of DCT in seconds 
-# want one that contains 5 oscillations 
-DctDuration: 0.2
+DctDuration: 0.15
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.6
+DctThreshold: 0.45
+#0.6 normally
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-
+MinOcilFreq: 100       
+MaxOcilFreq: 150
 # Minimum and maximum duration for the length of a true call.
-MinDuration: 0.25
-MaxDuration: 0.7
+MinDuration: 0.04
+MaxDuration: 0.8
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.30
-
-# 190 samples between coarser period of pulse (must set frame size to 1/4 of that)
-FrameSize: 64
-
 
 # Standard settings
 #DoNoiseReduction: false
