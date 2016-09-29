@@ -83,6 +83,11 @@ namespace AnalysisPrograms.Recognizers.Base
             double[,] hits = results.Hits;
             var predictedEvents = results.Events;
 
+            foreach (var predictedEvent in predictedEvents)
+            {
+                predictedEvent.SegmentStartOffset = analysisSettings.SegmentStartOffset.Value;
+            }
+
             analysisResults.Events = predictedEvents.ToArray();
 
             // convert events to summary index values
