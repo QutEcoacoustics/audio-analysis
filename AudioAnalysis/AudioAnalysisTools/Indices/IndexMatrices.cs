@@ -52,130 +52,120 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        public static Tuple<Dictionary<string, double[]>, string[]> GetSummaryIndexFilesAndConcatenateWithTimeCheck(FileInfo[] paths, TimeSpan indexCalcDuration)
+        public static List<SummaryIndexValues> ConcatenateSummaryIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
             DateTimeOffset startDTO;
-            FileInfo file;
-            DateTimeOffset[] dtoArray = new DateTimeOffset[paths.Length];
-            // check that all file names contain valid date time format.
-            for (int i = 0; i < paths.Length; i++)
-            {
-                file = paths[i];
-                if (!FileDateHelpers.FileNameContainsDateTime(file.Name, out startDTO, offsetHint))
-                {
-                    LoggedConsole.WriteLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + file.Name + ") ");
-                    LoggedConsole.WriteLine("  File name <{0}> does not contain a valid DateTime = {0}", file.Name);
-                }
-                dtoArray[i] = startDTO;
+            DateTimeOffset[] dtoArray = new DateTimeOffset[files.Length];
+            var summaryIndices = new List<SummaryIndexValues>();
+            int totalRowCount = 0;
 
+            // accumulate the start times for each of the files
+            for (int f = 0; f < files.Length; f++)
+            {
+                if (!files[f].Exists)
+                {
+                    if (IndexMatrices.Verbose)
+                    {
+                        LoggedConsole.WriteLine("WARNING: from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + files[f].Extension + ") ");
+                        LoggedConsole.WriteLine(String.Format("   MISSING FILE: {0}", files[f].FullName));
+                    }
+                    continue;
+                }
+
+                if (!FileDateHelpers.FileNameContainsDateTime(files[f].Name, out startDTO, offsetHint))
+                {
+                    LoggedConsole.WriteLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + files[f].Name + ") ");
+                    LoggedConsole.WriteLine("  File name <{0}> does not contain a valid DateTime = {0}", files[f].Name);
+                }
+
+                dtoArray[f] = startDTO;
             }
 
-            // get first file
-            string[] headers = null;
-            var dictionary = new Dictionary<string, double[]>();
-            int[] rowCounts = new int[paths.Length];
-
-            var listOfFileNames = new List<string>();
-
-            // cycle through files
-            for (int i = 0; i < paths.Length; i++)
+            // now loop through the files again to extact the indices
+            int partialMinutes = 0;
+            for (int i = 0; i < files.Length; i++)
             {
-                file = paths[i];
-                if (file.Exists)
+                if (!files[i].Exists)
                 {
-                    //####################################################################
-                    // NOTE: Using Csv.ReadFromCsv() ONLY to read in the file names as strings.
-                    //       Using CsvTools.ReadCSVFile2Dictionary(file.FullName) to read in all double values
-                    // THIS IS A TERRIBLE HACK.
-                    // TODO TODO TODO TODO 
-                    // DO THIS PROPERLY i.e. DEPRACATE CALL TO CSVTOOLS
-                    // JOB FOR A RAINY DAY.
-                    var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(file, throwOnMissingField: false);
-                    //var AciValues = rowsOfCsvFile.Select(x => x.AcousticComplexity).ToArray();
-                    var fileNameValues = rowsOfCsvFile.Select(x => x.FileName).ToArray();
-                    listOfFileNames.AddRange(fileNameValues);
+                    continue;
+                }
 
-                    // ##################################### NEXT LINE STILL USING DEPRACATED METHOD to read in doubles.
-                    var intermediateDictionary = CsvTools.ReadCSVFile2Dictionary(file.FullName);
+                var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(files[i], throwOnMissingField: false);
+                summaryIndices.AddRange(rowsOfCsvFile);
+                // track the row counts
+                int partialRowCount = rowsOfCsvFile.Count();
+                totalRowCount = summaryIndices.Count();
+                // calculate elapsed time from the rows
+                int partialRowMinutes = (int)Math.Round(partialRowCount * indexCalcDuration.TotalMinutes);
 
-                    if(headers == null) headers = intermediateDictionary.Keys.ToArray(); // only take headers in first file at start of day
-
-                    // now append the intermediate arrays
-                    for (int h = 0; h < headers.Length; h++)
-                    {
-                        string key = headers[h];
-                        double[] array2 = intermediateDictionary[headers[h]].ToArray();
-                        rowCounts[i] = array2.Length; // assume all arrays of same length
-                        if (!dictionary.ContainsKey(key))
-                        {
-                            dictionary.Add(key, array2);
-                        }
-                        else
-                        {
-                            // this is probably inefficient but it works!
-                            double[] array1 = dictionary[headers[h]].ToArray();
-                            double[] result = array1.Concat(array2).ToArray();
-                            dictionary[headers[h]] = result;
-                        }
-                    }
-
-                    if (i == paths.Length-1) break;
-
-                    // calculate the partial elapsed time indiced by file names.
-                    TimeSpan partialElapsedTime = dtoArray[i+1] - dtoArray[i];
-                    int partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
-                    //int partialMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
-
-                    // calculate elapsed time from the rows
-                    int rowMinutes = (int)Math.Round(rowCounts[i] * indexCalcDuration.TotalMinutes);
-
-                    if (rowMinutes != partialMinutes)
-                    {
-                        if (IndexMatrices.Verbose)
-                            LoggedConsole.WriteLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + file.Name + ") ");
-                        string str = String.Format("  CsvFile {0}/{1}: Row Count={2} != {3} elapsed minutes", i + 1, paths.Length, rowCounts[i], partialMinutes);
-                        dictionary = RepairDictionaryOfArrays(dictionary, rowCounts[i], partialMinutes);
-                        int difference = partialMinutes - rowCounts[i];
-                        rowCounts[i] += difference;
-                    }
-
+                //track the elapsed minutes
+                // calculate the partial elapsed time indexed by file names.
+                if (i < files.Length - 1)
+                {
+                    TimeSpan partialElapsedTime = dtoArray[i + 1] - dtoArray[i];
+                    partialMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
                 }
                 else
                 {
-                    if (IndexMatrices.Verbose)
-                        LoggedConsole.WriteLine("WARNING: from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + file.Extension + ") ");
-                    string str = String.Format("   MISSING FILE: {0}", file.FullName);
-                    if (IndexMatrices.Verbose)
-                        LoggedConsole.WriteLine(str);
+                    partialMinutes = partialRowMinutes; // a hack for the last file
                 }
+
+                if (partialRowMinutes != partialMinutes)
+                {
+                    if (IndexMatrices.Verbose)
+                        LoggedConsole.WriteLine("WARNING from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck(" + files[i].Name + ") ");
+                    string str = String.Format("  CsvFile {0}/{1}: Row Count={2} != {3} elapsed minutes", i + 1, files.Length, totalRowCount, partialMinutes);
+                    //dictionary = RepairDictionaryOfArrays(dictionary, rowCounts[i], partialMinutes);
+                    //int difference = partialMinutes - rowCounts[i];
+                    //rowCounts[i] += difference;
+
+                    for (int j = partialRowMinutes; j < partialMinutes; j++)
+                    {
+                        //summaryIndices.Add(null);
+                        summaryIndices.Add(new SummaryIndexValues());
+                    }
+
+                }
+
             }
+            return summaryIndices;
+        }
 
 
-            // ########### NOW DO FINAL CHECK ON ROW-COUNT OF CONCATENATED FILES
-            // IMPORTANT: IT IS ASSUMED THAT A FULL 24 HOURS OF DATA HAS BEEN CONCATENATED
 
-            int numberOfMinutesInDay = 1440;
-            int expectedRowCount = (int)Math.Round(numberOfMinutesInDay / indexCalcDuration.TotalMinutes);
 
-            int actualDataRowCount = dictionary[headers[0]].Length;
+        public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
+        {
+            var dictionary = new Dictionary<string, double[]>();
+            dictionary.Add("ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray());
+            //dictionary.Add("AvgSignalAmplitude", summaryIndices.Select(x => x.AcousticComplexity).ToArray());
+            dictionary.Add("BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray());
+            dictionary.Add("Snr", summaryIndices.Select(x => x.Snr).ToArray());
+            dictionary.Add("EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray());
+            dictionary.Add("Activity", summaryIndices.Select(x => x.Activity).ToArray());
+            dictionary.Add("AvgEntropySpectrum", summaryIndices.Select(x => x.AvgEntropySpectrum).ToArray());
+            dictionary.Add("EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray());
+            dictionary.Add("HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray());
+            dictionary.Add("MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray());
+            dictionary.Add("LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray());
+            dictionary.Add("TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray());
+            dictionary.Add("AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray());
+            //dictionary.Add("ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray());
 
-            TimeSpan totalElapsedTime = dtoArray[paths.Length-1] - dtoArray[0];
-            int lastRowMinutes = (int)Math.Round(rowCounts[paths.Length - 1] * indexCalcDuration.TotalMinutes);
-            int totalElapsedMinutes = (int)Math.Round(totalElapsedTime.TotalMinutes + lastRowMinutes);
+            //int expectedRowCount = (int)Math.Round(numberOfMinutesInDay / indexCalcDuration.TotalMinutes);
+            //if (totalRowCount != expectedRowCount)
+            //{
+            //    if (IndexMatrices.Verbose)
+            //        LoggedConsole.WriteLine("WARNING: INCONSISTENT ELAPSED TIME CHECK from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck() ");
+            //    string str = String.Format("   Final Data Row Count = {0}     Estimated Cumulative Duration = {1} minutes", totalRowCount, expectedRowCount);
+            //    if (IndexMatrices.Verbose)
+            //        LoggedConsole.WriteLine(str);
+            //    dictionary = RepairDictionaryOfArrays(dictionary, totalRowCount, expectedRowCount);
+            //}
 
-            if ((actualDataRowCount != expectedRowCount) || (totalElapsedMinutes != numberOfMinutesInDay))
-            {
-                if (IndexMatrices.Verbose)
-                    LoggedConsole.WriteLine("WARNING: INCONSISTENT ELAPSED TIME CHECK from IndexMatrices.GetSummaryIndexFilesAndConcatenateWithTimeCheck() ");
-                string str = String.Format("   Final Data Row Count = {0}     Estimated Cumulative Duration = {1} minutes", actualDataRowCount, totalElapsedMinutes);
-                if (IndexMatrices.Verbose)
-                    LoggedConsole.WriteLine(str);
-                dictionary = RepairDictionaryOfArrays(dictionary, actualDataRowCount, expectedRowCount);
-            }
             //FileTools.WriteMatrix2File(M, @"C:\Users\towsey\temp\delete2.csv");
-            var tuple = new Tuple<Dictionary<string, double[]>, string[]>(dictionary, listOfFileNames.ToArray());
-            return tuple;
+            return dictionary;
         }
 
 

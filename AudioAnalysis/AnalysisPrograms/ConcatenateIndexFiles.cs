@@ -208,7 +208,7 @@ namespace AnalysisPrograms
 
 
 
-            // ########################## EDDIE GAME'S RECORDINGS
+            // ########################## EDDIE GAME'S PNG RECORDINGS
             // top level directory
             //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Iwarame_4-7-15\BAR\BAR_32\";
             //string opFileStem = "TNC_Iwarame_20150704_BAR32";
@@ -240,20 +240,31 @@ namespace AnalysisPrograms
             // However the PNG data uses an older set of index properties prior to fixing a bug!
             //FileInfo indexPropertiesConfig = new FileInfo(@"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\IndexPropertiesOLDConfig.yml");
 
-            // ########################## END of EDDIE GAME'S RECORDINGS
+            // ########################## EDDIE GAME'S PNG RECORDINGS
+
+
+            // ########################## ZuZZana's INDONESIAN RECORDINGS
+            // top level directory
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\TheNatureConservancy\Indonesia\2"),
+                                       };
+            string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+            string opFileStem = "Indonesia_2"; // this should be a unique site identifier
+            string opPath = @"G:\SensorNetworks\Output\TheNatureConservancy\Indonesia\2";
+            //dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd   = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
+            // ########################## END of ZuZZana's INDONESIAN RECORDINGS
+
 
             // ########################## GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS          
             // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1"),
             //                           };
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings\Site1"),
-                                       };
-            string directoryFilter = "Site2";
-            string opPath = @"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings";
-            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
-            dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
-            string opFileStem = "Site1_20150709";
+            //string directoryFilter = "Site2";
+            //string opPath = @"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings";
+            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            //dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
+            //string opFileStem = "Site1_20150709";
 
             // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
 
@@ -282,7 +293,7 @@ namespace AnalysisPrograms
                 EndDate = dtoEnd,
                 DrawImages = drawImages,
                 IndexPropertiesConfig = indexPropertiesConfig,
-                ConcatenateEverythingYouCanLayYourHandsOn = false,
+                ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(10),
                 SunRiseDataFile = new FileInfo(BrisbaneSunriseDatafile),
                 Verbose = true
@@ -389,8 +400,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", (dayCount * 24)));
-                LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
+                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", totalTimespan.TotalHours));
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
 
                 if (arguments.SunRiseDataFile.Exists)
@@ -429,23 +439,20 @@ namespace AnalysisPrograms
             }
 
 
-            //TODO TODO TODO   ########################   NEED TO DEBUG THE FOLLOWING OPTION - use case of EDDIE GAME
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
-                LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
-                LoggedConsole.WriteErrorLine("       TODO TODO TODO   ########################   NEED TO DEBUG THE FOLLOWING OPTION");
-                LoggedConsole.WriteErrorLine("       The option <ConcatenateEverythingYouCanLayYourHandsOn> has not been debugged.");
-                LoggedConsole.WriteErrorLine("       Check results for accuracy.");
-                LoggedConsole.WriteErrorLine("       This option is only currently used for the TNC data of Eddie Game.");
-                // concatenate the summary index files
-                FileInfo[] files = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
-                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
                 string dateString = String.Format("{0}{1:D2}{2:D2}", ((DateTimeOffset)startDate).Year, ((DateTimeOffset)startDate).Month, ((DateTimeOffset)startDate).Day);
                 DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
-                throw new NotSupportedException("AT: MERGE CONFLICT - I DON'T UNDERSTAND THE CODE BELOW AND I DON'T KNOW HOW TO FIX IT");
-                /*Dictionary<string, double[,]> dict = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories, (DateTimeOffset)startDate);
+                FileInfo[] summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
+
+                LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, indexPropertiesConfig, indexGenerationData, opDir, arguments.FileStemName);
+
+
+                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                /*
+                Dictionary<string, double[,]> dict = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories, (DateTimeOffset)startDate);
                 LDSpectrogramStitching.DrawSpectralIndexFiles(
                     dict,
                     // AT: WARNING MERGE CONFLICT LINE BELOW - BEHAVIOR NOT TESTED
@@ -455,13 +462,18 @@ namespace AnalysisPrograms
                     resultsDir,
                     siteDescription,
                     null);
-                    */
-
-                //LDSpectrogramStitching.ConcatenateSummaryIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
+                */ 
                 return;
-            }
+            } // ConcatenateEverythingYouCanLayYourHandsOn
 
 
+
+
+
+
+            LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours or {1} days", totalTimespan.TotalHours, dayCount));
+            LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
+            LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
 
             // loop over days
             for (int d = 0; d < dayCount; d++)

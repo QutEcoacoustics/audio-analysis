@@ -239,7 +239,7 @@ namespace AnalysisPrograms
 
                 // string outputDirectory = @"C:\SensorNetworks\Output\Test\TNC";
                 var opDir = new DirectoryInfo(dataPath);
-                LDSpectrogramStitching.ConcatenateAllIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
+                //LDSpectrogramStitching.ConcatenateAllIndexFiles(dataDir, indexPropertiesConfigFileInfo, opDir, opFileStem);
 
             }
 
