@@ -2162,6 +2162,23 @@ namespace TowseyLibrary
             return sum;
         }
 
+        public static double CosineSimilarity(double[] v1, double[] v2)
+        {
+            //assume v1 and v2 have same dimensions
+            int L = v1.Length;
+            double sum = 0.0;
+            double Lv1 = 0.0;
+            double Lv2 = 0.0;
+            for (int i = 0; i < L; i++)
+            {
+                sum += (v1[i] * v2[i]);
+                Lv1 += (v1[i] * v1[i]);
+                Lv2 += (v2[i] * v2[i]);
+            }
+
+            return sum / (Math.Sqrt(Lv1) * Math.Sqrt(Lv2));
+        }
+
         /// <summary>
         /// Clculates Hamming distance for two vectors of doubles.
         /// d[i] = 1 if((int)Math.Round(Math.Abs(v1[i] - v2[i])) == 1 )
