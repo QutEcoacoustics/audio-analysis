@@ -84,7 +84,10 @@ Output  to  directory: {1}
             else if (!configFile.Exists)
             {
                 Log.Warn($"Config file {configFile.FullName} not found... attempting to resolve config file");
-                configFile = ConfigFile.ResolveConfigFile(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
+                // we use .ToString() here to get the original input string - Using fullname always produces an absolute path wrt to pwd... we don't want to prematurely make asusmptions:
+                // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
+                // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute check inside ResolveConfigFile
+                configFile = ConfigFile.ResolveConfigFile(configFile.ToString(), Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
 
             LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
