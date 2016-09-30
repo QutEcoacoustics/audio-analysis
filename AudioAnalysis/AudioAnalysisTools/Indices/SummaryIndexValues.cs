@@ -206,19 +206,25 @@ namespace AudioAnalysisTools.Indices
 
         public SpectralIndexValues(int spectrumLength, Dictionary<string, IndexProperties> indexProperties)
         {
-            foreach (var kvp in indexProperties)
+            foreach (var cachedSetter in CachedSetters)
             {
-                if (!kvp.Value.IsSpectralIndex)
+                var defaultValue = 0.0;
+
+                if (indexProperties.ContainsKey(cachedSetter.Key))
                 {
-                    continue;
+                    var indexProperty = indexProperties[cachedSetter.Key];
+                    if (indexProperty.IsSpectralIndex)
+                    {
+                        defaultValue = indexProperty.DefaultValue;
+                    }
                 }
 
-                double[] initArray = (new double[spectrumLength]).FastFill(kvp.Value.DefaultValue);
+                double[] initArray = (new double[spectrumLength]).FastFill(defaultValue);
 
                 // WARNING: Potential throw site
                 // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
                 // This prevents multiple warnings through loop.
-                this.SetPropertyValue(kvp.Key, initArray);
+                this.SetPropertyValue(cachedSetter.Key, initArray);
             }
         }
 
