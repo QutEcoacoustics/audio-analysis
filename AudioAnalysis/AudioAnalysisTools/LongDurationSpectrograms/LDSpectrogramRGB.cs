@@ -1437,7 +1437,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 indexDistributions = IndexDistributions.ReadSpectralIndexDistributionStatistics(inputDirectory, fileStem);
                 //cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
-                Log.Fatal("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
+                Log.Warn("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
 
                 if (indexDistributions == null)
                 {

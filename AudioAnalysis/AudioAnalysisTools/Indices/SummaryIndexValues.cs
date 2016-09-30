@@ -115,11 +115,11 @@ namespace AudioAnalysisTools.Indices
         public double EntropyOfCoVSpectrum { get; set; }
 
         // meaningless when calculated over short
-        public int ClusterCount { get; set; }
+        public double ClusterCount { get; set; }
 
         // public TimeSpan AvgClusterDuration { get; set; }
 
-        public int ThreeGramCount { get; set; }
+        public double ThreeGramCount { get; set; }
 
         // public double SptPerSecond { get; set; }
 

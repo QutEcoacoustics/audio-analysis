@@ -313,7 +313,7 @@ ClusterCount:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
-  NormMax: 20
+  NormMax: 50
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: true
@@ -337,7 +337,7 @@ ThreeGramCount:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0
-  NormMax: 200
+  NormMax: 1500
   ProjectID: Acoustic Indices
   Units: ""
   IncludeInComboIndex: false
