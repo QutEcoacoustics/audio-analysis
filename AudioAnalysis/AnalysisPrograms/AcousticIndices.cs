@@ -507,7 +507,7 @@ namespace AnalysisPrograms
                                           SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                                           SampleRateResampled = sampleRate,
                                           FrameLength = frameWidth,
-                                          FrameStep = settings.Configuration[AnalysisKeys.FrameStep],
+                                          FrameStep = (int?)settings.Configuration[AnalysisKeys.FrameStep] ?? (int?)settings.Configuration[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize,
                                           IndexCalculationDuration = acousticIndicesParsedConfiguration.IndexCalculationDuration,
                                           BGNoiseNeighbourhood = acousticIndicesParsedConfiguration.BgNoiseNeighborhood,
                                           MinuteOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
