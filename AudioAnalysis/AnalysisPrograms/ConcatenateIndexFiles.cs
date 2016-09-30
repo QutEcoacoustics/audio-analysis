@@ -245,11 +245,11 @@ namespace AnalysisPrograms
 
             // ########################## ZuZZana's INDONESIAN RECORDINGS
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\TheNatureConservancy\Indonesia\2"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\TheNatureConservancy\"),
                                        };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "Indonesia_2"; // this should be a unique site identifier
-            string opPath = @"G:\SensorNetworks\Output\TheNatureConservancy\Indonesia\2";
+            string opPath = @"G:\SensorNetworks\Output\TheNatureConservancy\";
             //dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
             // ########################## END of ZuZZana's INDONESIAN RECORDINGS
@@ -441,36 +441,78 @@ namespace AnalysisPrograms
 
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
+                string opFileStem = arguments.FileStemName;
                 string dateString = String.Format("{0}{1:D2}{2:D2}", ((DateTimeOffset)startDate).Year, ((DateTimeOffset)startDate).Month, ((DateTimeOffset)startDate).Day);
                 DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
+                // ###### FIRST CONCATENATE THE SUMMARY INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 FileInfo[] summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
 
-                LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, indexPropertiesConfig, indexGenerationData, opDir, arguments.FileStemName);
+                var dictionaryOfSummaryIndices = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem);
+/*
+                if (arguments.DrawImages)
+                {
+                    string imgFileExt = "png";
+                    string indexType = "SummaryIndices";
+                    TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
+                    string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
+                    string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
+                    Bitmap tracksImage =
+                        IndexDisplay.DrawImageOfSummaryIndices(
+                            IndexProperties.GetIndexProperties(indexPropertiesConfig),
+                            dictionaryOfSummaryIndices,
+                            imageTitle,
+                            indexGenerationData.IndexCalculationDuration,
+                            indexGenerationData.RecordingStartDate);
+                    var imagePath = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, indexType, imgFileExt);
+                    tracksImage.Save(imagePath);
+                }
+*/
+                // ###### THEN CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
+                //LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, resultsDir, arguments.FileStemName);
+                var dictionaryOfSpectralIndices = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem);
 
+                FileInfo sunriseDataFile = null;
 
-                //LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, opDir, arguments.FileStemName);
-                /*
-                Dictionary<string, double[,]> dict = LDSpectrogramStitching.ConcatenateSpectralIndexFiles(subDirectories, (DateTimeOffset)startDate);
-                LDSpectrogramStitching.DrawSpectralIndexFiles(
-                    dict,
-                    // AT: WARNING MERGE CONFLICT LINE BELOW - BEHAVIOR NOT TESTED
-                    LdSpectrogramConfig.GetDefaultConfig(),
-                    indexGenerationData,
-                    indexPropertiesConfig,
-                    resultsDir,
-                    siteDescription,
-                    null);
-                */ 
+                if (arguments.DrawImages)
+                {
+                    //string filename = "20160724_121922_continuous1";
+                    //Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = IndexDistributions.ReadSpectralIndexDistributionStatistics(resultsDir, filename);
+                    string analysisType = "Towsey.Acoustics";
+                    var ldSpectrogramConfig = new LdSpectrogramConfig
+                    {
+                        XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL,
+                        YAxisTicInterval = 1000,
+                        //ColorMap1 = "ACI-TEN-CVR",
+                        //ColorMap2 = "BGN-AVG-VAR",
+                        ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
+                        ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CLS,
+                    };
+
+                    Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                            subDirectories[0],
+                            resultsDir,
+                            ldSpectrogramConfig,
+                            indexPropertiesConfig,
+                            indexGenerationData,
+                            opFileStem,
+                            analysisType,
+                            dictionaryOfSpectralIndices,
+                            /*summaryIndices = */null,
+                            /*indexDistributions*/ null,
+                            siteDescription,
+                            sunriseDataFile,
+                            /*segmentErrors*/null,
+                            ImageChrome.With);
+                }
                 return;
             } // ConcatenateEverythingYouCanLayYourHandsOn
 
 
 
 
-
-
+            // CONCATENATE in 24 hour BLOCKS of DATA
             LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours or {1} days", totalTimespan.TotalHours, dayCount));
             LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
             LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
@@ -498,18 +540,16 @@ namespace AnalysisPrograms
                 DirectoryInfo resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
-                string opFileStem = String.Format("{0}_{1}", arguments.FileStemName, dateString);
-                var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
+                string opFileStem1 = String.Format("{0}_{1}", arguments.FileStemName, dateString);
+                var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem1, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
                 var indicesCsvfile = new FileInfo(indicesFile);
 
                 // CONCATENATE the SUMMARY INDEX FILES
                 FileInfo[] files = filteredDict.Values.ToArray<FileInfo>();
-                var summaryDict = LDSpectrogramStitching.ConcatenateSummaryIndexFiles(files, resultsDir, indicesCsvfile, indexGenerationData.IndexCalculationDuration);
+                var summaryDict = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(files, resultsDir, indicesCsvfile, indexGenerationData, opFileStem1);
 
-                if (summaryDict.Count == 0)
+                if (summaryDict == null)
                 {
-                    LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
-                    LoggedConsole.WriteErrorLine("        An empty dictionary of SUMMARY indices was returned !!! ");
                     break;
                 }
 
@@ -538,7 +578,7 @@ namespace AnalysisPrograms
                 string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT;
                 string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
                 var spectralDict = LDSpectrogramStitching.ConcatenateSpectralIndexFilesForOneDay(subDirectories, resultsDir, arguments.FileStemName, thisday, 
-                                                                         indexGenerationData.IndexCalculationDuration, keys, verbose);
+                                                                         indexGenerationData, keys, verbose);
                 if (spectralDict.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
