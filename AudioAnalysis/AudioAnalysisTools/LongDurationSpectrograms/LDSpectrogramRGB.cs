@@ -470,8 +470,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 if (!this.spectrogramMatrices.ContainsKey(key))
                 {
-                    LoggedConsole.WriteLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
-                    LoggedConsole.WriteLine("         Dictionary of spectrogram matrices does NOT contain key: {0}", key);
+                    LoggedConsole.WriteErrorLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
+                    LoggedConsole.WriteErrorLine("         Dictionary of spectrogram matrices does NOT contain key: {0}", key);
+                    LoggedConsole.WriteErrorLine("         This may prove to be a fatal error - just depends - wait and see!", key);
                     List<string> keyList = new List<string>(this.spectrogramMatrices.Keys);
                     string list = "";
                     foreach (string str in keyList)
@@ -483,8 +484,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
                 if (this.spectrogramMatrices[key] == null)
                 {
-                    LoggedConsole.WriteLine("WARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
-                    LoggedConsole.WriteLine("         Null matrix returned with key: {0}", key);
+                    LoggedConsole.WriteErrorLine("WARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
+                    LoggedConsole.WriteErrorLine("         Null matrix returned with key: {0}", key);
+                    LoggedConsole.WriteErrorLine("         This may be prove to be a fatal error - just depends - wait and see!", key);
                     continue;
                 }
 
@@ -1482,6 +1484,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 imageX.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".ClipHiAmpl", "png"));
             }
 
+            if ((image1 == null) || (image2 == null)) throw new Exception("NULL image returned. Cannot proceed!");
+
             CreateTwoMapsImage(outputDirectory, fileStem, image1, imageX, image2);
 
             Image ribbon;
@@ -1533,6 +1537,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // create a normal image with chrome
             Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
+            if(image == null)
+            {
+                LoggedConsole.WriteFatalLine(" No image returned!", new Exception("FATAL ERROR!"));
+                return Tuple.Create(image, image);
+            }
+
+
             if (errorsExist)
             {
                 Bitmap errorPatch = cs1.ErroneousSegments[0].DrawErrorPatch(image.Height, true);

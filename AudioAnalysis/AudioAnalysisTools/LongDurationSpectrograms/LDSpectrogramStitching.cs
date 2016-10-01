@@ -308,7 +308,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                          IndexGenerationData indexGenerationData,
                                                          string opFileStem)
         {
-            string[] keys = {"ACI", "ENT", "EVN", "BGN", "POW", "CLS"};
+            string[] keys = {"ACI", "ENT", "EVN", "BGN", "POW", "CLS", "SPT", "RHZ", "CVR"};
 
             string analysisType = "Towsey.Acoustic";
             var dictionaryOfSpectralIndices = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories, analysisType, keys, indexGenerationData, true);

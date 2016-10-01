@@ -229,11 +229,11 @@ namespace AnalysisPrograms
             //string opFileStem = "TNC_Yavera_20150708_BAR64";
 
             //string dataPath = @"Y:\Results\2015Jul26-215038 - Eddie, Indices, ICD=60.0, #47\TheNatureConservency\BAR\Musiamunat_3-7-15\BAR\BAR_18\";
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(dataPath) };
             //string opPath   = dataPath;
             //string directoryFilter = "Musimunat";  // this is a directory filter to locate only the required files
             //string opFileStem = "Musimunat_BAR18"; // this should be a unique site identifier
             //string opFileStem = "TNC_Musimunat_20150703_BAR18";
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(dataPath) };
 
             // the default set of index properties is located in the AnalysisConfig directory.
             //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo();
@@ -245,13 +245,11 @@ namespace AnalysisPrograms
 
             // ########################## ZuZZana's INDONESIAN RECORDINGS
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\TheNatureConservancy\"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"E:\SensorNetworks\OutputDataSets\TheNatureConservancy\"),
                                        };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "Indonesia_2"; // this should be a unique site identifier
-            string opPath = @"G:\SensorNetworks\Output\TheNatureConservancy\";
-            //dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd   = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
+            string opPath = @"E:\SensorNetworks\Output\TheNatureConservancy\";
             // ########################## END of ZuZZana's INDONESIAN RECORDINGS
 
 
@@ -450,31 +448,38 @@ namespace AnalysisPrograms
                 FileInfo[] summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
 
                 var dictionaryOfSummaryIndices = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem);
-/*
-                if (arguments.DrawImages)
-                {
-                    string imgFileExt = "png";
-                    string indexType = "SummaryIndices";
-                    TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
-                    string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
-                    string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
-                    Bitmap tracksImage =
-                        IndexDisplay.DrawImageOfSummaryIndices(
-                            IndexProperties.GetIndexProperties(indexPropertiesConfig),
-                            dictionaryOfSummaryIndices,
-                            imageTitle,
-                            indexGenerationData.IndexCalculationDuration,
-                            indexGenerationData.RecordingStartDate);
-                    var imagePath = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, indexType, imgFileExt);
-                    tracksImage.Save(imagePath);
-                }
-*/
+                // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
+                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(dictionaryOfSummaryIndices, resultsDir, arguments.FileStemName);
+
+                
+                                if (arguments.DrawImages)
+                                {
+                                    string imgFileExt = "png";
+                                    string indexType = "SummaryIndices";
+                                    TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
+                                    string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
+                                    string imageTitle = $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       (c) QUT.EDU.AU";
+                                    Bitmap tracksImage =
+                                        IndexDisplay.DrawImageOfSummaryIndices(
+                                            IndexProperties.GetIndexProperties(indexPropertiesConfig),
+                                            dictionaryOfSummaryIndices,
+                                            imageTitle,
+                                            indexGenerationData.IndexCalculationDuration,
+                                            indexGenerationData.RecordingStartDate);
+                                    var imagePath = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, indexType, imgFileExt);
+                                    tracksImage.Save(imagePath);
+                                }
+                
                 // ###### THEN CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
                 //LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories[0], indexPropertiesConfig, resultsDir, arguments.FileStemName);
                 var dictionaryOfSpectralIndices = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem);
 
                 FileInfo sunriseDataFile = null;
 
+                // The currently available sepctral indices
+                // "ACI", "ENT", "EVN", "BGN", "POW", "CLS", "SPT", "RHZ", "CVR"
+                // RHZ, SPT and CVR correlated with POW and do not add much. Currently use SPT
+                // Do not use CLS. Not particularly useful.
                 if (arguments.DrawImages)
                 {
                     //string filename = "20160724_121922_continuous1";
@@ -487,7 +492,9 @@ namespace AnalysisPrograms
                         //ColorMap1 = "ACI-TEN-CVR",
                         //ColorMap2 = "BGN-AVG-VAR",
                         ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                        ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CLS,
+                        ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT,
+                        //ColorMap2 = SpectrogramConstants.RGBMap_BGN_POW_CVR,
+                        //ColorMap2 = "BGN-POW-RHZ",
                     };
 
                     Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
@@ -503,7 +510,7 @@ namespace AnalysisPrograms
                             /*indexDistributions*/ null,
                             siteDescription,
                             sunriseDataFile,
-                            /*segmentErrors*/null,
+                            indexErrors,
                             ImageChrome.With);
                 }
                 return;
