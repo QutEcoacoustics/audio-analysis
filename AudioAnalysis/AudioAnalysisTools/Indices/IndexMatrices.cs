@@ -264,7 +264,12 @@ namespace AudioAnalysisTools.Indices
                 DateTime now1 = DateTime.Now;
                 string pattern = "*__" + analysisType + "." + key + ".csv";
                 FileInfo[] files = IndexMatrices.GetFilesInDirectories(dirs, pattern);
-                if (files.Length == 0) return spectrogramMatrices;
+
+                if (files.Length == 0)
+                {
+                    LoggedConsole.WriteWarnLine("WARNING: No csv files found for KEY="+key);
+                    continue;
+                }
 
                 List<double[,]> matrices = IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(files, indexCalcTimeSpan);
                 double[,] m = MatrixTools.ConcatenateMatrixRows(matrices);
@@ -365,7 +370,7 @@ namespace AudioAnalysisTools.Indices
                     int missingRowCount = partialMinutes - partialRowMinutes;
                     int columnCount = matrices[0].GetLength(1);
                     var emptyMatrix = new double[missingRowCount, columnCount];
-
+                    matrices.Add(emptyMatrix);
                 }
 
             }
