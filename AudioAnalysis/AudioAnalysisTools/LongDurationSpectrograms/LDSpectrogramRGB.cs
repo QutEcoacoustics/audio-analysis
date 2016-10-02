@@ -1371,8 +1371,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string colorMap1 = config.ColorMap1 ?? SpectrogramConstants.RGBMap_ACI_ENT_EVN;   // assigns indices to RGB
             string colorMap2 = config.ColorMap2 ?? SpectrogramConstants.RGBMap_BGN_POW_EVN;   // assigns indices to RGB
 
-            //double  colourGain = (double?)configuration.ColourGain ?? SpectrogramConstants.COLOUR_GAIN;  // determines colour saturation
-            
+            // Set ColourGain: Determines colour intensity of the lower index values relative to the higher index values. Good value is 0.75
+            double colourGain = SpectrogramConstants.COLOUR_GAIN; 
+            if (config.ColourGain == null) config.ColourGain = colourGain;
+            // Set ColourFilter: Must be < 1.0. Good value is 0.75
+            double colourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            if (config.ColourFilter == null) config.ColourFilter = colourFilter;
+
             var cs1 = new LDSpectrogramRGB(config, indexGenerationData, colorMap1);
             string fileStem = basename;
             
@@ -1512,7 +1517,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                                                 ImageChrome imageChrome, 
                                                                                 DirectoryInfo outputDirectory)
         {
-            const int HertzInterval = 1000;
+            const int hertzInterval = 1000;
+            //if (cs1.YInterval != null) cs1.YInterval = hertzInterval;
             int nyquist = cs1.SampleRate / 2;
 
             bool errorsExist = false;
@@ -1556,7 +1562,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string title = string.Format("<{0}> SPECTROGRAM  of \"{1}\".   Starts at {2}; Nyquist={3}", 
                                                                                       colorMap, cs1.FileName, startTime, nyquist);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
-            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1, nyquist, HertzInterval);
+            image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1, nyquist, hertzInterval);
             var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");
             image.Save(outputPath);
             return Tuple.Create(image, imageNoChrome);

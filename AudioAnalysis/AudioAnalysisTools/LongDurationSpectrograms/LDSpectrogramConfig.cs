@@ -55,6 +55,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string ColorMap2 { get; set; }
 
         /// <summary>
+        /// Determines colour intensity of the lower index values relative to the higher index values. Good value is 2.0
+        /// </summary>
+        public double? ColourGain { get; set; }
+
+        /// <summary>
+        /// Value must be < 1.0. Good value is 0.75
+        /// </summary>
+        public double? ColourFilter { get; set; }
+
+        /// <summary>
         /// The default is one minute spectra i.e. 60 per hour
         /// But as of January 2015, this is not fixed. The user can adjust
         ///  the tic interval to be appropriate to the time scale of the spectrogram.
