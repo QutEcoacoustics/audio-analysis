@@ -71,6 +71,27 @@ namespace Acoustics.Shared
             return datesAndFiles;
         }
 
+        /// <summary>
+        /// sorts a list of files by the date assumed to be encoded in their file names
+        /// and then returns the list as a sorted dictionary with file DateTime as the keys.
+        /// </summary>
+        /// <param name="directories">The files to filter.</param>
+        /// <param name="offsetHint">If you know what timezone you should have, specify a hint to enable parsing of ambiguous dates.</param>
+        /// <returns>A sorted dictionary FileInfo objects mapped to parsed dates.</returns>
+        public static SortedDictionary<DateTimeOffset, DirectoryInfo> FilterDirectoriesForDates(IEnumerable<DirectoryInfo> directories, TimeSpan? offsetHint = null)
+        {
+            var datesAndDirs = new SortedDictionary<DateTimeOffset, DirectoryInfo>();
+            foreach (var dir in directories)
+            {
+                DateTimeOffset parsedDate;
+                if (FileNameContainsDateTime(dir.Name, out parsedDate, offsetHint))
+                {
+                    datesAndDirs.Add(parsedDate, dir);
+                }
+            }
+            return datesAndDirs;
+        }
+
         public static bool FileNameContainsDateTime(string fileName)
         {
             return PossibleFormats.Any(format => Regex.IsMatch(fileName, format.Regex));

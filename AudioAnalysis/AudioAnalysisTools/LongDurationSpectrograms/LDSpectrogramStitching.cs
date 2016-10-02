@@ -88,33 +88,33 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="opDir"></param>
         /// <param name="site"></param>
         /// <param name="dto"></param>
-        public static Dictionary<string, double[,]> ConcatenateSpectralIndexFilesForOneDay(DirectoryInfo[] directories,
-                                         DirectoryInfo opDir,
-                                         string filestem,
-                                         DateTimeOffset dto,
-                                         IndexGenerationData indexGenerationData,
-                                         string[] keys,
-                                         bool verbose = false)
-        {
-            // 1. PATTERN SEARCH FOR CORRECT CSV FILES
-            string analysisType = "Towsey.Acoustic";
-            string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+        //public static Dictionary<string, double[,]> ConcatenateSpectralIndexFilesForOneDay(DirectoryInfo[] directories,
+        //                                 DirectoryInfo opDir,
+        //                                 string filestem,
+        //                                 DateTimeOffset dto,
+        //                                 IndexGenerationData indexGenerationData,
+        //                                 string[] keys,
+        //                                 bool verbose = false)
+        //{
+        //    // 1. PATTERN SEARCH FOR CORRECT CSV FILES
+        //    string analysisType = "Towsey.Acoustic";
+        //    string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
 
-            string fileStemPattern = "*" + dateString + "*__" + analysisType;
-            var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories.ToArray(), fileStemPattern, keys, indexGenerationData, verbose);
+        //    string fileStemPattern = "*" + dateString + "*__" + analysisType;
+        //    var dictionary = IndexMatrices.GetSpectralIndexFilesAndConcatenate(directories, fileStemPattern, keys, indexGenerationData, verbose);
 
-            // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
-            string opFileStem = String.Format("{0}_{1}", filestem, dateString);
-            //TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
-            TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajorFlipped;
-            foreach (var key in keys)
-            {
-                var filename = FilenameHelpers.AnalysisResultName(opDir, opFileStem, key, "csv").ToFileInfo();
-                Csv.WriteMatrixToCsv(filename, dictionary[key], orient);
-            }
+        //    // 2. SAVE SPECTRAL INDEX DATA as CSV file TO OUTPUT DIRECTORY
+        //    string opFileStem = String.Format("{0}_{1}", filestem, dateString);
+        //    //TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajor;
+        //    TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajorFlipped;
+        //    foreach (var key in keys)
+        //    {
+        //        var filename = FilenameHelpers.AnalysisResultName(opDir, opFileStem, key, "csv").ToFileInfo();
+        //        Csv.WriteMatrixToCsv(filename, dictionary[key], orient);
+        //    }
 
-            return dictionary;
-        }
+        //    return dictionary;
+        //}
 
 
         /// <summary>
@@ -218,6 +218,37 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             return matchFiles;
         }
+
+        public static FileInfo[] GetFileArrayForOneDay(SortedDictionary<DateTimeOffset, FileInfo> dict, DateTimeOffset dto)
+        {
+            var keys = dict.Keys;
+            var matchFiles = new List<FileInfo>();
+            foreach (var key in keys)
+            {
+                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                {
+                    matchFiles.Add(dict[key]);
+                }
+            }
+            FileInfo[] array = matchFiles.ToArray<FileInfo>();
+            return array;
+        }
+
+        public static DirectoryInfo[] GetDirectoryArrayForOneDay(SortedDictionary<DateTimeOffset, DirectoryInfo> dict, DateTimeOffset dto)
+        {
+            var keys = dict.Keys;
+            var matchFiles = new List<DirectoryInfo>();
+            foreach (var key in keys)
+            {
+                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                {
+                    matchFiles.Add(dict[key]);
+                }
+            }
+            DirectoryInfo[] array = matchFiles.ToArray<DirectoryInfo>();
+            return array;
+        }
+
 
 
         public static Dictionary<string, double[]> ConcatenateSummaryIndexFiles_DEPRACATED(FileInfo[] summaryIndexFiles, 
@@ -339,7 +370,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static Dictionary<string, double[]> ConcatenateAllSummaryIndexFiles(FileInfo[] summaryIndexFiles,
                                                         DirectoryInfo opDir,
-                                                        FileInfo indexPropertiesConfig,
                                                         IndexGenerationData indexGenerationData,
                                                         string opFileStem)
         {

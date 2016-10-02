@@ -261,6 +261,7 @@
     <Compile Include="StructureTensor.cs" />
     <Compile Include="TemporalMatrix.cs" />
     <Compile Include="TernaryPlots.cs" />
+    <Compile Include="TestTools.cs" />
     <Compile Include="TimeTools.cs" />
     <Compile Include="WaveletTransformContinuous.cs" />
     <Compile Include="CsvTools.cs" />
