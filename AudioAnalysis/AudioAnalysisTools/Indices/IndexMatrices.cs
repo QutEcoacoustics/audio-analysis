@@ -326,7 +326,10 @@ namespace AudioAnalysisTools.Indices
                 dtoArray[f] = startDTO;
             }
 
-            // now loop through the files again to extact the indices
+            string fileName = files[0].Name;
+            string fileExt = fileName.Substring(fileName.Length - 7);
+
+            // now loop through the files again to extract the indices
             int partialMinutes = 0;
             for (int i = 0; i < files.Length; i++)
             {
@@ -370,6 +373,16 @@ namespace AudioAnalysisTools.Indices
                     int missingRowCount = partialMinutes - partialRowMinutes;
                     int columnCount = matrices[0].GetLength(1);
                     var emptyMatrix = new double[missingRowCount, columnCount];
+                    if (fileExt.StartsWith("BGN"))
+                    {
+                        for (int r = 0; r < missingRowCount; r++)
+                        {
+                            for (int c = 0; c < columnCount; c++)
+                            {   // init with low decibel value
+                                emptyMatrix[r, c] = -100.0;
+                            }
+                        }
+                    }
                     matrices.Add(emptyMatrix);
                 }
 

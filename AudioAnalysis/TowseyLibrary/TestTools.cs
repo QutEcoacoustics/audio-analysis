@@ -22,6 +22,7 @@ namespace TowseyLibrary
         public static void RecognizerTest(string testName, double[] scoreArray, FileInfo file)
         {
             LoggedConsole.WriteLine("# TESTING: Starting benchmark test for "+ testName + ":");
+            LoggedConsole.WriteLine("#          Comparing passed array of double with content of file <" + file.Name + ">");
             string subDir = "/TestData";
             var dir = file.DirectoryName;
             var fileName = file.Name;
@@ -61,7 +62,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// This test checks two text/csv files to determine if they are exactly the same.
+        /// This test checks two text/csv files to determine if they are the same.
         /// </summary>
         /// <param name="testName"></param>
         /// <param name="file1"></param>
@@ -69,6 +70,7 @@ namespace TowseyLibrary
         public static void FileEqualityTest(string testName, FileInfo file1, FileInfo file2)
         {
             LoggedConsole.WriteLine("# TESTING: Starting benchmark test for " + testName + ":");
+            LoggedConsole.WriteLine("#          Comparing file <"+ file1.Name+ "> with <"+ file2.Name + ">");
 
 
             if (!file1.Exists)
@@ -78,11 +80,11 @@ namespace TowseyLibrary
             }
             if (!file2.Exists)
             {
-                LoggedConsole.WriteWarnLine("   " + testName + "  File2 <" + file1.Name + "> does not exist.");
+                LoggedConsole.WriteWarnLine("   " + testName + "  File2 <" + file2.Name + "> does not exist.");
                 return;
             }
             var lines1 = FileTools.ReadTextFile(file1.FullName);
-            var lines2 = FileTools.ReadTextFile(file1.FullName);
+            var lines2 = FileTools.ReadTextFile(file2.FullName);
 
             if (lines1.Count == 0)
             {
@@ -98,6 +100,7 @@ namespace TowseyLibrary
             if (lines1.Count != lines2.Count)
             {
                 LoggedConsole.WriteWarnLine("   " + testName + "  The two files do not contain the same number of lines.");
+                LoggedConsole.WriteWarnLine("   line count 1 <"+ lines1.Count + ">  !=  line count 2 <" + lines2.Count + ">");
                 return;
             }
 
@@ -108,7 +111,7 @@ namespace TowseyLibrary
             {
                 if (! lines1[i].Equals(lines2[i]))
                 {
-                    LoggedConsole.WriteWarnLine(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, lines1[i], lines2[i]));
+                    LoggedConsole.WriteWarnLine(String.Format("Line {0}: <{1}>   !=   benchmark <{2}>", i, lines1[i], lines2[i]));
                     AOK = false;
                 }
             }

@@ -62,9 +62,6 @@ namespace AnalysisPrograms
             [ArgDescription("Directory where the output is to go.")]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [ArgDescription("Directory where the required TEST files are stored.")]
-            public DirectoryInfo TestDirectory { get; set; }
-
             [ArgDescription("Filter string used to search for the required csv files - assumed to be in directory path.")]
             public string DirectoryFilter { get; set; }
 
@@ -85,7 +82,7 @@ namespace AnalysisPrograms
                 set { timeSpanOffsetHint = value; }
             }
 
-            //[ArgDescription("Draw images of summary and spectral indices after concatenating them")]
+            [ArgDescription("Draw false-colour spectrograms after concatenating index files")]
             internal bool DrawImages { get; set; }
 
             [ArgDescription("User specified file containing a list of indices and their properties.")]
@@ -101,13 +98,17 @@ namespace AnalysisPrograms
             public FileInfo SunRiseDataFile { get; set; }
 
             private bool concatenateEverythingYouCanLayYourHandsOn = false;
-            [ArgDescription("Set this true when want to concatenate longer than 24-hour recordings as in case of PNG/Indonesian data.")]
+            [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn {
                 get { return concatenateEverythingYouCanLayYourHandsOn; }
                 set { concatenateEverythingYouCanLayYourHandsOn = value; }
             }
 
+            [ArgDescription("Default = false. For use by software manager only.")]
             internal bool DoTest { get; set; }
+            [ArgDescription("Directory containing benchmark TEST files. For use by software manager only.")]
+            public DirectoryInfo TestDirectory { get; set; }
+
             internal bool Verbose { get; set; }
 
         }
@@ -141,17 +142,17 @@ namespace AnalysisPrograms
             FileInfo sunriseDatafile = null;
             doTest = true;
             // ########################## TEST 1 CONCATENATION 
-            //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
-            //string opPath = @"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Test1_Output\";
-            //bool concatenateEverythingYouCanLayYourHandsOn = true;
+            string opFileStem = "Concat_Test1"; // this should be a unique site identifier
+            string opPath = @"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Test1_Output\";
+            bool concatenateEverythingYouCanLayYourHandsOn = true;
             // ########################## TEST 2 CONCATENATION 
-            string opFileStem = "Concat_Test2"; 
-            string opPath = @"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Test2_Output\";
-            bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
-            dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-
+            //string opFileStem = "Concat_Test2";
+            //string opPath = @"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Test2_Output\";
+            //bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
+            //dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
             // ########################## END of TEST ARGUMENTS
+
 
             //// ########################## MARINE RECORDINGS          
             //// top level directory
@@ -330,19 +331,22 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
-            bool verbose = false; // default
+            string analysisType = "Towsey.Acoustics";
 
+            // deal with verbosity
+            bool verbose = false; // default
             if (arguments == null)
             {
                 arguments = Dev();
                 verbose = true; // default is verbose if in dev mode
             }
-
-            Log.Warn("DrawImages option hard coded to be on in this version");
-            arguments.DrawImages = true;
-
             verbose = arguments.Verbose;
             IndexMatrices.Verbose = verbose;
+
+
+            //Log.Warn("DrawImages option hard coded to be on in this version");
+            //arguments.DrawImages = true;
+
 
             if (verbose)
             {
@@ -441,6 +445,7 @@ namespace AnalysisPrograms
             // create top level output directory if it does not exist.
             DirectoryInfo opDir = arguments.OutputDirectory;
             if (!opDir.Exists) arguments.OutputDirectory.Create();
+            string opFileStem = arguments.FileStemName;
 
 
 
@@ -473,8 +478,10 @@ namespace AnalysisPrograms
 
                     // TODO TODO TODO TODO    Next line because not reading CORRECtly from yaml.
                     ldSpectrogramConfig.XAxisTicInterval = TimeSpan.FromMinutes(60);
+                    ldSpectrogramConfig.ColourGain = 1.0;
+                    ldSpectrogramConfig.ColourFilter = 1.0;
                 }
-                else
+                else // set up a default config
                 {
                     ldSpectrogramConfig = new LdSpectrogramConfig
                     {
@@ -493,11 +500,10 @@ namespace AnalysisPrograms
 
 
 
-
+            // ################################ ConcatenateEverythingYouCanLayYourHandsOn = true
             DirectoryInfo resultsDir = null;
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
-                string opFileStem = arguments.FileStemName;
                 string dateString = String.Format("{0}{1:D2}{2:D2}", ((DateTimeOffset)startDate).Year, ((DateTimeOffset)startDate).Month, ((DateTimeOffset)startDate).Day);
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
@@ -529,19 +535,14 @@ namespace AnalysisPrograms
                 }
                 
                 // ###### THEN CONCATENATE THE SPECTRAL INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
-                var dictionaryOfSpectralIndices = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem);
+                var dictionaryOfSpectralIndices1 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(subDirectories, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem);
 
-                FileInfo sunriseDataFile = null;
-
-                // The currently available sepctral indices
-                // "ACI", "ENT", "EVN", "BGN", "POW", "CLS", "SPT", "RHZ", "CVR"
-                // RHZ, SPT and CVR correlated with POW and do not add much. Currently use SPT
-                // Do not use CLS. Not particularly useful.
+                // The currently available sepctral indices are  "ACI", "ENT", "EVN", "BGN", "POW", "CLS", "SPT", "RHZ", "CVR"
+                // RHZ, SPT and CVR correlated with POW and do not add much. Currently use SPT.  Do not use CLS. Not particularly useful.
                 if (arguments.DrawImages)
                 {
                     //string filename = "20160724_121922_continuous1";
                     //Dictionary<string, IndexDistributions.SpectralStats> indexDistributions = IndexDistributions.ReadSpectralIndexDistributionStatistics(resultsDir, filename);
-                    string analysisType = "Towsey.Acoustics";
 
                     Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                             subDirectories[0],
@@ -551,11 +552,11 @@ namespace AnalysisPrograms
                             indexGenerationData,
                             opFileStem,
                             analysisType,
-                            dictionaryOfSpectralIndices,
+                            dictionaryOfSpectralIndices1,
                             /*summaryIndices = */null,
                             /*indexDistributions*/ null,
                             siteDescription,
-                            sunriseDataFile,
+                            arguments.SunRiseDataFile,
                             indexErrors,
                             ImageChrome.With);
                 }
@@ -563,13 +564,12 @@ namespace AnalysisPrograms
 
                 if(arguments.DoTest)
                 {
-                    var fileName = arguments.FileStemName;
                     // THis is test 1.
                     var expectedTestFile1 = new FileInfo(Path.Combine(arguments.TestDirectory.FullName, "Concat_Test1__SummaryIndexStatistics.EXPECTED.json"));
                     var expectedTestFile2 = new FileInfo(Path.Combine(arguments.TestDirectory.FullName, "Concat_Test1__SpectralIndexStatistics.EXPECTED.json"));
 
-                    var trialFile1 = new FileInfo(Path.Combine(resultsDir.FullName, fileName + "__SummaryIndexStatistics.json"));
-                    var trialFile2 = new FileInfo(Path.Combine(resultsDir.FullName, fileName + "__SpectralIndexStatistics.json"));
+                    var trialFile1 = new FileInfo(Path.Combine(resultsDir.FullName, opFileStem + "__SummaryIndexStatistics.json"));
+                    var trialFile2 = new FileInfo(Path.Combine(resultsDir.FullName, opFileStem + "__SpectralIndexStatistics.json"));
 
                     string testName1 = "test1";
                     TestTools.FileEqualityTest(testName1, trialFile1, expectedTestFile1);
@@ -586,8 +586,7 @@ namespace AnalysisPrograms
 
 
 
-
-            // CONCATENATE in 24 hour BLOCKS of DATA
+            // ############################# CONCATENATE in 24 hour BLOCKS of DATA  ### ConcatenateEverythingYouCanLayYourHandsOn = false
             LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours or {1} days", totalTimespan.TotalHours, dayCount));
             LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
             LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
@@ -624,7 +623,7 @@ namespace AnalysisPrograms
                 }
 
                 // REALITY CHECK - check for zero signal and anything else that might indicate defective signal
-                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict, resultsDir, arguments.FileStemName);
+                List<ErroneousIndexSegments> indexErrors = ErroneousIndexSegments.DataIntegrityCheck(summaryDict, resultsDir, opFileStem1);
 
 
                 // DRAW SUMMARY INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
@@ -644,26 +643,19 @@ namespace AnalysisPrograms
                 // ##############################################################################################################
 
                 // NOW CONCATENATE SPECTRAL INDEX FILES
-                string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-                string colorMap2 = SpectrogramConstants.RGBMap_BGN_POW_SPT;
-                string[] keys = LdSpectrogramConfig.GetKeys(colorMap1, colorMap2);
-
-                //FilterDirectoriesForDates
+                //Filter the array of Directories to get the correct dates
                 var spectralSubdirectories = FileDateHelpers.FilterDirectoriesForDates(subDirectories, arguments.TimeSpanOffsetHint);
                 var dirArray = LDSpectrogramStitching.GetDirectoryArrayForOneDay(spectralSubdirectories, thisday);
-
 
                 if (dirArray.Length == 0)
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
-                    LoggedConsole.WriteErrorLine("        No directories of Spectral indices were found.");
-                    LoggedConsole.WriteErrorLine("        Break cycle through days!!! ");
+                    LoggedConsole.WriteErrorLine("        No directories of Spectral indices were found.   Break cycle through days!!! ");
                     break;
                 }
 
-                string fileStem = arguments.FileStemName;
-                var spectralDict = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(dirArray, resultsDir, indexPropertiesConfig, indexGenerationData, fileStem);
-                if (spectralDict.Count == 0)
+                var dictionaryOfSpectralIndices2 = LDSpectrogramStitching.ConcatenateAllSpectralIndexFiles(dirArray, resultsDir, indexPropertiesConfig, indexGenerationData, opFileStem1);
+                if (dictionaryOfSpectralIndices2.Count == 0)
                 {
                     LoggedConsole.WriteErrorLine("WARNING from method ConcatenateIndexFiles.Execute():");
                     LoggedConsole.WriteErrorLine("        An empty dictionary of SPECTRAL indices was returned !!! ");
@@ -673,16 +665,21 @@ namespace AnalysisPrograms
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
-                    var sgConfig = LdSpectrogramConfig.GetDefaultConfig(colorMap1, colorMap2);
-                    LDSpectrogramStitching.DrawSpectralIndexFiles(spectralDict,
-                                                                  sgConfig,
-                                                                  indexGenerationData, 
-                                                                  indexPropertiesConfig, 
-                                                                  resultsDir, 
-                                                                  siteDescription,
-                                                                  arguments.SunRiseDataFile,
-                                                                  indexErrors,
-                                                                  verbose);
+                    Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                            subDirectories[0],
+                            resultsDir,
+                            ldSpectrogramConfig,
+                            indexPropertiesConfig,
+                            indexGenerationData,
+                            opFileStem1,
+                            analysisType,
+                            dictionaryOfSpectralIndices2,
+                            /*summaryIndices = */null,
+                            /*indexDistributions*/ null,
+                            siteDescription,
+                            arguments.SunRiseDataFile,
+                            indexErrors,
+                            ImageChrome.With);
                 }
 
             } // over days

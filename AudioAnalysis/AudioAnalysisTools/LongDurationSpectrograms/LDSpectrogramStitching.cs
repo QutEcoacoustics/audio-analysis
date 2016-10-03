@@ -396,9 +396,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return null;
             }
 
-            //string[] headers = dictionaryOfSummaryIndices.Keys.ToArray();
-
-
             // now add in derived indices i.e. NCDI etc
             // dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
 
