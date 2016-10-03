@@ -28,7 +28,7 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
-    public class LewinsRail3 : IAnalyser
+    public class LewinsRail3OBSOLETE : IAnalyser
     {
         public class Arguments : AnalyserArguments
         {
@@ -132,7 +132,7 @@ namespace AnalysisPrograms
                 };
             }
 
-            Execute(arguments);
+            //Execute(arguments);
 
             if (executeDev)
             {
@@ -176,7 +176,7 @@ namespace AnalysisPrograms
         }
 
 
-
+/*
         /// <summary>
         /// A WRAPPER AROUND THE Analysis() METHOD
         /// To be called as an executable with command line arguments.
@@ -216,7 +216,7 @@ namespace AnalysisPrograms
             CsvTools.DataTable2CSV(dt, analysisSettings.EventsFile.FullName);
             //DataTableTools.WriteTable(dt);
         }
-
+*/
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
             var configuration = new ConfigDictionary(analysisSettings.ConfigFile.FullName);
