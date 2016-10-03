@@ -139,6 +139,8 @@ namespace AudioAnalysisTools.Indices
         public SummaryIndexValues()
         {
             // serialization entry
+            BackgroundNoise = -100;
+            AvgSignalAmplitude = -100;
         }
 
         public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)

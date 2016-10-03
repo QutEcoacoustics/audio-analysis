@@ -232,7 +232,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
         /// <summary>
-        /// This method sets default indeces to use if passed Dictionary = null.
+        /// This method sets default indices to use if passed Dictionary = null.
         /// This may not be a good idea. Trying it out. Maybe better to crash! 
         /// </summary>
         /// <param name="_spectralIndexProperties"></param>
@@ -451,7 +451,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="opFileName"></param>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
         {
-            // string[] keys = LdSpectrogramConfig.GetKeys(this.ColorMap);
             string[] keys = this.spectrogramKeys;
             this.DrawGreyScaleSpectrograms(opdir, opFileName, keys);
         }
@@ -530,12 +529,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return returnImage;
         }
 
-        public void DrawFalseColourSpectrograms(DirectoryInfo outputDirectory, string outputFileName)
-        {
-            this.DrawNegativeFalseColourSpectrogram(outputDirectory, outputFileName);
-            this.DrawPositiveFalseColourSpectrogram(outputDirectory, outputFileName);
-        }
-
         public void DrawNegativeFalseColourSpectrogram(DirectoryInfo outputDirectory, string outputFileName)
         {
             Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
@@ -565,41 +558,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
         }
 
-        public void DrawNegativeFalseColourSpectrogram(DirectoryInfo outputDirectory, string outputFileName, string colorMap)
-        {
-            Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
-            if (bmpNeg == null)
-            {
-                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
-                LoggedConsole.WriteLine("         Null image returned");
-                return;
-            }
-            else
-            {
-                bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + "." + colorMap + "png"));
-            }
-        }
+        //public void DrawNegativeFalseColourSpectrogram(DirectoryInfo outputDirectory, string outputFileName, string colorMap)
+        //{
+        //    Image bmpNeg = this.DrawFalseColourSpectrogram("NEGATIVE");
+        //    if (bmpNeg == null)
+        //    {
+        //        LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
+        //        LoggedConsole.WriteLine("         Null image returned");
+        //        return;
+        //    }
+        //    else
+        //    {
+        //        bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + "." + colorMap + "png"));
+        //    }
+        //}
 
-        public void DrawPositiveFalseColourSpectrogram(DirectoryInfo opdir, string opFileName)
-        {
-            Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE");
-            if (bmpPos == null)
-            {
-                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawPositiveFalseColourSpectrograms()");
-                LoggedConsole.WriteLine("         Null image returned");
-                return;
-            }
-            else
-            {
-                bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
-            }
-        }
+        //public void DrawPositiveFalseColourSpectrogram(DirectoryInfo opdir, string opFileName)
+        //{
+        //    Image bmpPos = this.DrawFalseColourSpectrogram("POSITIVE");
+        //    if (bmpPos == null)
+        //    {
+        //        LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawPositiveFalseColourSpectrograms()");
+        //        LoggedConsole.WriteLine("         Null image returned");
+        //        return;
+        //    }
+        //    else
+        //    {
+        //        bmpPos.Save(Path.Combine(opdir.FullName, opFileName + ".COLNEG.png"));
+        //    }
+        //}
 
-        public void BlurSpectrogramMatrix(string key)
-        {
-            double[,] matrix = ImageTools.GaussianBlur_5cell(this.spectrogramMatrices[key]);
-            this.spectrogramMatrices[key] = matrix;
-        }
+        //public void BlurSpectrogramMatrix(string key)
+        //{
+        //    double[,] matrix = ImageTools.GaussianBlur_5cell(this.spectrogramMatrices[key]);
+        //    this.spectrogramMatrices[key] = matrix;
+        //}
 
         public Image DrawFalseColourSpectrogram(string colorMODE, bool withChrome = true)
         {
@@ -1038,15 +1031,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //############################################################################################################################################################
 
 
-        //public static double[,] NormaliseSpectrogramMatrix(IndexProperties indexProperties, double[,] matrix, double backgroundFilterCoeff)
-        //{
-        //    matrix = MatrixTools.NormaliseInZeroOne(matrix, indexProperties.NormMin, indexProperties.NormMax);
-        //    matrix = MatrixTools.FilterBackgroundValues(matrix, backgroundFilterCoeff); // to de-demphasize the background small values
-        //    return matrix;
-        //}
-
-
-
         //========================================================================================================================================================
         //========= NEXT FEW METHODS ARE STATIC AND RETURN VARIOUS KINDS OF IMAGE
         //========================================================================================================================================================
@@ -1437,19 +1421,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 throw new InvalidOperationException("Cannot find spectrogram matrix files");
             }
 
-            // Get index distribution statistics. 
-            // Either read from input variable or json file. 
-            // Stats are useful because needed if drawing difference spectrograms etc.     
+            // Get index distribution statistics. Either read from input variable or json file. 
+            // Index Distribution Stats are required if drawing "difference" spectrograms etc.     
             if (indexDistributions == null)
             {
                 indexDistributions = IndexDistributions.ReadSpectralIndexDistributionStatistics(inputDirectory, fileStem);
-                //cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
-                Log.Warn("A .json file of index distribution statistics was not found in directory <" + outputDirectory.FullName + ">");
+                Log.Warn("A .json file of Index Distribution Statistics was not found in dir: <" + outputDirectory.FullName + ">");
+                Log.Warn("        This is not required in most cases. Only required if doing \"difference\" spectrograms.");
 
-                if (indexDistributions == null)
-                {
-                    //throw new InvalidOperationException("Cannot proceed without index distribution data");
-                }
+                //cs1.IndexStats = IndexDistributions.WriteIndexDistributionStatistics(cs1.spectrogramMatrices, ipDir, fileStem);
+                //if (indexDistributions == null)
+                //{
+                //    //throw new InvalidOperationException("Cannot proceed without index distribution data");
+                //}
             }
             cs1.IndexStats = indexDistributions;
 
