@@ -266,12 +266,12 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("Calls LewinsRail3.Dev():  Dates back to 2012. Revise code if intend to use.")]
-        public LewinsRail3.Arguments LewinsRailArgs { get; set; }
-        public static Action<LewinsRail3.Arguments> LewinsRail()
+        public LewinsRail3OBSOLETE.Arguments LewinsRailArgs { get; set; }
+        public static Action<LewinsRail3OBSOLETE.Arguments> LewinsRail()
         {
             // IAnalyser - LewinsRail3 - yet to be tested on large data set but works OK on one or two available calls.
             // Execute() signed off: Michael Towsey 27th July 2012
-            return AnalysisPrograms.LewinsRail3.Dev;
+            return AnalysisPrograms.LewinsRail3OBSOLETE.Dev;
         }
 
         [ArgDescription("Calls PlanesTrainsAndAutomobiles.Execute():  Dates back to 2013. Revise code if intend to use.")]
