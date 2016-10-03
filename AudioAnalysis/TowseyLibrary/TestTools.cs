@@ -15,46 +15,31 @@ namespace TowseyLibrary
 
         /// <summary>
         /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
-        /// If the benchmark file does not exist then the passed score array is written to become the benchmark.
         /// </summary>
         /// <param name="scoreArray"></param>
         /// <param name="wavFile"></param>
-        public static void RecognizerTest(string testName, double[] scoreArray, FileInfo file)
+        public static void RecognizerTest(string testName, double[] scoreArray, FileInfo scoreFile)
         {
             LoggedConsole.WriteLine("# TESTING: Starting benchmark test for "+ testName + ":");
-            LoggedConsole.WriteLine("#          Comparing passed array of double with content of file <" + file.Name + ">");
-            string subDir = "/TestData";
-            var dir = file.DirectoryName;
-            var fileName = file.Name;
-            fileName = fileName.Substring(0, fileName.Length - 4);
-            var scoreFilePath = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
-            var scoreFile = new FileInfo(scoreFilePath);
-            if (!scoreFile.Exists)
+            LoggedConsole.WriteLine("#          Comparing passed array of double with content of file <" + scoreFile.Name + ">");
+            bool allOK = true;
+            var scoreLines = FileTools.ReadTextFile(scoreFile.FullName);
+            for (int i = 0; i < scoreLines.Count; i++)
             {
-                LoggedConsole.WriteWarnLine("   Score Test file does not exist.    Writing output as future score-test file");
-                FileTools.WriteArray2File(scoreArray, scoreFilePath);
+                string str = scoreArray[i].ToString();
+                if (!scoreLines[i].Equals(str))
+                {
+                    LoggedConsole.WriteWarnLine(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
+                    allOK = false;
+                }
             }
-            else // else if the scores file exists then do a compare.
+            if (allOK)
             {
-                bool allOK = true;
-                var scoreLines = FileTools.ReadTextFile(scoreFilePath);
-                for (int i = 0; i < scoreLines.Count; i++)
-                {
-                    string str = scoreArray[i].ToString();
-                    if (!scoreLines[i].Equals(str))
-                    {
-                        LoggedConsole.WriteWarnLine(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
-                        allOK = false;
-                    }
-                }
-                if (allOK)
-                {
-                    LoggedConsole.WriteLine("   SUCCESS! Passed the SCORE ARRAY TEST.");
-                }
-                else
-                {
-                    LoggedConsole.WriteWarnLine("   FAILED THE SCORE ARRAY TEST");
-                }
+                LoggedConsole.WriteSuccessLine("   SUCCESS! Passed the SCORE ARRAY TEST.");
+            }
+            else
+            {
+                LoggedConsole.WriteWarnLine("   FAILED THE SCORE ARRAY TEST");
             }
             LoggedConsole.WriteLine("Completed benchmark test.");
         }
@@ -117,7 +102,7 @@ namespace TowseyLibrary
             }
             if (AOK)
             {
-                LoggedConsole.WriteLine("   SUCCESS! Passed the TEST.");
+                LoggedConsole.WriteSuccessLine("   SUCCESS! Passed the FILE EQUALITY TEST.");
             }
             else
             {

@@ -79,9 +79,13 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-084607.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LewiniaPectoralis.yml";
-            string outputPath     = @"C:\SensorNetworks\Output\LewinsRail\";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LewiniaPectoralis.yml";
+            //string outputPath     = @"C:\SensorNetworks\Output\LewinsRail\";
+            // LEWIN'S RAIL TEST
+            string recordingPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\BAC2_20071008-085040.wav";
+            string configPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\Towsey.LewiniaPectoralis.yml";
+            string outputPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\";
 
             // Limnodynastes convex.
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
