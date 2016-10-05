@@ -98,27 +98,27 @@
         /// Requires the existing signal to be either 44100Hz or 88200 Hz.
         /// </summary>
         [Obsolete]
-        public void ConvertSampleRate22kHz()
-        {
-            LoggedConsole.WriteError("ConvertSampleRate22kHz is deprecated - DO NOT USE");
+        //public void ConvertSampleRate22kHz()
+        //{
+        //    LoggedConsole.WriteError("ConvertSampleRate22kHz is deprecated - DO NOT USE");
 
-            int sr = wavReader.SampleRate;
-            if(sr == 22050) return; //signal already has required sr
+        //    int sr = wavReader.SampleRate;
+        //    if(sr == 22050) return; //signal already has required sr
 
-            if (sr == 44100)
-            {
-                wavReader.SubSample(2);
-                Log.WriteLine("Original signal Sample Rate=44100 - Downsampled to 22050.");
-                return;
-            }else
-            if (sr == 88200)
-            {
-                wavReader.SubSample(4);
-                Log.WriteLine("Original signal Sample Rate=88200 - Downsampled to 22050.");
-                return;
-            }
-            Log.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
-        }
+        //    if (sr == 44100)
+        //    {
+        //        wavReader.SubSample(2);
+        //        Log.WriteLine("Original signal Sample Rate=44100 - Downsampled to 22050.");
+        //        return;
+        //    }else
+        //    if (sr == 88200)
+        //    {
+        //        wavReader.SubSample(4);
+        //        Log.WriteLine("Original signal Sample Rate=88200 - Downsampled to 22050.");
+        //        return;
+        //    }
+        //    Log.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
+        //}
 
         /// <summary>
         /// returns Time Span of the recording
@@ -129,44 +129,44 @@
             return WavReader.Time;
         }
 
-        /// <summary>
-        /// Reduces the signal sample rate by a factor of N if sample rate. 
-        /// Requires the existing signal to be either 44100Hz or 88200 Hz.
-        /// </summary>
-        public void ReduceSampleRateByFactor(int factor)
-        {
-            int sr = wavReader.SampleRate;
-            wavReader.SubSample(factor);
-            Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate=" + sr + " >>> Downsampled to " + wavReader.SampleRate + ".");
-        }
+        ///// <summary> OBSOLETE - SHOULD NEVER BE USED
+        ///// Reduces the signal sample rate by a factor of N if sample rate. 
+        ///// Requires the existing signal to be either 44100Hz or 88200 Hz.
+        ///// </summary>
+        //public void ReduceSampleRateByFactor(int factor)
+        //{
+        //    int sr = wavReader.SampleRate;
+        //    wavReader.SubSample(factor);
+        //    Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate=" + sr + " >>> Downsampled to " + wavReader.SampleRate + ".");
+        //}
 
-        /// <summary>
-        /// Reduces the signal sample rate by a factor of N if sample rate exceed passed threshold. 
-        /// Requires the existing signal to be either 44100Hz or 88200 Hz.
-        /// </summary>
-        public void ReduceSampleRateByFactor(int threshold, int factor)
-        {
-            int sr = wavReader.SampleRate;
-            if (sr > threshold)
-            {
-                wavReader.SubSample(factor);
-                Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate={1} >>> Downsampled to {2}.", sr, wavReader.SampleRate);
-                return;
-            }
-        }
+        ///// <summary> OBSOLETE - SHOULD NEVER BE USED
+        ///// Reduces the signal sample rate by a factor of N if sample rate exceed passed threshold. 
+        ///// Requires the existing signal to be either 44100Hz or 88200 Hz.
+        ///// </summary>
+        //public void ReduceSampleRateByFactor(int threshold, int factor)
+        //{
+        //    int sr = wavReader.SampleRate;
+        //    if (sr > threshold)
+        //    {
+        //        wavReader.SubSample(factor);
+        //        Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate={1} >>> Downsampled to {2}.", sr, wavReader.SampleRate);
+        //        return;
+        //    }
+        //}
 
-        public void Filter_IIR(string filterName)
-        {
-            DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
-            double[] output;
-            filter.ApplyIIRFilter(this.wavReader.Samples, out output);
-            //int channels = this.wavReader.Channels;
-            //int bitsPerSample = this.BitsPerSample;
-            //int sampleRate = this.SampleRate;
-            //WavReader wr = new WavReader(output, channels, bitsPerSample, sampleRate);
-            //var ar = new AudioRecording(wr);
-            this.wavReader.Samples = output;
-        }
+        //public void Filter_IIR(string filterName)
+        //{
+        //    DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
+        //    double[] output;
+        //    filter.ApplyIIRFilter(this.wavReader.Samples, out output);
+        //    //int channels = this.wavReader.Channels;
+        //    //int bitsPerSample = this.BitsPerSample;
+        //    //int sampleRate = this.SampleRate;
+        //    //WavReader wr = new WavReader(output, channels, bitsPerSample, sampleRate);
+        //    //var ar = new AudioRecording(wr);
+        //    this.wavReader.Samples = output;
+        //}
 
         static public AudioRecording Filter_IIR(AudioRecording audio, string filterName)
         {
@@ -320,33 +320,33 @@
             return bmp;
         }
 
-        public AudioRecording ExportSignal(double startTime, double endTime)
-        {
-            Log.WriteLine("AudioRecording.Extract()");
-            int startIndex = (int)(startTime * this.SampleRate);
-            int endIndex   = (int)(endTime   * this.SampleRate);
-            Log.WriteLine("start=" + startTime.ToString("F1") + "s = " + startIndex);
-            Log.WriteLine("end  =" + endTime.ToString("F1") + "s = " + endIndex);
-            int sampleCount = endIndex - startIndex + 1;
-            double[] signal = new double[sampleCount];
-            //must multiply signal in [-1,+1] to signal in signed 16 bit integer range ie multiply by 2^15
-            for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 32768; //65536
-            //for (int i = 0; i < 100; i++) LoggedConsole.WriteLine(signal[i]); //debug check for integers
-            int channels = 1;
-            WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SampleRate);
-            var ar = new AudioRecording(wav);
-            return ar;
-        }
+        //public AudioRecording ExportSignal(double startTime, double endTime)
+        //{
+        //    Log.WriteLine("AudioRecording.Extract()");
+        //    int startIndex = (int)(startTime * this.SampleRate);
+        //    int endIndex   = (int)(endTime   * this.SampleRate);
+        //    Log.WriteLine("start=" + startTime.ToString("F1") + "s = " + startIndex);
+        //    Log.WriteLine("end  =" + endTime.ToString("F1") + "s = " + endIndex);
+        //    int sampleCount = endIndex - startIndex + 1;
+        //    double[] signal = new double[sampleCount];
+        //    //must multiply signal in [-1,+1] to signal in signed 16 bit integer range ie multiply by 2^15
+        //    for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 32768; //65536
+        //    //for (int i = 0; i < 100; i++) LoggedConsole.WriteLine(signal[i]); //debug check for integers
+        //    int channels = 1;
+        //    WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SampleRate);
+        //    var ar = new AudioRecording(wav);
+        //    return ar;
+        //}
 
-        public void Save(string path)
-        {
-            // int sampleRate = 22050;
-            //double duration = 30.245; //sig duration in seconds
-            //int[] harmonics = { 500, 1000, 2000, 4000 };
-            //double[] signal2 = DSP.GetSignal(sampleRate, duration, harmonics);
-            //WavWriter.WriteWavFile(signal2, sampleRate, path);
-            WavWriter.Write16bitWavFile(this.wavReader.Samples, this.SampleRate, path);
-        }
+        //public void Save(string path)
+        //{
+        //    // int sampleRate = 22050;
+        //    //double duration = 30.245; //sig duration in seconds
+        //    //int[] harmonics = { 500, 1000, 2000, 4000 };
+        //    //double[] signal2 = DSP.GetSignal(sampleRate, duration, harmonics);
+        //    //WavWriter.WriteWavFile(signal2, sampleRate, path);
+        //    WavWriter.Write16bitWavFile(this.wavReader.Samples, this.SampleRate, path);
+        //}
 
 
         #region IDisposable Members
@@ -372,28 +372,28 @@
         /// <param name="recordingPath"></param>
         /// <param name="resampleRate"></param>
         /// <returns></returns>
-        public static AudioRecording GetAudioRecording(string recordingPath, int resampleRate)
-        {
-            //OLD CODE
-            //AudioRecording recording = new AudioRecording(recordingPath);
-            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
-            //MORE OLD CODE
-            //AudioRecording recording = new AudioRecording(recordingPath);
-            //string filterName = "Chebyshev_Lowpass_5000";
-            //recording.Filter_IIR(filterName); //filter audio recording.
-            //recording.ReduceSampleRateByFactor(2);
+        //public static AudioRecording GetAudioRecording(string recordingPath, int resampleRate)
+        //{
+        //    //OLD CODE
+        //    //AudioRecording recording = new AudioRecording(recordingPath);
+        //    //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+        //    //MORE OLD CODE
+        //    //AudioRecording recording = new AudioRecording(recordingPath);
+        //    //string filterName = "Chebyshev_Lowpass_5000";
+        //    //recording.Filter_IIR(filterName); //filter audio recording.
+        //    //recording.ReduceSampleRateByFactor(2);
 
 
 
-            AudioRecording recording = new AudioRecording(recordingPath);
+        //    AudioRecording recording = new AudioRecording(recordingPath);
 
-            // WRITE FILTERED SIGNAL IF NEED TO DEBUG
-            //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
-            //int bitRate = 16;
-            //WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav"); 
+        //    // WRITE FILTERED SIGNAL IF NEED TO DEBUG
+        //    //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
+        //    //int bitRate = 16;
+        //    //WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav"); 
 
-            return recording;
-        }
+        //    return recording;
+        //}
 
         /// <summary>
         /// TODO - this is long winded way to get file. Need to talk to Mark.
