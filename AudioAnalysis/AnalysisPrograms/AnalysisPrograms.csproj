@@ -309,7 +309,7 @@
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SPR.cs" />
+    <Compile Include="SPR_OBSOLETE.cs" />
     <Compile Include="Spt.cs" />
     <Compile Include="XiesAnalysis.cs" />
   </ItemGroup>

@@ -165,7 +165,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             Log.WriteLine("# Extract spectrogram and cepstrogram from from file: " + Path.GetFileName(path));
             AudioRecording recording = new AudioRecording(path);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            // if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             var tuple = GetAllSonograms(recording, sonoConfig, minHz, maxHz);
             return tuple;
         }
@@ -181,7 +181,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <returns></returns>
         public static System.Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(AudioRecording recording, SonogramConfig sonoConfig, int minHz, int maxHz)
         {
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
             bool doMelScale = sonoConfig.DoMelScale;
             int ccCount = sonoConfig.mfccConfig.CcCount;
