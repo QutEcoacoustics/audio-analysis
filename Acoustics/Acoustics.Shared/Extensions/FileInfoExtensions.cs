@@ -75,4 +75,22 @@ namespace System
             return new DirectoryInfo(str);
         }
     }
+
+    public class FileInfoNameComparer : IComparer<FileInfo>, IEqualityComparer<FileInfo>
+    {
+        public int Compare(FileInfo x, FileInfo y)
+        {
+            return string.Compare(x.FullName, y.FullName, StringComparison.Ordinal);
+        }
+
+        public bool Equals(FileInfo x, FileInfo y)
+        {
+            return this.Compare(x, y) == 0;
+        }
+
+        public int GetHashCode(FileInfo obj)
+        {
+            return obj.FullName.GetHashCode();
+        }
+    }
 }
