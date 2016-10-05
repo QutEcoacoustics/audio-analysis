@@ -83,11 +83,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LewiniaPectoralis.yml";
             //string outputPath     = @"C:\SensorNetworks\Output\LewinsRail\";
             // LEWIN'S RAIL TEST
-            string recordingPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\BAC2_20071008-085040.wav";
-            string configPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\Towsey.LewiniaPectoralis.yml";
-            string outputPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\";
+            //string recordingPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\BAC2_20071008-085040.wav";
+            //string configPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\Towsey.LewiniaPectoralis.yml";
+            //string outputPath = @"E:\SensorNetworks\SoftwareTests\Test_LewinsRail\";
 
-            // Limnodynastes convex.
+            // Limnodynastes convex
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\LimnoConvex";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LimnodynastesConvex.yml";
@@ -112,6 +112,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Canetoad.yml";
 
+            // Platyplectrum ornatum
+            string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\PlatyplectrumSp\p_ornatum_bickerton_island_1013_255599_20140213_214500_30_0.wav";
+            string outputPath = @"E:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.PlatyplectrumOrnatum.yml";
+
             // Litoria rothii.
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\49 Litoria rothii.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\69 Litoria rothii.mp3";
@@ -123,6 +128,12 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\50 Litoria rubella.mp3";
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRubella.yml";
+
+            // Uperoleia inundata
+            //string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\UperoleiaSp\u_inundata_bickerton_island_1013_255713_20140112_212900_30_0.wav";
+            //string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\UperoleiaSp\u_inundata_bickerton_island_1013_255713_20140112_213030_30_0.wav";
+            //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.UperoleiaInundata.yml";
+            //string outputPath    = @"E:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October";
 
             // Uperoleia mimula
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\23 Uperoleia mimula.mp3";
