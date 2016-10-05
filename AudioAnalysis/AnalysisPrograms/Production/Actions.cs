@@ -307,12 +307,12 @@ namespace AnalysisPrograms.Production
             return SPT.Execute;
         }
 
-        [ArgDescription("Calls SPR.Execute():  spr = Syntactic Pattern Recognition. Probably not useful anymore.")]
-        public SPR.Arguments SprArgs { get; set; }
-        public static Action<SPR.Arguments> Spr()
+        [ArgDescription("Calls SPR.Execute():  spr = Syntactic Pattern Recognition. OBSOLETE.")]
+        public SPR_OBSOLETE.Arguments SprArgs { get; set; }
+        public static Action<SPR_OBSOLETE.Arguments> Spr()
         {
             // syntactic pattern recognition
-            return AnalysisPrograms.SPR.Execute;
+            return AnalysisPrograms.SPR_OBSOLETE.Execute;
         }
 
         [ArgDescription("Calls FeltAnalysis.Dev(): Xueyan's work area.")]

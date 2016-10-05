@@ -17,7 +17,7 @@ namespace AnalysisPrograms
     /// <summary>
     /// Implements a simple form of Syntactic Pattern Recognition to find defined bird calls in spectra.
     /// </summary>
-    public class SPR  //Syntactic Pattern Recognition
+    public class SPR_OBSOLETE  //Syntactic Pattern Recognition
     {
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_CALL_NAME       = "CALL_NAME";
@@ -108,7 +108,7 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = null;
             using (var recording = new AudioRecording(destinationAudioFile.FullName))
             {
-                if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // down sample if necessary
+                // if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
 
                 var sonoConfig = new SonogramConfig
                 {

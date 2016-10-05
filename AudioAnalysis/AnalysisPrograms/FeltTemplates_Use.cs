@@ -101,7 +101,7 @@ namespace AnalysisPrograms
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(arguments.Source.FullName);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
 
             //ii: MAKE SONOGRAM
