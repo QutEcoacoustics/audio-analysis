@@ -461,7 +461,7 @@ namespace AudioAnalysisTools.Indices
                 }
 
                 var list = new List<string>();
-                FileInfo[] files = dir.GetFiles(pattern, SearchOption.AllDirectories);
+                FileInfo[] files = dir.GetFiles(pattern, SearchOption.TopDirectoryOnly);
                 fileList.AddRange(files);
             }
 

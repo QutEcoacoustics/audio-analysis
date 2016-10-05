@@ -2,12 +2,10 @@
 // <copyright file="DrawLongDurationSpectrograms.cs" company="QutBioacoustics">
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
-
 // <summary>
 // Defines the ConcatenateIndexFiles type.
 //
 // Action code for this activity = "concatenateIndexFiles"
-
 /// Activity Codes for other tasks to do with spectrograms and audio files:
 /// 
 /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
@@ -23,6 +21,8 @@
 /// createfoursonograms 
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+using Acoustics.Shared.Csv;
 
 namespace AnalysisPrograms
 {
@@ -59,6 +59,9 @@ namespace AnalysisPrograms
             [ArgDescription("One or more directories where the original csv files are located.")]
             public DirectoryInfo[] InputDataDirectories { get; set; }
 
+            [ArgDescription("One directory where the original csv files are located. This option exists as well as a hack to get around commas in paths conflicting with PowerArgs' array parsing feature.")]
+            public DirectoryInfo InputDataDirectory { get; set; }
+
             [ArgDescription("Directory where the output is to go.")]
             public DirectoryInfo OutputDirectory { get; set; }
 
@@ -83,7 +86,7 @@ namespace AnalysisPrograms
             }
 
             [ArgDescription("Draw false-colour spectrograms after concatenating index files")]
-            internal bool DrawImages { get; set; }
+            internal bool DrawImages { get; set; } = true;
 
             [ArgDescription("User specified file containing a list of indices and their properties.")]
             [Production.ArgExistingFile(Extension = ".yml")]
@@ -97,12 +100,8 @@ namespace AnalysisPrograms
             [Production.ArgExistingFile(Extension = ".csv")]
             public FileInfo SunRiseDataFile { get; set; }
 
-            private bool concatenateEverythingYouCanLayYourHandsOn = false;
             [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
-            public bool ConcatenateEverythingYouCanLayYourHandsOn {
-                get { return concatenateEverythingYouCanLayYourHandsOn; }
-                set { concatenateEverythingYouCanLayYourHandsOn = value; }
-            }
+            public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; } = false;
 
             [ArgDescription("Default = false. For use by software manager only.")]
             internal bool DoTest { get; set; }
@@ -331,7 +330,7 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
-            string analysisType = "Towsey.Acoustics";
+            string analysisType = "Towsey.Acoustic";
 
             // deal with verbosity
             bool verbose = false; // default
@@ -342,6 +341,12 @@ namespace AnalysisPrograms
             }
             verbose = arguments.Verbose;
             IndexMatrices.Verbose = verbose;
+
+            if (arguments.InputDataDirectory != null)
+            {
+                arguments.InputDataDirectories =
+                    (arguments.InputDataDirectories ?? new DirectoryInfo[0]).Concat(new[] {arguments.InputDataDirectory}).ToArray();
+            }
 
 
             //Log.Warn("DrawImages option hard coded to be on in this version");
@@ -390,11 +395,8 @@ namespace AnalysisPrograms
             // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES.
             string pattern = "*_Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
-            if (verbose)
-            {
-                LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
-                LoggedConsole.WriteLine("# IndexFiles.csv Count = " + csvFiles.Length);
-            }
+            LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
+            LoggedConsole.WriteLine("# IndexFiles.csv Count = " + csvFiles.Length);
 
             if (csvFiles.Length == 0)
             {
@@ -422,7 +424,8 @@ namespace AnalysisPrograms
                 //endDate = DateTimeOffset.UtcNow;
             }
 
-            TimeSpan totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
+            var dateTimeOffset = (DateTimeOffset)startDate;
+            TimeSpan totalTimespan = (DateTimeOffset)endDate - dateTimeOffset;
             int dayCount = totalTimespan.Days + 1; // assume last day has full 24 hours of recording available.
 
             if (verbose)
@@ -504,7 +507,7 @@ namespace AnalysisPrograms
             DirectoryInfo resultsDir = null;
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
-                string dateString = String.Format("{0}{1:D2}{2:D2}", ((DateTimeOffset)startDate).Year, ((DateTimeOffset)startDate).Month, ((DateTimeOffset)startDate).Day);
+                string dateString = string.Format("{0}{1:D2}{2:D2}", dateTimeOffset.Year, dateTimeOffset.Month, dateTimeOffset.Day);
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
@@ -561,8 +564,9 @@ namespace AnalysisPrograms
                             ImageChrome.With);
                 }
 
+                WriteSpectrumIndicesFiles(resultsDir, opFileStem, analysisType, dictionaryOfSpectralIndices1);
 
-                if(arguments.DoTest)
+                if (arguments.DoTest)
                 {
                     // THis is test 1.
                     var expectedTestFile1 = new FileInfo(Path.Combine(arguments.TestDirectory.FullName, "Concat_Test1__SummaryIndexStatistics.EXPECTED.json"));
@@ -578,6 +582,7 @@ namespace AnalysisPrograms
                     TestTools.FileEqualityTest(testName2, trialFile2, expectedTestFile2);
                 }
 
+                Log.Success("Complete ConcatenateEverythingYouCanLayYourHandsOn");
                 return;
             } // ConcatenateEverythingYouCanLayYourHandsOn
 
@@ -594,7 +599,7 @@ namespace AnalysisPrograms
             // loop over days
             for (int d = 0; d < dayCount; d++)
             {
-                var thisday = ((DateTimeOffset)startDate).AddDays(d);
+                var thisday = dateTimeOffset.AddDays(d);
                 LoggedConsole.WriteLine(String.Format("\n\n\nCONCATENATING DAY {0} of {1}:   {2}", (d + 1), dayCount, thisday.ToString()));
 
                 FileInfo[] indexFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
@@ -682,6 +687,8 @@ namespace AnalysisPrograms
                             ImageChrome.With);
                 }
 
+                WriteSpectrumIndicesFiles(subDirectories[0], opFileStem1, analysisType, dictionaryOfSpectralIndices2);
+
             } // over days
 
             if (arguments.DoTest)
@@ -702,7 +709,29 @@ namespace AnalysisPrograms
                 string testName2 = "test2";
                 TestTools.FileEqualityTest(testName2, trialFile2, expectedTestFile2);
             }
+
+            Log.Success("Complete");
         } // Execute()
+
+
+        public static List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, string identifier, Dictionary<string, double[,]> results)
+        {
+
+            Log.Info("Writing spectral indices");
+            
+            var spectralIndexFiles = new List<FileInfo>(results.Count);
+
+            foreach (var kvp in results)
+            {
+                // write spectrogram to disk as CSV file
+                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, identifier + "." + kvp.Key, "csv").ToFileInfo();
+                spectralIndexFiles.Add(filename);
+                Csv.WriteMatrixToCsv(filename, kvp.Value, TwoDimensionalArray.ColumnMajorFlipped);
+            }
+
+            Log.Debug("Finished writing spectral indices");
+            return spectralIndexFiles;
+        }
 
 
         /// <summary>
