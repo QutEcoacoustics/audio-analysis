@@ -108,7 +108,7 @@
 
             using (var audiorecording = new AudioRecording(bytes))
             {
-                audiorecording.ConvertSampleRate22kHz();
+                // audiorecording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
                 if (audiorecording.SampleRate != 22050)
                 {
                     var msg = string.Format(

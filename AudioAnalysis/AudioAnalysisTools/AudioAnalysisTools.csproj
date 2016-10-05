@@ -289,7 +289,7 @@
     <Compile Include="Indices\IndexDisplay.cs" />
     <Compile Include="FindMatchingEvents.cs" />
     <Compile Include="HarmonicAnalysis.cs" />
-    <Compile Include="DSP\AudioSegmentation.cs" />
+    <Compile Include="DSP\AudioSegmentationOBSOLETE.cs" />
     <Compile Include="AnalysisKeys.cs" />
     <Compile Include="LongDurationSpectrograms\ZoomFocusedSpectrograms.cs" />
     <Compile Include="Oscillations2014.cs" />
