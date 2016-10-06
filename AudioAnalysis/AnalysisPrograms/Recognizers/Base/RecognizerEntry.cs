@@ -68,6 +68,10 @@ namespace AnalysisPrograms.Recognizers.Base
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
 
+            //Crinia tinnula
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\Crinia\CriniaTinnula.wav";
+            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016October";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Stark.CriniaTinnula.yml";
 
             // Cyclorana novaehollandiae
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\28 Cyclorana novaehollandiae.mp3";
