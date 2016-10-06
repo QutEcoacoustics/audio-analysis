@@ -415,19 +415,19 @@ namespace AnalysisPrograms.Production
         }
 
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
-        public FrogRibit.Arguments FrogRibitArgs { get; set; }
-        public static Action<FrogRibit.Arguments> FrogRibit()
+        public FrogRibit_OBSOLETE.Arguments FrogRibitArgs { get; set; }
+        public static Action<FrogRibit_OBSOLETE.Arguments> FrogRibit()
         {
             // frog calls
-            return AnalysisPrograms.FrogRibit.Dev;
+            return AnalysisPrograms.FrogRibit_OBSOLETE.Dev;
         }
 
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
-        public Frogs.Arguments FrogArgs { get; set; }
-        public static Action<Frogs.Arguments> Frog()
+        public Frogs_OBSOLETE.Arguments FrogArgs { get; set; }
+        public static Action<Frogs_OBSOLETE.Arguments> Frog()
         {
             // IAnalyser - detects Gastric Brooding Frog
-            return Frogs.Dev;
+            return Frogs_OBSOLETE.Dev;
         }
 
         [ArgDescription("DEPRACATED:  All frog recognizers should now enter through EventRecognizer.Execute() or Multirecognizer.Execute().")]
