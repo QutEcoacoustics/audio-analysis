@@ -85,7 +85,6 @@ namespace AudioAnalysisTools.Indices
             }
 
             // now loop through the files again to extact the indices
-            int partialMinutes = 0;
             for (int i = 0; i < files.Length; i++)
             {
                 if (!files[i].Exists)
@@ -103,6 +102,7 @@ namespace AudioAnalysisTools.Indices
 
                 //track the elapsed minutes
                 // calculate the partial elapsed time indexed by file names.
+                var partialMinutes = 0;
                 if (i < files.Length - 1)
                 {
                     TimeSpan partialElapsedTime = dtoArray[i + 1] - dtoArray[i];
@@ -299,10 +299,8 @@ namespace AudioAnalysisTools.Indices
         public static List<double[,]> ConcatenateSpectralIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
-            DateTimeOffset startDTO;
             DateTimeOffset[] dtoArray = new DateTimeOffset[files.Length];
             var matrices = new List<double[,]>();
-            int totalRowCount = 0;
 
             // accumulate the start times for each of the files
             for (int f = 0; f < files.Length; f++)
@@ -317,20 +315,21 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                if (!FileDateHelpers.FileNameContainsDateTime(files[f].Name, out startDTO, offsetHint))
+                DateTimeOffset startDto;
+                if (!FileDateHelpers.FileNameContainsDateTime(files[f].Name, out startDto, offsetHint))
                 {
                     LoggedConsole.WriteWarnLine("WARNING from IndexMatrices.ConcatenateSpectralIndexFilesWithTimeCheck(" + files[f].Name + ") ");
                     LoggedConsole.WriteWarnLine("  File name <{0}> does not contain a valid DateTime = {0}", files[f].Name);
                 }
 
-                dtoArray[f] = startDTO;
+                dtoArray[f] = startDto;
             }
 
             string fileName = files[0].Name;
             string fileExt = fileName.Substring(fileName.Length - 7);
 
             // now loop through the files again to extract the indices
-            int partialMinutes = 0;
+            int totalRowCount = 0;
             for (int i = 0; i < files.Length; i++)
             {
                 if (!files[i].Exists)
@@ -349,6 +348,7 @@ namespace AudioAnalysisTools.Indices
 
                 //track the elapsed minutes
                 // calculate the partial elapsed time indexed by file names.
+                var partialMinutes = 0;
                 if (i < files.Length - 1)
                 {
                     TimeSpan partialElapsedTime = dtoArray[i + 1] - dtoArray[i];
@@ -404,11 +404,9 @@ namespace AudioAnalysisTools.Indices
         }
 
 
-
         /// <summary>
         /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
         /// </summary>
-        /// <param name="summaryIndices"></param>
         /// <returns></returns>
         public static Dictionary<string, double[,]> GetMatrixOfSpectralIndices(List<AnalysisBase.ResultBases.SpectralIndexBase> spectralIndices)
         {
@@ -444,12 +442,12 @@ namespace AudioAnalysisTools.Indices
         /// Returns a sorted list of file paths, sorted on file name.
         /// IMPORTANT: Sorts on alphanumerics, NOT on date or time encoded in the file name. 
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="directories"></param>
         /// <param name="pattern"></param>
         /// <returns></returns>
         public static FileInfo[] GetFilesInDirectories(DirectoryInfo[] directories, string pattern)
         {
-            List<FileInfo> fileList = new List<FileInfo>();
+            var fileList = new List<FileInfo>();
 
             foreach (DirectoryInfo dir in directories)
             {
@@ -481,9 +479,8 @@ namespace AudioAnalysisTools.Indices
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
             var list = new List<double[,]>();
-            int freqBinCount;
             int[] matrixRowCounts = new int[paths.Length];
-            DateTimeOffset[] startDTO = new DateTimeOffset[paths.Length];
+            DateTimeOffset[] startDto = new DateTimeOffset[paths.Length];
 
             // cycle through the files
             for (int i = 0; i < paths.Length; i++)
@@ -491,6 +488,7 @@ namespace AudioAnalysisTools.Indices
                 FileInfo file = paths[i];
                 if (file.Exists)
                 {
+                    int freqBinCount;
                     double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
                     list.Add(matrix);
                     matrixRowCounts[i] = matrix.GetLength(0);
@@ -502,12 +500,12 @@ namespace AudioAnalysisTools.Indices
                         LoggedConsole.WriteLine("  You should not call this method. Instead try method GetSpectralIndexFilesAndConcatenate()");
                         LoggedConsole.WriteLine("                 which does not require valid DateTime to be in file name.");
                     }
-                    startDTO[i] = dto;
+                    startDto[i] = dto;
                 }
                 else
                 {
                     LoggedConsole.WriteLine("SERIOUS WARNING: from IndexMatrices.ReadAndConcatenateSpectrogramCSVFilesWithTimeCheck(" + file.Extension + ") ");
-                    string str = String.Format("   MISSING CSV FILE: {0}", file.FullName);
+                    string str = $"   MISSING CSV FILE: {file.FullName}";
                     LoggedConsole.WriteLine(str);
                 }
             }
@@ -518,7 +516,7 @@ namespace AudioAnalysisTools.Indices
             for (int i = 0; i < paths.Length-1; i++)
             {
                 // now calculate elapsed time from the file name TimeStamps
-                TimeSpan partialElapsedTime = startDTO[i+1] - startDTO[i];
+                TimeSpan partialElapsedTime = startDto[i+1] - startDto[i];
                 int partialTimeSpanMinutes = (int)Math.Round(partialElapsedTime.TotalMinutes);
                 //int partialTimeSpanMinutes = (int)Math.Ceiling(partialElapsedTime.TotalMinutes);
 
@@ -591,7 +589,7 @@ namespace AudioAnalysisTools.Indices
         {
             double[] nullArray = new double[countToAdd];
             for (int i = 0; i < countToAdd; i++)
-                nullArray[i] = Double.NaN;
+                nullArray[i] = double.NaN;
 
             string[] keys = dict.Keys.ToArray();
             foreach(string key in keys)
@@ -655,7 +653,12 @@ namespace AudioAnalysisTools.Indices
 
 
 
-
+        /// <summary>
+        /// DO NOT DELETE THIS METHOD DESPITE NO REFERENCES
+        /// It can be useful in future.
+        /// </summary>
+        /// <param name="summaryIndices"></param>
+        /// <returns></returns>
         public static Dictionary<string, double[]> AddDerivedIndices(Dictionary<string, double[]> summaryIndices)
         {
             // insert some transformed data columns
@@ -682,14 +685,14 @@ namespace AudioAnalysisTools.Indices
 
 
 
-public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
-        {
-            Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvPath.FullName);
+        //public static double[,] ReadSummaryIndicesFromFile(FileInfo csvPath)
+        //{
+        //    Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvPath.FullName);
 
-            double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
-            // matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1);
-            return matrix;
-        }
+        //    double[,] matrix = CsvTools.ReadCSVFile2Matrix(csvPath.FullName);
+        //    // matrix = MatrixTools.Submatrix(matrix, 0, 1, matrix.GetLength(0) - 1, matrix.GetLength(1) - 1);
+        //    return matrix;
+        //}
 
 
         /// <summary>

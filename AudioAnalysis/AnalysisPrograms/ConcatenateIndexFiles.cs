@@ -6,19 +6,19 @@
 // Defines the ConcatenateIndexFiles type.
 //
 // Action code for this activity = "concatenateIndexFiles"
-/// Activity Codes for other tasks to do with spectrograms and audio files:
-/// 
-/// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
-/// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
-/// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
-/// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-/// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
-/// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
-///
-/// audiofilecheck - Writes information about audio files to a csv file.
-/// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
-/// audiocutter - Cuts audio into segments of desired length and format
-/// createfoursonograms 
+// Activity Codes for other tasks to do with spectrograms and audio files:
+// 
+// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
+// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
+// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
+//
+// audiofilecheck - Writes information about audio files to a csv file.
+// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
+// audiocutter - Cuts audio into segments of desired length and format
+// createfoursonograms 
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -77,13 +77,8 @@ namespace AnalysisPrograms
             [ArgDescription("DateTimeOffset at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? EndDate { get; set; }
 
-            private TimeSpan? timeSpanOffsetHint = null;
-
             [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
-            public TimeSpan? TimeSpanOffsetHint {
-                get { return timeSpanOffsetHint; }
-                set { timeSpanOffsetHint = value; }
-            }
+            public TimeSpan? TimeSpanOffsetHint { get; set; } = null;
 
             [ArgDescription("Draw false-colour spectrograms after concatenating index files")]
             internal bool DrawImages { get; set; } = true;
@@ -118,8 +113,8 @@ namespace AnalysisPrograms
         public static Arguments Dev()
         {
             // set the default values here
-            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-            TimeSpan timeSpanOffsetHint = TimeSpan.FromHours(10); // Brisbane time
+            var indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+            var timeSpanOffsetHint = TimeSpan.FromHours(10); // Brisbane time
             bool drawImages = true;
             bool doTest = false;
 
@@ -432,7 +427,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours", totalTimespan.TotalHours));
+                LoggedConsole.WriteLine(string.Format("# Elapsed time = {0:f1} hours", totalTimespan.TotalHours));
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
 
                 if ((arguments.SunRiseDataFile != null) && (arguments.SunRiseDataFile.Exists))
@@ -456,10 +451,12 @@ namespace AnalysisPrograms
             // The following location data is used only to draw the sunrise/sunset tracks on images.
             double? latitude = null;
             double? longitude = null;
-            var siteDescription = new SiteDescription();
-            siteDescription.SiteName = arguments.FileStemName;
-            siteDescription.Latitude = latitude;
-            siteDescription.Longitude = longitude;
+            var siteDescription = new SiteDescription
+            {
+                SiteName = arguments.FileStemName,
+                Latitude = latitude,
+                Longitude = longitude
+            };
 
             // the following are required if drawing the index images
             IndexGenerationData indexGenerationData = null;
@@ -592,7 +589,7 @@ namespace AnalysisPrograms
 
 
             // ############################# CONCATENATE in 24 hour BLOCKS of DATA  ### ConcatenateEverythingYouCanLayYourHandsOn = false
-            LoggedConsole.WriteLine(String.Format("# Elapsed time = {0:f1} hours or {1} days", totalTimespan.TotalHours, dayCount));
+            LoggedConsole.WriteLine($"# Elapsed time = {totalTimespan.TotalHours:f1} hours or {dayCount} days");
             LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
             LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
 
@@ -600,7 +597,7 @@ namespace AnalysisPrograms
             for (int d = 0; d < dayCount; d++)
             {
                 var thisday = dateTimeOffset.AddDays(d);
-                LoggedConsole.WriteLine(String.Format("\n\n\nCONCATENATING DAY {0} of {1}:   {2}", (d + 1), dayCount, thisday.ToString()));
+                LoggedConsole.WriteLine(string.Format("\n\n\nCONCATENATING DAY {0} of {1}:   {2}", (d + 1), dayCount, thisday.ToString()));
 
                 FileInfo[] indexFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
                 if (indexFiles.Length == 0)
@@ -612,11 +609,11 @@ namespace AnalysisPrograms
                 }
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
-                string dateString = String.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
+                string dateString = string.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
-                string opFileStem1 = String.Format("{0}_{1}", arguments.FileStemName, dateString);
+                var opFileStem1 = $"{arguments.FileStemName}_{dateString}";
                 //var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem1, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
 
                 // CONCATENATE the SUMMARY INDEX FILES
@@ -694,7 +691,7 @@ namespace AnalysisPrograms
             if (arguments.DoTest)
             {
                 var dto = (DateTimeOffset)arguments.StartDate;
-                string date = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
+                var date = $"{dto.Year}{dto.Month:D2}{dto.Day:D2}";
                 var fileName = arguments.FileStemName + "_" + date;
                 // THis is test 2.
                 var expectedTestFile1 = new FileInfo(Path.Combine(arguments.TestDirectory.FullName, "Concat_Test2__SummaryIndexStatistics.EXPECTED.json"));
@@ -783,13 +780,13 @@ namespace AnalysisPrograms
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
 
             // create left side day scale    
-            Font stringFont = new Font("Arial", 16);
+            var stringFont = new Font("Arial", 16);
             imageList = new List<Image>();
             for(int i = 0; i < imageCount; i++)
             {
                 image = new Bitmap(60, imageHt);
                 canvas = Graphics.FromImage(image);
-                string str = String.Format("{0}", i+1);
+                var str = string.Format("{0}", i+1);
                 canvas.DrawString(str, stringFont, Brushes.White, new PointF(3, 3));
 
                 imageList.Add(image);
@@ -797,9 +794,9 @@ namespace AnalysisPrograms
             }
 
             //create composite image
-            Bitmap compositeBmpYscale = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            var compositeBmpYscale = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             Bitmap[] finalImages = { compositeBmpYscale, compositeBmp, compositeBmpYscale };
-            Bitmap finalComposite = (Bitmap)ImageTools.CombineImagesInLine(finalImages);
+            var finalComposite = (Bitmap)ImageTools.CombineImagesInLine(finalImages);
 
             // add title bar
             var titleBmp = new Bitmap(finalComposite.Width, 30);
@@ -823,10 +820,9 @@ namespace AnalysisPrograms
         static void AddTidalInfo(Bitmap image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
         {
             Pen yellowPen = new Pen(Brushes.Yellow);
-            Pen CyanPen   = new Pen(Brushes.Lime, 2);
-            Pen WhitePen  = new Pen(Brushes.White, 2);
+            Pen cyanPen   = new Pen(Brushes.Lime, 2);
+            Pen whitePen  = new Pen(Brushes.White, 2);
             Graphics spgCanvas = Graphics.FromImage(image);
-            Pen thisPen = yellowPen;
 
             foreach (SunAndMoon.SunMoonTides smt in tidalInfo)
             {
@@ -836,9 +832,9 @@ namespace AnalysisPrograms
                     {
                         string key = kvp.Key;
                         DateTimeOffset dto2 = kvp.Value;
-                        thisPen = yellowPen;
-                        if (key == SunAndMoon.SunMoonTides.HIGHTIDE) thisPen = CyanPen;
-                        else if (key == SunAndMoon.SunMoonTides.LOWTIDE) thisPen = WhitePen;
+                        var thisPen = yellowPen;
+                        if (key == SunAndMoon.SunMoonTides.HIGHTIDE) thisPen = cyanPen;
+                        else if (key == SunAndMoon.SunMoonTides.LOWTIDE) thisPen = whitePen;
 
                         int minute = (int)Math.Round(dto2.TimeOfDay.TotalMinutes * 2); //IMPORTANT multiply by 2 because scale = 30s/px.
                         spgCanvas.DrawLine(thisPen, minute, 0, minute, image.Height);
