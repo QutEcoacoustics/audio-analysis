@@ -29,7 +29,7 @@ namespace AnalysisPrograms
 
     using AnalysisPrograms.Production;
 
-    public class Frogs : IAnalyser
+    public class Frogs_OBSOLETE : IAnalyser
     {
 
         public class Arguments : AnalyserArguments
@@ -200,11 +200,11 @@ namespace AnalysisPrograms
 
             if (tsDuration == TimeSpan.Zero)  // Process entire file
             {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = Frogs.ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = Frogs_OBSOLETE.ResampleRate }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
             else
             {
-                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = Frogs.ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
+                beforeAndAfterInfo = AudioFilePreparer.PrepareFile(fiSource, tempF, new AudioUtilityRequest { TargetSampleRate = Frogs_OBSOLETE.ResampleRate, OffsetStart = tsStart, OffsetEnd = tsStart.Add(tsDuration) }, analysisSettings.AnalysisBaseTempDirectoryChecked);
             }
 
             // Store source sample rate - may need during the analysis if have upsampled the source.
@@ -212,7 +212,7 @@ namespace AnalysisPrograms
 
             // DO THE ANALYSIS
             // #############################################################################################################################################
-            IAnalyser analyser = new Frogs();
+            IAnalyser analyser = new Frogs_OBSOLETE();
             AnalysisResult result = analyser.Analyse(analysisSettings);
             DataTable dt = result.Data;
             if (dt == null) { throw new InvalidOperationException("Data table of results is null"); }
