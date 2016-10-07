@@ -12,12 +12,9 @@ namespace AnalysisPrograms.Recognizers
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
-    using System.Text;
 
     using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -102,8 +99,8 @@ namespace AnalysisPrograms.Recognizers
             double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
 
             // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            var speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
 
 
@@ -195,7 +192,7 @@ namespace AnalysisPrograms.Recognizers
             int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
-            int bandwidth = dominantBinMax - dominantBinMin + 1;
+            // int bandwidth = dominantBinMax - dominantBinMin + 1;
 
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
             double[] scores = new double[rowCount]; // predefinition of score array
@@ -277,11 +274,14 @@ namespace AnalysisPrograms.Recognizers
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent);
-                newEvent.DominantFreq = avDominantFreq;
-                newEvent.Score = eventScore;
+                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                {
+                    DominantFreq = avDominantFreq,
+                    Score = eventScore,
+                    // remove name because it hides spectral content in display of the event.
+                    Name = ""
+                };
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
-                newEvent.Name = ""; // remove name because it hides spectral content of the event.
 
                 potentialEvents.Add(newEvent);
 

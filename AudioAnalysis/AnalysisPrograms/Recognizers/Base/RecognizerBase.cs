@@ -125,10 +125,10 @@ namespace AnalysisPrograms.Recognizers.Base
             if (analysisSettings.ImageFile != null)
             {
                 string imagePath = analysisSettings.ImageFile.FullName;
-                const double EventThreshold = 0.1;
+                const double eventThreshold = 0.1;
                 var plots = results.Plots ?? new List<Plot>();
 
-                Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, EventThreshold);
+                Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, eventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = analysisSettings.ImageFile;
 
@@ -191,7 +191,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 // 1: DRAW the coloured ridge spectrograms 
 
                 // passed null for first argument on purpose: we don't want to read files off disk
-                Image ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(null, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
+                var ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(null, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
                 //var opImages = new List<Image>();
                 //opImages.Add(ridgeSpectrogram);
                 //opImages.Add(scoreTrackImage);
@@ -204,7 +204,7 @@ namespace AnalysisPrograms.Recognizers.Base
             } // if (saveRidgeSpectrograms)
 
             // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
-            Image opImage = null;
+            Image opImage;
             bool saveGrayScaleSpectrograms = (bool?)highResolutionConfiguration["SaveGrayScaleSpectrograms"] ?? false;
             if (saveGrayScaleSpectrograms)
             {
@@ -218,9 +218,7 @@ namespace AnalysisPrograms.Recognizers.Base
             if (saveTwoMapsSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
-                var opImages = new List<Image>();
-                opImages.Add(opImage);
-                opImages.Add(scoreTrack);
+                var opImages = new List<Image> {opImage, scoreTrack};
                 opImage = ImageTools.CombineImagesVertically(opImages);
                 var fileName = FilenameHelpers.AnalysisResultName(ldfcSpectrogramArguments.OutputDirectory, fileStem, "TwoMaps", ".png");
                 opImage.Save(fileName);
@@ -234,7 +232,6 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="analysisResults"></param>
         /// <param name="indexResults"></param>
         /// <param name="highResolutionParsedConfiguration"></param>
-        /// <param name="highResolutionConfig"></param>
         private void SummarizeHighResolutionIndices(
             AnalysisResult2 analysisResults, 
             IndexCalculateResult[] indexResults, 
@@ -258,8 +255,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             // Place LOW RESOLUTION SPECTRAL INDICES INTO analysisResults before returning. 
-            int windowLength = (int?)highResolutionConfig[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
-            int spectrumLength = windowLength / 2;
+            //int windowLength = (int?)highResolutionConfig[AnalysisKeys.FrameLength] ?? IndexCalculate.DefaultWindowSize;
             var indexProperties = IndexProperties.GetIndexProperties(highResolutionParsedConfiguration.IndexPropertiesFile);
             SpectralIndexValues.CheckExistenceOfSpectralIndexValues(indexProperties);
 
@@ -277,7 +273,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             //TODO TODO TODO
             // ALSO NEED TO COMPRESS THE analysisResults.SummaryIndices To LOW RESOLUTION
-            var summaryIndexValues = new SummaryIndexValues();
+            //var summaryIndexValues = new SummaryIndexValues();
             //summaryIndexValues.BackgroundNoise = ETC;
             // ETC
             //var summaryiv = new SummaryIndexValues[1];
@@ -326,9 +322,9 @@ namespace AnalysisPrograms.Recognizers.Base
             List<AcousticEvent> predictedEvents,
             double eventThreshold)
         {
-            const bool DoHighlightSubband = false;
-            const bool Add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(DoHighlightSubband, Add1KHzLines));
+            const bool doHighlightSubband = false;
+            const bool add1KHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
 
             ////System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             ////img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
