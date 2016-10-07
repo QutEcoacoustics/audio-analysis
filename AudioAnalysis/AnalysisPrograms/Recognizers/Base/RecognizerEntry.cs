@@ -13,27 +13,15 @@
 namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
-    using System.Text;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.Csv;
     using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
-
     using AnalysisBase;
 
     using AnalysisPrograms.Production;
-
-    using AnalysisRunner;
-
     using AudioAnalysisTools;
-    using AudioAnalysisTools.WavTools;
-
     using log4net;
 
     public class RecognizerEntry
