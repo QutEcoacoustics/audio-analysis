@@ -24,9 +24,9 @@ DominantFrequency: 1850
 # MinHz: 850 
 
 # Decibel threshold for the dominant peak: Use this to require a minimum decibel SNR value for a valid call.
-PeakThreshold: 10.0
-# Event threshold - use this to determine FP / FN trade-off for events. CosineSimilarity to template in 0,1.
-EventThreshold: 0.6
+EventDecibelThreshold: 21.0
+# Threshold Cosine-similarity to a in-line call template: use this to determine FP / FN trade-off for events.
+EventSimilarityThreshold: 0.5
 
 ################################################################################
 SaveIntermediateWavFiles: false

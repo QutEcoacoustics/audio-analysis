@@ -148,13 +148,13 @@ namespace AnalysisPrograms.Recognizers
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
             // The threshold dB amplitude in the dominant freq bin required to yield an event 
-            double eventThresholdDb = 10.0;
+            double eventDecibelThreshold = (double?)configuration["EventDecibelThreshold"] ?? 6.0;
             // minimum score for an acceptable event - that is when processing the score array.
-            double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
+            double eventSimilarityThreshold = (double?)configuration["EventSimilarityThreshold"] ?? 0.2;
 
             // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
             int minFrameWidth = 2;
-            int maxFrameWidth = 4;
+            int maxFrameWidth = 5;  // this is larger than actual to accomodate an echo.
             double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
             double maxDuration = maxFrameWidth * frameStepInSeconds;
 
@@ -228,8 +228,8 @@ namespace AnalysisPrograms.Recognizers
 
             // We now have a list of potential hits for LimCon. This needs to be filtered.
             double[] prunedScores;
-            var startEnds = new List<Point>();
-            Plot.FindStartsAndEndsOfScoreEvents(scores, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+            List<Point> startEnds;
+            Plot.FindStartsAndEndsOfScoreEvents(scores, eventDecibelThreshold, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
 
             // loop through the score array and find beginning and end of potential events
             var potentialEvents = new List<AcousticEvent>();
@@ -265,7 +265,7 @@ namespace AnalysisPrograms.Recognizers
                     prunedScores[s] = eventScore;
                 }
 
-                if (eventScore < similarityThreshold) continue;
+                if (eventScore < eventSimilarityThreshold) continue;
 
                 int topBinForEvent = avDominantBin + 2;
                 int bottomBinForEvent = topBinForEvent - callBinWidth;
@@ -287,26 +287,28 @@ namespace AnalysisPrograms.Recognizers
 
             }
 
-            // display the original score array
-            scores = DataTools.normalise(scores);
-            var debugPlot = new Plot(this.DisplayName, scores, similarityThreshold);
-            var debugPlots = new List<Plot> { debugPlot };
+            // calculate the cosine similarity scores
+            var plot = new Plot(this.DisplayName, prunedScores, eventSimilarityThreshold);
+            var plots = new List<Plot> { plot };
 
             //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
-                Image debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
+                // display the original decibel score array
+                double[] normalisedScores;
+                double normalisedThreshold;
+                DataTools.Normalise(scores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
+                var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
+                var debugPlots = new List<Plot> { debugPlot };
+                debugPlots.Add(plot);
+                var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
 
-            // display the cosine similarity scores
-            var plot = new Plot(this.DisplayName, prunedScores, similarityThreshold);
-            var plots = new List<Plot> { plot };
-
             // add names into the returned events
-            foreach (AcousticEvent ae in potentialEvents)
+            foreach (var ae in potentialEvents)
             {
                 ae.Name = "P.o"; // abbreviatedSpeciesName;
             }

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-
+using CsvHelper;
 using MathNet.Numerics;
 
 
@@ -211,9 +211,9 @@ namespace TowseyLibrary
 
 
 
-        public static List<Double[]> RemoveNullElementsFromList(List<Double[]> list)
+        public static List<double[]> RemoveNullElementsFromList(List<double[]> list)
         {
-            var newList = new List<Double[]>();
+            var newList = new List<double[]>();
             for (int i = 0; i < list.Count; i++)
             {
                 if (list[i] != null) newList.Add(list[i]);
@@ -709,7 +709,7 @@ namespace TowseyLibrary
             double result = 0;
             for (int i = 0; i < array.Length; i++)
             {
-                if (! Double.TryParse(array[i], out result)) return false;
+                if (!double.TryParse(array[i], out result)) return false;
             }
             return true;
         }
@@ -745,7 +745,7 @@ namespace TowseyLibrary
                 sort[i] = clone[maxIndex];
                 //if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
-                clone[maxIndex] = -Double.MaxValue;
+                clone[maxIndex] = -double.MaxValue;
             }
             return Tuple.Create(rankOrder, sort);
         }
@@ -772,7 +772,7 @@ namespace TowseyLibrary
                 sort[i] = clone[minIndex];
                 //if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
-                clone[minIndex] = Double.MaxValue;
+                clone[minIndex] = double.MaxValue;
             }
             return Tuple.Create(rankOrder, sort);
         }
@@ -1865,8 +1865,8 @@ namespace TowseyLibrary
 		/// </summary>
 		public static double[,] normalise(double[,] m)
 		{
-			double min = Double.MaxValue;
-			double max = -Double.MaxValue;
+			double min = double.MaxValue;
+			double max = -double.MaxValue;
 
 			int rows = m.GetLength(0);
 			int cols = m.GetLength(1);
@@ -2046,8 +2046,8 @@ namespace TowseyLibrary
         {
             int L = array.Length;
             //CALCULATE THE MIN AND MAX OF THE ARRAY
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
             for (int i = 0; i < L; i++)
             {
                 if (array[i] < min) min = array[i];
@@ -2295,8 +2295,8 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[,] DeciBels(double[,] m, out double min, out double max)
         {
-            min = Double.MaxValue;
-            max = -Double.MaxValue;
+            min = double.MaxValue;
+            max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -2341,8 +2341,8 @@ namespace TowseyLibrary
         public static double[,] Normalise(double[,] m, double normMin, double normMax)
         {
             //m = normalise(m);
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -2380,8 +2380,8 @@ namespace TowseyLibrary
         public static double[] Normalise(double[] v, double normMin, double normMax)
         {
             //m = normalise(m);
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
 
             int length = v.Length;
             double[] ret = new double[length];
@@ -2542,8 +2542,8 @@ namespace TowseyLibrary
         public static double[] normalise(double[] v)
         {
             //find min an max
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
             for (int i = 0; i < v.Length; i++)
             {
                 if (v[i] > max) max = v[i];
@@ -2558,6 +2558,43 @@ namespace TowseyLibrary
                 ret[i] = (v[i] - min) / diff;
 
             return (ret);
+        }
+
+        /// <summary>
+        /// Normalises a vector in 0, 1 and also returns a threshold value accordingly normalised.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="threshold"></param>
+        /// <param name="output"></param>
+        /// <param name="normalisedThreshold"></param>
+        public static void Normalise(double[] v, double threshold, out double[] output, out double normalisedThreshold)
+        {
+            //find min and max
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
+            for (int i = 0; i < v.Length; i++)
+            {
+                if (v[i] > max) max = v[i];
+                if (v[i] < min) min = v[i];
+            }
+            var diff = max - min;
+            output = new double[v.Length];
+            normalisedThreshold = 0.0;
+
+            double tolerance = 0.00000000001;
+            if (Math.Abs(diff) < tolerance)
+            {
+                LoggedConsole.WriteErrorLine("Cannot normalise vector in method DataTools.Normalise(). Min = Max.");
+                return;
+            }
+
+            // calculate the scaling factor for normalisation
+            normalisedThreshold = threshold/max;
+            for (int i = 0; i < v.Length; i++)
+            {
+                output[i] = (v[i] - min) / diff;
+                
+            }
         }
 
         /// <summary>
@@ -2670,8 +2707,8 @@ namespace TowseyLibrary
             for (int i = 1; i < cols-1; i++) m[rows-1, i] = edge; 
 
             //find min and max
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
                 {
@@ -2868,7 +2905,7 @@ namespace TowseyLibrary
     {
         //some safety checks but unlikely to happen
         int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 0) return double.NaN; // cannot calculate entropy
         if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
         
         double[] pmf2 = DataTools.Normalise2Probabilites(v); //pmf = probability mass funciton
@@ -2879,7 +2916,7 @@ namespace TowseyLibrary
     {
         //some safety checks but unlikely to happen
         int posCount = v.Count(p => p > 0.0);
-        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 0) return double.NaN; // cannot calculate entropy
         if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
 
         double[] pmf2 = DataTools.NormaliseArea(v); //pmf = probability mass funciton
@@ -2964,7 +3001,7 @@ namespace TowseyLibrary
  	{
         //some safety checks but unlikely to happen
         int posCount = distr.Count(p => p > 0.0);
-        if (posCount == 0) return Double.NaN; // cannot calculate entropy
+        if (posCount == 0) return double.NaN; // cannot calculate entropy
         if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
 
         int length = distr.Length;
@@ -3277,7 +3314,7 @@ namespace TowseyLibrary
     {   int maxIndex;
         getMaxIndex(dataCopy, out maxIndex);
     	order[i] = maxIndex;
-    	dataCopy[maxIndex] = -Double.MaxValue;
+    	dataCopy[maxIndex] = -double.MaxValue;
     }
     return order;
   }
@@ -3298,34 +3335,34 @@ namespace TowseyLibrary
       {
           minIndex = DataTools.GetMinIndex(dataCopy);
           order[i] = minIndex;
-          dataCopy[minIndex] = Double.MaxValue;
+          dataCopy[minIndex] = double.MaxValue;
       }
       return order;
   }
 
   static public double GetNthSmallestValue(double[] data, int N)
   {
-      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -Double.MaxValue;
+      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -double.MaxValue;
       double[] dataCopy = (double[])data.Clone();
       int minIndex = 0;
 
       for (int i = 0; i < N; i++)
       {
           minIndex = DataTools.GetMinIndex(dataCopy);
-          dataCopy[minIndex] = Double.MaxValue;
+          dataCopy[minIndex] = double.MaxValue;
       }
       return data[minIndex];
   }
   static public double GetNthLargestValue(double[] data, int N)
   {
-      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -Double.MaxValue;
+      if ((data == null) || (data.Length == 0) || (data.Length < N)) return -double.MaxValue;
       double[] dataCopy = (double[])data.Clone();
       int maxValue = 0;
 
       for (int i = 0; i < N; i++)
       {
           maxValue = DataTools.GetMaxIndex(dataCopy);
-          dataCopy[maxValue] = -Double.MaxValue;
+          dataCopy[maxValue] = -double.MaxValue;
       }
       return data[maxValue];
   }
