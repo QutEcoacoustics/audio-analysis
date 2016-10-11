@@ -2165,18 +2165,35 @@ namespace TowseyLibrary
         public static double CosineSimilarity(double[] v1, double[] v2)
         {
             //assume v1 and v2 have same dimensions
-            int L = v1.Length;
             double sum = 0.0;
-            double Lv1 = 0.0;
-            double Lv2 = 0.0;
-            for (int i = 0; i < L; i++)
+            double v1Squared = 0.0;
+            double v2Squared = 0.0;
+            for (int i = 0; i < v1.Length; i++)
             {
                 sum += (v1[i] * v2[i]);
-                Lv1 += (v1[i] * v1[i]);
-                Lv2 += (v2[i] * v2[i]);
+                v1Squared += (v1[i] * v1[i]);
+                v2Squared += (v2[i] * v2[i]);
             }
 
-            return sum / (Math.Sqrt(Lv1) * Math.Sqrt(Lv2));
+            return sum / (Math.Sqrt(v1Squared) * Math.Sqrt(v2Squared));
+        }
+
+        public static double CosineSimilarity(double[,] m1, double[,] m2)
+        {
+            //assume m1 and m2 have same dimensions
+            double sum = 0.0;
+            double m1Squared = 0.0;
+            double m2Squared = 0.0;
+            for (int r = 0; r < m1.GetLength(0); r++)
+            {
+                for (int c = 0; c < m1.GetLength(1); c++)
+                {
+                    sum += (m1[r,c] * m2[r, c]);
+                    m1Squared += (m1[r, c] * m1[r, c]);
+                    m2Squared += (m2[r, c] * m2[r, c]);
+                }
+            }
+            return sum / (Math.Sqrt(m1Squared) * Math.Sqrt(m2Squared));
         }
 
         /// <summary>
