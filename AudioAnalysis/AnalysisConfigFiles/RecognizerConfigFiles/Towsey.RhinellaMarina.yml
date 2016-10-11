@@ -19,7 +19,7 @@ MaxOcilFreq: 20
 # The min duration setting of 5 seconds should not be changed because it is boundary between advert calls ( >5s duration) and release calls (<5s duration).
 # The min duration for a release call will be set = to the DCT duration in the code. 
 MinDuration: 5.0
-MaxDuration: 50.0
+MaxDuration: 60.0
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.40
 
