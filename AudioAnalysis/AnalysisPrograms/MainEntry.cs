@@ -27,15 +27,17 @@ namespace AnalysisPrograms
 
         public static int Main(string[] args)
         {
+            // HACK: Disable the following two line when argument refactoring is done
+            //var options = DebugOptions.Yes;
+            //AttachDebugger(ref options);
+
+            ParseEnvirionemnt();
+
             Copyright();
 
             AttachExceptionHandler();
 
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
-
-            // HACK: Disable the following two line when argument refactoring is done
-            //var options = DebugOptions.Yes;
-            //AttachDebugger(ref options);
 
             Arguments = ParseArguments(args);
 

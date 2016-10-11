@@ -46,8 +46,8 @@ namespace AnalysisPrograms
         private static DateTime RetrieveLinkerTimestamp()
         {
             string filePath = System.Reflection.Assembly.GetCallingAssembly().Location;
-            const int PeHeaderOffset = 60;
-            const int LinkerTimestampOffset = 8;
+            const int peHeaderOffset = 60;
+            const int linkerTimestampOffset = 8;
             byte[] b = new byte[2048];
             System.IO.Stream s = null;
 
@@ -58,14 +58,11 @@ namespace AnalysisPrograms
             }
             finally
             {
-                if (s != null)
-                {
-                    s.Close();
-                }
+                s?.Close();
             }
 
-            int i = System.BitConverter.ToInt32(b, PeHeaderOffset);
-            int secondsSince1970 = System.BitConverter.ToInt32(b, i + LinkerTimestampOffset);
+            int i = System.BitConverter.ToInt32(b, peHeaderOffset);
+            int secondsSince1970 = System.BitConverter.ToInt32(b, i + linkerTimestampOffset);
             DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0);
             dt = dt.AddSeconds(secondsSince1970);
             dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
@@ -199,6 +196,8 @@ namespace AnalysisPrograms
                                                                        NoOptionsMessage = "<< no arguments >>"
                                                                    };
 
+        private const string ApPlainLogging = "AP_PLAIN_LOGGING";
+
         internal static void PrintUsage(string message, Usages usageStyle, string actionName = null)
         {
             //Contract.Requires(usageStyle != Usages.Single || actionName != null);
@@ -211,7 +210,7 @@ namespace AnalysisPrograms
             if (usageStyle == Usages.All)
             {
                 // print entire usage
-                LoggedConsole.WriteLine(ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions).ToString());
+                LoggedConsole.WriteLine(InsertEnvironmentVariablesIntoUsage(ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions).ToString()));
             }
             else if (usageStyle == Usages.Single)
             {
@@ -222,7 +221,7 @@ namespace AnalysisPrograms
                 else
                 {
                     var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { actionName });
-                    LoggedConsole.WriteLine(usage.ToString());
+                    LoggedConsole.WriteLine(InsertEnvironmentVariablesIntoUsage(usage.ToString()));
                 }
             }
             else if (usageStyle == Usages.ListAvailable)
@@ -244,13 +243,20 @@ namespace AnalysisPrograms
             {
                 var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { "list", "help" });
 
-                LoggedConsole.WriteLine(usage.ToString());
+                LoggedConsole.WriteLine(InsertEnvironmentVariablesIntoUsage(usage.ToString()));
             }
             else
             {
                 throw new InvalidOperationException();
             }
 
+        }
+
+        internal static string InsertEnvironmentVariablesIntoUsage(string usage)
+        {
+            return usage.Insert(usage.IndexOf("Global options:", StringComparison.Ordinal),
+                "Environment variables:\n" +
+                "    " + ApPlainLogging + "  [true|false]\t Enable simpler logging - the default is value is `false`\n");
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
@@ -422,6 +428,25 @@ namespace AnalysisPrograms
                 Console.ReadLine();
             }
 #endif
+        }
+
+        private static void ParseEnvirionemnt()
+        {
+            bool isTrue;
+            var simpleLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLogging), out isTrue) && isTrue;
+            var repository = (log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository();
+            var root = repository.Root;
+            var cleanLogger = (Logger) repository.GetLogger("CleanLogger");
+
+            if (simpleLogging)
+            {
+                root.RemoveAppender("ConsoleAppender");
+                cleanLogger.RemoveAppender("CleanConsoleAppender");
+            }
+            else
+            {
+                root.RemoveAppender("SimpleConsoleAppender");
+            }
         }
 
         private static void ModifyVerbosity(MainEntryArguments arguments)
