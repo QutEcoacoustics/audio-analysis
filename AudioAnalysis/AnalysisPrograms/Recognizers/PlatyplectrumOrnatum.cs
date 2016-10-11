@@ -105,13 +105,14 @@ namespace AnalysisPrograms.Recognizers
 
 
 
-            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
+            //RecognizerResults results = Algorithm1(recording, configuration, outputDirectory);
+            RecognizerResults results = Algorithm2(audioRecording, configuration, outputDirectory);
 
             return results;
         }
 
 
-        internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
+        internal RecognizerResults Algorithm1(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
         {
             double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
             // make a spectrogram
@@ -123,7 +124,7 @@ namespace AnalysisPrograms.Recognizers
             };
             config.WindowOverlap = 0.0;
 
-            // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
+            // now construct the standard decibel spectrogram WITH noise removal
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
             // remove the DC column
@@ -158,26 +159,12 @@ namespace AnalysisPrograms.Recognizers
             double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
             double maxDuration = maxFrameWidth * frameStepInSeconds;
 
-            // minimum number of bins covering frequency bandwidth of L.convex call
+            // minimum number of bins covering frequency bandwidth of call
             int callBinWidth = 19;
 
             // # The PlatyplectrumOrnatum call has a duration of 3-5 frames given the above settings.
-            // # The call has three major peaks. The dominant peak is at approx 1850, a value which is set in the convig.
-            // # The second and third peak are at equal gaps below. DominantFreq-gap and DominantFreq-(2*gap);
-            // # Set the gap in the Config file. Should typically be in range 880 to 970
-            // for Limnodynastes convex, in the D.Stewart CD, there are peaks close to:
-            //1. 1950 Hz
-            //2. 1460 hz
-            //3.  970 hz    These are 490 Hz apart.
-            // for Limnodynastes convex, in the Kiyomi's JCU recording, there are peaks close to:
-            //1. 1780 Hz
-            //2. 1330 hz
-            //3.  880 hz    These are 450 Hz apart.
-
-            // So the strategy is to look for three peaks separated by same amount and in the vicinity of the above,
-            //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
-            // To this end we produce two templates each of length 25, but having 2nd and 3rd peaks at different intervals.
-            var templates = GetTemplates(callBinWidth);
+            // To this end we produce two templates.
+            var templates = GetTemplatesForAlgorithm1(callBinWidth);
 
             int dominantFrequency = (int)configuration["DominantFrequency"];
             // NOTE: could give user control over other call features 
@@ -205,7 +192,7 @@ namespace AnalysisPrograms.Recognizers
                 double[] spectrum = MatrixTools.GetRow(spg, s);
                 double maxAmplitude = -Double.MaxValue;
                 int maxId = 0;
-                // loop through bandwidth of L.onvex call and look for dominant frequency
+                // loop through bandwidth of call and look for dominant frequency
                 for (int binID = 5; binID < dominantBinMax; binID++)
                 {
                     if (spectrum[binID] > maxAmplitude)
@@ -226,7 +213,7 @@ namespace AnalysisPrograms.Recognizers
 
 
 
-            // We now have a list of potential hits for LimCon. This needs to be filtered.
+            // We now have a list of potential hits. This needs to be filtered.
             double[] prunedScores;
             List<Point> startEnds;
             Plot.FindStartsAndEndsOfScoreEvents(scores, eventDecibelThreshold, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
@@ -300,8 +287,7 @@ namespace AnalysisPrograms.Recognizers
                 double normalisedThreshold;
                 DataTools.Normalise(scores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
                 var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
-                var debugPlots = new List<Plot> { debugPlot };
-                debugPlots.Add(plot);
+                var debugPlots = new List<Plot> { debugPlot, plot };
                 var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
@@ -322,6 +308,198 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
+        internal RecognizerResults Algorithm2(AudioRecording recording, dynamic configuration, DirectoryInfo outputDirectory)
+        {
+            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 0.1;
+            // make a spectrogram
+            var config = new SonogramConfig
+            {
+                WindowSize = 256,
+                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionParameter = noiseReductionParameter
+            };
+            config.WindowOverlap = 0.0;
+
+            // now construct the standard decibel spectrogram WITH noise removal
+            // get frame parameters for the analysis
+            var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
+            // remove the DC column
+            var spg = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
+            sonogram.Data = spg;
+            int sampleRate = recording.SampleRate;
+            int rowCount = spg.GetLength(0);
+            int colCount = spg.GetLength(1);
+
+            double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            int frameSize = colCount * 2;
+            int frameStep = frameSize; // this default = zero overlap
+            double frameDurationInSeconds = frameSize / (double)sampleRate;
+            double frameStepInSeconds = frameStep / (double)sampleRate;
+            double framesPerSec = 1 / frameStepInSeconds;
+            double herzPerBin = sampleRate / 2 / (double)colCount;
+
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
+            // ## THREE THRESHOLDS ---- only one of these is given to user.
+            // minimum dB to register a dominant freq peak. After noise removal
+            double peakThresholdDb = 3.0;
+            // The threshold dB amplitude in the dominant freq bin required to yield an event 
+            double eventDecibelThreshold = (double?)configuration["EventDecibelThreshold"] ?? 6.0;
+            // minimum score for an acceptable event - that is when processing the score array.
+            double eventSimilarityThreshold = (double?)configuration["EventSimilarityThreshold"] ?? 0.2;
+
+            // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
+            int minFrameWidth = 2;
+            int maxFrameWidth = 5;  // this is larger than actual to accomodate an echo.
+            //double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
+            //double maxDuration = maxFrameWidth * frameStepInSeconds;
+
+
+            // minimum number of frames and bins covering the call
+            // The PlatyplectrumOrnatum call has a duration of 3-5 frames GIVEN THE ABOVE SETTINGS!
+            int callFrameDuration;
+            int callBinWidth;
+            // Get the call templates and their dimensions
+            var templates = GetTemplatesForAlgorithm2(out callFrameDuration, out callBinWidth);
+
+            int dominantFrequency = (int)configuration["DominantFrequency"];
+
+            const int hzBuffer = 100;
+            int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
+            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
+            int dominantBinMin = dominantBin - binBuffer;
+            int dominantBinMax = dominantBin + binBuffer;
+            int bottomBin = 1;
+            int topBin = bottomBin + callBinWidth - 1;
+
+            int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
+            double[] similarityScores = new double[rowCount]; // predefinition of score array
+            double[] amplitudeScores = new double[rowCount];
+            double[,] hits = new double[rowCount, colCount];
+
+            // loop through all spectra/rows of the spectrogram - NB: the spectrogram is rotated to vertical, i.e. rows = spectra, columns= freq bins
+            // mark the hits in hitMatrix
+            for (int s = 1; s < rowCount - callFrameDuration; s++)
+            {
+                double[] spectrum = MatrixTools.GetRow(spg, s);
+                double maxAmplitude = -Double.MaxValue;
+                int maxId = 0;
+                // loop through bandwidth of call and look for dominant frequency
+                for (int binID = 8; binID <= dominantBinMax; binID++)
+                {
+                    if (spectrum[binID] > maxAmplitude)
+                    {
+                        maxAmplitude = spectrum[binID];
+                        maxId = binID;
+                    }
+                }
+
+                if (maxId < dominantBinMin) continue;
+                // peak should exceed thresold amplitude
+                if (spectrum[maxId] < peakThresholdDb) continue;
+
+                //now calculate similarity with template 
+                var locality = MatrixTools.Submatrix(spg, s-1, bottomBin, s + callFrameDuration - 2, topBin); // s-1 because first row of template is zeros.
+                int localMaxBin = maxId - bottomBin;
+                double callAmplitude = (locality[1, localMaxBin] + locality[2, localMaxBin] + locality[3, localMaxBin]) / (double)3;
+
+                // use the following lines to write out call templates for use as recognizer
+                //double[] columnSums = MatrixTools.SumColumns(locality);
+                //if (columnSums[maxId - bottomBin] < 80) continue;
+                //FileTools.WriteMatrix2File(locality, "E:\\SensorNetworks\\Output\\Frogs\\TestOfRecognizers-2016October\\Towsey.PlatyplectrumOrnatum\\Locality_S"+s+".csv");
+
+                double score = DataTools.CosineSimilarity(locality, templates[0]);
+                if(score > eventSimilarityThreshold)
+                {
+                    similarityScores[s] = score;
+                    dominantBins[s]     = maxId;
+                    amplitudeScores[s]  = callAmplitude;
+                }
+            } // loop through all spectra
+
+
+
+            // loop through all spectra/rows of the spectrogram for a second time
+            // NB: the spectrogram is rotated to vertical, i.e. rows = spectra, columns= freq bins
+            // We now have a list of potential hits. This needs to be filtered.
+            // mark the hits in hitMatrix
+            var events = new List<AcousticEvent>();
+
+            for (int s = 1; s < rowCount - callFrameDuration; s++)
+            {
+
+                // find peaks in the array of similarity scores. First step, only look for peaks
+                if ((similarityScores[s] < similarityScores[s - 1]) || (similarityScores[s] < similarityScores[s + 1]))
+                    continue;
+                // require three consecutive similarity scores to be above the threshold
+                if ((similarityScores[s + 1] < eventSimilarityThreshold) || (similarityScores[s + 2] < eventSimilarityThreshold))
+                    continue;
+                // now check the amplitude
+                if (amplitudeScores[s] < eventDecibelThreshold)
+                    continue;
+
+                // have an event
+                // find average dominant bin for the event
+                int avDominantBin = (dominantBins[s] + dominantBins[s] + dominantBins[s]) / 3;
+                int avDominantFreq = (int)(Math.Round(avDominantBin * herzPerBin));
+                int topBinForEvent = avDominantBin + 3;
+                int bottomBinForEvent = topBinForEvent - callBinWidth;
+                int topFreqForEvent = (int)Math.Round(topBinForEvent * herzPerBin);
+                int bottomFreqForEvent = (int)Math.Round(bottomBinForEvent * herzPerBin);
+
+                hits[s, avDominantBin] = 10;
+
+                double startTime = s * frameStepInSeconds;
+                double durationTime = 4 * frameStepInSeconds;
+                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent)
+                {
+                    DominantFreq = avDominantFreq,
+                    Score = amplitudeScores[s],
+                    // remove name because it hides spectral content in display of the event.
+                    Name = ""
+                };
+                newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
+
+                events.Add(newEvent);
+
+            } // loop through all spectra
+
+
+            // display the amplitude scores
+            double[] normalisedScores;
+            double normalisedThreshold;
+            DataTools.Normalise(amplitudeScores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
+            var plot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
+            var plots = new List<Plot> { plot };
+
+            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+            bool displayDebugImage = MainEntry.InDEBUG;
+            if (displayDebugImage)
+            {
+                // display the original decibel score array
+                var debugPlot = new Plot("Similarity Score", similarityScores, eventSimilarityThreshold);
+                var debugPlots = new List<Plot> { plot, debugPlot };
+                var debugImage = DisplayDebugImage(sonogram, events, debugPlots, hits);
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), this.Identifier, "png", "DebugSpectrogram"));
+                debugImage.Save(debugPath.FullName);
+            }
+
+            // add names into the returned events
+            foreach (var ae in events)
+            {
+                ae.Name = "P.o"; // abbreviatedSpeciesName;
+            }
+
+            return new RecognizerResults()
+            {
+                Events = events,
+                Hits = hits,
+                Plots = plots,
+                Sonogram = sonogram
+            };
+        }
+
 
 
         /// <summary>
@@ -330,7 +508,7 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         /// <param name="callBinWidth">Typical value = 25</param>
         /// <returns></returns>
-        public static List<double[]> GetTemplates(int callBinWidth)
+        public static List<double[]> GetTemplatesForAlgorithm1(int callBinWidth)
         {
             var templates = new List<double[]>();
             // template 1
@@ -352,6 +530,38 @@ namespace AnalysisPrograms.Recognizers
             t2[16] = 1.0;
             t2[17] = 1.0;
             templates.Add(t2);
+            return templates;
+        }
+
+
+
+        /// <summary>
+        /// Constructs a simple template for the P. ornatum call.
+        /// </summary>
+        /// <param name="callFrameWidth"></param>
+        /// <param name="callBinWidth">Typical value = 25</param>
+        /// <returns></returns>
+        public static List<double[,]> GetTemplatesForAlgorithm2(out int callFrameWidth, out int callBinWidth)
+        {
+            callFrameWidth = 5;
+            callBinWidth = 22;
+
+            var templates = new List<double[,]>();
+            // template 1
+            //double[,] t1 = new double[callFrameWidth, callBinWidth];
+            double[,] t1 =
+            {
+                { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                { 0,0,0,0,26,33,33,28,20,20,20,20,28,30,30,30,30,30,25,30,35,20},
+                { 0,0,16,25,25,25,0,0,25,25,16,25,25,25,25,20,20,28,30,36,43,38},
+                { 0,0,27,30,30,20,0,17,25,23,0,0,0,0,0,0,18,20,19,30,35,26},
+                { 0,0,32,37,25,0,0,16,0,0,0,0,0,0,0,0,0,0,0,20,26,24},
+                { 0,0,30,30, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,20},
+            };
+            templates.Add(t1);
+
+            // template 2
+            //templates.Add(t2);
             return templates;
         }
 
