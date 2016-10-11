@@ -19,14 +19,11 @@ BgNoiseThreshold: 0.1
 # Set the gap here: should be in range 880 to 970
 DominantFrequency: 1850
 
-# Possible future additional parameters to control required call characteristics.
-# PeakGap: 470 
-# MinHz: 850 
+# Threshold Cosine-similarity to a in-line call template: Similarity must exceed this threshold. 
+EventSimilarityThreshold: 0.6
+# Decibel SNR threshold for the dominant peak: use this to determine FP / FN trade-off for events.
+EventDecibelThreshold: 20.0
 
-# Decibel threshold for the dominant peak: Use this to require a minimum decibel SNR value for a valid call.
-EventDecibelThreshold: 21.0
-# Threshold Cosine-similarity to a in-line call template: use this to determine FP / FN trade-off for events.
-EventSimilarityThreshold: 0.5
 
 ################################################################################
 SaveIntermediateWavFiles: false
