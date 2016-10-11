@@ -5,6 +5,16 @@
 # depends on MSBuild.exe being on path
 
 param([bool]$pre_release = $true)
+$ErrorActionPreference = "Stop"
+
+function Check-Command($cmdname)
+{
+    return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
+}
+if (!(Check-Command 7za) -or !(Check-Command hub) -or !(Check-Command MSBuild)) {
+	throw "Cannot find needed executable dependencies";
+}
+
 
 cd $PSScriptRoot
 
