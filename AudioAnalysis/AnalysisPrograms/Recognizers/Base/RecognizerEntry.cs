@@ -85,8 +85,8 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LimnodynastesConvex.yml";
 
             // Litoria bicolor
-            string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\bicolor_bickerton_island_1013_255205_20131211_191621_30_0.wav";
-            string outputPath = @"E:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\bicolor_bickerton_island_1013_255205_20131211_191621_30_0.wav";
+            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaBicolor.yml";
 
             // Litoria fallax

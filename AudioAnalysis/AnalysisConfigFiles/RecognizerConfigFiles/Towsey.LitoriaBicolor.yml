@@ -8,8 +8,8 @@ UpperFreqBandTop: 6200
 UpperFreqBandBottom: 5500
 LowerFreqBandTop: 3200
 LowerFreqBandBottom: 2800
-MinPeriod: 0.02
-MaxPeriod: 0.03
+MinPeriod: 0.01
+MaxPeriod: 0.07
 # Minimum and maximum duration in seconds for the length of a true call.
 MinDuration: 0.18
 MaxDuration: 0.25
