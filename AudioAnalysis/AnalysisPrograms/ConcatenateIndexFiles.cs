@@ -50,6 +50,8 @@ namespace AnalysisPrograms
 
     /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"
+    /// 
+    /// NOTE: This code was last tested on 2016 October 10. Both tests passed.
     /// </summary>
     public static class ConcatenateIndexFiles
     {
@@ -65,7 +67,7 @@ namespace AnalysisPrograms
             [ArgDescription("Directory where the output is to go.")]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [ArgDescription("Filter string used to search for the required csv files - assumed to be in directory path.")]
+            [ArgDescription("Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav")]
             public string DirectoryFilter { get; set; }
 
             [ArgDescription("File stem name for output files.")]
@@ -78,7 +80,7 @@ namespace AnalysisPrograms
             public DateTimeOffset? EndDate { get; set; }
 
             [ArgDescription("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
-            public TimeSpan? TimeSpanOffsetHint { get; set; } = null;
+            public TimeSpan? TimeSpanOffsetHint { get; set; }
 
             [ArgDescription("Draw false-colour spectrograms after concatenating index files")]
             internal bool DrawImages { get; set; } = true;
@@ -96,7 +98,7 @@ namespace AnalysisPrograms
             public FileInfo SunRiseDataFile { get; set; }
 
             [ArgDescription("Set true only when concatenating more than 24-hours of data into one image - e.g. PNG/Indonesian data.")]
-            public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; } = false;
+            public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
             [ArgDescription("Default = false. For use by software manager only.")]
             internal bool DoTest { get; set; }
@@ -124,27 +126,28 @@ namespace AnalysisPrograms
 
             // ########################## TESTING OF CONCATENATION 
             // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
+            // The drive: work = G; home = E
+            string drive = "G";
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Data\Indonesia_2\"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Indonesia_2\\"),
                                        };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string testPath = @"E:\SensorNetworks\SoftwareTests\Test_Concatenation\ExpectedOutput\";
-            indexPropertiesConfig = new FileInfo(@"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Data\Concat_TEST_IndexPropertiesConfig.yml");
-            FileInfo falseColourSpgConfig = new FileInfo(@"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Data\TEST_SpectrogramFalseColourConfig.yml");
-            drawImages = true;
+            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
+            indexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml");
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
             timeSpanOffsetHint = TimeSpan.FromHours(8);
             FileInfo sunriseDatafile = null;
             doTest = true;
             // ########################## TEST 1 CONCATENATION 
-            string opFileStem = "Concat_Test1"; // this should be a unique site identifier
-            string opPath = @"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Test1_Output\";
-            bool concatenateEverythingYouCanLayYourHandsOn = true;
+            //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
+            //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
+            //bool concatenateEverythingYouCanLayYourHandsOn = true;
             // ########################## TEST 2 CONCATENATION 
-            //string opFileStem = "Concat_Test2";
-            //string opPath = @"E:\SensorNetworks\SoftwareTests\Test_Concatenation\Test2_Output\";
-            //bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
-            //dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-            //dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+            string opFileStem = "Concat_Test2";
+            string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
+            bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
+            dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
             // ########################## END of TEST ARGUMENTS
 
 
@@ -427,7 +430,7 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(string.Format("# Elapsed time = {0:f1} hours", totalTimespan.TotalHours));
+                LoggedConsole.WriteLine($"# Elapsed time = {totalTimespan.TotalHours:f1} hours");
                 LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
 
                 if ((arguments.SunRiseDataFile != null) && (arguments.SunRiseDataFile.Exists))
@@ -476,7 +479,8 @@ namespace AnalysisPrograms
                 {
                     ldSpectrogramConfig = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig);
 
-                    // TODO TODO TODO TODO    Next line because not reading CORRECtly from yaml.
+                    // TODO TODO TODO TODO    
+                    // this next line is necessary because TimeSpan is not read correctly from yaml.
                     ldSpectrogramConfig.XAxisTicInterval = TimeSpan.FromMinutes(60);
                     ldSpectrogramConfig.ColourGain = 1.0;
                     ldSpectrogramConfig.ColourFilter = 1.0;
@@ -504,12 +508,12 @@ namespace AnalysisPrograms
             DirectoryInfo resultsDir = null;
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
-                string dateString = string.Format("{0}{1:D2}{2:D2}", dateTimeOffset.Year, dateTimeOffset.Month, dateTimeOffset.Day);
+                string dateString = $"{dateTimeOffset.Year}{dateTimeOffset.Month:D2}{dateTimeOffset.Day:D2}";
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
                 // ###### FIRST CONCATENATE THE SUMMARY INDICES, DRAW IMAGES AND SAVE IN RESULTS DIRECTORY
-                FileInfo[] summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
+                var summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
 
                 var dictionaryOfSummaryIndices = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, opFileStem);
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal or incomplete analysis of recordings
@@ -597,7 +601,7 @@ namespace AnalysisPrograms
             for (int d = 0; d < dayCount; d++)
             {
                 var thisday = dateTimeOffset.AddDays(d);
-                LoggedConsole.WriteLine(string.Format("\n\n\nCONCATENATING DAY {0} of {1}:   {2}", (d + 1), dayCount, thisday.ToString()));
+                LoggedConsole.WriteLine($"\n\n\nCONCATENATING DAY {(d + 1)} of {dayCount}:   {thisday.ToString()}");
 
                 FileInfo[] indexFiles = LDSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
                 if (indexFiles.Length == 0)
@@ -609,7 +613,7 @@ namespace AnalysisPrograms
                 }
 
                 // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
-                string dateString = string.Format("{0}{1:D2}{2:D2}", thisday.Year, thisday.Month, thisday.Day);
+                string dateString = $"{thisday.Year}{thisday.Month:D2}{thisday.Day:D2}";
                 resultsDir = new DirectoryInfo(Path.Combine(opDir.FullName, arguments.FileStemName, dateString));
                 if (!resultsDir.Exists) resultsDir.Create();
 
@@ -777,7 +781,7 @@ namespace AnalysisPrograms
             }
 
             //create composite image
-            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
 
             // create left side day scale    
             var stringFont = new Font("Arial", 16);
@@ -786,7 +790,7 @@ namespace AnalysisPrograms
             {
                 image = new Bitmap(60, imageHt);
                 canvas = Graphics.FromImage(image);
-                var str = string.Format("{0}", i+1);
+                var str = $"{i + 1}";
                 canvas.DrawString(str, stringFont, Brushes.White, new PointF(3, 3));
 
                 imageList.Add(image);
@@ -795,7 +799,7 @@ namespace AnalysisPrograms
 
             //create composite image
             var compositeBmpYscale = (Bitmap)ImageTools.CombineImagesVertically(imageList);
-            Bitmap[] finalImages = { compositeBmpYscale, compositeBmp, compositeBmpYscale };
+            Image[] finalImages = { compositeBmpYscale, compositeBmp, compositeBmpYscale };
             var finalComposite = (Bitmap)ImageTools.CombineImagesInLine(finalImages);
 
             // add title bar
@@ -807,12 +811,12 @@ namespace AnalysisPrograms
             spacer = new Bitmap(finalComposite.Width, 3);
             canvas = Graphics.FromImage(spacer);
             canvas.Clear(Color.Gray);
-            Bitmap[] titledImages = { titleBmp, spacer, finalComposite };
+            Image[] titledImages = { titleBmp, spacer, finalComposite };
             finalComposite = (Bitmap)ImageTools.CombineImagesVertically(titledImages);
 
             finalComposite.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
-            Console.WriteLine(string.Format("Final compositeBmp dimensions are width {0} by height {1}", compositeBmp.Width, compositeBmp.Height));
-            Console.WriteLine(string.Format("Final number of ribbons/days = {0}", imageFiles.Length));
+            Console.WriteLine($"Final compositeBmp dimensions are width {compositeBmp.Width} by height {compositeBmp.Height}");
+            Console.WriteLine($"Final number of ribbons/days = {imageFiles.Length}");
 
         } //ConcatenateRibbonImages
 
