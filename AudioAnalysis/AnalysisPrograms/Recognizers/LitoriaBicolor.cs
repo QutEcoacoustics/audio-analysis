@@ -33,14 +33,19 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.Csv;
     using System.Drawing;
     using Acoustics.Shared;
+    using MathNet.Numerics.Statistics;
 
     /// <summary>
-    /// This is a frog recognizer based on the "kek-kek" recognizer for the Lewin's Rail
+    /// To call this LitoriaBicolor recognizer, the first command line argument must be "EventRecognizer".
+    /// Alternatively, this recognizer can be called via the MultiRecognizer.
+    ///
+    /// This frog recognizer is based on the "kek-kek" recognizer for the Lewin's Rail
     /// It looks for synchronous oscillations in two frequency bands
     /// This recognizer was first developed for Jenny ???, a Masters student around 2007.
     /// It has been updated in October 2016 to become one of the new RecognizerBase recognizers. 
-    /// To call this recognizer, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recognizer can be called via the MultiRecognizer.
+    /// however the Correlation technique used for the Lewins Rail did not work because the ossilations in the upper and lower freq bands are not correlated.
+    /// Instead measure the oscillations in the upper and lower bands independently. 
+    /// 
     /// </summary>
 
 
@@ -305,10 +310,16 @@ namespace AnalysisPrograms.Recognizers
             double[] upperArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, upperBandMinBin, (rowCount - 1), upperBandMaxBin);
 
             int stepCount = rowCount / step;
-            double[] intensity   = new double[rowCount];
-            double[] periodicity = new double[rowCount];
+            double[] scores   = new double[rowCount];
 
             double dBthreshold = 3.0;
+
+            // duration of DCT in seconds 
+            //double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            double dctDuration = 0.2;
+            int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
+            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
+
 
             //######################################################################
             //ii: DO THE ANALYSIS AND RECOVER SCORES
@@ -319,27 +330,28 @@ namespace AnalysisPrograms.Recognizers
                 double[] upperSubarray = DataTools.Subarray(upperArray, start, minFrameCount);
                 if ((lowerSubarray.Length != minFrameCount) || (upperSubarray.Length != minFrameCount)) break;
 
-                if ((lowerSubarray.Average() < dBthreshold) && (upperSubarray.Average() < dBthreshold))
+                if ((lowerSubarray.Average() < dBthreshold) || (upperSubarray.Average() < dBthreshold))
                     continue;
 
-                lowerSubarray = DataTools.filterMovingAverageOdd(lowerSubarray, 5);
-                upperSubarray = DataTools.filterMovingAverageOdd(upperSubarray, 5);
+                double lowerOscilFreq;
+                double lowerPeriod;
+                GetOscillation(lowerSubarray, framesPerSecond, cosines, out lowerOscilFreq, out lowerPeriod);
+                double upperOscilFreq;
+                double upperPeriod;
+                GetOscillation(upperSubarray, framesPerSecond, cosines, out upperOscilFreq, out upperPeriod);
 
-                double score = DataTools.CosineSimilarity(lowerSubarray, upperSubarray);
+                bool upperPeriodWithinBounds = false;
+                bool lowerPeriodWithinBounds = false;
+                if ((upperPeriod > minPeriod) && (upperPeriod < maxPeriod)) upperPeriodWithinBounds = true;
+                if ((lowerPeriod > minPeriod) && (lowerPeriod < maxPeriod)) lowerPeriodWithinBounds = true;
 
-                //var spectrum = AutoAndCrossCorrelation.CrossCorr(lowerSubarray, upperSubarray);
-                //int zeroCount = 3;
-                //for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
-                //spectrum = DataTools.NormaliseArea(spectrum);
-                //int maxId = DataTools.GetMaxIndex(spectrum);
-                //double period = 2 * minFrameCount / (double)maxId / framesPerSecond; //convert maxID to period in seconds
-                //if ((period < minPeriod) || (period > maxPeriod)) continue;
-                for (int j = 0; j < minFrameCount; j++) //lay down score for sample length
+                if (upperPeriodWithinBounds && lowerPeriodWithinBounds)
                 {
-                    //if (intensity[start + j] < spectrum[maxId]) intensity[start + j] = spectrum[maxId];
-                    //periodicity[start + j] = period;
-                    if (intensity[start + j] < score) intensity[start + j] = score;
-                    periodicity[start + j] = score;
+                    double score = (lowerSubarray.Mean() + lowerSubarray.Mean()) / (double)2;
+                    for (int j = 0; j < minFrameCount; j++) //lay down score for sample length
+                    {
+                        if (scores[start + j] < score) scores[start + j] = score;
+                    }
                 }
             }
             //######################################################################
@@ -347,15 +359,15 @@ namespace AnalysisPrograms.Recognizers
 
             // calculate the cosine similarity scores
             double eventSimilarityThreshold = 0.2;
-            var plot = new Plot("Lb", intensity, eventSimilarityThreshold);
+            var plot = new Plot("Lb", scores, eventSimilarityThreshold);
             var plots = new List<Plot> { plot };
 
 
 
 
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
-            intensity = DataTools.filterMovingAverage(intensity, 5);
-            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(intensity, lowerBandMinHz, upperBandMaxHz, sonogram.FramesPerSecond, freqBinWidth,
+            //scores = DataTools.filterMovingAverage(scores, 5);
+            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, lowerBandMinHz, upperBandMaxHz, sonogram.FramesPerSecond, freqBinWidth,
                                                                                          eventThreshold, minDuration, maxDuration);
             CropEvents(predictedEvents, upperArray);
             var hits = new double[rowCount, colCount];
@@ -368,8 +380,8 @@ namespace AnalysisPrograms.Recognizers
                 // display the original decibel score array
                 double[] normalisedScores;
                 double normalisedThreshold;
-                DataTools.Normalise(intensity, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
-                var debugPlot = new Plot(".", normalisedScores, normalisedThreshold);
+                DataTools.Normalise(scores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
+                var debugPlot = new Plot("Score", normalisedScores, normalisedThreshold);
                 DataTools.Normalise(upperArray, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
                 var upperPlot = new Plot("Upper", normalisedScores, normalisedThreshold);
                 DataTools.Normalise(lowerArray, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
@@ -388,11 +400,32 @@ namespace AnalysisPrograms.Recognizers
             }
 
 
-            return System.Tuple.Create(sonogram, hits, intensity, predictedEvents);
+            return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
            // return System.Tuple.Create(sonogram, hits, intensity, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
 
+        public static void GetOscillation(double[] array, double framesPerSecond, double[,] cosines, out double oscilFreq, out double period)
+        {
+            double[] modifiedArray = DataTools.SubtractMean(array);
+            double[] dctCoeff = MFCCStuff.DCT(modifiedArray, cosines);
+            // convert to absolute values because not interested in negative values due to phase.
+            for (int i = 0; i < dctCoeff.Length; i++)
+                dctCoeff[i] = Math.Abs(dctCoeff[i]);
+            // remove low freq oscillations from consideration
+            int thresholdIndex = dctCoeff.Length / 4;
+            for (int i = 0; i < thresholdIndex; i++)
+                dctCoeff[i] = 0.0;
+
+            dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
+            //dct = DataTools.normalise(dctCoeff); //another option to normalise
+            int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
+
+            //recalculate DCT duration in seconds
+            double dctDuration = dctCoeff.Length / framesPerSecond;
+            oscilFreq = indexOfMaxValue/dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+            period = 2 * dctCoeff.Length / (double)indexOfMaxValue / framesPerSecond; //convert maxID to period in seconds
+        }
 
 
         public static void CropEvents(List<AcousticEvent> events, double[] intensity)
