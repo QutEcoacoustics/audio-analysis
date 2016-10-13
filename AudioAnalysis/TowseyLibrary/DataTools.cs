@@ -1798,8 +1798,28 @@ namespace TowseyLibrary
 
 
 
+    public static double[] SumMinusDifference(double[] lowerArray, double[] upperArray)
+    {
+        if (lowerArray.Length != upperArray.Length)
+        {
+            LoggedConsole.WriteWarnLine("DataTools.SumMinusDifference(): Two vectors are not the same length");
+            return null;
+        }
+
+        var smdVector = new double[lowerArray.Length];
+        for (int i = 0; i < lowerArray.Length; i++)
+        {
+            smdVector[i] = lowerArray[i] + upperArray[i] - Math.Abs(lowerArray[i] - upperArray[i]);
+        }
+        return smdVector;
+    }
+
+
+
+
+
         //copy first n values of vector1 into vector 2}
-    public static double[] CopyVector(int n, double[] v1)
+        public static double[] CopyVector(int n, double[] v1)
     {
         double[] v2 = new double[v1.Length];
         for (int i = 0; i < n; i++) v2[i] = v1[i];
