@@ -12,7 +12,6 @@ namespace AnalysisPrograms.Recognizers
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
 
     using AnalysisBase;
@@ -28,19 +27,16 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
 
     using TowseyLibrary;
-    using System.Diagnostics.Contracts;
-
-    using AnalysisPrograms.Production;
     using AudioAnalysisTools.Indices;
-    using System.Drawing;
     using Acoustics.Shared.Csv;
 
     /// <summary>
     /// AKA: Lewin's Rail
-    /// This is call recognizer depends on an oscillation recognizer picking up the Kek-kek repeated at a period of 200ms
+    /// This call recognizer depends on an oscillation recognizer picking up the Kek-kek repeated at a period of 200ms
     /// 
-    /// This recognizer was first developed for Jenny ???, a Masters student around 2007.
-    /// It has been updated in October 2016 to become one of the new RecognizerBase recognizers. 
+    /// This recognizer was first developed around 2007 for Masters student, Jenny Gibson, and supervisor, Ian Williamson.
+    /// It was updated in October 2016 to become one of the new recognizers derived from RecognizerBase. 
+    /// 
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
@@ -72,8 +68,7 @@ namespace AnalysisPrograms.Recognizers
         }
 
         // OTHER CONSTANTS
-        public const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-
+        private const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
 
         /// <summary>
@@ -85,10 +80,10 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="getSpectralIndexes"></param>
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
-        /// <param name="audioRecording"></param>
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
+            if (imageWidth == null) throw new ArgumentNullException(nameof(imageWidth));
 
             // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
@@ -126,12 +121,12 @@ namespace AnalysisPrograms.Recognizers
             //double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
             // this default framesize seems to work for Lewins Rail
-            const int FrameSize = 512;
+            const int frameSize = 512;
             //const int FrameSize = 1024;
 
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
-                FrameSize,
+                frameSize,
                 maxOscilRate);
 
             // i: MAKE SONOGRAM
@@ -139,7 +134,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 SourceFName = recording.FileName,
                 //set default values - ignor those set by user
-                WindowSize = FrameSize,
+                WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
@@ -164,7 +159,7 @@ namespace AnalysisPrograms.Recognizers
             var hits = results.Item2;
             var scoreArray = results.Item3;
             var predictedEvents = results.Item4;
-            var recordingTimeSpan = results.Item5;
+            //var recordingTimeSpan = results.Item5;
 
             //#############################################################################################################################################
 
@@ -172,16 +167,16 @@ namespace AnalysisPrograms.Recognizers
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.Duration();
             int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
             var prunedEvents = new List<AcousticEvent>();
 
             for (int i = 0; i < predictedEvents.Count; i++)
             {
-                AcousticEvent ae = predictedEvents[i];
+                var ae = predictedEvents[i];
 
                 // add additional info
-                if (ae.Score > (LewinsRailConfig.EventThreshold))
+                if (ae.Score > LewinsRailConfig.EventThreshold)
                 {
                     ae.Name = abbreviatedSpeciesName;
                     ae.SpeciesName = speciesName;
@@ -252,13 +247,12 @@ namespace AnalysisPrograms.Recognizers
         }
 
 
-
         /// <summary>
         /// ################ THE KEY ANALYSIS METHOD
         /// </summary>
-        /// <param name="fiSegmentOfSourceFile"></param>
-        /// <param name="configDict"></param>
-        /// <param name="diOutputDir"></param>
+        /// <param name="recording"></param>
+        /// <param name="sonoConfig"></param>
+        /// <returns></returns>
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan> Analysis(AudioRecording recording, SonogramConfig sonoConfig)
         {
             int upperBandMinHz = LewinsRailConfig.UpperBandMinHz;
