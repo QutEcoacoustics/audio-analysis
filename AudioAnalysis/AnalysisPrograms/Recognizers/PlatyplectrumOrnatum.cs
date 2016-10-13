@@ -39,6 +39,18 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
+    /// There are two different recognizer algorithms in this class, in methods Algorithm1() and Algorithm2(). They differ in the sequence of their filtering steps.
+    /// 
+    /// Algorithm1:  
+    /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
+    /// 2: Find the starts-ends of call events based on the amplitude array
+    /// 3: Give a score to each event (found at 2) which is its cosine similarity to a simple template (in this case a vector template) 
+    /// 
+    /// Algorithm2: 
+    /// 1: Loop through spgm and find dominant freq bin and its amplitude in each frame
+    /// 2: If frame passes amplitude test, then calculate a similarity cosine score for that frame. Simlarity score is wrt a template matrix.
+    /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude. 
+    /// 
     /// </summary>
     class PlatyplectrumOrnatum : RecognizerBase
     {
@@ -182,7 +194,7 @@ namespace AnalysisPrograms.Recognizers
             // int bandwidth = dominantBinMax - dominantBinMin + 1;
 
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
-            double[] scores = new double[rowCount]; // predefinition of score array
+            double[] amplitudeScores = new double[rowCount]; // predefinition of amplitude score array
             double[,] hits = new double[rowCount, colCount];
 
             // loop through all spectra/rows of the spectrogram - NB: spg is rotated to vertical.
@@ -206,7 +218,7 @@ namespace AnalysisPrograms.Recognizers
                 // peak should exceed thresold amplitude
                 if (spectrum[maxId] < peakThresholdDb) continue;
 
-                scores[s] = maxAmplitude;
+                amplitudeScores[s] = maxAmplitude;
                 dominantBins[s] = maxId;
                 // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             } // loop through all spectra
@@ -216,7 +228,7 @@ namespace AnalysisPrograms.Recognizers
             // We now have a list of potential hits. This needs to be filtered.
             double[] prunedScores;
             List<Point> startEnds;
-            Plot.FindStartsAndEndsOfScoreEvents(scores, eventDecibelThreshold, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+            Plot.FindStartsAndEndsOfScoreEvents(amplitudeScores, eventDecibelThreshold, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
 
             // loop through the score array and find beginning and end of potential events
             var potentialEvents = new List<AcousticEvent>();
@@ -285,7 +297,7 @@ namespace AnalysisPrograms.Recognizers
                 // display the original decibel score array
                 double[] normalisedScores;
                 double normalisedThreshold;
-                DataTools.Normalise(scores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
+                DataTools.Normalise(amplitudeScores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
                 var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
                 var debugPlots = new List<Plot> { debugPlot, plot };
                 var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
