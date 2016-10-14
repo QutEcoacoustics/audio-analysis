@@ -14,8 +14,6 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
@@ -71,13 +69,12 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="getSpectralIndexes"></param>
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
-        /// <param name="audioRecording"></param>
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
 
@@ -92,11 +89,10 @@ namespace AnalysisPrograms.Recognizers
             // minimum acceptable value of a DCT coefficient
             double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
-            // ignore oscillations below this threshold freq
-            int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
-
-            // ignore oscillations above this threshold freq
-            int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
+            double minPeriod = (double)configuration["MinPeriod"]; //: 0.18
+            double maxPeriod = (double)configuration["MaxPeriod"]; //
+            int maxOscilRate = (int)Math.Ceiling(1 /minPeriod);
+            int minOscilRate = (int)Math.Floor(1 /maxPeriod);
 
             // min duration of event in seconds 
             double minDuration = (double)configuration[AnalysisKeys.MinDuration];
@@ -112,16 +108,10 @@ namespace AnalysisPrograms.Recognizers
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
                 frameSize,
-                maxOscilFreq);
-            //windowOverlap = 0.75; // previous default
-
-
-            // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
-
-
+                maxOscilRate);
 
             // i: MAKE SONOGRAM
+            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 2.0;
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.FileName,
@@ -129,38 +119,31 @@ namespace AnalysisPrograms.Recognizers
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
-                //WindowFunction = WindowFunctions.NONE.ToString(),
-                // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.NONE
-                NoiseReductionType = NoiseReductionType.STANDARD
-                
+                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionParameter = noiseReductionParameter
             };
 
             TimeSpan recordingDuration = recording.Duration();
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            //int sr = recording.SampleRate;
+            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
             /* #############################################################################################################################################
              * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
              * 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
              * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-             * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
+             * 2048     17640      116.1ms           8.6         8.6    7430ms           551hz          1100hz
+             * 2048     22050       92.8ms          21.5        10.7666 1472ms          
              */
 
             // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
             // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
-
-            // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
-            //double[] array = DataTools.Matrix2Array(sonogram.Data);
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+".csv"), array);
+            //int rowCount = sonogram.Data.GetLength(0);
+            //int colCount = sonogram.Data.GetLength(1);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            double minDurationOfReleaseCall = 1.0;
             double[] scores; // predefinition of score array
             List<AcousticEvent> events;
             double[,] hits;
@@ -169,27 +152,21 @@ namespace AnalysisPrograms.Recognizers
                 minHz,
                 maxHz,
                 dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
+                minOscilRate,
+                maxOscilRate,
                 dctThreshold,
                 eventThreshold,
-                minDurationOfReleaseCall,
+                minDuration,
                 maxDuration,
                 out scores,
                 out events,
                 out hits);
 
 
-            // DEBUG: Following line used to search for where indeterminism creeps into the event detection
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_ScoreArray.csv"), scores);
-
-
             var prunedEvents = new List<AcousticEvent>();
-
-            for (int i = 0; i < events.Count; i++)
+            foreach (var ae in events)
             {
-                AcousticEvent ae = events[i];
-                if (ae.Duration < minDurationOfReleaseCall)
+                if (ae.Duration < minDuration)
                 {
                     continue;
                 }
@@ -198,13 +175,8 @@ namespace AnalysisPrograms.Recognizers
                 ae.SpeciesName = speciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
-
-                if (ae.Duration >= minDurationOfAdvertCall)
-                {
-                    ae.Name = abbreviatedSpeciesName + ".AdvertCall";
-                    prunedEvents.Add(ae);
-                }
-
+                ae.Name = abbreviatedSpeciesName;
+                prunedEvents.Add(ae);
             };
 
             // do a recognizer test.
@@ -218,7 +190,6 @@ namespace AnalysisPrograms.Recognizers
                 Hits = hits,
                 Plots = plot.AsList(),
                 Events = prunedEvents
-                //Events = events
             };
 
         }
@@ -233,7 +204,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="wavFile"></param>
         public static void RecognizerTest(double[] scoreArray, FileInfo wavFile)
         {
-            Log.Info("# TESTING: Starting benchmark test for the Canetoad recognizer:");
+            Log.Info("# TESTING: Starting benchmark test for the Bhutan Herron recognizer:");
             string subDir = "/TestData";
             var dir = wavFile.DirectoryName;
             var fileName = wavFile.Name;
@@ -247,18 +218,18 @@ namespace AnalysisPrograms.Recognizers
             }
             else // else if the scores file exists then do a compare.
             {
-                bool allOK = true;
+                bool ok = true;
                 var scoreLines = FileTools.ReadTextFile(scoreFilePath);
                 for (int i = 0; i < scoreLines.Count; i++)
                 {
-                    string str = scoreArray[i].ToString();
+                    var str = scoreArray[i].ToString();
                     if (!scoreLines[i].Equals(str))
                     {
-                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
-                        allOK = false;
+                        Log.Warn($"Line {i}: {str} NOT= benchmark <{scoreLines[i]}>");
+                        ok = false;
                     }
                 }
-                if (allOK)
+                if (ok)
                 {
                     Log.Info("   SUCCESS! Passed the SCORE ARRAY TEST.");
                 }
@@ -267,7 +238,7 @@ namespace AnalysisPrograms.Recognizers
                     Log.Warn("   FAILED THE SCORE ARRAY TEST");
                 }
             }
-            Log.Info("Completed benchmark test for the Canetoad recognizer.");
+            Log.Info("Completed benchmark test for the Bhutan Herron recognizer.");
         }
 
 
@@ -316,7 +287,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     if (!testEventLines[i].Equals(newEventLines[i]))
                     {
-                        Log.Warn(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, testEventLines[i], newEventLines[i]));
+                        Log.Warn($"Line {i}: {testEventLines[i]} NOT= benchmark <{newEventLines[i]}>");
                         AOK = false;
                     }
                 }
