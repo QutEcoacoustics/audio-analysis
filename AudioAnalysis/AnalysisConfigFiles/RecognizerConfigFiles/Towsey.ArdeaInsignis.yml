@@ -5,27 +5,26 @@ AbbreviatedSpeciesName: A.insignis
 
 # min and max of the freq band to search
 MinHz: 300          
-MaxHz: 360
+MaxHz: 500
 # duration of DCT in seconds 
-DctDuration: 2.0
+DctDuration: 3.0
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.4
-# ignore oscillation rates below the min & above the max threshold
-# OSCILLATIONS PER SECOND
-MinOcilFreq: 2        
-MaxOcilFreq: 3
+DctThreshold: 0.5
+# ignore oscillation rates whose period fall outside the below bounds
+# PERIOD IN SECONDS
+MinPeriod: 0.4
+MaxPeriod: 1.0
 # Minimum and maximum duration for the length of a true call.
-MinDuration: 5.0
-MaxDuration: 60.0
+MinDuration: 3.0
+MaxDuration: 8.0
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.40
+EventThreshold: 0.50
 
 # Standard settings
 #DoNoiseReduction: false
 #BgNoiseThreshold: 3.0
 
 # Resample rate must be 2 X the desired Nyquist
-# ResampleRate: 17640
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
