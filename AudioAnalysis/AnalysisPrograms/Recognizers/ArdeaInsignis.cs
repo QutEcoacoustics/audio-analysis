@@ -84,15 +84,15 @@ namespace AnalysisPrograms.Recognizers
             // BETTER TO CALCULATE THIS. IGNORE USER!
             // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
             // duration of DCT in seconds 
-            double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            //double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
 
             // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            //double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
 
             double minPeriod = (double)configuration["MinPeriod"]; //: 0.18
-            double maxPeriod = (double)configuration["MaxPeriod"]; //
+            //double maxPeriod = (double)configuration["MaxPeriod"]; //
             int maxOscilRate = (int)Math.Ceiling(1 /minPeriod);
-            int minOscilRate = (int)Math.Floor(1 /maxPeriod);
+            //int minOscilRate = (int)Math.Floor(1 /maxPeriod);
 
             // min duration of event in seconds 
             double minDuration = (double)configuration[AnalysisKeys.MinDuration];
@@ -125,8 +125,10 @@ namespace AnalysisPrograms.Recognizers
             };
 
             TimeSpan recordingDuration = recording.Duration();
-            //int sr = recording.SampleRate;
-            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            int sr = recording.SampleRate;
+            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
+            int maxBin = (int)Math.Round(maxHz / freqBinWidth) + 1;
 
             /* #############################################################################################################################################
              * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
@@ -136,35 +138,74 @@ namespace AnalysisPrograms.Recognizers
              * 2048     22050       92.8ms          21.5        10.7666 1472ms          
              */
 
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            //int rowCount = sonogram.Data.GetLength(0);
-            //int colCount = sonogram.Data.GetLength(1);
+            int rowCount = sonogram.Data.GetLength(0);
+            int colCount = sonogram.Data.GetLength(1);
+            
+            /*
+                        // ######################################################################
+                        // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
+                        double[] scores; // predefinition of score array
+                        List<AcousticEvent> events;
+                        double[,] hits;
+                        Oscillations2012.Execute(
+                            (SpectrogramStandard)sonogram,
+                            minHz,
+                            maxHz,
+                            dctDuration,
+                            minOscilRate,
+                            maxOscilRate,
+                            dctThreshold,
+                            eventThreshold,
+                            minDuration,
+                            maxDuration,
+                            out scores,
+                            out events,
+                            out hits);
+            */
 
-            // ######################################################################
-            // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
-            double[,] hits;
-            Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram,
-                minHz,
-                maxHz,
-                dctDuration,
-                minOscilRate,
-                maxOscilRate,
-                dctThreshold,
-                eventThreshold,
-                minDuration,
-                maxDuration,
-                out scores,
-                out events,
-                out hits);
+            var templates = GetTemplatesForAlgorithm1(14);
+
+            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            double[] amplitudeScores = new double[rowCount];
+            double[,] hits = new double[rowCount, colCount];
+
+            int templateLength = templates[0].Length;
+
+            for (int i = 2; i < amplitudeArray.Length - templateLength; i++)
+            {
+                if (amplitudeArray[i] < 3.0) continue;
+                if ((amplitudeArray[i] < amplitudeArray[i - 1]) || (amplitudeArray[i] < amplitudeArray[i + 1]))
+                    continue;
+                //now calculate similarity of locality with template 
+                var locality = DataTools.Subarray(amplitudeArray, i-2, templateLength); // i-2 because first two polaces should be zero.
+                double maxScore = 0.0;
+                foreach (var template in templates)
+                {
+                    double score = DataTools.CosineSimilarity(locality, template);
+                    if (score > maxScore)
+                    {
+                        maxScore = score;
+                    }
+
+                }
+                for (int t = 0; t < templateLength; t++)
+                {
+                    if (maxScore > amplitudeScores[i + t])
+                    {
+                        amplitudeScores[i + t] = maxScore;
+                        hits[i, minBin] = 10;
+                    }
+                }
+            }
+
+            //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
+            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeScores, minHz, maxHz, sonogram.FramesPerSecond,
+                                                                          freqBinWidth, eventThreshold, minDuration, maxDuration);
 
 
             var prunedEvents = new List<AcousticEvent>();
-            foreach (var ae in events)
+            foreach (var ae in predictedEvents)
             {
                 if (ae.Duration < minDuration)
                 {
@@ -183,7 +224,7 @@ namespace AnalysisPrograms.Recognizers
             //RecognizerTest(scores, new FileInfo(recording.FilePath));
             //RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
 
-            var plot = new Plot(this.DisplayName, scores, eventThreshold);
+            var plot = new Plot(this.DisplayName, amplitudeScores, eventThreshold);
             return new RecognizerResults()
             {
                 Sonogram = sonogram,
@@ -193,6 +234,51 @@ namespace AnalysisPrograms.Recognizers
             };
 
         }
+
+
+        /// <summary>
+        /// Constructs a simple template for the White Herron oscillation call.
+        /// </summary>
+        /// <param name="callBinWidth">Typical value = 13</param>
+        /// <returns></returns>
+        public static List<double[]> GetTemplatesForAlgorithm1(int callBinWidth)
+        {
+            var templates = new List<double[]>();
+            // template 1
+            double[] t1 = new double[callBinWidth];
+            t1[2] = 1.0;
+            t1[3] = 1.0;
+            t1[8] = 1.0;
+            t1[9] = 1.0;
+            templates.Add(t1);
+
+            // template 2
+            double[] t2 = new double[callBinWidth];
+            t1[2] = 1.0;
+            t1[3] = 1.0;
+            t2[9] = 1.0;
+            t2[10] = 1.0;
+            templates.Add(t2);
+
+            // template 3
+            double[] t3 = new double[callBinWidth];
+            t1[2] = 1.0;
+            t1[3] = 1.0;
+            t2[10] = 1.0;
+            t2[11] = 1.0;
+            templates.Add(t3);
+
+            // template 4
+            double[] t4 = new double[callBinWidth];
+            t1[2] = 1.0;
+            t1[3] = 1.0;
+            t2[11] = 1.0;
+            t2[12] = 1.0;
+            templates.Add(t4);
+
+            return templates;
+        }
+
 
 
 
