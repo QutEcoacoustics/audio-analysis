@@ -42,8 +42,11 @@ length(indices_norm_summary[,1])
 k1 <- i <- c(12500, 15000, 17500, 20000, 22500, 25000, 27500, 30000, 40000)
 k2 <- seq(5, 100, 5)
 
+k1 <- 25000
+k2 <- 60
+
 paste(Sys.time(), " Starting kmeans clustering", sep = " ")
-for (k in 7:7) {
+for (k in 1:1) {
   set.seed(123)
   kmeansObj <- kmeans(indices_norm_summary, centers = k1[k], iter.max = 100)
   paste(Sys.time(), " End of kmeans clustering", k1[k], sep = " ")
@@ -68,6 +71,7 @@ paste(Sys.time(), "Starting hclust")
 folder <- "C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\datasets\\kmeans_results"
 
 kmeansCenters <- kmeansObj$centers
+kmeansCenters <- as.hclust(centers25000)
 # Hierarchically cluster the centers from kmeans
 hybrid.fit.ward <- hclust(dist(kmeansCenters), method = "ward.D2")
 

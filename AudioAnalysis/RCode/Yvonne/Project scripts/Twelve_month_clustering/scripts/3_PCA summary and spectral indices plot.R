@@ -140,6 +140,7 @@ for (j in 1:ncol(indices_norm)) {
   a <- which(indices_norm[,j] < 0)
   indices_norm[a,j] = 0
 }
+
 ##################################
 # preform pca analysis
 indices_pca <- prcomp(indices_norm, scale. = F)
@@ -234,7 +235,7 @@ for (k in 1:2) {
   end <- start + as.difftime(days, units="days")
   dates <- seq(from=start, by=interval*60, to=end)
   
-  png(filename = paste("plots/final",site[k],"_", type,"_", index, ".png", sep = ""),
+  png(filename = paste("plots/PCA_plot_",site[k],"_", type,"_", index, ".png", sep = ""),
       width = 2000, height = 1000, units = "px")
   par(mar=c(2, 2.5, 2, 2.5))
   # Plot an empty plot with no axes or frame
@@ -258,6 +259,9 @@ for (k in 1:2) {
     # set the column starting on the left
     for(k in 1:1440) {
       ref <- ref + 1
+      # draw a square for each minute in each day 
+      # using the polygon function mapping the red, green
+      # and blue channels to the normalised pca-coefficients
       polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
               col=rgb(coef_min_max_norm[ref,1],
                       coef_min_max_norm[ref,2],

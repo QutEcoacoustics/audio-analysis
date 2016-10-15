@@ -5,30 +5,34 @@
 
 # Description:  This code creates a csv file containing links to 
 # the Ecosounds webpage for access to particular minutes within 
-# a particular cluster.
+# a particular cluster, it could be adapted to include all minutes 
+# on a certain day and time.
 
 # remove all objects in global environment
 rm(list = ls())
 
 ##############################################
-# Read Ecosounds mapping files
+# Read Ecosounds mapping file 
 ##############################################
-# Selects a random sample from set time periods
+# Load the mapping file containing id, site.ids, duration and original file name
 map_all <- read.csv("data/mapping_ecosounds/all_recordings_from_sites_1192_and_1193.csv",
-                    header = T)[c(1,5,6,21)]
+                    header = T)[c(1,5,6,17,21)]
+# remove any rows containing a deleter_id ie. files no longer referenced on Ecosounds
+a <- which(!is.na(map_all$deleter_id))
+map_all <- map_all[-a,]
+map_all <- map_all[,-4]
+
 gym <- which(map_all$site_id=="1192")
 map_gym <- map_all[gym,]
 
 woon <- which(map_all$site_id=="1193")
 map_woon <- map_all[woon,]
 
-map_gym <- map_gym[order(map_gym[,4]),]
-map_gym$row <- c(1:length(map_gym$id))
-map_woon <- map_woon[order(map_woon[,4]),]
-map_woon$row <- c(1:length(map_woon$id))
+map_gym <- map_gym[order(map_gym$original_file_name),]
+map_woon <- map_woon[order(map_woon$original_file_name),]
 
 ##############################################
-# Read the cluster list
+# Read cluster list
 ##############################################
 k1_value <- 25000
 k2_value <- 60
@@ -39,7 +43,7 @@ file_name <- paste("data/datasets/hclust_results/hclust_clusters",
 file_name_short <- paste("hclust_clusters_",k1_value, sep = "")
 # remove unneeded values
 load(file_name)
-# load the cluster list 
+# load the cluster list corresponding to k1 and k2 value
 cluster_list <- get(file_name_short, envir=globalenv())[,column]
 
 # remove unneeded objects from global environment
@@ -74,10 +78,10 @@ cluster_list_Woondum <- cluster_list[((length(cluster_list)/2)+1):length(cluster
 ############################################################
 # generate a sequence of dates
 start <-  strptime("20150622", format="%Y%m%d")
-# the 26 June was used because the mapping file only includes to this date
+# IMPORTANT:  Ensure the mapping file contains the mapping of 
+# files at least to the finish date
 finish <-  strptime("20160723", format="%Y%m%d") 
 dates <- seq(start, finish, by = "1440 mins")
-any(is.na(dates)) #FALSE
 date.list <- NULL
 for (i in 1:length(dates)) {
   dat <- substr(as.character(dates[i]),1,10)
@@ -86,14 +90,12 @@ for (i in 1:length(dates)) {
 dates <- date.list
 
 ############################################################
-# generate the Gympie csv file
+# FUNCTION - generate a csv of cluster links for each cluster
 ############################################################
-# FUNCTION
-Ecosounds_links <- function(clust_num, map) {
+Ecosounds_links <- function(clust_num, site, map) {
   file_name_short <- as.character(paste("cluster_list_", site, sep = ""))
   cluster_list <- get(file_name_short, envir=globalenv())
   list <- which(cluster_list==clust_num)
-  length(list)
   a <- NULL
   date_times <- NULL
   hour <- NULL
@@ -106,14 +108,9 @@ Ecosounds_links <- function(clust_num, map) {
   duration <- NULL 
   file.rf <- NULL
 
-  #list_Gympie <- list_Gympie[1:length_Gympie]
-  
   for (i in 1:length_list) {
     # Find date
     day.ref <- floor(list[i]/1440) + 1
-    #if(day.ref <= 398) { # the problem is that the day.ref is greater 
-    # than 371
-    
     ste <- paste(site, "NP", sep = "")  
     date1 <- dates[day.ref]
     hour1 <- floor((list[i]/1440 - (day.ref-1))*24)
@@ -145,7 +142,7 @@ Ecosounds_links <- function(clust_num, map) {
     if(minute1 < 10) {
       minute1 <- paste("0",round(minute1,0),sep = "")
     }
-    # there is a problem with the date_time or perhaps date1
+    
     date_time <- paste(substr(date1,1,4),substr(date1,6,7),
                        substr(date1,9,10),"_",
                        hour1, minute1,"00",
@@ -233,61 +230,80 @@ Ecosounds_links <- function(clust_num, map) {
   
   cluster_num <- rep(clust_num, length(list))
   dataset<- NULL
-  dataset <- cbind(list, file.ref, file.ids, site.ids, site_des, date_times, hour,
-                   minute, orig.files, seconds.into.rec, duration, sec.remainder, 
-                   links, hyperlinks, cluster_num)
+  dataset <- cbind(list, file.ref, file.ids, site.ids, site_des, 
+                   date_times, hour, minute, orig.files, 
+                   seconds.into.rec, duration, sec.remainder, 
+                   links, cluster_num)
+  # remove any minutes where seconds remaining is less than 60
+  too_short <- which(as.numeric(dataset[,12]) <= 60)
+  dataset <- dataset[-c(too_short),]
   if(clust_num < 10) {
-    write.csv(dataset, file = paste("data/Ecosounds_links/", site, 
-                                    "NP/Ecosounds_Links_Cluster", 
-                                    "0",clust_num, "_",k1_value, "_", 
-                                    k2_value,"_",site,".csv",sep=""), row.names = F)
+    write.csv(dataset, file = 
+                paste("data/Ecosounds_links/", site, 
+                      "NP/Ecosounds_Links_Cluster", 
+                      "0",clust_num, "_",k1_value, "_", 
+                      k2_value,"_",site,".csv",sep=""), 
+              row.names = F)
   }
   if(clust_num>=10) {
-    write.csv(dataset, file = paste("data/Ecosounds_links/", site, 
-                                    "NP/Ecosounds_Links_Cluster", 
-                                    clust_num, "_",k1_value, "_", 
-                                    k2_value,"_",site,".csv",sep=""), row.names = F)
+    write.csv(dataset, file = 
+                paste("data/Ecosounds_links/", site, 
+                      "NP/Ecosounds_Links_Cluster", 
+                      clust_num, "_",k1_value, "_", 
+                      k2_value,"_",site,".csv",sep=""), 
+              row.names = F)
   }
 }
-########## END FUNCTION
 
-# Call the Ecosounds function to complete the files for Gympie
-for(i in 1:5) {
-  site <- "Gympie"
-  Ecosounds_links(i, map_gym) # eg. (i, map_gym)
-}
-
-# Call the Ecosounds function to complete the files for Woondum
+###################################################
+# Call the Ecosounds_links function
+###################################################
+# Call the Ecosounds_links Function for the Gympie data
+# to save a csv file for each cluster containing all minutes
 for(i in 1:k2_value) {
-  site <- "Woondum"
-  Ecosounds_links(i, map_woon) # eg. (i, "Woondum", map_woon)
+  Ecosounds_links(i, "Gympie", map_gym) # eg. (i, "Gympie", map_gym)
 }
 
-# Randomly select 50 minutes from each site
-Random_Selection <- function(clust_num, site) {
-  if(clust_num<10) {
+# Call the Ecosounds_links Function for the Woondum data
+# to save a csv file for each cluster containing all minutes
+for(i in 1:k2_value) {
+  Ecosounds_links(i, "Woondum", map_woon) # eg. (i, "Woondum", map_woon)
+}
+
+#######################################################
+# FUNCTION Random selection of 50 minutes from each cluster from each site
+#######################################################
+Random_Selection <- function(clust_num, site, sample_num) {
+  if(clust_num < 10) {
     links <- read.csv(paste("data/Ecosounds_links/", site, 
                             "NP/Ecosounds_links_Cluster0",
                             clust_num, "_", k1_value, "_", 
-                            k2_value, ".csv", sep = ""), header = T)
+                            k2_value,"_", site, ".csv", sep = ""), 
+                      header = T)
   }
-  if(clust_num >=10) {
+  if(clust_num >= 10) {
     links <- read.csv(paste("data/Ecosounds_links/", site, 
                              "NP/Ecosounds_links_Cluster",
                             clust_num, "_", k1_value, "_", 
-                            k2_value, ".csv", sep = ""), header = T)
+                            k2_value, "_", site, ".csv", sep = ""), 
+                      header = T)
   }
-  link_sample <- links[sample(nrow(links), 50), ]
+  link_sample <<- links[sample(nrow(links), sample_num), ]
 }
 
+###################################################
 # Call the Random_Selection function
+###################################################
 link_samples <- NULL
-for(i in 1:k2_value) {
+k1_value <- 25000
+k2_value <- 60
+for(i in 1:60) {
+  sample_num <- 50
   print(paste("starting", i, sep = " "))
-  Random_Selection(i,"Gympie")
+  Random_Selection(i, "Gympie", 50)
   link_samples <- rbind(link_samples, link_sample)
   print(paste("starting", i, sep = " "))
-  Random_Selection(i,"Woondum")
+  Random_Selection(i, "Woondum", 50)
   link_samples <- rbind(link_samples, link_sample)
 }
 
@@ -309,8 +325,3 @@ woondum_dates <- c("2015-07-30","2015-07-31","2015-08-01","2015-08-04",
                    "2016-01-11","2016-01-12","2016-02-25","2016-02-26",
                    "2016-03-10","2016-03-15","2016-04-06","2016-04-09",
                    "2016-05-12","2016-05-13","2016-06-08","2016-06-10")
-
-
-
-
-
