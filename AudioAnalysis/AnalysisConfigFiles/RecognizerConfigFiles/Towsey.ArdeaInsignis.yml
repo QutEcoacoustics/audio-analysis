@@ -4,21 +4,21 @@ SpeciesName: Ardea insignis
 AbbreviatedSpeciesName: A.insignis
 
 # min and max of the freq band to search
-MinHz: 300          
+MinHz: 280          
 MaxHz: 500
 # duration of DCT in seconds 
-DctDuration: 3.0
+#DctDuration: 3.0
 # minimum acceptable value of a DCT coefficient
-DctThreshold: 0.5
+#DctThreshold: 0.5
 # ignore oscillation rates whose period fall outside the below bounds
 # PERIOD IN SECONDS
 MinPeriod: 0.4
-MaxPeriod: 1.0
+#MaxPeriod: 1.0
 # Minimum and maximum duration for the length of a true call.
-MinDuration: 3.0
+MinDuration: 4.0
 MaxDuration: 8.0
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.50
+EventThreshold: 0.40
 
 # Standard settings
 #DoNoiseReduction: false
