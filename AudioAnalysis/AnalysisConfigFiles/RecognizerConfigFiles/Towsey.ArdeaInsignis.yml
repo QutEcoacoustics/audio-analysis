@@ -3,14 +3,16 @@ AnalysisName: Towsey.ArdeaInsignis
 SpeciesName: Ardea insignis
 AbbreviatedSpeciesName: A.insignis
 
+# Noise removal: 0=Least severe.  >5=Most severe. Best value depends on the call and background noise.
+SeverityOfNoiseRemoval: 2.0
+
 # min and max of the freq band to search
 MinHz: 280          
 MaxHz: 500
-# duration of DCT in seconds 
-#DctDuration: 3.0
-# minimum acceptable value of a DCT coefficient
-#DctThreshold: 0.5
-# ignore oscillation rates whose period fall outside the below bounds
+
+# Decibel threshold
+DecibelThreshold: 4.0
+
 # PERIOD IN SECONDS
 MinPeriod: 0.4
 #MaxPeriod: 1.0
@@ -18,7 +20,7 @@ MinPeriod: 0.4
 MinDuration: 4.0
 MaxDuration: 8.0
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.40
+EventThreshold: 0.30
 
 # Standard settings
 #DoNoiseReduction: false
