@@ -148,7 +148,8 @@ namespace AnalysisPrograms.Recognizers
             double[] amplitudeScores = new double[rowCount];
             double[,] hits = new double[rowCount, colCount];
 
-            int maxTemplateLength = 20;
+            const int maxTemplateLength = 20;
+            const int minimumGap = 4;
 
             // first find the amplitude peaks
             for (int j = 2; j < amplitudeArray.Length - maxTemplateLength; j++)
@@ -170,12 +171,20 @@ namespace AnalysisPrograms.Recognizers
                 // calculate distance to next peak
                 int distanceToNextPeak = CalculateDistanceToNextPeak(peakArray, i);
 
+
+                if (distanceToNextPeak < minimumGap)
+                {
+                    //i += minimumGap;
+                    continue;
+                }
+
+                const int templateOffset = 14;
                 if (distanceToNextPeak > maxTemplateLength)
                 {
                     var endTemplate = GetEndTemplateForAlgorithm2();
-                    var endLocality = DataTools.Subarray(amplitudeArray, i - 10, endTemplate.Length); // i-2 because first two places should be zero.
+                    var endLocality = DataTools.Subarray(amplitudeArray, i - templateOffset, endTemplate.Length); // i-2 because first two places should be zero.
                     double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
-                    for (int t = -10; t < (endTemplate.Length-10); t++)
+                    for (int t = -templateOffset; t < (endTemplate.Length- templateOffset); t++)
                     {
                         if (endScore > amplitudeScores[i + t])
                         {
@@ -217,10 +226,11 @@ namespace AnalysisPrograms.Recognizers
                 }
             }
 
-            //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
-            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(amplitudeScores, minHz, maxHz, sonogram.FramesPerSecond,
-                                                                          freqBinWidth, eventThreshold, minDuration, maxDuration);
+            var smoothedScores = DataTools.filterMovingAverageOdd(amplitudeScores, 3);
 
+            //iii: CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
+            var predictedEvents = AcousticEvent.ConvertScoreArray2Events(smoothedScores, minHz, maxHz, sonogram.FramesPerSecond,
+                                                                          freqBinWidth, eventThreshold, minDuration, maxDuration);
 
             var prunedEvents = new List<AcousticEvent>();
             foreach (var ae in predictedEvents)
@@ -300,7 +310,7 @@ namespace AnalysisPrograms.Recognizers
 
         public static double[] GetTemplateForAlgorithm2(int gapBetweenPeaks)
         {
-            int templateLength = gapBetweenPeaks + 6;
+            int templateLength = gapBetweenPeaks + 7;
             var template = new double[templateLength];
             template[2] = 1.0;
             template[3] = 1.0;
@@ -312,16 +322,17 @@ namespace AnalysisPrograms.Recognizers
 
         public static double[] GetEndTemplateForAlgorithm2()
         {
-            int templateLength = 12;
+            int templateLength = 16;
             var template = new double[templateLength];
-            template[2] = 0.2;
-            template[3] = 0.4;
-            template[4] = 0.5;
-            template[5] = 0.6;
-            template[6] = 0.7;
-            template[7] = 0.8;
-            template[8] = 0.9;
-            template[9] = 1.0;
+            template[5] = 0.2;
+            template[6] = 0.3;
+            template[7] = 0.4;
+            template[8] = 0.5;
+            template[9] = 0.6;
+            template[10] = 0.7;
+            template[11] = 0.8;
+            template[12] = 0.9;
+            template[13] = 1.0;
 
             return template;
         }

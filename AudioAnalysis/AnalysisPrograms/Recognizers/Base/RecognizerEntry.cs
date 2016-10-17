@@ -48,8 +48,12 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 
             //Ardea insignis (The White-bellied Herron
-            string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
+            //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
+            //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347077_20160409_061730_40_0.wav";
+            //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_061431_130_0.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Both call types of Heron.wav";
+            string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347103_20160329_133319_130_0.wav";
+            //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_062131_40_0.wav";
             string outputPath = @"E:\SensorNetworks\Output\Bhutan\";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ArdeaInsignis.yml";
 
