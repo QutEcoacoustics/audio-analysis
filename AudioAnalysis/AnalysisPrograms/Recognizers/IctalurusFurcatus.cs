@@ -7,17 +7,15 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
-    using System.Text;
-
-    using Acoustics.Tools.Wav;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -33,6 +31,7 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
 
     using TowseyLibrary;
+    using Acoustics.Shared.Csv;
 
     /// <summary>
     /// This is a Blue Catfish recognizer (Ictalurus furcatus)
@@ -44,6 +43,17 @@ namespace AnalysisPrograms.Recognizers
         public override string SpeciesName => "IctalurusFurcatus";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+
+        internal class CatFishCallData
+        {
+            public TimeSpan Timehms { get; set; } //(hh:mm:ss)
+            public double TimeSeconds { get; set; }
+            public int Sample { get; set; }
+            public int Rating { get; set; }
+            public int Waveform { get; set; }
+        }
+
 
 
         /// <summary>
@@ -73,11 +83,12 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            double minAmplitudeThreshold = 0.1;
-            int percentile = 5;
-            double scoreThreshold = 0.3;
-            bool doFiltering = true;
-            int windowWidth = 1024;
+            const double minAmplitudeThreshold = 0.1;
+            const int percentile = 5;
+            const double scoreThreshold = 0.3;
+            const bool doFiltering = true;
+            const int windowWidth = 1024;
+            const int signalBuffer = windowWidth * 2;
 
             //string path = @"C:\SensorNetworks\WavFiles\Freshwater\savedfortest.wav";
             //audioRecording.Save(path); // this does not work
@@ -162,21 +173,36 @@ namespace AnalysisPrograms.Recognizers
 
                 //double[] times = { 2.2, 26.589, 29.62 };
                 //double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62 };
-                double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62, 31.39, 62.1, 67.67, 72.27, 72.42, 72.59, 72.8, 94.3, 95.3,
-                                   100.16, 110.0, 125.9, 126.62, 137.57, 141.0, 146.33, 163.07, 163.17, 196.55, 215.09, 262.44, 269.9, 282.6,
-                                   291.48, 301.85, 321.18, 322.72, 332.37, 336.1, 342.82, 363.5, 379.93, 381.55, 402.0, 402.15, 406.44, 432.17,
-                                   462.65, 465.86, 466.18, 472.38, 479.14, 490.63, 494.4, 494.63, 495.240, 526.590, 536.590, 565.82, 568.94,
-                                   570.5, 583.9, 603.19, 624.26, 624.36, 638.8, 641.08, 650.9, 65.13, 68.63, 704.66,
-                                   710.36, 711.2, 724.93, 730.05, 740.78, 747.05, 758.5, 782.25, 788.18, 792.8,
-                                   805.24, 816.03, 830.4, 831.2, 837.87, 855.02, 909.74, 912.14, 925.81  };
+                //double[] times = { 2.2, 3.68, 10.83, 24.95, 26.589, 27.2, 29.62, 31.39, 62.1, 67.67, 72.27, 72.42, 72.59, 72.8, 94.3, 95.3,
+                //                   100.16, 110.0, 125.9, 126.62, 137.57, 141.0, 146.33, 163.07, 163.17, 196.55, 215.09, 262.44, 269.9, 282.6,
+                //                   291.48, 301.85, 321.18, 322.72, 332.37, 336.1, 342.82, 363.5, 379.93, 381.55, 402.0, 402.15, 406.44, 432.17,
+                //                   462.65, 465.86, 466.18, 472.38, 479.14, 490.63, 494.4, 494.63, 495.240, 526.590, 536.590, 565.82, 568.94,
+                //                   570.5, 583.9, 603.19, 624.26, 624.36, 638.8, 641.08, 650.9, 65.13, 68.63, 704.66,
+                //                   710.36, 711.2, 724.93, 730.05, 740.78, 747.05, 758.5, 782.25, 788.18, 792.8,
+                //                   805.24, 816.03, 830.4, 831.2, 837.87, 855.02, 909.74, 912.14, 925.81  };
+
+                var filePath = new FileInfo(@"C:\SensorNetworks\WavFiles\Freshwater\GruntSummaryRevisedAndEditedByMichael.csv");
+                List<CatFishCallData> data = Csv.ReadFromCsv<CatFishCallData>(filePath, true).ToList();
+                //var catFishCallDatas = data as IList<CatFishCallData> ?? data.ToList();
+                int count = data.Count();
+
 
                 var subSamplesDirectory = outputDirectory.CreateSubdirectory("testSubsamples_5000LPFilter");
-                for (int t = 0; t < times.Length; t++)
+                //for (int t = 0; t < times.Length; t++)
+                foreach (var fishCall in data)
                 {
                     //Image bmp1 = IctalurusFurcatus.AnalyseLocation(bandPassFilteredSignal, sr, times[t], windowWidth);
 
-                    int signalBuffer = windowWidth * 2;
-                    int location = (int)Math.Round(times[t] * sr); //assume location points to start of grunt
+
+                    // use following line where using time in seconds
+                    //int location = (int)Math.Round(times[t] * sr); //assume location points to start of grunt
+                    //double[] subsample = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 2 * signalBuffer);
+
+                    // use following line where using sample
+                    int location1 = fishCall.Sample / 2; //assume Chris's sample location points to centre of grunt. Divide by 2 because original recording was 44100.
+                    int location = (int)Math.Round(fishCall.TimeSeconds * sr); //assume location points to centre of grunt
+
+
                     double[] subsample = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 2 * signalBuffer);
 
                     // calculate an amplitude threshold that is above 95th percentile of amplitudes in the subsample
@@ -193,13 +219,13 @@ namespace AnalysisPrograms.Recognizers
                     //if (amplitudeThreshold < minAmplitudeThreshold) amplitudeThreshold = minAmplitudeThreshold;
 
                     double[] scores1 = IctalurusFurcatus.AnalyseWaveformAtLocation(subsample, amplitudeThreshold, scoreThreshold);
-                    string title1 = $"scores={times[t]}";
+                    string title1 = $"scores={fishCall.Timehms}";
                     Image bmp1 = ImageTools.DrawGraph(title1, scores1, subsample.Length, 300, 1);
                     //bmp1.Save(path1.FullName);
 
-                    string title2 = $"tStart={times[t]}";
+                    string title2 = $"tStart={fishCall.Timehms}";
                     Image bmp2 = ImageTools.DrawWaveform(title2, subsample, 1);
-                    var path1 = subSamplesDirectory.CombineFile($"scoresForTestSubsample_{times[t]}secs.png");
+                    var path1 = subSamplesDirectory.CombineFile($"scoresForTestSubsample_{fishCall.TimeSeconds}secs.png");
                     //var path2 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.png");
                     Image[] imageList = { bmp2, bmp1 };
                     Image bmp3 = ImageTools.CombineImagesVertically(imageList);
@@ -211,7 +237,8 @@ namespace AnalysisPrograms.Recognizers
                     //double[] subsample2 = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 3 * signalBuffer);
                     //FileTools.WriteArray2File(subsample2, path3.FullName);
                 }
-            } 
+
+            }
 
             int signalLength = bandPassFilteredSignal.Length;
             // count number of 1000 sample segments
@@ -351,8 +378,6 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram
             };
         }
-
-
 
 
         public static Image AnalyseLocation(double[] signal, int sr, double startTimeInSeconds, int windowWidth)
