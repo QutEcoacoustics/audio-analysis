@@ -88,9 +88,13 @@ namespace AnalysisPrograms.Recognizers
 
             // minimum acceptable value of a DCT coefficient
             //double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+            double noiseReductionParameter = (double?)configuration["SeverityOfNoiseRemoval"] ?? 2.0;
+            double decibelThreshold = (double)configuration["DecibelThreshold"];
+
 
             double minPeriod = (double)configuration["MinPeriod"]; //: 0.18
             //double maxPeriod = (double)configuration["MaxPeriod"]; //
+
             int maxOscilRate = (int)Math.Ceiling(1 /minPeriod);
             //int minOscilRate = (int)Math.Floor(1 /maxPeriod);
 
@@ -103,15 +107,11 @@ namespace AnalysisPrograms.Recognizers
             // min score for an acceptable event
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
-            // this default framesize seems to work for Canetoad
+            // this default framesize and overlap is best for the White Hrron of Bhutan.
             const int frameSize = 2048;
-            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate,
-                frameSize,
-                maxOscilRate);
-
+            double windowOverlap = 0.0;
+            
             // i: MAKE SONOGRAM
-            double noiseReductionParameter = (double?)configuration["BgNoiseThreshold"] ?? 2.0;
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.FileName,
@@ -119,7 +119,6 @@ namespace AnalysisPrograms.Recognizers
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
-                //NoiseReductionType = NoiseReductionType.NONE
                 NoiseReductionType = NoiseReductionType.STANDARD,
                 NoiseReductionParameter = noiseReductionParameter
             };
@@ -142,58 +141,77 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
             
-            /*
-                        // ######################################################################
-                        // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-                        double[] scores; // predefinition of score array
-                        List<AcousticEvent> events;
-                        double[,] hits;
-                        Oscillations2012.Execute(
-                            (SpectrogramStandard)sonogram,
-                            minHz,
-                            maxHz,
-                            dctDuration,
-                            minOscilRate,
-                            maxOscilRate,
-                            dctThreshold,
-                            eventThreshold,
-                            minDuration,
-                            maxDuration,
-                            out scores,
-                            out events,
-                            out hits);
-            */
-
-            var templates = GetTemplatesForAlgorithm1(14);
+            //var templates = GetTemplatesForAlgorithm1(14);
 
             double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            bool[] peakArray = new bool[rowCount];
             double[] amplitudeScores = new double[rowCount];
             double[,] hits = new double[rowCount, colCount];
 
-            int templateLength = templates[0].Length;
+            int maxTemplateLength = 20;
 
-            for (int i = 2; i < amplitudeArray.Length - templateLength; i++)
+            // first find the amplitude peaks
+            for (int j = 2; j < amplitudeArray.Length - maxTemplateLength; j++)
             {
-                if (amplitudeArray[i] < 3.0) continue;
-                if ((amplitudeArray[i] < amplitudeArray[i - 1]) || (amplitudeArray[i] < amplitudeArray[i + 1]))
-                    continue;
-                //now calculate similarity of locality with template 
-                var locality = DataTools.Subarray(amplitudeArray, i-2, templateLength); // i-2 because first two polaces should be zero.
-                double maxScore = 0.0;
-                foreach (var template in templates)
+                if (amplitudeArray[j] < decibelThreshold) continue;
+                if ((amplitudeArray[j] > amplitudeArray[j - 1]) && (amplitudeArray[j] > amplitudeArray[j + 1]))
                 {
-                    double score = DataTools.CosineSimilarity(locality, template);
-                    if (score > maxScore)
+                    peakArray[j] = true;
+                }
+
+            }
+
+
+            // now search for peaks that are the correct distance apart.
+            for (int i = 2; i < amplitudeArray.Length - maxTemplateLength; i++)
+            {
+                if (!peakArray[i]) continue;
+
+                // calculate distance to next peak
+                int distanceToNextPeak = CalculateDistanceToNextPeak(peakArray, i);
+
+                if (distanceToNextPeak > maxTemplateLength)
+                {
+                    var endTemplate = GetEndTemplateForAlgorithm2();
+                    var endLocality = DataTools.Subarray(amplitudeArray, i - 10, endTemplate.Length); // i-2 because first two places should be zero.
+                    double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
+                    for (int t = -10; t < (endTemplate.Length-10); t++)
                     {
-                        maxScore = score;
+                        if (endScore > amplitudeScores[i + t])
+                        {
+                            amplitudeScores[i + t] = endScore;
+                            //hits[i, minBin] = 10;
+                        }
                     }
 
-                }
-                for (int t = 0; t < templateLength; t++)
-                {
-                    if (maxScore > amplitudeScores[i + t])
+                    for (int k = 2; k < maxTemplateLength; k++)
                     {
-                        amplitudeScores[i + t] = maxScore;
+                        amplitudeScores[i + k] = 0.0;
+                    }
+                    continue;                  
+                }
+
+                var template = GetTemplateForAlgorithm2(distanceToNextPeak);
+
+                //now calculate similarity of locality with template 
+                //var locality = DataTools.Subarray(amplitudeArray, i - 2, templateLength); // i-2 because first two polaces should be zero.
+                var locality = DataTools.Subarray(amplitudeArray, i-2, template.Length); // i-2 because first two places should be zero.
+                double score = DataTools.CosineSimilarity(locality, template);
+                //double maxScore = 0.0;
+                //foreach (var template in templates)
+                //{
+                //    double score = DataTools.CosineSimilarity(locality, template);
+                //    if (score > maxScore)
+                //    {
+                //        maxScore = score;
+                //    }
+
+                //}
+                for (int t = 0; t < template.Length; t++)
+                {
+                    if (score > amplitudeScores[i + t])
+                    {
+                        amplitudeScores[i + t] = score;
                         hits[i, minBin] = 10;
                     }
                 }
@@ -279,6 +297,48 @@ namespace AnalysisPrograms.Recognizers
             return templates;
         }
 
+
+        public static double[] GetTemplateForAlgorithm2(int gapBetweenPeaks)
+        {
+            int templateLength = gapBetweenPeaks + 6;
+            var template = new double[templateLength];
+            template[2] = 1.0;
+            template[3] = 1.0;
+            template[templateLength - 4] = 1.0;
+            template[templateLength - 3] = 1.0;
+
+            return template;
+        }
+
+        public static double[] GetEndTemplateForAlgorithm2()
+        {
+            int templateLength = 12;
+            var template = new double[templateLength];
+            template[2] = 0.2;
+            template[3] = 0.4;
+            template[4] = 0.5;
+            template[5] = 0.6;
+            template[6] = 0.7;
+            template[7] = 0.8;
+            template[8] = 0.9;
+            template[9] = 1.0;
+
+            return template;
+        }
+
+        private static int CalculateDistanceToNextPeak(bool[] peakArray, int currentLocation)
+        {
+            int distanceToNextPeak = 0;
+            for (int i = currentLocation+1; i < peakArray.Length; i++)
+            {
+                distanceToNextPeak++;
+                if (peakArray[i])
+                {
+                    return distanceToNextPeak;
+                }
+            }
+                return distanceToNextPeak;
+        }
 
 
 
