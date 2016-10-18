@@ -3,8 +3,8 @@
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
-//   This is a frog recognizer based on the "ribit" or "washboard" template
-//   It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
+//   This is a frog recognizer based on the "trill", "ribit" or "washboard" template
+//   It detects trill type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
 //   This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
 //   To call this recognizer, the first command line argument must be "EventRecognizer".
 //   Alternatively, this recognizer can be called via the MultiRecognizer.
@@ -17,12 +17,12 @@ namespace AnalysisPrograms.Recognizers
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-    using System.Linq;
+    //using System.Linq;
     using System.Reflection;
-    using System.Text;
+    //using System.Text;
 
     using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
+    //using Acoustics.Tools.Wav;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -87,6 +87,8 @@ namespace AnalysisPrograms.Recognizers
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
+            double noiseReductionParameter = (double?)configuration["SeverityOfNoiseRemoval"] ?? 2.0;
+
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int maxHz = (int)configuration[AnalysisKeys.MaxHz];
 
@@ -138,16 +140,16 @@ namespace AnalysisPrograms.Recognizers
                 WindowOverlap = windowOverlap,
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.STANDARD,
-                NoiseReductionParameter = 0.2,
+                NoiseReductionParameter = noiseReductionParameter
             };
 
-            TimeSpan recordingDuration = recording.Duration();
+            var recordingDuration = recording.Duration();
             int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
+            //int rowCount = sonogram.Data.GetLength(0);
+            //int colCount = sonogram.Data.GetLength(1);
 
             // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
@@ -155,7 +157,7 @@ namespace AnalysisPrograms.Recognizers
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             // This window is used to smooth the score array before extracting events.
             // A short window preserves sharper score edges to define events but also keeps noise.
-            int scoreSmoothingWindow = 5;
+            const int scoreSmoothingWindow = 5;
             double[] scores; // predefinition of score array
             List<AcousticEvent> acousticEvents;
             double[,] hits;
@@ -210,7 +212,8 @@ namespace AnalysisPrograms.Recognizers
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            const bool doHighlightSubband = false;
+            const bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
 
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
