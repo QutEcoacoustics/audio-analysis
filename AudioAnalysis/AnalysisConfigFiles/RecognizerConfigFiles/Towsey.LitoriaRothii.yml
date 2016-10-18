@@ -3,9 +3,16 @@ AnalysisName: Towsey.LitoriaRothii
 SpeciesName: Litoria rothii
 AbbreviatedSpeciesName: L.rothi
 
+# Noise removal: 0=Least severe.  >5=Most severe. Best value depends on the call and background noise.
+SeverityOfNoiseRemoval: 1.0
+
 # min and max of the freq band to search
-MinHz: 1000          
+MinHz: 1200          
 MaxHz: 2200
+
+# 512 0r 256
+FrameSize: 256
+
 # duration of DCT in seconds 
 # default for Stewart CD DctDuration: 0.4
 DctDuration: 0.25
@@ -14,14 +21,12 @@ DctThreshold: 0.55
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND Default=8-15
 MinOcilFreq: 10        
-MaxOcilFreq: 25
+MaxOcilFreq: 30
 # Minimum and maximum duration in seconds for the length of a true call.
 MinDuration: 0.4
-MaxDuration: 1.2
+MaxDuration: 1.4
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.5
-
-FrameSize: 512
+EventThreshold: 0.4
 
 # Standard settings
 #DoNoiseReduction: false

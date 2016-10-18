@@ -119,8 +119,10 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\49 Litoria rothii.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\69 Litoria rothii.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\bickerton_island_1013_255205_20131211_194041_30_0.wav";
-            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRothii.yml";
+            //string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205130_30_0.wav";
+            string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205630_30_0.wav";
+            string outputPath = @"E:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRothii.yml";
 
             // Litoria rubella
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\50 Litoria rubella.mp3";
@@ -146,10 +148,10 @@ namespace AnalysisPrograms.Recognizers.Base
             // Fresh water blue cat fish
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_ChrisAfterFiltering.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel_First60s.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_LeftChannel.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Freshwater\BlueCatfish_LonePine_ChrisFilteredLeftChFirst60s.wav";
-            string outputPath = @"C:\SensorNetworks\Output\FreshWater";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.IctalurusFurcatus.yml";
+            //string outputPath = @"C:\SensorNetworks\Output\FreshWater";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.IctalurusFurcatus.yml";
 
             var arguments = new Arguments
             {
