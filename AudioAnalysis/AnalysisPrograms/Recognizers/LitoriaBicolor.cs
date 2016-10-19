@@ -129,6 +129,11 @@ namespace AnalysisPrograms.Recognizers
             //// min score for an acceptable event
             //double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
+            if (recording.WavReader.SampleRate != 22050)
+            {
+                throw new InvalidOperationException("Requires a 22050Hz file");
+            }
+
             // this default framesize seems to work for 
             const int frameSize = 128;
 
@@ -296,7 +301,7 @@ namespace AnalysisPrograms.Recognizers
                     double oscilFreq;
                     double period;
                     double intensity;
-                    GetOscillation(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
+                    Oscillations2014.GetOscillation(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
 
                     bool periodWithinBounds = (period > minPeriod) && (period < maxPeriod);
                     //Console.WriteLine($"step={i}    period={period:f4}");
@@ -372,30 +377,6 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram returnSonogram = new SpectrogramStandard(returnSonoConfig, recording.WavReader);
             return System.Tuple.Create(returnSonogram, hits, scores, confirmedEvents);
         } //Analysis()
-
-
-        public static void GetOscillation(double[] array, double framesPerSecond, double[,] cosines, out double oscilFreq, out double period, out double intenisty)
-        {
-            double[] modifiedArray = DataTools.SubtractMean(array);
-            double[] dctCoeff = MFCCStuff.DCT(modifiedArray, cosines);
-            // convert to absolute values because not interested in negative values due to phase.
-            for (int i = 0; i < dctCoeff.Length; i++)
-                dctCoeff[i] = Math.Abs(dctCoeff[i]);
-            // remove low freq oscillations from consideration
-            int thresholdIndex = dctCoeff.Length / 5;
-            for (int i = 0; i < thresholdIndex; i++)
-                dctCoeff[i] = 0.0;
-
-            dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
-            //dct = DataTools.normalise(dctCoeff); //another option to normalise
-            int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
-
-            //recalculate DCT duration in seconds
-            double dctDuration = dctCoeff.Length / framesPerSecond;
-            oscilFreq = indexOfMaxValue/dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
-            period = 2 * dctCoeff.Length / (double)indexOfMaxValue / framesPerSecond; //convert maxID to period in seconds
-            intenisty = dctCoeff[indexOfMaxValue];
-        }
 
 
         //public static void CropEvents(List<AcousticEvent> events, double[] intensity)
