@@ -1,0 +1,52 @@
+---
+AnalysisName: Towsey.LitoriaWatjulumensis
+SpeciesName: Litoria watjulumensis
+CommonName: Watjulum frog
+AbbreviatedSpeciesName: L.watjulum
+
+FrameSize: 256
+
+# Do not change this resample rate
+ResampleRate: 22050
+
+# Standard settings
+#DoNoiseReduction: false
+#BgNoiseThreshold: 3.0
+
+UpperFreqBandTop: 3500
+UpperFreqBandBottom: 2500
+LowerFreqBandTop: 1500
+LowerFreqBandBottom: 1000
+
+# ignore oscillation rates below the min & above the max threshold
+# OSCILLATIONS PER SECOND Default=8-15
+#MinOcilFreq: 35        
+#MaxOcilFreq: 250
+
+# Periodicity of oscillation
+MinPeriod: 0.02
+MaxPeriod: 0.05
+# Minimum and maximum duration in seconds for the length of a true call.
+MinDuration: 0.2
+MaxDuration: 0.8
+
+# Threshold for oscillation intensity found by DCT
+IntensityThreshold: 0.4
+DecibelThreshold: 5.0
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=minutes;    
+SegmentDuration: 1
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+SaveIntermediateWavFiles: false
+SaveIntermediateCsvFiles: false
+SaveSonogramImages: true
+DisplayCsvImage: false
+ParallelProcessing: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
+HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+...
