@@ -119,9 +119,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\49 Litoria rothii.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\69 Litoria rothii.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\LitoriaWotjulumensisAndRothii\bickerton_island_1013_255205_20131211_194041_30_0.wav";
-            //string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205130_30_0.wav";
-            string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205630_30_0.wav";
-            string outputPath = @"E:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205130_30_0.wav";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\rothii_bickerton_island_1013_255213_20131212_205630_30_0.wav";
+            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRothii.yml";
 
             // Litoria rubella
@@ -220,6 +220,10 @@ namespace AnalysisPrograms.Recognizers.Base
             // convert arguments to analysis settings
             analysisSettings = arguments.ToAnalysisSettings(analysisSettings, outputIntermediate: true, resultSubDirectory: recognizer.Identifier);
             analysisSettings.Configuration = configuration;
+
+            // Enable this if you want the Config file ResampleRate parameter to work.
+            // Generally however the ResampleRate should remain at 22050Hz for all recognizers.
+            //analysisSettings.SegmentTargetSampleRate = (int) configuration[AnalysisKeys.ResampleRate];
 
             // get transform input audio file - if needed
             Log.Info("Querying source audio file");
