@@ -424,7 +424,7 @@ namespace AnalysisPrograms
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
             if (parentProcess.ProcessName == "devenv")
             {
-                LoggedConsole.WriteLine("FINISHED: Press RETURN key to exit.");
+                LoggedConsole.WriteSuccessLine("FINISHED: Press RETURN key to exit.");
                 Console.ReadLine();
             }
 #endif
