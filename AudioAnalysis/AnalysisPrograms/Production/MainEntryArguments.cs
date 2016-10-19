@@ -126,6 +126,9 @@ namespace AnalysisPrograms.Production
 
         [ArgDescription("Set the logging to very very verbose. Equivalent to LogLevel = ALL = 7")]
         public bool VVVerbose { get; set; }
+
+        [ArgDescription("Reduce StdOut logging to WARN and ERROR. The default is false.")]
+        public bool QuietConsole { get; set; }
     }
 
     public enum LogVerbosity
