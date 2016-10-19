@@ -635,6 +635,30 @@ namespace AudioAnalysisTools
         }
 
 
+        public static void GetOscillation(double[] array, double framesPerSecond, double[,] cosines, out double oscilFreq, out double period, out double intenisty)
+        {
+            double[] modifiedArray = DataTools.SubtractMean(array);
+            double[] dctCoeff = MFCCStuff.DCT(modifiedArray, cosines);
+            // convert to absolute values because not interested in negative values due to phase.
+            for (int i = 0; i < dctCoeff.Length; i++)
+                dctCoeff[i] = Math.Abs(dctCoeff[i]);
+            // remove low freq oscillations from consideration
+            int thresholdIndex = dctCoeff.Length / 5;
+            for (int i = 0; i < thresholdIndex; i++)
+                dctCoeff[i] = 0.0;
+
+            dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
+            //dct = DataTools.normalise(dctCoeff); //another option to normalise
+            int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
+
+            //recalculate DCT duration in seconds
+            double dctDuration = dctCoeff.Length / framesPerSecond;
+            oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+            period = 2 * dctCoeff.Length / (double)indexOfMaxValue / framesPerSecond; //convert maxID to period in seconds
+            intenisty = dctCoeff[indexOfMaxValue];
+        }
+
+
         /// <summary>
         /// Note: The columns are freq bins.
         /// </summary>
