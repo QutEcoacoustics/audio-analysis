@@ -130,7 +130,7 @@ namespace AnalysisPrograms
             //vii: MAKE SONOGRAM
             Log.WriteLine("# Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;            
+            sonoConfig.SourceFName = recording.BaseName;            
             sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE;
             sonoConfig.WindowOverlap = 0.5;      // set default value
             sonoConfig.DoMelScale = false;

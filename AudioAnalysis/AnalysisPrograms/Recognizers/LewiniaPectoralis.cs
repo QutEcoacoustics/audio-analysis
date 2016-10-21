@@ -132,7 +132,7 @@ namespace AnalysisPrograms.Recognizers
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 //set default values - ignor those set by user
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,

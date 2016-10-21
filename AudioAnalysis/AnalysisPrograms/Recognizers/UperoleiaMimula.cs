@@ -131,7 +131,7 @@ namespace AnalysisPrograms.Recognizers
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
                 //NoiseReductionType = NoiseReductionType.NONE,
@@ -208,13 +208,13 @@ namespace AnalysisPrograms.Recognizers
             if (displayDebugImage)
             {
                 Image debugImage1 = LitoriaRothii.DisplayDebugImage(sonogram, acousticEvents, plots, hits);
-                var debugPath1 = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), this.Identifier, "png", "DebugSpectrogram1"));
+                var debugPath1 = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram1"));
                 debugImage1.Save(debugPath1.FullName);
 
                 // save new image with longer frame
                 var sonoConfig2 = new SonogramConfig
                     {
-                        SourceFName = recording.FileName,
+                        SourceFName = recording.BaseName,
                         WindowSize = 1024,
                         WindowOverlap = 0,
                         //NoiseReductionType = NoiseReductionType.NONE,
@@ -223,7 +223,7 @@ namespace AnalysisPrograms.Recognizers
                     };
                 BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);
 
-                var debugPath2 = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), this.Identifier, "png", "DebugSpectrogram2"));
+                var debugPath2 = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram2"));
                 Image debugImage2 = LitoriaRothii.DisplayDebugImage(sonogram2, acousticEvents, plots, null);
                 debugImage2.Save(debugPath2.FullName);
             }

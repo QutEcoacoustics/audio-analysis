@@ -107,7 +107,7 @@ namespace AnalysisPrograms
             //ii: MAKE SONOGRAM
             Log.WriteLine("Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             sonoConfig.WindowOverlap = FeltFrameOverlap;      // set default value
             sonoConfig.DoMelScale = false;
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;

@@ -114,7 +114,7 @@ namespace AnalysisPrograms.Recognizers
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING

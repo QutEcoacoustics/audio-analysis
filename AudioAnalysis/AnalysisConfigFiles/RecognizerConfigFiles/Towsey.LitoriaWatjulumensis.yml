@@ -20,6 +20,8 @@ Profiles:
         # Threshold for oscillation intensity found by DCT
         IntensityThreshold: 0.4
         DecibelThreshold: 5.0
+        # AT: Michael, TODO below - you referenced this value in your code but did not have it in the config file!
+        EventThreshold: ~ 
     Tink:    
         <<: *Standard
         MinDuration: 0.1

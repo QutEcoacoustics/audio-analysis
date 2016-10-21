@@ -196,7 +196,7 @@ namespace AnalysisPrograms
         {
             //ii: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             //sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
             

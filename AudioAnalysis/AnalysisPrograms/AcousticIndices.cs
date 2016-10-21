@@ -431,7 +431,7 @@ namespace AnalysisPrograms
 
                 if (saveSonogramData)
                 {
-                    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                    string csvPath = Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv");
                     Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
                 }
             }
@@ -458,7 +458,7 @@ namespace AnalysisPrograms
             foreach (var kvp in selectors)
             {
                 // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
@@ -514,7 +514,7 @@ namespace AnalysisPrograms
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                                           LongDurationSpectrogramConfig = ldSpectrogramConfig
                                       };
-            var icdPath = FilenameHelpers.AnalysisResultName(
+            var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
                 basename,
                 IndexGenerationData.FileNameFragment,

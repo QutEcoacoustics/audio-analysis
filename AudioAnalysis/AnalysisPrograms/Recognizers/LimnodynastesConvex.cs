@@ -297,7 +297,7 @@ namespace AnalysisPrograms.Recognizers
             if (displayDebugImage)
             {
                 Image debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
 
