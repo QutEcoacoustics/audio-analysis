@@ -301,7 +301,7 @@ namespace AnalysisPrograms.Recognizers
                 var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
                 var debugPlots = new List<Plot> { debugPlot, plot };
                 var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
 
@@ -493,7 +493,7 @@ namespace AnalysisPrograms.Recognizers
                 var debugPlot = new Plot("Similarity Score", similarityScores, eventSimilarityThreshold);
                 var debugPlots = new List<Plot> { plot, debugPlot };
                 var debugImage = DisplayDebugImage(sonogram, events, debugPlots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), this.Identifier, "png", "DebugSpectrogram"));
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
 

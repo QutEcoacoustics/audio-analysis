@@ -302,7 +302,7 @@ namespace AudioAnalysisTools.DSP
                 //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
                 //SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-                //sonoConfig.SourceFName = recording.FileName;
+                //sonoConfig.SourceFName = recording.BaseName;
                 //sonoConfig.WindowOverlap = 0.5;      // set default value
                 //sonoConfig.DoMelScale = false;
                 //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;

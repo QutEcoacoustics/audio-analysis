@@ -121,14 +121,14 @@ namespace AnalysisPrograms.Recognizers
 
 
             // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_RecordingSamples.csv"), recording.WavReader.GetChannel(0));
 
 
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING
@@ -158,7 +158,7 @@ namespace AnalysisPrograms.Recognizers
 
             // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
             //double[] array = DataTools.Matrix2Array(sonogram.Data);
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+".csv"), array);
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+".csv"), array);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
@@ -184,7 +184,7 @@ namespace AnalysisPrograms.Recognizers
 
 
             // DEBUG: Following line used to search for where indeterminism creeps into the event detection
-            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.FileName+"_ScoreArray.csv"), scores);
+            //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_ScoreArray.csv"), scores);
 
 
             var prunedEvents = new List<AcousticEvent>();

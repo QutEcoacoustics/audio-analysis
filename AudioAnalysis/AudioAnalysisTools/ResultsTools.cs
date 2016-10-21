@@ -498,8 +498,8 @@ namespace AudioAnalysisTools
             }
 
             
-            var reportfilePath = FilenameHelpers.AnalysisResultName(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt).ToFileInfo();
-            var reportfilePathBackup = FilenameHelpers.AnalysisResultName(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt, "BACKUP").ToFileInfo();
+            var reportfilePath = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt).ToFileInfo();
+            var reportfilePathBackup = FilenameHelpers.AnalysisResultPath(outputDirectory, resultFilenamebase, analysisTag, ReportFileExt, "BACKUP").ToFileInfo();
 
             serialiseFunc(reportfilePath, results);
 

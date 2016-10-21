@@ -357,7 +357,7 @@ namespace AnalysisPrograms
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
 
             DrawLongDurationSpectrograms.Arguments args = new DrawLongDurationSpectrograms.Arguments();
-            //args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+            //args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv")),
             //args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
             args.SpectrogramConfigPath = null;
             args.IndexPropertiesConfig = indexPropertiesConfig;

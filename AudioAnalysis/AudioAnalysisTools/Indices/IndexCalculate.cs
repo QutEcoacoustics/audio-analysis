@@ -129,7 +129,7 @@ namespace AudioAnalysisTools.Indices
             dynamic configuration, 
             bool returnSonogramInfo = true)
         {
-            string recordingFileName = recording.FileName;
+            string recordingFileName = recording.BaseName;
             double epsilon   = Math.Pow(0.5, recording.BitsPerSample - 1);
             int signalLength = recording.WavReader.GetChannel(0).Length;
             int sampleRate   = recording.WavReader.SampleRate; 
