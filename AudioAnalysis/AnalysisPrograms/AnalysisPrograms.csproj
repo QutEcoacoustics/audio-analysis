@@ -263,7 +263,6 @@
     <Compile Include="Recognizers\LitoriaPallida.cs" />
     <Compile Include="Recognizers\LitoriaRubella.cs" />
     <Compile Include="Recognizers\UperoleiaMimula.cs" />
-    <Compile Include="Recognizers\LitoriaBicolorOLD.cs" />
     <Compile Include="Recognizers\LitoriaNasuta.cs" />
     <Compile Include="Recognizers\LitoriaRothii.cs" />
     <Compile Include="Recognizers\LitoriaOlong.cs" />
