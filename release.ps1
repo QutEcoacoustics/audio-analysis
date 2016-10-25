@@ -60,3 +60,4 @@ echo "creating github release"
 hub release create "$(if($pre_release){"-p"})" -a .\Release.$version.tar.gz -a .\Debug.$version.tar.gz -m "Version $tag_name`nRELEASE and DEBUG builds" $tag_name
 
 Write-Host "Release created!"
+cd "../../.."
