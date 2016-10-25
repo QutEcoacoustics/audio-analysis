@@ -112,7 +112,7 @@ namespace AnalysisPrograms.Recognizers
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 //set default values - ignore those set by user
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
@@ -140,13 +140,15 @@ namespace AnalysisPrograms.Recognizers
             var predictedEvents = results.Item4;
             var debugImage = results.Item5;
 
-            var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), SpeciesName, "png", "DebugSpectrogram"));
-            debugImage.Save(debugPath.FullName);
+            // old way of creating a path:
+            //var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), SpeciesName, "png", "DebugSpectrogram"));
+            var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, SpeciesName, "png", "DebugSpectrogram");
+            debugImage.Save(debugPath);
 
 
             //#############################################################################################################################################
 
-            // Prune events here if erquired i.e. remove those below threshold score if this not already done. See other recognizers.
+            // Prune events here if required i.e. remove those below threshold score if this not already done. See other recognizers.
             foreach (var ae in predictedEvents)
             {
                 // add additional info
@@ -292,9 +294,9 @@ namespace AnalysisPrograms.Recognizers
                 // add abbreviatedSpeciesName into event
                 if (maximumIntensity >= intensityThreshold)
                 {
-                    ae.Name = "L.w.Trill";
+                    ae.Name = "L.w.Trill"; // TODO: use variable
                     ae.Score_MaxInEvent = maximumIntensity;
-                    ae.Profile = "Trill";
+                    ae.Profile = "Trill"; // TODO: use variable
                     confirmedEvents.Add(ae);
                 }
 
@@ -322,9 +324,9 @@ namespace AnalysisPrograms.Recognizers
                 // add abbreviatedSpeciesName into event
                 //if (maximumIntensity >= intensityThreshold)
                 //{
-                    ae2.Name = "L.w.Tink";
+                    ae2.Name = "L.w.Tink"; // TODO: use variable
                     //ae2.Score_MaxInEvent = maximumIntensity;
-                    ae2.Profile = "Tink";
+                    ae2.Profile = "Tink"; // TODO: use variable
                     confirmedEvents.Add(ae2);
                 //}
 
@@ -353,7 +355,7 @@ namespace AnalysisPrograms.Recognizers
             // return new sonogram because it makes for more easy interpretation of the image
             var returnSonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 WindowSize = 512,
                 WindowOverlap = 0,
                 // the default window is HAMMING

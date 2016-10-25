@@ -131,7 +131,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //    double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
         //    string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_CVR;
         //    var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap);
-        //    cs1.FileName = fileStem;
+        //    cs1.BaseName = fileStem;
         //    cs1.ColorMode = colorMap;
         //    cs1.BackgroundFilter = backgroundFilterCoeff;
         //    var dirInfo = new DirectoryInfo(topLevelDirectory);

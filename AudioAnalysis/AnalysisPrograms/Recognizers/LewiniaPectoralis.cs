@@ -107,8 +107,7 @@ namespace AnalysisPrograms.Recognizers
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
             if (!hasProfiles)
             {
-                LoggedConsole.WriteFatalLine("The Config file for L.pectoralis must contain profiles.",
-                    new Exception("Fatal error"));
+                throw new ConfigFileException("The Config file for L.pectoralis must contain a profiles object.");
             }
 
             // get the profile names

@@ -493,7 +493,7 @@ namespace AnalysisPrograms
             // i: Init SONOGRAM config
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = 0.0,
                 NoiseReductionType = NoiseReductionType.NONE
@@ -691,7 +691,7 @@ namespace AnalysisPrograms
                 ae.SegmentDuration = recording.Duration();
                 ae.Name = abbreviatedName;
                 ae.BorderColour = Color.Red;
-                ae.FileName = recording.FileName;
+                ae.FileName = recording.BaseName;
             });
 
             double[] scores = new double[rhzColCount]; // predefinition of score array

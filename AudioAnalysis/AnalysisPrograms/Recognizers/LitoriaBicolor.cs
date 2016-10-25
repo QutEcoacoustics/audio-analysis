@@ -120,7 +120,7 @@ namespace AnalysisPrograms.Recognizers
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 //set default values - ignore those set by user
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
@@ -334,7 +334,7 @@ namespace AnalysisPrograms.Recognizers
             // return new sonogram because it makes for more easy interpretation of the image
             var returnSonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 WindowSize = 512,
                 WindowOverlap = 0,
                 // the default window is HAMMING

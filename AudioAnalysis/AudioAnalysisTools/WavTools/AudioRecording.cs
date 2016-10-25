@@ -22,7 +22,11 @@
         private readonly WavReader wavReader = null;
         
         #region Properties
-		public string FileName { get; private set; }
+
+        /// <summary>
+        /// The file name without the extension
+        /// </summary>
+		public string BaseName { get; private set; }
         public string FilePath { get; private set; }
         public byte[] Bytes { get; set; }
         public int SampleRate    { get { if (wavReader != null) return wavReader.SampleRate;    else return -999; } }
@@ -50,7 +54,7 @@
         public AudioRecording(string path)
         {
             this.FilePath  = path;
-            this.FileName  = Path.GetFileNameWithoutExtension(path);
+            this.BaseName  = Path.GetFileNameWithoutExtension(path);
             this.wavReader = new WavReader(path);           
         }
 
@@ -62,7 +66,7 @@
         public AudioRecording(byte[] bytes, string name)
         {
             this.FilePath = name;
-            this.FileName = Path.GetFileNameWithoutExtension(name);
+            this.BaseName = Path.GetFileNameWithoutExtension(name);
             this.Bytes    = bytes;
             if (Bytes != null) 
                 this.wavReader = new WavReader(bytes);

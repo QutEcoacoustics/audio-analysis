@@ -534,7 +534,7 @@ namespace AnalysisPrograms
                             indexGenerationData.IndexCalculationDuration,
                             indexGenerationData.RecordingStartDate);
 
-                    var imagePath = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem, "SummaryIndices", "png");
+                    var imagePath = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem, "SummaryIndices", "png");
                     tracksImage.Save(imagePath);
                 }
                 
@@ -618,7 +618,7 @@ namespace AnalysisPrograms
                 if (!resultsDir.Exists) resultsDir.Create();
 
                 var opFileStem1 = $"{arguments.FileStemName}_{dateString}";
-                //var indicesFile = FilenameHelpers.AnalysisResultName(resultsDir, opFileStem1, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
+                //var indicesFile = FilenameHelpers.AnalysisResultPath(resultsDir, opFileStem1, LDSpectrogramStitching.SummaryIndicesStr, LDSpectrogramStitching.CsvFileExt);
 
                 // CONCATENATE the SUMMARY INDEX FILES
                 var summaryDict = LDSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, opFileStem1);
@@ -725,7 +725,7 @@ namespace AnalysisPrograms
             foreach (var kvp in results)
             {
                 // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, kvp.Value, TwoDimensionalArray.ColumnMajorFlipped);
             }
