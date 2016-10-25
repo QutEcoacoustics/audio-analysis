@@ -150,7 +150,7 @@ namespace AnalysisPrograms.Recognizers
 
             //#############################################################################################################################################
 
-            var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), SpeciesName, "png", "DebugSpectrogram"));
+            var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), SpeciesName, "png", "DebugSpectrogram"));
             debugImage.Save(debugPath.FullName);
 
             // Prune events here if erquired i.e. remove those below threshold score if this not already done. See other recognizers.
