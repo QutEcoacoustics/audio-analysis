@@ -106,7 +106,7 @@ namespace AudioAnalysisTools.Indices
             // write info to file
             if (errors.Count != 0)
             {
-                string path = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, ErroneousIndexSegments.ErroneousIndexSegmentsFilenameFragment, "json");
+                string path = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, ErroneousIndexSegments.ErroneousIndexSegmentsFilenameFragment, "json");
                 Yaml.Serialise<List<ErroneousIndexSegments>>(new FileInfo(path), errors);
             }
 

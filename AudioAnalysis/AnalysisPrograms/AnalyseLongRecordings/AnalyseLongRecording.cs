@@ -322,7 +322,7 @@ Output  to  directory: {1}
                             imageTitle,
                             timeScale,
                             fileSegment.TargetFileStartDate);
-                    var imagePath = FilenameHelpers.AnalysisResultName(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
+                    var imagePath = FilenameHelpers.AnalysisResultPath(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
                     tracksImage.Save(imagePath);
                 }
             }

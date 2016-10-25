@@ -11,16 +11,16 @@
 #     sourced externally
 # 5.  Clustering diel plots - uses col_func.R
 
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 1. Plot ID3 separation values ------------------------------------------------------
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
 
 ID3_values <- read.csv("ID3_values.csv")
 #col <- c("red", "blue", "green", "orange", 
 #         "black", "purple","magenta")
-col <- rep("black",8)
+Jcol <- rep("black",8)
 pch = c(15,20,17,18,16,21,22,23)
 labels <- as.character(seq(12500, 30000, 2500))
 x <- seq(5, 100, 5)
@@ -75,9 +75,9 @@ legend("topright", pch = pch[2:5], lty = c(1),
 dev.off()
 rm(ID3_values)
 
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 2.  Plot Composite Images of each cluster -------------------------------
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
 
@@ -232,9 +232,9 @@ for(j in 1:k2_value) {
   cluster_image(j) # call function k2 times
 }
 
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 3.  Plotting 2hour_plot - time of day per month -------------------------------
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
 
@@ -416,11 +416,14 @@ for(i in 1:k2_value){
   plot_2hour_files(i)  
 }
 
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 4. Plot yearlong dot matrix plots  -----------------------------------------------------
-
-# Description:  Plots the dominant clusters in ech two 
-#               hour period across each day
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Description:  Plots the dominant clusters in each two 
+#               hour period across days in two ways
+# 1. As individual clusters 
+# 2. As agglomerated clusters ie grouping all clusters 
+# classified as the same feature together
 
 # remove all objects in the global environment
 rm(list = ls())
@@ -435,6 +438,7 @@ cluster_list <- read.csv(paste("data/datasets/chosen_cluster_list_",
 site1 <- rep("GympieNP", nrow(cluster_list)/2)
 site2 <- rep("WoondumNP", nrow(cluster_list)/2)
 site <- c(site1, site2)
+rm(site1, site2)
 
 # generate a sequence of dates
 start <-  strptime("20150622", format="%Y%m%d")
@@ -482,10 +486,275 @@ for(i in 1:(length(periods)-1)) {
 }
 
 # Create column containing specific site, date and period info
-cluster_list$site_yrMth_per <- paste(cluster_list$site, 
-                                     substr(cluster_list$dates,1,6),
+#cluster_list$site_yrMth_per <- paste(cluster_list$site, 
+#                                     substr(cluster_list$dates,1,6),
+#                                     cluster_list$period, 
+#                                     sep = "_")
+# Create column containing specific site, date and period info
+cluster_list$site_Date_per <- paste(cluster_list$site, 
+                                     substr(cluster_list$dates,1,8),
                                      cluster_list$period, 
                                      sep = "_")
+
+# Aggregate all clusters from the same feature together
+# features include 
+
+# Check for col_func in globalEnv otherwise source function
+if(!exists("col_func", mode="function")) source("scripts/col_func.R")
+
+# Generate colour list using col_func
+# Note col_func requires a csv file containing customed
+# colour information for each cluster 
+col_func(cluster_colours)
+
+cluster_list$descpt <- 0
+list <- unique(cluster_colours$Feature)
+list <- as.character(list[1:(length(list)-1)])
+
+# Add a description column
+for(i in 1:(length(unique(cluster_list$cluster_list))-1)) {
+  # Obtain a list of clusters corresponding to the first feature
+  # in the list
+  a <- which(as.character(cluster_colours$Feature)==list[i])
+  for(j in 1:length(a)) {
+    a1 <- which(cluster_list$cluster_list==a[j])  
+    cluster_list[a1,7] <- as.character(list[i])
+  }
+}
+# complete the description column by adding NAs
+a <- which(cluster_list$descpt=="0")
+cluster_list$descpt[a] <- "NA"
+
+# Find the number of each class 
+num_class <- dataFrame(colClasses=c(a="list", 
+                                    b="integer", c="numeric",d="numeric", 
+                                    e="integer", f="numeric",g="numeric", 
+                                    h="numeric"), 
+                       nrow=(length(list)+1))
+colnames(num_class) <- c("class", "Freq_Gym","Percent_class","Pcent_gym_tot",
+                         "Freq_Woon","Percent_class","Pcent_woon_tot",
+                         "Percent_total")
+
+number_of_obs <- nrow(cluster_list)
+for(i in 1:length(list)) {
+  gym <- length(which(cluster_list$descpt[1:(number_of_obs/2)]==list[i]))
+  woon <- length(which(cluster_list$descpt[(number_of_obs/2+1):number_of_obs]==list[i]))
+  total <- gym + woon
+  gym_per <- round(gym/total*100, 6)
+  woon_per <- round(woon/total*100, 6)
+  gym_per_all <- round(gym/number_of_obs*100, 6)
+  woon_per_all <- round(woon/number_of_obs*100, 6)
+  percent_total <- gym_per_all + woon_per_all
+  num_class[i,] <- c(list[i], gym, gym_per, gym_per_all,
+                     woon, woon_per, woon_per_all, percent_total)
+}
+rm(gym, woon, total, gym_per, woon_per, gym_per_all, woon_per_all)
+gym_na <- length(which(cluster_list$descpt[1:(number_of_obs/2)]=="NA"))
+woon_na <- length(which(cluster_list$descpt[(number_of_obs/2+1):number_of_obs]=="NA"))
+total <- gym_na + woon_na
+gym_na_percent <- round((gym_na/total *100),6)
+woon_na_percent <- round((woon_na/total *100),6)
+gym_na_total <- round(gym_na/number_of_obs*100, 6)
+woon_na_total <- round(woon_na/number_of_obs*100, 6)
+total_percent <- round(((gym_na_percent + woon_na_percent)/number_of_obs), 10)
+num_class[(length(list)+1),] <- c("NA", gym_na, gym_na_percent,
+                                  gym_na_total, woon_na, woon_na_percent,
+                                  woon_na_total, total_percent)
+rm(gym_na,gym_na_percent, gym_na_total,
+   woon_na, woon_na_percent, woon_na_total, total_percent)
+
+g <- grep("QUIET", num_class$class)
+total_quiet <- sum(as.numeric(num_class$Percent_total[g]))
+g <- grep("RAIN", num_class$class)
+total_rain <- sum(as.numeric(num_class$Percent_total[g]))
+g <- grep("WIND", num_class$class)
+total_wind <- sum(as.numeric(num_class$Percent_total[g]))
+g <- grep("BIRDS", num_class$class)
+h <- grep("MORNING CHORUS", num_class$class)
+total_birds <- sum(as.numeric(num_class$Percent_total[c(g,h)]))
+
+g <- grep("INSECTS", num_class$class)
+h <- grep("QUIET INSECTS", num_class$class)
+total_insects <- sum(as.numeric(num_class$Percent_total[g])) -
+  sum(as.numeric(num_class$Percent_total[h]))
+g <- grep("CICADAS", num_class$class)
+total_cicadas <- sum(as.numeric(num_class$Percent_total[g]))
+
+
+# not needed for agg
+#cluster_list$R <- 0
+#cluster_list$G <- 0
+#cluster_list$B <- 0
+#for(i in 1:length(list)) {
+#  a <- which(cluster_colours$Feature==list[i])
+#  red <- cluster_colours$R[a[1]]
+#  green <- cluster_colours$G[a[1]]
+#  blue <- cluster_colours$B[a[1]]
+#  a <- which(cluster_list$descpt==list[i])
+#  cluster_list$R[a] <- red
+#  cluster_list$G[a] <- green
+#  cluster_list$B[a] <- blue
+#}
+
+# Generate a list of dominant clusters in each 2 hour period from the 
+# agglomerated cluster descriptions
+a <- table(cluster_list$descpt, cluster_list$site_Date_per)
+a <- data.frame(a)
+ref1 <- 1
+ref2 <- (length(list)+1)
+selected_rows <- NULL
+i <- 0
+for(i in 1:(nrow(a)/(length(list)+1))) {
+  b <- which(a$Freq[ref1:ref2]==max(a$Freq[ref1:ref2]))
+  
+  if(length(b)==1) {
+    print(b)
+    b <- b + ref1 - 1
+    selected_rows <- c(selected_rows, b)
+  }
+  # Break ties,  Take the one that is greatest over two periods
+  if(length(b) >= 2) {
+    print(b)
+    b <- b + ref1 - 1 
+    b <- b[1]
+    selected_rows <- c(selected_rows, b)
+  }
+  ref1 <- ref1 + length(list) + 1
+  ref2 <- ref2 + (length(list)+1)
+}
+dominant_agglomerated_clusters <- a[selected_rows,]
+dominant_agglomerated_clusters <- data.frame(dominant_agglomerated_clusters)
+
+feature_colours <- read.csv("data/datasets/Feature_colours.csv")
+
+# Separate cluster_list into sites
+nrow_dom_cluster <- nrow(dominant_agglomerated_clusters)
+dom_agg_cl_gym <- dominant_agglomerated_clusters[1:(nrow_dom_cluster/2),]
+dom_agg_cl_woon <- dominant_agglomerated_clusters[(nrow_dom_cluster/2 + 1):
+                                                    nrow_dom_cluster,]
+colnames(dom_agg_cl_gym) <- c("feature", "date", "frequency")
+colnames(dom_agg_cl_woon) <- c("feature", "date", "frequency")
+
+# Using dom_agg_cl_gym and feature_colours
+png("plots/dom_agg_gym_test.png", 
+    width = 5000, height = 5000)
+par(mar=c(2, 2.5, 2, 2.5))
+# Plot an empty plot with no axes or frame
+plot(c(0, nrow(dom_agg_cl_gym)), 
+     c(nrow(dom_agg_cl_gym), 1), 
+     type = "n", axes=FALSE, 
+     frame.plot=FALSE,
+     xlab="", ylab="")
+for(i in 1:length(feature_colours$Feature)) {
+  feature <- as.character(feature_colours$Feature[i])
+  a <- which(dom_agg_cl_gym$feature==feature)
+  for(j in a) {
+    for(k in a) {
+      ref <- i
+      R_code <- intToHex(feature_colours[ref,2])
+      # add padding if necessary
+      if(nchar(R_code)==1) {
+        R_code <- paste("0", R_code, sep="")
+      }
+      G_code <- intToHex(feature_colours[ref,3])
+      if(nchar(G_code)==1) {
+        G_code <- paste("0", G_code, sep="")
+      }
+      B_code <- intToHex(feature_colours[ref,4])
+      if(nchar(B_code)==1) {
+        B_code <- paste("0", B_code, sep="")
+      }
+      col_code <- paste("#",
+                        R_code, 
+                        G_code,
+                        B_code,
+                        sep = "")
+      #polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
+      polygon(c(k-1,k-1,k,k), c((j-1),j, j,(j-1)),
+              col=col_code, border = NA)
+    }
+  }
+}
+# Add axes labels (which in this case will be dates)
+at <- seq(12, 4776, by = 12)
+#axis(1, line = -5.5, at = at, #line=NA,
+#     labels = c("2","4","6","8","10","12","14","16","18","20",
+#                "22", "24"), cex.axis=2.1, outer = TRUE,
+#     las=T, pos = NA)
+#at <- seq(0, 1440, by = 10)
+#axis(1, line = -5.5, at = at, tick = TRUE,
+#     labels = FALSE, outer=TRUE)
+abline (v=seq(0, 4776, 12), h=seq(0,4776,12), lty=2, lwd=0.02, xpd=FALSE)
+#at <- seq(0, 1440, by = 120)
+#axis(2, line = 0.01, at = at, 
+#     labels = c("0","2","4","6","8","10",
+#                "12","14","16","18","20",
+#                "22", "24"), cex.axis=2.1, las=T, pos=NA)
+#at <- seq(0, 1440, by = 10)
+#axis(2, line = 0.01, at = at, tick = TRUE,
+#     labels = FALSE, pos=NA)
+dev.off()
+
+# Using dom_agg_cl_gym and feature_colours
+png("plots/dom_agg_woon_test.png", 
+    width = 5000, height = 5000)
+par(mar=c(2, 2.5, 2, 2.5))
+# Plot an empty plot with no axes or frame
+plot(c(0, nrow(dom_agg_cl_woon)), 
+     c(nrow(dom_agg_cl_woon), 1), 
+     type = "n", axes=FALSE, 
+     frame.plot=FALSE,
+     xlab="", ylab="")
+for(i in 1:length(feature_colours$Feature)) {
+  feature <- as.character(feature_colours$Feature[i])
+  a <- which(dom_agg_cl_woon$feature==feature)
+  for(j in a) {
+    for(k in a) {
+      ref <- i
+      R_code <- intToHex(feature_colours[ref,2])
+      # add padding if necessary
+      if(nchar(R_code)==1) {
+        R_code <- paste("0", R_code, sep="")
+      }
+      G_code <- intToHex(feature_colours[ref,3])
+      if(nchar(G_code)==1) {
+        G_code <- paste("0", G_code, sep="")
+      }
+      B_code <- intToHex(feature_colours[ref,4])
+      if(nchar(B_code)==1) {
+        B_code <- paste("0", B_code, sep="")
+      }
+      col_code <- paste("#",
+                        R_code, 
+                        G_code,
+                        B_code,
+                        sep = "")
+      #polygon(c(k,k,k+1,k+1), c(j,(j-1),(j-1),j),
+      polygon(c(k-1,k-1,k,k), c((j-1),j, j,(j-1)),
+              col=col_code, border = NA)
+    }
+  }
+}
+# Add axes labels (which in this case will be dates)
+at <- seq(12, 4776, by = 12)
+#axis(1, line = -5.5, at = at, #line=NA,
+#     labels = c("2","4","6","8","10","12","14","16","18","20",
+#                "22", "24"), cex.axis=2.1, outer = TRUE,
+#     las=T, pos = NA)
+#at <- seq(0, 1440, by = 10)
+#axis(1, line = -5.5, at = at, tick = TRUE,
+#     labels = FALSE, outer=TRUE)
+abline (v=seq(0, 4776, 12), h=seq(0,4776,12), lty=2, lwd=0.02, xpd=FALSE)
+#at <- seq(0, 1440, by = 120)
+#axis(2, line = 0.01, at = at, 
+#     labels = c("0","2","4","6","8","10",
+#                "12","14","16","18","20",
+#                "22", "24"), cex.axis=2.1, las=T, pos=NA)
+#at <- seq(0, 1440, by = 10)
+#axis(2, line = 0.01, at = at, tick = TRUE,
+#     labels = FALSE, pos=NA)
+dev.off()
+
 # Separate the site lists
 cluster_list_Gympie <- cluster_list[1:(nrow(cluster_list)/2),]
 cluster_list_Woondum <- cluster_list[(nrow(cluster_list)/2+1):nrow(cluster_list),]
@@ -497,12 +766,12 @@ a_Woon <- table(cluster_list_Woondum$cluster_list, cluster_list_Woondum$site_yrM
 a_Woon <- as.data.frame(a_Woon)
 
 # replace the NAs with 1000 to track these minutes
-NA_ref <- which(is.na(cluster_list$cluster_list)==TRUE)
-cluster_list$cluster_list[NA_ref] <- 1000
-NA_ref <- which(is.na(cluster_list_Gympie$cluster_list)==TRUE)
-cluster_list_Gympie$cluster_list[NA_ref] <- 1000
-NA_ref <- which(is.na(cluster_list_Woondum$cluster_list)==TRUE)
-cluster_list_Woondum$cluster_list[NA_ref] <- 1000
+#NA_ref <- which(is.na(cluster_list$cluster_list)==TRUE)
+#cluster_list$cluster_list[NA_ref] <- 1000
+#NA_ref <- which(is.na(cluster_list_Gympie$cluster_list)==TRUE)
+#cluster_list_Gympie$cluster_list[NA_ref] <- 1000
+#NA_ref <- which(is.na(cluster_list_Woondum$cluster_list)==TRUE)
+#cluster_list_Woondum$cluster_list[NA_ref] <- 1000
 
 # Create a csv file containing the numbers of each cluster at each site 
 summary <- NULL
@@ -554,10 +823,10 @@ colnames(summary) <- c("clusters", "gympie", "gym_percent",
 write.csv(summary, paste("data/2hour_plots_", k1_value, "_",
                          k2_value,"/Summary_",k1_value,"_",
                          k2_value,".csv", sep = ""), row.names = F)
-
+# dominant clusters using all 60 clusters
 dominant_clusters <- function(cluster_list) {
   # Create a table containing variables and frequencies
-  a <- table(cluster_list$cluster_list, cluster_list$site_yrMth_per)
+  a <- table(cluster_list$cluster_list, cluster_list$site_Date_per)
   a <- as.data.frame(a)
   
   reference <- NULL
@@ -633,9 +902,9 @@ png("data/dominant_clusters_Gympie_and_Woondum.png",
     width = 2000, height = 1000)
 par(mfrow=c(2,1), mar=c(3,3,2,1))
 plot(dom_clust_list_Gym, main=paste("Dominant clusters_Gympie_in 2 hour periods",
-                                k1_value, "_", k2_value))
-plot(dom_clust_list_Woon, main=paste("Dominant clusters_Woondum_in 2 hour periods",
                                     k1_value, "_", k2_value))
+plot(dom_clust_list_Woon, main=paste("Dominant clusters_Woondum_in 2 hour periods",
+                                     k1_value, "_", k2_value))
 dev.off()
 
 png("data/dominant_clusters_Gympie.png", width = 1000)
@@ -645,22 +914,150 @@ dev.off()
 
 png("data/dominant_clusters_Woondum.png", width = 1000)
 plot(dom_clust_list_Woon, main=paste("Dominant clusters_Woondum_in 2 hour periods",
-                                    k1_value, "_", k2_value))
+                                     k1_value, "_", k2_value))
 dev.off()
 
-# dot matrix plots
+############## dominant clusters using all agglomerated clusters
+# Check for col_func in globalEnv otherwise source function
+#if(!exists("col_func", mode="function")) source("scripts/col_func.R")
+
+# Generate colour list using col_func
+# Note col_func requires a csv file containing customed
+# colour information for each cluster 
+#col_func(cluster_colours)
+
+#cluster_list$descpt <- 0
+list <- unique(cluster_colours$Feature)
+list <- as.character(list[1:(length(list)-1)])
+list <- c(list, "NA")
+# sort list into alphabetical listing
+alpha_order <- order(list)
+list <- list[alpha_order]
+
+dominant_clusters_agglom <- function(cluster_list) {
+  # Create a table containing variables and frequencies
+  a <- table(cluster_list$descpt, cluster_list$site_Date_per)
+  a <- as.data.frame(a)
+  a$R <- 0
+  a$G <- 0
+  a$B <- 0
+  for(i in 1:length(list)) {
+    b <- which(a$Var1==list[i])
+    c <- which(cluster_list$descpt==list[i]) 
+      red <- cluster_list$R[c[1]]
+      green <- cluster_list$G[c[1]]
+      blue <- cluster_list$B[c[1]]
+    a$R[b] <- red
+    a$G[b] <- green
+    a$B[b] <- blue
+  }
+  
+  reference <- NULL
+  num_cluster <- length(unique(list))
+  seq1 <- seq(1, nrow(a), num_cluster)
+  seq1 <- c(seq1, nrow(a))
+  
+  for(i in 1:(nrow(a)/(num_cluster)))  {
+    ref <- which(a[seq1[i]:(seq1[i+1]-1),3]==max(a[seq1[i]:(seq1[i+1]-1),3]))
+    reference <- c(reference, ref)
+  }
+  # produce a dominant cluster list, that is a list of the dominant cluster 
+  # for each 2 hour period for each month for the two sites
+  dom_clust_list <- a[reference, 1]
+  
+  ref2 <- NULL
+  length <- NULL
+  reference <- NULL
+  seq1 <- seq(1, nrow(a), num_cluster)
+  seq1 <- c(seq1, nrow(a))
+  for(i in 1:(nrow(a)/num_cluster))  {
+    ref <- which(a[seq1[i]:(seq1[i+1]-1),4]==max(a[seq1[i]:(seq1[i+1]-1),4]))
+    if (length(ref)==1) {
+      print(ref)
+      reference <- c(reference, ref)  
+    }
+    
+    # Break ties,  Take the one that is greatest over two periods
+    if(length(ref) >= 2) {
+      ref2 <- c(ref2, i)
+      if(i > 1 & reference[i-1] %in% ref==TRUE) {
+        print(ref)
+        reference <- c(reference, reference[i-1])
+      }
+      
+      if(reference[i-1] %in% ref==FALSE) {
+        print(ref)
+        reference <- c(reference, ref[1])
+      }
+      
+    }
+  }
+  
+  # produce a dominant cluster list, that is a list of the dominant cluster 
+  # for each 2 hour period for each month for the two sites
+  dom_clust_list <<- a[reference,]
+}
+
+dominant_clusters_agglom(cluster_list)
+a <- a
+dom_clust_list <- dom_clust_list
+
+dominant_clusters_agglom(cluster_list_Gympie)
+a_Gym <- a
+dom_clust_list_Gym <- dom_clust_list
+
+dominant_clusters_agglom(cluster_list_Woondum)
+a_Woon <- a
+dom_clust_list_Woon <- dom_clust_list
+
+png("data/dominant_clusters_agglomeration.png", 
+    width = 2500)
+plot(dom_clust_list, main=paste("Dominant clusters_in 2 hour periods",
+                                k1_value, "_", k2_value),
+     ylab="Frequency")
+dev.off()
+
+png("data/dominant_clusters_Gympie_and_Woondum_agglomeration.png", 
+    width = 2500, height = 1000)
+par(mfrow=c(2,1), mar=c(3,3,2,1))
+max_height <- max(c(max(table(dom_clust_list_Gym),
+                        max(table(dom_clust_list_Woon)))))
+plot(dom_clust_list_Gym, main=paste("Dominant clusters_Gympie_in 2 hour periods",
+                                    k1_value, "_", k2_value),
+     ylim = c(0,max_height), ylab="Frequency")
+plot(dom_clust_list_Woon, main=paste("Dominant clusters_Woondum_in 2 hour periods",
+                                     k1_value, "_", k2_value),
+     ylim = c(0,max_height), ylab="Frequency")
+dev.off()
+
+png("data/dominant_clusters_Gympie_agglomeration.png", 
+    width = 2000)
+plot(dom_clust_list_Gym, main=paste("Dominant clusters_Gympie_in 2 hour periods",
+                                    k1_value, "_", k2_value),
+     ylab="Frequency")
+dev.off()
+
+png("data/dominant_clusters_Woondum_agglomeration.png", 
+    width = 2000)
+plot(dom_clust_list_Woon, main=paste("Dominant clusters_Woondum_in 2 hour periods",
+                                     k1_value, "_", k2_value),
+     ylab="Frequency")
+dev.off()
+
+# dot matrix plots 
 library(graphics)
 library(fields)
-data <- dom_clust_list[1:(length(dom_clust_list)/2)]
-num_periods <- length(dom_clust_list)/2  # number of 2 hour segments
+data <- dom_clust_list_Gym
+num_periods <- length(dom_clust_list_Gym)  # number of 2 hour segments
 
 num_clus <- length(unique(dom_clust_list))
 
 t <- rep(0,(num_periods*num_periods))
+periods <- 12
 for (i in 1:num_periods) { 
   for (j in 1:num_periods) {
     if(data[i]==data[j]) { 
-      t[((i-1)*min)+j] <- data[i]
+      t[((i-1)*periods)+j] <- data[i]
     }
   }
 }
@@ -823,9 +1220,9 @@ for (k in 1:2) {
   dev.off()
 }
 
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 5. Clustering Diel Plots -----------------------------------------------------
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # remove all objects in the global environment
 rm(list = ls())
 

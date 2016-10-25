@@ -415,7 +415,7 @@ namespace AudioBrowser
             fdlg.RestoreDirectory = false;
             if (fdlg.ShowDialog() == DialogResult.OK)
             {
-                var fiImageFile = new FileInfo(fdlg.FileName);
+                var fiImageFile = new FileInfo(fdlg.BaseName);
                 this.Helper.fiCSVFile = fiImageFile; // store in settings so can be accessed later.
 
                 this.Helper.diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiImageFile.FullName)); // change to selected directory

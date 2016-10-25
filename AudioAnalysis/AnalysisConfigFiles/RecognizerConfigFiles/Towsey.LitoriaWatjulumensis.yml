@@ -21,6 +21,7 @@ Profiles:
         MaxDuration: 0.8
         # Threshold for oscillation intensity found by DCT
         IntensityThreshold: 0.4
+        EventThreshold: 0.4 
     Tink:    
         #<<: *Standard
         MinDuration: 0.01

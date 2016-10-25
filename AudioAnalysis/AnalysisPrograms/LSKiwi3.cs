@@ -331,7 +331,7 @@ namespace AnalysisPrograms
 
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //MUST DO NOISE REMOVAL - XCORR only works well if do noise removal

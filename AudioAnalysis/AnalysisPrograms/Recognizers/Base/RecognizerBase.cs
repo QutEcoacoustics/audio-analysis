@@ -138,7 +138,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 {
                     this.DrawLongDurationSpectrogram(
                         analysisSettings.AnalysisInstanceOutputDirectory,
-                        recording.FileName,
+                        recording.BaseName,
                         results.ScoreTrack,
                         lazyIndices.Value,
                         acousticIndicesParsedConfiguration);
@@ -198,7 +198,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 // combine and save
                 //Image opImage = ImageTools.CombineImagesVertically(opImages);
 
-                var fileName = FilenameHelpers.AnalysisResultName(ldfcSpectrogramArguments.OutputDirectory, fileStem, "Ridges", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "Ridges", ".png");
                 //opImage.Save(fileName);
                 ridgeSpectrogram.Save(fileName);
             } // if (saveRidgeSpectrograms)
@@ -209,7 +209,7 @@ namespace AnalysisPrograms.Recognizers.Base
             if (saveGrayScaleSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(ldfcSpectrogramArguments, fileStem, hiResTimeScale, dictionaryOfSpectra);
-                var fileName = FilenameHelpers.AnalysisResultName(ldfcSpectrogramArguments.OutputDirectory, fileStem, "CombinedGreyScale", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "CombinedGreyScale", ".png");
                 opImage.Save(fileName);
             }
 
@@ -220,7 +220,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
                 var opImages = new List<Image> {opImage, scoreTrack};
                 opImage = ImageTools.CombineImagesVertically(opImages);
-                var fileName = FilenameHelpers.AnalysisResultName(ldfcSpectrogramArguments.OutputDirectory, fileStem, "TwoMaps", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "TwoMaps", ".png");
                 opImage.Save(fileName);
             }
         }
@@ -305,7 +305,7 @@ namespace AnalysisPrograms.Recognizers.Base
             foreach (var kvp in selectors)
             {
                 // write spectrum to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }

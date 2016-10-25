@@ -180,7 +180,7 @@ namespace AnalysisPrograms
             Log.WriteLine("Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);

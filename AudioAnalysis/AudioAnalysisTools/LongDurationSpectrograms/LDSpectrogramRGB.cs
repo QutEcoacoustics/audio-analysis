@@ -263,7 +263,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // TODO: this string constant is dodgy... but should never change... fix me when broken :-)
                 const string analysisType = "Towsey.Acoustic";
-                var path = FilenameHelpers.AnalysisResultName(ipdir, fileName, analysisType + "." + keys[i], "csv");
+                var path = FilenameHelpers.AnalysisResultPath(ipdir, fileName, analysisType + "." + keys[i], "csv");
                 var file = new FileInfo(path);
                 //string path = Path.Combine(ipdir.FullName, fileName + "." + keys[i] + ".csv");
                 if (File.Exists(path))
@@ -489,7 +489,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
-                string path = FilenameHelpers.AnalysisResultName(opdir, opFileName, key, "png");
+                string path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
                 Image bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
                 if (bmp != null)
                 {
@@ -1413,7 +1413,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image imageX;
             if (summaryIndices == null)
             {
-                string indicesFile = FilenameHelpers.AnalysisResultName(
+                string indicesFile = FilenameHelpers.AnalysisResultPath(
                     inputDirectory,
                     fileStem,
                     analysisType + ".Indices",
@@ -1427,7 +1427,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             if (imageX != null)
             {
-                imageX.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".ClipHiAmpl", "png"));
+                imageX.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + ".ClipHiAmpl", "png"));
             }
 
             if ((image1 == null) || (image2 == null)) throw new Exception("NULL image returned. Cannot proceed!");
@@ -1438,15 +1438,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //ribbon = cs1.GetSummaryIndexRibbon(colorMap1);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
 
-            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".SummaryRibbon", "png"));
+            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + ".SummaryRibbon", "png"));
             //ribbon = cs1.GetSummaryIndexRibbon(colorMap2);
             ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
-            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap2 + ".SummaryRibbon", "png"));
+            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + ".SummaryRibbon", "png"));
 
             ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
-            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap1 + ".SpectralRibbon", "png"));
+            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + ".SpectralRibbon", "png"));
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
-            ribbon.Save(FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, colorMap2 + ".SpectralRibbon", "png"));
+            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + ".SpectralRibbon", "png"));
 
             // only return images if chromeless
             return imageChrome == ImageChrome.Without
@@ -1500,7 +1500,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                                                                       colorMap, cs1.FileName, startTime, nyquist);
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, image.Width);
             image = LDSpectrogramRGB.FrameLDSpectrogram(image, titleBar, cs1, nyquist, hertzInterval);
-            var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, cs1.FileName, colorMap, "png");
+            var outputPath = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap, "png");
             image.Save(outputPath);
             return Tuple.Create(image, imageNoChrome);
         }
@@ -1509,7 +1509,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             var imageList = new[] { image1, imageX, image2 };
             Image image3 = ImageTools.CombineImagesVertically(imageList);
-            var outputPath = FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, "2Maps", "png");
+            var outputPath = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, "2Maps", "png");
             image3.Save(outputPath);
         }
     }
