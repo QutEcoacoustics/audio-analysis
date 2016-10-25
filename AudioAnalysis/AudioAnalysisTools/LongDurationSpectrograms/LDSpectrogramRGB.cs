@@ -1482,7 +1482,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image image = cs1.DrawFalseColourSpectrogram("NEGATIVE", colorMap);
             if(image == null)
             {
-                LoggedConsole.WriteFatalLine(" No image returned!", new Exception("FATAL ERROR!"));
+                LoggedConsole.WriteWarnLine($" No image returned for this ColorMap: {colorMap}!");
                 return Tuple.Create(image, image);
             }
 

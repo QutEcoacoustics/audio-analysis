@@ -469,13 +469,12 @@ namespace AnalysisPrograms.Recognizers
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
             if (!hasProfiles)
             {
-                LoggedConsole.WriteFatalLine("The Config file for L.watjulum must contain profiles.",
-                    new Exception("Fatal error"));
+                throw new ConfigFileException($"The Config file for {SpeciesName} must contain at least one valid profile.");
             }
             string[] profileNames = ConfigFile.GetProfileNames(configuration);
             foreach (var name in profileNames)
             {
-                LoggedConsole.WriteLine($"The Config file for L.watjulum contains the profile <{name}>.");
+                LoggedConsole.WriteLine($"The Config file for {SpeciesName}  contains the profile <{name}>.");
             }
 
             // dynamic profile = ConfigFile.GetProfile(configuration, "Trill");
@@ -483,8 +482,7 @@ namespace AnalysisPrograms.Recognizers
             bool success = ConfigFile.TryGetProfile(configuration, "Trill", out trillProfile);
             if (!success)
             {
-                LoggedConsole.WriteFatalLine("The Config file for L.watjulum must contain a \"Trill\" profile.",
-                    new Exception("Fatal error"));
+                throw new ConfigFileException($"The Config file for {SpeciesName} must contain a \"Trill\" profile.");
             }
 
             LoggedConsole.WriteLine($"Analyzing profile: {profileNames[0]}");
@@ -509,7 +507,7 @@ namespace AnalysisPrograms.Recognizers
             success = ConfigFile.TryGetProfile(configuration, "Tink", out tinkProfile);
             if (!success)
             {
-                LoggedConsole.WriteFatalLine("The Config file for L.watjulum must contain a \"Tink\" profile.", new Exception("Fatal error"));
+                throw new ConfigFileException($"The Config file for {SpeciesName} must contain a \"Tink\" profile.");
             }
             MinDurationOfTink = (double)tinkProfile[AnalysisKeys.MinDuration]; //
             // maximum duration in seconds of a tink event

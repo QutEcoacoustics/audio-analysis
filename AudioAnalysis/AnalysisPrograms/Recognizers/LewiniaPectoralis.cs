@@ -135,7 +135,7 @@ namespace AnalysisPrograms.Recognizers
                 // i: MAKE SONOGRAM
                 var sonoConfig = new SonogramConfig
                 {
-                    SourceFName = recording.FileName,
+                    SourceFName = recording.BaseName,
                     //set default values - ignor those set by user
                     WindowSize = frameSize,
                     WindowOverlap = windowOverlap,
@@ -166,7 +166,7 @@ namespace AnalysisPrograms.Recognizers
 
                 //#############################################################################################################################################
 
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.FileName), SpeciesName, "png", "DebugSpectrogram"));
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), SpeciesName, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
 
                 foreach (var ae in predictedEvents)
@@ -472,8 +472,7 @@ namespace AnalysisPrograms.Recognizers
             bool success = ConfigFile.TryGetProfile(configuration, profileName, out profile);
             if (!success)
             {
-                LoggedConsole.WriteFatalLine($"The Config file for L.pectoralis must contain a valid {profileName} profile.",
-                    new Exception("Fatal error"));
+                throw new InvalidOperationException($"The Config file for L.pectoralis must contain a valid {profileName} profile.");
             }
 
             // extract parameters
