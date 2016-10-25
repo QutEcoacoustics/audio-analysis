@@ -4,27 +4,28 @@ SpeciesName: Litoria watjulumensis
 CommonName: Watjulum frog
 AbbreviatedSpeciesName: L.watjulum
 
+UpperFreqBandTop: 3500
+UpperFreqBandBottom: 2500
+LowerFreqBandTop: 1500
+LowerFreqBandBottom: 1000
+DecibelThreshold: 5.0
+
 Profiles:
     Trill: &Standard
-        UpperFreqBandTop: 3500
-        UpperFreqBandBottom: 2500
-        LowerFreqBandTop: 1500
-        LowerFreqBandBottom: 1000
         # Periodicity of oscillation
-        # ignore oscillation rates whose period is below min & above max threshold
+        # Ignore oscillation rates whose period is below min & above max threshold
         MinPeriod: 0.02
         MaxPeriod: 0.05
-        # Minimum and maximum duration in seconds for the length of a true call.
+        # Minimum and maximum duration in seconds for the length of a true TRILL.
         MinDuration: 0.2
         MaxDuration: 0.8
         # Threshold for oscillation intensity found by DCT
         IntensityThreshold: 0.4
-        DecibelThreshold: 5.0
     Tink:    
-        <<: *Standard
-        MinDuration: 0.1
-        MaxDuration: 0.2
-
+        #<<: *Standard
+        MinDuration: 0.01
+        MaxDuration: 0.03
+        EventThreshold: 0.4
 
 ## Specifically for AnalyzeLongRecording
 # SegmentDuration: units=minutes;    
