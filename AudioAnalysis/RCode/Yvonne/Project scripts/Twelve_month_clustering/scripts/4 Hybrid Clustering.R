@@ -15,8 +15,8 @@
 #   days that show high similarity in the twenty-four hour spectrograms.  The
 #   clustering should maintain the similarity of the three days which should be
 #   distinct from another three day set.  
-# Note:  the code that generated the normalised .Rdata files see
-# end of code
+# Note:  the code that generated the normalised .Rdata files 
+# see the end of code
 
 #############################################
 # Load the SUMMARY indices

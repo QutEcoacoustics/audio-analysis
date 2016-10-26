@@ -1,3 +1,30 @@
+# This is an example only
+dd<-data.frame(
+  clust = 1:4, 
+  BGN = c(0, 0.13, 0.25, 0.38), 
+  SNR = c(0.1, 0.8, 0.63, 1), 
+  ACT = c(0.12, 0.84, 1, 0.54), 
+  EPS = c(0.23, 0.7, 1, 0.67), 
+  HFC = c(0.33, 0.6, 0.1, 0.9), 
+  MFC = c(1, 0.77, 1, 0.59),
+  LFC = c(0.8, 0.2, 0.3, 0.5),
+  ACI = c(0, 0.13, 0.25, 0.38), 
+  EAS = c(0.1, 0.8, 0.63, 1), 
+  EPS = c(0.12, 0.84, 1, 0.54), 
+  ECS = c(0.23, 0.7, 1, 0.67), 
+  CLC = c(0.33, 0.6, 0.1, 0.9) 
+)
+
+library(fmsb)
+
+par(mfrow=c(2,2), mar=c(1, 1, 1, 1)) #decrease default margin
+#layout(matrix(1:4, ncol=2)) #draw 4 plots to device
+#loop over rows to draw them, add 1 as max and 0 as min for each var
+lapply(1:4, function(i) { 
+  radarchart(rbind(rep(1,12), rep(0,12), dd[i,-1]))
+})
+
+###############################
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")
 #setwd("C:\\Work\\CSV files\\2015Jul01-120417\\Woondum3\\")
 
@@ -59,8 +86,8 @@ for (j in 4:20) {
   }
 }
 indices <- normIndices
-
-#model <- m.km <- kmeans(indices[c(4:20)], 30)
+nclust <- 30
+#model <- m.library(fmsb)km <- kmeans(indices[c(4:20)], 30)
 model <- m.kms <- kmeans(indices[c(5,7,9,10,11,13,14,15,17,18)], nclust)
 
 model$size

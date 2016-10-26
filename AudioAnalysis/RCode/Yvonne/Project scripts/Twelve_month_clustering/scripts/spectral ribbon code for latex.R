@@ -24,8 +24,10 @@ dates <- date.list
 rm(date.list)
 
 # Commands for Gympie ACI-ENT-EVN
-commands <- NULL
-ref <- 0
+commands <- paste("\\begin{document}")
+commands <- c(commands, paste(" ",sep = '\n'))
+
+ref <- 0;
 for(i in 1:length(dates)) {
   ref <- ref + 1
   b <- NULL
@@ -59,7 +61,15 @@ for(i in 1:length(dates)) {
 last_date <- dates[i]
 commands <- c(commands,
               paste("\\caption{GympieNP ACI-ENT-EVN: ", first_date," to ", last_date, "}"),
-              paste("\\end{figure} "))
+              paste("\\end{figure}"),
+              paste(" ",sep = '\n'),
+              paste("\\end{document}"))
+
+# Save the commands to text file
+fileConn <- file("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\concatOutput\\GympieNP\\GympieNP_tex_commands ACI-ENT-EVN.txt")
+writeLines(commands, fileConn)
+close(fileConn)
+
 fileConn <- file("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\concatOutput\\GympieNP\\GympieNP_tex_commands ACI-ENT-EVN.txt")
 writeLines(commands, fileConn)
 close(fileConn)
@@ -76,10 +86,11 @@ rm(list = ls())
 #\usepackage{caption}
 #\usepackage{graphicx}            
 # INSERT COMMANDS
-#\end{document}
 
 # Commands for Woondum ACI-ENT-EVN
-commands <- NULL
+commands <- paste("\\begin{document}")
+commands <- c(commands, paste(" ",sep = '\n'))
+
 ref <- 0
 for(i in 1:length(dates)) {
   ref <- ref + 1
@@ -113,7 +124,9 @@ a <- paste("\\includegraphics[width=18.5cm]
 last_date <- dates[i]
 commands <- c(commands,
               paste("\\caption{WoondumNP ACI-ENT-EVN: ", first_date," to ", last_date, "}"),
-              paste("\\end{figure} "))
+              paste("\\end{figure} "),
+              paste(" ",sep = '\n'),
+              paste("\\end{document}"))
 
 fileConn<-file("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\concatOutput\\Woondum3\\Woondum_tex_commands ACI-ENT-EVN.txt")
 writeLines(commands, fileConn)
@@ -128,10 +141,11 @@ close(fileConn)
 #\usepackage{caption}
 #\usepackage{graphicx}            
 # INSERT COMMANDS
-#\end{document}
 
 # Commands for Gympie BGN-POW-SPT
-commands <- NULL
+commands <- paste("\\begin{document}")
+commands <- c(commands, paste(" ",sep = '\n'))
+
 ref <- 0
 for(i in 1:length(dates)) {
   ref <- ref + 1
@@ -165,7 +179,9 @@ a <- paste("\\includegraphics[width=18.5cm]
 last_date <- dates[i]
 commands <- c(commands,
               paste("\\caption{GympieNP BGN-POW-SPT: ", first_date," to ", last_date, "}"),
-              paste("\\end{figure} "))
+              paste("\\end{figure} "),
+              paste(" ",sep = '\n'),
+              paste("\\end{document}"))
 
 fileConn<-file("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\concatOutput\\GympieNP\\GympieNP_tex_commands BGN-POW-SPT.txt")
 writeLines(commands, fileConn)
@@ -180,10 +196,11 @@ close(fileConn)
 #\usepackage{caption}
 #\usepackage{graphicx}            
 # INSERT COMMANDS
-#\end{document}
 
 # Commands for Woondum BGN-POW-SPT
-commands <- NULL
+commands <- paste("\\begin{document}")
+commands <- c(commands, paste(" ",sep = '\n'))
+
 ref <- 0
 for(i in 1:length(dates)) {
   ref <- ref + 1
@@ -217,7 +234,9 @@ a <- paste("\\includegraphics[width=18.5cm]
 last_date <- dates[i]
 commands <- c(commands,
               paste("\\caption{WoondumNP BGN-POW-SPT: ", first_date," to ", last_date, "}"),
-              paste("\\end{figure} "))
+              paste("\\end{figure} "),
+              paste(" ",sep = '\n'),
+              paste("\\end{document}"))
 
 fileConn<-file("C:\\Work\\Projects\\Twelve_month_clustering\\Saving_dataset\\data\\concatOutput\\Woondum3\\Woondum_tex_commands BGN-POW-SPT.txt")
 writeLines(commands, fileConn)
@@ -230,7 +249,5 @@ close(fileConn)
 #\setlength{\@fptop}{0pt}
 #\makeatother
 #\usepackage{caption}
-#\usepackage{graphicx}            
+#\usepackage{graphicx}
 # INSERT COMMANDS
-#\end{document}
-
