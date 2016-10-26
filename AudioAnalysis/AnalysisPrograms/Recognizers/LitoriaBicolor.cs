@@ -7,8 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Linq;
-
 namespace AnalysisPrograms.Recognizers
 {
     using System;
@@ -30,12 +28,8 @@ namespace AnalysisPrograms.Recognizers
 
     using TowseyLibrary;
     using AudioAnalysisTools.Indices;
-    //using Acoustics.Shared.Csv;
     using System.Drawing;
     using Acoustics.Shared;
-    using System.Diagnostics;
-    using Acoustics.Shared.Csv;
-    using Acoustics.Shared.ConfigFile;
 
     /// <summary>
     /// To call this LitoriaBicolor recognizer, the first command line argument must be "EventRecognizer".
@@ -59,8 +53,6 @@ namespace AnalysisPrograms.Recognizers
         public override string SpeciesName => "LitoriaBicolor";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        private const bool DoRecognizerTest = false;
 
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
@@ -95,8 +87,8 @@ namespace AnalysisPrograms.Recognizers
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
-            var lbConfig = new LitoriaBicolorConfig();
-            lbConfig.ReadConfigFile(configuration);
+            var recognizerConfig = new LitoriaBicolorConfig();
+            recognizerConfig.ReadConfigFile(configuration);
 
             if (recording.WavReader.SampleRate != 22050)
             {
@@ -107,7 +99,7 @@ namespace AnalysisPrograms.Recognizers
             //// ignore oscillations below this threshold freq
             //int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
             //// ignore oscillations above this threshold freq
-            int maxOscilRate = (int)Math.Ceiling(1 / lbConfig.MinPeriod);
+            int maxOscilRate = (int)Math.Ceiling(1 / recognizerConfig.MinPeriod);
 
             // this default framesize seems to work 
             const int frameSize = 128;
@@ -132,13 +124,9 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
             };
 
-            // Return a DEBUG IMAGE this recognizer only. MUST set false for deployment. 
-            bool returnDebugImage = false;
-            returnDebugImage = MainEntry.InDEBUG;
-
             //#############################################################################################################################################
             //DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            var results = Analysis(recording, sonoConfig, lbConfig, returnDebugImage);
+            var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG);
             //######################################################################
 
             if (results == null) return null; //nothing to process 
@@ -154,23 +142,24 @@ namespace AnalysisPrograms.Recognizers
             debugImage.Save(debugPath.FullName);
 
             // Prune events here if erquired i.e. remove those below threshold score if this not already done. See other recognizers.
-            foreach (var ae in predictedEvents)
+            foreach (AcousticEvent ae in predictedEvents)
             {
                 // add additional info
-                ae.Name = lbConfig.AbbreviatedSpeciesName;
-                ae.SpeciesName = lbConfig.SpeciesName;
+                ae.Name = recognizerConfig.AbbreviatedSpeciesName;
+                ae.SpeciesName = recognizerConfig.SpeciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
             };
 
-            // do a recognizer TEST.
-            if (DoRecognizerTest)
+            // do a RECOGNIZER TEST.
+            if (true)
             {
-                RecognizerScoresTest(new FileInfo(recording.FilePath), scoreArray);
-                RecognizerEventsTest(new FileInfo(recording.FilePath), predictedEvents);
+                var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
+                TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
+                AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, predictedEvents);
             }
 
-            var plot = new Plot(this.DisplayName, scoreArray, lbConfig.EventThreshold);
+            var plot = new Plot(this.DisplayName, scoreArray, recognizerConfig.EventThreshold);
             return new RecognizerResults()
             {
                 Sonogram = sonogram,
@@ -304,7 +293,7 @@ namespace AnalysisPrograms.Recognizers
             //######################################################################
 
             // calculate the cosine similarity scores
-            var scorePlot = new Plot("L.bicolor", scores, intensityThreshold);
+            var scorePlot = new Plot(lbConfig.SpeciesName, scores, intensityThreshold);
 
             //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
             Image debugImage = null;
@@ -345,15 +334,15 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
             };
             BaseSonogram returnSonogram = new SpectrogramStandard(returnSonoConfig, recording.WavReader);
-            return System.Tuple.Create(returnSonogram, hits, scores, confirmedEvents, debugImage);
+            return Tuple.Create(returnSonogram, hits, scores, confirmedEvents, debugImage);
         } //Analysis()
 
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
             const bool doHighlightSubband = false;
-            const bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            const bool add1KHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
 
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
@@ -365,7 +354,7 @@ namespace AnalysisPrograms.Recognizers
 
             if (events.Count > 0)
             {
-                foreach (AcousticEvent ev in events) // set colour for the events
+                foreach (var ev in events) // set colour for the events
                 {
                     ev.BorderColour = AcousticEvent.DefaultBorderColor;
                     ev.ScoreColour = AcousticEvent.DefaultScoreColor;
@@ -375,65 +364,12 @@ namespace AnalysisPrograms.Recognizers
             return image.GetImage();
         }
 
-        private void RecognizerScoresTest(FileInfo file, double[] scoreArray)
-        {
-            var subDir = "/Test_LitoriaBicolor/ExpectedOutput";
-            if (file.Directory == null) return;
-
-            Debug.Assert(file.Directory.Parent != null, "file.Directory.Parent != null");
-            var testDir = new DirectoryInfo(file.Directory.Parent.FullName + subDir);
-            if (!testDir.Exists) testDir.Create();
-            var fileName = file.Name.Substring(0, file.Name.Length - 9);
-
-            Log.Info("# ARRAY TEST: Starting benchmark score array test for the Test_LitoriaBicolor recognizer:");
-            string testName1 = "Check score array.";
-            var scoreFilePath = Path.Combine(testDir.FullName, fileName + ".TestScores.csv");
-            var scoreFile = new FileInfo(scoreFilePath);
-            if (!scoreFile.Exists)
-            {
-                Log.Warn("   Score Test file does not exist.    Writing output as future scores-test file");
-                FileTools.WriteArray2File(scoreArray, scoreFilePath);
-            }
-            else
-            {
-                TestTools.RecognizerTest(testName1, scoreArray, new FileInfo(scoreFilePath));
-            }
-        } // RecognizerTests()
-
-
-        private void RecognizerEventsTest(FileInfo file, List<AcousticEvent> events)
-        {
-            var subDir = "/Test_LitoriaBicolor/ExpectedOutput";
-            if (file.Directory == null) return;
-
-            Debug.Assert(file.Directory.Parent != null, "file.Directory.Parent != null");
-            var testDir = new DirectoryInfo(file.Directory.Parent.FullName + subDir);
-            if (!testDir.Exists) testDir.Create();
-            var fileName = file.Name.Substring(0, file.Name.Length - 9);
-
-            Log.Info("# EVENTS TEST: Starting benchmark acoustic events test for the Test_LitoriaBicolor recognizer:");
-            string testName2 = "Check events.";
-            var benchmarkFilePath = Path.Combine(testDir.FullName, fileName + ".TestEvents.csv");
-            var benchmarkFile = new FileInfo(benchmarkFilePath);
-            if (!benchmarkFile.Exists)
-            {
-                Log.Warn("   A file of test events does not exist.    Writing output as future events-test file");
-                Csv.WriteToCsv<EventBase>(benchmarkFile, events);
-            }
-            else // compare the test events with benchmark
-            {
-                var opDir = file.Directory.FullName + @"\" + Author + "." + SpeciesName;
-                var eventsFilePath = Path.Combine(opDir, fileName + "__Events.csv");
-                var eventsFile = new FileInfo(eventsFilePath);
-                TestTools.FileEqualityTest(testName2, eventsFile, benchmarkFile);
-            }
-        } // RecognizerTests()
-
     } //end class LitoriaBicolor.cs
 
 
     public class LitoriaBicolorConfig
     {
+        public string AnalysisName { get; set; }
         public string SpeciesName { get; set; }
         public string AbbreviatedSpeciesName { get; set; }
         public int UpperBandMinHz { get; set; }
@@ -451,7 +387,8 @@ namespace AnalysisPrograms.Recognizers
         internal void ReadConfigFile(dynamic configuration)
         {
             // common properties
-            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
             UpperBandMaxHz = (int)configuration["UpperFreqBandTop"];
             UpperBandMinHz = (int)configuration["UpperFreqBandBottom"];
