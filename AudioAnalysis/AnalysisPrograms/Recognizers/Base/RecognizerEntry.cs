@@ -86,9 +86,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string outputPath     = @"C:\SensorNetworks\Output\LewinsRail\";
             
             // LEWIN'S RAIL TEST
-            //string recordingPath = @"G:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\BAC2_20071008-085040.wav";
-            //string configPath    = @"G:\SensorNetworks\SoftwareTests\Test_LewinsRail\Data\Towsey.LewiniaPectoralis.yml";
-            //string outputPath    = @"G:\SensorNetworks\SoftwareTests\Test_LewinsRail\";
+            //string recordingPath = @"G:\SensorNetworks\SoftwareTests\UnitTest_Towsey.LewiniaPectoralis\Data\BAC2_20071008-085040.wav";
+            //string configPath    = @"G:\SensorNetworks\SoftwareTests\UnitTest_Towsey.LewiniaPectoralis\Data\Towsey.LewiniaPectoralis.yml";
+            //string outputPath    = @"G:\SensorNetworks\SoftwareTests\UnitTest_Towsey.LewiniaPectoralis\";
 
             // Limnodynastes convex
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\3mile_creek_dam_-_Herveys_Range_1076_248366_20130305_001700_30.wav";
@@ -96,10 +96,10 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LimnodynastesConvex.yml";
 
             // Litoria bicolor
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\bicolor_bickerton_island_1013_255205_20131211_191621_30_0.wav";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\bicolor_bickerton_island_1013_255205_20131211_191621_30_0.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\bicolor_bickerton_island_1013_255205_20131211_195821_30_0.wav";
-            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaBicolor.yml";
+            //string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaBicolor.yml";
 
             // Litoria fallax
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\53 Litoria fallax.mp3";
@@ -131,9 +131,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRubella.yml";
 
             // Litoria watjulumensis
-            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\wotjulumensis_bickerton_island_1013_255205_20131211_192951_30_0.wav";
-            //string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaWatjulumensis.yml";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\wotjulumensis_bickerton_island_1013_255205_20131211_192951_30_0.wav";
+            string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
+            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaWatjulumensis.yml";
 
             // Platyplectrum ornatum
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\PlatyplectrumSp\p_ornatum_bickerton_island_1013_255599_20140213_214500_30_0.wav";

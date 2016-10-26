@@ -7,8 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Diagnostics;
-
 namespace AnalysisPrograms.Recognizers
 {
     using System;
@@ -30,7 +28,6 @@ namespace AnalysisPrograms.Recognizers
 
     using TowseyLibrary;
     using AudioAnalysisTools.Indices;
-    using Acoustics.Shared.Csv;
     using Acoustics.Shared.ConfigFile;
     using System.Drawing;
     using Acoustics.Shared;
@@ -45,9 +42,6 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
-
-
-
     public class LewiniaPectoralis : RecognizerBase
     {
         public override string Author => "Towsey";
@@ -56,7 +50,10 @@ namespace AnalysisPrograms.Recognizers
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private const bool DoRecognizerTest = false;
+        private const bool DoRecognizerTest = true;
+        // Return a DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+        //public bool returnDebugImage = false;
+        public bool ReturnDebugImage = MainEntry.InDEBUG;
 
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
@@ -112,7 +109,7 @@ namespace AnalysisPrograms.Recognizers
 
             // get the profile names
             string[] profileNames = ConfigFile.GetProfileNames(configuration);
-            var lrConfig = new LewinsRailConfig();
+            var recognizerConfig = new LewinsRailConfig();
             var prunedEvents = new List<AcousticEvent>();
             var plots = new List<Plot>();
             BaseSonogram sonogram = null;
@@ -121,10 +118,10 @@ namespace AnalysisPrograms.Recognizers
             foreach (var name in profileNames)
             {
                 LoggedConsole.WriteLine($"Reading profile <{name}>.");
-                lrConfig.ReadConfigFile(configuration, name);
+                recognizerConfig.ReadConfigFile(configuration, name);
 
                 // ignore oscillations above this threshold freq
-                int maxOscilRate = (int)Math.Ceiling(1 / lrConfig.MinPeriod);
+                int maxOscilRate = (int)Math.Ceiling(1 / recognizerConfig.MinPeriod);
 
                 // calculate frame overlap and ignor any user inut.
                 double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
@@ -147,14 +144,9 @@ namespace AnalysisPrograms.Recognizers
                     NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
                 };
 
-                // Return a DEBUG IMAGE this recognizer only. MUST set false for deployment. 
-                bool returnDebugImage = false;
-                returnDebugImage = MainEntry.InDEBUG;
-
-
                 //#############################################################################################################################################
                 //DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-                var results = Analysis(recording, sonoConfig, lrConfig, returnDebugImage);
+                var results = Analysis(recording, sonoConfig, recognizerConfig, ReturnDebugImage);
                 //######################################################################
 
                 if (results == null) return null; //nothing to process 
@@ -172,20 +164,21 @@ namespace AnalysisPrograms.Recognizers
                 foreach (var ae in predictedEvents)
                 {
                     // add additional info
-                    if (!(ae.Score > lrConfig.EventThreshold)) continue;
+                    if (!(ae.Score > recognizerConfig.EventThreshold)) continue;
 
-                    ae.Name = lrConfig.AbbreviatedSpeciesName;
-                    ae.SpeciesName = lrConfig.SpeciesName;
+                    ae.Name = recognizerConfig.AbbreviatedSpeciesName;
+                    ae.SpeciesName = recognizerConfig.SpeciesName;
                     ae.SegmentStartOffset = segmentStartOffset;
                     ae.SegmentDuration = recordingDuration;
                     prunedEvents.Add(ae);
                 }
 
                 // do a recognizer TEST.
-                if(DoRecognizerTest)
+                if (true)
                 {
-                    RecognizerScoresTest(new FileInfo(recording.FilePath), scoreArray);
-                    RecognizerEventsTest(new FileInfo(recording.FilePath), prunedEvents);
+                    var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
+                    TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
+                    AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, predictedEvents);
                 }
 
 
@@ -195,7 +188,7 @@ namespace AnalysisPrograms.Recognizers
                     scoreArray[j] *= 4;
                     if (scoreArray[j] > 1.0) scoreArray[j] = 1.0;
                 }
-                var plot = new Plot(this.DisplayName, scoreArray, lrConfig.EventThreshold);
+                var plot = new Plot(this.DisplayName, scoreArray, recognizerConfig.EventThreshold);
                 plots.Add(plot);
             }
 
@@ -355,8 +348,8 @@ namespace AnalysisPrograms.Recognizers
         private static Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
             const bool doHighlightSubband = false;
-            const bool add1kHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            const bool add1KHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
 
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
@@ -378,68 +371,14 @@ namespace AnalysisPrograms.Recognizers
             return image.GetImage();
         }
 
-
-        private void RecognizerScoresTest(FileInfo file, double[] scoreArray)
-        {
-            var subDir = "/Test_LewinsRail/ExpectedOutput";
-            if (file.Directory == null) return;
-
-            Debug.Assert(file.Directory.Parent != null, "file.Directory.Parent != null");
-            var testDir = new DirectoryInfo(file.Directory.Parent.FullName + subDir);
-            if (!testDir.Exists) testDir.Create();
-            var fileName = file.Name.Substring(0, file.Name.Length - 9);
-
-            Log.Info("# ARRAY TEST: Starting benchmark score array test for the Lewin's Rail recognizer:");
-            string testName1 = "Check score array.";
-            var scoreFilePath = Path.Combine(testDir.FullName, fileName + ".TestScores.csv");
-            var scoreFile = new FileInfo(scoreFilePath);
-            if (!scoreFile.Exists)
-            {
-                Log.Warn("   Score Test file does not exist.    Writing output as future scores-test file");
-                FileTools.WriteArray2File(scoreArray, scoreFilePath);
-            }
-            else
-            {
-                TestTools.RecognizerTest(testName1, scoreArray, new FileInfo(scoreFilePath));
-            }
-        } // RecognizerTests()
-
-
-        private void RecognizerEventsTest(FileInfo file, List<AcousticEvent> events)
-        {
-            var subDir = "/Test_LewinsRail/ExpectedOutput";
-            if (file.Directory == null) return;
-
-            Debug.Assert(file.Directory.Parent != null, "file.Directory.Parent != null");
-            var testDir = new DirectoryInfo(file.Directory.Parent.FullName + subDir);
-            if (!testDir.Exists) testDir.Create();
-            var fileName = file.Name.Substring(0, file.Name.Length - 9);
-
-            Log.Info("# EVENTS TEST: Starting benchmark acoustic events test for the Lewin's Rail recognizer:");
-            string testName2 = "Check events.";
-            var benchmarkFilePath = Path.Combine(testDir.FullName, fileName + ".TestEvents.csv");
-            var benchmarkFile = new FileInfo(benchmarkFilePath);
-            if (!benchmarkFile.Exists)
-            {
-                Log.Warn("   A file of test events does not exist.    Writing output as future events-test file");
-                Csv.WriteToCsv<EventBase>(benchmarkFile, events);
-            }
-            else // compare the test events with benchmark
-            {
-                var opDir = file.Directory.FullName + @"\" + Author + "." + SpeciesName;
-                var eventsFilePath = Path.Combine(opDir, fileName + "__Events.csv");
-                var eventsFile = new FileInfo(eventsFilePath);
-                TestTools.FileEqualityTest(testName2, eventsFile, benchmarkFile);
-            }
-        } // RecognizerTests()
-
     } //end class Lewinia pectoralis - Lewin's Rail.
 
 
 
 
     public class LewinsRailConfig
-    {
+    {        
+        public string AnalysisName { get; set; }
         public string SpeciesName { get; set; }
         public string AbbreviatedSpeciesName { get; set; }
         public int UpperBandMinHz { get; set; }
@@ -458,7 +397,8 @@ namespace AnalysisPrograms.Recognizers
         public void ReadConfigFile(dynamic configuration, string profileName)
         {
             // common properties
-            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // KEYS TO PARAMETERS IN CONFIG FILE
@@ -472,7 +412,7 @@ namespace AnalysisPrograms.Recognizers
             bool success = ConfigFile.TryGetProfile(configuration, profileName, out profile);
             if (!success)
             {
-                throw new InvalidOperationException($"The Config file for L.pectoralis must contain a valid {profileName} profile.");
+                throw new InvalidOperationException($"The Config file for {SpeciesName} must contain a valid {profileName} profile.");
             }
 
             // extract parameters

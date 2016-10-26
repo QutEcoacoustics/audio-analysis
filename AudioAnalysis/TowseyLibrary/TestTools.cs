@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 using log4net;
 using Acoustics.Shared.Csv;
+using System.Diagnostics;
 
 namespace TowseyLibrary
 {
@@ -13,27 +15,53 @@ namespace TowseyLibrary
     {
 
 
+
+
+        public static void RecognizerScoresTest(string fileName, DirectoryInfo opDir, string testName, double[] scoreArray)
+        {
+            var testDir = new DirectoryInfo(opDir + $"\\UnitTest_{testName}");
+            var benchmarkDir = new DirectoryInfo(testDir + "\\ExpectedOutput");
+            if (!benchmarkDir.Exists) benchmarkDir.Create();
+            var benchmarkFilePath = Path.Combine(benchmarkDir.FullName, fileName + ".TestScores.csv");
+            var testFilePath = Path.Combine(testDir.FullName, fileName + ".Scores.csv");
+            FileTools.WriteArray2File(scoreArray, testFilePath);
+
+            LoggedConsole.WriteLine($"# ARRAY TEST: Starting benchmark score array test for the {testName} recognizer:");
+            var benchmarkFile = new FileInfo(benchmarkFilePath);
+            if (!benchmarkFile.Exists)
+            {
+                LoggedConsole.WriteWarnLine("   A file of test scores does not exist.    Writing output as future scores-test file");
+                FileTools.WriteArray2File(scoreArray, benchmarkFilePath);
+            }
+            else
+            {
+                CompareArrayWithBenchmark(testName, scoreArray, new FileInfo(benchmarkFilePath));
+            }
+        } 
+
+
         /// <summary>
         /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
         /// </summary>
+        /// <param name="testName"></param>
         /// <param name="scoreArray"></param>
-        /// <param name="wavFile"></param>
-        public static void RecognizerTest(string testName, double[] scoreArray, FileInfo scoreFile)
+        /// <param name="scoreFile"></param>
+        public static void CompareArrayWithBenchmark(string testName, double[] scoreArray, FileInfo scoreFile)
         {
             LoggedConsole.WriteLine("# TESTING: Starting benchmark test for "+ testName + ":");
             LoggedConsole.WriteLine("#          Comparing passed array of double with content of file <" + scoreFile.Name + ">");
-            bool allOK = true;
+            bool allOk = true;
             var scoreLines = FileTools.ReadTextFile(scoreFile.FullName);
             for (int i = 0; i < scoreLines.Count; i++)
             {
-                string str = scoreArray[i].ToString();
+                var str = scoreArray[i].ToString(CultureInfo.InvariantCulture);
                 if (!scoreLines[i].Equals(str))
                 {
-                    LoggedConsole.WriteWarnLine(String.Format("Line {0}: {1} NOT= benchmark <{2}>", i, str, scoreLines[i]));
-                    allOK = false;
+                    LoggedConsole.WriteWarnLine($"Line {i}: {str} NOT= benchmark <{scoreLines[i]}>");
+                    allOk = false;
                 }
             }
-            if (allOK)
+            if (allOk)
             {
                 LoggedConsole.WriteSuccessLine("   SUCCESS! Passed the SCORE ARRAY TEST.");
             }
@@ -90,17 +118,17 @@ namespace TowseyLibrary
             }
 
 
-            bool AOK = true;
+            var allOk = true;
 
             for (int i = 0; i < lines2.Count; i++)
             {
                 if (! lines1[i].Equals(lines2[i]))
                 {
-                    LoggedConsole.WriteWarnLine(String.Format("Line {0}: <{1}>   !=   benchmark <{2}>", i, lines1[i], lines2[i]));
-                    AOK = false;
+                    LoggedConsole.WriteWarnLine($"Line {i}: <{lines1[i]}>   !=   benchmark <{lines2[i]}>");
+                    allOk = false;
                 }
             }
-            if (AOK)
+            if (allOk)
             {
                 LoggedConsole.WriteSuccessLine("   SUCCESS! Passed the FILE EQUALITY TEST.");
             }

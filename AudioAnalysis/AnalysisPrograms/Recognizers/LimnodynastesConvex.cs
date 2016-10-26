@@ -12,13 +12,9 @@ namespace AnalysisPrograms.Recognizers
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
-    using System.Text;
 
     using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
@@ -31,7 +27,6 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.WavTools;
 
     using log4net;
-
     using TowseyLibrary;
 
     /// <summary>
@@ -50,6 +45,8 @@ namespace AnalysisPrograms.Recognizers
         public override string SpeciesName => "LimnodynastesConvex";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+        readonly bool _displayDebugImage = MainEntry.InDEBUG;
 
 
         /// <summary>
@@ -104,9 +101,6 @@ namespace AnalysisPrograms.Recognizers
             // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
-
-
 
             RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
 
@@ -292,9 +286,7 @@ namespace AnalysisPrograms.Recognizers
             var debugPlot = new Plot(this.DisplayName, scores, similarityThreshold);
             var debugPlots = new List<Plot> { debugPlot };
 
-            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
-            bool displayDebugImage = MainEntry.InDEBUG;
-            if (displayDebugImage)
+            if (_displayDebugImage)
             {
                 Image debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
@@ -306,9 +298,9 @@ namespace AnalysisPrograms.Recognizers
             var plots = new List<Plot> { plot };
 
             // add names into the returned events
-            foreach (AcousticEvent ae in potentialEvents)
+            foreach (var ae in potentialEvents)
             {
-                ae.Name = "L.c"; // abbreviatedSpeciesName;
+                ae.Name = abbreviatedSpeciesName;
             }
 
             return new RecognizerResults()
@@ -377,8 +369,9 @@ namespace AnalysisPrograms.Recognizers
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            const bool doHighlightSubband = false;
+            const bool add1KHzLines = true;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
 
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
@@ -390,7 +383,7 @@ namespace AnalysisPrograms.Recognizers
 
             if (events.Count > 0)
             {
-                foreach (AcousticEvent ev in events) // set colour for the events
+                foreach (var ev in events) // set colour for the events
                 {
                     ev.BorderColour = AcousticEvent.DefaultBorderColor;
                     ev.ScoreColour = AcousticEvent.DefaultScoreColor;
@@ -398,40 +391,8 @@ namespace AnalysisPrograms.Recognizers
                 image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
 
-            // the below code was used in the first LinoConvex attempt
-            //foreach (AcousticEvent ae in predictedEvents)
-            //{
-            //    ae.DrawEvent(image);
-            //    //g.DrawRectangle(pen, ob.ColumnLeft, ob.RowTop, ob.ColWidth-1, ob.RowWidth);
-            //    //ae.DrawPoint(image, ae.HitElements.[0], Color.OrangeRed);
-            //    //ae.DrawPoint(image, ae.HitElements[1], Color.Yellow);
-            //    //ae.DrawPoint(image, ae.HitElements[2], Color.Green);
-            //    ae.DrawPoint(image, ae.Points[0], Color.OrangeRed);
-            //    ae.DrawPoint(image, ae.Points[1], Color.Yellow);
-            //    ae.DrawPoint(image, ae.Points[2], Color.LimeGreen);
-            //}
-
-            // draw the original hits on the standard sonogram
-            //foreach (int[] array in newList)
-            //{
-            //    image.SetPixel(array[0], height - array[1], Color.Cyan);
-            //}
-
-            // mark off every tenth frequency bin on the standard sonogram
-            //for (int r = 0; r < 20; r++)
-            //{
-            //    image.SetPixel(0, height - (r * 10) - 1, Color.Blue);
-            //    image.SetPixel(1, height - (r * 10) - 1, Color.Blue);
-            //}
-            // mark off upper bound and lower frequency bound
-            //image.SetPixel(0, height - dominantBinMin, Color.Lime);
-            //image.SetPixel(0, height - dominantBinMax, Color.Lime);
-            //image.Save(filePath2);
-
             return image.GetImage();
         }
-
-
 
     }
 }

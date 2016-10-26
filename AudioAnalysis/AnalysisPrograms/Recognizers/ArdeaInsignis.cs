@@ -249,8 +249,8 @@ namespace AnalysisPrograms.Recognizers
             };
 
             // do a recognizer test.
-            //RecognizerTest(scores, new FileInfo(recording.FilePath));
-            //RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
+            //CompareArrayWithBenchmark(scores, new FileInfo(recording.FilePath));
+            //CompareArrayWithBenchmark(prunedEvents, new FileInfo(recording.FilePath));
 
             var plot = new Plot(this.DisplayName, amplitudeScores, eventThreshold);
             return new RecognizerResults()
