@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.IO;
 using System.Drawing;
-using System.Drawing.Imaging;
-
+using System.Globalization;
 using TowseyLibrary;
 using AudioAnalysisTools;
 using AudioAnalysisTools.Indices;
@@ -17,9 +15,6 @@ using Acoustics.Shared;
 
 namespace AnalysisPrograms
 {
-    using Acoustics.Tools;
-    using PowerArgs;
-
 
     /// <summary>
     /// Activity Code for this class:= sandpit
@@ -40,8 +35,7 @@ namespace AnalysisPrograms
     /// </summary>
     public class Sandpit
     {
-        public const int RESAMPLE_RATE = 17640;
-        public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
+        //public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
 
         public class Arguments
         {
@@ -51,14 +45,66 @@ namespace AnalysisPrograms
         {
 
             //SET VERBOSITY
-            DateTime tStart = DateTime.Now;
+            var tStart = DateTime.Now;
             Log.Verbosity = 1;
-            Log.WriteLine("# Start Time = " + tStart.ToString());
+            Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
 
+            if (true)
+            {
+                //int resampleRate = 22050;
+                var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
+                var outputDirectory = new DirectoryInfo(outputPath);
+                string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                AudioRecording recording = new AudioRecording(recordingPath);
+                var recordingDuration = recording.WavReader.Time;
+
+
+                const int frameSize = 1024;
+                double windowOverlap = 0.0;
+                var sonoConfig = new SonogramConfig
+                {
+                    SourceFName = recording.BaseName,
+                    //set default values - ignore those set by user
+                    WindowSize = frameSize,
+                    WindowOverlap = windowOverlap,
+                    // the default window is HAMMING
+                    //WindowFunction = WindowFunctions.HANNING.ToString(),
+                    //WindowFunction = WindowFunctions.NONE.ToString(),
+                    // if do not use noise reduction can get a more sensitive recogniser.
+                    //NoiseReductionType = NoiseReductionType.NONE,
+                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                };
+
+
+                var aedConfiguration = new Aed.AedConfiguration
+                {
+                    //AedEventColor = Color.Red;
+                    //AedHitColor = Color.FromArgb(128, AedEventColor),
+                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
+                    IntensityThreshold = 3.5,
+                    SmallAreaThreshold = 150,
+                    //BgNoiseThreshold   = 3.5
+                };
+
+                var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, recording.WavReader);
+                AcousticEvent[] events = Aed.CallAed(sonogram, aedConfiguration, TimeSpan.Zero, recordingDuration);
+                LoggedConsole.WriteLine("AED # events: " + events.Length);
+
+
+                //var debugPlots = new List<Plot> { scorePlot, sumDiffPlot, differencePlot };
+                var debugImage = Aed.DrawSonogram(sonogram, events);
+                var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment", "png");
+                debugImage.Save(debugPath);
+            }
+
+            if (false)
+            {
+                LDSpectrogramClusters.ExtractSOMClusters2();
+            }
 
             // // TEST TO DETERMINE whether one of the signal channels has microphone problems due to rain or whatever.
-            if (true)
+            if (false)
             {
                 LDSpectrogramClusters.ExtractSOMClusters2();
             }
@@ -193,7 +239,7 @@ namespace AnalysisPrograms
 
 
             // code to merge all files of acoustic indeces derived from 24 hours of recording,
-            if (true)
+            if (false)
             {
                 //LDSpectrogramStitching.ConcatenateSpectralIndexFiles1(); //DEPRACATED
                 LDSpectrogramStitching.ConcatenateFalsecolourSpectrograms();
@@ -333,15 +379,9 @@ namespace AnalysisPrograms
                 LDSpectrogramDiscreteColour.DiscreteColourSpectrograms();
             }
 
-
-//<<<<<<< HEAD
-//            // Concatenate marine spectrogram ribbons and add tidal info if available.
-//=======
-//            // experiments with false colour images - categorising/discretising the colours
-//>>>>>>> master
+            // Concatenate marine spectrogram ribbons and add tidal info if available.
             if (false)
             {
-
                 DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March\CornellMarine"),
                                              new DirectoryInfo(@"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April\CornellMarine")
                                            };
@@ -414,14 +454,14 @@ namespace AnalysisPrograms
                 string name2 = "Open Melaleuca paperbark forest (13th Oct 2010)";
 
                 var opDirectory = new DirectoryInfo(@"C:\Users\Owner\Documents\QUT\SensorNetworks\MyPapers\2016_EcoacousticsCongress");
-                string opFileName = String.Format("Comparison SERF DotPlots NWandSW 2010Oct13.png");
+                var opFileName = string.Format("Comparison SERF DotPlots NWandSW 2010Oct13.png");
 
 
                 var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
                 var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
                 //var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
 
-                Image image1 = Bitmap.FromFile(image1Path.FullName);
+                Image image1 = Image.FromFile(image1Path.FullName);
                 int width = image1.Width;
                 int height = 40;
 
@@ -618,7 +658,7 @@ namespace AnalysisPrograms
                     char[] delimiters = { '.', 's' };
                     string fileName = filePaths[i].Name;
                     string[] parts = fileName.Split(delimiters);
-                    int speciesID = Int32.Parse(parts[1]);
+                    int speciesId = Int32.Parse(parts[1]);
                     double[,] matrix = null;
                     if (filePaths[i].Exists)
                     {
@@ -632,7 +672,7 @@ namespace AnalysisPrograms
                         matrix = BirdClefExperiment1.ExoticMaxPoolingMatrixColumns(matrix, reducedBinCount);
                     }
 
-                    Console.WriteLine("Species ID = " + speciesID);
+                    Console.WriteLine("Species ID = " + speciesId);
 
                     int rowCount = matrix.GetLength(0);
                     reducedBinCount = matrix.GetLength(1);
@@ -649,7 +689,7 @@ namespace AnalysisPrograms
                             {
                                 if (rowVector[c] > bounds[bound]) valueCategory = bound;
                             }
-                            probSgivenF[c, speciesID-1, valueCategory] ++;
+                            probSgivenF[c, speciesId-1, valueCategory] ++;
                         }
                     }
                 }
