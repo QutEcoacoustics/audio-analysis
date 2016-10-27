@@ -80,60 +80,41 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
+            // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
+     
+            // min and max frequency of event in Hz
             int minHz = (int)configuration[AnalysisKeys.MinHz];
             int maxHz = (int)configuration[AnalysisKeys.MaxHz];
 
-            // BETTER TO CALCULATE THIS. IGNORE USER!
-            // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
-
-            // duration of DCT in seconds 
-            double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
-
-            // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];  
-
-            // ignore oscillations below this threshold freq
-            int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
-
-            // ignore oscillations above this threshold freq
-            int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
-
-            // min duration of event in seconds 
-            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
-
-            // max duration of event in seconds                 
+            // min & max duration of event in seconds 
+            double minDuration = (double)configuration[AnalysisKeys.MinDuration];                
             double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
             // min score for an acceptable event
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
+            // check sample rate is 22050
             if (recording.WavReader.SampleRate != 22050)
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
 
-            // The default was 512 for Canetoad.
-            // Framesize = 128 seems to work for Littoria fallax.
-            const int FrameSize = 128;
-            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate,
-                FrameSize,
-                maxOscilFreq);
-            //windowOverlap = 0.75; // previous default
+            // Set the Frame Size
+            // Currently set at 256; if not good enough, try 512
+            const int FrameSize = 256;
 
-            // i: MAKE SONOGRAM
+            // Make a spectrogram
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.FileName,
                 WindowSize = FrameSize,
-                WindowOverlap = windowOverlap,
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.STANDARD,
                 NoiseReductionParameter = 0.1
             };
+            sonoConfig.WindowOverlap = 0.0;
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.Duration();
@@ -143,6 +124,10 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
+            double eventThresholdDb = 10.0;
+
+            // minimum number of bins covering frequency bandwidth of L.convex call
+            int callBinWidth = 632;
             // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
             // ######################################################################
@@ -153,21 +138,6 @@ namespace AnalysisPrograms.Recognizers
             double[] scores; // predefinition of score array
             List<AcousticEvent> acousticEvents;
             double[,] hits;
-            Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram,
-                minHz,
-                maxHz,
-                dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
-                dctThreshold,
-                eventThreshold,
-                minDuration,
-                maxDuration,
-                scoreSmoothingWindow,
-                out scores,
-                out acousticEvents,
-                out hits);
 
             acousticEvents.ForEach(ae =>
             {
