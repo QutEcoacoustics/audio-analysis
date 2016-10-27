@@ -1562,7 +1562,7 @@ namespace Dong.Felt
         {
             //var spectrogram = SpectrogramGeneration(wavFilePath);
             var recording = new AudioRecording(wavFilePath);
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.5 };
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.Standard, WindowOverlap = 0.5 };
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             double secondsScale = spectrogram.Configuration.GetFrameOffset(recording.SampleRate);
             var timeScale = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond * secondsScale)); // Time scale here is millionSecond?

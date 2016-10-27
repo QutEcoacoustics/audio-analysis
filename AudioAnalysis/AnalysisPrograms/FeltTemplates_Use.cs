@@ -110,7 +110,7 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName = recording.BaseName;
             sonoConfig.WindowOverlap = FeltFrameOverlap;      // set default value
             sonoConfig.DoMelScale = false;
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
 

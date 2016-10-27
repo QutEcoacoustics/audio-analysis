@@ -119,7 +119,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
-                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = noiseReductionParameter
             };
 

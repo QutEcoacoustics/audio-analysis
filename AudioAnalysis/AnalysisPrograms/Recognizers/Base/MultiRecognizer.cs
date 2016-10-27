@@ -52,7 +52,7 @@ namespace AnalysisPrograms.Recognizers.Base
             // currently using Hamming window. Worth trying Hanning Window
             var config = new SonogramConfig
             {
-                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.1,
                 WindowSize = 512                
             };
