@@ -7,32 +7,23 @@ AbbreviatedSpeciesName: C.tinnula
 MinHz: 3000          
 MaxHz: 5000
 # duration of DCT in seconds 
-DctDuration: 0.15
-# minimum acceptable value of a DCT coefficient
-DctThreshold: 0.6
-# ignore oscillation rates below the min & above the max threshold
-# OSCILLATIONS PER SECOND
-MinOcilFreq: 50        
-MaxOcilFreq: 140
-# Minimum and maximum duration for the length of a true call.
-MinDuration: 0.1
-MaxDuration: 0.8
+
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.30
 
 Profiles:
     Standard: &Standard
         # min and max of the freq band to search
-        MinHz: 3000          
-        MaxHz: 5000
+        MinHz: 3500          
+        MaxHz: 6000
         # duration of DCT in seconds 
         DctDuration: 0.15
         # minimum acceptable value of a DCT coefficient
         DctThreshold: 0.6
         # ignore oscillation rates below the min & above the max threshold
         # OSCILLATIONS PER SECOND
-        MinOcilFreq: 50        
-        MaxOcilFreq: 140
+        MinOcilFreq: 1
+        MaxOcilFreq: 2
         # Minimum and maximum duration for the length of a true call.
         MinDuration: 0.1
         MaxDuration: 0.8
