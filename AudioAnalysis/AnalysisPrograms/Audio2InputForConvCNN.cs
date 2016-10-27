@@ -733,7 +733,7 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(configDict); 
                 
             // disable noise removal for first two spectrograms
-            sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+            sonoConfig.NoiseReductionType = NoiseReductionType.None;
 
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
 
@@ -798,7 +798,7 @@ namespace AnalysisPrograms
             double[,] dbSpectrogramData = (double[,])sonogram.Data.Clone();
 
             // 4) now draw the noise reduced decibel spectrogram
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
             sonoConfig.NoiseReductionParameter = 3;
             ////sonoConfig.NoiseReductionType = NoiseReductionType.SHORT_RECORDING;
             ////sonoConfig.NoiseReductionParameter = 50;

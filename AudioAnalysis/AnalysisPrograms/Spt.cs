@@ -86,7 +86,7 @@ namespace AnalysisPrograms
 
             var config = new SonogramConfig
                              {
-                                 NoiseReductionType = NoiseReductionType.STANDARD,
+                                 NoiseReductionType = NoiseReductionType.Standard,
                                  NoiseReductionParameter = 3.5
                              };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);

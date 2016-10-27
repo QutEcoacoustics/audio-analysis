@@ -292,7 +292,7 @@ namespace AnalysisPrograms
             sonogramList.Add(segmentationImage);
 
             // 3) now draw the noise reduced decibel spectrogram
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
             sonoConfig.NoiseReductionParameter = configuration["BgNoiseThreshold"] ?? 3.0; 
 
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);

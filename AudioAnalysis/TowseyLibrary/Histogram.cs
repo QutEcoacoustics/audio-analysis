@@ -291,16 +291,22 @@ namespace TowseyLibrary
             histogramOfAmplitudes = Histo(amplitudeArray, binCount, out binWidth, out minAmplitude, out maxAmplitude);
         }
 
-
+        /// <summary>
+        /// Returns the bin ID that coincides with the passed percentile
+        /// </summary>
+        /// <param name="histogram"></param>
+        /// <param name="percentile"></param>
+        /// <returns></returns>
         static public int GetPercentileBin(int[] histogram, int percentile)
         {
             if (percentile > 99) throw new Exception("percentile must be < 100");
+            double percentAsfraction = percentile/(double)100;
             int sum = histogram.Sum();
             int percentileSum = 0;
             for (int i = 0; i < histogram.Length; i++)
             {
                 percentileSum += histogram[i];
-                if ((percentileSum / (double)sum) > 0.95) return i;
+                if ((percentileSum / (double)sum) > percentAsfraction) return i;
             }
             return histogram.Length - 1;
         }

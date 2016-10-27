@@ -135,7 +135,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.1
             };
 
@@ -218,7 +218,7 @@ namespace AnalysisPrograms.Recognizers
                         WindowSize = 1024,
                         WindowOverlap = 0,
                         //NoiseReductionType = NoiseReductionType.NONE,
-                        NoiseReductionType = NoiseReductionType.STANDARD,
+                        NoiseReductionType = NoiseReductionType.Standard,
                         NoiseReductionParameter = 0.1
                     };
                 BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);

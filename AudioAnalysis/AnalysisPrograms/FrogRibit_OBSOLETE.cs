@@ -134,7 +134,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE;
             sonoConfig.WindowOverlap = 0.5;      // set default value
             sonoConfig.DoMelScale = false;
-            sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+            sonoConfig.NoiseReductionType = NoiseReductionType.None;
             //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             var filteredRecording = results.Item2;
 

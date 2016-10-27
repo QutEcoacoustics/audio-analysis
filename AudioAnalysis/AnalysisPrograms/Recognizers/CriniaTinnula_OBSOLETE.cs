@@ -111,7 +111,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = FrameSize,
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.1
             };
             sonoConfig.WindowOverlap = 0.0;
@@ -189,7 +189,7 @@ namespace AnalysisPrograms.Recognizers
                         SourceFName = recording.BaseName,
                         WindowSize = 1024,
                         WindowOverlap = 0,
-                        NoiseReductionType = NoiseReductionType.NONE,
+                        NoiseReductionType = NoiseReductionType.None,
                         //NoiseReductionType = NoiseReductionType.STANDARD,
                         //NoiseReductionParameter = 0.1
                     };

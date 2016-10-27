@@ -62,6 +62,7 @@ namespace AnalysisPrograms
 
                 const int frameSize = 1024;
                 double windowOverlap = 0.0;
+                NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
                 var sonoConfig = new SonogramConfig
                 {
                     SourceFName = recording.BaseName,
@@ -73,7 +74,8 @@ namespace AnalysisPrograms
                     //WindowFunction = WindowFunctions.NONE.ToString(),
                     // if do not use noise reduction can get a more sensitive recogniser.
                     //NoiseReductionType = NoiseReductionType.NONE,
-                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD")
+                    NoiseReductionType = noiseReductionType,
+                    NoiseReductionParameter = 0.0
                 };
 
 
@@ -81,21 +83,33 @@ namespace AnalysisPrograms
                 {
                     //AedEventColor = Color.Red;
                     //AedHitColor = Color.FromArgb(128, AedEventColor),
-                    NoiseReductionType = SNR.KeyToNoiseReductionType("STANDARD"),
-                    IntensityThreshold = 3.5,
-                    SmallAreaThreshold = 150,
+                    // This stops AED Wiener filter and noise removal.
+                    NoiseReductionType = noiseReductionType,
+                    IntensityThreshold = 20.0,
+                    SmallAreaThreshold = 100,
                     //BgNoiseThreshold   = 3.5
                 };
 
-                var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, recording.WavReader);
-                AcousticEvent[] events = Aed.CallAed(sonogram, aedConfiguration, TimeSpan.Zero, recordingDuration);
-                LoggedConsole.WriteLine("AED # events: " + events.Length);
+                double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
+                var imageList = new List<Image>();
 
+                foreach (double th in thresholdLevels)
+                {
+                    aedConfiguration.IntensityThreshold = th;
+                    var sonogram = (BaseSonogram) new SpectrogramStandard(sonoConfig, recording.WavReader);
+                    AcousticEvent[] events = Aed.CallAed(sonogram, aedConfiguration, TimeSpan.Zero, recordingDuration);
+                    LoggedConsole.WriteLine("AED # events: " + events.Length);
 
-                //var debugPlots = new List<Plot> { scorePlot, sumDiffPlot, differencePlot };
-                var debugImage = Aed.DrawSonogram(sonogram, events);
+                    //cluster events
+                    var clusters = AcousticEvent.ClusterEvents(events);
+                    AcousticEvent.AssignClusterIds(clusters);
+
+                    // see line 415 of AcousticEvent.cs for drawing the cluster ID into the sonogram image.
+                    imageList.Add(Aed.DrawSonogram(sonogram, events));
+                }
+                var compositeImage = ImageTools.CombineImagesVertically(imageList);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment", "png");
-                debugImage.Save(debugPath);
+                compositeImage.Save(debugPath);
             }
 
             if (false)

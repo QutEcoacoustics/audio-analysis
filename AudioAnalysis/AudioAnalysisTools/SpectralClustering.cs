@@ -428,7 +428,7 @@ namespace AudioAnalysisTools
 
             //NORMAL WAY TO DO THINGS
             var recording = new AudioRecording(wavFilePath); // get recording segment
-            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = frameOverlap };
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.Standard, WindowOverlap = frameOverlap };
             config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
             Plot scores = null;
