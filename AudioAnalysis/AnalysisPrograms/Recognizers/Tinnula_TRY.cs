@@ -43,11 +43,11 @@ namespace AnalysisPrograms.Recognizers
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
     /// </summary>
-    class LimnodynastesConvex : RecognizerBase
+    class CriniaTinnula : RecognizerBase
     {
         public override string Author => "Towsey";
 
-        public override string SpeciesName => "LimnodynastesConvex";
+        public override string SpeciesName => "CriniaTinnula";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -80,39 +80,14 @@ namespace AnalysisPrograms.Recognizers
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
-            // The next line actually calculates the high resolution indices!
-            // They are not much help for frogs recognition but could be useful for HiRes spectrogram display
-            /*
-            var indices = getSpectralIndexes.Value;
-            // check if the indices have been calculated - you shouldn't actually need this
-            if (getSpectralIndexes.IsValueCreated)
-            {
-                // then indices have been calculated before
-            }
-            */
-
-
-            // Get a value from the config file - with a backup default
-            int minHz = (int?)configuration[AnalysisKeys.MinHz] ?? 600;
-
-            // Get a value from the config file - with no default, throw an exception if value is not present
-            //int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
-
-            // Get a value from the config file - without a string accessor, as a double
-            double someExampleSettingA = (double?)configuration.someExampleSettingA ?? 0.0;
-
             // common properties
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
-
-
 
             RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
 
             return results;
         }
-
 
         internal RecognizerResults Gruntwork(AudioRecording audioRecording, dynamic configuration, DirectoryInfo outputDirectory)
         {
@@ -120,7 +95,7 @@ namespace AnalysisPrograms.Recognizers
             // make a spectrogram
             var config = new SonogramConfig
             {
-                WindowSize = 512,
+                WindowSize = 256,
                 NoiseReductionType = NoiseReductionType.STANDARD,
                 NoiseReductionParameter = noiseReductionParameter
             };
@@ -131,21 +106,21 @@ namespace AnalysisPrograms.Recognizers
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
             // remove the DC column
             var spg = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
-            sonogram.Data = spg;
             int sampleRate = audioRecording.SampleRate;
             int rowCount = spg.GetLength(0);
             int colCount = spg.GetLength(1);
 
-            double epsilon = Math.Pow(0.5, audioRecording.BitsPerSample - 1);
-            int frameSize = colCount * 2;
+
+            int frameSize = config.WindowSize;
             int frameStep = frameSize; // this default = zero overlap
-            double frameDurationInSeconds = frameSize / (double)sampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
             double framesPerSec = 1 / frameStepInSeconds;
-            double herzPerBin = sampleRate / 2 / (double)colCount;
 
+            // reading in variables from the config file
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            int minHz = (int)configuration[AnalysisKeys.MinHz];
+            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
 
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
@@ -155,47 +130,17 @@ namespace AnalysisPrograms.Recognizers
             // minimum score for an acceptable event - that is when processing the score array.
             double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
 
-            // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 512.
-            int minFrameWidth = 3;
-            int maxFrameWidth = 5;
+            // IMPORTANT: The following frame durations assume a sampling rate = 22050 and window size of 256.
+            int minFrameWidth = 7;
+            int maxFrameWidth = 14;
             double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
             double maxDuration = maxFrameWidth * frameStepInSeconds;
 
-            // minimum number of bins covering frequency bandwidth of L.convex call// minimum number of bins covering frequency bandwidth of L.convex call
-            int callBinWidth = 25;
+           
 
-            // # The Limnodynastes call has a duration of 3-5 frames given the above settings.
-            // # The call has three major peaks. The dominant peak is at approx 1850, a value which is set in the convig.
-            // # The second and third peak are at equal gaps below. DominantFreq-gap and DominantFreq-(2*gap);
-            // # Set the gap in the Config file. Should typically be in range 880 to 970
-            // for Limnodynastes convex, in the D.Stewart CD, there are peaks close to:
-            //1. 1950 Hz
-            //2. 1460 hz
-            //3.  970 hz    These are 490 Hz apart.
-            // for Limnodynastes convex, in the Kiyomi's JCU recording, there are peaks close to:
-            //1. 1780 Hz
-            //2. 1330 hz
-            //3.  880 hz    These are 450 Hz apart.
-
-            // So the strategy is to look for three peaks separated by same amount and in the vicinity of the above,
-            //  starting with highest power (the top peak) and working down to lowest power (bottom peak).
-            // To this end we produce two templates each of length 25, but having 2nd and 3rd peaks at different intervals.
-            var templates = GetLconvexTemplates(callBinWidth);
-
-            int dominantFrequency = (int)configuration["DominantFrequency"];
-            // NOTE: could give user control over other call features 
-            //  Such as frequency gap between peaks. But not in this first iteration of the recognizer.
-            //int peakGapInHerz = (int)configuration["PeakGap"];
-            //int minHz = (int)configuration[AnalysisKeys.MinHz];
-            //int F1AndF2BinGap = (int)Math.Round(peakGapInHerz / herzPerBin);
-            //int F1AndF3BinGap = 2 * F1AndF2BinGap;
-
-            int hzBuffer = 250;
-            int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
-            int binBuffer = (int)Math.Round(hzBuffer / herzPerBin); ;
-            int dominantBinMin = dominantBin - binBuffer;
-            int dominantBinMax = dominantBin + binBuffer;
-            int bandwidth = dominantBinMax - dominantBinMin + 1;
+            // Calculate Max Amplitude
+            int binMin = (int) Math.Round(minHz / sonogram.FBinWidth);
+            int binMax = (int) Math.Round(maxHz / sonogram.FBinWidth); 
 
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
             double[] scores = new double[rowCount]; // predefinition of score array
@@ -206,10 +151,10 @@ namespace AnalysisPrograms.Recognizers
             for (int s = 0; s < rowCount; s++)
             {
                 double[] spectrum = MatrixTools.GetRow(spg, s);
-                double maxAmplitude = -Double.MaxValue;
+                double maxAmplitude = Double.MinValue;
                 int maxId = 0;
                 // loop through bandwidth of L.onvex call and look for dominant frequency
-                for (int binID = 5; binID < dominantBinMax; binID++)
+                for (int binID = 5; binID < binMax; binID++)
                 {
                     if (spectrum[binID] > maxAmplitude)
                     {
@@ -218,7 +163,7 @@ namespace AnalysisPrograms.Recognizers
                     }
                 }
 
-                if (maxId < dominantBinMin) continue;
+                if (maxId < binMin) continue;
                 // peak should exceed thresold amplitude
                 if (spectrum[maxId] < peakThresholdDb) continue;
 
@@ -227,12 +172,19 @@ namespace AnalysisPrograms.Recognizers
                 // Console.WriteLine("Col {0}, Bin {1}  ", c, freqBinID);
             } // loop through all spectra
 
+            // Find average amplitude
+         
+            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, binMin, (rowCount - 1),
+                binMax);
 
-
-            // We now have a list of potential hits for LimCon. This needs to be filtered.
+            // We now have a list of potential hits for C. tinnula. This needs to be filtered.
             double[] prunedScores;
             var startEnds = new List<Point>();
-            Plot.FindStartsAndEndsOfScoreEvents(scores, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+            Plot.FindStartsAndEndsOfScoreEvents(amplitudeArray, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+            
+            // High pass Filter
+
+            var highPassFilteredSignal = DSP_Filters.SubtractBaseline(amplitudeArray, 7);
 
             // loop through the score array and find beginning and end of potential events
             var potentialEvents = new List<AcousticEvent>();
@@ -244,7 +196,7 @@ namespace AnalysisPrograms.Recognizers
                 int eventWidth = point.Y - point.X + 1;
                 for (int s = point.X; s <= point.Y; s++)
                 {
-                    if (dominantBins[s] >= dominantBinMin)
+                    if (dominantBins[s] >= binMin)
                     {
                         binSum += dominantBins[s];
                         binCount++;
@@ -252,11 +204,14 @@ namespace AnalysisPrograms.Recognizers
                 }
                 // find average dominant bin for the event
                 int avDominantBin = (int)Math.Round(binSum / (double)binCount);
-                int avDominantFreq = (int)(Math.Round(binSum / (double)binCount) * herzPerBin);
+                int avDominantFreq = (int)(Math.Round(binSum / (double)binCount) * sonogram.FBinWidth);
 
                 // Get score for the event.
                 // Use a simple template for the honk and calculate cosine similarity to the template.
                 // Template has three dominant frequenices.
+                // minimum number of bins covering frequency bandwidth of C. tinnula call// minimum number of bins covering frequency bandwidth of L.convex call
+                int callBinWidth = 13;
+                var templates = GetCtinnulaTemplates(callBinWidth);
                 var eventMatrix = MatrixTools.Submatrix(spg, point.X, (avDominantBin - callBinWidth + 2), point.Y, avDominantBin + 1);
                 double eventScore = GetEventScore(eventMatrix, templates);
 
@@ -272,15 +227,15 @@ namespace AnalysisPrograms.Recognizers
 
                 int topBinForEvent = avDominantBin + 2;
                 int bottomBinForEvent = topBinForEvent - callBinWidth;
-                int topFreqForEvent = (int)Math.Round(topBinForEvent * herzPerBin);
-                int bottomFreqForEvent = (int)Math.Round(bottomBinForEvent * herzPerBin);
+                int topFreqForEvent = (int)Math.Round(topBinForEvent * sonogram.FBinWidth);
+                int bottomFreqForEvent = (int)Math.Round(bottomBinForEvent * sonogram.FBinWidth);
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
                 var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent);
                 newEvent.DominantFreq = avDominantFreq;
                 newEvent.Score = eventScore;
-                newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
+                newEvent.SetTimeAndFreqScales(framesPerSec, sonogram.FBinWidth);
                 newEvent.Name = ""; // remove name because it hides spectral content of the event.
 
                 potentialEvents.Add(newEvent);
@@ -290,16 +245,36 @@ namespace AnalysisPrograms.Recognizers
             // display the original score array
             scores = DataTools.normalise(scores);
             var debugPlot = new Plot(this.DisplayName, scores, similarityThreshold);
-            var debugPlots = new List<Plot> { debugPlot };
+    
 
-            //DEBUG IMAGE this recognizer only. MUST set false for deployment. 
+
+            // DEBUG IMAGE this recognizer only. MUST set false for deployment. 
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
-                Image debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.FileName), this.Identifier, "png", "DebugSpectrogram"));
+                // display a variety of debug score arrays
+                double[] normalisedScores;
+                double normalisedThreshold;
+                DataTools.Normalise(amplitudeArray, eventThresholdDb , out normalisedScores, out normalisedThreshold);
+                var ampltdPlot = new Plot("Average amplitude", normalisedScores, normalisedThreshold);
+
+                DataTools.Normalise(highPassFilteredSignal, eventThresholdDb, out normalisedScores, out normalisedThreshold);
+                var demeanedPlot = new Plot("Hi Pass", normalisedScores, normalisedThreshold);
+
+                /*
+                DataTools.Normalise(scores, eventThresholdDb, out normalisedScores, out normalisedThreshold);
+                var ampltdPlot = new Plot("amplitude", normalisedScores, normalisedThreshold);
+
+                
+                DataTools.Normalise(lowPassFilteredSignal, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                var lowPassPlot = new Plot("Low Pass", normalisedScores, normalisedThreshold);
+                */
+                var debugPlots = new List<Plot> { ampltdPlot, demeanedPlot};
+                Image debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, null);
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
+
 
             // display the cosine similarity scores
             var plot = new Plot(this.DisplayName, prunedScores, similarityThreshold);
@@ -308,7 +283,7 @@ namespace AnalysisPrograms.Recognizers
             // add names into the returned events
             foreach (AcousticEvent ae in potentialEvents)
             {
-                ae.Name = "L.c"; // abbreviatedSpeciesName;
+                ae.Name = "C.tinnula"; // abbreviatedSpeciesName;
             }
 
             return new RecognizerResults()
@@ -326,34 +301,64 @@ namespace AnalysisPrograms.Recognizers
         /// Constructs a simple template for the L.convex call.
         /// Assume that the passed value of callBinWidth > 22.
         /// </summary>
-        /// <param name="callBinWidth">Typical value = 25</param>
+        /// <param name="callBinWidth">Typical value = 13</param>
         /// <returns></returns>
-        public static List<double[]> GetLconvexTemplates(int callBinWidth)
+        public static List<double[]> GetCtinnulaTemplates(int callBinWidth)
         {
             var templates = new List<double[]>();
             // template 1
             double[] t1 = new double[callBinWidth];
-            t1[0] = 0.5;
-            t1[1] = 1.0;
+
             t1[2] = 1.0;
+            t1[3] = 1.0;
+            t1[4] = 1.0;  
+            t1[5] = 1.0;
+            t1[8] = 1.0;
+            t1[9] = 1.0;
             t1[10] = 1.0;
-            t1[11] = 1.0;
-            t1[12] = 1.0;
-            t1[20] = 0.5;
-            t1[21] = 0.5;
+
             templates.Add(t1);
 
             // template 2
             double[] t2 = new double[callBinWidth];
-            t2[0] = 0.5;
-            t2[1] = 1.0;
+
             t2[2] = 1.0;
-            t2[11] = 1.0;
-            t2[12] = 1.0;
-            t2[13] = 1.0;
-            t2[21] = 0.5;
-            t2[22] = 0.5;
+            t2[3] = 1.0;
+            t2[4] = 1.0;
+            t2[5] = 1.0;
+            t2[7] = 1.0;
+            t2[8] = 1.0;
+            t2[9] = 1.0;
+            t2[10] = 1.0;
+
             templates.Add(t2);
+
+            // template 3
+            double[] t3 = new double[callBinWidth];
+
+            t3[4] = 1.0;
+            t3[5] = 1.0;
+            t3[9] = 1.0;
+            t3[10] = 1.0;
+
+            templates.Add(t3);
+
+            // template 4
+            double[] t4 = new double[callBinWidth];
+
+            t4[2] = 1.0;
+            t4[3] = 1.0;
+            t4[4] = 1.0;
+            t4[5] = 1.0;
+            t4[6] = 1.0;
+            t4[8] = 1.0;
+            t4[9] = 1.0;
+            t4[10] = 1.0;
+            t4[11] = 1.0;
+            t4[12] = 1.0;
+
+            templates.Add(t2);
+
             return templates;
         }
 
@@ -397,41 +402,7 @@ namespace AnalysisPrograms.Recognizers
                 }
                 image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
-
-            // the below code was used in the first LinoConvex attempt
-            //foreach (AcousticEvent ae in predictedEvents)
-            //{
-            //    ae.DrawEvent(image);
-            //    //g.DrawRectangle(pen, ob.ColumnLeft, ob.RowTop, ob.ColWidth-1, ob.RowWidth);
-            //    //ae.DrawPoint(image, ae.HitElements.[0], Color.OrangeRed);
-            //    //ae.DrawPoint(image, ae.HitElements[1], Color.Yellow);
-            //    //ae.DrawPoint(image, ae.HitElements[2], Color.Green);
-            //    ae.DrawPoint(image, ae.Points[0], Color.OrangeRed);
-            //    ae.DrawPoint(image, ae.Points[1], Color.Yellow);
-            //    ae.DrawPoint(image, ae.Points[2], Color.LimeGreen);
-            //}
-
-            // draw the original hits on the standard sonogram
-            //foreach (int[] array in newList)
-            //{
-            //    image.SetPixel(array[0], height - array[1], Color.Cyan);
-            //}
-
-            // mark off every tenth frequency bin on the standard sonogram
-            //for (int r = 0; r < 20; r++)
-            //{
-            //    image.SetPixel(0, height - (r * 10) - 1, Color.Blue);
-            //    image.SetPixel(1, height - (r * 10) - 1, Color.Blue);
-            //}
-            // mark off upper bound and lower frequency bound
-            //image.SetPixel(0, height - dominantBinMin, Color.Lime);
-            //image.SetPixel(0, height - dominantBinMax, Color.Lime);
-            //image.Save(filePath2);
-
             return image.GetImage();
         }
-
-
-
     }
 }

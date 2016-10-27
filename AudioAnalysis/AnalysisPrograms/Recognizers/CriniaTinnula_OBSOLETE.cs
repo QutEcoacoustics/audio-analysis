@@ -44,7 +44,7 @@ namespace AnalysisPrograms.Recognizers
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// 
     /// </summary>
-    class CriniaTinnula : RecognizerBase
+ /*   class CriniaTinnula2 : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -206,5 +206,5 @@ namespace AnalysisPrograms.Recognizers
                 debugImage2.Save(debugPath2.FullName);
             }
         }
-    }
+    }*/
 }
