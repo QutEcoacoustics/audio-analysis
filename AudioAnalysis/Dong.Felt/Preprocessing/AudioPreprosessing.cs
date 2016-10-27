@@ -55,7 +55,7 @@ namespace Dong.Felt.Preprocessing
         public static BaseSonogram AudioToAmplitudeSpectrogram(SonogramConfig config, string audioFilePath)
         {
             var recording = new AudioRecording(audioFilePath);
-            config.NoiseReductionType = NoiseReductionType.NONE;
+            config.NoiseReductionType = NoiseReductionType.None;
             BaseSonogram sonogram = new AmplitudeSonogram(config, recording.WavReader);
             sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, sonogram.Configuration.FreqBinCount);
 
@@ -124,18 +124,18 @@ namespace Dong.Felt.Preprocessing
 
             if (makeBinary)
             {
-                return SNR.NoiseReduce(result, NoiseReductionType.BINARY, backgroundThreshold).Item1;
+                return SNR.NoiseReduce(result, NoiseReductionType.Binary, backgroundThreshold).Item1;
             }
             else
             {
                 if (changeOriginalData)
                 {
-                    spectralSonogram.Data = SNR.NoiseReduce(result, NoiseReductionType.STANDARD, backgroundThreshold).Item1;
+                    spectralSonogram.Data = SNR.NoiseReduce(result, NoiseReductionType.Standard, backgroundThreshold).Item1;
                     return spectralSonogram.Data;
                 }
                 else
                 {
-                    return SNR.NoiseReduce(result, NoiseReductionType.STANDARD, backgroundThreshold).Item1;
+                    return SNR.NoiseReduce(result, NoiseReductionType.Standard, backgroundThreshold).Item1;
                 }
             }
         }

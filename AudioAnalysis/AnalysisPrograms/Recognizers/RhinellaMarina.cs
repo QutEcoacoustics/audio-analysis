@@ -135,7 +135,7 @@ namespace AnalysisPrograms.Recognizers
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
                 // if do not use noise reduction can get a more sensitive recogniser.
-                NoiseReductionType = NoiseReductionType.NONE
+                NoiseReductionType = NoiseReductionType.None
             };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");

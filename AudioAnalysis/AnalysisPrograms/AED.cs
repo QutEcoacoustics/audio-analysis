@@ -61,7 +61,7 @@ namespace AnalysisPrograms
             {
                 this.AedEventColor = Color.Red;
                 this.AedHitColor = Color.FromArgb(128, this.AedEventColor);
-                this.NoiseReductionType = NoiseReductionType.NONE;
+                this.NoiseReductionType = NoiseReductionType.None;
             }
 
             public double IntensityThreshold { get; set; } 
@@ -150,7 +150,7 @@ namespace AnalysisPrograms
             AedConfiguration aedConfiguration,
             TimeSpan segmentStartOffset)
         {
-            if (aedConfiguration.NoiseReductionType != NoiseReductionType.NONE && aedConfiguration.NoiseReductionParameter == null)
+            if (aedConfiguration.NoiseReductionType != NoiseReductionType.None && aedConfiguration.NoiseReductionParameter == null)
             {
                 throw new ArgumentException("A noise production parameter should be supplied if not using AED noise removal", "noiseReductionParameter");
             }
@@ -185,7 +185,7 @@ namespace AnalysisPrograms
                                  {
                                      IntensityThreshold = aedConfiguration.IntensityThreshold,
                                      SmallAreaThreshold = aedConfiguration.SmallAreaThreshold,
-                                     DoNoiseRemoval = aedConfiguration.NoiseReductionType == NoiseReductionType.NONE
+                                     DoNoiseRemoval = aedConfiguration.NoiseReductionType == NoiseReductionType.None
                                  };
 
             if (aedConfiguration.BandpassMinimum.HasValue && aedConfiguration.BandpassMaximum.HasValue)
@@ -334,7 +334,7 @@ namespace AnalysisPrograms
 
         public static AedConfiguration GetAedParametersFromConfigFileOrDefaults(dynamic configuration)
         {
-            NoiseReductionType noiseReduction = NoiseReductionType.NONE;
+            NoiseReductionType noiseReduction = NoiseReductionType.None;
             if ((bool)configuration[AnalysisKeys.NoiseDoReduction])
             {
                 noiseReduction = (NoiseReductionType?)configuration[AnalysisKeys.NoiseReductionType] ?? noiseReduction;

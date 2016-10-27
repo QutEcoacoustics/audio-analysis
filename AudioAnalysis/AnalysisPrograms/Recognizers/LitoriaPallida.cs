@@ -137,7 +137,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.2,
             };
 

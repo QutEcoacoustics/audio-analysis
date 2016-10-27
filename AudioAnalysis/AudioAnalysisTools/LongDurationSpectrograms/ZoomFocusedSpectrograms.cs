@@ -581,7 +581,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             // Do NOISE REDUCTION
             double noiseReductionParameter = 2.0;
-            var tuple = SNR.NoiseReduce(dbSpectrogramData, NoiseReductionType.STANDARD, noiseReductionParameter);
+            var tuple = SNR.NoiseReduce(dbSpectrogramData, NoiseReductionType.Standard, noiseReductionParameter);
             double[,] nrSpectrogramData = tuple.Item1;   // store data matrix
 
             double ridgeThreshold = 2.5;

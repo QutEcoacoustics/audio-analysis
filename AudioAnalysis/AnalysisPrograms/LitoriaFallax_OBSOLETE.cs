@@ -417,7 +417,7 @@ namespace AnalysisPrograms
                                      SourceFName = recording.BaseName,
                                      WindowSize = FrameSize,
                                      WindowOverlap = windowOverlap,
-                                     NoiseReductionType = NoiseReductionType.NONE
+                                     NoiseReductionType = NoiseReductionType.None
                                  };
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
