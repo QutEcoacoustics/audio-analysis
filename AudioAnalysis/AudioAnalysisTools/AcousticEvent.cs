@@ -18,7 +18,6 @@ namespace AudioAnalysisTools
     using System.Text;
     using System.Text.RegularExpressions;
 
-    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
 
     using AnalysisBase.ResultBases;
@@ -27,8 +26,6 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.StandardSpectrograms;
 
     using CsvHelper.Configuration;
-    using CsvHelper.TypeConversion;
-
     using TowseyLibrary;
 
     public class AcousticEvent : EventBase
@@ -414,6 +411,8 @@ namespace AudioAnalysisTools
             //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
             g.DrawLine(scorePen, t1, y1, t1, y2);
             g.DrawString(this.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 1));
+            // ################ draw quality: this is hack for Michael. Please keep this - Oct 2016
+            //g.DrawString($"{this.Quality}", new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 10));
         }
 
 
@@ -1207,7 +1206,14 @@ namespace AudioAnalysisTools
         //##############################################################################################################################################
 
 
-
+        /// <summary>
+        /// This method is used to do unit test on lists of events.
+        /// First developed for frog recognizers - October 2016.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="opDir"></param>
+        /// <param name="testName"></param>
+        /// <param name="events"></param>
         public static void TestToCompareEvents(string fileName, DirectoryInfo opDir, string testName, List<AcousticEvent> events)
         {
             var testDir = new DirectoryInfo(opDir + $"\\UnitTest_{testName}");
@@ -1230,6 +1236,74 @@ namespace AudioAnalysisTools
                 TestTools.FileEqualityTest("Compare acoustic events.", eventsFile, benchmarkFile);
             }
         }
+
+
+        public static List<List<AcousticEvent>> ClusterEvents(AcousticEvent[] events)
+        {
+            LoggedConsole.WriteLine("# CLUSTERING EVENTS");
+            var clusters = new List<List<AcousticEvent>>();
+
+            var firstCluster = new List<AcousticEvent> {events[0]};
+            clusters.Add(firstCluster);
+
+            for (int e = 1; e < events.Length; e++)
+            {
+                const double tolerance = 0.01;
+
+                double[] scoreArray = new double[clusters.Count];
+                for (int c = 0; c < clusters.Count; c++)
+                {
+                    double distance = DistanceFromCluster(events[e], clusters[c]);
+                    scoreArray[c] = distance;
+                }
+                int minId = DataTools.GetMinIndex(scoreArray);
+
+
+                if (scoreArray[minId] < tolerance)
+                {
+                    clusters[minId].Add(events[e]);
+                }
+                else
+                {
+                    // if get to here, we have no match and therefore create a new cluster.
+                    var newCluster = new List<AcousticEvent> {events[e]};
+                    clusters.Add(newCluster);
+                }
+            } 
+            return clusters;
+        }
+
+
+        public static double DistanceFromCluster(AcousticEvent ae, List<AcousticEvent> cluster )
+        {
+            // take first event as the centroid
+            var centroid = cluster[0];
+
+            // now compare the time duration of the event with the cluster 
+            double distance = centroid.Duration - ae.Duration;
+            if (Math.Abs(distance) > 0.75) return 1.0;
+
+            double topFreqDifference = centroid.MaxFreq - ae.MaxFreq;
+            if (Math.Abs(topFreqDifference) > 300) return 1.0;
+
+            double bottomFreqDifference = centroid.MinFreq - ae.MinFreq;
+            if (Math.Abs(bottomFreqDifference) > 300) return 1.0;
+
+            return 0.0;
+        }
+
+        public static void AssignClusterIds(List<List<AcousticEvent>> clusters)
+        {
+            LoggedConsole.WriteLine("# ASSIGN CLUSTER IDs");
+
+            for (int c = 0; c < clusters.Count; c++)
+            {
+                for (int e = 0; e < clusters[c].Count; e++)
+                {
+                    clusters[c][e].Quality = c;
+                }
+            }
+        } // AssignClusterIds
 
 
     }
