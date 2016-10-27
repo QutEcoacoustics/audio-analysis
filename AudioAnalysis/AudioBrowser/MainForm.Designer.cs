@@ -832,8 +832,8 @@
             // 
             // fileNameDataGridViewTextBoxColumn1
             // 
-            this.fileNameDataGridViewTextBoxColumn1.DataPropertyName = "FileName";
-            this.fileNameDataGridViewTextBoxColumn1.HeaderText = "FileName";
+            this.fileNameDataGridViewTextBoxColumn1.DataPropertyName = "BaseName";
+            this.fileNameDataGridViewTextBoxColumn1.HeaderText = "BaseName";
             this.fileNameDataGridViewTextBoxColumn1.Name = "fileNameDataGridViewTextBoxColumn1";
             this.fileNameDataGridViewTextBoxColumn1.Width = 76;
             // 

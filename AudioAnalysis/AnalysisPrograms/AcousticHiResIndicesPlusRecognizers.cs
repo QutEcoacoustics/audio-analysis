@@ -461,7 +461,7 @@ namespace AnalysisPrograms
             // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
             var LDFCSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
             {
-                InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.FileName + ".csv")),
+                InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv")),
                 OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages"),
                 SpectrogramConfigPath = acousticIndicesParsedConfiguration.SpectrogramConfigFile,
                 IndexPropertiesConfig = acousticIndicesParsedConfiguration.IndexPropertiesFile,
@@ -478,7 +478,7 @@ namespace AnalysisPrograms
             }
 
             string fileName = null;
-            string fileStem = recording.FileName;
+            string fileStem = recording.BaseName;
 
             bool saveRidgeSpectrograms = (bool?)analysisSettings.Configuration["SaveRidgeSpectrograms"] ?? false;
             if (saveRidgeSpectrograms)
@@ -523,7 +523,7 @@ namespace AnalysisPrograms
             bool saveSonogramImages = (bool?)analysisSettings.Configuration["SaveSonogramImages"] ?? false;
             if (saveSonogramImages)
             {
-                //    string csvPath = Path.Combine(outputDirectory.FullName, recording.FileName + ".csv");
+                //    string csvPath = Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv");
                 //    Csv.WriteMatrixToCsv(csvPath.ToFileInfo(), sonogram.Data);
                 LoggedConsole.WriteErrorLine("WARNING: STANDARD SPECTROGRAMS ARE NOT SAVED IN THIS TASK.");
             }
@@ -622,7 +622,7 @@ namespace AnalysisPrograms
         /// Writes a csv file containing results for all species detections
         /// Previous csv files coded by Anthony had the following headings:
         /// EventStartSeconds, EventEndSeconds, Duration, MinHz	MaxHz, FreqBinCount, FreqBinWidth, FrameDuration, FrameCount, SegmentStartOffset,
-        /// 	   Score	EventCount	FileName	StartOffset	SegmentDuration	StartOffsetMinute	Bottom	Top	Left	Right	HitElements
+        /// 	   Score	EventCount	BaseName	StartOffset	SegmentDuration	StartOffsetMinute	Bottom	Top	Left	Right	HitElements
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="results"></param>
@@ -630,7 +630,7 @@ namespace AnalysisPrograms
         {
             var lines = new List<string>();
             //string line = "Start,Duration,SpeciesName,CallType,MinFreq,MaxFreq,Score,Score2";
-            string line = "EvStartSec,evEndSec,Duration,MinFreq,MaxFreq,SegmentStartOffset,SegmentDuration,Score,Score2,CallName,SpeciesName,FileName";
+            string line = "EvStartSec,evEndSec,Duration,MinFreq,MaxFreq,SegmentStartOffset,SegmentDuration,Score,Score2,CallName,SpeciesName,BaseName";
 
 
             lines.Add(line);
@@ -670,7 +670,7 @@ namespace AnalysisPrograms
             foreach (var kvp in selectors)
             {
                 // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultName(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, this.Identifier + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, results, kvp.Value);
             }
@@ -726,7 +726,7 @@ namespace AnalysisPrograms
                                           BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
                                           LongDurationSpectrogramConfig = ldSpectrogramConfig
                                       };
-            var icdPath = FilenameHelpers.AnalysisResultName(
+            var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
                 basename,
                 IndexGenerationData.FileNameFragment,

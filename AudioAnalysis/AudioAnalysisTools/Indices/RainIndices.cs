@@ -115,7 +115,7 @@ namespace AudioAnalysisTools.Indices
 
             //FOR PREPARING SEE.5 DATA   ------    write indices and clsasification info to file
             //string opDir = @"C:\SensorNetworks\Output\Rain";
-            //string opPath = Path.Combine(opDir, recording.FileName + ".Rain.csv");
+            //string opPath = Path.Combine(opDir, recording.BaseName + ".Rain.csv");
             //FileTools.WriteTextFile(opPath, sb.ToString());
 
             Dictionary<string, double> dict = ConvertClassifcations2Dictionary(classifications);

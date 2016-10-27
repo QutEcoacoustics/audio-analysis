@@ -22,6 +22,7 @@ echo "Running build"
 
 . .\build.ps1
 
+echo "Build complete, press any key to continue"
 Pause
 
 cd "AudioAnalysis/AnalysisPrograms/bin"
@@ -41,10 +42,13 @@ echo "Packging files for version $version"
 # We're just going to write temporary files instead.
 
 # create tar.gz for Release
-7za.exe a -ttar Release.$version.tar Release/* -xr0!*log.txt* ; 7za.exe a Release.$version.tar.gz Release.$version.tar 
+7za.exe a -ttar Release.$version.tar ./Release/* -xr0!*log.txt* ; 7za.exe a Release.$version.tar.gz Release.$version.tar 
 
 # create tar.gz for Debug
-7za.exe a -ttar Debug.$version.tar Debug/* xr0!*log.txt* ; 7za.exe a Debug.$version.tar.gz Debug.$version.tar
+7za.exe a -ttar Debug.$version.tar ./Debug/* xr0!*log.txt* ; 7za.exe a Debug.$version.tar.gz Debug.$version.tar
+
+echo "Packing complete, press any key to continue"
+Pause
 
 # create and upload a github release
 $tag_name = "v$version"
@@ -56,3 +60,4 @@ echo "creating github release"
 hub release create "$(if($pre_release){"-p"})" -a .\Release.$version.tar.gz -a .\Debug.$version.tar.gz -m "Version $tag_name`nRELEASE and DEBUG builds" $tag_name
 
 Write-Host "Release created!"
+cd "../../.."

@@ -109,7 +109,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //    TwoDimensionalArray orient = TwoDimensionalArray.ColumnMajorFlipped;
         //    foreach (var key in keys)
         //    {
-        //        var filename = FilenameHelpers.AnalysisResultName(opDir, opFileStem, key, "csv").ToFileInfo();
+        //        var filename = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, key, "csv").ToFileInfo();
         //        Csv.WriteMatrixToCsv(filename, dictionary[key], orient);
         //    }
 
@@ -317,7 +317,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                  sunriseDatafile,
                                  erroneousSegments,
                                  verbose);
-            var imagePath = FilenameHelpers.AnalysisResultName(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
+            var imagePath = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);
             tracksImage.Save(imagePath);
         }
 
@@ -384,7 +384,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // write out the list of data file names to JSON file.
             var arrayOfFileNames = summaryIndices.Select(x => x.FileName).ToArray();
             string indexType = "SummaryIndex";
-            var path = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, "FileNames.json");
+            var path = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, "FileNames.json");
             Json.Serialise(new FileInfo(path), arrayOfFileNames);
 
             //now put summary indices into a dictionary. WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
@@ -403,7 +403,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var indexDistributions = IndexDistributions.WriteSummaryIndexDistributionStatistics(dictionaryOfSummaryIndices, opDir, opFileStem);
             string csvFileExt = "csv";
 
-            var indicesFile = FilenameHelpers.AnalysisResultName(opDir, opFileStem, indexType, csvFileExt);
+            var indicesFile = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, indexType, csvFileExt);
             var indicesCsvfile = new FileInfo(indicesFile);
             //serialiseFunc(indicesFile, results);
             //Csv.WriteMatrixToCsv(indicesCsvfile, summaryIndices);

@@ -246,22 +246,22 @@ namespace AudioAnalysisTools.Indices
 
         public static string GetSummaryStatsPath(DirectoryInfo outputDirectory, string fileStem)
         {
-            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SummaryIndexStatisticsFilenameFragment, "json");
+            return FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, SummaryIndexStatisticsFilenameFragment, "json");
         }
 
         public static string GetSummaryImagePath(DirectoryInfo outputDirectory, string fileStem)
         {
-            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SummaryIndexDistributionsFilenameFragment, "png");
+            return FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, SummaryIndexDistributionsFilenameFragment, "png");
         }
 
         public static string GetSpectralStatsPath(DirectoryInfo outputDirectory, string fileStem)
         {
-            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SpectralIndexStatisticsFilenameFragment, "json");
+            return FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, SpectralIndexStatisticsFilenameFragment, "json");
         }
 
         public static string GetSpectralImagePath(DirectoryInfo outputDirectory, string fileStem)
         {
-            return FilenameHelpers.AnalysisResultName(outputDirectory, fileStem, SpectralIndexDistributionsFilenameFragment, "png");
+            return FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, SpectralIndexDistributionsFilenameFragment, "png");
         }
 
         public static Dictionary<string, SpectralStats> Deserialize(FileInfo file)

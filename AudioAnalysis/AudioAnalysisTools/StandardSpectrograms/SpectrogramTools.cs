@@ -609,7 +609,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             return sumSpectrum;
-        } 
+        }
 
 
 
@@ -617,7 +617,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Returns AVERAGE POWER SPECTRUM (PSD) and VARIANCE OF POWER SPECTRUM. 
         /// Have been passed the amplitude spectrum but square amplitude values to get power or energy.
         /// 
-        /// This method assumes that the psased amplitude spectrogram has been prepared according to method of P.D. Welch.
+        /// This method assumes that the passed amplitude spectrogram has been prepared according to method of P.D. Welch.
         /// It is the standard method used now to calculate a PSD. 
         /// Welch's method splits time series into overlapping segments and windows them.
         /// It is the windowing that makes Welche's method different. Normally overlap windows because windows decay at edges and therefore loss of info. 
@@ -627,7 +627,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// in that it reduces noise in the estimated power spectra in exchange for reducing the frequency resolution.
         /// The end result is an array of power measurements vs. frequency "bin".
         /// 
-        /// As well as calculating the power spectrum also calcuate a spectrum of the variance and a spectrum of the Coeff of Variation = var/mean.
+        /// As well as calculating the av power spectrum, this method also returns a variance spectrum and a spectrum of the Coeff of Variation = var/mean.
         /// </summary>
         /// <param name="amplitudeSpectrogram">this is an amplitude spectrum. Must square values to get power</param>
         /// <returns></returns>

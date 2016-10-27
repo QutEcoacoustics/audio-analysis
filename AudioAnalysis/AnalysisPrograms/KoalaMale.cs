@@ -299,7 +299,7 @@ namespace AnalysisPrograms
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
                                  {
-                                     SourceFName = recording.FileName, 
+                                     SourceFName = recording.BaseName, 
                                      WindowSize = FrameSize, 
                                      WindowOverlap = windowOverlap, 
                                      NoiseReductionType = NoiseReductionType.NONE

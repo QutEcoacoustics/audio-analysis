@@ -19,34 +19,61 @@ namespace Acoustics.Shared
         public const string ExampleFilename = "orginalBasename" + BasenameSeparator + "AnalysisType.SubType" + SegmentSeparator + "someOtherValue" + ExtensionSeparator + "extension";
         public static readonly Regex AnalysisResultRegex = new Regex(@"^(.*)" + BasenameSeparator + @"(.*)\" + ExtensionSeparator + "(.+)$");
 
-        public static string AnalysisResultName(
+        /// <summary>
+        /// Return an absolute path for a result file.
+        /// </summary>
+        /// <param name="outputDirectory"></param>
+        /// <param name="orignalFile"></param>
+        /// <param name="analysisTag"></param>
+        /// <param name="newExtension"></param>
+        /// <param name="otherSegments"></param>
+        /// <returns></returns>
+        public static string AnalysisResultPath(
+            DirectoryInfo outputDirectory,
             FileInfo orignalFile,
             string analysisTag,
             string newExtension,
             params string[] otherSegments)
         {
-            var basename = Path.GetFileNameWithoutExtension(orignalFile.Name);
+            var baseName = Path.GetFileNameWithoutExtension(orignalFile.Name);
 
-            return AnalysisResultName(orignalFile.Directory, basename, analysisTag, newExtension, otherSegments);
+            return AnalysisResultPath(outputDirectory, baseName, analysisTag, newExtension, otherSegments);
         }
 
-        public static string AnalysisResultName(
-            DirectoryInfo directory,
-            string basename,
+        /// <summary>
+        /// Return an absolute path for a result file.
+        /// </summary>
+        /// <param name="outputDirectory"></param>
+        /// <param name="baseName"></param>
+        /// <param name="analysisTag"></param>
+        /// <param name="newExtension"></param>
+        /// <param name="otherSegments"></param>
+        /// <returns></returns>
+        public static string AnalysisResultPath(
+            DirectoryInfo outputDirectory,
+            string baseName,
             string analysisTag,
             string newExtension,
             params string[] otherSegments)
         {
-            var newBaseName = AnalysisResultName(basename, analysisTag, newExtension, otherSegments);
+            var newBaseName = AnalysisResultName(baseName, analysisTag, newExtension, otherSegments);
 
-            return Path.Combine(directory.FullName, newBaseName);
+            return Path.Combine(outputDirectory.FullName, newBaseName);
         }
 
-        public static string AnalysisResultName(string basename, string analysisTag, string newExtension, params string[] otherSegments)
+        /// <summary>
+        /// Return a relative file name only (no directory) for a result file.
+        /// </summary>
+        /// <param name="baseName"></param>
+        /// <param name="analysisTag"></param>
+        /// <param name="newExtension"></param>
+        /// <param name="otherSegments"></param>
+        /// <returns></returns>
+        public static string AnalysisResultName(string baseName, string analysisTag, string newExtension, params string[] otherSegments)
         {
-            if (string.IsNullOrWhiteSpace(basename))
+            if (string.IsNullOrWhiteSpace(baseName))
             {
-                throw new ArgumentException("Invalid file stem / basename supplied");
+                throw new ArgumentException("Invalid file stem / base name supplied");
             }
 
             if (string.IsNullOrWhiteSpace(analysisTag))
@@ -54,12 +81,12 @@ namespace Acoustics.Shared
                 throw new ArgumentException("analysisTag must have a value", nameof(analysisTag));
             }
 
-            if (basename.Contains(BasenameSeparator))
+            if (baseName.Contains(BasenameSeparator))
             {
-                basename = basename.Replace(BasenameSeparator, SegmentSeparator);
+                baseName = baseName.Replace(BasenameSeparator, SegmentSeparator);
             }
 
-            var filename = basename + BasenameSeparator + analysisTag;
+            var filename = baseName + BasenameSeparator + analysisTag;
 
             if (otherSegments.Length > 0)
             {
@@ -74,26 +101,22 @@ namespace Acoustics.Shared
             return filename;
         }
 
-        public static string AnalysisResultName(DirectoryInfo outputDirectory, string v1, object spectralIndexDistributionsFilenameFragment, string v2)
-        {
-            throw new NotImplementedException();
-        }
 
         public static void ParseAnalysisFileName(
             FileInfo file,
-            out string originalBasename,
+            out string originalBaseName,
             out string analysisTag,
             out string[] otherSegments)
         {
-            ParseAnalysisFileName(file.Name, out originalBasename, out analysisTag, out otherSegments);
+            ParseAnalysisFileName(file.Name, out originalBaseName, out analysisTag, out otherSegments);
         }
 
-        public static void ParseAnalysisFileName(string filename, out string originalBasename, out string analysisTag, out string[] otherSegments)
+        public static void ParseAnalysisFileName(string fileName, out string originalBaseName, out string analysisTag, out string[] otherSegments)
         {
-            if (!TryParseAnalysisFileName(filename, out originalBasename, out analysisTag, out otherSegments))
+            if (!TryParseAnalysisFileName(fileName, out originalBaseName, out analysisTag, out otherSegments))
             {
                 throw new FormatException(
-                    "Could not parse analysis filename. Expected filename form like: " + ExampleFilename);
+                    "Could not parse analysis fileName. Expected fileName form like: " + ExampleFilename);
             }
         }
 

@@ -614,7 +614,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
 
 
-        //public string FileName { get; set; }
+        //public string BaseName { get; set; }
 
         private static readonly ILog Logger =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -759,13 +759,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         //        int frameWidth = configuration.FrameLength;
 
         //        var cs1 = new LDSpectrogramRGB(minuteOffset, xScale, sampleRate, frameWidth, colorMap2);
-        //        cs1.FileName = configuration.FileName;
+        //        cs1.BaseName = configuration.BaseName;
         //        cs1.BackgroundFilter = backgroundFilterCoeff;
         //        cs1.SetSpectralIndexProperties(dictIP); // set the relevant dictionary of index properties
 
         //        // reads all known files spectral indices
         //        Logger.Info("Reading spectra files from disk");
-        //        cs1.ReadCSVFiles(configuration.InputDirectoryInfo, configuration.FileName);
+        //        cs1.ReadCSVFiles(configuration.InputDirectoryInfo, configuration.BaseName);
 
         //        if (cs1.GetCountOfSpectrogramMatrices() == 0)
         //        {

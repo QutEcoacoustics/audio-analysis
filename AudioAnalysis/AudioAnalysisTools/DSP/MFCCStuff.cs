@@ -650,18 +650,18 @@ namespace AudioAnalysisTools.DSP
 
         public static double[] DCT(double[] spectrum, double[,] cosines)
         {
-            int L = spectrum.Length;
+            int length = spectrum.Length;
             int coeffCount = cosines.GetLength(0);
 
-            double k0factor = 1 / Math.Sqrt(L);
-            double kLfactor = Math.Sqrt(2/(double)L);
+            double k0Factor = 1 / Math.Sqrt(length);
+            double kLFactor = Math.Sqrt(2/(double)length);
             double[] cepstrum = new double[coeffCount];
             for (int k = 0; k < coeffCount; k++)//foreach coeff
             {
-                double factor = kLfactor;
-                if (k == 0) factor = k0factor;
+                double factor = kLFactor;
+                if (k == 0) factor = k0Factor;
                 double sum = 0.0;
-                for (int m = 0; m < L; m++) // over all spectral bins
+                for (int m = 0; m < length; m++) // over all spectral bins
                 {
                     sum += (spectrum[m] * cosines[k,m]);
                 }
@@ -671,7 +671,7 @@ namespace AudioAnalysisTools.DSP
         }
 
 
-        public static int[,] zigzag12x12 = {
+        public static int[,] Zigzag12X12 = {
         {  1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67},
         {  3,  5,  8, 14, 17, 27, 30, 44, 47, 65, 68, 89},
         {  4,  9, 13, 18, 26, 31, 43, 48, 64, 69, 88, 90},

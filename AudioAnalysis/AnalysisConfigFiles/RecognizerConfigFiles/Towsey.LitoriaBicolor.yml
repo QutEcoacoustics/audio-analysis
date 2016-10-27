@@ -4,19 +4,18 @@ SpeciesName: Litoria bicolor
 CommonName: Northern dwarf tree frog
 AbbreviatedSpeciesName: L.bicolor
 
-UpperFreqBandTop: 6200
+UpperFreqBandTop: 6300
 UpperFreqBandBottom: 5500
 LowerFreqBandTop: 3200
 LowerFreqBandBottom: 2800
-MinPeriod: 0.02
-MaxPeriod: 0.03
+MinPeriod: 0.01
+MaxPeriod: 0.04
 # Minimum and maximum duration in seconds for the length of a true call.
-MinDuration: 0.18
-MaxDuration: 0.25
-#use this threshold if averaging over a period - averaging seems to work better
-IntensityThreshold: 0.01
-#use this threshold if obtaining max value over a period
-#IntensityThreshold: 0.1
+MinDuration: 0.1
+MaxDuration: 0.4
+# Threshold for oscillation intensity found by DCT
+IntensityThreshold: 0.4
+DecibelThreshold: 6.0
 
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND Default=8-15
