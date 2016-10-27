@@ -328,7 +328,7 @@
       <Name>Acoustics.Tools</Name>
     </ProjectReference>
     <ProjectReference Include="..\AED\AED\AED.fsproj">
-      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
+      <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
       <Name>AED</Name>
     </ProjectReference>
     <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">

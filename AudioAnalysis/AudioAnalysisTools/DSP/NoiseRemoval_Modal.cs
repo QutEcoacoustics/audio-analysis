@@ -9,38 +9,38 @@ using System.Drawing;
 
 namespace AudioAnalysisTools.DSP
 {
-    public static class NoiseRemoval_Modal
+    public static class NoiseRemovalModal
     {
 
 
         public static Image ModalNoiseRemovalAndGetSonograms(double[,] deciBelSpectrogram, double parameter,  
-                                                             TimeSpan wavDuration, TimeSpan X_AxisInterval, TimeSpan stepDuration, 
-                                                             int nyquist, int HzInterval)
+                                                             TimeSpan wavDuration, TimeSpan xAxisInterval, TimeSpan stepDuration, 
+                                                             int nyquist, int hzInterval)
         {
-            double SD_COUNT = -0.5; // number of SDs above the mean for noise removal
-            NoiseReductionType nrt = NoiseReductionType.MODAL;
-            System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, SD_COUNT);
+            double sdCount = -0.5; // number of SDs above the mean for noise removal
+            NoiseReductionType nrt = NoiseReductionType.Modal;
+            System.Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, sdCount);
 
             double[,] noiseReducedSpectrogram1 = tuple.Item1;  //
             double[] noiseProfile = tuple.Item2;  // smoothed modal profile
 
             string title = "title1";
-            Image image1 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
+            Image image1 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
             double dBThreshold = 0.0; // SPECTRAL dB THRESHOLD for smoothing background
             double[,] noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title2";
-            Image image2 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
+            Image image2 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
             dBThreshold = 3.0; // SPECTRAL dB THRESHOLD for smoothing background
             noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title3";
-            Image image3 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
+            Image image3 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
             dBThreshold = 10.0; // SPECTRAL dB THRESHOLD for smoothing background
             noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title4";
-            Image image4 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, X_AxisInterval, stepDuration, nyquist, HzInterval, title);
+            Image image4 = DrawSonogram(noiseReducedSpectrogram2, wavDuration, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
 
             Image[] array = new Image[4];
@@ -65,38 +65,35 @@ namespace AudioAnalysisTools.DSP
         /// NOTE: noiseThreshold is passed as decibels. Original algorithm ONLY SEARCHES in range min to 10dB above min.
         /// </summary>
         /// <param name="dBarray">signal in decibel values</param>
-        /// <param name="minDecibels">ignore signal values less than minDecibels when calculating background noise. Likely to be spurious
-        ///                            This is a safety device because some mobile phone signals had min values.</param>
-        /// <param name="noiseThreshold_dB">Sets dB range in which to find value for background noise.</param>
-        /// <param name="min_dB"></param>
-        /// <param name="max_dB"></param>
-        /// <param name="mode_noise">modal or background noise in decibels</param>
-        /// <param name="sd_noise">estimated sd of the noies - assuming noise to be guassian</param>
+        /// <param name="min_DB"></param>
+        /// <param name="max_DB"></param>
+        /// <param name="modeNoise">modal or background noise in decibels</param>
+        /// <param name="sdNoise">estimated sd of the noies - assuming noise to be guassian</param>
         /// <returns></returns>
         public static void CalculateNoise_LamelsAlgorithm(
             double[] dBarray,
-            out double min_dB,
-            out double max_dB,
-            out double mode_noise,
-            out double sd_noise)
+            out double min_DB,
+            out double max_DB,
+            out double modeNoise,
+            out double sdNoise)
         {
             // set constants
-            double NOISE_THRESHOLD_dB = 10.0; // dB
+            double noiseThreshold_DB = 10.0; // dB
             double minDecibels = (SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference) * 10; // = -60dB
-            int BIN_COUNT = 100; // number of bins for histogram is FIXED
-            int indexOfUpperBound = (int)(BIN_COUNT * SNR.FRACTIONAL_BOUND_FOR_MODE); // mode cannot be higher than this
-            double histogramBinWidth = NOISE_THRESHOLD_dB / BIN_COUNT;
+            int binCount = 100; // number of bins for histogram is FIXED
+            //int indexOfUpperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE); // mode cannot be higher than this
+            double histogramBinWidth = noiseThreshold_DB / binCount;
 
             //ignore first N and last N frames when calculating background noise level because 
             // sometimes these frames have atypically low signal values
             int buffer = 20; //ignore first N and last N frames when calculating background noise level
             //HOWEVER do not ignore them for short recordings!
-            int L = dBarray.Length;
-            if (L < 1000) buffer = 0; //ie recording is < approx 11 seconds long
+            int l = dBarray.Length;
+            if (l < 1000) buffer = 0; //ie recording is < approx 11 seconds long
 
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
-            for (int i = buffer; i < L - buffer; i++)
+            double min = double.MaxValue;
+            double max = -double.MaxValue;
+            for (int i = buffer; i < l - buffer; i++)
             {
                 if (dBarray[i] <= minDecibels) continue; //ignore lowest values when establishing noise level
                 if (dBarray[i] < min) min = dBarray[i];
@@ -106,18 +103,18 @@ namespace AudioAnalysisTools.DSP
                     //LoggedConsole.WriteLine("max="+max+"    at index "+i);
                 }
             }
-            min_dB = min; // return out
-            max_dB = max;
+            min_DB = min; // return out
+            max_DB = max;
 
-            int[] histo = new int[BIN_COUNT];
-            double absThreshold = min_dB + NOISE_THRESHOLD_dB;
+            int[] histo = new int[binCount];
+            double absThreshold = min_DB + noiseThreshold_DB;
 
-            for (int i = 0; i < L; i++)
+            for (int i = 0; i < l; i++)
             {
                 if (dBarray[i] <= absThreshold)
                 {
-                    int id = (int)((dBarray[i] - min_dB) / histogramBinWidth);
-                    if (id >= BIN_COUNT) id = BIN_COUNT - 1;
+                    int id = (int)((dBarray[i] - min_DB) / histogramBinWidth);
+                    if (id >= binCount) id = binCount - 1;
                     else if (id < 0) id = 0;
                     histo[id]++;
                 }
@@ -126,11 +123,11 @@ namespace AudioAnalysisTools.DSP
             //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
-            int indexOfMode, indexOfOneSD;
-            SNR.GetModeAndOneStandardDeviation(smoothHisto, out indexOfMode, out indexOfOneSD);
+            int indexOfMode, indexOfOneSd;
+            SNR.GetModeAndOneStandardDeviation(smoothHisto, out indexOfMode, out indexOfOneSd);
 
-            mode_noise = min + ((indexOfMode + 1) * histogramBinWidth);    // modal noise level
-            sd_noise = (indexOfMode - indexOfOneSD) * histogramBinWidth; // SD of the noise
+            modeNoise = min + ((indexOfMode + 1) * histogramBinWidth);    // modal noise level
+            sdNoise = (indexOfMode - indexOfOneSd) * histogramBinWidth; // SD of the noise
         }
 
         /// <summary>
@@ -141,15 +138,14 @@ namespace AudioAnalysisTools.DSP
         public static double CalculateBackgroundNoise(double[] signalEnvelope)
         {
             double[] dBarray = SNR.Signal2Decibels(signalEnvelope);
-            double noise_mode, noise_SD;
-            double min_dB, max_dB;
-            NoiseRemoval_Modal.CalculateNoise_LamelsAlgorithm(dBarray, out min_dB, out max_dB, out noise_mode, out noise_SD);
-            return noise_mode;
+            double noiseMode, noiseSd;
+            double min_DB, max_DB;
+            NoiseRemovalModal.CalculateNoise_LamelsAlgorithm(dBarray, out min_DB, out max_DB, out noiseMode, out noiseSd);
+            return noiseMode;
         }
 
 
-
-        static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
+        private static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan xInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
         {
             //double framesPerSecond = 1000 / xAxisPixelDuration.TotalMilliseconds;
             Image image = BaseSonogram.GetSonogramImage(data);
@@ -157,7 +153,7 @@ namespace AudioAnalysisTools.DSP
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
             TimeSpan labelInterval = TimeSpan.FromSeconds(5);
-            image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);
+            image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, xInterval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);
             return image;
         }
 
