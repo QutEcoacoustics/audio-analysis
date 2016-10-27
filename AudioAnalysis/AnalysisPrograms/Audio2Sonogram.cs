@@ -276,7 +276,7 @@ namespace AnalysisPrograms
                 SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
 
                 // disable noise removal
-                sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+                sonoConfig.NoiseReductionType = NoiseReductionType.None;
                 Log.Warn("Noise removal disabled!");
 
                 var sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
@@ -294,7 +294,7 @@ namespace AnalysisPrograms
                 
                 // disable noise removal for first two spectrograms
                 var disabledNoiseReductionType = sonoConfig.NoiseReductionType;
-                sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
+                sonoConfig.NoiseReductionType = NoiseReductionType.None;
 
                 BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
                 // remove the DC bin

@@ -55,7 +55,7 @@ namespace AudioAnalysisTools
             this.nyquistFreq     = _nyquist;
             this.freqBinCount    = _freqBinCount;
             this.framesPerSecond = _framesPerSecond;
-            this.freqBinWidth    = _nyquist / _freqBinCount;
+            this.freqBinWidth    = _nyquist / (double)_freqBinCount;
         }
 
 

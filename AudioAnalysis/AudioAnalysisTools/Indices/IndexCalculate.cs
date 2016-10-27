@@ -234,7 +234,7 @@ namespace AudioAnalysisTools.Indices
             // EXTRACT ENVELOPE and SPECTROGRAM FROM BACKGROUND NOISE SUBSEGMENT
             var dspOutput2 = DSP_Frames.ExtractEnvelopeAndFFTs(bgnRecording, frameSize, frameStep);
             // i. convert signal to dB and subtract background noise. Noise SDs to calculate threshold = ZERO by default
-            double signalBGN = NoiseRemoval_Modal.CalculateBackgroundNoise(dspOutput2.Envelope);
+            double signalBGN = NoiseRemovalModal.CalculateBackgroundNoise(dspOutput2.Envelope);
             // ii.: calculate the noise profile from the amplitude sepctrogram
             double[] spectralAmplitudeBGN = NoiseProfile.CalculateBackgroundNoise(dspOutput2.amplitudeSpectrogram);
             // iii: generate deciBel spectrogram and calculate the dB noise profile
@@ -469,12 +469,12 @@ namespace AudioAnalysisTools.Indices
                 sonoConfig.WindowSize = (int?)config[AnalysisKeys.FrameLength] ?? 1024; // the default
                 sonoConfig.WindowOverlap = (double?)config[AnalysisKeys.FrameOverlap] ?? 0.0; // the default
 
-                sonoConfig.NoiseReductionType = NoiseReductionType.NONE; // the default
+                sonoConfig.NoiseReductionType = NoiseReductionType.None; // the default
                 bool doNoiseReduction = (bool?)config[AnalysisKeys.NoiseDoReduction] ?? false;  // the default
 
                 if (doNoiseReduction)
                 {
-                    sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+                    sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
                 }
 
                 // init sonogram

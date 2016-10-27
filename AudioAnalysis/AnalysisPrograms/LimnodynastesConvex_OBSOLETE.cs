@@ -496,7 +496,7 @@ namespace AnalysisPrograms
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = 0.0,
-                NoiseReductionType = NoiseReductionType.NONE
+                NoiseReductionType = NoiseReductionType.None
             };
             // init sonogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);

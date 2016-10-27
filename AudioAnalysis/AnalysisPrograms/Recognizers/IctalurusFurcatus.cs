@@ -353,7 +353,7 @@ namespace AnalysisPrograms.Recognizers
             // make a spectrogram
             var config = new SonogramConfig
             {
-                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = (double?)configuration[AnalysisKeys.NoiseBgThreshold] ?? 0.0
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);

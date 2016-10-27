@@ -112,7 +112,7 @@ namespace AnalysisPrograms
 
                 var sonoConfig = new SonogramConfig
                 {
-                    NoiseReductionType = NoiseReductionType.NONE,
+                    NoiseReductionType = NoiseReductionType.None,
                     //NoiseReductionType = NoiseReductionType.STANDARD,
                     WindowOverlap = frameOverlap
                 };
@@ -166,7 +166,7 @@ namespace AnalysisPrograms
             {
                 //SPT
                 double backgroundThreshold = 4.0;
-                var result1 = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, backgroundThreshold);
+                var result1 = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.Standard, backgroundThreshold);
                 //var result1 = SPT.doSPT(sonogram, intensityThreshold, smallLengthThreshold);
                 //var result1 = doNoiseRemoval(sonogram, intensityThreshold, smallLengthThreshold);
 
