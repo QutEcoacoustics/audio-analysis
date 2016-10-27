@@ -1207,5 +1207,30 @@ namespace AudioAnalysisTools
         //##############################################################################################################################################
 
 
+
+        public static void TestToCompareEvents(string fileName, DirectoryInfo opDir, string testName, List<AcousticEvent> events)
+        {
+            var testDir = new DirectoryInfo(opDir + $"\\UnitTest_{testName}");
+            var benchmarkDir = new DirectoryInfo(testDir + "\\ExpectedOutput");
+            if (!benchmarkDir.Exists) benchmarkDir.Create();
+            var benchmarkFilePath = Path.Combine(benchmarkDir.FullName, fileName + ".TestEvents.csv");
+            var eventsFilePath    = Path.Combine(testDir.FullName,      fileName + ".Events.csv");
+            var eventsFile = new FileInfo(eventsFilePath);
+            Csv.WriteToCsv<EventBase>(eventsFile, events);
+
+            LoggedConsole.WriteLine($"# EVENTS TEST: Camparing List of {testName} events with those in benchmark file:");
+            var benchmarkFile = new FileInfo(benchmarkFilePath);
+            if (!benchmarkFile.Exists)
+            {
+                LoggedConsole.WriteWarnLine("   A file of test/benchmark events does not exist.  Writing output as future events-test file");
+                Csv.WriteToCsv<EventBase>(benchmarkFile, events);
+            }
+            else // compare the test events with benchmark
+            {
+                TestTools.FileEqualityTest("Compare acoustic events.", eventsFile, benchmarkFile);
+            }
+        }
+
+
     }
 }

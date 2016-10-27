@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TowseyLibrary;
 
@@ -55,9 +56,24 @@ namespace AudioAnalysisTools.DSP
         /// <returns></returns>
         public static double[] PreEmphasis(double[] signal, double coeff)
         {
-            int L = signal.Length;
-            double[] newSig = new double[L - 1];
-            for (int i = 0; i < L - 1; i++) newSig[i] = signal[i + 1] - (coeff * signal[i]);
+            int length = signal.Length;
+            double[] newSig = new double[length - 1];
+            for (int i = 0; i < length - 1; i++) newSig[i] = signal[i + 1] - (coeff * signal[i]);
+            return newSig;
+        }
+
+
+        public static double[] SubtractBaseline(double[] signal, int nh)
+        {
+            int sideNh = nh/2;
+            int length = signal.Length;
+            double[] newSig = new double[length];
+            for (int i = nh; i < length - nh; i++)
+            {
+                double[] subarray = DataTools.Subarray(signal, i - sideNh, nh);
+                newSig[i] = signal[i] - subarray.Min();
+            }
+        
             return newSig;
         }
 

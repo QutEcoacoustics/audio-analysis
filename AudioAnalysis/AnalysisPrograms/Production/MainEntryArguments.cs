@@ -126,6 +126,9 @@ namespace AnalysisPrograms.Production
 
         [ArgDescription("Set the logging to very very verbose. Equivalent to LogLevel = ALL = 7")]
         public bool VVVerbose { get; set; }
+
+        [ArgDescription("Reduce StdOut logging to WARN and ERROR. The default is false.")]
+        public bool QuietConsole { get; set; }
     }
 
     public enum LogVerbosity
@@ -204,10 +207,10 @@ namespace AnalysisPrograms.Production
             if (outputIntermediate)
             {
                 string fileNameBase = Path.GetFileNameWithoutExtension(this.Source.Name);
-                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Events", "csv").ToFileInfo();
-                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
+                analysisSettings.EventsFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Events", "csv").ToFileInfo();
+                analysisSettings.SummaryIndicesFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Indices", "csv").ToFileInfo();
                 analysisSettings.SpectrumIndicesDirectory = resultDirectory;
-                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultName(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
+                analysisSettings.ImageFile = FilenameHelpers.AnalysisResultPath(resultDirectory, fileNameBase, "Image", "png").ToFileInfo();
             }
 
             analysisSettings.Configuration = Yaml.Deserialise(this.Config);

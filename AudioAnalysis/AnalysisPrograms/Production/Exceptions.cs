@@ -19,7 +19,10 @@ namespace AnalysisPrograms.Production
     {
         #region Constants
 
-        public const int UnhandledExceptionErrorCode = 1000;
+        /// <summary>
+        /// The default exit code to use for exceptions not recognised. Must not be greater than 255.
+        /// </summary>
+        public const int UnhandledExceptionErrorCode = 200;
 
         #endregion
 
@@ -31,8 +34,12 @@ namespace AnalysisPrograms.Production
 
         #region Constructors and Destructors
 
+        /// <summary>
+        ///
+        /// </summary>
         static ExceptionLookup()
         {
+            // WARNING: EXIT CODES CANNOT BE > 255 (for linux compatibility)
             ErrorLevels = new Dictionary<Type, ExceptionStyle>
                               {
                                   {
@@ -99,13 +106,13 @@ namespace AnalysisPrograms.Production
                                       typeof(AnalysisOptionDevilException), 
                                       new ExceptionStyle
                                           {
-                                              ErrorCode = 666, 
+                                              ErrorCode = 66, 
                                               Handle = false
                                           }
                                   }, 
                                   {
                                       typeof(NoDeveloperMethodException), 
-                                      new ExceptionStyle { ErrorCode = 999 }
+                                      new ExceptionStyle { ErrorCode = 199 }
                                   }, 
                                   {
                                       typeof(Exception), 

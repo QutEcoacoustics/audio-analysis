@@ -147,7 +147,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             string[] keys = indexProperties.Keys.ToArray();
 
             Stopwatch timer = Stopwatch.StartNew();
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCSVFiles(
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadCsvFiles(
                 inputDirectory,
                 fileStem + FilenameHelpers.BasenameSeparator + analysisType,
                 keys);

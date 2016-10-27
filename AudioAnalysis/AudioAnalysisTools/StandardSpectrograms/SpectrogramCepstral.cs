@@ -187,7 +187,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int ccCount = sonoConfig.mfccConfig.CcCount;
             bool includeDelta = sonoConfig.mfccConfig.IncludeDelta;
             bool includeDoubleDelta = sonoConfig.mfccConfig.IncludeDoubleDelta;
-            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.SourceFName = recording.BaseName;
 
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             SpectrogramStandard sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]

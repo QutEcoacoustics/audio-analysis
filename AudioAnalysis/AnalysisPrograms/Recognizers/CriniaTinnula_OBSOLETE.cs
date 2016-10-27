@@ -108,7 +108,7 @@ namespace AnalysisPrograms.Recognizers
             // Make a spectrogram
             var sonoConfig = new SonogramConfig
             {
-                SourceFName = recording.FileName,
+                SourceFName = recording.BaseName,
                 WindowSize = FrameSize,
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.STANDARD,
@@ -177,7 +177,7 @@ namespace AnalysisPrograms.Recognizers
                 var debugPath1 =
                     outputDirectory.Combine(
                         FilenameHelpers.AnalysisResultName(
-                            Path.GetFileNameWithoutExtension(recording.FileName),
+                            Path.GetFileNameWithoutExtension(recording.BaseName),
                             this.Identifier,
                             "png",
                             "DebugSpectrogram1"));
@@ -186,7 +186,7 @@ namespace AnalysisPrograms.Recognizers
                 // save new image with longer frame
                 var sonoConfig2 = new SonogramConfig
                     {
-                        SourceFName = recording.FileName,
+                        SourceFName = recording.BaseName,
                         WindowSize = 1024,
                         WindowOverlap = 0,
                         NoiseReductionType = NoiseReductionType.NONE,
@@ -198,7 +198,7 @@ namespace AnalysisPrograms.Recognizers
                 var debugPath2 =
                     outputDirectory.Combine(
                         FilenameHelpers.AnalysisResultName(
-                            Path.GetFileNameWithoutExtension(recording.FileName),
+                            Path.GetFileNameWithoutExtension(recording.BaseName),
                             this.Identifier,
                             "png",
                             "DebugSpectrogram2"));

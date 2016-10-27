@@ -250,7 +250,7 @@ namespace AudioAnalysisTools
             //draw a spectrogram of t-statistic values
             //double[,] tStatMatrix = SpectrogramDifference.GetTStatisticMatrix(avg1, std1, cs1.SampleCount, avg2, std2, cs2.SampleCount);
             //Image image3 = SpectrogramDifference.DrawTStatisticSpectrogram(tStatMatrix);
-            //titleBar = SpectrogramDifference.DrawTitleBarOfTStatisticSpectrogram(cs1.FileName, cs2.FileName, image1.Width, titleHt);
+            //titleBar = SpectrogramDifference.DrawTitleBarOfTStatisticSpectrogram(cs1.BaseName, cs2.BaseName, image1.Width, titleHt);
             //image3 = ColourSpectrogram.FrameSpectrogram(image3, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
             //draw a difference spectrogram derived from by thresholding a t-statistic matrix 
