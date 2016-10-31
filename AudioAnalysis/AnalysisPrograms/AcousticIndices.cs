@@ -150,6 +150,9 @@ namespace AnalysisPrograms
             }
         }
 
+        public string Description
+            => "Generates all our default acoustic indices, including summary indices and spectral indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
+
 
         public static void Dev(Arguments arguments)
         {

@@ -24,6 +24,8 @@ namespace AnalysisBase
 
         public abstract string Identifier { get; }
 
+        public virtual string Description => "YOU SHOULD IMPLEMENT THIS!";
+
         public virtual AnalysisSettings DefaultSettings
         {
             get

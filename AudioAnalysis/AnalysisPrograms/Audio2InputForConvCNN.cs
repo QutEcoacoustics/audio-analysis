@@ -863,6 +863,7 @@ namespace AnalysisPrograms
         public string DisplayName { get; private set; }
 
         public string Identifier { get; private set; }
+        public string Description => "This analyzer preprocesses short audio segments a few seconds to maximum 1 minute long for processing by a convolutional Deep NN. It does not accumulate data or other indices over a long recording.";
 
         public AnalysisSettings DefaultSettings { get; private set; }
 
