@@ -61,7 +61,16 @@ namespace AnalysisPrograms.Production
 
         #endregion
 
-        #region FourMainTasks
+        #region ImportantTasks
+        [ArgDescription("List available IAnalyzers available for use with audio2csv or eventRecognizer")]
+        public object AnalysesAvailableArgs { get; set; }
+        public static Action<object> AnalysesAvailable()
+        {
+            // 1. Returns list of available analyses
+            // Signed off: Anthony Truskinger 2016
+            return AnalysisPrograms.AnalysesAvailable.Execute;
+        }
+
         [ArgDescription("Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.")]
         public AnalyseLongRecording.Arguments Audio2CsvArgs { get; set; }
         public static Action<AnalyseLongRecording.Arguments> Audio2Csv()
@@ -356,15 +365,6 @@ namespace AnalysisPrograms.Production
         public static Action<DummyAnalyser.Arguments> Dummy()
         {
             return AnalysisPrograms.DummyAnalyser.Execute;
-        }
-
-        [ArgDescription("DEPRACATED: Test only!")]
-        public AnalysesAvailable.Arguments AnalysesAvailableArgs { get; set; }
-        public static Action<AnalysesAvailable.Arguments> AnalysesAvailable()
-        {
-            // 1. Returns list of available analyses
-            // Signed off: Michael Towsey 1st August 2012
-            return AnalysisPrograms.AnalysesAvailable.Main;
         }
 
         public FileRenamer.Arguments FileRenamerArgs { get; set; }
