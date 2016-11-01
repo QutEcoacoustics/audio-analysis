@@ -350,6 +350,37 @@ namespace TowseyLibrary
             return outM;
         }
 
+        public static byte[,] ConvertMatrixOfDouble2Byte(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            var outM = new byte[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = (byte)matrix[r, c];
+                }
+            }
+            return outM;
+        }
+        public static double[,] ConvertMatrixOfByte2Double(byte[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            var outM = new double[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = matrix[r, c];
+                }
+            }
+            return outM;
+        }
+
         /*
          * converts a matrix to a vector by concatenating columns.
          */
@@ -1681,32 +1712,65 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="M"></param>
         /// <param name="truncateMin"></param>
-        /// <param name="normMax"></param>
+        /// <param name="truncateMax"></param>
         /// <returns></returns>
         public static double[,] NormaliseInZeroOne(double[,] M, double truncateMin, double truncateMax)
         {
             int rows = M.GetLength(0);
             int cols = M.GetLength(1);
             double range = truncateMax - truncateMin;
-            double[,] M2return = new double[rows, cols];
+            double[,] m2Return = new double[rows, cols];
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    M2return[r, c] = (M[r, c] - truncateMin) / range;
-                    if (M2return[r, c] > 1.0)
+                    m2Return[r, c] = (M[r, c] - truncateMin) / range;
+                    if (m2Return[r, c] > 1.0)
                     {
-                        M2return[r, c] = 1.0;
+                        m2Return[r, c] = 1.0;
                     }
-                    else if (M2return[r, c] < 0.0)
+                    else if (m2Return[r, c] < 0.0)
                     {
-                        M2return[r, c] = 0.0;
+                        m2Return[r, c] = 0.0;
                     }
                 }
             }
 
-            return M2return;
+            return m2Return;
         }
+
+        /// <summary>
+        /// Normalises a matrix so that all values lie between 0 and 1.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[,] NormaliseInZeroOne(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double min;
+            double max;
+            DataTools.MinMax(m, out min, out max);
+            double range = max - min;
+            double[,] m2Return = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    m2Return[r, c] = (m[r, c] - min) / range;
+                    if (m2Return[r, c] > 1.0)
+                    {
+                        m2Return[r, c] = 1.0;
+                    }
+                    else if (m2Return[r, c] < 0.0)
+                    {
+                        m2Return[r, c] = 0.0;
+                    }
+                }
+            }
+            return m2Return;
+        }
+
 
 
 

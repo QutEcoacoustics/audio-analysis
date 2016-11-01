@@ -1251,6 +1251,7 @@ namespace AudioAnalysisTools.DSP
             return normM;
         }
 
+
         /// <summary>
         /// </summary>
         /// <param name="m">The spectral sonogram passes as matrix of doubles</param>
@@ -1275,13 +1276,14 @@ namespace AudioAnalysisTools.DSP
                     int[] histo = Histogram.Histo(localMatrix, binCount, out binWidth, out minIntensity, out maxIntensity);
                     int lowerBinBound = Histogram.GetPercentileBin(histo, minPercentileBound);
                     int upperBinBound = Histogram.GetPercentileBin(histo, maxPercentileBound);
-                    double lowerBound = minIntensity + (lowerBinBound * binWidth);
-                    double upperBound = minIntensity + (upperBinBound * binWidth);
-                    double range = upperBound - lowerBound;
-                    normM[row, col] = range;
+                    // double lowerBound = minIntensity + (lowerBinBound * binWidth);
+                    // double upperBound = minIntensity + (upperBinBound * binWidth);
+                    // calculate the range = upperBound - lowerBound
+                    //                     = (minIntensity + (upperBinBound * binWidth)) - (minIntensity + (lowerBinBound * binWidth));
+                    //                     = (upperBinBound - lowerBinBound) * binWidth;
+                    normM[row, col] = (upperBinBound - lowerBinBound) * binWidth;
                 }
             }
-
             return normM;
         }
 
