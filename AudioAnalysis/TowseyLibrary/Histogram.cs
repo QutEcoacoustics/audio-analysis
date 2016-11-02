@@ -80,7 +80,7 @@ namespace TowseyLibrary
 
 
 
-        static public int[] Histo(double[,] data, int binCount, out double binWidth, out double min, out double max)
+        public static int[] Histo(double[,] data, int binCount, out double binWidth, out double min, out double max)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
@@ -103,6 +103,24 @@ namespace TowseyLibrary
         }
 
 
+        public static int[] Histo(byte[,] data, out byte min, out byte max)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            int[] histo = new int[256];
+            DataTools.MinMax(data, out min, out max);
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    histo[data[i, j]]++;
+                }
+            }
+            return histo;
+        }
+
+
 
         /// <summary>
         /// HISTOGRAM from a matrix of double
@@ -110,12 +128,12 @@ namespace TowseyLibrary
         /// <param name="data"></param>
         /// <param name="binCount"></param>
         /// <returns></returns>
-        static public int[] Histo(double[,] data, int binCount)
+        public static int[] Histo(double[,] data, int binCount)
         {
             double min;
             double max;
             DataTools.MinMax(data, out min, out max);
-            double binWidth = (max - min) / (double)binCount;
+            double binWidth = (max - min) / binCount;
             //LoggedConsole.WriteLine("data min=" + min + "  data max=" + max + " binwidth=" + binWidth);
 
             return Histo(data, binCount, min, max, binWidth);
