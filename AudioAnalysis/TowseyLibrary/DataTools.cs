@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using CsvHelper;
 using MathNet.Numerics;
 
 
@@ -256,47 +254,6 @@ namespace TowseyLibrary
             return op;
         }
 
-        /// <summary>
-        /// Converts a matrix to a vector by concatenating columns.
-        /// </summary>
-        /// <param name="M"></param>
-        /// <returns></returns>
-        public static double[] Matrix2Array(double[,] M)
-        {
-            int ht = M.GetLength(0);
-            int width = M.GetLength(1);
-            double[] v = new double[ht * width];
-
-            int id = 0;
-            for (int col = 0; col < width; col++)
-            {
-                for (int row = 0; row < ht; row++)
-                {
-                    v[id++] = M[row, col];
-                }
-            }
-            return v;
-        }
-
-        /*
-         * converts a matrix to a vector by concatenating columns.
-         */
-        public static int[] Matrix2Array(int[,] M)
-        {
-            int ht = M.GetLength(0);
-            int width = M.GetLength(1);
-            int[] v = new int[ht * width];
-
-            int id = 0;
-            for (int col = 0; col < width; col++)
-            {
-                for (int row = 0; row < ht; row++)
-                {
-                    v[id++] = M[row, col];
-                }
-            }
-            return v;
-        }
 
         /*
          * converts a matrix to a vector by concatenating columns.
@@ -317,10 +274,75 @@ namespace TowseyLibrary
         }
 
 
+        
+        /// <summary>
+        /// Converts a matrix to a vector by concatenating columns.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[] Matrix2Array(double[,] m)
+        {
+            int ht = m.GetLength(0);
+            int width = m.GetLength(1);
+            double[] v = new double[ht * width];
 
-        /*
-         * converts a matrix to a vector by concatenating columns.
-         */
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = m[row, col];
+                }
+            }
+            return v;
+        }
+
+        // *
+        // * converts a matrix to a vector by concatenating columns.
+        // 
+        public static int[] Matrix2Array(int[,] m)
+        {
+            int ht = m.GetLength(0);
+            int width = m.GetLength(1);
+            int[] v = new int[ht * width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = m[row, col];
+                }
+            }
+            return v;
+        }
+
+
+/*
+        /// <summary>
+        /// Converts a matrix to a vector by concatenating columns.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static T[] Matrix2Array(T[,] m)
+        {
+            int ht = m.GetLength(0);
+            int width = m.GetLength(1);
+            T[] v = new T[ht * width];
+
+            int id = 0;
+            for (int col = 0; col < width; col++)
+            {
+                for (int row = 0; row < ht; row++)
+                {
+                    v[id++] = m[row, col];
+                }
+            }
+            return v;
+        }
+
+*/
+        
         public static byte[] Matrix2Array(byte[,] M)
         {
             int ht = M.GetLength(0);
@@ -337,6 +359,8 @@ namespace TowseyLibrary
             }
             return v;
         }
+
+
 
         /*
          * converts a 3-D matrix to a vector by concatenating columns and columns.
@@ -3077,19 +3101,28 @@ namespace TowseyLibrary
   /// <param name="data">array ofintegers</param>
   /// <param name="min">min value to return</param>
   /// <param name="max">max value to return</param>
-  static public void MinMax(int[] data, out int min, out int max)
+  public static void MinMax(int[] data, out int min, out int max)
   { min = data[0];
     max = data[0];
     for(int i=1; i<data.Length; i++)
     { if(data[i] < min) min = data[i];
       if(data[i] > max) max = data[i];
     }
-    //LoggedConsole.WriteLine(data.Length+"  min="+min+" max="+max);
   }
+        public static void MinMax(byte[] data, out byte min, out byte max)
+        {
+            min = data[0];
+            max = data[0];
+            for (int i = 1; i < data.Length; i++)
+            {
+                if (data[i] < min) min = data[i];
+                if (data[i] > max) max = data[i];
+            }
+        }
 
-//=============================================================================
+        //=============================================================================
 
-        static public void MinMax(double[] data, out double min, out double max)
+        public static void MinMax(double[] data, out double min, out double max)
         {
             min = data[0];
             max = data[0];
@@ -3106,7 +3139,7 @@ namespace TowseyLibrary
             }
         }
 
-        static public void MinMaxAv(double[] data, out double min, out double max, out double av)
+        public static void MinMaxAv(double[] data, out double min, out double max, out double av)
         {
             min = data[0];
             max = data[0];
@@ -3130,14 +3163,14 @@ namespace TowseyLibrary
         /// <summary>
         /// returns the min and max values in a matrix of doubles
         /// </summary>
-        static public void MinMax(double[,] data, out double min, out double max)
+        public static void MinMax(double[,] data, out double min, out double max)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
             min = data[0, 0];
             max = data[0, 0];
-            for (int i = 1; i < rows; i++)
-            for (int j = 1; j < cols; j++)
+            for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
             {
                 if (data[i,j] < min)
                     min = data[i,j];
@@ -3146,13 +3179,53 @@ namespace TowseyLibrary
             }//end double loop
         }
 
+        /// <summary>
+        /// returns the min and max values in a matrix of byte
+        /// </summary>
+        public static void MinMax(byte[,] data, out byte min, out byte max)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            min = data[0, 0];
+            max = data[0, 0];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    if (data[i, j] < min)
+                        min = data[i, j];
+                    else if (data[i, j] > max)
+                        max = data[i, j];
+                }
+            }
+        }
+
+        /// <summary>
+        /// returns the min and max values in a matrix of byte
+        /// </summary>
+        public static int[] GetByteDistribution(byte[,] data)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            var byteDistribution = new int[256];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    byteDistribution[data[i, j]]++;
+                } 
+            }
+            return byteDistribution;            
+        }
+
+
         /**
          * returns the min and max of an array of doubles
          * and the index for both.
          * @param data
          * @return 
-         */  
-  static public void MinMax(double[] data, out int indexMin, out int indexMax, out double min, out double max)
+         */
+        public static void MinMax(double[] data, out int indexMin, out int indexMax, out double min, out double max)
   {
       indexMin = 0;
       indexMax = 0;

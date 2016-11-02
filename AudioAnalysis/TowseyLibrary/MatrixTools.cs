@@ -259,37 +259,36 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// The returned submatrix includes the rows and column passed as bounds.
-        /// Assume that RowTop < RowBottom, ColumnLeft < ColumnRight. 
+        /// Assume that RowTop GT RowBottom, ColumnLeft LT ColumnRight. 
         /// Row, column indices start at 0
         /// </summary>
-        /// <param name="M"></param>
+        /// <param name="m"></param>
         /// <param name="r1"></param>
         /// <param name="c1"></param>
         /// <param name="r2"></param>
         /// <param name="c2"></param>
         /// <returns></returns>
-        public static double[,] Submatrix(double[,] M, int r1, int c1, int r2, int c2)
+        public static T[,] Submatrix<T>(T[,] m, int r1, int c1, int r2, int c2)
         {
             int subRowCount = r2 - r1 + 1;
             int subColCount = c2 - c1 + 1;
 
-            double[,] sm = new double[subRowCount, subColCount];
+            T[,] sm = new T[subRowCount, subColCount];
 
             for (int i = 0; i < subRowCount; i++)
             {
                 for (int j = 0; j < subColCount; j++)
-                {                       
-                    sm[i, j] = M[r1 + i, c1 + j];
+                {
+                    sm[i, j] = m[r1 + i, c1 + j];
                 }
             }
-
             return sm;
         }
 
         /// <summary>
         /// Returns an array of row averages in the submatrix of passed matrix.
         /// This method combines two methods, Submatrix() & GetRowAverages(), for efficiency
-        /// Assume that RowTop < RowBottom, ColumnLeft < ColumnRight. 
+        /// Assume that RowTop LT RowBottom, ColumnLeft LT ColumnRight. 
         /// Row, column indices start at 0
         /// </summary>
         /// <param name="M"></param>
@@ -350,21 +349,52 @@ namespace TowseyLibrary
             return outM;
         }
 
-        public static byte[,] ConvertMatrixOfDouble2Byte(double[,] matrix)
-        {
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            var outM = new byte[rows, cols];
+/*
 
-            for (int r = 0; r < rows; r++)
+        /// <summary>
+        /// Converts a matrix to a vector by concatenating columns.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static T[] Matrix2Array(T[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            T[] v = new T[rows * cols];
+
+            int id = 0;
+            for (int col = 0; col < cols; col++)
             {
-                for (int c = 0; c < cols; c++)
+                for (int row = 0; row < rows; row++)
                 {
-                    outM[r, c] = (byte)matrix[r, c];
+                    v[id++] = m[row, col];
                 }
             }
-            return outM;
+            return v;
         }
+*/
+
+    /// <summary>
+    /// This method assumes that the passed matrix of double already takes values between 0.0 and 1.0
+    /// </summary>
+    /// <param name="matrix"></param>
+    /// <returns></returns>
+    public static byte[,] ConvertMatrixOfDouble2Byte(double[,] matrix)
+    {
+        int rows = matrix.GetLength(0);
+        int cols = matrix.GetLength(1);
+        var outM = new byte[rows, cols];
+        var maxValue = byte.MaxValue;
+
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols; c++)
+            {
+                outM[r, c] = (byte)(matrix[r, c] * maxValue);
+            }
+        }
+        return outM;
+    }
         public static double[,] ConvertMatrixOfByte2Double(byte[,] matrix)
         {
             int rows = matrix.GetLength(0);
@@ -1768,9 +1798,43 @@ namespace TowseyLibrary
                     }
                 }
             }
+            // DataTools.MinMax(m2Return, out min, out max);
             return m2Return;
         }
 
+
+        /// <summary>
+        /// Normalises a matrix so that all values lie between 0 and 1.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static double[,] NormaliseInZeroOne(double[,] m, out double min, out double max)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            DataTools.MinMax(m, out min, out max);
+            double range = max - min;
+            double[,] m2Return = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    m2Return[r, c] = (m[r, c] - min) / range;
+                    if (m2Return[r, c] > 1.0)
+                    {
+                        m2Return[r, c] = 1.0;
+                    }
+                    else if (m2Return[r, c] < 0.0)
+                    {
+                        m2Return[r, c] = 0.0;
+                    }
+                }
+            }
+            // DataTools.MinMax(m2Return, out min, out max);
+            return m2Return;
+        }
 
 
 

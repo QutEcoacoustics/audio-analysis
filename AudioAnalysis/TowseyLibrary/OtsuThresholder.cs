@@ -130,7 +130,7 @@ namespace TowseyLibrary
             byte[,] opByteMatrix;
             Image histoImage;
             double threshold;
-            GetOtsuThreshold(ipMatrix, out opByteMatrix, out threshold, out histoImage);
+            GetGlobalOtsuThreshold(ipMatrix, out opByteMatrix, out threshold, out histoImage);
             Console.WriteLine("Threshold: {0}", threshold);
 
             Image opImage = ConvertMatrixToGreyScaleImage(opByteMatrix);
@@ -367,8 +367,9 @@ namespace TowseyLibrary
             {
                 for (int c = 0; c < width; c++)
                 {
-                    Color color = Color.FromArgb(255 - M[r, c], 255 - M[r, c], 255 - M[r, c]);
-                    image.SetPixel(c, r, color);
+                    int value = 255 - M[r, c];
+                    //Color color = Color.FromArgb(value, value, value);
+                    image.SetPixel(c, r, Color.FromArgb(value, value, value));
                 }
             }
             return image;
@@ -437,54 +438,72 @@ namespace TowseyLibrary
         }
 
 
-        public static void GetOtsuThreshold(double[,] inputMatrix, out byte[,] opByteMatrix, out double opThreshold, out Image histogramImage)
+        public static void GetGlobalOtsuThreshold(double[,] inputMatrix, out byte[,] opByteMatrix, out double opThreshold, out Image histogramImage)
         {
-            var byteMatrix = MatrixTools.ConvertMatrixOfDouble2Byte(inputMatrix);
+            if (inputMatrix == null)
+                throw new ArgumentNullException(nameof(inputMatrix));
+            double min, max;
+            var normMatrix = MatrixTools.NormaliseInZeroOne(inputMatrix, out min, out max);
+            var byteMatrix = MatrixTools.ConvertMatrixOfDouble2Byte(normMatrix);
             int threshold;
             GetOtsuThreshold(byteMatrix, out opByteMatrix, out threshold, out histogramImage);
-            opThreshold  = threshold / (double)byte.MaxValue;
+            opThreshold = threshold / (double)byte.MaxValue;
+            opThreshold = min + (opThreshold * (max - min));            
         }
 
 
         /// <summary>
         /// </summary>
         /// <param name="m">The spectral sonogram passes as matrix of doubles</param>
-        /// <param name="minPercentileBound">minimum decibel value</param>
-        /// <param name="maxPercentileBound">maximum decibel value</param>
-        /// <param name="temporalNh"></param>
-        /// <param name="freqBinNh"></param>
+        /// <param name="opByteMatrix"></param>
         /// <returns></returns>
-        public static void DoLocalOtsuThresholding(double[,] m, int minPercentileBound, int maxPercentileBound, int temporalNh, int freqBinNh, out byte[,] opByteMatrix)
+        public static void DoLocalOtsuThresholding(double[,] m, out byte[,] opByteMatrix)
         {
+            int byteThreshold = 30;
+            int minPercentileBound = 5;
+            int maxPercentileBound = 95;
+            int temporalNh = 15;
+            int freqBinNh  = 15;
+
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);
-            //double[,] normM = new double[rowCount, colCount];
+            //double[,] normM  = MatrixTools.NormaliseInZeroOne(m);
+            var ipByteMatrix = MatrixTools.ConvertMatrixOfDouble2Byte(m);
+            var bd1 = DataTools.GetByteDistribution(ipByteMatrix);
             opByteMatrix = new byte[rowCount, colCount];
 
             for (int col = freqBinNh; col < colCount - freqBinNh; col++) //for all cols i.e. freq bins
             {
                 for (int row = temporalNh; row < rowCount - temporalNh; row++) //for all rows i.e. frames
                 {
-                    var localMatrix = MatrixTools.Submatrix(m, row - temporalNh, col - freqBinNh, row + temporalNh, col + freqBinNh);
-                    var byteMatrix = MatrixTools.ConvertMatrixOfDouble2Byte(localMatrix);
-                    var thresholder = new OtsuThresholder();
-                    byte[] vector = DataTools.Matrix2Array(byteMatrix);
-                    int threshold = thresholder.CalculateThreshold(vector);
-                    if (localMatrix[temporalNh, freqBinNh] > threshold)
-                    {
-                        opByteMatrix[row, col] = 255;
-                    }
+                    var localMatrix = MatrixTools.Submatrix(ipByteMatrix, row - temporalNh, col - freqBinNh, row + temporalNh, col + freqBinNh);
 
+                    // debug check for min and max - make sure it worked
+                    int[] bd = DataTools.GetByteDistribution(localMatrix);
 
-                    /*
-                    double minIntensity, maxIntensity, binWidth;
-                    int[] histo = Histogram.Histo(localMatrix, binCount, out binWidth, out minIntensity, out maxIntensity);
+                    byte minIntensity, maxIntensity;
+                    int[] histo = Histogram.Histo(localMatrix, out minIntensity, out maxIntensity);
                     int lowerBinBound = Histogram.GetPercentileBin(histo, minPercentileBound);
                     int upperBinBound = Histogram.GetPercentileBin(histo, maxPercentileBound);
-                    normM[row, col] = (upperBinBound - lowerBinBound) * binWidth;
-                    */
+                    int range = upperBinBound - lowerBinBound;
+                    //normM[row, col] = (upperBinBound - lowerBinBound);
+                    if (range > byteThreshold)
+                    {
+                        var thresholder = new OtsuThresholder();
+                        byte[] vector = DataTools.Matrix2Array(localMatrix);
+                        int threshold = thresholder.CalculateThreshold(vector);
+                        if (localMatrix[temporalNh, freqBinNh] > threshold)
+                        {
+                            opByteMatrix[row, col] = 255;
+                        }
+                    }
+
                 }
             }
+
+            // debug check for min and max - make sure it worked
+            var bd2 = DataTools.GetByteDistribution(opByteMatrix);
+            bd2 = null;
         }
 
 
