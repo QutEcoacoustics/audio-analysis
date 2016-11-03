@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using TowseyLibrary;
 using AudioAnalysisTools.StandardSpectrograms;
 using AudioAnalysisTools.DSP;
@@ -26,7 +24,7 @@ namespace AudioAnalysisTools
         public static void Execute(SpectrogramStandard sonogram, int minHz, int maxHz,
                                    double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold, double scoreThreshold,
                                    double minDuration, double maxDuration, int smoothingWindow,
-                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+                                   out double[] scores, out List<AcousticEvent> events, out double[,] hits)
         {
             // smooth the frames to make oscillations more regular.
             sonogram.Data = MatrixTools.SmoothRows(sonogram.Data, 5);
@@ -69,8 +67,6 @@ namespace AudioAnalysisTools
         }
 
 
-
-
         /// <summary>
         /// Detects oscillations in a given freq bin.
         /// there are several important parameters for tuning.
@@ -81,14 +77,15 @@ namespace AudioAnalysisTools
         /// c) MinAmplitude: minimum acceptable value of a DCT coefficient if hit is to be accepted.
         ///     The algorithm is sensitive to this value. A lower value results in more oscillation hits being returned.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="minBin">min freq bin of search band</param>
-        /// <param name="maxBin">max freq bin of search band</param>
-        /// <param name="dctLength">number of values</param>
-        /// <param name="DCTindex">Sets lower bound for oscillations of interest.</param>
+        /// <param name="sonogram"></param>
+        /// <param name="minHz">min freq bin of search band</param>
+        /// <param name="maxHz">max freq bin of search band</param>
+        /// <param name="dctDuration">number of values</param>
+        /// <param name="maxOscilFreq"></param>
         /// <param name="dctThreshold">threshold - do not accept a DCT coefficient if its value is less than this threshold</param>
+        /// <param name="minOscilFreq"></param>
         /// <returns></returns>
-        public static Double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz,
+        public static double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz,
                                                    double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
@@ -142,7 +139,7 @@ namespace AudioAnalysisTools
                     dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
                     //dct = DataTools.normalise(dct); //another option to normalise
                     int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
-                    double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+                    //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
                     // #### Tried this option for scoring oscillation hits but did not work well.
                     // #### Requires very fine tuning of thresholds
@@ -181,11 +178,11 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="matrix">the Oscillation matrix</param>
         /// <returns></returns>
-        public static Double[,] RemoveIsolatedOscillations(Double[,] matrix)
+        public static double[,] RemoveIsolatedOscillations(Double[,] matrix)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            Double[,] cleanMatrix = matrix;
+            double[,] cleanMatrix = matrix;
 
             for (int c = 3; c < cols - 3; c++)//traverse columns - skip DC column
             {
@@ -212,7 +209,6 @@ namespace AudioAnalysisTools
         public static double[] GetOscillationScores(double[,] hits, int minHz, int maxHz, double freqBinWidth)
         {
             int rows = hits.GetLength(0);
-            int cols = hits.GetLength(1);
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
             int binCount = maxBin - minBin + 1;
@@ -235,10 +231,9 @@ namespace AudioAnalysisTools
         public static double[] GetOscillationFrequency(double[,] hits, int minHz, int maxHz, double freqBinWidth)
         {
             int rows = hits.GetLength(0);
-            int cols = hits.GetLength(1);
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
-            int binCount = maxBin - minBin + 1;
+            //int binCount = maxBin - minBin + 1;
 
             var oscFreq = new double[rows]; //to store the oscillation frequency
             for (int r = 0; r < rows; r++)
@@ -254,7 +249,7 @@ namespace AudioAnalysisTools
                     }
                 }
                 if (count == 0) oscFreq[r] = 0;
-                else            oscFreq[r] = freq / (double)count; //return the average frequency
+                else            oscFreq[r] = freq / count; //return the average frequency
                 //if (oscFreq[r] > 1.0) oscFreq[r] = 1.0;
             }
             return oscFreq;
@@ -264,13 +259,15 @@ namespace AudioAnalysisTools
         /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
         /// </summary>
         /// <param name="scores">the array of OD scores</param>
+        /// <param name="oscFreq"></param>
         /// <param name="minHz">lower freq bound of the acoustic event</param>
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="scoreThreshold">OD score must exceed this threshold to count as an event</param>
-        /// <param name="durationThreshold">duration of event must exceed this duration to count as an event</param>
+        /// <param name="maxDurationThreshold"></param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
+        /// <param name="maxScoreThreshold"></param>
+        /// <param name="minDurationThreshold"></param>
         /// <returns></returns>
         public static List<AcousticEvent> ConvertOscillationScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, 
                                                                          double freqBinWidth, double maxScoreThreshold, 
@@ -298,27 +295,26 @@ namespace AudioAnalysisTools
                     startFrame = i;
                 }
                 else  //check for the end of an event
-                    if ((isHit == true) && ((scores[i] < scoreThreshold)||(i == count-1)))//this is end of an event, so initialise it
+                    if (isHit && ((scores[i] < scoreThreshold)||(i == count-1)))//this is end of an event, so initialise it
                     {
                         isHit = false;
-                        double endTime = i * frameOffset;
+                        //double endTime = i * frameOffset;
                         //double duration = endTime - startTime;
                         double duration = (i - startFrame + 1)  * frameOffset;
                         if (duration < minDurationThreshold) continue; //skip events with duration shorter than threshold
                         if (duration > maxDurationThreshold) continue; //skip events with duration longer than threshold
-                        //LoggedConsole.WriteLine("startFrame={0}   startTime={1:f2}s    endFrame={2}   endTime={3:f2}s ", startFrame, startTime, i, endTime);
-                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        var ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "Oscillation"; //default name
                         //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.FileName = fileName;
                         //obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
-                        ev.Score = av / (double)(i - startFrame + 1);
+                        ev.Score = av / (i - startFrame + 1);
                         //obtain oscillation freq.
                         av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += oscFreq[n];
-                        ev.Score2 = av / (double)(i - startFrame + 1);
+                        ev.Score2 = av / (i - startFrame + 1);
                         ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
                         events.Add(ev);
                     }
@@ -342,11 +338,10 @@ namespace AudioAnalysisTools
         /// <param name="frameWidth"></param>
         /// <param name="maxOscilation"></param>
         /// <returns></returns>
-        public static double CalculateRequiredFrameOverlap(int sr, int frameWidth, /*double dctDuration, */ double maxOscilation)
+        public static double CalculateRequiredFrameOverlap(int sr, int frameWidth, double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
-            //double frameOffset = sr / (double)optimumFrameRate;
-            int frameOffset = (int)(sr / (double)optimumFrameRate);  //do this AND NOT LINE ABOVE OR ELSE GET CUMULATIVE ERRORS IN time scale
+            int frameOffset = (int)(sr / optimumFrameRate); 
 
             // this line added 17 Aug 2016 to deal with high Oscillation rate frog ribits.
             if (frameOffset > frameWidth) frameOffset = frameWidth;
