@@ -52,6 +52,13 @@ namespace TowseyLibrary
             LoggedConsole.WriteLine("#          Comparing passed array of double with content of file <" + scoreFile.Name + ">");
             bool allOk = true;
             var scoreLines = FileTools.ReadTextFile(scoreFile.FullName);
+
+            if (scoreArray.Length != scoreLines.Count)
+            {
+                LoggedConsole.WriteWarnLine("   FAIL! SCORE ARRAY not same length as Benchmark.");
+                return;
+            }
+
             for (int i = 0; i < scoreLines.Count; i++)
             {
                 var str = scoreArray[i].ToString(CultureInfo.InvariantCulture);

@@ -259,6 +259,7 @@
     <Compile Include="Recognizers\ExempliGratia.cs" />
     <Compile Include="Recognizers\CycloranaNovaehollandiae.cs" />
     <Compile Include="Recognizers\ArdeaInsignis.cs" />
+    <Compile Include="Recognizers\CriniaRemota.cs" />
     <Compile Include="Recognizers\UperoleiaInundata.cs" />
     <Compile Include="Recognizers\LitoriaPallida.cs" />
     <Compile Include="Recognizers\LitoriaRubella.cs" />
