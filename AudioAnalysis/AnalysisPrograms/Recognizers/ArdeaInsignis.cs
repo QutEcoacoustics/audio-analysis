@@ -202,7 +202,7 @@ namespace AnalysisPrograms.Recognizers
 
                 var template = GetTemplateForAlgorithm2(distanceToNextPeak);
 
-                //now calculate similarity of locality with template 
+                // now calculate similarity of locality with template 
                 //var locality = DataTools.Subarray(amplitudeArray, i - 2, templateLength); // i-2 because first two polaces should be zero.
                 var locality = DataTools.Subarray(amplitudeArray, i-2, template.Length); // i-2 because first two places should be zero.
                 double score = DataTools.CosineSimilarity(locality, template);
