@@ -67,7 +67,7 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
 
             //Crinia remota
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\CriniaSpecies\ER_CriniaRemota_20140206_032030.wav";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\CriniaSpecies\EmeraldRiver_CriniaRemota_20140206_032030.wav";
             string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016November";
             string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.CriniaRemota.yml";
 

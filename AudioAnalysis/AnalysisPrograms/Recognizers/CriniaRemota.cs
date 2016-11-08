@@ -14,12 +14,8 @@ namespace AnalysisPrograms.Recognizers
     using System;
     using System.Collections.Generic;
     using System.IO;
-    //using System.Linq;
-    //using System.Reflection;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using Recognizers.Base;
 
     using AudioAnalysisTools;
@@ -27,21 +23,22 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
-    //using log4net;
-
     using TowseyLibrary;
-    using System.Drawing;
-
-    //using Acoustics.Shared.ConfigFile;
 
     /// <summary>
-    /// AKA: The remote froglet
+    /// Crinia remota, AKA: The remote froglet
     /// This is a frog recognizer based on the "trill" or "washboard" template
-    /// It detects trill type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
+    /// It detects an irregular trill type typical of many frogs.
+    /// NOTE: The standard canetoad oscillation recognizer is not suitable for those frogs whose trill is irregular. 
+    /// The algorithm implemented in this recognizer is as follows:
     /// 
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs 
-    /// e.g. Litoria rothii and Litoria olongburesnsis.
+    /// 1. Extract the frequency band containing the call and average the energy in each frame.  
+    /// 2. Extract the side-bands (leaving a gap) and calculate average energy in each from of each side-band.
+    /// 3. Subtract sidebands from dominant call band.
+    /// 4. Find the C.remota calls using an IMPULSE/DECAY filter that is tuned to the expected pulse interval, even though irregular.
+    /// 5. Pass the resulting score array (output from impulse-decay filter) through an event recognizer.
+    /// 6. This returns events within user set duration bounds.
+    /// 
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
@@ -88,14 +85,10 @@ namespace AnalysisPrograms.Recognizers
             string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             //string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
+            // BETTER TO SET THESE. IGNORE USER!
             // this default framesize seems to work
             const int frameSize = 256;
-            // BETTER TO CALCULATE THIS. IGNORE USER!
-            // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
-            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate,
-                frameSize,
-                recognizerConfig.MaxOscilFreq);
+            const double windowOverlap = 0.25;
 
 
             // i: MAKE SONOGRAM
@@ -104,42 +97,89 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
-                // the default window is HAMMING
+                // use the default HAMMING window
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
+
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.None
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.0
             };
 
-            // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.WavReader.Time;
-            //int sr = recording.SampleRate;
-            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
+            int sr = recording.SampleRate;
+            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            int minBin = (int)Math.Round(recognizerConfig.MinHz / freqBinWidth) + 1;
+            int maxBin = (int)Math.Round(recognizerConfig.MaxHz / freqBinWidth) + 1;
+            var decibelThreshold = 6.0;
+
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
-            double[,] hits;
-            Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram,
-                recognizerConfig.MinHz,
-                recognizerConfig.MaxHz,
-                recognizerConfig.DctDuration,
-                (int)recognizerConfig.MinOscilFreq,
-                (int)recognizerConfig.MaxOscilFreq,
-                recognizerConfig.DctThreshold,
-                recognizerConfig.EventThreshold,
-                recognizerConfig.MinDuration,
-                recognizerConfig.MaxDuration,
-                out scores,
-                out events,
-                out hits);
+            int rowCount = sonogram.Data.GetLength(0);
+            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            double[] topBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, maxBin + 3, (rowCount - 1), maxBin + 9);
+            double[] botBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin - 3, (rowCount - 1), minBin - 9);
+            double[] diffArray = new double[amplitudeArray.Length];
+            for (int i = 0; i < amplitudeArray.Length; i++)
+            {
+                diffArray[i] = amplitudeArray[i] - topBand[i] - botBand[i];
+                if (diffArray[i] < 1.0) diffArray[i] = 0.0;
+            }
+            bool[] peakArray = new bool[amplitudeArray.Length];
+            for (int i = 1; i < diffArray.Length-1; i++)
+            {
+                if (diffArray[i] < decibelThreshold) continue;
+                if ((diffArray[i] > diffArray[i-1]) && (diffArray[i] > diffArray[i + 1]))
+                {
+                    peakArray[i] = true;
+                }
+            }
+
+            // calculate score array based on density of peaks
+            double frameDuration = (double)frameSize / sr;
+            // use a stimulus-decay function
+            double durationOfDecayTail = 0.35; // seconds
+            int lengthOfDecayTail = (int)Math.Round(durationOfDecayTail / frameDuration);
+            double decayrate = 0.95;
+            //double decay = -0.05;
+            //double fractionalDecay = Math.Exp(decay * lengthOfDecayTail);
+            // the above setting gives decay of 0.22 over 0.35 seconds or 30 frames.
+
+            double score = 0.0;
+            int locationOfLastPeak = 0;
+            double[] peakScores = new double[amplitudeArray.Length];
+            for (int p = 0; p < peakScores.Length-1; p++)
+            {
+                if (!peakArray[p])
+                {
+                    int distanceFromLastpeak = p - locationOfLastPeak;
+                    // score decay
+                    score *= decayrate;
+                    // remove the decay tail
+                    if ((score < 0.5) && (distanceFromLastpeak > lengthOfDecayTail) && (p >= lengthOfDecayTail))
+                    {
+                        score = 0.0;
+                        for (int j = 0; j < lengthOfDecayTail; j++)
+                        {
+                            peakScores[p - j] = score;
+                        }
+                    }
+                }
+                else
+                {
+                    locationOfLastPeak = p;
+                    score += 0.8;
+                }
+
+                peakScores[p] = score;
+            }
+
+            var events = AcousticEvent.ConvertScoreArray2Events(peakScores, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
+                                                                          freqBinWidth, recognizerConfig.EventThreshold, recognizerConfig.MinDuration, recognizerConfig.MaxDuration);
+            double[,] hits = null;
 
             var prunedEvents = new List<AcousticEvent>();
 
@@ -161,21 +201,24 @@ namespace AnalysisPrograms.Recognizers
             // do a recognizer test.
             if (MainEntry.InDEBUG)
             {
-                var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
-                TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scores);
-                AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, prunedEvents);
+               // var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
+               // TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, peakScores);
+               // AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, prunedEvents);
             }
 
-            var plot = new Plot(this.DisplayName, scores, recognizerConfig.EventThreshold);
+            var plot = new Plot(this.DisplayName, peakScores, recognizerConfig.EventThreshold);
 
-            if (true)
+            if (false)
             {
                 // display a variety of debug score arrays
-                //double[] normalisedScores;
-                //double normalisedThreshold;
-                //DataTools.Normalise(amplitudeScores, lwConfig.DecibelThreshold, out normalisedScores, out normalisedThreshold);
-                //var sumDiffPlot = new Plot("Sum Minus Difference", normalisedScores, normalisedThreshold);
-                var debugPlots = new List<Plot> { plot };
+                double[] normalisedScores;
+                double normalisedThreshold;
+                DataTools.Normalise(amplitudeArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                var amplPlot = new Plot("Band amplitude", normalisedScores, normalisedThreshold);
+                DataTools.Normalise(diffArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                var diffPlot = new Plot("Diff plot", normalisedScores, normalisedThreshold);
+
+                var debugPlots = new List<Plot> { plot, amplPlot, diffPlot };
                 // NOTE: This DrawDebugImage() method can be over-written in this class.
                 var debugImage = RecognizerBase.DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, SpeciesName, "png", "DebugSpectrogram");
@@ -205,8 +248,6 @@ namespace AnalysisPrograms.Recognizers
         public int MaxHz { get; set; }
         public double DctDuration { get; set; }
         public double DctThreshold { get; set; }
-        public double MinOscilFreq { get; set; }           
-        public double MaxOscilFreq { get; set; }
         public double MinDuration { get; set; }
         public double MaxDuration { get; set; }
         public double EventThreshold { get; set; }
@@ -230,9 +271,6 @@ namespace AnalysisPrograms.Recognizers
             MinDuration = (double)configuration[AnalysisKeys.MinDuration];
             MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
-            // Periods and Oscillations
-            MinOscilFreq = (double)configuration[AnalysisKeys.MinOscilFreq];
-            MaxOscilFreq = (double)configuration[AnalysisKeys.MaxOscilFreq];
 
             // min score for an acceptable event
             EventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
