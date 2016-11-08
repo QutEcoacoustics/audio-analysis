@@ -82,7 +82,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from spectral indices. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
 
-            /***
+            
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
             int[] compressionFactor = { 8, 4, 2, 1 };
             int compressionCount = compressionFactor.Length;
@@ -126,7 +126,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from standard frames. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
-            *****/
+            
 
             // combine the images into a stack  
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
