@@ -73,7 +73,7 @@ namespace AudioAnalysisTools
         }//end method
 
 
-
+/*
         /// <summary>
         /// FINDS OSCILLATIONS IN A SONOGRAM
         /// SAME METHOD AS ABOVE BUT .....
@@ -116,7 +116,7 @@ namespace AudioAnalysisTools
                                             minDuration, maxDuration, sonogram.Configuration.SourceFName);
         }//end method
 
-
+*/
 
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace AudioAnalysisTools
             return hits;
         }
 
-
+/*
 
         /// <summary>
         /// Detects oscillations in a given freq bin.
@@ -321,7 +321,7 @@ namespace AudioAnalysisTools
             }
             return hits;
         }
-
+*/
 
 
         public static double[] DetectOscillationsInScoreArray(double[] scoreArray, double dctDuration, double timeScale, double dctThreshold,
@@ -556,7 +556,7 @@ namespace AudioAnalysisTools
             return events;
         } // end method ConvertODScores2Events()
 
-
+/*
         public static double PeakEntropy(double[] array)
         {
             bool[] peaks = DataTools.GetPeaks(array);
@@ -579,7 +579,7 @@ namespace AudioAnalysisTools
             return entropy;
         }
 
-
+*/
 
         /// <summary>
         /// returns the periodicity in an array of values
