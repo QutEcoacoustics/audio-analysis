@@ -96,7 +96,7 @@ namespace AnalysisPrograms.Recognizers
             var config = new SonogramConfig
             {
                 WindowSize = 256,
-                NoiseReductionType = NoiseReductionType.STANDARD,
+                NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = noiseReductionParameter
             };
             config.WindowOverlap = 0.0;
