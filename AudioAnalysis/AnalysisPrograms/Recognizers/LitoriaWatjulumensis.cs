@@ -345,7 +345,7 @@ namespace AnalysisPrograms.Recognizers
                 var differencePlot = new Plot("Baseline Removed", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { scorePlot, sumDiffPlot, differencePlot };
-                debugImage = DrawDebugImage(sonogram, confirmedEvents, debugPlots, hits);
+                debugImage = RecognizerBase.DrawDebugImage(sonogram, confirmedEvents, debugPlots, hits);
             }
 
 
@@ -365,33 +365,6 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram returnSonogram = new SpectrogramStandard(returnSonoConfig, recording.WavReader);
             return Tuple.Create(returnSonogram, hits, scores, confirmedEvents, debugImage);
         } //Analysis()
-
-
-        private static Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
-        {
-            const bool doHighlightSubband = false;
-            const bool add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
-
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            if (scores != null)
-            {
-                foreach (var plot in scores)
-                    image.AddTrack(Image_Track.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-            }
-            if (hits != null) image.OverlayRainbowTransparency(hits);
-
-            if (events.Count > 0)
-            {
-                foreach (var ev in events) // set colour for the events
-                {
-                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                }
-                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            }
-            return image.GetImage();
-        }
 
     } //end class LitoriaWatjulumensis.
 

@@ -218,8 +218,11 @@ namespace AnalysisPrograms.Recognizers
             };
 
             // do a recognizer test.
-            RecognizerTest(scores, new FileInfo(recording.FilePath));
-            RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
+            if (MainEntry.InDEBUG)
+            {
+                RecognizerTest(scores, new FileInfo(recording.FilePath));
+                RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
+            }
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             return new RecognizerResults()

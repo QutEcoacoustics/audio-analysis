@@ -148,8 +148,42 @@ namespace AudioAnalysisTools.Indices
             return indexDistributionStatistics;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        public static Image DrawImageOfDistribution(double[,] matrix, int width, int height, string label)
+        {
+            SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, IndexDistributions.UPPER_PERCENTILE_DEFAULT);
+            double value = stats.GetValueOfNthPercentile(IndexDistributions.UPPER_PERCENTILE_DEFAULT);
 
-        public static Dictionary<string, SpectralStats> WriteSummaryIndexDistributionStatistics(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
+            var image = 
+                ImageTools.DrawHistogram(
+                    label,
+                    stats.Distribution,
+                    stats.UpperPercentileBin,
+                    new Dictionary<string, double>()
+                    {
+                                { "min",  stats.Minimum },
+                                { "max",  stats.Maximum },
+                                { "mode", stats.Mode },
+                                { "sd",   stats.StandardDeviation},
+                                { IndexDistributions.UPPER_PERCENTILE_LABEL,  value},
+                                { "count",  stats.Count},
+                    },
+                    width,
+                    height);
+            return image;
+        }
+
+    
+
+
+    public static Dictionary<string, SpectralStats> WriteSummaryIndexDistributionStatistics(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
             // to accumulate the images
             int width = 100;  // pixels 

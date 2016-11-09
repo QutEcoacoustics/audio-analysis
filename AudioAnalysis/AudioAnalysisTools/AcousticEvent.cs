@@ -411,8 +411,9 @@ namespace AudioAnalysisTools
             //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
             g.DrawLine(scorePen, t1, y1, t1, y2);
             g.DrawString(this.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 1));
+
             // ################ draw quality: this is hack for Michael. Please keep this - Oct 2016
-            //g.DrawString($"{this.Quality}", new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 10));
+            g.DrawString($"{this.Quality}", new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 10));
         }
 
 

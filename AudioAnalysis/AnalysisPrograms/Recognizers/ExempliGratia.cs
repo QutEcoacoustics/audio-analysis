@@ -45,6 +45,8 @@ namespace AnalysisPrograms.Recognizers
 
         public override string SpeciesName => "ExempliGratia";
 
+        public override string Description => "Detects acoustic events for the _For example_ species";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
