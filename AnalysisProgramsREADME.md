@@ -41,6 +41,10 @@ And help for a specific action:
 
     $ AnalysisPrograms.exe help audio2csv
 
+Importantly, to get a list of the available `IAnalyzer2` analyses (which are used by `audio2csv`), run:
+
+    $ AnalysisPrograms.exe analysesavailable
+
 ## Gotchas 
 
  - **Never** finish a double quoted argument with a backslash (`\`). The parsing rules for such 
@@ -81,17 +85,48 @@ Git branch-version: <git-branch-when-built>-<lastest-commit-hash-when-built>
 There are, in broad terms, these types of sub-programs:
 
  - Main actions
-	 - Process large amounts of information (like `audio2csv`)
+   - Process large amounts of information (like `audio2csv`)
  - Development / small scale actions
-	 - Small data / development entry points 
+   - Small data / development entry points
+   - `eventrecognizer` which is a generic program for running different recognizers
  - Utility actions
-	 - DummyAnalyser
-	 - audiocutter
+   - DummyAnalyser
+   - audiocutter
  - Meta actions
-	 - CLI usage
-	 - `analysesavailable`
+   - help and documentation usage (`help` & `list`)
+   - `analysesavailable`
 
-Most development actions correlate to an implementation of `IAnalyser` or a custom algorithm. For details on implementing the `IAnalyser` work-flow refer to [AboutIAnalyser.md](AudioAnalysis/AboutIAnalyser.md)
+### IAnalyzer[2]
+
+`IAnalyzer2` is a pattern code must adhere to in order to be run by `audio2csv`. `audio2csv` is our mass,
+parallel, analysis runner that is used to analyze very long files.
+
+It is common for each analysis type to have **both** a _development sub-program type_ which is used for
+testing and an _IAnalyzer_ implementation which is used in production. 
+
+For example, the canetoad recognizer has:
+
+- Sub-program type: canetoad (for short testing recordings, <2min)
+
+  ```
+  $ AnalysisPrograms.exe canetoad ... ->  CanetoadOld.Execute -> CanetoadOld.Analysis -> RhinellaMarina.Analysis
+  ```
+- audio2csv + IAnalyzer: Rhinella.Marina (for very long files, >2min)
+  
+  ```
+  $ AnalysisPrograms.exe audio2csv ... -c Rhinella.Marina.yml ...->  AnalyseLongRecording.Execute -> RhinellaMarina.Analysis
+  ```
+
+
+**Warning:** Our newer event recognizers no longer have their own _sub-program types_. Instead they are run
+in devleopment through a generic _sub-program_ named _eventrecognizer_
+
+- eventrecognizer + IAnalyzer: Rhinella.Marina  (for short testing recordings, <2min)
+  
+  ```
+  $ AnalysisPrograms.exe eventrecognizer ... -c Rhinella.Marina.yml ... ->  RecognizerEntry.Execute -> RecognizerBase.Analysis -> RhinellaMarina.Analysis
+  ```
+
 
 ## Documentation for specific sub-programs
 

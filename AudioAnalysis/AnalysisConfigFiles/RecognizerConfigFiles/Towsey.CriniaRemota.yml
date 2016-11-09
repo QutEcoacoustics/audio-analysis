@@ -1,36 +1,32 @@
 ---
-AnalysisName: Towsey.LitoriaRemota
-SpeciesName: Litoria remota
-AbbreviatedSpeciesName: L.remota
+AnalysisName: Towsey.CriniaRemota
+SpeciesName: Crinia remota
+AbbreviatedSpeciesName: C.remota
 
-# min and max of the freq band to search
-Dominantfreq: 3500
-MinHz: 3000          
-MaxHz: 4000
-# duration of DCT in seconds 
-# default for Stewart CD DctDuration: 0.4
-DctDuration: 0.3
-# minimum acceptable value of a DCT coefficient  # default = 0.6
-DctThreshold: 0.5  
-# ignore oscillation rates below the min & above the max threshold
-# OSCILLATIONS PER SECOND Default=8-15
-MinOcilFreq: 16        
-MaxOcilFreq: 20
-# Minimum and maximum duration in seconds for the length of a true call.
-MinDuration: 0.720
-MaxDuration: 0.760
-# Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.5
-
+# do not change the below
+ResampleRate: 22050
 FrameSize: 128
-
 # Standard settings
 #DoNoiseReduction: false
 #BgNoiseThreshold: 3.0
 
-# Resample rate must be 2 X the desired Nyquist
-# ResampleRate: 17640
-ResampleRate: 22050
+# min and max of the freq band to search
+MinHz: 3200          
+MaxHz: 4300
+Dominantfreq: 3500
+# duration of DCT in seconds - default = 0.4
+DctDuration: 0.2
+# minimum acceptable value of a DCT coefficient  # default = 0.6
+DctThreshold: 0.2  
+# ignore oscillation rates below the min & above the max threshold
+# OSCILLATIONS PER SECOND Default=8-15
+MinOcilFreq: 15        
+MaxOcilFreq: 25
+# Minimum and maximum duration in seconds for the length of a true call.
+MinDuration: 0.40
+MaxDuration: 0.80
+# Event threshold - use this to determine FP / FN trade-off for events.
+EventThreshold: 0.5
 
 ## Specifically for AnalyzeLongRecording
 # SegmentDuration: units=minutes;    

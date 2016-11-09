@@ -259,7 +259,11 @@
     <Compile Include="Recognizers\ExempliGratia.cs" />
     <Compile Include="Recognizers\CycloranaNovaehollandiae.cs" />
     <Compile Include="Recognizers\ArdeaInsignis.cs" />
+<<<<<<< HEAD
     <Compile Include="Recognizers\Tinnula_TRY.cs" />
+=======
+    <Compile Include="Recognizers\CriniaRemota.cs" />
+>>>>>>> refs/remotes/origin/master
     <Compile Include="Recognizers\UperoleiaInundata.cs" />
     <Compile Include="Recognizers\LitoriaPallida.cs" />
     <Compile Include="Recognizers\LitoriaRubella.cs" />

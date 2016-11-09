@@ -57,6 +57,53 @@ namespace System
             return text + ellipsis;
         }
 
+        public static string WordWrap(this string text, int wrapThreshold = 120, int leftPadding = 0)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
+            string leftPad = string.Empty.PadRight(leftPadding);
+
+            // wrap lines
+            var lines = text.Split(new[] { Environment.NewLine, "\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+            var result = new StringBuilder();
+            
+            foreach (string paragraph in lines)
+            {
+                if (paragraph.Length <= wrapThreshold)
+                {
+                    result.AppendLine(leftPad + paragraph);
+                    continue;
+                }
+                
+                var currentLine = paragraph;
+
+                while (currentLine.Length > wrapThreshold)
+                {
+                    int splitPoint = currentLine.Substring(0, wrapThreshold).LastIndexOf(' ');
+
+                    if (splitPoint < 0)
+                    {
+                        splitPoint = wrapThreshold; // cuts through a word
+                    }
+
+                    result.AppendLine(leftPad + currentLine.Substring(0, splitPoint));
+
+                    currentLine = currentLine.Substring(splitPoint + 1);
+                }
+
+                if (currentLine.IsNotWhitespace())
+                {
+                    result.AppendLine(leftPad + currentLine);
+                }
+            }
+
+            return result.ToString().Remove(0, leftPad.Length).TrimEnd('\r', '\n');
+        }
+
         /// <summary>
         /// Attempts to convert a string to a guid.
         /// </summary>

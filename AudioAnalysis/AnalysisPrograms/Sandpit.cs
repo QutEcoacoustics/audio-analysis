@@ -49,31 +49,32 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
             Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
-
+            // experiments with Otsu Thresholder
             if (true)
             {
+                // check that Otsu thresholder is still working
+                //OtsuThresholder.Execute(null);
+                //string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav";
+                string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav"; 
                 //int resampleRate = 22050;
                 var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
                 var outputDirectory = new DirectoryInfo(outputPath);
-                string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
                 AudioRecording recording = new AudioRecording(recordingPath);
                 var recordingDuration = recording.WavReader.Time;
 
 
                 const int frameSize = 1024;
                 double windowOverlap = 0.0;
+                //NoiseReductionType noiseReductionType  = NoiseReductionType.None;
                 NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
+                //NoiseReductionType noiseReductionType   = NoiseReductionType.Standard;
                 var sonoConfig = new SonogramConfig
                 {
                     SourceFName = recording.BaseName,
                     //set default values - ignore those set by user
                     WindowSize = frameSize,
                     WindowOverlap = windowOverlap,
-                    // the default window is HAMMING
-                    //WindowFunction = WindowFunctions.HANNING.ToString(),
-                    //WindowFunction = WindowFunctions.NONE.ToString(),
-                    // if do not use noise reduction can get a more sensitive recogniser.
-                    //NoiseReductionType = NoiseReductionType.NONE,
                     NoiseReductionType = noiseReductionType,
                     NoiseReductionParameter = 0.0
                 };
@@ -90,7 +91,8 @@ namespace AnalysisPrograms
                     //BgNoiseThreshold   = 3.5
                 };
 
-                double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
+                double[] thresholdLevels = { 20.0 };
+                //double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
                 var imageList = new List<Image>();
 
                 foreach (double th in thresholdLevels)
@@ -101,16 +103,126 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine("AED # events: " + events.Length);
 
                     //cluster events
-                    var clusters = AcousticEvent.ClusterEvents(events);
-                    AcousticEvent.AssignClusterIds(clusters);
-
+                    //var clusters = AcousticEvent.ClusterEvents(events);
+                    //AcousticEvent.AssignClusterIds(clusters);
                     // see line 415 of AcousticEvent.cs for drawing the cluster ID into the sonogram image.
-                    imageList.Add(Aed.DrawSonogram(sonogram, events));
+                    var distributionImage = IndexDistributions.DrawImageOfDistribution(sonogram.Data, 300, 100, "Distribution");
+
+                    // get image of original data matrix
+                    var srcImage = ImageTools.DrawReversedMatrix(sonogram.Data);
+                    srcImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                    // get image of global thresholded data matrix
+                    byte[,] opByteMatrix;
+                    double opGlobalThreshold;
+                    Image histogramImage;
+                    OtsuThresholder.GetGlobalOtsuThreshold(sonogram.Data, out opByteMatrix, out opGlobalThreshold, out histogramImage);
+                    Image opImageGlobal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
+                    opImageGlobal.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                    // get image of local thresholded data matrix
+                    var normalisedMatrix = MatrixTools.NormaliseInZeroOne(sonogram.Data);
+                    OtsuThresholder.DoLocalOtsuThresholding(normalisedMatrix, out opByteMatrix);
+
+                    // debug check for min and max - make sure it worked
+                    int[] bd = DataTools.GetByteDistribution(opByteMatrix);
+
+                    //Image opImageLocal = OtsuThresholder.ConvertMatrixToGreyScaleImage(opByteMatrix);
+                    Image opImageLocal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
+                    opImageLocal.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                    Image[] imageArray = { srcImage, opImageGlobal, opImageLocal };
+                    Image images = ImageTools.CombineImagesVertically(imageArray);
+                    var opPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "ThresholdExperiment", "png");
+                    images.Save(opPath);
+
+
+                    var hits = new double[sonogram.FrameCount, sonogram.Data.GetLength(1)];
+
+                    // display a variety of debug score arrays
+                    double[] normalisedScores = new double[sonogram.FrameCount];
+                    double normalisedThreshold = 0.5;
+                    //DataTools.Normalise(amplitudeScores, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                    var scorePlot = new Plot("Scores", normalisedScores, normalisedThreshold);
+                    var plots = new List<Plot> {scorePlot};
+                    var image = Recognizers.LitoriaBicolor.DisplayDebugImage(sonogram, events.ToList<AcousticEvent>(),
+                        plots, hits);
+
+                    //var image = Aed.DrawSonogram(sonogram, events);
+
+                    using (Graphics gr = Graphics.FromImage(image))
+                    {
+                        gr.DrawImage(distributionImage, new Point(0, 0));
+                    }
+                    imageList.Add(image);
                 }
                 var compositeImage = ImageTools.CombineImagesVertically(imageList);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment", "png");
                 compositeImage.Save(debugPath);
             }
+
+
+
+            // experiments with Mitchell-Aide ARBIMON segmentation algorithm
+            // Three steps: (1) Flattening spectrogram by subtracting the median bin value from each freq bin.
+            //              (2) Recalculate the spectrogram using local range. Trim off the 5 percentiles.
+            //              (3) Set a global threshold.  
+            if (false)
+            {
+                var outputPath = @"G:\SensorNetworks\Output\temp\AEDexperiments";
+                var outputDirectory = new DirectoryInfo(outputPath);
+                string recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+                AudioRecording recording = new AudioRecording(recordingPath);
+                var recordingDuration = recording.WavReader.Time;
+
+                const int frameSize = 1024;
+                double windowOverlap = 0.0;
+                NoiseReductionType noiseReductionType = SNR.KeyToNoiseReductionType("FlattenAndTrim");
+                var sonoConfig = new SonogramConfig
+                {
+                    SourceFName = recording.BaseName,
+                    //set default values - ignore those set by user
+                    WindowSize = frameSize,
+                    WindowOverlap = windowOverlap,
+                    NoiseReductionType = noiseReductionType,
+                    NoiseReductionParameter = 0.0
+                };
+
+                var aedConfiguration = new Aed.AedConfiguration
+                {
+                    //AedEventColor = Color.Red;
+                    //AedHitColor = Color.FromArgb(128, AedEventColor),
+                    // This stops AED Wiener filter and noise removal.
+                    NoiseReductionType = noiseReductionType,
+                    //BgNoiseThreshold   = 3.5
+                    IntensityThreshold = 20.0,
+                    SmallAreaThreshold = 100,
+                };
+
+                double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
+                var imageList = new List<Image>();
+
+                foreach (double th in thresholdLevels)
+                {
+                    aedConfiguration.IntensityThreshold = th;
+                    var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, recording.WavReader);
+                    AcousticEvent[] events = Aed.CallAed(sonogram, aedConfiguration, TimeSpan.Zero, recordingDuration);
+                    LoggedConsole.WriteLine("AED # events: " + events.Length);
+
+                    //cluster events
+                    var clusters = AcousticEvent.ClusterEvents(events);
+                    AcousticEvent.AssignClusterIds(clusters);
+                    // see line 415 of AcousticEvent.cs for drawing the cluster ID into the sonogram image.
+
+                    var image = Aed.DrawSonogram(sonogram, events);
+                    imageList.Add(image);
+                }
+                var compositeImage = ImageTools.CombineImagesVertically(imageList);
+                var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "AedExperiment_ThresholdStack", "png");
+                compositeImage.Save(debugPath);
+            }
+
+
 
             if (false)
             {

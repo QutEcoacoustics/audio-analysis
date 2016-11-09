@@ -35,6 +35,11 @@ namespace AnalysisBase
         string Identifier { get; }
 
         /// <summary>
+        /// A user friendly string describing the analyzer. Intending for printing in the console.
+        /// </summary>
+        string Description { get; }
+
+        /// <summary>
         /// Gets the initial (default) settings for the analysis.
         /// </summary>
         AnalysisSettings DefaultSettings { get; }

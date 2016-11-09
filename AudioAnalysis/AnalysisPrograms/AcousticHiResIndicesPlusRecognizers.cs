@@ -152,6 +152,8 @@ namespace AnalysisPrograms
             }
         }
 
+        public string Description => "[OBSOLETE] This is the old way of doing a multi recognizer!";
+
 
         public static void Dev(Arguments arguments)
         {
