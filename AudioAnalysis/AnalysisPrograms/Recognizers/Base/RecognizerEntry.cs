@@ -48,15 +48,15 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Ecosounds.MultiRecognizer.yml";
 
             //Ardea insignis (The White-bellied Herron
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Heron_commonCall_downsampled.wav";
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347077_20160409_061730_40_0.wav";
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_061431_130_0.wav";
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\Both call types of Heron.wav";
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347103_20160329_133319_130_0.wav";
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Bhutan\waklaytar_site3_1379_347093_20160404_062131_40_0.wav";
-            string outputPath = @"G:\SensorNetworks\Output\Bhutan\";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ArdeaInsignis.yml";
-            
+            //string outputPath = @"G:\SensorNetworks\Output\Bhutan\";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ArdeaInsignis.yml";
+
             // PAth from Anthony //"C:\Users\Administrator\Desktop\Sensors Analysis\ParallelExecutables\2\AnalysisPrograms.exe" audio2csv - source "Y:\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - config "C:\Users\Administrator\Desktop\Sensors Analysis\Towsey.ArdeaInsignis.Parallel.yml" - output "Y:\Results\2016Oct31-145124\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - tempdir F:\2 - m True - n
 
             // Canetoad
@@ -107,6 +107,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\bicolor_bickerton_island_1013_255205_20131211_195821_30_0.wav";
             //string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaBicolor.yml";
+
+            // Litoria caerulea Common green tree frog
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaCaerulea_20131223_220522.wav";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaCaerulea.yml";
 
             // Litoria fallax
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\53 Litoria fallax.mp3";
