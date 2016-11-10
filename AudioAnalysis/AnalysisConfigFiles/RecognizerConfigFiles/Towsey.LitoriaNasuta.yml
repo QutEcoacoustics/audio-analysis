@@ -4,8 +4,8 @@ SpeciesName: Litoria nasuta
 AbbreviatedSpeciesName: L.nasuta
 
 # min and max of the freq band to search
-MinHz: 2000          
-MaxHz: 4000
+MinHz: 2500          
+MaxHz: 3800
 # duration of DCT in seconds 
 # default for Stewart CD DctDuration: 0.4
 DctDuration: 0.9
@@ -16,10 +16,10 @@ DctThreshold: 0.5
 MinOcilFreq: 3        
 MaxOcilFreq: 5
 # Minimum and maximum duration in seconds for the length of a true call.
-MinDuration: 8.0
-MaxDuration: 60.0
+MinDuration: 0.050
+MaxDuration: 0.100
 # Event threshold - use this to determine FP / FN trade-off for events.
-EventThreshold: 0.5
+EventThreshold: 0.2
 
 FrameSize: 2048
 

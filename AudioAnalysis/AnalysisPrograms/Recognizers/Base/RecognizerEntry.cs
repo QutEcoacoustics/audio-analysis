@@ -109,9 +109,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaBicolor.yml";
 
             // Litoria caerulea Common green tree frog
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaCaerulea_20131223_220522.wav";
-            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaCaerulea.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaCaerulea_20131223_220522.wav";
+            //string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaCaerulea.yml";
 
             // Litoria fallax
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\53 Litoria fallax.mp3";
@@ -119,8 +119,8 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaFallax.yml";
 
             // Litoria nasuta
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\43 Litoria nasuta.mp3";
-            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Test";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaNasuta_Lbicolor_20131225_223700_30_0.wav";
+            //string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaNasuta.yml";
 
             // Litoria olongburensis
@@ -142,7 +142,7 @@ namespace AnalysisPrograms.Recognizers.Base
             //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016Sept\Test";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaRubella.yml";
 
-            // Litoria watjulumensis
+            // Litoria wotjulumensis
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Bickerton\wotjulumensis_bickerton_island_1013_255205_20131211_192951_30_0.wav";
             //string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October\";
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.LitoriaWatjulumensis.yml";
@@ -157,6 +157,11 @@ namespace AnalysisPrograms.Recognizers.Base
             //string recordingPath = @"E:\SensorNetworks\WavFiles\Frogs\UperoleiaSp\u_inundata_bickerton_island_1013_255713_20140112_213030_30_0.wav";
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.UperoleiaInundata.yml";
             //string outputPath    = @"E:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October";
+
+            // Uperoleia lithomoda
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\UperoleiaSpecies\UperoleiaLithomoda_BickertonIsland_140128_201100.mp3";
+            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016November";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.UperoleiaLithomoda.yml";
 
             // Uperoleia mimula
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\23 Uperoleia mimula.mp3";

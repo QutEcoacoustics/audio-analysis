@@ -81,10 +81,6 @@ namespace AnalysisPrograms.Recognizers
             var recognizerConfig = new CriniaRemotaConfig();
             recognizerConfig.ReadConfigFile(configuration);
 
-            // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            //string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
             // BETTER TO SET THESE. IGNORE USER!
             // this default framesize seems to work
             const int frameSize = 256;
@@ -191,7 +187,7 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 // add additional info
-                ae.SpeciesName = speciesName;
+                ae.SpeciesName = recognizerConfig.SpeciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
                 ae.Name = recognizerConfig.AbbreviatedSpeciesName;
