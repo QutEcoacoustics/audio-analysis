@@ -63,19 +63,16 @@ namespace AudioAnalysisTools
             public double[,] FreqOscillationData { get; set; }
             // the FreqOscillationData matrix reduced to a vector
             public double[] OscillationSpectralIndex { get; set; }
-        } 
-
-
+        }
 
 
         /// <summary>
         /// Generates the FREQUENCY x OSCILLATIONS Graphs and csv
         /// </summary>
-        /// <param name="sourceRecording"></param>
         /// <param name="audioSegment"></param>
         /// <param name="configDict"></param>
-        /// <param name="opDir"></param>
-        /// <param name="dataOnly"></param>
+        /// <param name="saveData"></param>
+        /// <param name="saveImage"></param>
         /// <returns></returns>
         public static double[] GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict,
                                                                                 bool saveData = false, bool saveImage = false)
@@ -264,19 +261,19 @@ namespace AudioAnalysisTools
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
                     //xcorCount += xCorrByTimeMatrix.GetLength(1);
-                    oscillationsSpectrum = GetOscillationArrayUsingSVDAndFFT(xCorrByTimeMatrix, sensitivity, bin);
+                    oscillationsSpectrum = GetOscillationArrayUsingSvdAndFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
                 // set true to use the Autocorrelation - FFT option.
                 if (algorithmName.Equals("Autocorr-FFT"))
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
-                    oscillationsSpectrum = GetOscillationArrayUsingFFT(xCorrByTimeMatrix, sensitivity, bin);
+                    oscillationsSpectrum = GetOscillationArrayUsingFft(xCorrByTimeMatrix, sensitivity, bin);
                 }
                 // set true to use the Wavelet Transform
                 if (algorithmName.Equals("Autocorr-WPD"))
                 {
                     double[,] xCorrByTimeMatrix = Oscillations2014.GetXcorrByTimeMatrix(freqBin, sampleLength);
-                    oscillationsSpectrum = GetOscillationArrayUsingWPD(xCorrByTimeMatrix, sensitivity, bin);
+                    oscillationsSpectrum = GetOscillationArrayUsingWpd(xCorrByTimeMatrix, sensitivity, bin);
                     //WaveletTransformContinuous cwt = new WaveletTransformContinuous(freqBin, maxScale);
                     //double[,] cwtMatrix = cwt.GetScaleTimeMatrix();
                     //oscillationsSpectrum = GetOscillationArrayUsingCWT(cwtMatrix, sensitivity, bin);
@@ -290,14 +287,13 @@ namespace AudioAnalysisTools
             return freqByOscMatrix;
         }
 
-        
-        
+
         /// <summary>
         /// Returns a matrix whose columns consist of autocorrelations of freq bin samples.
         /// The columns are non-overlapping.
         /// </summary>
         /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
+        /// <param name="sampleLength"></param>
         /// <returns></returns>
         public static double[,] GetXcorrByTimeMatrix(double[] signal, int sampleLength)
         {
@@ -318,8 +314,7 @@ namespace AudioAnalysisTools
             return xCorrelationsByTime;
         }
 
-        
-        
+
         /// <summary>
         /// <summary>
         /// reduces the sequence of Xcorrelation vectors to a single summary vector.
@@ -336,10 +331,10 @@ namespace AudioAnalysisTools
         ///             
         /// </summary>
         /// <param name="xCorrByTimeMatrix">double[,] xCorrelationsByTime = new double[sampleLength, sampleCount]; </param>
-        /// <param name="framesPerSecond"></param>
+        /// <param></param>
         /// <param name="binNumber">only used when debugging</param>
         /// <returns></returns>
-        public static double[] GetOscillationArrayUsingSVDAndFFT(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
+        public static double[] GetOscillationArrayUsingSvdAndFft(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
             int sampleCount = xCorrByTimeMatrix.GetLength(1);
@@ -416,7 +411,7 @@ namespace AudioAnalysisTools
                 spectrum = DataTools.SquareValues(spectrum);
                 // get relative power in the three bins around max.
                 double sumOfSquares = spectrum.Sum();
-                double avPower = spectrum.Sum() / spectrum.Length;
+                //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
                 if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
@@ -450,7 +445,7 @@ namespace AudioAnalysisTools
             return oscillationsVector;
         }
 
-        public static double[] GetOscillationArrayUsingFFT(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
+        public static double[] GetOscillationArrayUsingFft(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
             int sampleCount = xCorrByTimeMatrix.GetLength(1);
@@ -478,7 +473,7 @@ namespace AudioAnalysisTools
                 spectrum = DataTools.SquareValues(spectrum);
                 // get relative power in the three bins around max.
                 double sumOfSquares = spectrum.Sum();
-                double avPower = spectrum.Sum() / spectrum.Length;
+                //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
                 if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
@@ -486,7 +481,7 @@ namespace AudioAnalysisTools
                 if (maxIndex >= spectrum.Length - 1) powerAtMax += spectrum[maxIndex];
                 else powerAtMax += spectrum[maxIndex + 1];
                 double relativePower1 = powerAtMax / sumOfSquares;
-                double relativePower2 = powerAtMax / avPower;
+                //double relativePower2 = powerAtMax / avPower;
 
                 if (relativePower1 > sensitivity)
                 //if (relativePower2 > 10.0)
@@ -513,7 +508,7 @@ namespace AudioAnalysisTools
         }
 
 
-        public static double[] GetOscillationArrayUsingWPD(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
+        public static double[] GetOscillationArrayUsingWpd(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
             int sampleCount = xCorrByTimeMatrix.GetLength(1);
@@ -535,7 +530,7 @@ namespace AudioAnalysisTools
                 spectrum = DataTools.SquareValues(spectrum);
                 // get relative power in the three bins around max.
                 double sumOfSquares = spectrum.Sum();
-                double avPower = spectrum.Sum() / spectrum.Length;
+                //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
                 if (maxIndex == 0) powerAtMax += spectrum[maxIndex];
@@ -543,7 +538,7 @@ namespace AudioAnalysisTools
                 if (maxIndex >= spectrum.Length - 1) powerAtMax += spectrum[maxIndex];
                 else powerAtMax += spectrum[maxIndex + 1];
                 double relativePower1 = powerAtMax / sumOfSquares;
-                double relativePower2 = powerAtMax / avPower;
+                //double relativePower2 = powerAtMax / avPower;
 
                 if (relativePower1 > sensitivity)
                 //if (relativePower2 > 10.0)
@@ -571,10 +566,10 @@ namespace AudioAnalysisTools
 
 
 
-        public static double[] GetOscillationArrayUsingCWT(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
+        public static double[] GetOscillationArrayUsingCwt(double[,] xCorrByTimeMatrix, double framesPerSecond, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
-            int sampleCount = xCorrByTimeMatrix.GetLength(1);
+            //int sampleCount = xCorrByTimeMatrix.GetLength(1);
 
 
             // loop over the singular values and
@@ -684,7 +679,7 @@ namespace AudioAnalysisTools
             return spectralIndex;
         }
 
-
+/*
         /// <summary>
         /// Returns a vector of the amplitude range in each signal segment
         /// </summary>
@@ -707,7 +702,7 @@ namespace AudioAnalysisTools
             }
             return dynamicRange;
         }
-
+*/
 
 
     }

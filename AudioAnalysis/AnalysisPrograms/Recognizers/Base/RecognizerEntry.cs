@@ -70,7 +70,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             //Crinia remota
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\CriniaSpecies\EmeraldRiver_CriniaRemota_20140206_032030.wav";
-            //string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016November";
+            //string outputPath    = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
             //string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.CriniaRemota.yml";
 
             //Crinia tinnula
@@ -109,8 +109,8 @@ namespace AnalysisPrograms.Recognizers.Base
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaBicolor.yml";
 
             // Litoria caerulea Common green tree frog
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaCaerulea_20131223_220522.wav";
-            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
+            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\LitoriaSpecies\Groote\EmeraldRiver_LitoriaCaerulea_20131223_220522.wav";
+            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
             string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.LitoriaCaerulea.yml";
 
             // Litoria fallax

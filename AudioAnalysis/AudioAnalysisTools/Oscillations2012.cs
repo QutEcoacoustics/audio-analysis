@@ -172,6 +172,85 @@ namespace AudioAnalysisTools
         }
 
 
+        public static double[] DetectOscillations(double[] ipArray, double framesPerSecond, double dctDuration, double minOscilFreq, double maxOscilFreq, double dctThreshold)
+        {
+            int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
+            int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+            int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+
+            //double midOscilFreq = minOscilFreq + ((maxOscilFreq - minOscilFreq) / 2);
+
+            if (maxIndex > dctLength) return null;       //safety check
+
+            int length = ipArray.Length;
+            var dctScores = new double[length];
+            //var hits = new double[length];
+
+            double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            //following two lines write bmp image of cosine matrix values for checking.
+            //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
+            //ImageTools.DrawMatrix(cosines, bmpPath, true);
+
+            for (int r = 1; r < length - dctLength; r ++)
+            {
+                // only stop if current location is a peak
+                if ((ipArray[r] < ipArray[r - 1]) || (ipArray[r] < ipArray[r + 1]))
+                {
+                    continue;
+                }
+
+                // extract array and ready for DCT
+                //for (int i = 0; i < dctLength; i++) dctArray[i] = ipArray[r + i];
+                var dctArray = DataTools.Subarray(ipArray, r, dctLength);
+
+                dctArray = DataTools.SubtractMean(dctArray);
+                //dctArray = DataTools.Vector2Zscores(dctArray);
+
+                double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
+                // convert to absolute values because not interested in negative values due to phase.
+                for (int i = 0; i < dctLength; i++)
+                    dctCoeff[i] = Math.Abs(dctCoeff[i]);
+                // remove low freq oscillations from consideration
+                int thresholdIndex = minIndex / 4;
+                for (int i = 0; i < thresholdIndex; i++)
+                    dctCoeff[i] = 0.0;
+
+                dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
+                //dct = DataTools.normalise(dct); //another option to normalise
+                int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
+                //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+
+                // #### Tried this option for scoring oscillation hits but did not work well.
+                // #### Requires very fine tuning of thresholds
+                //dctCoeff = DataTools.Normalise2Probabilites(dctCoeff); 
+                //// sum area under curve where looking for oscillations
+                //double sum = 0.0;
+                //for (int i = minIndex; i <= maxIndex; i++) 
+                //    sum += dctCoeff[i];
+                //if (sum > dctThreshold)
+                //{
+                //    for (int i = 0; i < dctLength; i++) hits[r + i, c] = midOscilFreq;
+                //}
+
+
+                // DEBUGGING
+                // DataTools.MinMax(dctCoeff, out min, out max);
+                //DataTools.writeBarGraph(dctArray);
+                //DataTools.writeBarGraph(dctCoeff);
+
+                //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
+                if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dctCoeff[indexOfMaxValue] > dctThreshold))
+                {
+                    //for (int i = 0; i < dctLength; i++) dctScores[r + i] = midOscilFreq;
+                    for (int i = 0; i < dctLength; i++)
+                    {
+                        if (dctScores[r + i] < dctCoeff[indexOfMaxValue]) dctScores[r + i] = dctCoeff[indexOfMaxValue];
+                    }
+                }
+            }
+            //return hits; //dctArray
+            return dctScores;
+        }
 
         /// <summary>
         /// Removes single lines of hits from Oscillation matrix.
@@ -183,13 +262,13 @@ namespace AudioAnalysisTools
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             double[,] cleanMatrix = matrix;
-
+            const double tolerance = Double.Epsilon;
             for (int c = 3; c < cols - 3; c++)//traverse columns - skip DC column
             {
                 for (int r = 0; r < rows; r++)
                 {
-                    if (cleanMatrix[r, c] == 0.0) continue;
-                    if ((matrix[r, c - 2] == 0.0) && (matrix[r, c + 2] == 0))  //+2 because alternate columns
+                    if (Math.Abs(cleanMatrix[r, c]) < tolerance) continue;
+                    if ((Math.Abs(matrix[r, c - 2]) < tolerance) && (Math.Abs(matrix[r, c + 2]) < tolerance))  //+2 because alternate columns
                         cleanMatrix[r, c] = 0.0;
                 }
             }
