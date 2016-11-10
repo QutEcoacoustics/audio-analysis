@@ -12,14 +12,12 @@ namespace AnalysisPrograms.Recognizers
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
-    using System.Text;
 
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
     using Recognizers.Base;
+    using Acoustics.Shared;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -37,7 +35,7 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
-    class RhinLitoriaCaeruleaellaMarina : RecognizerBase
+    class LitoriaCaerulea : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -73,41 +71,18 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
+            var recognizerConfig = new LitoriaCaeruleaConfig();
+            recognizerConfig.ReadConfigFile(configuration);
 
             // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-
-            int minHz = (int)configuration[AnalysisKeys.MinHz];
-            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
-
-            // BETTER TO CALCULATE THIS. IGNORE USER!
-            // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
-            // duration of DCT in seconds 
-            double dctDuration = (double)configuration[AnalysisKeys.DctDuration];
-
-            // minimum acceptable value of a DCT coefficient
-            double dctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
-
-            // ignore oscillations below this threshold freq
-            int minOscilFreq = (int)configuration[AnalysisKeys.MinOscilFreq];
-
-            // ignore oscillations above this threshold freq
-            int maxOscilFreq = (int)configuration[AnalysisKeys.MaxOscilFreq];
-
-            // min duration of event in seconds 
-            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
-
-            // max duration of event in seconds                 
-            double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
-
-            // min score for an acceptable event
-            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
-
-            // this default framesize seems to work for Canetoad
-            const int frameSize = 256;
-            double windowOverlap = 0.75;
+            // BETTER TO SET THESE. IGNORE USER!
+            // This framesize is large because the oscillation we wish to detect is due to repeated croaks
+            // having an interval of about 0.6 seconds. The overlap is also required to give smooth oscillation.
+            const int frameSize = 2048;
+            const double windowOverlap = 0.5;
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
@@ -115,76 +90,60 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
-                // the default window is HAMMING
+                // use the default HAMMING window
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
+
                 // if do not use noise reduction can get a more sensitive recogniser.
-                NoiseReductionType = NoiseReductionType.None
+                //NoiseReductionType = NoiseReductionType.None
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0
             };
 
-            // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration();
+
+            TimeSpan recordingDuration = recording.WavReader.Time;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            double framesPerSecond = sr / (sonoConfig.WindowSize * (1 - windowOverlap));
+            int minBin = (int)Math.Round(recognizerConfig.MinHz / freqBinWidth) + 1;
+            int maxBin = (int)Math.Round(recognizerConfig.MaxHz / freqBinWidth) + 1;
+            var decibelThreshold = 6.0;
 
-            /* #############################################################################################################################################
-             * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-             * 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-             * 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-             * 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-             */
-
-            // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
-            double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            double minDurationOfReleaseCall = 1.0;
-            double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
-            double[,] hits;
-            Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram,
-                minHz,
-                maxHz,
-                dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
-                dctThreshold,
-                eventThreshold,
-                minDurationOfReleaseCall,
-                maxDuration,
-                out scores,
-                out events,
-                out hits);
+            int rowCount = sonogram.Data.GetLength(0);
+            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            amplitudeArray = DataTools.filterMovingAverageOdd(amplitudeArray, 5);
 
+            // Look for oscillations in the difference array
+            // duration of DCT in seconds 
+            double dctDuration = recognizerConfig.DctDuration;
+            // minimum acceptable value of a DCT coefficient
+            double dctThreshold = recognizerConfig.DctThreshold;
+            double minOscRate = 1 / recognizerConfig.MaxPeriod;
+            double maxOscRate = 1 / recognizerConfig.MinPeriod;
+            var dctScores = Oscillations2012.DetectOscillations(amplitudeArray, framesPerSecond, dctDuration, minOscRate, maxOscRate, dctThreshold);
+
+
+            // ######################################################################
+            // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
+            var events = AcousticEvent.ConvertScoreArray2Events(dctScores, recognizerConfig.MinHz, recognizerConfig.MaxHz, sonogram.FramesPerSecond,
+                                                                          freqBinWidth, recognizerConfig.EventThreshold, 
+                                                                          recognizerConfig.MinDuration, recognizerConfig.MaxDuration);
+            double[,] hits = null;
             var prunedEvents = new List<AcousticEvent>();
-
-            if (events != null)
+            foreach (var ae in events)
             {
-                foreach (var ae in events)
-                {
-                    if (ae.Duration < minDurationOfReleaseCall)
-                    {
-                        continue;
-                    }
-
-                    // add additional info
-                    ae.SpeciesName = speciesName;
-                    ae.SegmentStartOffset = segmentStartOffset;
-                    ae.SegmentDuration = recordingDuration;
-
-                    if (ae.Duration >= minDurationOfAdvertCall)
-                    {
-                        ae.Name = abbreviatedSpeciesName;
-                        prunedEvents.Add(ae);
-                    }
-                }                
+                // add additional info
+                ae.SpeciesName = speciesName;
+                ae.SegmentStartOffset = segmentStartOffset;
+                ae.SegmentDuration = recordingDuration;
+                ae.Name = recognizerConfig.AbbreviatedSpeciesName;
+                prunedEvents.Add(ae);
             }
+
 
             // do a recognizer test.
             if (MainEntry.InDEBUG)
@@ -193,15 +152,78 @@ namespace AnalysisPrograms.Recognizers
                 //AcousticEvent.TestToCompareEvents(prunedEvents, new FileInfo(recording.FilePath));
             }
 
-            var plot = new Plot(this.DisplayName, scores, eventThreshold);
+            var scoresPlot = new Plot(this.DisplayName, dctScores, recognizerConfig.EventThreshold);
+
+
+            if (true)
+            {
+                // display a variety of debug score arrays
+                double[] normalisedScores;
+                double normalisedThreshold;
+                DataTools.Normalise(amplitudeArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                var amplPlot = new Plot("Band amplitude", normalisedScores, normalisedThreshold);
+
+                var debugPlots = new List<Plot> { scoresPlot, amplPlot };
+                // NOTE: This DrawDebugImage() method can be over-written in this class.
+                var debugImage = RecognizerBase.DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
+                var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, SpeciesName, "png", "DebugSpectrogram");
+                debugImage.Save(debugPath);
+            }
+
+
+
+
             return new RecognizerResults()
             {
                 Sonogram = sonogram,
                 Hits = hits,
-                Plots = plot.AsList(),
+                Plots = scoresPlot.AsList(),
                 Events = prunedEvents
                 //Events = events
             };
         }
     }
+
+    internal class LitoriaCaeruleaConfig
+    {
+        public string AnalysisName { get; set; }
+        public string SpeciesName { get; set; }
+        public string AbbreviatedSpeciesName { get; set; }
+        public int MinHz { get; set; }
+        public int MaxHz { get; set; }
+        public double DctDuration { get; set; }
+        public double DctThreshold { get; set; }
+        public double MinPeriod { get; set; }
+        public double MaxPeriod { get; set; }
+        public double MinDuration { get; set; }
+        public double MaxDuration { get; set; }
+        public double EventThreshold { get; set; }
+
+        internal void ReadConfigFile(dynamic configuration)
+        {
+            // common properties
+            AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            // frequency band of the call
+            MinHz = (int)configuration[AnalysisKeys.MinHz];
+            MaxHz = (int)configuration[AnalysisKeys.MaxHz];
+
+            // duration of DCT in seconds 
+            DctDuration = (double)configuration[AnalysisKeys.DctDuration];
+            // minimum acceptable value of a DCT coefficient
+            DctThreshold = (double)configuration[AnalysisKeys.DctThreshold];
+
+            MinPeriod = configuration["MinInterval"];
+            MaxPeriod = configuration["MaxInterval"];
+
+            // min and max duration of event in seconds 
+            MinDuration = (double)configuration[AnalysisKeys.MinDuration];
+            MaxDuration = (double)configuration[AnalysisKeys.MaxDuration];
+
+            // min score for an acceptable event
+            EventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
+        }
+
+    } // Config class
 }

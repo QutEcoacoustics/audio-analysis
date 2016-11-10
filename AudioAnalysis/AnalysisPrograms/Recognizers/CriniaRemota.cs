@@ -3,7 +3,7 @@
 //   All code in this file and all associated files are the copyright of the QUT Bioacoustics Research Group (formally MQUTeR).
 // </copyright>
 // <summary>
-//   AKA: The bloody canetoad
+//   AKA: The remote froglet
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
