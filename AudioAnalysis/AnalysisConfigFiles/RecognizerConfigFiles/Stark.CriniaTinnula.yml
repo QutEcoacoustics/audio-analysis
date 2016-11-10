@@ -5,7 +5,7 @@ AbbreviatedSpeciesName: C.tinnula
 
 # min and max of the freq band to search
 MinHz: 3000          
-MaxHz: 5000
+MaxHz: 6000
 # duration of DCT in seconds 
 
 # Event threshold - use this to determine FP / FN trade-off for events.

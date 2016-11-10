@@ -79,11 +79,6 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
-            // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
             RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory);
 
             return results;
@@ -110,7 +105,6 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = spg.GetLength(0);
             int colCount = spg.GetLength(1);
 
-
             int frameSize = config.WindowSize;
             int frameStep = frameSize; // this default = zero overlap
             double frameStepInSeconds = frameStep / (double)sampleRate;
@@ -126,7 +120,7 @@ namespace AnalysisPrograms.Recognizers
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
             // The threshold dB amplitude in the dominant freq bin required to yield an event 
-            double eventThresholdDb = 10.0;
+            double eventThresholdDb = 6;
             // minimum score for an acceptable event - that is when processing the score array.
             double similarityThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? 0.2;
 
@@ -135,8 +129,6 @@ namespace AnalysisPrograms.Recognizers
             int maxFrameWidth = 14;
             double minDuration = (minFrameWidth - 1) * frameStepInSeconds;
             double maxDuration = maxFrameWidth * frameStepInSeconds;
-
-           
 
             // Calculate Max Amplitude
             int binMin = (int) Math.Round(minHz / sonogram.FBinWidth);
@@ -177,14 +169,17 @@ namespace AnalysisPrograms.Recognizers
             double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, binMin, (rowCount - 1),
                 binMax);
 
+            var highPassFilteredSignal = DSP_Filters.SubtractBaseline(amplitudeArray, 7);
+
             // We now have a list of potential hits for C. tinnula. This needs to be filtered.
             double[] prunedScores;
             var startEnds = new List<Point>();
-            Plot.FindStartsAndEndsOfScoreEvents(amplitudeArray, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
-            
+            Plot.FindStartsAndEndsOfScoreEvents(highPassFilteredSignal, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+
+
             // High pass Filter
 
-            var highPassFilteredSignal = DSP_Filters.SubtractBaseline(amplitudeArray, 7);
+
 
             // loop through the score array and find beginning and end of potential events
             var potentialEvents = new List<AcousticEvent>();
@@ -210,7 +205,7 @@ namespace AnalysisPrograms.Recognizers
                 // Use a simple template for the honk and calculate cosine similarity to the template.
                 // Template has three dominant frequenices.
                 // minimum number of bins covering frequency bandwidth of C. tinnula call// minimum number of bins covering frequency bandwidth of L.convex call
-                int callBinWidth = 13;
+                int callBinWidth = 11;
                 var templates = GetCtinnulaTemplates(callBinWidth);
                 var eventMatrix = MatrixTools.Submatrix(spg, point.X, (avDominantBin - callBinWidth + 2), point.Y, avDominantBin + 1);
                 double eventScore = GetEventScore(eventMatrix, templates);
@@ -224,15 +219,14 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 if (eventScore < similarityThreshold) continue;
+               
 
                 int topBinForEvent = avDominantBin + 2;
                 int bottomBinForEvent = topBinForEvent - callBinWidth;
-                int topFreqForEvent = (int)Math.Round(topBinForEvent * sonogram.FBinWidth);
-                int bottomFreqForEvent = (int)Math.Round(bottomBinForEvent * sonogram.FBinWidth);
 
                 double startTime = point.X * frameStepInSeconds;
                 double durationTime = eventWidth * frameStepInSeconds;
-                var newEvent = new AcousticEvent(startTime, durationTime, bottomFreqForEvent, topFreqForEvent);
+                var newEvent = new AcousticEvent(startTime, durationTime, minHz, maxHz);
                 newEvent.DominantFreq = avDominantFreq;
                 newEvent.Score = eventScore;
                 newEvent.SetTimeAndFreqScales(framesPerSec, sonogram.FBinWidth);
@@ -283,7 +277,7 @@ namespace AnalysisPrograms.Recognizers
             // add names into the returned events
             foreach (AcousticEvent ae in potentialEvents)
             {
-                ae.Name = "C.tinnula"; // abbreviatedSpeciesName;
+                ae.Name = "speciesName"; // abbreviatedSpeciesName;
             }
 
             return new RecognizerResults()
@@ -308,56 +302,39 @@ namespace AnalysisPrograms.Recognizers
             var templates = new List<double[]>();
             // template 1
             double[] t1 = new double[callBinWidth];
-
+            t1[0] = 0.5;
+            t1[1] = 1.0;
             t1[2] = 1.0;
             t1[3] = 1.0;
-            t1[4] = 1.0;  
-            t1[5] = 1.0;
+            t1[4] = 1.0;
+            t1[5] = 0;
+            t1[6] = 1.0;
+            t1[7] = 1.0;
             t1[8] = 1.0;
             t1[9] = 1.0;
-            t1[10] = 1.0;
-
+            t1[10] = 0.5;
+ 
             templates.Add(t1);
 
             // template 2
             double[] t2 = new double[callBinWidth];
-
-            t2[2] = 1.0;
-            t2[3] = 1.0;
-            t2[4] = 1.0;
-            t2[5] = 1.0;
-            t2[7] = 1.0;
-            t2[8] = 1.0;
-            t2[9] = 1.0;
-            t2[10] = 1.0;
-
+            t1[0] = 0.5;
+            t1[1] = 0.5;
+            t1[2] = 0.5;
+            t1[3] = 1.0;
+            t1[4] = 1.0;
+            t1[5] = 0;
+            t1[6] = 0;
+            t1[7] = 1.0;
+            t1[8] = 1.0;
+            t1[9] = 0.5;
+            t1[10] = 0.5;
             templates.Add(t2);
+    
 
-            // template 3
-            double[] t3 = new double[callBinWidth];
 
-            t3[4] = 1.0;
-            t3[5] = 1.0;
-            t3[9] = 1.0;
-            t3[10] = 1.0;
+            //templates.Add(new[] {0.0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0});
 
-            templates.Add(t3);
-
-            // template 4
-            double[] t4 = new double[callBinWidth];
-
-            t4[2] = 1.0;
-            t4[3] = 1.0;
-            t4[4] = 1.0;
-            t4[5] = 1.0;
-            t4[6] = 1.0;
-            t4[8] = 1.0;
-            t4[9] = 1.0;
-            t4[10] = 1.0;
-            t4[11] = 1.0;
-            t4[12] = 1.0;
-
-            templates.Add(t2);
 
             return templates;
         }
