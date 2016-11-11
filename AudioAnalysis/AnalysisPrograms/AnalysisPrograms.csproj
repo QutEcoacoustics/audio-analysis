@@ -261,6 +261,8 @@
     <Compile Include="Recognizers\ArdeaInsignis.cs" />
     <Compile Include="Recognizers\Tinnula_TRY.cs" />
     <Compile Include="Recognizers\CriniaRemota.cs" />
+    <Compile Include="Recognizers\LitoriaCaerulea.cs" />
+    <Compile Include="Recognizers\UperoleiaLithomoda.cs" />
     <Compile Include="Recognizers\UperoleiaInundata.cs" />
     <Compile Include="Recognizers\LitoriaPallida.cs" />
     <Compile Include="Recognizers\LitoriaRubella.cs" />
