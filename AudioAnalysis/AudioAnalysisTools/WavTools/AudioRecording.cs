@@ -101,7 +101,7 @@
         /// Reduces the signal sample rate to 22050Hz. 
         /// Requires the existing signal to be either 44100Hz or 88200 Hz.
         /// </summary>
-        [Obsolete]
+        //[Obsolete]
         //public void ConvertSampleRate22kHz()
         //{
         //    LoggedConsole.WriteError("ConvertSampleRate22kHz is deprecated - DO NOT USE");

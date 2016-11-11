@@ -18,12 +18,8 @@ Dominantfreq: 3500
 DctDuration: 0.2
 # minimum acceptable value of a DCT coefficient  # default = 0.6
 DctThreshold: 0.2  
-# ignore oscillation rates below the min & above the max threshold
-# OSCILLATIONS PER SECOND Default=8-15
-MinOcilFreq: 15        
-MaxOcilFreq: 25
 # Minimum and maximum duration in seconds for the length of a true call.
-MinDuration: 0.40
+MinDuration: 0.25
 MaxDuration: 0.80
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.5

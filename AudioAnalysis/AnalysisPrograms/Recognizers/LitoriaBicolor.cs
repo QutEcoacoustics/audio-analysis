@@ -17,7 +17,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;

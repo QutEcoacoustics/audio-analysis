@@ -254,7 +254,8 @@ namespace AnalysisPrograms
 
             #region Public Properties
 
-            public int? FocusMinute { get; set; }
+            [ArgDescription("When doing a `Focused` stack, which minute to center on. Accepts partial minutes.")]
+            public float? FocusMinute { get; set; }
 
             [ArgDescription("A directory to write output to")]
             [Production.ArgExistingDirectory(createIfNotExists: true)]

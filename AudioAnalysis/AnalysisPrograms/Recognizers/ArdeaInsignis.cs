@@ -149,10 +149,14 @@ namespace AnalysisPrograms.Recognizers
             double[,] hits = new double[rowCount, colCount];
 
             const int maxTemplateLength = 20;
+            const int maxTemplateOffset = 14;
             const int minimumGap = 4;
+            // the following is a hopeful shot in the dark to stop an array overflow. Have not checked it.
+            // There is no logic to it! 
+            int totalOffset = maxTemplateLength + maxTemplateOffset + minimumGap;
 
             // first find the amplitude peaks
-            for (int j = 2; j < amplitudeArray.Length - maxTemplateLength; j++)
+            for (int j = 2; j < amplitudeArray.Length - totalOffset; j++)
             {
                 if (amplitudeArray[j] < decibelThreshold) continue;
                 if ((amplitudeArray[j] > amplitudeArray[j - 1]) && (amplitudeArray[j] > amplitudeArray[j + 1]))
@@ -178,7 +182,7 @@ namespace AnalysisPrograms.Recognizers
                     continue;
                 }
 
-                const int templateOffset = 14;
+                int templateOffset = maxTemplateOffset;
                 if (distanceToNextPeak > maxTemplateLength)
                 {
                     var endTemplate = GetEndTemplateForAlgorithm2();
@@ -202,7 +206,7 @@ namespace AnalysisPrograms.Recognizers
 
                 var template = GetTemplateForAlgorithm2(distanceToNextPeak);
 
-                //now calculate similarity of locality with template 
+                // now calculate similarity of locality with template 
                 //var locality = DataTools.Subarray(amplitudeArray, i - 2, templateLength); // i-2 because first two polaces should be zero.
                 var locality = DataTools.Subarray(amplitudeArray, i-2, template.Length); // i-2 because first two places should be zero.
                 double score = DataTools.CosineSimilarity(locality, template);
