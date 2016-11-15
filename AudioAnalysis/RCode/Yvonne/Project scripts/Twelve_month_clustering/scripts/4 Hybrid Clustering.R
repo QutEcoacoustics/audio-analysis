@@ -25,7 +25,8 @@
 rm(list = ls())
 
 # load normalised summary indices this has had the missing minutes
-# and microphone problem minutes removed
+# and microphone problem minutes removed 
+# the dataframe is called "indices_norm_summary"
 load(file="data/datasets/normalised_summary_indices.RData")
 colnames(indices_norm_summary)
 length(indices_norm_summary[,1])

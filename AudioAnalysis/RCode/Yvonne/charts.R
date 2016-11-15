@@ -78,7 +78,8 @@ plot(x,I3D.average,type = "b",pch=15, ylim = c(1.3,1.85),
      cex=1.3,cex.axis=1.6,cex.main=1.5)
 par(new=TRUE)
 plot(x,I3D.wardD2,type = "b",pch=19,ylim = c(1.3,1.85),
-     yaxt="n",ylab = "",xlab = "k",cex=1.3,cex.axis=1.5)
+     yaxt="n",ylab = "",xlab = "k", xaxt ="n",
+     cex=1.3,cex.axis=1.5)
 legend("bottomright",pch = c(15, 19),
        c("hclust (average)","hclust (ward.D2)"),bty = "n",cex=1.5)
 dev.off()

@@ -1,28 +1,141 @@
-# This is an example only
-dd<-data.frame(
-  clust = 1:4, 
-  BGN = c(0, 0.13, 0.25, 0.38), 
-  SNR = c(0.1, 0.8, 0.63, 1), 
-  ACT = c(0.12, 0.84, 1, 0.54), 
-  EPS = c(0.23, 0.7, 1, 0.67), 
-  HFC = c(0.33, 0.6, 0.1, 0.9), 
-  MFC = c(1, 0.77, 1, 0.59),
-  LFC = c(0.8, 0.2, 0.3, 0.5),
-  ACI = c(0, 0.13, 0.25, 0.38), 
-  EAS = c(0.1, 0.8, 0.63, 1), 
-  EPS = c(0.12, 0.84, 1, 0.54), 
-  ECS = c(0.23, 0.7, 1, 0.67), 
-  CLC = c(0.33, 0.6, 0.1, 0.9) 
-)
+# clustering of medoids from 13 months of data ------------------------------------------------------
+# remove all objects in the global environment
+rm(list = ls())
+
+# load normalised summary indices this has had the missing minutes
+# and microphone problem minutes removed 
+# the dataframe is called "indices_norm_summary"
+load(file="data/datasets/normalised_summary_indices.RData")
+
+k1_value <- 25000
+k2_value <- 60
+column <- k2_value/5
+
+file_name <- paste("C:/Work/Projects/Twelve_month_clustering/Saving_dataset/data/datasets/hclust_results/hclust_clusters",
+                   k1_value, ".RData", sep = "")
+file_name_short <- paste("hclust_clusters_",k1_value, sep = "")
+# remove unneeded values
+load(file_name)
+# load the cluster list 
+cluster.list <- get(file_name_short, envir=globalenv())[,column]
+
+data <- cbind(cluster.list, indices_norm_summary)
+
+num_clus <- unique(data$cluster.list)
+num_clus <- 1:length(num_clus)
+
+library(cluster) # needed for pam/clara functions
+medoids <- NULL
+for(i in 1:length(num_clus)) {
+  a <- which(data$cluster.list==i)
+  clust <- data[a,2:ncol(data)]
+  #plot(clust$BackgroundNoise, clust$Snr)
+  #points(pam(clust, 1)$medoids, pch = 16, col = "red")
+  medo <- clara(clust,1)$medoids
+  medoids <- rbind(medoids, medo)
+}
+rownames(medoids) <- as.character(as.numeric(num_clus))
+
+View(medoids)
+#write.csv(medoids, "medoids_all_data.csv", row.names = T)
+
+dd <- medoids
+dd <- data.frame(dd)
+dd <- cbind(c(1:60), medoids)
+colnames(dd)[] <- c("clust", "BGN","SNR","ACT",
+                     "EVN", "HFC", "MFC", "LFC",
+                     "ACI", "EAS", "EPS", "ECV",
+                     "CLC")
+
+#dd<-data.frame(
+#  clust = 1:4, 
+#  BGN = c(0, 0.13, 0.25, 0.38), 
+#  SNR = c(0.1, 0.8, 0.63, 1), 
+#  ACTV = c(0.12, 0.84, 1, 0.54), 
+#  EPS = c(0.23, 0.7, 1, 0.67), 
+#  HFC = c(0.33, 0.6, 0.1, 0.9), 
+#  MFC = c(1, 0.77, 1, 0.59),
+#  LFC = c(0.8, 0.2, 0.3, 0.5),
+#  ACI = c(0, 0.13, 0.25, 0.38), 
+#  EAS = c(0.1, 0.8, 0.63, 1), 
+#  EPST = c(0.12, 0.84, 1, 0.54), 
+#  ECS = c(0.23, 0.7, 1, 0.67), 
+#  CLC = c(0.33, 0.6, 0.1, 0.9) 
+#)
+
+
+#par(mfrow=c(2,2), mar=c(1, 1, 1, 1)) #decrease default margin
+#layout(matrix(1:4, ncol=2)) #draw 4 plots to device
+#loop over rows to draw them, add 1 as max and 0 as min for each var
+#lapply(1:4, function(i) { 
+#  radarchart(rbind(rep(1,12), rep(0,12), dd[i,-1]))
+#})
 
 library(fmsb)
 
-par(mfrow=c(2,2), mar=c(1, 1, 1, 1)) #decrease default margin
-#layout(matrix(1:4, ncol=2)) #draw 4 plots to device
-#loop over rows to draw them, add 1 as max and 0 as min for each var
-lapply(1:4, function(i) { 
-  radarchart(rbind(rep(1,12), rep(0,12), dd[i,-1]))
-})
+rain <- c(59,18,10,54,2,21,38,60)
+wind <- c(42,47,51,56,52,45,8,40,24,19,46,28,9,25,30,20)
+birds <- c(58,43,57,37,11,3,33,15,14,39,4)
+insects <- c(17,1,27,22,26,29)
+cicada <- c(48,34,44,7,12,32,16)
+planes <- c(49,23)
+quiet <- c(6,53,36,31,50,35,55,41,13,5)
+rain1 <- rain[1:4]
+rain2 <- rain[5:8]
+wind1 <- wind[1:4]
+wind2 <- wind[5:8]
+wind3 <- wind[9:12]
+wind4 <- wind[13:16]
+birds1 <- birds[1:4]
+birds2 <- birds[5:8]
+birds3 <- birds[9:11]
+insects1 <- insects[1:4]
+insects2 <- insects[5:6]
+cicada1 <- cicada[1:4]
+cicada2 <- cicada[5:7]
+quiet1 <- quiet[1:4]
+quiet2 <- quiet[5:8]
+quiet3 <- quiet[9:10]
+all <- c(rain1, rain2, wind1, wind2, wind3, wind4,
+         birds1, birds2, birds3, insects1, insects2,
+         cicada1, cicada2, quiet1, quiet2, quiet3)
+
+all <- c("rain1", "rain2", "wind1", "wind2", "wind3", "wind4",
+         "birds1", "birds2", "birds3", "insects1", "insects2",
+         "cicada1", "cicada2", "quiet1", "quiet2", "quiet3","planes")
+
+dd <- data.frame(dd)
+for(i in all) {
+  png(paste("radarPlots/plot_",i,".png",sep = ""), width = 1000, 
+      height = 1000)
+  par(mfrow=c(2,2), mar=c(1, 1, 1, 1), xpd=NA) #decrease default margin
+  lapply(get(i), function(i) {
+    radarchart(rbind(rep(1,60), rep(0,60), dd[i,-1]), seg = 10,
+               centerzero = TRUE)
+    text(x = -1.2, y = 1.2, paste("Cluster:",i))
+  })
+  dev.off()
+}
+
+
+text(x = -1.6, y = 1, paste("Cluster:",i))
+text(x = -1.6, y = -1.6, deparse(substitute(class)))
+if(length(class)==1) {
+  text(x = 1.2, y = -1.2, paste(names(class)))  
+}
+if(length(class)==2) {
+  mtext(side = 1, deparse(substitute(class)))  
+}
+if(length(class)==3) {
+  text(x = 1.6, y = 1.6, paste("Here"))  
+}
+if(length(class)==4) {
+  text(x = -1.6, y = 1.6, paste("Here"))  
+}
+
+
+abc <- 5
+get("abc")
 
 ###############################
 setwd("C:\\Work\\CSV files\\GympieNP1_new\\2015_06_21\\")

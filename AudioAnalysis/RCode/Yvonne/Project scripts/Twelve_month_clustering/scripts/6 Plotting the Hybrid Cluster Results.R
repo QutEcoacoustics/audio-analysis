@@ -20,14 +20,14 @@ rm(list = ls())
 ID3_values <- read.csv("ID3_values.csv")
 #col <- c("red", "blue", "green", "orange", 
 #         "black", "purple","magenta")
-Jcol <- rep("black",8)
+col <- rep("black",8)
 pch = c(15,20,17,18,16,21,22,23)
 labels <- as.character(seq(12500, 30000, 2500))
 x <- seq(5, 100, 5)
 ylimit <- c(1.1, 2.3)
 xlimit <- c(40,100)
 
-png("ID3_separation_plot.png", height = 600, width = 600)
+png("ID3_distance_plot.png", height = 600, width = 600)
 par(mar=c(3.5, 3.5, 2.8, 1.5), cex=1.5)
 #plot(x,ID3_values[1:20,3], type = "o", 
 #     col=col[1], pch=15, ylim=ylim, las=1)
@@ -38,9 +38,9 @@ par(mar=c(3.5, 3.5, 2.8, 1.5), cex=1.5)
 #par(new=T)
 plot(x,ID3_values[41:60,3], type = "o", 
      col=col, pch=pch[2], ylim=ylimit,
-     xlab = "k2", ylab = "ID3 separation", las=1, 
+     xlab = "k2", ylab = "ID3 distance", las=1, 
      xlim = xlimit, mgp = c(2.1, 0.6, 0))
-mtext("ID3 separation (clustering of 24 hour fingerprints)", side = 3, 
+mtext("ID3 distance (clustering of 24 hour fingerprints)", side = 3, 
       cex = 1.8, line = 1.2)
 mtext("12 days out of 796 days", side = 3, 
       cex = 1.4, line = 0.3)
@@ -315,12 +315,15 @@ a <- as.data.frame(a)
 z <- which(a$Var1==1000)
 na_reference <- a[z,3]
 
-plot_2hour_files <- function(clust_num) {
-  if(clust_num<10) {
+# function for more compact plots
+plot_2hour_files <- function(clust_num, num_plots) {
+  if(clust_num < 10) {
   png(filename = paste("data/2hour_plots_", k1_value, "_",
                        k2_value,"/2hourPlot_Cluster",
                       "0",clust_num,"_", k1_value, "_", k2_value, 
-                       ".png", sep = ""), width = 800, height = 668, 
+                       ".png", sep = ""), 
+      width = 800, 
+      height = 668, 
       units = "px")
   }
   if(clust_num >= 10) {
@@ -341,22 +344,26 @@ plot_2hour_files <- function(clust_num) {
     (cluster_reference$days_per_period - (cluster_reference$na_reference/120))
   cluster_reference$output <- round(cluster_reference$output,2)
   
-  months <- unique(substr(cluster_list$dates,1,6))
-  for(i in 1:length(months)) {
-    if(substr(months[i],5,6)=="01") {months[i] <- paste("Jan", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="02") {months[i] <- paste("Feb", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="03") {months[i] <- paste("Mar", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="04") {months[i] <- paste("Apr", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="05") {months[i] <- paste("May", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="06") {months[i] <- paste("Jun", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="07") {months[i] <- paste("Jul", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="08") {months[i] <- paste("Aug", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="09") {months[i] <- paste("Sept", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="10") {months[i] <- paste("Oct", substr(months[i],1,4), sep=" ")}
-    if(substr(months[i],5,6)=="11") {months[i] <- paste("Nov", substr(months[i],1,4), sep=" ")}  
-    if(substr(months[i],5,6)=="12") {months[i] <- paste("Dec", substr(months[i],1,4), sep=" ")}  
+  if(clust_num < ceiling(num_plots/2)) {
+    months <- unique(substr(cluster_list$dates,1,6))
+    for(i in 1:length(months)) {
+      if(substr(months[i],5,6)=="01") {months[i] <- paste("Jan", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="02") {months[i] <- paste("Feb", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="03") {months[i] <- paste("Mar", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="04") {months[i] <- paste("Apr", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="05") {months[i] <- paste("May", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="06") {months[i] <- paste("Jun", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="07") {months[i] <- paste("Jul", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="08") {months[i] <- paste("Aug", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="09") {months[i] <- paste("Sept", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="10") {months[i] <- paste("Oct", substr(months[i],1,4), sep=" ")}
+      if(substr(months[i],5,6)=="11") {months[i] <- paste("Nov", substr(months[i],1,4), sep=" ")}  
+      if(substr(months[i],5,6)=="12") {months[i] <- paste("Dec", substr(months[i],1,4), sep=" ")}  
+    }
   }
-  
+  if(clust_num > ceiling(num_plots/2)) {
+   months[i] <- "" 
+  }
   started <- seq(1,nrow(cluster_reference),12)
   finished <- started + 11
   
@@ -412,7 +419,85 @@ plot_2hour_files <- function(clust_num) {
   dev.off()
 }
 
-for(i in 1:k2_value){
+# function for long plots
+plot_2hour_files <- function(clust_num) {
+  if(clust_num<10) {
+    png(filename = paste("data/2hour_plots_", k1_value, "_",
+                         k2_value,"/2hourPlot_Cluster",
+                         "0",clust_num,"_", k1_value, "_", k2_value, 
+                         ".png", sep = ""), 
+        width = 1600, 
+        height = 500, 
+        units = "px")
+  }
+  if(clust_num >= 10) {
+    png(filename = paste("data/2hour_plots_", k1_value, "_",
+                         k2_value,"/2hourPlot_Cluster",
+                         clust_num,"_", k1_value, "_", k2_value, 
+                         ".png", sep = ""), 
+        width = 1600, 
+        height = 500, 
+        units = "px")
+  }
+  # produce a list of when each cluster occured
+  y <- which(a$Var1==clust_num)
+  cluster_reference <- a[y,3]
+  cluster_reference <- cbind(cluster_reference, 
+                             days_per_period,
+                             na_reference)
+  cluster_reference <- as.data.frame(cluster_reference)
+  cluster_reference$output <- cluster_reference$cluster_reference/
+    (cluster_reference$days_per_period - (cluster_reference$na_reference/120))
+  cluster_reference$output <- round(cluster_reference$output,2)
+  
+  months <- unique(substr(cluster_list$dates,1,6))
+  for(i in 1:length(months)) {
+    if(substr(months[i],5,6)=="01") {months[i] <- paste("Jan", substr(months[i],1,4), sep=" ")}
+    if(substr(months[i],5,6)=="02") {months[i] <- paste("Feb", substr(months[i],1,4), sep=" ")}
+    if(substr(months[i],5,6)=="03") {months[i] <- paste("Mar", substr(months[i],1,4), sep=" ")}  
+    if(substr(months[i],5,6)=="04") {months[i] <- paste("Apr", substr(months[i],1,4), sep=" ")}  
+    if(substr(months[i],5,6)=="05") {months[i] <- paste("May", substr(months[i],1,4), sep=" ")}
+    if(substr(months[i],5,6)=="06") {months[i] <- paste("Jun", substr(months[i],1,4), sep=" ")}
+    if(substr(months[i],5,6)=="07") {months[i] <- paste("Jul", substr(months[i],1,4), sep=" ")}  
+    if(substr(months[i],5,6)=="08") {months[i] <- paste("Aug", substr(months[i],1,4), sep=" ")}  
+    if(substr(months[i],5,6)=="09") {months[i] <- paste("Sept", substr(months[i],1,4), sep=" ")}
+    if(substr(months[i],5,6)=="10") {months[i] <- paste("Oct", substr(months[i],1,4), sep=" ")}
+    if(substr(months[i],5,6)=="11") {months[i] <- paste("Nov", substr(months[i],1,4), sep=" ")}  
+    if(substr(months[i],5,6)=="12") {months[i] <- paste("Dec", substr(months[i],1,4), sep=" ")}  
+  }
+  started <- seq(1,nrow(cluster_reference),12)
+  finished <- started + 11
+  
+  months <- rep(months, 2)
+  barplot(cluster_reference$output[1:nrow(cluster_reference)/2],
+          las=1)
+  num_of_plots <- length(started)
+  max <- max(cluster_reference$output)
+  par(mfrow=c(2,ceiling(num_of_plots/2)), 
+      mar=c(2.5,2.5,2.5,1), oma=c(2,5,2.5,2), 
+      cex.axis=1.6)
+  for(i in 1:num_of_plots) { # num_of_plots should be even
+    barplot(cluster_reference$output[started[i]:finished[i]],
+            ylim=c(0,max))
+    mtext(side=3, paste(months[i]))
+    mtext(side = 1, text = c(as.character(seq(0,24,12))), 
+          at = c(0,7,14), line=0.8)
+  }
+  mtext(side = 3, line=0.5,paste("Cluster ", clust_num,
+                                 "  -  (k1 = ",k1_value,", k2 = ", k2_value,")", 
+                                 sep=""), 
+        cex=1.4, outer = T)
+  mtext(side = 3, line = -1.2, adj = 0,
+        "Gympie NP", cex= 1.2, outer = T)
+  mtext(side = 3, line = -25, adj = 0,
+        "Woondum NP", cex= 1.2, outer = T)
+  mtext(side =2, line = 2,
+        "Average number of minutes in 2 hour period", 
+        cex=1.3, outer = T)
+  dev.off()
+}
+
+for(i in 1:k2_value) {
   plot_2hour_files(i)  
 }
 

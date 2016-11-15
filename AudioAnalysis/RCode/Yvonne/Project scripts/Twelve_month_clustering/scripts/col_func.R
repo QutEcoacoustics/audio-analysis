@@ -1,6 +1,11 @@
-col_func <- function(cluster_colours) {
+col_func <- function(cluster_colours, version) {
   # read the colour reference for each cluster -----------
-  cluster_colours <<- read.csv("data/datasets/Cluster_features.csv")
+  if(version=="ordinary") {
+    cluster_colours <<- read.csv("data/datasets/Cluster_features.csv")  
+  }
+  if(version=="colourblind") {
+    cluster_colours <<- read.csv("data/datasets/Cluster_features_colourblind_version.csv")  
+  }
   # Convert the RGB (0:255) values to hexadecimal (base16) 
   # colours
   library(R.utils)

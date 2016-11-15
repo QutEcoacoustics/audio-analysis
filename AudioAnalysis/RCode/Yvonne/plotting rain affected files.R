@@ -3,7 +3,7 @@
 # data_wfilter <- filter(data_w_28, filter= rep(1/3,3))
 
 sourceDir <- "D:\\Cooloola\\"
-setwd(paste("D:\\Statistics\\"))
+setwd("D:\\Statistics\\")
 # Obtain a list of the original wave files
 myFiles <- list.files(full.names=TRUE, pattern="*.csv$", 
                       path=sourceDir, recursive=T)

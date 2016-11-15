@@ -186,7 +186,7 @@ first_of_month <- which(substr(dates, 9, 10)=="01")
 
 civil_dawn <- read.csv("data/Sunrise_Sunset_Solar Noon_protected.csv", header=T)
 a <- which(civil_dawn$Date==paste(substr(start, 9,20), substr(start, 6,7),
-                             substr(start, 1,4), sep = "/"))
+                                  substr(start, 1,4), sep = "/"))
 reference <- a:(a+days-1)
 civil_dawn_times <- civil_dawn$Civil_Sunrise[reference]
 civil_dusk_times <- civil_dawn$Civil_Sunset[reference]
@@ -394,9 +394,8 @@ for(i in 1:length(indices)) {
 
 dev.off()
 
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# 2. Plot PCA coefficient plot ------------------------------------------------------
+# 2. Plot PCA biplot ------------------------------------------------------
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # NOTE:  This code cannot be run until afer clustering 
 # remove all objects in the global environment
@@ -463,28 +462,12 @@ colnames(pca_coef) <- c("PC1", "PC2", "PC3", "PC4",
 
 coef_min_max <- pca_coef[,1:3]
 
-# normalise function
-#normalise <- function (x, xmin, xmax) {
-#  y <- (x - xmin)/(xmax - xmin)
-#}
-
-# Scale the PCA coefficients between 0 and 1
-#coef_min_max_norm <- coef_min_max
-#min.values <- NULL
-#max.values <- NULL
-#for (i in 1:3) {
-#  min <- unname(quantile(pca_coef[,i], probs = 0.0, na.rm = TRUE))
-#  max <- unname(quantile(pca_coef[,i], probs = 1.0, na.rm = TRUE))
-#  min.values <- c(min.values, min)
-#  max.values <- c(max.values, max)
-#  coef_min_max_norm[,i]  <- normalise(coef_min_max[,i], min, max)
-#}
-
 coef_min_max_norm <- coef_min_max
-plot(coef_min_max_norm)
-# biplot(indices_pca) takes time and too dense to be effective
+#plot(coef_min_max_norm)
+library(stats)
 
-coef_min_max_norm <- cbind(indices_norm_summary, coef_min_max_norm)
+coef_min_max_norm <- cbind(indices_norm_summary, 
+                           coef_min_max_norm)
 rm(indices_norm_summary)
 
 coef_min_max_norm <- as.data.frame(coef_min_max_norm)
@@ -494,10 +477,21 @@ for(i in 1:30) {
   minutes1_30 <- c(minutes1_30, a)
 }
 
+coef_min_max_norm <- as.data.frame(coef_min_max_norm)
+minutes31_60 <- NULL
+for(i in 31:60) {
+  a <- which(coef_min_max_norm$cluster.list==i)
+  minutes31_60 <- c(minutes31_60, a)
+}
+
 normIndices1_30 <- coef_min_max_norm[minutes1_30,]
+normIndices31_60 <- coef_min_max_norm[minutes31_60,]
 normIndices1_60 <- coef_min_max_norm
+
 normIndices1_30$cluster.list <- as.character(normIndices1_30$cluster.list)
+normIndices31_60$cluster.list <- as.character(normIndices31_60$cluster.list)
 normIndices1_60$cluster.list <- as.character(normIndices1_60$cluster.list)
+
 colours <- c("red", "chocolate4", "palegreen", "darkblue",
              "brown1", "darkgoldenrod3", "cadetblue4", 
              "darkorchid", "orange" ,"darkseagreen", 
@@ -507,13 +501,13 @@ colours <- c("red", "chocolate4", "palegreen", "darkblue",
              "royalblue", "turquoise", "palevioletred2", 
              "sienna", "slateblue", "yellow", "tan2", 
              "salmon","violetred1","plum")
-# colours
+# 60_colours
 # Check for col_func in globalEnv otherwise source function
 if(!exists("col_func", mode="function")) source("scripts/col_func.R")
 
 # colour information for each cluster, this function calls a csv
 # containing R,G and B columns containing numbers between 0 and 255
-col_func(cluster_colours)
+col_func(cluster_colours, version = "colourblind")
 colours <- cols[1:(length(cols)-1)]
 list_unique_colours <- unique(cluster_colours[,3:5])
 # change the same colours to unique colours
@@ -564,34 +558,39 @@ cols <<- cols
 colours <- cols[1:(length(cols)-1)] 
 
 normIndices1_30 <- within(normIndices1_30, levels(cluster.list) <- colours)
+normIndices31_60 <- within(normIndices31_60, levels(cluster.list) <- colours)
 normIndices1_60 <- within(normIndices1_60, levels(cluster.list) <- colours)
+
 #### Plotting PC1 & PC2 Principal Component Plots with base plotting system
 # changes these and the values in the plot function
-PrinComp_X_axis <- "PC1"
-PrinComp_Y_axis <- "PC2"
+PrinComp_X_axis <- "PC2"
+PrinComp_Y_axis <- "PC3"
 first <- as.numeric(substr(PrinComp_X_axis, 3,3))  # change this and values in plot function below!!! to match PC# 
 second <- as.numeric(substr(PrinComp_Y_axis, 3,3))
 xlim <- c(-2,1.3)
 ylim <- c(-1.35,1)
 
-png(paste("data/plots/60", PrinComp_X_axis, 
-    PrinComp_Y_axis,".png", sep = ""), 
+png(paste("data/plots/31_60_colourblind", PrinComp_X_axis, 
+          PrinComp_Y_axis,".png", sep = ""), 
     width = 2200, height = 1400, units = "px") 
 
 start <- 1
-finish <- length(normIndices1_60[,1])
+#finish <- length(normIndices1_60[,1])
+finish <- length(normIndices31_60[,1])
+colours <- rep(colours,2)
 arrowScale <- 2.2 # increase/decrease this to adjust arrow length
 summ <- summary(indices_pca)
 rotate <- unname(summ$rotation)
-labels1 <- names(normIndices1_60[1:length(summ$center)])
-labels2 <-c("BGN", "SNR", "ACT", "EPS", "HFC", "MFC",
+#labels1 <- names(normIndices1_60[1:length(summ$center)])
+labels1 <- names(normIndices31_60[1:length(summ$center)])
+labels2 <-c("BGN", "SNR", "ACTV", "EPS", "HFC", "MFC",
             "LFC", "ACI", "EAS", "EPSP", "ECS", "CLC")
 mainHeader <- paste (site,indices$rec.date[start],indices$rec.date[finish],
                      PrinComp_X_axis, PrinComp_Y_axis, sep=" ")
 par(mar=c(6,6,4,4))
-plot(normIndices1_60$PC1[start:finish], 
-     normIndices1_60$PC2[start:finish],  # Change these!!!!! 
-     col=colours[as.numeric(as.character(normIndices1_60$cluster.list[start:finish]))], 
+plot(normIndices31_60$PC2[start:finish], 
+     normIndices31_60$PC3[start:finish],  # Change these!!!!! 
+     col=colours[as.numeric(as.character(normIndices31_60$cluster.list[start:finish]))], 
      cex=1, type='p', pch=15, main=mainHeader, 
      xlab=paste(PrinComp_X_axis," (", 
                 round(summ$importance[first*3-1]*100,2),"%)", 
@@ -618,16 +617,16 @@ clust <- as.character(1:60)
 #legend('topright', clust[31:60], pch=15, 
 #       col=colours[31:60], bty='n', 
 #       cex=2)
-legend(x=xlim[2]-0.18, y= ylim[2],
-      clust[1:30], pch=15, 
-       col=colours[1:30], bty='n', 
-       cex=2)
+#legend(x=xlim[2]-0.18, y= ylim[2],
+#       clust[1:30], pch=15, 
+#       col=colours[1:30], bty='n', 
+#       cex=2)
 legend(x=xlim[2]-0.05, y= ylim[2],
        clust[31:60], pch=15, 
        col=colours[31:60], bty='n', 
        cex=2)
 text(x=xlim[2]-0.01, y= ylim[2]+0.03,
-  "Clusters", cex = 2)
+     "Clusters", cex = 2)
 legend('topleft',labels, col=colours, bty='n', 
        cex=2, title = "Indices")
 
@@ -638,21 +637,63 @@ dev.off()
 ####### 3d plot #################################
 library(rgl) # using rgl package
 start <-  1         #day[5] + offset[4] + 1   
-finish <- floor(length(normIndices$PC1)/20) #day[7]-1)
+finish <- floor(length(normIndices31_60$PC1)) #day[7]-1)
 start
 finish
+asp1 <- 2*(max(normIndices31_60$PC1)-min(normIndices31_60$PC1))
+asp2 <- 2*(max(normIndices31_60$PC2)-min(normIndices31_60$PC2))
+asp3 <- 2*(max(normIndices31_60$PC3)-min(normIndices31_60$PC3))
+
 normIndices <- normIndices1_60
-plot3d(normIndices$PC1[start:finish], normIndices$PC2[start:finish], 
+plot3d(normIndices$PC1[start:finish], 
+       normIndices$PC2[start:finish], 
        normIndices$PC3[start:finish], 
-       col=colours[as.numeric(as.character(normIndices1_60$cluster.list[start:finish]))],
-       alpha.f = 0.1)
+       aspect = c(asp1, asp2, asp3),
+       xlab = "", ylab = "", zlab = "",
+       col=colours[as.numeric(
+         as.character(
+           normIndices$cluster.list[start:finish]))])#,
+       #alpha.f = 0.1)
+
+#play3d(spin3d(axis = c(0, 0, 1), rpm = 2), duration = 60)
+
+M <- par3d("userMatrix")
+if (!rgl.useNULL())
+  play3d( par3dinterp(time = (0:2)*5, userMatrix = list(M,
+                             rotate3d(M, pi/2, 1, 0, 0),
+                             rotate3d(M, pi/2, 0, 1, 0) ) ), 
+          duration = 30)
+## Not run: 
+movie3d( spin3d(), duration = 50, convert=TRUE )
+
+
+
+
+
+if (!rgl.useNULL())
+  play3d(spin3d(axis = c(1, 0, 0), rpm = 30), duration = 2)
 #col=adjustcolor(normIndices$cluster.list, alpha.f = 0.1))
-spheres3d(normIndices$PC1[start:finish], normIndices$PC2[start:finish], 
-          normIndices$PC3[start:finish], 
-          col=colours[as.numeric(as.character(normIndices1_60$cluster.list[start:finish]))],
-          radius = 0.015)
-          #col=adjustcolor(normIndices$cluster.list, alpha.f = 0.1),
-          
+spheres3d(normIndices$PC1[start:finish], 
+          normIndices31_60$PC2[start:finish], 
+          normIndices31_60$PC3[start:finish], 
+          aspect = c(asp1, asp2, asp3),
+          col=colours[as.numeric(
+            as.character(
+              normIndices31_60$cluster.list[start:finish]))],
+          radius = 0.005)
+M <- par3d("userMatrix")
+if (!rgl.useNULL())
+  play3d( par3dinterp(time = (0:2)*0.75, userMatrix = list(M,
+                                                           rotate3d(M, pi/2, 1, 0, 0),
+                                                           rotate3d(M, pi/2, 0, 1, 0) ) ), 
+          duration = 3 )
+## Not run: 
+movie3d( spin3d(), duration = 5, convert=TRUE )
+
+       convert=T)
+
+#col=adjustcolor(normIndices$cluster.list, alpha.f = 0.1),
+
 xyzCoords <- data.frame(x1= numeric(10),  y1= integer(10), 
                         z1 = numeric(10), x2= numeric(10), 
                         y2= integer(10),  z2 = numeric(10))
@@ -675,8 +716,39 @@ segments3d(x=as.vector(t(xyzCoords[1:10,c(1,4)])),
            z=as.vector(t(xyzCoords[1:10,c(3,6)])), 
            lwd=2, col= "midnightblue")
 
+library(scatterplot3d)
+angle1 <- NULL
+for(i in 0:100) {
+  ang <- cos(i*0.03125*pi)
+  angle1 <- c(angle1, ang)
+}
+angle2 <- NULL
+for(i in 0:100) {
+  ang <- sin(i*0.03125*pi)
+  angle2 <- c(angle2, ang)
+}
 
+order <- c(1:32)
 
+for(i in 1:18) {
+  if(i < 10) {
+    png(paste("data\\plots\\scatterplot3d\\scatterplot3d_5_0",i,".png",sep=""),
+        width = 2200, height = 1400, units = "px")
+  }
+  if(i >= 10) {
+    png(paste("data\\plots\\scatterplot3d\\scatterplot3d_5_",i,".png",sep=""),
+        width = 2200, height = 1400, units = "px")
+  }
+  scatterplot3d(normIndices31_60$PC1[start:finish], 
+                -1*angle2[i]*normIndices31_60$PC2[start:finish], 
+                -1*angle1[i]*normIndices31_60$PC3[start:finish],
+                xlim = c(-2.5,1),
+                ylim = c(-1.5,1),
+                zlim = c(-1.5,1),
+                color = colours[as.numeric(
+                  as.character(normIndices31_60$cluster.list[start:finish]))])
+  dev.off()
+}
 
 
 
