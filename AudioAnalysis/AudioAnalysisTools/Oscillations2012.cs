@@ -59,7 +59,7 @@ namespace AudioAnalysisTools
                            double minDuration, double maxDuration,
                            out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
-            int scoreSmoothingWindow = 11; // sets a default that is good for Cane toad but not necessarily for other recognisers
+            int scoreSmoothingWindow = 11; // sets a default that is good for Canetoad but not necessarily for other recognisers
 
             Execute(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, scoreThreshold,
                                                minDuration, maxDuration, scoreSmoothingWindow,

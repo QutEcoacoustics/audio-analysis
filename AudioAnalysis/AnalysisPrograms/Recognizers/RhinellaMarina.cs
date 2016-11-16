@@ -19,7 +19,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 
-    using AnalysisPrograms.Recognizers.Base;
+    using Recognizers.Base;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -75,14 +75,13 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="getSpectralIndexes"></param>
         /// <param name="outputDirectory"></param>
         /// <param name="imageWidth"></param>
-        /// <param name="audioRecording"></param>
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, dynamic configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
 
             // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            var speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
 
             int minHz = (int)configuration[AnalysisKeys.MinHz];
@@ -112,10 +111,10 @@ namespace AnalysisPrograms.Recognizers
             double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
             // this default framesize seems to work for Canetoad
-            const int FrameSize = 512;
+            const int frameSize = 512;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
-                FrameSize,
+                frameSize,
                 maxOscilFreq);
             //windowOverlap = 0.75; // previous default
 
@@ -129,7 +128,7 @@ namespace AnalysisPrograms.Recognizers
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.BaseName,
-                WindowSize = FrameSize,
+                WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
@@ -140,8 +139,8 @@ namespace AnalysisPrograms.Recognizers
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.Duration();
-            int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
+            //int sr = recording.SampleRate;
+            //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
             /* #############################################################################################################################################
              * window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
@@ -153,8 +152,8 @@ namespace AnalysisPrograms.Recognizers
             // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
             // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
+            //int rowCount = sonogram.Data.GetLength(0);
+            //int colCount = sonogram.Data.GetLength(1);
 
             // DEBUG: Following lines used to search for where indeterminism creeps into the spectrogram values which vary from run to run. 
             //double[] array = DataTools.Matrix2Array(sonogram.Data);
@@ -163,7 +162,7 @@ namespace AnalysisPrograms.Recognizers
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
-            double minDurationOfReleaseCall = 1.0;
+            //double minDurationOfReleaseCall = 1.0;
             double[] scores; // predefinition of score array
             List<AcousticEvent> events;
             double[,] hits;
@@ -176,7 +175,7 @@ namespace AnalysisPrograms.Recognizers
                 maxOscilFreq,
                 dctThreshold,
                 eventThreshold,
-                minDurationOfReleaseCall,
+                minDurationOfAdvertCall,
                 maxDuration,
                 out scores,
                 out events,
@@ -189,35 +188,29 @@ namespace AnalysisPrograms.Recognizers
 
             var prunedEvents = new List<AcousticEvent>();
 
-            for (int i = 0; i < events.Count; i++)
+            foreach (AcousticEvent ae in events)
             {
-                AcousticEvent ae = events[i];
-                if (ae.Duration < minDurationOfReleaseCall)
-                {
-                    continue;
-                }
+                //if (ae.Duration < minDurationOfReleaseCall) { continue; }
+                if (ae.Duration < minDurationOfAdvertCall) { continue; }
+                if (ae.Duration > maxDuration)             { continue; }
 
                 // add additional info
                 ae.SpeciesName = speciesName;
+                ae.Name = abbreviatedSpeciesName;
                 ae.SegmentStartOffset = segmentStartOffset;
                 ae.SegmentDuration = recordingDuration;
+                prunedEvents.Add(ae);
 
-                if (ae.Duration >= minDurationOfAdvertCall)
-                {
-                    ae.Name = abbreviatedSpeciesName + ".AdvertCall";
-                    prunedEvents.Add(ae);
-                    continue;
-                }
-
-                // release calls are shorter and we require higher score to reduce chance of false-positive.
-                if (ae.Score > (eventThreshold + 0.4))
-                {
-                    ae.Name = abbreviatedSpeciesName + ".ReleaseCall";
-                    prunedEvents.Add(ae);
-                }
+                //if (ae.Duration >= minDurationOfAdvertCall)
+                //{
+                //    ae.Name = abbreviatedSpeciesName; // + ".AdvertCall";
+                //    prunedEvents.Add(ae);
+                //    continue;
+                //}
             };
 
             // do a recognizer test.
+            if (false)
             if (MainEntry.InDEBUG)
             {
                 RecognizerTest(scores, new FileInfo(recording.FilePath));

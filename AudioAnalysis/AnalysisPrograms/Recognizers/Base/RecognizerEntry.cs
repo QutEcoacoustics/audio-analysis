@@ -60,13 +60,14 @@ namespace AnalysisPrograms.Recognizers.Base
             // PAth from Anthony //"C:\Users\Administrator\Desktop\Sensors Analysis\ParallelExecutables\2\AnalysisPrograms.exe" audio2csv - source "Y:\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - config "C:\Users\Administrator\Desktop\Sensors Analysis\Towsey.ArdeaInsignis.Parallel.yml" - output "Y:\Results\2016Oct31-145124\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav" - tempdir F:\2 - m True - n
 
             // Canetoad
-            //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\CaneToad_Gympie_resampled.wav";   // Positive call   
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\Groote_20160803_151738_Canetoad_LinsPlayback.wav";   // Positive call   
+            string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\CaneToad_Gympie.wav";         // Positive call   
             //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\Lwotjulumensis_trill_bickerton_20131212_214430.wav";    // Positive call
             //string recordingPath = @"C:\Work\GitHub\recognizer-tests\tests\species\Rhinella_marina\data\TruckMotor_20150603_004248.wav"; // Negative call
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\FalsePositives\FalsePosFromPaul_2015-06-02-031015_downsampled.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Canetoad\FalsePositives\FalsePosFromPaul_2015-06-03-004248_downsampled.wav";
-            //string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016Sept\Canetoad";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
+            string outputPath = @"C:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016November";
+            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.RhinellaMarina.yml";
 
             //Crinia remota
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\CriniaSpecies\EmeraldRiver_CriniaRemota_20140206_032030.wav";
@@ -159,9 +160,9 @@ namespace AnalysisPrograms.Recognizers.Base
             //string outputPath    = @"E:\SensorNetworks\Output\Frogs\TestOfRecognizers-2016October";
 
             // Uperoleia lithomoda
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\UperoleiaSpecies\UperoleiaLithomoda_BickertonIsland_140128_201100.mp3";
-            string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016November";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.UperoleiaLithomoda.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Frogs\UperoleiaSpecies\UperoleiaLithomoda_BickertonIsland_140128_201100.mp3";
+            //string outputPath = @"G:\SensorNetworks\Output\Frogs\TestOfRecognisers-2016November";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.UperoleiaLithomoda.yml";
 
             // Uperoleia mimula
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\23 Uperoleia mimula.mp3";
