@@ -116,39 +116,62 @@ namespace AnalysisPrograms
         {
             // set the default values here
             var indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
-            var timeSpanOffsetHint = TimeSpan.FromHours(10); // Brisbane time
+            var timeSpanOffsetHint = TimeSpan.FromHours(10); // default = Brisbane time
             bool drawImages = true;
-            bool doTest = false;
+            bool doTest = true;
 
             DateTimeOffset? dtoStart = null;
             DateTimeOffset? dtoEnd = null;
 
 
-            // ########################## TESTING OF CONCATENATION 
-            // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
-            // The drive: work = G; home = E
-            string drive = "G";
+            // The drive: local = C; work = G; home = E
+            string drive = "C";
+
+            /*
+                        // ########################## TESTING OF CONCATENATION 
+                        // Test data derived from ZuZZana's INDONESIAN RECORDINGS, recording site 2. Obtained July 2016. THis teste set up October 2016.
+                        // The drive: work = G; home = E
+                        // top level directory
+                        DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Indonesia_2\\"),
+                                                   };
+                        string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
+                        string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
+                        indexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml");
+                        var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
+                        timeSpanOffsetHint = TimeSpan.FromHours(8);
+                        FileInfo sunriseDatafile = null;
+                        doTest = true;
+                        // ########################## TEST 1 CONCATENATION 
+                        //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
+                        //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
+                        //bool concatenateEverythingYouCanLayYourHandsOn = true;
+                        // ########################## TEST 2 CONCATENATION 
+                        string opFileStem = "Concat_Test2";
+                        string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
+                        bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
+                        dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+                        dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
+                        // ########################## END of TEST ARGUMENTS
+            */
+
+            // ################################ CONCATENATE GROOTE DATA 
+            // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Indonesia_2\\"),
-                                       };
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
+                                                   };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput\\";
-            indexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\Concat_TEST_IndexPropertiesConfig.yml");
+            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
             var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
-            timeSpanOffsetHint = TimeSpan.FromHours(8);
+            timeSpanOffsetHint = TimeSpan.FromHours(10);
             FileInfo sunriseDatafile = null;
-            doTest = true;
-            // ########################## TEST 1 CONCATENATION 
-            //string opFileStem = "Concat_Test1"; // this should be a unique site identifier
-            //string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test1_Output\\";
-            //bool concatenateEverythingYouCanLayYourHandsOn = true;
-            // ########################## TEST 2 CONCATENATION 
-            string opFileStem = "Concat_Test2";
-            string opPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Test2_Output\\";
+            doTest = false;
+            string opFileStem = "ConcatGrooteJCU_";
+            string opPath = $"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
             bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
-            dtoStart = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero);
-            // ########################## END of TEST ARGUMENTS
+            // start and end dates INCLUSIVE
+            dtoStart = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
+
 
 
             //// ########################## MARINE RECORDINGS          
@@ -565,7 +588,7 @@ namespace AnalysisPrograms
                             ImageChrome.With);
                 }
 
-                WriteSpectrumIndicesFiles(resultsDir, opFileStem, analysisType, dictionaryOfSpectralIndices1);
+                WriteSpectralIndexFiles(resultsDir, opFileStem, analysisType, dictionaryOfSpectralIndices1);
 
                 if (arguments.DoTest)
                 {
@@ -688,7 +711,7 @@ namespace AnalysisPrograms
                             ImageChrome.With);
                 }
 
-                WriteSpectrumIndicesFiles(subDirectories[0], opFileStem1, analysisType, dictionaryOfSpectralIndices2);
+                WriteSpectralIndexFiles(subDirectories[0], opFileStem1, analysisType, dictionaryOfSpectralIndices2);
 
             } // over days
 
@@ -715,7 +738,7 @@ namespace AnalysisPrograms
         } // Execute()
 
 
-        public static List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, string identifier, Dictionary<string, double[,]> results)
+        public static List<FileInfo> WriteSpectralIndexFiles(DirectoryInfo destination, string fileNameBase, string identifier, Dictionary<string, double[,]> results)
         {
 
             Log.Info("Writing spectral indices");
